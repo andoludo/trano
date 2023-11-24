@@ -1,0 +1,4 @@
+getVersion();
+loadFile("/model/model.mo");
+checkModel(mymodel);
+simulate(mymodel,startTime = 0, stopTime = 3600);
