@@ -1,0 +1,39 @@
+{% import 'macros/macros.jinja2' as fn %}
+package Medium = Buildings.Media.Air "Medium model";
+
+{%- set windows = []	 -%}
+{% for node in network.graph.nodes %}
+    {% if node.type == "Window" and node.construction.name not in windows %}
+        {{ fn.create_glass(node.construction) }}
+        {{ windows.append(node.construction.name) or "" }}
+    {% endif %}
+{% endfor %}
+{% set constructions = []	 %}
+{%- for node in network.graph.nodes -%}
+    {% if (node.type != "space" and node.type != "Window" and node.type != "Occupancy" and node.type != "Weather") and node.construction.name not in constructions %}
+        {{ fn.create_construction(node.construction) }}
+        {{ constructions.append(node.construction.name) or "" }}
+    {% endif %}
+{%- endfor %}
+{%- for node in network.graph.nodes -%}
+    {%- if node.type == "space" -%}
+        {{ fn.space_builder(node) }}
+    {%- endif %}
+{%- endfor %}
+{%- for node in network.graph.nodes -%}
+    {#line break#}
+    {%- if node.type == "InternalElement" -%}
+        {{ fn.create_internal_wall(node) }}
+    {%- endif %}
+        {%- if node.type == "Occupancy" -%}
+        {{ fn.create_occcupancy(node) }}
+    {%- endif %}
+            {%- if node.type == "Weather" -%}
+        {{ fn.create_weather(node) }}
+    {%- endif %}
+{%- endfor %}
+equation
+{%- for edge in network.edge_attributes -%}
+    {#line break#}
+    {{ fn.connect(edge) }}
+{%- endfor %}
