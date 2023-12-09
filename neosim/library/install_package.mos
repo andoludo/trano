@@ -3,3 +3,5 @@ installPackage(ModelicaServices, "4.0.0+maint.om", exactMatch=true);
 installPackage(Modelica, "4.0.0+maint.om", exactMatch=true);
 installPackage(Complex, "4.0.0+maint.om", exactMatch=true);
 installPackage(Buildings, "10.0.0");
+installPackage(Buildings, "10.0.0");
+loadFile("/neosim/neosim/library/Neosim.mo");
