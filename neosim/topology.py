@@ -1,6 +1,7 @@
 import random
 import string
 from collections import Counter
+from pathlib import Path
 
 import networkx as nx
 from networkx import Graph
@@ -8,8 +9,8 @@ from uuid import uuid4
 from pydantic import BaseModel
 
 from neosim.construction import Constructions
-from neosim.model import Space, InternalElement, BaseWall, Tilt, System
-
+from neosim.model import Space, InternalElement, BaseWall, Tilt, System, Weather, Occupancy
+from jinja2 import Environment, FileSystemLoader
 
 class Edge(BaseModel):
     space: str
@@ -59,9 +60,10 @@ def random_name():
 
 
 class Network:
-    def __init__(self):
+    def __init__(self, name: str):
         self.graph = Graph()
         self.edge_attributes = None
+        self.name = name
 
     def add_space(self, space: "Space"):
         self.graph.add_node(space)
@@ -134,3 +136,27 @@ class Network:
             counter.update([_get_node_id(node, edge) for node in edge])
             edge_attributes.append(Edge.from_edge(edge, counter, layout))
         self.edge_attributes = edge_attributes
+
+    def model(self):
+        self.generate_graphs()
+        environment = Environment(
+         trim_blocks=True,
+         lstrip_blocks=True,
+         loader=FileSystemLoader(
+             str(Path(__file__).parent.joinpath("templates"))
+         )
+        )
+
+        template = environment.get_template("buildings.jinja2")
+        return template.render(network=self)
+
+    def add_boiler_plate_spaces(self, spaces):
+        for space in spaces:
+            self.add_space(space)
+        weather = Weather(name=f"weather")
+        self.graph.add_node(weather)
+        for i, space in enumerate(spaces):
+            occupancy = Occupancy(name=f"occupancy_{i}")
+            self.graph.add_node(occupancy)
+            self.connect_system(space, occupancy)
+            self.connect_system(space, weather)
