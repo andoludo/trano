@@ -2,25 +2,18 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
-import pytest
+import docker
 import jinja2
+import pytest
+
 from neosim.construction import Constructions
 from neosim.glass import Glasses
-from neosim.model import (
-    Space,
-    ExternalWall,
-    Window,
-    Azimuth,
-    Tilt,
-    Occupancy,
-    Weather,
-    FloorOnGround,
-)
+from neosim.model import Azimuth, ExternalWall, FloorOnGround, Space, Tilt, Window
 from neosim.topology import Network
 
 
 @contextmanager
-def create_mos_file(network):
+def create_mos_file(network: Network) -> str:
     model = network.model()
     with tempfile.NamedTemporaryFile(
         mode="w", dir=Path(__file__).parent, suffix=".mo"
@@ -45,13 +38,12 @@ simulate({{model_name}},startTime = 0, stopTime = 3600);
         yield Path(temp_mos_file.name).name
 
 
-def is_success(results):
+def is_success(results: docker.models.containers.ExecResult) -> bool:
     return "The simulation finished successfully" in results.output.decode()
 
 
-
 @pytest.fixture
-def buildings_free_float_single_zone():
+def buildings_free_float_single_zone() -> Network:
     space_1 = Space(
         name="space_1",
         volume=100,
@@ -106,8 +98,9 @@ def buildings_free_float_single_zone():
     network.add_boiler_plate_spaces([space_1])
     return network
 
+
 @pytest.fixture
-def buildings_free_float_two_zones():
+def buildings_free_float_two_zones() -> Network:
     space_1 = Space(
         name="space_1",
         volume=100,
@@ -197,10 +190,8 @@ def buildings_free_float_two_zones():
     return network
 
 
-
-
 @pytest.fixture
-def buildings_free_float_three_zones():
+def buildings_free_float_three_zones() -> Network:
     space_1 = Space(
         name="space_1",
         volume=10,
@@ -353,7 +344,6 @@ def buildings_free_float_three_zones():
             ),
         ],
     )
-
 
     network = Network(name="buildings_free_float_three_zones")
     network.add_boiler_plate_spaces([space_1, space_2, space_3])

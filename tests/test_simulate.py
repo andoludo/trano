@@ -1,21 +1,20 @@
-import tempfile
 from pathlib import Path
 
 import docker
 import pytest
-import jinja2
 
+from neosim.topology import Network
 from tests.conftest import create_mos_file, is_success
 
 
-@pytest.fixture(scope= "session")
-def client():
+@pytest.fixture(scope="session")
+def client() -> docker.DockerClient:
     client = docker.DockerClient(base_url="unix://var/run/docker.sock")
     return client
 
 
-@pytest.fixture(scope= "session")
-def container(client):
+@pytest.fixture(scope="session")
+def container(client: docker.DockerClient) -> None:
     container = client.containers.run(
         "openmodelica/openmodelica:v1.22.0-ompython",
         command="tail -f /dev/null",
@@ -27,17 +26,29 @@ def container(client):
     container.stop()
     container.remove()
 
-def test_simulate_buildings_free_float_single_zone(buildings_free_float_single_zone, container):
+
+def test_simulate_buildings_free_float_single_zone(
+    buildings_free_float_single_zone: Network,
+    container: docker.models.containers.Container,
+) -> None:
     with create_mos_file(buildings_free_float_single_zone) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
 
-def test_simulate_buildings_free_float_two_zones(buildings_free_float_two_zones, container):
+
+def test_simulate_buildings_free_float_two_zones(
+    buildings_free_float_two_zones: Network,
+    container: docker.models.containers.Container,
+) -> None:
     with create_mos_file(buildings_free_float_two_zones) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
 
-def test_simulate_buildings_free_float_three_zones(buildings_free_float_three_zones, container):
+
+def test_simulate_buildings_free_float_three_zones(
+    buildings_free_float_three_zones: Network,
+    container: docker.models.containers.Container,
+) -> None:
     with create_mos_file(buildings_free_float_three_zones) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)

@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class GlassMaterial(BaseModel):
@@ -71,9 +71,9 @@ class GlassLayer(BaseModel):
     layer_type: str = "glass"
 
     @field_validator("material", mode="before")
-    def material(cls, material):
+    @classmethod
+    def material(cls, material: GlassMaterials) -> GlassMaterial:
         return material.value
-
 
 
 class GasLayer(BaseModel):
@@ -81,7 +81,6 @@ class GasLayer(BaseModel):
     thickness: float
     gas: Gas
     layer_type: str = "gas"
-
 
 
 class Glass(BaseModel):
