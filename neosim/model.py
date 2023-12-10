@@ -1,11 +1,12 @@
 from enum import Enum
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from networkx import Graph
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from neosim.construction import Construction, Constructions
 from neosim.glass import Glass, Glasses
+from neosim.library.buildings.buildings import buildings_ports
 
 
 class Tilt(Enum):
@@ -104,7 +105,133 @@ class WindowedWallParameters(WallParameters):
         )
 
 
-class Space(BaseModel):
+class Flow(Enum):
+    inlet = "inlet"
+    outlet = "outlet"
+    inlet_or_outlet = "inlet_or_outlet"
+    undirected = "undirected"
+
+
+class PartialConnection(BaseModel):
+    equation: str
+    position: Optional[list] = None
+
+
+class Connection(BaseModel):
+    right: PartialConnection
+    left: PartialConnection
+
+    @property
+    def path(self) -> list:
+        mid_path = (self.left.position[0] + self.right.position[0]) / 2
+        return [
+            self.left.position,
+            (self.left.position[0] + mid_path, self.left.position[1]),
+            (self.right.position[0] - mid_path, self.right.position[1]),
+            self.right.position,
+        ]
+
+
+class Port(BaseModel):
+    names: list[str]
+    target: Optional[Any] = None
+    available: bool = True
+    flow: Flow = Field(default=Flow.undirected)
+    multi_connection: bool = False
+    use_counter: bool = True
+    counter: int = Field(default=1)
+
+    def is_available(self) -> bool:
+        return self.multi_connection or self.available
+
+    def link(self, node: "BaseElement") -> list[PartialConnection]:
+        self.available = False
+        partial_connections = []
+        for name in self.names:
+            if self.multi_connection and self.use_counter:
+                equation = f"{node.name}.{name}[{self.counter}]"
+            else:
+                equation = f"{node.name}.{name}"
+            partial_connections.append(
+                PartialConnection(equation=equation, position=node.position)
+            )
+        self.counter += 1
+        return partial_connections
+
+
+def connect(edge: tuple) -> list[Connection]:
+    connections = []
+    edge_first = edge[0]
+    edge_second = edge[1]
+    current_port = edge_first._get_target_compatible_port(edge_second, Flow.outlet)
+    other_port = edge_second._get_target_compatible_port(edge_first, Flow.inlet)
+    if any([port is None for port in [current_port, other_port]]):
+        return []
+    for left, right in zip(current_port.link(edge_first), other_port.link(edge_second)):
+        connections.append(Connection(left=left, right=right))
+    return connections
+
+
+def _has_inlet_or_outlet(target: "BaseElement") -> bool:
+    return bool([port for port in target.ports if port.flow == Flow.inlet_or_outlet])
+
+
+class BaseElement(BaseModel):
+    name: str
+    position: Optional[list] = None
+    ports: list[Port] = Field(default=[], validate_default=True)
+
+    def get_position(self, layout: dict) -> None:
+        if not self.position:
+            self.position = list(layout.get(self))
+
+    @property
+    def type(self) -> str:
+        return type(self).__name__
+
+    def _get_target_compatible_port(self, target: "BaseElement", flow: Flow) -> Port:
+        ports = [
+            port
+            for port in self.ports
+            if port.target and isinstance(target, port.target) and port.is_available()
+        ]
+        if ports:
+            return ports[0]
+        ports = [
+            port
+            for port in self.ports
+            if not port.target and port.is_available() and port.flow == flow
+        ]
+        if ports:
+            if len(ports) > 1:
+                raise NotImplementedError
+            return ports[0]
+
+        ports = [
+            port
+            for port in self.ports
+            if not port.target
+            and port.is_available()
+            and port.flow == Flow.inlet_or_outlet
+            and _has_inlet_or_outlet(target)
+        ]
+        if ports:
+            if len(ports) > 1:
+                raise NotImplementedError
+            return ports[0]
+
+        return
+
+    def __hash__(self) -> int:
+        return hash(f"{self.name}-{type(self).__name__}")
+
+    @field_validator("ports")
+    @classmethod
+    def ports_validator(cls, ports: list[Port]) -> list[Port]:
+        return buildings_ports().get(cls.__name__, [])
+
+
+class Space(BaseElement):
     name: str
     volume: float | int
     height: float | int
@@ -113,8 +240,6 @@ class Space(BaseModel):
     external_boundaries: list[Union["ExternalWall", "Window", "FloorOnGround"]]
     internal_elements: list["ExternalWall"] = None
     boundaries: list[WallParameters] = None
-    type: str = "space"  # TODO: to replace
-    position: Optional[list] = None
 
     def get_neighhors(self, graph: Graph) -> None:
         neighbors = list(graph.neighbors(self))
@@ -122,9 +247,6 @@ class Space(BaseModel):
         for wall in [ExternalWall, Window, InternalElement, FloorOnGround]:
             self.boundaries.append(WallParameters.from_neighbors(neighbors, wall))
         self.boundaries += [WindowedWallParameters.from_neighbors(neighbors)]
-
-    def __hash__(self) -> int:
-        return hash(f"{self.name}-{self.volume}")
 
     def __add__(self, other: "Space") -> "Space":
         self.name = (
@@ -134,24 +256,34 @@ class Space(BaseModel):
         self.external_boundaries += other.external_boundaries
         return self
 
-    def get_position(self, layout: dict) -> None:
-        if not self.position:
-            self.position = list(layout.get(self))
 
-
-class System(BaseModel):
+class System(BaseElement):
     name: str
     position: Optional[list] = None
 
-    def get_position(self, layout: dict) -> None:
-        self.position = list(layout.get(self))
 
-    @property
-    def type(self) -> str:
-        return type(self).__name__
+class Emission(System):
+    ...
 
-    def __hash__(self) -> int:
-        return hash(f"{self.name}-{type(self).__name__}")
+
+class Valve(System):
+    ...
+
+
+class SplitValve(System):
+    ...
+
+
+class ThreeWayValve(System):
+    ...
+
+
+class Pump(System):
+    ...
+
+
+class Boiler(System):
+    ...
 
 
 class Occupancy(System):
@@ -162,13 +294,11 @@ class Weather(System):
     ...
 
 
-class BaseWall(BaseModel):
-    name: str
+class BaseWall(BaseElement):
     surface: float | int
     azimuth: float | int
     tilt: Tilt
     construction: Construction | Glass
-    position: Optional[list] = None
 
     @field_validator("construction", mode="before")
     @classmethod
@@ -176,17 +306,6 @@ class BaseWall(BaseModel):
         cls, construction: Constructions | Glasses
     ) -> Construction | Glass:
         return construction.value
-
-    def __hash__(self) -> int:
-        return hash(f"{self.name}-{self.surface}-{type(self).__name__}")
-
-    def get_position(self, layout: dict) -> None:
-        if not self.position:
-            self.position = list(layout.get(self))
-
-    @property
-    def type(self) -> str:
-        return type(self).__name__
 
 
 class ExternalWall(BaseWall):

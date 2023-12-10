@@ -1,7 +1,7 @@
 {% import 'macros/macros.jinja2' as fn %}
 model {{ network.name }}
 package Medium = Buildings.Media.Air "Medium model";
-
+{#package MediumW = Buildings.Media.Water "Medium model";#}
 {%- set windows = []	 -%}
 {% for node in network.graph.nodes %}
     {% if node.type == "Window" and node.construction.name not in windows %}
@@ -11,13 +11,13 @@ package Medium = Buildings.Media.Air "Medium model";
 {% endfor %}
 {% set constructions = []	 %}
 {%- for node in network.graph.nodes -%}
-    {% if (node.type != "space" and node.type != "Window" and node.type != "Occupancy" and node.type != "Weather") and node.construction.name not in constructions %}
+    {% if node.type not in ("Space" , "Window" , "Occupancy" , "Weather", "Emission", "Valve", "Pump", "Boiler","SplitValve", "ThreeWayValve") and node.construction.name not in constructions %}
         {{ fn.create_construction(node.construction) }}
         {{ constructions.append(node.construction.name) or "" }}
     {% endif %}
 {%- endfor %}
 {%- for node in network.graph.nodes -%}
-    {%- if node.type == "space" -%}
+    {%- if node.type == "Space" -%}
         {{ fn.space_builder(node) }}
     {%- endif %}
 {%- endfor %}
@@ -31,6 +31,26 @@ package Medium = Buildings.Media.Air "Medium model";
     {%- endif %}
             {%- if node.type == "Weather" -%}
         {{ fn.create_weather(node) }}
+    {%- endif %}
+                {%- if node.type == "Emission" -%}
+        {{ fn.create_emission(node) }}
+    {%- endif %}
+
+                {%- if node.type == "Pump" -%}
+        {{ fn.create_pump(node) }}
+    {%- endif %}
+
+                {%- if node.type == "Boiler" -%}
+        {{ fn.create_boiler(node) }}
+    {%- endif %}
+                    {%- if node.type == "Valve" -%}
+        {{ fn.create_valve(node) }}
+    {%- endif %}
+                        {%- if node.type == "SplitValve" -%}
+        {{ fn.create_split_valve(node) }}
+    {%- endif %}
+                            {%- if node.type == "ThreeWayValve" -%}
+        {{ fn.create_three_way_valve(node) }}
     {%- endif %}
 {%- endfor %}
 equation

@@ -43,3 +43,10 @@ def test_template_buildings_free_float_three_zones(
     model_ = buildings_free_float_three_zones.model()
     model_ = remove_annotation(model_)
     assert model_ == _read(buildings_free_float_three_zones.name)
+
+
+def test_template_buildings_simple_hydronic(
+    buildings_simple_hydronic: Network,
+) -> None:
+    model_ = buildings_simple_hydronic.model()
+    model_ = remove_annotation(model_)

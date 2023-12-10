@@ -8,7 +8,20 @@ import pytest
 
 from neosim.construction import Constructions
 from neosim.glass import Glasses
-from neosim.model import Azimuth, ExternalWall, FloorOnGround, Space, Tilt, Window
+from neosim.model import (
+    Azimuth,
+    Boiler,
+    Emission,
+    ExternalWall,
+    FloorOnGround,
+    Pump,
+    Space,
+    SplitValve,
+    ThreeWayValve,
+    Tilt,
+    Valve,
+    Window,
+)
 from neosim.topology import Network
 
 
@@ -347,4 +360,82 @@ def buildings_free_float_three_zones() -> Network:
 
     network = Network(name="buildings_free_float_three_zones")
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
+    return network
+
+
+@pytest.fixture
+def buildings_simple_hydronic() -> Network:
+    space_1 = Space(
+        name="space_1",
+        volume=100,
+        floor_area=50,
+        height=2,
+        elevation=2,
+        external_boundaries=[
+            ExternalWall(
+                name="w1_1",
+                surface=10,
+                azimuth=Azimuth.west,
+                layer_name="layer",
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w2_1",
+                surface=10,
+                azimuth=Azimuth.north,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w3_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w4_1",
+                surface=10,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            FloorOnGround(
+                name="floor_2", surface=10, construction=Constructions.external_wall
+            ),
+            Window(
+                name="win1_1",
+                surface=1,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+    )
+    network = Network(name="buildings_free_float_single_zone")
+    network.add_boiler_plate_spaces([space_1])
+    emission = Emission(name="emission")
+    valve = Valve(name="valve")
+    pump = Pump(name="pump")
+    boiler = Boiler(name="boiler")
+    split_valve = SplitValve(name="split_valve")
+    three_way_valve = ThreeWayValve(name="three_way_valve")
+    network.graph.add_node(emission)
+    network.graph.add_edge(emission, space_1)
+    network.graph.add_node(valve)
+    network.graph.add_node(pump)
+    network.graph.add_node(boiler)
+    network.graph.add_node(split_valve)
+    network.graph.add_node(three_way_valve)
+    network.graph.add_edge(valve, emission)
+    network.graph.add_edge(three_way_valve, valve)
+    network.graph.add_edge(emission, split_valve)
+    #
+    network.graph.add_edge(boiler, pump)
+    network.graph.add_edge(pump, three_way_valve)
+    network.graph.add_edge(three_way_valve, split_valve)
+    network.graph.add_edge(split_valve, boiler)
     return network
