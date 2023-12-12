@@ -1,6 +1,7 @@
 def buildings_ports() -> dict:
     from neosim.model import (
         Boiler,
+        Control,
         Emission,
         Flow,
         InternalElement,
@@ -20,6 +21,7 @@ def buildings_ports() -> dict:
             Port(target=Occupancy, names=["qGai_flow"]),
             Port(target=Weather, names=["weaBus"]),
             Port(target=Emission, names=["heaPorAir", "heaPorRad"]),
+            Port(target=Control, names=["y"]),
         ],
         Emission.__name__: [
             Port(target=Space, names=["heatPortCon", "heatPortRad"]),
@@ -29,6 +31,7 @@ def buildings_ports() -> dict:
         Valve.__name__: [
             Port(names=["port_a"], flow=Flow.inlet),
             Port(names=["port_b"], flow=Flow.outlet),
+            Port(target=Control, names=["y"]),
         ],
         Boiler.__name__: [
             Port(names=["port_a"], flow=Flow.inlet),
@@ -37,6 +40,7 @@ def buildings_ports() -> dict:
         Pump.__name__: [
             Port(names=["port_a"], flow=Flow.inlet),
             Port(names=["port_b"], flow=Flow.outlet),
+            Port(target=Control, names=["y"]),
         ],
         SplitValve.__name__: [
             Port(names=["port_1"], flow=Flow.inlet),
@@ -47,6 +51,7 @@ def buildings_ports() -> dict:
             Port(names=["port_1"], flow=Flow.inlet),
             Port(names=["port_2"], flow=Flow.outlet),
             Port(names=["port_3"], flow=Flow.inlet_or_outlet),
+            Port(target=Control, names=["y"]),
         ],
         Occupancy.__name__: [
             Port(target=Space, names=["y"]),

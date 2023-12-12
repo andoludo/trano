@@ -47,5 +47,85 @@ package Neosim
             coordinateSystem(preserveAspectRatio=false)));
     end SimpleOccupancy;
   end Occupancy;
-  annotation (uses(Buildings(version="11.0.0"), Modelica(version="4.0.0")));
+
+  package Controls
+  package BaseClasses
+  annotation (
+        Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
+                fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25), Ellipse(lineColor = {128, 128, 128}, fillColor = {255, 255, 255},
+                fillPattern =                                                                                                                                                                                                        FillPattern.Solid, extent = {{-30, -30}, {30, 30}})}));
+  end BaseClasses;
+
+    package Interfaces
+      partial model BaseSpaceControl
+        Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a port annotation (
+                Placement(transformation(extent = {{-110, -10}, {-90, 10}}), iconTransformation(extent = {{-110, -10}, {-90, 10}})));
+        Modelica.Blocks.Interfaces.RealOutput y annotation (
+                Placement(transformation(origin = {106, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {106, 0}, extent = {{-10, -10}, {10, 10}})));
+      equation
+
+            annotation (
+                Icon,
+        Diagram);
+      end BaseSpaceControl;
+      annotation (
+        Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
+                fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25), Polygon(origin = {20, 0}, lineColor = {64, 64, 64}, fillColor = {255, 255, 255},
+                fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-10, 70}, {10, 70}, {40, 20}, {80, 20}, {80, -20}, {40, -20}, {10, -70}, {-10, -70}, {-10, 70}}), Polygon(fillColor = {102, 102, 102}, pattern = LinePattern.None,
+                fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-100, 20}, {-60, 20}, {-30, 70}, {-10, 70}, {-10, -70}, {-30, -70}, {-60, -20}, {-100, -20}, {-100, 20}})}));
+    end Interfaces;
+
+    package SpaceControls
+      model PID
+              extends Neosim.Controls.Interfaces.BaseSpaceControl;
+
+                parameter .Modelica.Blocks.Types.SimpleController controllerType=
+                 .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
+          parameter Real k(min=0, unit="1") = 1 "Gain of controller";
+          parameter Modelica.Units.SI.Time Ti(min=Modelica.Constants.small)=0.5
+            "Time constant of Integrator block" annotation (Dialog(enable=
+                  controllerType == .Modelica.Blocks.Types.SimpleController.PI or
+                  controllerType == .Modelica.Blocks.Types.SimpleController.PID));
+          parameter Modelica.Units.SI.Time Td(min=0)=0.1
+            "Time constant of Derivative block" annotation (Dialog(enable=
+                  controllerType == .Modelica.Blocks.Types.SimpleController.PD or
+                  controllerType == .Modelica.Blocks.Types.SimpleController.PID));
+          parameter Real yMax(start=1) "Upper limit of output";
+          parameter Real yMin=-yMax "Lower limit of output";
+          parameter Modelica.Units.SI.Temperature setPoint;
+        Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor TRoo annotation (
+                Placement(transformation(origin = {-542, -226}, extent = {{480, 216}, {500, 236}})));
+        Modelica.Blocks.Continuous.LimPID conRoo(yMax = yMax, yMin = yMin, controllerType = controllerType, k = k, Ti = Ti, Td = Td)  annotation (
+                Placement(transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}})));
+        Modelica.Blocks.Sources.RealExpression realExpression(y=setPoint)
+          annotation (Placement(transformation(extent={{-42,36},{-22,56}})));
+      equation
+              connect(port, TRoo.port) annotation (
+                Line(points = {{-100, 0}, {-62, 0}}, color = {191, 0, 0}));
+        connect(conRoo.y, y) annotation (
+                Line(points={{61,0},{106,0}},      color = {0, 0, 127}));
+        connect(TRoo.T, conRoo.u_m) annotation (
+                Line(points={{-41,0},{4,0},{4,-36},{50,-36},{50,-12}},            color = {0, 0, 127}));
+        connect(realExpression.y, conRoo.u_s) annotation (Line(points={{-21,46},{32,46},
+                {32,0},{38,0}}, color={0,0,127}));
+            annotation (
+                Icon(graphics={  Rectangle(lineColor = {0, 0, 127}, fillColor = {255, 255, 255},
+                  fillPattern =                                                                                FillPattern.Solid, extent = {{-100, -100}, {100, 100}}), Line(points = {{-80, 78}, {-80, -90}}, color = {192, 192, 192}), Polygon(lineColor = {192, 192, 192}, fillColor = {192, 192, 192},
+                  fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-80, 90}, {-88, 68}, {-72, 68}, {-80, 90}}), Line(points = {{-90, -80}, {82, -80}}, color = {192, 192, 192}), Polygon(lineColor = {192, 192, 192}, fillColor = {192, 192, 192},
+                  fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{90, -80}, {68, -72}, {68, -88}, {90, -80}}), Line(points = {{-80, -80}, {-80, -20}, {60, 80}}, color = {0, 0, 127}), Text(textColor = {192, 192, 192}, extent = {{-20, -60}, {80, -20}}, textString = "PID")}));
+      end PID;
+      annotation (
+        Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
+                fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
+    end SpaceControls;
+  annotation (
+      Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
+              fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
+              fillPattern =                                                                                                                                                                                                        FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(origin = {0, 35.1488}, fillColor = {255, 255, 255}, extent = {{-30, -20.1488}, {30, 20.1488}}), Rectangle(origin = {0, -34.8512}, fillColor = {255, 255, 255}, extent = {{-30, -20.1488}, {30, 20.1488}}), Line(origin = {-51.25, 0}, points = {{21.25, -35}, {-13.75, -35}, {-13.75, 35}, {6.25, 35}}), Polygon(origin = {-40, 35}, pattern = LinePattern.None,
+              fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{10, 0}, {-5, 5}, {-5, -5}, {10, 0}}), Line(origin = {51.25, 0}, points = {{-21.25, 35}, {13.75, 35}, {13.75, -35}, {-6.25, -35}}), Polygon(origin = {40, -35}, pattern = LinePattern.None,
+              fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-10, 0}, {5, 5}, {5, -5}, {-10, 0}})}));
+  end Controls;
+  annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0")),
+  Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
+            fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
 end Neosim;

@@ -257,6 +257,11 @@ class Space(BaseElement):
         return self
 
 
+class Control(BaseElement):
+    name: str
+    position: Optional[list] = None
+
+
 class System(BaseElement):
     name: str
     position: Optional[list] = None

@@ -1,7 +1,7 @@
 {% import 'macros/macros.jinja2' as fn %}
 model {{ network.name }}
 package Medium = Buildings.Media.Air "Medium model";
-{#package MediumW = Buildings.Media.Water "Medium model";#}
+package MediumW = Buildings.Media.Water "Medium model";
 {%- set windows = []	 -%}
 {% for node in network.graph.nodes %}
     {% if node.type == "Window" and node.construction.name not in windows %}
