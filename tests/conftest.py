@@ -11,11 +11,13 @@ from neosim.glass import Glasses
 from neosim.model import (
     Azimuth,
     Boiler,
+    Control,
     Emission,
     ExternalWall,
     FloorOnGround,
     Pump,
     Space,
+    SpaceControl,
     SplitValve,
     ThreeWayValve,
     Tilt,
@@ -363,6 +365,10 @@ def buildings_free_float_three_zones() -> Network:
     return network
 
 
+import networkx as nx
+from networkx import shortest_path
+
+
 @pytest.fixture
 def buildings_simple_hydronic() -> Network:
     space_1 = Space(
@@ -414,28 +420,39 @@ def buildings_simple_hydronic() -> Network:
                 construction=Glasses.double_glazing,
             ),
         ],
+        emissions=[Valve(name="valve"), Emission(name="emission")],
+        control=SpaceControl(name="space_control"),
     )
-    network = Network(name="buildings_free_float_single_zone")
+    network = Network(name="buildings_simple_hydronic")
     network.add_boiler_plate_spaces([space_1])
-    emission = Emission(name="emission")
-    valve = Valve(name="valve")
+
     pump = Pump(name="pump")
     boiler = Boiler(name="boiler")
     split_valve = SplitValve(name="split_valve")
     three_way_valve = ThreeWayValve(name="three_way_valve")
-    network.graph.add_node(emission)
-    network.graph.add_edge(emission, space_1)
-    network.graph.add_node(valve)
     network.graph.add_node(pump)
     network.graph.add_node(boiler)
     network.graph.add_node(split_valve)
     network.graph.add_node(three_way_valve)
-    network.graph.add_edge(valve, emission)
-    network.graph.add_edge(three_way_valve, valve)
-    network.graph.add_edge(emission, split_valve)
+    network.graph.add_edge(three_way_valve, space_1.first_emission())
+    network.graph.add_edge(space_1.last_emission(), split_valve)
     #
     network.graph.add_edge(boiler, pump)
     network.graph.add_edge(pump, three_way_valve)
     network.graph.add_edge(three_way_valve, split_valve)
     network.graph.add_edge(split_valve, boiler)
+    # check if controllable
+    if pump.get_controllable_ports():
+        pump_control = Control(name="pump_control")
+        network.graph.add_edge(pump, pump_control)
+
+    if three_way_valve.get_controllable_ports():
+        three_way_valve_control = Control(name="three_way_valve_control")
+        network.graph.add_edge(three_way_valve, three_way_valve_control)
+    # network.graph.draw(network.graph)
+    import matplotlib.pyplot as plt
+
+    nx.draw(network.graph)
+    plt.show()
+    # shortest_path(network.graph, pump, space_1)
     return network

@@ -168,7 +168,7 @@ smooth=Smooth.None));
 {%- macro create_emission(element) -%}
     Buildings.Fluid.HeatExchangers.Radiators.RadiatorEN442_2 {{ element.name }}(
     redeclare package Medium = MediumW,
-    Q_flow_nominal=12,
+    Q_flow_nominal=scaFacRad*Q_flow_nominal/nRoo,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     T_a_nominal=323.15,
     T_b_nominal=313.15) "Radiator"
@@ -181,8 +181,8 @@ smooth=Smooth.None));
 {%- macro create_pump(element) -%}
     Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y {{ element.name }}(
     redeclare package Medium = MediumW,
-    m_flow_nominal=1,
-    dp_nominal=1,
+    m_flow_nominal=mRad_flow_nominal,
+    dp_nominal=dp_nominal,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -190,16 +190,8 @@ smooth=Smooth.None));
 {%- endmacro %}
 
 {%- macro create_boiler(element) -%}
-    Buildings.Fluid.Boilers.BoilerPolynomial {{ element.name }}(
-    a={0.9},
-    effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant,
-    redeclare package Medium = MediumW,
-    Q_flow_nominal=1,
-    m_flow_nominal=1,
-    fue=Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue(),
-    dp_nominal=3000 + 2000,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-    T_start=293.15) "Boiler"
+    Neosim.Fluid.Boilers.Simple {{ element.name }}(
+    redeclare package Medium = MediumW) "Boiler"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %}, rotation = 90)));
@@ -209,9 +201,9 @@ smooth=Smooth.None));
 {%- macro create_valve(element) -%}
     Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage {{ element.name }}(
     redeclare package Medium = MediumW,
-    dpValve_nominal(displayUnit="Pa") = 1,
-    m_flow_nominal=1,
-    dpFixed_nominal=1,
+    dpValve_nominal(displayUnit="Pa") = dpVal_nominal,
+    m_flow_nominal=mRad_flow_nominal/nRoo,
+    dpFixed_nominal=dpRoo_nominal,
     from_dp=true,
     use_inputFilter=false) "Radiator valve"
     annotation (
@@ -221,7 +213,7 @@ smooth=Smooth.None));
 
 {%- macro create_split_valve(element) -%}
     Buildings.Fluid.FixedResistances.Junction {{ element.name }} (
-    dp_nominal={dpPip_nominal,0,0},
+    dp_nominal={0,0,0},
     m_flow_nominal=mRad_flow_nominal*{1,-1,-1},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
@@ -242,6 +234,20 @@ smooth=Smooth.None));
     dpFixed_nominal={100,0},
     use_inputFilter=false,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-way valve"
+    annotation (
+    Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %}, rotation = 90)));
+{%- endmacro %}
+
+{%- macro create_space_control(element) -%}
+    Neosim.Controls.SpaceControls.PID {{ element.name }}(setPoint = 295.15, yMax = 1, yMin = 0)
+    annotation (
+    Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %}, rotation = 90)));
+{%- endmacro %}
+
+{%- macro create_control(element) -%}
+    Modelica.Blocks.Sources.Constant {{ element.name }}(k= 1)
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %}, rotation = 90)));

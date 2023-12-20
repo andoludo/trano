@@ -144,6 +144,9 @@ class Port(BaseModel):
     def is_available(self) -> bool:
         return self.multi_connection or self.available
 
+    def is_controllable(self):
+        return self.target and self.target == Control
+
     def link(self, node: "BaseElement") -> list[PartialConnection]:
         self.available = False
         partial_connections = []
@@ -184,6 +187,9 @@ class BaseElement(BaseModel):
     def get_position(self, layout: dict) -> None:
         if not self.position:
             self.position = list(layout.get(self))
+
+    def get_controllable_ports(self):
+        return [port for port in self.ports if port.is_controllable()]
 
     @property
     def type(self) -> str:
@@ -240,6 +246,38 @@ class Space(BaseElement):
     external_boundaries: list[Union["ExternalWall", "Window", "FloorOnGround"]]
     internal_elements: list["ExternalWall"] = None
     boundaries: list[WallParameters] = None
+    emissions: list = Field(default=[])
+    control: "SpaceControl" = None
+
+    def get_controllable_emission(self):
+        cotrollable_emissions = []
+        for emission in self.emissions:
+            controllable_ports = emission.get_controllable_ports()
+            if controllable_ports:
+                cotrollable_emissions.append(emission)
+        if len(cotrollable_emissions) > 1:
+            raise NotImplementedError
+        if not cotrollable_emissions:
+            return
+        return cotrollable_emissions[0]
+
+    def find_emission(self):
+        emissions = [
+            emission for emission in self.emissions if isinstance(emission, Emission)
+        ]
+        if not emissions:
+            return
+        if len(emissions) != 1:
+            raise NotImplementedError
+        return emissions[0]
+
+    def first_emission(self):
+        if self.emissions:
+            return self.emissions[0]
+
+    def last_emission(self):
+        if self.emissions:
+            return self.emissions[-1]
 
     def get_neighhors(self, graph: Graph) -> None:
         neighbors = list(graph.neighbors(self))
@@ -260,6 +298,10 @@ class Space(BaseElement):
 class Control(BaseElement):
     name: str
     position: Optional[list] = None
+
+
+class SpaceControl(Control):
+    ...
 
 
 class System(BaseElement):

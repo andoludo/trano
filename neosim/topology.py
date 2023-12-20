@@ -4,11 +4,12 @@ from typing import Optional
 
 import networkx as nx
 from jinja2 import Environment, FileSystemLoader
-from networkx import DiGraph
+from networkx import DiGraph, Graph
 
 from neosim.construction import Constructions
 from neosim.model import (
     Connection,
+    Emission,
     InternalElement,
     Occupancy,
     Space,
@@ -21,7 +22,7 @@ from neosim.model import (
 
 class Network:
     def __init__(self, name: str) -> None:
-        self.graph = DiGraph(directed=True)
+        self.graph = DiGraph()
         self.edge_attributes = []
         self.name = name
 
@@ -33,6 +34,35 @@ class Network:
                 space,
                 boundary,
             )
+        self._build_space_emission(space)  # TODO: perhaps move to space
+        self._build_control(space)  # TODO: perhaps move to space
+
+    def _build_space_emission(self, space: "Space"):
+        emission = space.find_emission()
+        if emission:
+            self.graph.add_node(emission)
+            self.graph.add_edge(
+                space,
+                emission,
+            )
+            for system1, system2 in zip(space.emissions[:-1], space.emissions[1:]):
+                if not self.graph.has_node(system1):
+                    self.graph.add_node(system1)
+                if not self.graph.has_node(system2):
+                    self.graph.add_node(system2)
+                self.graph.add_edge(
+                    system1,
+                    system2,
+                )
+
+    def _build_control(self, space: "Space"):
+        if space.control:
+            self.graph.add_node(space.control)
+            self.graph.add_edge(
+                space.control,
+                space,
+            )
+            self.graph.add_edge(space.control, space.get_controllable_emission())
 
     def connect_spaces(
         self,

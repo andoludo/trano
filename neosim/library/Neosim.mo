@@ -125,6 +125,28 @@ package Neosim
               fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{10, 0}, {-5, 5}, {-5, -5}, {10, 0}}), Line(origin = {51.25, 0}, points = {{-21.25, 35}, {13.75, 35}, {13.75, -35}, {-6.25, -35}}), Polygon(origin = {40, -35}, pattern = LinePattern.None,
               fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-10, 0}, {5, 5}, {5, -5}, {-10, 0}})}));
   end Controls;
+
+  package Fluid
+  package Boilers
+  model Simple
+
+  extends Buildings.Fluid.Interfaces.PartialTwoPort;
+  Buildings.Fluid.Sources.Boundary_pT bou(use_T_in = true, nPorts = 2, redeclare final package Medium = Medium)  annotation(
+          Placement(transformation(origin = {90, 188}, extent = {{-82, -180}, {-62, -160}})));
+  Modelica.Blocks.Sources.Constant constant1(k = 273 + 70)  annotation(
+          Placement(transformation(origin = {-32, 20}, extent = {{-10, -10}, {10, 10}})));
+      equation
+  connect(constant1.y, bou.T_in) annotation(
+          Line(points = {{-20, 20}, {6, 20}, {6, 22}}, color = {0, 0, 127}));
+  connect(bou.ports[1], port_b) annotation(
+          Line(points = {{28, 18}, {100, 18}, {100, 0}}, color = {0, 127, 255}));
+  connect(bou.ports[2], port_a) annotation(
+          Line(points = {{28, 18}, {-100, 18}, {-100, 0}}, color = {0, 127, 255}));
+      annotation(
+          Icon(graphics = {Rectangle(fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}}), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255}, fillPattern = FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
+end Simple;
+    end Boilers;
+  end Fluid;
   annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));

@@ -9,7 +9,9 @@ def buildings_ports() -> dict:
         Port,
         Pump,
         Space,
+        SpaceControl,
         SplitValve,
+        System,
         ThreeWayValve,
         Valve,
         Weather,
@@ -21,7 +23,7 @@ def buildings_ports() -> dict:
             Port(target=Occupancy, names=["qGai_flow"]),
             Port(target=Weather, names=["weaBus"]),
             Port(target=Emission, names=["heaPorAir", "heaPorRad"]),
-            Port(target=Control, names=["y"]),
+            Port(target=SpaceControl, names=["heaPorAir"]),
         ],
         Emission.__name__: [
             Port(target=Space, names=["heatPortCon", "heatPortRad"]),
@@ -64,5 +66,12 @@ def buildings_ports() -> dict:
         InternalElement.__name__: [
             Port(target=Space, names=["port_a"]),
             Port(target=Space, names=["port_b"]),
+        ],
+        SpaceControl.__name__: [
+            Port(target=Space, names=["port"]),
+            Port(target=System, names=["y"]),
+        ],
+        Control.__name__: [
+            Port(target=System, names=["y"]),
         ],
     }

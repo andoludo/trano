@@ -50,3 +50,4 @@ def test_template_buildings_simple_hydronic(
 ) -> None:
     model_ = buildings_simple_hydronic.model()
     model_ = remove_annotation(model_)
+    assert model_ == _read(buildings_simple_hydronic.name)
