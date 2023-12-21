@@ -147,13 +147,13 @@ smooth=Smooth.None));
     {{ element.construction.name }}, stateAtSurface_a = true, stateAtSurface_b = true) "Partition wall between the two
     rooms" annotation(
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 {%- macro create_occcupancy(element) -%}
     Neosim.Occupancy.SimpleOccupancy {{ element.name }} annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 {%- macro create_weather(element) -%}
@@ -161,7 +161,7 @@ smooth=Smooth.None));
     Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 
@@ -174,7 +174,7 @@ smooth=Smooth.None));
     T_b_nominal=313.15) "Radiator"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 
@@ -186,7 +186,7 @@ smooth=Smooth.None));
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 {%- macro create_boiler(element) -%}
@@ -194,7 +194,7 @@ smooth=Smooth.None));
     redeclare package Medium = MediumW) "Boiler"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 
@@ -208,7 +208,7 @@ smooth=Smooth.None));
     use_inputFilter=false) "Radiator valve"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 {%- macro create_split_valve(element) -%}
@@ -220,7 +220,7 @@ smooth=Smooth.None));
     "Flow splitter"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 
@@ -236,19 +236,19 @@ smooth=Smooth.None));
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-way valve"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 {%- macro create_space_control(element) -%}
     Neosim.Controls.SpaceControls.PID {{ element.name }}(setPoint = 295.15, yMax = 1, yMin = 0)
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}
 
 {%- macro create_control(element) -%}
     Modelica.Blocks.Sources.Constant {{ element.name }}(k= 1)
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %}, rotation = 90)));
+    {% endraw %})));
 {%- endmacro %}

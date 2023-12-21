@@ -370,7 +370,7 @@ from networkx import shortest_path
 
 
 @pytest.fixture
-def buildings_simple_hydronic() -> Network:
+def space_1():
     space_1 = Space(
         name="space_1",
         volume=100,
@@ -423,6 +423,68 @@ def buildings_simple_hydronic() -> Network:
         emissions=[Valve(name="valve"), Emission(name="emission")],
         control=SpaceControl(name="space_control"),
     )
+    return space_1
+
+
+@pytest.fixture
+def space_2():
+    space_2 = Space(
+        name="space_2",
+        volume=100,
+        floor_area=50,
+        height=2,
+        elevation=2,
+        external_boundaries=[
+            ExternalWall(
+                name="w1_2",
+                surface=10,
+                azimuth=Azimuth.west,
+                layer_name="layer",
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w2_2",
+                surface=10,
+                azimuth=Azimuth.north,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w3_2",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w4_2",
+                surface=10,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            FloorOnGround(
+                name="floor_3", surface=10, construction=Constructions.external_wall
+            ),
+            Window(
+                name="win1_2",
+                surface=1,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+        emissions=[Valve(name="valve_2"), Emission(name="emission_2")],
+        control=SpaceControl(name="space_control_2"),
+    )
+    return space_2
+
+
+@pytest.fixture
+def buildings_simple_hydronic(space_1) -> Network:
     network = Network(name="buildings_simple_hydronic")
     network.add_boiler_plate_spaces([space_1])
 
@@ -430,17 +492,13 @@ def buildings_simple_hydronic() -> Network:
     boiler = Boiler(name="boiler")
     split_valve = SplitValve(name="split_valve")
     three_way_valve = ThreeWayValve(name="three_way_valve")
-    network.graph.add_node(pump)
-    network.graph.add_node(boiler)
-    network.graph.add_node(split_valve)
-    network.graph.add_node(three_way_valve)
-    network.graph.add_edge(three_way_valve, space_1.first_emission())
-    network.graph.add_edge(space_1.last_emission(), split_valve)
-    #
-    network.graph.add_edge(boiler, pump)
-    network.graph.add_edge(pump, three_way_valve)
-    network.graph.add_edge(three_way_valve, split_valve)
-    network.graph.add_edge(split_valve, boiler)
+    network.connect_systems(three_way_valve, space_1.first_emission())
+    network.connect_systems(space_1.last_emission(), split_valve)
+    network.connect_systems(boiler, pump)
+    network.connect_systems(pump, three_way_valve)
+    network.connect_systems(three_way_valve, split_valve)
+    network.connect_systems(split_valve, boiler)
+
     # check if controllable
     if pump.get_controllable_ports():
         pump_control = Control(name="pump_control")
@@ -449,10 +507,33 @@ def buildings_simple_hydronic() -> Network:
     if three_way_valve.get_controllable_ports():
         three_way_valve_control = Control(name="three_way_valve_control")
         network.graph.add_edge(three_way_valve, three_way_valve_control)
-    # network.graph.draw(network.graph)
-    import matplotlib.pyplot as plt
+    return network
 
-    nx.draw(network.graph)
-    plt.show()
-    # shortest_path(network.graph, pump, space_1)
+
+@pytest.fixture
+def buildings_simple_hydronic_two_zones(space_1, space_2) -> Network:
+    network = Network(name="buildings_simple_hydronic_two_zones")
+    network.add_boiler_plate_spaces([space_1, space_2])
+
+    pump = Pump(name="pump")
+    boiler = Boiler(name="boiler")
+    split_valve = SplitValve(name="split_valve")
+    three_way_valve = ThreeWayValve(name="three_way_valve")
+    network.connect_systems(three_way_valve, space_1.first_emission())
+    network.connect_systems(three_way_valve, space_2.first_emission())
+    network.connect_systems(space_1.last_emission(), split_valve)
+    network.connect_systems(space_2.last_emission(), split_valve)
+    network.connect_systems(boiler, pump)
+    network.connect_systems(pump, three_way_valve)
+    network.connect_systems(three_way_valve, split_valve)
+    network.connect_systems(split_valve, boiler)
+
+    # check if controllable
+    if pump.get_controllable_ports():
+        pump_control = Control(name="pump_control")
+        network.graph.add_edge(pump, pump_control)
+
+    if three_way_valve.get_controllable_ports():
+        three_way_valve_control = Control(name="three_way_valve_control")
+        network.graph.add_edge(three_way_valve, three_way_valve_control)
     return network

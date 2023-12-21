@@ -95,6 +95,13 @@ class Network:
             system,
         )
 
+    def connect_systems(self, system_1, system_2):
+        if system_1 not in self.graph.nodes:
+            self.graph.add_node(system_1)
+        if system_2 not in self.graph.nodes:
+            self.graph.add_node(system_2)
+        self.graph.add_edge(system_1, system_2)
+
     def connect_edges(self, edge: tuple) -> list[Connection]:
         return connect(edge)
 
@@ -105,7 +112,7 @@ class Network:
         self.graph = nx.contracted_nodes(self.graph, merged_space, space_2)
 
     def generate_layout(self) -> dict:
-        return nx.spring_layout(self.graph, dim=2, scale=200)
+        return nx.spring_layout(self.graph, k=10, dim=2, scale=200)
 
     def generate_graphs(self) -> None:
         layout = self.generate_layout()

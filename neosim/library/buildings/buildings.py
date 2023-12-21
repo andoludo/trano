@@ -45,13 +45,23 @@ def buildings_ports() -> dict:
             Port(target=Control, names=["y"]),
         ],
         SplitValve.__name__: [
-            Port(names=["port_1"], flow=Flow.inlet),
+            Port(
+                names=["port_1"],
+                flow=Flow.inlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
             Port(names=["port_2"], flow=Flow.outlet),
             Port(names=["port_3"], flow=Flow.inlet_or_outlet),
         ],
         ThreeWayValve.__name__: [
             Port(names=["port_1"], flow=Flow.inlet),
-            Port(names=["port_2"], flow=Flow.outlet),
+            Port(
+                names=["port_2"],
+                flow=Flow.outlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
             Port(names=["port_3"], flow=Flow.inlet_or_outlet),
             Port(target=Control, names=["y"]),
         ],

@@ -206,20 +206,19 @@ class BaseElement(BaseModel):
         ports = [
             port
             for port in self.ports
-            if not port.target and port.is_available() and port.flow == flow
+            if not port.target
+            and port.is_available()
+            and port.flow == Flow.inlet_or_outlet
+            and _has_inlet_or_outlet(target)
         ]
         if ports:
             if len(ports) > 1:
                 raise NotImplementedError
             return ports[0]
-
         ports = [
             port
             for port in self.ports
-            if not port.target
-            and port.is_available()
-            and port.flow == Flow.inlet_or_outlet
-            and _has_inlet_or_outlet(target)
+            if not port.target and port.is_available() and port.flow == flow
         ]
         if ports:
             if len(ports) > 1:
