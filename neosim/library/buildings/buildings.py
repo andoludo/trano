@@ -36,12 +36,12 @@ def buildings_ports() -> dict:
             Port(target=Control, names=["y"]),
         ],
         Boiler.__name__: [
-            Port(names=["port_a"], flow=Flow.inlet),
-            Port(names=["port_b"], flow=Flow.outlet),
+            Port(names=["port_a"], flow=Flow.inlet, multi_connection=True, use_counter=False),
+            Port(names=["port_b"], flow=Flow.outlet, multi_connection=True, use_counter=False),
         ],
         Pump.__name__: [
-            Port(names=["port_a"], flow=Flow.inlet),
-            Port(names=["port_b"], flow=Flow.outlet),
+            Port(names=["port_a"], flow=Flow.inlet, multi_connection=True, use_counter=False),
+            Port(names=["port_b"], flow=Flow.outlet, multi_connection=True, use_counter=False),
             Port(target=Control, names=["y"]),
         ],
         SplitValve.__name__: [

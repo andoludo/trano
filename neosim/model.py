@@ -123,13 +123,23 @@ class Connection(BaseModel):
 
     @property
     def path(self) -> list:
-        mid_path = (self.left.position[0] + self.right.position[0]) / 2
-        return [
-            self.left.position,
-            (self.left.position[0] + mid_path, self.left.position[1]),
-            (self.right.position[0] - mid_path, self.right.position[1]),
-            self.right.position,
-        ]
+        if self.left.position[0] < self.right.position[0]:
+            mid_path = (self.right.position[0] - self.left.position[0]) / 2
+            return [
+                self.left.position,
+                (self.left.position[0] + mid_path, self.left.position[1]),
+                (self.right.position[0] - mid_path, self.right.position[1]),
+                self.right.position,
+            ]
+
+        else:
+            mid_path = (self.left.position[0] - self.right.position[0]) / 2
+            return [
+                self.left.position,
+                (self.left.position[0] - mid_path, self.left.position[1]),
+                (self.right.position[0] + mid_path, self.right.position[1]),
+                self.right.position,
+            ]
 
 
 class Port(BaseModel):
@@ -235,7 +245,7 @@ class BaseElement(BaseModel):
     def ports_validator(cls, ports: list[Port]) -> list[Port]:
         return buildings_ports().get(cls.__name__, [])
 
-
+counter = 0
 class Space(BaseElement):
     name: str
     volume: float | int
@@ -247,6 +257,7 @@ class Space(BaseElement):
     boundaries: list[WallParameters] = None
     emissions: list = Field(default=[])
     control: "SpaceControl" = None
+    occupancy: "Occupancy" = None
 
     def get_controllable_emission(self):
         cotrollable_emissions = []
@@ -259,6 +270,19 @@ class Space(BaseElement):
         if not cotrollable_emissions:
             return
         return cotrollable_emissions[0]
+
+    def assign_position(self):
+        global counter
+        self.position = [200 * counter, 50]
+        counter+=1
+        x = self.position[0]
+        y = self.position[1]
+        for i, emission in enumerate(self.emissions):
+            emission.position = [x + i * 30, y - 75]
+        if self.control:
+            self.control.position = [x - 50, y - 50]
+        if self.occupancy:
+            self.occupancy.position = [x - 50, y]
 
     def find_emission(self):
         emissions = [

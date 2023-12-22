@@ -36,6 +36,8 @@ class Network:
             )
         self._build_space_emission(space)  # TODO: perhaps move to space
         self._build_control(space)  # TODO: perhaps move to space
+        self._build_occupancy(space)
+        space.assign_position()
 
     def _build_space_emission(self, space: "Space"):
         emission = space.find_emission()
@@ -64,6 +66,11 @@ class Network:
             )
             self.graph.add_edge(space.control, space.get_controllable_emission())
 
+    def _build_occupancy(self, space: "Space"):
+        if space.occupancy:
+            self.graph.add_node(space.occupancy)
+            self.connect_system(space, space.occupancy)
+
     def connect_spaces(
         self,
         space_1: "Space",
@@ -79,6 +86,7 @@ class Network:
             construction=Constructions.internal_wall,
             tilt=Tilt.wall,
         )
+        internal_element.position = [space_1.position[0] +(space_2.position[0] -space_1.position[0])/2, space_1.position[1]]
         self.graph.add_node(internal_element)
         self.graph.add_edge(
             space_1,
@@ -112,6 +120,10 @@ class Network:
         self.graph = nx.contracted_nodes(self.graph, merged_space, space_2)
 
     def generate_layout(self) -> dict:
+        # nodes = [n for n in self.graph.nodes if isinstance(n, Space)]
+        # for i, n in enumerate(nodes):
+        #     n.assign_position([200*i, 50])
+
         return nx.spring_layout(self.graph, k=10, dim=2, scale=200)
 
     def generate_graphs(self) -> None:
@@ -143,7 +155,4 @@ class Network:
         weather = Weather(name="weather")
         self.graph.add_node(weather)
         for i, space in enumerate(spaces):
-            occupancy = Occupancy(name=f"occupancy_{i}")
-            self.graph.add_node(occupancy)
-            self.connect_system(space, occupancy)
             self.connect_system(space, weather)

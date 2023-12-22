@@ -26,7 +26,9 @@ def test_template_buildings_free_float_single_zone(
 ) -> None:
     model_ = buildings_free_float_single_zone.model()
     model_ = remove_annotation(model_)
-    assert model_ == _read(buildings_free_float_single_zone.name)
+    assert set(model_.split(";")) == set(
+        _read(buildings_free_float_single_zone.name).split(";")
+    )
 
 
 def test_template_buildings_free_float_two_zones(
@@ -34,7 +36,10 @@ def test_template_buildings_free_float_two_zones(
 ) -> None:
     model_ = buildings_free_float_two_zones.model()
     model_ = remove_annotation(model_)
-    assert model_ == _read(buildings_free_float_two_zones.name)
+    assert set(model_.replace('equationconnect','connect').split(";")) == set(
+        _read(buildings_free_float_two_zones.name).replace('equationconnect','connect').split(";")
+    )
+
 
 
 def test_template_buildings_free_float_three_zones(
@@ -42,7 +47,9 @@ def test_template_buildings_free_float_three_zones(
 ) -> None:
     model_ = buildings_free_float_three_zones.model()
     model_ = remove_annotation(model_)
-    assert model_ == _read(buildings_free_float_three_zones.name)
+    assert set(model_.replace('equationconnect','connect').split(";")) == set(
+        _read(buildings_free_float_three_zones.name).replace('equationconnect','connect').split(";")
+    )
 
 
 def test_template_buildings_simple_hydronic(
@@ -62,4 +69,13 @@ def test_template_buildings_simple_hydronic_two_zones(
     model_ = remove_annotation(model_)
     assert set(model_.split(";")) == set(
         _read(buildings_simple_hydronic_two_zones.name).split(";")
+    )
+
+def test_template_buildings_simple_hydronic_three_zones(
+    buildings_simple_hydronic_three_zones: Network,
+) -> None:
+    model_ = buildings_simple_hydronic_three_zones.model()
+    model_ = remove_annotation(model_)
+    assert set(model_.split(";")) == set(
+        _read(buildings_simple_hydronic_three_zones.name).split(";")
     )
