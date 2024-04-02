@@ -1,8 +1,6 @@
 import re
 from pathlib import Path
 
-import pytest
-
 from neosim.topology import Network
 
 

@@ -107,7 +107,9 @@ class Network:
             system,
         )
 
-    def _assign_position(self, system_1: System, system_2: System) -> None:
+    def _assign_position(
+        self, system_1: System, system_2: System  # noqa :  PLR6301
+    ) -> None:
         # TODO: change position to object
         if system_1.position and not system_2.position:
             system_2.position = [system_1.position[0] + 100, system_1.position[1] - 100]
@@ -145,7 +147,9 @@ class Network:
         self.graph.add_edge(system_1, system_2)
         self._assign_position(system_1, system_2)
 
-    def connect_edges(self, edge: Tuple[BaseElement, BaseElement]) -> list[Connection]:
+    def connect_edges(
+        self, edge: Tuple[BaseElement, BaseElement]  # noqa :  PLR6301
+    ) -> list[Connection]:
         return connect(edge)
 
     def merge_spaces(self, space_1: "Space", space_2: "Space") -> None:
@@ -155,9 +159,9 @@ class Network:
         self.graph = nx.contracted_nodes(self.graph, merged_space, space_2)
 
     def generate_layout(self) -> Dict[Any, Any]:
-        # nodes = [n for n in self.graph.nodes if isinstance(n, Space)]
-        # for i, n in enumerate(nodes):
-        #     n.assign_position([200*i, 50])
+        # nodes = [n for n in self.graph.nodes if isinstance(n, Space)] # noqa : E800
+        # for i, n in enumerate(nodes): # : E800
+        #     n.assign_position([200*i, 50]) # noqa : E800
 
         return nx.spring_layout(self.graph, k=10, dim=2, scale=200)  # type: ignore
 
@@ -177,8 +181,7 @@ class Network:
         ]
         for space_control in space_controls:
             for system_control in self._system_controls:
-                paths = shortest_path(undirected_graph, system_control, space_control)
-                a = 12
+                shortest_path(undirected_graph, system_control, space_control)
 
     def model(self) -> str:
         self.generate_graphs()
@@ -187,6 +190,7 @@ class Network:
             trim_blocks=True,
             lstrip_blocks=True,
             loader=FileSystemLoader(str(Path(__file__).parent.joinpath("templates"))),
+            autoescape=True,
         )
         environment.filters["frozenset"] = frozenset
 
@@ -201,5 +205,5 @@ class Network:
         weather = Weather(name="weather")
         weather.position = [-100, 200]  # TODO: move somewhere else
         self.graph.add_node(weather)
-        for i, space in enumerate(spaces):
+        for space in spaces:
             self.connect_system(space, weather)

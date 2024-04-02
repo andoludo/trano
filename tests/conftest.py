@@ -66,7 +66,7 @@ def buildings_free_float_single_zone() -> Network:
         floor_area=50,
         height=2,
         elevation=2,
-        occupancy=Occupancy(name=f"occupancy_0"),
+        occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
@@ -124,7 +124,7 @@ def buildings_free_float_two_zones() -> Network:
         floor_area=50,
         height=2,
         elevation=2,
-        occupancy=Occupancy(name=f"occupancy_0"),
+        occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
@@ -175,7 +175,7 @@ def buildings_free_float_two_zones() -> Network:
         floor_area=50,
         height=2,
         elevation=10,
-        occupancy=Occupancy(name=f"occupancy_1"),
+        occupancy=Occupancy(name="occupancy_1"),
         external_boundaries=[
             ExternalWall(
                 name="w1_2",
@@ -217,7 +217,7 @@ def buildings_free_float_three_zones() -> Network:
         floor_area=10,
         height=10,
         elevation=10,
-        occupancy=Occupancy(name=f"occupancy_0"),
+        occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
@@ -277,7 +277,7 @@ def buildings_free_float_three_zones() -> Network:
         floor_area=10,
         height=10,
         elevation=10,
-        occupancy=Occupancy(name=f"occupancy_1"),
+        occupancy=Occupancy(name="occupancy_1"),
         external_boundaries=[
             ExternalWall(
                 name="w1_2",
@@ -329,7 +329,7 @@ def buildings_free_float_three_zones() -> Network:
         floor_area=10,
         height=10,
         elevation=10,
-        occupancy=Occupancy(name=f"occupancy_2"),
+        occupancy=Occupancy(name="occupancy_2"),
         external_boundaries=[
             ExternalWall(
                 name="w1_3",
@@ -372,19 +372,15 @@ def buildings_free_float_three_zones() -> Network:
     return network
 
 
-import networkx as nx
-from networkx import shortest_path
-
-
 @pytest.fixture
-def space_1():
+def space_1() -> Space:
     space_1 = Space(
         name="space_1",
         volume=100,
         floor_area=50,
         height=2,
         elevation=2,
-        occupancy=Occupancy(name=f"occupancy_0"),
+        occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
@@ -435,14 +431,14 @@ def space_1():
 
 
 @pytest.fixture
-def space_2():
+def space_2() -> Space:
     space_2 = Space(
         name="space_2",
         volume=100,
         floor_area=50,
         height=2,
         elevation=2,
-        occupancy=Occupancy(name=f"occupancy_1"),
+        occupancy=Occupancy(name="occupancy_1"),
         external_boundaries=[
             ExternalWall(
                 name="w1_2",
@@ -493,14 +489,14 @@ def space_2():
 
 
 @pytest.fixture
-def space_3():
+def space_3() -> Space:
     space_3 = Space(
         name="space_3",
         volume=100,
         floor_area=50,
         height=2,
         elevation=2,
-        occupancy=Occupancy(name=f"occupancy_2"),
+        occupancy=Occupancy(name="occupancy_2"),
         external_boundaries=[
             ExternalWall(
                 name="w1_3",
@@ -551,7 +547,7 @@ def space_3():
 
 
 @pytest.fixture
-def buildings_simple_hydronic(space_1) -> Network:
+def buildings_simple_hydronic(space_1: Space) -> Network:
     network = Network(name="buildings_simple_hydronic")
     network.add_boiler_plate_spaces([space_1])
 
@@ -578,7 +574,7 @@ def buildings_simple_hydronic(space_1) -> Network:
 
 
 @pytest.fixture
-def buildings_simple_hydronic_two_zones(space_1, space_2) -> Network:
+def buildings_simple_hydronic_two_zones(space_1: Space, space_2: Space) -> Network:
     network = Network(name="buildings_simple_hydronic_two_zones")
     network.add_boiler_plate_spaces([space_1, space_2])
 
@@ -603,16 +599,18 @@ def buildings_simple_hydronic_two_zones(space_1, space_2) -> Network:
     if three_way_valve.get_controllable_ports():
         three_way_valve_control = Control(name="three_way_valve_control")
         network.graph.add_edge(three_way_valve, three_way_valve_control)
-    undirected_graph = network.graph.to_undirected()
-    space_controls = [
-        node for node in undirected_graph.nodes if isinstance(node, SpaceControl)
-    ]
-    paths = shortest_path(undirected_graph, pump_control, space_controls[0])
+    # undirected_graph = network.graph.to_undirected() # noqa : E800
+    # space_controls = [ # noqa : E800
+    #     node for node in undirected_graph.nodes if isinstance(node, SpaceControl) # noqa : E800
+    # ] # noqa : E800
+    # paths = shortest_path(undirected_graph, pump_control, space_controls[0]) # noqa : E800
     return network
 
 
 @pytest.fixture
-def buildings_simple_hydronic_three_zones(space_1, space_2, space_3) -> Network:
+def buildings_simple_hydronic_three_zones(
+    space_1: Space, space_2: Space, space_3: Space
+) -> Network:
     network = Network(name="buildings_simple_hydronic_two_zones")
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
@@ -640,15 +638,15 @@ def buildings_simple_hydronic_three_zones(space_1, space_2, space_3) -> Network:
     network.connect_systems(split_valve, boiler)
     network.connect_systems(split_valve_2, boiler)
 
-    # # check if controllable
-    # if pump.get_controllable_ports():
-    #     pump_control = Control(name="pump_control")
-    #     network.graph.add_edge(pump, pump_control)
+    # # check if controllable # noqa : E800
+    # if pump.get_controllable_ports(): # noqa : E800
+    #     pump_control = Control(name="pump_control") # noqa : E800
+    #     network.graph.add_edge(pump, pump_control) # noqa : E800
     #
-    # if three_way_valve.get_controllable_ports():
-    #     three_way_valve_control = Control(name="three_way_valve_control")
-    #     network.graph.add_edge(three_way_valve, three_way_valve_control)
-    # undirected_graph = network.graph.to_undirected()
-    # space_controls = [node for node in undirected_graph.nodes if isinstance(node, SpaceControl)]
-    # paths = shortest_path(undirected_graph, pump_control, space_controls[0])
+    # if three_way_valve.get_controllable_ports(): # noqa : E800
+    #     three_way_valve_control = Control(name="three_way_valve_control") # noqa : E800
+    #     network.graph.add_edge(three_way_valve, three_way_valve_control) # noqa : E800
+    # undirected_graph = network.graph.to_undirected() # noqa : E800
+    # space_controls = [node for node in undirected_graph.nodes if isinstance(node, SpaceControl)] # noqa : E800
+    # paths = shortest_path(undirected_graph, pump_control, space_controls[0]) # noqa : E800
     return network

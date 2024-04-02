@@ -178,7 +178,7 @@ def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:
     edge_second = edge[1]
     current_port = edge_first._get_target_compatible_port(edge_second, Flow.outlet)
     other_port = edge_second._get_target_compatible_port(edge_first, Flow.inlet)
-    if any([port is None for port in [current_port, other_port]]):
+    if any(port is None for port in [current_port, other_port]):
         return []
     for left, right in zip(current_port.link(edge_first), other_port.link(edge_second)):  # type: ignore
         connections.append(Connection(left=left, right=right))
@@ -277,7 +277,7 @@ class Space(BaseElement):
         return cotrollable_emissions[0]
 
     def assign_position(self) -> None:
-        global counter
+        global counter  # noqa: PLW0603
         self.position = [200 * counter, 50]
         counter += 1
         x = self.position[0]
