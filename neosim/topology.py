@@ -4,7 +4,7 @@ from typing import Optional
 
 import networkx as nx
 from jinja2 import Environment, FileSystemLoader
-from networkx import DiGraph, Graph
+from networkx import DiGraph, Graph, shortest_path
 
 from neosim.construction import Constructions
 from neosim.model import (
@@ -13,6 +13,7 @@ from neosim.model import (
     InternalElement,
     Occupancy,
     Space,
+    SpaceControl,
     System,
     Tilt,
     Weather,
@@ -25,6 +26,7 @@ class Network:
         self.graph = DiGraph()
         self.edge_attributes = []
         self.name = name
+        self._system_controls = []
 
     def add_space(self, space: "Space") -> None:
         self.graph.add_node(space)
@@ -86,7 +88,10 @@ class Network:
             construction=Constructions.internal_wall,
             tilt=Tilt.wall,
         )
-        internal_element.position = [space_1.position[0] +(space_2.position[0] -space_1.position[0])/2, space_1.position[1]]
+        internal_element.position = [
+            space_1.position[0] + (space_2.position[0] - space_1.position[0]) / 2,
+            space_1.position[1],
+        ]  # TODO: this is to be moved somewher
         self.graph.add_node(internal_element)
         self.graph.add_edge(
             space_1,
@@ -103,12 +108,43 @@ class Network:
             system,
         )
 
+    def _assign_position(self, system_1, system_2):
+        # TODO: change position to object
+        if system_1.position and not system_2.position:
+            system_2.position = [system_1.position[0] + 100, system_1.position[1] - 100]
+            if system_2.control:
+                system_2.control.position = [
+                    system_2.position[0] - 50,
+                    system_2.position[1],
+                ]
+        if system_2.position and not system_1.position:
+            system_1.position = [system_2.position[0] - 100, system_2.position[1] - 100]
+            if system_1.control:
+                system_1.control.position = [
+                    system_1.position[0] - 50,
+                    system_1.position[1],
+                ]
+
     def connect_systems(self, system_1, system_2):
+
         if system_1 not in self.graph.nodes:
             self.graph.add_node(system_1)
+            if system_1.control:
+                if system_1.control not in self.graph.nodes:
+                    self.graph.add_node(system_1.control)
+                    self._system_controls.append(system_1.control)
+                self.graph.add_edge(system_1, system_1.control)
+                # TODO: check if it is controllable the system
+
         if system_2 not in self.graph.nodes:
             self.graph.add_node(system_2)
+            if system_2.control:
+                if system_2.control not in self.graph.nodes:
+                    self.graph.add_node(system_2.control)
+                    self._system_controls.append(system_2.control)
+                self.graph.add_edge(system_2, system_2.control)
         self.graph.add_edge(system_1, system_2)
+        self._assign_position(system_1, system_2)
 
     def connect_edges(self, edge: tuple) -> list[Connection]:
         return connect(edge)
@@ -135,8 +171,20 @@ class Network:
         for edge in self.graph.edges:
             self.edge_attributes += self.connect_edges(edge)
 
+    def _connect_space_controls(self):
+        undirected_graph = self.graph.to_undirected()
+        self._system_controls
+        space_controls = [
+            node for node in undirected_graph.nodes if isinstance(node, Space)
+        ]
+        for space_control in space_controls:
+            for system_control in self._system_controls:
+                paths = shortest_path(undirected_graph, system_control, space_control)
+                a = 12
+
     def model(self) -> str:
         self.generate_graphs()
+        self._connect_space_controls()
         environment = Environment(
             trim_blocks=True,
             lstrip_blocks=True,
@@ -153,6 +201,7 @@ class Network:
         for combination in itertools.combinations(spaces, 2):
             self.connect_spaces(*combination)
         weather = Weather(name="weather")
+        weather.position = [-100, 200]  # TODO: move somewhere else
         self.graph.add_node(weather)
         for i, space in enumerate(spaces):
             self.connect_system(space, weather)

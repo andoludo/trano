@@ -15,6 +15,7 @@ from neosim.model import (
     Emission,
     ExternalWall,
     FloorOnGround,
+    Occupancy,
     Pump,
     Space,
     SpaceControl,
@@ -22,7 +23,7 @@ from neosim.model import (
     ThreeWayValve,
     Tilt,
     Valve,
-    Window, Occupancy,
+    Window,
 )
 from neosim.topology import Network
 
@@ -65,7 +66,7 @@ def buildings_free_float_single_zone() -> Network:
         floor_area=50,
         height=2,
         elevation=2,
-        occupancy = Occupancy(name=f"occupancy_0"),
+        occupancy=Occupancy(name=f"occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
@@ -490,6 +491,7 @@ def space_2():
     )
     return space_2
 
+
 @pytest.fixture
 def space_3():
     space_3 = Space(
@@ -602,7 +604,9 @@ def buildings_simple_hydronic_two_zones(space_1, space_2) -> Network:
         three_way_valve_control = Control(name="three_way_valve_control")
         network.graph.add_edge(three_way_valve, three_way_valve_control)
     undirected_graph = network.graph.to_undirected()
-    space_controls = [node for node in undirected_graph.nodes if isinstance(node, SpaceControl)]
+    space_controls = [
+        node for node in undirected_graph.nodes if isinstance(node, SpaceControl)
+    ]
     paths = shortest_path(undirected_graph, pump_control, space_controls[0])
     return network
 
@@ -612,12 +616,16 @@ def buildings_simple_hydronic_three_zones(space_1, space_2, space_3) -> Network:
     network = Network(name="buildings_simple_hydronic_two_zones")
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
-    pump = Pump(name="pump")
+    pump = Pump(name="pump", control=Control(name="pump_control"))
     boiler = Boiler(name="boiler")
     split_valve = SplitValve(name="split_valve")
-    three_way_valve = ThreeWayValve(name="three_way_valve")
+    three_way_valve = ThreeWayValve(
+        name="three_way_valve", control=Control(name="three_way_valve_control")
+    )
     split_valve_2 = SplitValve(name="split_valve_2")
-    three_way_valve_2 = ThreeWayValve(name="three_way_valve_2")
+    three_way_valve_2 = ThreeWayValve(
+        name="three_way_valve_2", control=Control(name="three_way_valve_control_2")
+    )
     network.connect_systems(three_way_valve, space_1.first_emission())
     network.connect_systems(three_way_valve, space_2.first_emission())
     network.connect_systems(three_way_valve_2, space_3.first_emission())
@@ -632,14 +640,14 @@ def buildings_simple_hydronic_three_zones(space_1, space_2, space_3) -> Network:
     network.connect_systems(split_valve, boiler)
     network.connect_systems(split_valve_2, boiler)
 
-    # check if controllable
-    if pump.get_controllable_ports():
-        pump_control = Control(name="pump_control")
-        network.graph.add_edge(pump, pump_control)
-
-    if three_way_valve.get_controllable_ports():
-        three_way_valve_control = Control(name="three_way_valve_control")
-        network.graph.add_edge(three_way_valve, three_way_valve_control)
+    # # check if controllable
+    # if pump.get_controllable_ports():
+    #     pump_control = Control(name="pump_control")
+    #     network.graph.add_edge(pump, pump_control)
+    #
+    # if three_way_valve.get_controllable_ports():
+    #     three_way_valve_control = Control(name="three_way_valve_control")
+    #     network.graph.add_edge(three_way_valve, three_way_valve_control)
     # undirected_graph = network.graph.to_undirected()
     # space_controls = [node for node in undirected_graph.nodes if isinstance(node, SpaceControl)]
     # paths = shortest_path(undirected_graph, pump_control, space_controls[0])

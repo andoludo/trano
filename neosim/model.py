@@ -245,7 +245,10 @@ class BaseElement(BaseModel):
     def ports_validator(cls, ports: list[Port]) -> list[Port]:
         return buildings_ports().get(cls.__name__, [])
 
+
 counter = 0
+
+
 class Space(BaseElement):
     name: str
     volume: float | int
@@ -274,7 +277,7 @@ class Space(BaseElement):
     def assign_position(self):
         global counter
         self.position = [200 * counter, 50]
-        counter+=1
+        counter += 1
         x = self.position[0]
         y = self.position[1]
         for i, emission in enumerate(self.emissions):
@@ -330,6 +333,7 @@ class SpaceControl(Control):
 class System(BaseElement):
     name: str
     position: Optional[list] = None
+    control: "Control" = None
 
 
 class Emission(System):
