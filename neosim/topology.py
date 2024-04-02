@@ -1,19 +1,18 @@
 import itertools
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import networkx as nx
 from jinja2 import Environment, FileSystemLoader
-from networkx import DiGraph, Graph, shortest_path
+from networkx import DiGraph, shortest_path
 
 from neosim.construction import Constructions
 from neosim.model import (
+    BaseElement,
     Connection,
-    Emission,
+    Control,
     InternalElement,
-    Occupancy,
     Space,
-    SpaceControl,
     System,
     Tilt,
     Weather,
@@ -23,10 +22,10 @@ from neosim.model import (
 
 class Network:
     def __init__(self, name: str) -> None:
-        self.graph = DiGraph()
-        self.edge_attributes = []
-        self.name = name
-        self._system_controls = []
+        self.graph: DiGraph = DiGraph()
+        self.edge_attributes: List[Connection] = []
+        self.name: str = name
+        self._system_controls: List[Control] = []
 
     def add_space(self, space: "Space") -> None:
         self.graph.add_node(space)
@@ -41,7 +40,7 @@ class Network:
         self._build_occupancy(space)
         space.assign_position()
 
-    def _build_space_emission(self, space: "Space"):
+    def _build_space_emission(self, space: "Space") -> None:
         emission = space.find_emission()
         if emission:
             self.graph.add_node(emission)
@@ -50,16 +49,16 @@ class Network:
                 emission,
             )
             for system1, system2 in zip(space.emissions[:-1], space.emissions[1:]):
-                if not self.graph.has_node(system1):
+                if not self.graph.has_node(system1):  # type: ignore
                     self.graph.add_node(system1)
-                if not self.graph.has_node(system2):
+                if not self.graph.has_node(system2):  # type: ignore
                     self.graph.add_node(system2)
                 self.graph.add_edge(
                     system1,
                     system2,
                 )
 
-    def _build_control(self, space: "Space"):
+    def _build_control(self, space: "Space") -> None:
         if space.control:
             self.graph.add_node(space.control)
             self.graph.add_edge(
@@ -68,7 +67,7 @@ class Network:
             )
             self.graph.add_edge(space.control, space.get_controllable_emission())
 
-    def _build_occupancy(self, space: "Space"):
+    def _build_occupancy(self, space: "Space") -> None:
         if space.occupancy:
             self.graph.add_node(space.occupancy)
             self.connect_system(space, space.occupancy)
@@ -108,7 +107,7 @@ class Network:
             system,
         )
 
-    def _assign_position(self, system_1, system_2):
+    def _assign_position(self, system_1: System, system_2: System) -> None:
         # TODO: change position to object
         if system_1.position and not system_2.position:
             system_2.position = [system_1.position[0] + 100, system_1.position[1] - 100]
@@ -125,7 +124,7 @@ class Network:
                     system_1.position[1],
                 ]
 
-    def connect_systems(self, system_1, system_2):
+    def connect_systems(self, system_1: System, system_2: System) -> None:
 
         if system_1 not in self.graph.nodes:
             self.graph.add_node(system_1)
@@ -146,7 +145,7 @@ class Network:
         self.graph.add_edge(system_1, system_2)
         self._assign_position(system_1, system_2)
 
-    def connect_edges(self, edge: tuple) -> list[Connection]:
+    def connect_edges(self, edge: Tuple[BaseElement, BaseElement]) -> list[Connection]:
         return connect(edge)
 
     def merge_spaces(self, space_1: "Space", space_2: "Space") -> None:
@@ -155,12 +154,12 @@ class Network:
         merged_space.internal_elements = internal_elements
         self.graph = nx.contracted_nodes(self.graph, merged_space, space_2)
 
-    def generate_layout(self) -> dict:
+    def generate_layout(self) -> Dict[Any, Any]:
         # nodes = [n for n in self.graph.nodes if isinstance(n, Space)]
         # for i, n in enumerate(nodes):
         #     n.assign_position([200*i, 50])
 
-        return nx.spring_layout(self.graph, k=10, dim=2, scale=200)
+        return nx.spring_layout(self.graph, k=10, dim=2, scale=200)  # type: ignore
 
     def generate_graphs(self) -> None:
         layout = self.generate_layout()
@@ -171,9 +170,8 @@ class Network:
         for edge in self.graph.edges:
             self.edge_attributes += self.connect_edges(edge)
 
-    def _connect_space_controls(self):
+    def _connect_space_controls(self) -> None:
         undirected_graph = self.graph.to_undirected()
-        self._system_controls
         space_controls = [
             node for node in undirected_graph.nodes if isinstance(node, Space)
         ]

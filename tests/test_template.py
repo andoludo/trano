@@ -77,7 +77,7 @@ def test_template_buildings_simple_hydronic_two_zones(
     )
 
 
-@pytest.mark.skip("To be checked")
+# @pytest.mark.skip("To be checked")
 def test_template_buildings_simple_hydronic_three_zones(
     buildings_simple_hydronic_three_zones: Network,
 ) -> None:

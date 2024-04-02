@@ -1,6 +1,4 @@
-from enum import Enum
-
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 
 class Material(BaseModel):
@@ -10,7 +8,7 @@ class Material(BaseModel):
     density: float
 
 
-class Materials(Enum):
+class Materials:
     brick: Material = Material(
         name="brick",
         thermal_conductivity=0.89,
@@ -57,18 +55,13 @@ class Layer(BaseModel):
     material: Material
     thickness: float
 
-    @field_validator("material", mode="before")
-    @classmethod
-    def material(cls, material: Materials) -> Material:
-        return material.value
-
 
 class Construction(BaseModel):
     name: str
     layers: list[Layer]
 
 
-class Constructions(Enum):
+class Constructions:
     external_wall: Construction = Construction(
         name="external_wall",
         layers=[

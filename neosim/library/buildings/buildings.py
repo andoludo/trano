@@ -1,4 +1,10 @@
-def buildings_ports() -> dict:
+from typing import TYPE_CHECKING, Dict, List
+
+if TYPE_CHECKING:
+    from neosim.model import Port
+
+
+def buildings_ports() -> Dict[str, List["Port"]]:
     from neosim.model import (
         Boiler,
         Control,
@@ -36,12 +42,32 @@ def buildings_ports() -> dict:
             Port(target=Control, names=["y"]),
         ],
         Boiler.__name__: [
-            Port(names=["port_a"], flow=Flow.inlet, multi_connection=True, use_counter=False),
-            Port(names=["port_b"], flow=Flow.outlet, multi_connection=True, use_counter=False),
+            Port(
+                names=["port_a"],
+                flow=Flow.inlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                names=["port_b"],
+                flow=Flow.outlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
         ],
         Pump.__name__: [
-            Port(names=["port_a"], flow=Flow.inlet, multi_connection=True, use_counter=False),
-            Port(names=["port_b"], flow=Flow.outlet, multi_connection=True, use_counter=False),
+            Port(
+                names=["port_a"],
+                flow=Flow.inlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                names=["port_b"],
+                flow=Flow.outlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
             Port(target=Control, names=["y"]),
         ],
         SplitValve.__name__: [
