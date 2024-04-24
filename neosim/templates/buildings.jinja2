@@ -3,7 +3,7 @@ model {{ network.name }}
 package Medium = Buildings.Media.Air "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";
 
-{% if network.name == "buildings_simple_hydronic" or network.name == "buildings_simple_hydronic_two_zones"%}
+{% if network.name == "buildings_simple_hydronic" or network.name == "buildings_simple_hydronic_two_zones" or network.name == "buildings_simple_hydronic_three_zones"%}
  parameter Integer nRoo = 2 "Number of rooms";
   parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";
   parameter Modelica.Units.SI.Power Q_flow_nominal=2200

@@ -29,8 +29,8 @@ from neosim.topology import Network
 
 
 @contextmanager
-def create_mos_file(network: Network) -> str:
-    model = network.model()
+def create_mos_file(network: Network, library: str = "buildings.jinja2") -> str:
+    model = network.model(library=library)
     with tempfile.NamedTemporaryFile(
         mode="w", dir=Path(__file__).parent, suffix=".mo"
     ) as temp_model_file, tempfile.NamedTemporaryFile(
@@ -59,8 +59,8 @@ def is_success(results: docker.models.containers.ExecResult) -> bool:
 
 
 @pytest.fixture
-def buildings_free_float_single_zone() -> Network:
-    space_1 = Space(
+def simple_space_1() -> Space:
+    return Space(
         name="space_1",
         volume=100,
         floor_area=50,
@@ -111,8 +111,21 @@ def buildings_free_float_single_zone() -> Network:
             ),
         ],
     )
+
+
+@pytest.fixture
+def buildings_free_float_single_zone(simple_space_1: Space) -> Network:
     network = Network(name="buildings_free_float_single_zone")
-    network.add_boiler_plate_spaces([space_1])
+    network.add_boiler_plate_spaces([simple_space_1])
+    return network
+
+
+@pytest.fixture
+def ideas_free_float_single_zone(simple_space_1: Space) -> Network:
+    network = Network(
+        name="ideas_free_float_single_zone", merged_external_boundaries=True
+    )
+    network.add_boiler_plate_spaces([simple_space_1])
     return network
 
 
@@ -210,7 +223,7 @@ def buildings_free_float_two_zones() -> Network:
 
 
 @pytest.fixture
-def buildings_free_float_three_zones() -> Network:
+def buildings_free_float_three_zones_spaces() -> list:
     space_1 = Space(
         name="space_1",
         volume=10,
@@ -367,8 +380,26 @@ def buildings_free_float_three_zones() -> Network:
         ],
     )
 
+    return [space_1, space_2, space_3]
+
+
+@pytest.fixture
+def buildings_free_float_three_zones(
+    buildings_free_float_three_zones_spaces: list,
+) -> Network:
     network = Network(name="buildings_free_float_three_zones")
-    network.add_boiler_plate_spaces([space_1, space_2, space_3])
+    network.add_boiler_plate_spaces(buildings_free_float_three_zones_spaces)
+    return network
+
+
+@pytest.fixture
+def ideas_free_float_three_zones(
+    buildings_free_float_three_zones_spaces: list,
+) -> Network:
+    network = Network(
+        name="ideas_free_float_three_zones", merged_external_boundaries=True
+    )
+    network.add_boiler_plate_spaces(buildings_free_float_three_zones_spaces)
     return network
 
 
@@ -611,7 +642,7 @@ def buildings_simple_hydronic_two_zones(space_1: Space, space_2: Space) -> Netwo
 def buildings_simple_hydronic_three_zones(
     space_1: Space, space_2: Space, space_3: Space
 ) -> Network:
-    network = Network(name="buildings_simple_hydronic_two_zones")
+    network = Network(name="buildings_simple_hydronic_three_zones")
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
     pump = Pump(name="pump", control=Control(name="pump_control"))

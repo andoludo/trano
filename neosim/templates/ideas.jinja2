@@ -1,0 +1,92 @@
+{% import 'macros/ideas_macros.jinja2' as fn %}
+model {{ network.name }}
+{#package Medium = Buildings.Media.Air "Medium model";#}
+{#package MediumW = Buildings.Media.Water "Medium model";#}
+
+package Data "Data for transient thermal building simulation"
+extends Modelica.Icons.MaterialPropertiesPackage;
+
+package Glazing "Library of building glazing systems"
+extends Modelica.Icons.MaterialPropertiesPackage;
+{% for glazing in data.glazing %}
+    {{ fn.create_glass(network.name,glazing) }}
+{% endfor %}
+end Glazing;
+
+package Materials "Library of construction materials"
+extends Modelica.Icons.MaterialPropertiesPackage;
+{%- for material in data.materials -%}
+    {{ fn.create_material(material) }}
+{%- endfor %}
+end Materials;
+package Constructions "Library of building envelope constructions"
+{%- for construction in data.constructions -%}
+    {{ fn.create_construction(network.name, construction) }}
+{%- endfor %}
+
+end Constructions;
+end Data;
+  replaceable package Medium = IDEAS.Media.Air
+constrainedby Modelica.Media.Interfaces.PartialMedium
+"Medium in the component"
+  annotation (choicesAllMatching = true);
+  inner IDEAS.BoundaryConditions.SimInfoManager sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
+                                              "Data reader"
+    annotation (Placement(transformation(extent={% raw %}{{-96,76},{-76,96}}{% endraw %})));
+{%- for node in network.graph.nodes -%}
+    {%- if node.type == "Space" -%}
+        {{ fn.space_builder(node) }}
+
+    {%- endif %}
+    {%- if node.type == "MergedExternalWall" -%}
+        {{ fn.create_merged_walls(network.name, node) }}
+    {%- endif %}
+        {%- if node.type == "MergedWindows" -%}
+        {{ fn.create_merged_windows(network.name, node) }}
+    {%- endif %}
+            {%- if node.type == "FloorOnGround" -%}
+        {{ fn.create_floor_on_ground(network.name, node) }}
+    {%- endif %}
+                {%- if node.type == "InternalElement" -%}
+        {{ fn.create_internal_wall(network.name, node) }}
+    {%- endif %}
+{%- endfor %}
+
+equation
+{%- for edge in network.edge_attributes -%}
+    {#line break#}
+    {{ fn.connect(edge) }}
+{%- endfor %}
+
+
+{#                {%- if node.type == "Pump" -%}#}
+{#        {{ fn.create_pump(node) }}#}
+{#    {%- endif %}#}
+{##}
+{#                {%- if node.type == "Boiler" -%}#}
+{#        {{ fn.create_boiler(node) }}#}
+{#    {%- endif %}#}
+{#                    {%- if node.type == "Valve" -%}#}
+{#        {{ fn.create_valve(node) }}#}
+{#    {%- endif %}#}
+{#                        {%- if node.type == "SplitValve" -%}#}
+{#        {{ fn.create_split_valve(node) }}#}
+{#    {%- endif %}#}
+{#                            {%- if node.type == "ThreeWayValve" -%}#}
+{#        {{ fn.create_three_way_valve(node) }}#}
+{#    {%- endif %}#}
+{##}
+{#                                {%- if node.type == "SpaceControl" -%}#}
+{#        {{ fn.create_space_control(node) }}#}
+{#    {%- endif %}#}
+{#                                    {%- if node.type == "Control" -%}#}
+{#        {{ fn.create_control(node) }}#}
+{#    {%- endif %}#}
+{#{%- endfor %}#}
+{#equation#}
+{#{%- for edge in network.edge_attributes -%}#}
+    {#line break#}
+{#    {{ fn.connect(edge) }}#}
+{#{%- endfor %}#}
+
+end {{ network.name }};

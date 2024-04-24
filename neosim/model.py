@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from networkx import Graph
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, computed_field, field_validator
 
 from neosim.construction import Construction
 from neosim.glass import Glass
@@ -32,7 +32,7 @@ class WallParameters(BaseModel):
 
     @classmethod
     def from_neighbors(
-        cls, neighbors: list["BaseElement"], wall: Type["BaseWall"]
+        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
     ) -> "WallParameters":
         constructions = [
             neighbor for neighbor in neighbors if isinstance(neighbor, wall)
@@ -148,6 +148,8 @@ class Port(BaseModel):
     available: bool = True
     flow: Flow = Field(default=Flow.undirected)
     multi_connection: bool = False
+    multi_object: bool = False
+    bus_connection: bool = False
     use_counter: bool = True
     counter: int = Field(default=1)
 
@@ -157,18 +159,39 @@ class Port(BaseModel):
     def is_controllable(self) -> bool:
         return self.target is not None and self.target == Control
 
-    def link(self, node: "BaseElement") -> list[PartialConnection]:
+    def link(
+        self, node: "BaseElement", connected_node: "BaseElement"
+    ) -> list[PartialConnection]:
         self.available = False
         partial_connections = []
+        merged_number = 1
+        if isinstance(node, MergedBaseWall):
+            merged_number = len(node.surfaces)
+
+        if isinstance(connected_node, MergedBaseWall):
+            merged_number = len(connected_node.surfaces)
         for name in self.names:
-            if self.multi_connection and self.use_counter:
+            if self.multi_connection and self.bus_connection:
+                first_counter = self.counter
+                last_counter = self.counter + merged_number - 1
+                if first_counter == last_counter:
+                    counter = f"{first_counter}"
+                else:
+                    counter = f"{first_counter}:{last_counter}"
+                if self.multi_object:
+                    equation = f"{node.name}[{counter}].{name}"
+                else:
+                    equation = f"{node.name}.{name}[{counter}]"
+                self.counter = last_counter + 1
+            elif self.multi_connection and self.use_counter:
                 equation = f"{node.name}.{name}[{self.counter}]"
+                self.counter += 1
             else:
                 equation = f"{node.name}.{name}"
             partial_connections.append(
                 PartialConnection(equation=equation, position=node.position)
             )
-        self.counter += 1
+
         return partial_connections
 
 
@@ -180,7 +203,10 @@ def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:
     other_port = edge_second._get_target_compatible_port(edge_first, Flow.inlet)
     if any(port is None for port in [current_port, other_port]):
         return []
-    for left, right in zip(current_port.link(edge_first), other_port.link(edge_second)):  # type: ignore
+    for left, right in zip(
+        current_port.link(edge_first, edge_second),  # type: ignore
+        other_port.link(edge_second, edge_first),  # type: ignore
+    ):
         connections.append(Connection(left=left, right=right))
     return connections
 
@@ -258,11 +284,45 @@ class Space(BaseElement):
     floor_area: float | int
     elevation: float | int
     external_boundaries: list[Union["ExternalWall", "Window", "FloorOnGround"]]
-    internal_elements: Optional[List["ExternalWall"]] = None
+    internal_elements: List["InternalElement"] = Field(default=[])
     boundaries: Optional[List[WallParameters]] = None
     emissions: List["System"] = Field(default=[])
     control: Optional["SpaceControl"] = None
     occupancy: Optional["Occupancy"] = None
+
+    @computed_field  # type: ignore
+    @property
+    def number_merged_external_boundaries(self) -> int:
+        return sum(
+            [
+                boundary.length
+                for boundary in self.merged_external_boundaries + self.internal_elements
+            ]
+        )
+
+    @computed_field  # type: ignore
+    @property
+    def merged_external_boundaries(
+        self,
+    ) -> List[Union["ExternalWall", "Window", "FloorOnGround", "MergedBaseWall"]]:
+        external_walls = [
+            boundary
+            for boundary in self.external_boundaries
+            if boundary.type == "ExternalWall"
+        ]
+        windows = [
+            boundary
+            for boundary in self.external_boundaries
+            if boundary.type == "Window"
+        ]
+        merged_external_walls = MergedExternalWall.from_base_elements(external_walls)
+        merged_windows = MergedWindows.from_base_windows(windows)  # type: ignore
+        external_boundaries = [merged_external_walls, merged_windows] + [
+            boundary
+            for boundary in self.external_boundaries
+            if boundary.type not in ["ExternalWall", "Window"]
+        ]
+        return external_boundaries
 
     def get_controllable_emission(self) -> Optional["System"]:
         cotrollable_emissions = []
@@ -373,29 +433,96 @@ class Weather(System):
 
 
 class BaseWall(BaseElement):
+    ...
+
+    @computed_field  # type: ignore
+    @property
+    def length(self) -> int:
+        if hasattr(self, "surfaces"):
+            return len(self.surfaces)
+        return 1
+
+
+class BaseSimpleWall(BaseWall):
     surface: float | int
     azimuth: float | int
     tilt: Tilt
     construction: Construction | Glass
 
 
-class ExternalWall(BaseWall):
+class ExternalWall(BaseSimpleWall):
     ...
 
 
-class FloorOnGround(BaseWall):
+class FloorOnGround(BaseSimpleWall):
     azimuth: float | int = Azimuth.south
     tilt: Tilt = Tilt.floor
 
 
-class Window(BaseWall):
+class Window(BaseSimpleWall):
     width: float | int
     height: float | int
 
 
-class WindowedWall(BaseWall):
+class WindowedWall(BaseSimpleWall):
     ...
 
 
-class InternalElement(BaseWall):
+class InternalElement(BaseSimpleWall):
     ...
+
+
+class MergedBaseWall(BaseWall):
+    surfaces: List[float | int]
+    azimuths: List[float | int]
+    tilts: List[Tilt]
+    constructions: List[Construction | Glass]
+
+    @classmethod
+    def from_base_elements(
+        cls, base_walls: List[ExternalWall | Window | FloorOnGround]
+    ) -> "MergedBaseWall":
+        surfaces = [base_wall.surface for base_wall in base_walls]
+        azimuths = [base_wall.azimuth for base_wall in base_walls]
+        tilts = [base_wall.tilt for base_wall in base_walls]
+        constructions = [base_wall.construction for base_wall in base_walls]
+        names = [base_wall.name for base_wall in base_walls]
+        return cls(
+            name=f"merged_{'_'.join(names)}",
+            surfaces=surfaces,
+            azimuths=azimuths,
+            tilts=tilts,
+            constructions=constructions,
+        )
+
+
+class MergedExternalWall(MergedBaseWall):
+    ...
+
+
+class MergedFloor(MergedBaseWall):
+    ...
+
+
+class MergedWindows(MergedBaseWall):
+    widths: List[float | int]
+    heights: List[float | int]
+
+    @classmethod
+    def from_base_windows(cls, base_walls: List[Window]) -> "MergedWindows":
+        surfaces = [base_wall.surface for base_wall in base_walls]
+        azimuths = [base_wall.azimuth for base_wall in base_walls]
+        tilts = [base_wall.tilt for base_wall in base_walls]
+        constructions = [base_wall.construction for base_wall in base_walls]
+        names = [base_wall.name for base_wall in base_walls]
+        widths = [base_wall.width for base_wall in base_walls]
+        heights = [base_wall.height for base_wall in base_walls]
+        return cls(
+            name=f"merged_{'_'.join(names)}",
+            surfaces=surfaces,
+            azimuths=azimuths,
+            tilts=tilts,
+            constructions=constructions,
+            heights=heights,
+            widths=widths,
+        )

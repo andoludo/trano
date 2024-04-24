@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from typing import Set
 
 from neosim.topology import Network
 
@@ -11,13 +12,13 @@ def remove_annotation(model: str) -> str:
     return model
 
 
-def _read(file_name: str) -> str:
-    return (
-        Path(__file__)
-        .parent.joinpath("data", file_name)
-        .read_text()
-        .replace(" ", "")
-        .replace("\n", "")
+def _read(file_name: str) -> Set:
+    return set(
+        remove_annotation(
+            Path(__file__).parent.joinpath("data", f"{file_name}.mo").read_text()
+        )
+        .replace("record", ";")
+        .split(";")
     )
 
 
@@ -26,9 +27,7 @@ def test_template_buildings_free_float_single_zone(
 ) -> None:
     model_ = buildings_free_float_single_zone.model()
     model_ = remove_annotation(model_)
-    assert set(model_.split(";")) == set(
-        _read(buildings_free_float_single_zone.name).split(";")
-    )
+    assert set(model_.split(";")) == _read(buildings_free_float_single_zone.name)
 
 
 def test_template_buildings_free_float_two_zones(
@@ -36,11 +35,7 @@ def test_template_buildings_free_float_two_zones(
 ) -> None:
     model_ = buildings_free_float_two_zones.model()
     model_ = remove_annotation(model_)
-    assert set(model_.replace("equationconnect", "connect").split(";")) == set(
-        _read(buildings_free_float_two_zones.name)
-        .replace("equationconnect", "connect")
-        .split(";")
-    )
+    assert set(model_.split(";")) == _read(buildings_free_float_two_zones.name)
 
 
 def test_template_buildings_free_float_three_zones(
@@ -48,11 +43,7 @@ def test_template_buildings_free_float_three_zones(
 ) -> None:
     model_ = buildings_free_float_three_zones.model()
     model_ = remove_annotation(model_)
-    assert set(model_.replace("equationconnect", "connect").split(";")) == set(
-        _read(buildings_free_float_three_zones.name)
-        .replace("equationconnect", "connect")
-        .split(";")
-    )
+    assert set(model_.split(";")) == _read(buildings_free_float_three_zones.name)
 
 
 def test_template_buildings_simple_hydronic(
@@ -60,9 +51,7 @@ def test_template_buildings_simple_hydronic(
 ) -> None:
     model_ = buildings_simple_hydronic.model()
     model_ = remove_annotation(model_)
-    assert set(model_.split(";")) == set(
-        _read(buildings_simple_hydronic.name).split(";")
-    )
+    assert set(model_.split(";")) == _read(buildings_simple_hydronic.name)
 
 
 def test_template_buildings_simple_hydronic_two_zones(
@@ -70,9 +59,7 @@ def test_template_buildings_simple_hydronic_two_zones(
 ) -> None:
     model_ = buildings_simple_hydronic_two_zones.model()
     model_ = remove_annotation(model_)
-    assert set(model_.split(";")) == set(
-        _read(buildings_simple_hydronic_two_zones.name).split(";")
-    )
+    assert set(model_.split(";")) == _read(buildings_simple_hydronic_two_zones.name)
 
 
 # @pytest.mark.skip("To be checked")
@@ -82,5 +69,31 @@ def test_template_buildings_simple_hydronic_three_zones(
     model_ = buildings_simple_hydronic_three_zones.model()
     model_ = remove_annotation(model_)
     assert set(model_.split(";")) == set(
-        _read(buildings_simple_hydronic_three_zones.name).split(";")
+        _read(buildings_simple_hydronic_three_zones.name)
+    )
+
+
+def test_template_buildings_simple_hydronic_three_zones_draw(
+    buildings_simple_hydronic_three_zones: Network,
+) -> None:
+    buildings_simple_hydronic_three_zones.plot()
+
+
+def test_template_ideas_free_float_single_zone(
+    ideas_free_float_single_zone: Network,
+) -> None:
+    model_ = ideas_free_float_single_zone.model("ideas.jinja2")
+    model_ = remove_annotation(model_)
+    assert set(model_.replace("record", ";").split(";")) == _read(
+        ideas_free_float_single_zone.name
+    )
+
+
+def test_template_ideas_free_float_three_zones(
+    ideas_free_float_three_zones: Network,
+) -> None:
+    model_ = ideas_free_float_three_zones.model("ideas.jinja2")
+    model_ = remove_annotation(model_)
+    assert set(model_.replace("record", ";").split(";")) == _read(
+        ideas_free_float_three_zones.name
     )

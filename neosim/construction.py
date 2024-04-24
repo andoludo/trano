@@ -1,11 +1,6 @@
 from pydantic import BaseModel
 
-
-class Material(BaseModel):
-    name: str
-    thermal_conductivity: float
-    specific_heat_capacity: float
-    density: float
+from neosim.material import Material
 
 
 class Materials:
@@ -59,6 +54,9 @@ class Layer(BaseModel):
 class Construction(BaseModel):
     name: str
     layers: list[Layer]
+
+    def __hash__(self) -> int:
+        return hash(self.name)
 
 
 class Constructions:
