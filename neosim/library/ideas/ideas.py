@@ -8,30 +8,26 @@ from neosim.glass import Glass
 from neosim.material import Material
 
 if TYPE_CHECKING:
-    from neosim.model import Port
+    from neosim.models.elements.base import Port
 
 
 def ideas_ports() -> Dict[str, Callable[[], List["Port"]]]:
-    from neosim.model import (
-        BaseWall,
+    from neosim.models.constants import Flow
+    from neosim.models.elements.base import Port
+    from neosim.models.elements.control import Control, SpaceControl
+    from neosim.models.elements.merged_wall import MergedExternalWall, MergedWindows
+    from neosim.models.elements.space import Space
+    from neosim.models.elements.system import (
         Boiler,
-        Control,
         Emission,
-        FloorOnGround,
-        Flow,
-        InternalElement,
-        MergedExternalWall,
-        MergedWindows,
         Occupancy,
-        Port,
         Pump,
-        Space,
-        SpaceControl,
         SplitValve,
         System,
         ThreeWayValve,
         Valve,
     )
+    from neosim.models.elements.wall import BaseWall, FloorOnGround, InternalElement
 
     return {
         Space.__name__: lambda: [
@@ -150,7 +146,8 @@ class IdeasData(BaseModel):
 
 
 def extract_data(nodes: NodeView) -> IdeasData:
-    from neosim.model import BaseSimpleWall, MergedBaseWall
+    from neosim.models.elements.merged_wall import MergedBaseWall
+    from neosim.models.elements.wall import BaseSimpleWall
 
     merged_constructions = {
         construction

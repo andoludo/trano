@@ -11,18 +11,13 @@ from pyvis.network import Network as PyvisNetwork  # type: ignore
 from neosim.construction import Constructions
 from neosim.library.buildings.buildings import buildings_ports
 from neosim.library.ideas.ideas import extract_data, ideas_ports
-from neosim.model import (
-    BaseElement,
-    Connection,
-    Control,
-    InternalElement,
-    MergedExternalWall,
-    Space,
-    System,
-    Tilt,
-    Weather,
-    connect,
-)
+from neosim.models.constants import Tilt
+from neosim.models.elements.base import BaseElement, Connection, connect
+from neosim.models.elements.control import Control
+from neosim.models.elements.merged_wall import MergedExternalWall
+from neosim.models.elements.space import Space
+from neosim.models.elements.system import System, Weather
+from neosim.models.elements.wall import InternalElement
 
 
 def tilts_processing_ideas(element: MergedExternalWall) -> List[str]:

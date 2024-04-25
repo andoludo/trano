@@ -8,23 +8,19 @@ import pytest
 
 from neosim.construction import Constructions
 from neosim.glass import Glasses
-from neosim.model import (
-    Azimuth,
+from neosim.models.constants import Azimuth, Tilt
+from neosim.models.elements.control import Control, SpaceControl
+from neosim.models.elements.space import Space
+from neosim.models.elements.system import (
     Boiler,
-    Control,
     Emission,
-    ExternalWall,
-    FloorOnGround,
     Occupancy,
     Pump,
-    Space,
-    SpaceControl,
     SplitValve,
     ThreeWayValve,
-    Tilt,
     Valve,
-    Window,
 )
+from neosim.models.elements.wall import ExternalWall, FloorOnGround, Window
 from neosim.topology import Network
 
 

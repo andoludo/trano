@@ -1,27 +1,26 @@
 from typing import TYPE_CHECKING, Dict, List
 
 if TYPE_CHECKING:
-    from neosim.model import Port
+    from neosim.models.elements.base import Port
 
 
 def buildings_ports() -> Dict[str, List["Port"]]:
-    from neosim.model import (
+    from neosim.models.constants import Flow
+    from neosim.models.elements.base import Port
+    from neosim.models.elements.control import Control, SpaceControl
+    from neosim.models.elements.space import Space
+    from neosim.models.elements.system import (
         Boiler,
-        Control,
         Emission,
-        Flow,
-        InternalElement,
         Occupancy,
-        Port,
         Pump,
-        Space,
-        SpaceControl,
         SplitValve,
         System,
         ThreeWayValve,
         Valve,
         Weather,
     )
+    from neosim.models.elements.wall import InternalElement
 
     return {
         Space.__name__: [
