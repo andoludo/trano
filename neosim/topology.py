@@ -88,7 +88,13 @@ class Network:
                 space.control,
                 space,
             )
-            self.graph.add_edge(space.control, space.get_controllable_emission())
+            controllable_emission = space.get_controllable_emission()
+            if controllable_emission is None:
+                raise Exception(
+                    f"Space {space.name} is controllable but is "
+                    f"not linked to controllable emission."
+                )
+            self.graph.add_edge(space.control, controllable_emission)
 
     def _build_occupancy(self, space: "Space") -> None:
         if space.occupancy:

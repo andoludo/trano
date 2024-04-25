@@ -66,6 +66,60 @@ def simple_space_1() -> Space:
         floor_area=50,
         height=2,
         elevation=2,
+        external_boundaries=[
+            ExternalWall(
+                name="w1_1",
+                surface=10,
+                azimuth=Azimuth.west,
+                layer_name="layer",
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w2_1",
+                surface=10,
+                azimuth=Azimuth.north,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w3_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w4_1",
+                surface=10,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            FloorOnGround(
+                name="floor_2", surface=10, construction=Constructions.external_wall
+            ),
+            Window(
+                name="win1_1",
+                surface=1,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+    )
+
+
+@pytest.fixture
+def simple_space_1_with_occupancy() -> Space:
+    return Space(
+        name="space_1",
+        volume=100,
+        floor_area=50,
+        height=2,
+        elevation=2,
         occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
@@ -114,9 +168,9 @@ def simple_space_1() -> Space:
 
 
 @pytest.fixture
-def buildings_free_float_single_zone(simple_space_1: Space) -> Network:
+def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space) -> Network:
     network = Network(name="buildings_free_float_single_zone")
-    network.add_boiler_plate_spaces([simple_space_1])
+    network.add_boiler_plate_spaces([simple_space_1_with_occupancy])
     return network
 
 
@@ -384,6 +438,164 @@ def buildings_free_float_three_zones_spaces() -> list:
 
 
 @pytest.fixture
+def ideas_free_float_three_zones_spaces() -> list:
+    space_1 = Space(
+        name="space_1",
+        volume=10,
+        floor_area=10,
+        height=10,
+        elevation=10,
+        external_boundaries=[
+            ExternalWall(
+                name="w1_1",
+                surface=10,
+                azimuth=Azimuth.west,
+                layer_name="layer",
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w2_1",
+                surface=10,
+                azimuth=Azimuth.north,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w3_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w4_1",
+                surface=10,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            Window(
+                name="win1_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+            Window(
+                name="win2_1",
+                surface=10,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+            FloorOnGround(
+                name="floor_1", surface=10, construction=Constructions.external_wall
+            ),
+        ],
+    )
+    space_2 = Space(
+        name="space_2",
+        volume=10,
+        floor_area=10,
+        height=10,
+        elevation=10,
+        external_boundaries=[
+            ExternalWall(
+                name="w1_2",
+                surface=10,
+                azimuth=Azimuth.west,
+                construction=Constructions.external_wall,
+                tilt=Tilt.wall,
+            ),
+            ExternalWall(
+                name="w2_2",
+                surface=10,
+                azimuth=Azimuth.north,
+                construction=Constructions.external_wall,
+                tilt=Tilt.wall,
+            ),
+            ExternalWall(
+                name="w3_2",
+                surface=10,
+                azimuth=Azimuth.south,
+                construction=Constructions.external_wall,
+                tilt=Tilt.wall,
+            ),
+            Window(
+                name="win1_2",
+                surface=10,
+                azimuth=Azimuth.north,
+                construction=Glasses.double_glazing,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+            ),
+            Window(
+                name="win2_2",
+                surface=10,
+                azimuth=Azimuth.south,
+                construction=Glasses.double_glazing,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+            ),
+            FloorOnGround(
+                name="floor_2", surface=10, construction=Constructions.external_wall
+            ),
+        ],
+    )
+    space_3 = Space(
+        name="space_3",
+        volume=10,
+        floor_area=10,
+        height=10,
+        elevation=10,
+        external_boundaries=[
+            ExternalWall(
+                name="w1_3",
+                surface=10,
+                azimuth=Azimuth.west,
+                construction=Constructions.external_wall,
+                tilt=Tilt.wall,
+            ),
+            ExternalWall(
+                name="w2_3",
+                surface=10,
+                azimuth=Azimuth.north,
+                construction=Constructions.external_wall,
+                tilt=Tilt.wall,
+            ),
+            ExternalWall(
+                name="w3_3",
+                surface=10,
+                azimuth=Azimuth.east,
+                construction=Constructions.external_wall,
+                tilt=Tilt.wall,
+            ),
+            Window(
+                name="w4_3",
+                surface=10,
+                azimuth=Azimuth.east,
+                construction=Glasses.double_glazing,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+            ),
+            FloorOnGround(
+                name="floor_3", surface=10, construction=Constructions.external_wall
+            ),
+        ],
+    )
+
+    return [space_1, space_2, space_3]
+
+
+@pytest.fixture
 def buildings_free_float_three_zones(
     buildings_free_float_three_zones_spaces: list,
 ) -> Network:
@@ -394,12 +606,12 @@ def buildings_free_float_three_zones(
 
 @pytest.fixture
 def ideas_free_float_three_zones(
-    buildings_free_float_three_zones_spaces: list,
+    ideas_free_float_three_zones_spaces: list,
 ) -> Network:
     network = Network(
         name="ideas_free_float_three_zones", merged_external_boundaries=True
     )
-    network.add_boiler_plate_spaces(buildings_free_float_three_zones_spaces)
+    network.add_boiler_plate_spaces(ideas_free_float_three_zones_spaces)
     return network
 
 
@@ -680,4 +892,137 @@ def buildings_simple_hydronic_three_zones(
     # undirected_graph = network.graph.to_undirected() # noqa : E800
     # space_controls = [node for node in undirected_graph.nodes if isinstance(node, SpaceControl)] # noqa : E800
     # paths = shortest_path(undirected_graph, pump_control, space_controls[0]) # noqa : E800
+    return network
+
+
+@pytest.fixture
+def ideas_simple_hydronic_three_zones(
+    space_1: Space, space_2: Space, space_3: Space
+) -> Network:
+    network = Network(
+        name="ideas_simple_hydronic_three_zones", merged_external_boundaries=True
+    )
+    network.add_boiler_plate_spaces([space_1, space_2, space_3])
+
+    pump = Pump(name="pump", control=Control(name="pump_control"))
+    boiler = Boiler(name="boiler")
+    split_valve = SplitValve(name="split_valve")
+    three_way_valve = ThreeWayValve(
+        name="three_way_valve", control=Control(name="three_way_valve_control")
+    )
+    split_valve_2 = SplitValve(name="split_valve_2")
+    three_way_valve_2 = ThreeWayValve(
+        name="three_way_valve_2", control=Control(name="three_way_valve_control_2")
+    )
+    network.connect_systems(three_way_valve, space_1.first_emission())
+    network.connect_systems(three_way_valve, space_2.first_emission())
+    network.connect_systems(three_way_valve_2, space_3.first_emission())
+    network.connect_systems(space_1.last_emission(), split_valve)
+    network.connect_systems(space_2.last_emission(), split_valve)
+    network.connect_systems(space_3.last_emission(), split_valve_2)
+    network.connect_systems(boiler, pump)
+    network.connect_systems(pump, three_way_valve)
+    network.connect_systems(pump, three_way_valve_2)
+    network.connect_systems(three_way_valve, split_valve)
+    network.connect_systems(three_way_valve_2, split_valve_2)
+    network.connect_systems(split_valve, boiler)
+    network.connect_systems(split_valve_2, boiler)
+
+    # # check if controllable # noqa : E800
+    # if pump.get_controllable_ports(): # noqa : E800
+    #     pump_control = Control(name="pump_control") # noqa : E800
+    #     network.graph.add_edge(pump, pump_control) # noqa : E800
+    #
+    # if three_way_valve.get_controllable_ports(): # noqa : E800
+    #     three_way_valve_control = Control(name="three_way_valve_control") # noqa : E800
+    #     network.graph.add_edge(three_way_valve, three_way_valve_control) # noqa : E800
+    # undirected_graph = network.graph.to_undirected() # noqa : E800
+    # space_controls = [node for node in undirected_graph.nodes if isinstance(node, SpaceControl)] # noqa : E800
+    # paths = shortest_path(undirected_graph, pump_control, space_controls[0]) # noqa : E800
+    return network
+
+
+@pytest.fixture
+def space_1_no_occupancy() -> Space:
+    space_1 = Space(
+        name="space_1",
+        volume=100,
+        floor_area=50,
+        height=2,
+        elevation=2,
+        external_boundaries=[
+            ExternalWall(
+                name="w1_1",
+                surface=10,
+                azimuth=Azimuth.west,
+                layer_name="layer",
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w2_1",
+                surface=10,
+                azimuth=Azimuth.north,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w3_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w4_1",
+                surface=10,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            FloorOnGround(
+                name="floor_2", surface=10, construction=Constructions.external_wall
+            ),
+            Window(
+                name="win1_1",
+                surface=1,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+        emissions=[Valve(name="valve"), Emission(name="emission")],
+        control=SpaceControl(name="space_control"),
+    )
+    return space_1
+
+
+@pytest.fixture
+def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
+    network = Network(
+        name="ideas_simple_hydronic_no_occupancy", merged_external_boundaries=True
+    )
+    network.add_boiler_plate_spaces([space_1_no_occupancy])
+
+    pump = Pump(name="pump")
+    boiler = Boiler(name="boiler")
+    split_valve = SplitValve(name="split_valve")
+    three_way_valve = ThreeWayValve(name="three_way_valve")
+    network.connect_systems(three_way_valve, space_1_no_occupancy.first_emission())
+    network.connect_systems(space_1_no_occupancy.last_emission(), split_valve)
+    network.connect_systems(boiler, pump)
+    network.connect_systems(pump, three_way_valve)
+    network.connect_systems(three_way_valve, split_valve)
+    network.connect_systems(split_valve, boiler)
+
+    # check if controllable
+    if pump.get_controllable_ports():
+        pump_control = Control(name="pump_control")
+        network.graph.add_edge(pump, pump_control)
+
+    if three_way_valve.get_controllable_ports():
+        three_way_valve_control = Control(name="three_way_valve_control")
+        network.graph.add_edge(three_way_valve, three_way_valve_control)
     return network

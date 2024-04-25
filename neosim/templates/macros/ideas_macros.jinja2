@@ -7,14 +7,6 @@
     {{ "," if not loop.last }}{%- endfor %}{% raw %}}{% endraw %}
 {%- endmacro %}
 
-{%- macro convert_tilts(boundary_tilts) -%}
-    {% set tilts = ({"wall":"Buildings.Types.Tilt.Wall",
-"ceiling":"Buildings.Types.Tilt.Ceiling",
-"roof":"Buildings.Types.Tilt.Roof",
-"floor":"Buildings.Types.Tilt.Floor"}) %}
-    {% raw %}{{% endraw %} {%- for tilt in boundary_tilts -%}
-    {{ tilts[tilt.value] }}{{ "," if not loop.last }} {%- endfor %}{% raw %}}{% endraw %}
-{%- endmacro %}
 
 {%- macro create_material(material) -%}
     record {{ material.name }} = IDEAS.Buildings.Data.Interfaces.Material (
@@ -178,22 +170,12 @@ smooth=Smooth.None));
     {% endraw %})));
 {%- endmacro %}
 
-{%- macro create_weather(element) -%}
-    Buildings.BoundaryConditions.WeatherData.ReaderTMY3 {{ element.name }}(filNam =
-    Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
-    annotation (
-    Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));
-{%- endmacro %}
+
 
 
 {%- macro create_emission(element) -%}
-    Buildings.Fluid.HeatExchangers.Radiators.RadiatorEN442_2 {{ element.name }}(
-    redeclare package Medium = MediumW,
-    Q_flow_nominal=scaFacRad*Q_flow_nominal/nRoo,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-    T_a_nominal=323.15,
-    T_b_nominal=313.15) "Radiator"
+    IDEAS.Fluid.HeatExchangers.Radiators.RadiatorEN442_2 {{ element.name }}(
+    redeclare package Medium = MediumW) "Radiator"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));
@@ -201,11 +183,8 @@ smooth=Smooth.None));
 
 
 {%- macro create_pump(element) -%}
-    Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y {{ element.name }}(
-    redeclare package Medium = MediumW,
-    m_flow_nominal=mRad_flow_nominal,
-    dp_nominal=dp_nominal,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
+    IDEAS.Fluid.Movers.FlowControlled_m_flow {{ element.name }}(
+    redeclare package Medium = MediumW, m_flow_nominal = 1, dp_nominal = 100)
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));
@@ -221,24 +200,16 @@ smooth=Smooth.None));
 
 
 {%- macro create_valve(element) -%}
-    Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage {{ element.name }}(
-    redeclare package Medium = MediumW,
-    dpValve_nominal(displayUnit="Pa") = dpVal_nominal,
-    m_flow_nominal=mRad_flow_nominal/nRoo,
-    dpFixed_nominal=dpRoo_nominal,
-    from_dp=true,
-    use_inputFilter=false) "Radiator valve"
+    IDEAS.Fluid.Actuators.Valves.TwoWayEqualPercentage {{ element.name }}(
+    redeclare package Medium = MediumW) "Radiator valve"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));
 {%- endmacro %}
 
 {%- macro create_split_valve(element) -%}
-    Buildings.Fluid.FixedResistances.Junction {{ element.name }} (
-    dp_nominal={0,0,0},
-    m_flow_nominal=mRad_flow_nominal*{1,-1,-1},
-    redeclare package Medium = MediumW,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
+    IDEAS.Fluid.FixedResistances.Junction {{ element.name }} (
+    redeclare package Medium = MediumW)
     "Flow splitter"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -247,15 +218,8 @@ smooth=Smooth.None));
 
 
 {%- macro create_three_way_valve(element) -%}
-    Buildings.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear {{ element.name }}(
-    redeclare package Medium = MediumW,
-    dpValve_nominal=dpThrWayVal_nominal,
-    l={0.01,0.01},
-    tau=10,
-    m_flow_nominal=mRad_flow_nominal,
-    dpFixed_nominal={100,0},
-    use_inputFilter=false,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-way valve"
+    IDEAS.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear {{ element.name }}(
+    redeclare package Medium = MediumW) "Three-way valve"
     annotation (
     Placement(transformation(origin = {{ join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));
