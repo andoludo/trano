@@ -790,10 +790,12 @@ def buildings_simple_hydronic(space_1: Space) -> Network:
     network = Network(name="buildings_simple_hydronic")
     network.add_boiler_plate_spaces([space_1])
 
-    pump = Pump(name="pump")
+    pump = Pump(name="pump", control=Control(name="pump_control"))
     boiler = Boiler(name="boiler")
     split_valve = SplitValve(name="split_valve")
-    three_way_valve = ThreeWayValve(name="three_way_valve")
+    three_way_valve = ThreeWayValve(
+        name="three_way_valve", control=Control(name="three_way_valve_control")
+    )
     network.connect_systems(three_way_valve, space_1.first_emission())
     network.connect_systems(space_1.last_emission(), split_valve)
     network.connect_systems(boiler, pump)
@@ -801,14 +803,6 @@ def buildings_simple_hydronic(space_1: Space) -> Network:
     network.connect_systems(three_way_valve, split_valve)
     network.connect_systems(split_valve, boiler)
 
-    # check if controllable
-    if pump.get_controllable_ports():
-        pump_control = Control(name="pump_control")
-        network.graph.add_edge(pump, pump_control)
-
-    if three_way_valve.get_controllable_ports():
-        three_way_valve_control = Control(name="three_way_valve_control")
-        network.graph.add_edge(three_way_valve, three_way_valve_control)
     return network
 
 
@@ -817,10 +811,12 @@ def buildings_simple_hydronic_two_zones(space_1: Space, space_2: Space) -> Netwo
     network = Network(name="buildings_simple_hydronic_two_zones")
     network.add_boiler_plate_spaces([space_1, space_2])
 
-    pump = Pump(name="pump")
+    pump = Pump(name="pump", control=Control(name="pump_control"))
     boiler = Boiler(name="boiler")
     split_valve = SplitValve(name="split_valve")
-    three_way_valve = ThreeWayValve(name="three_way_valve")
+    three_way_valve = ThreeWayValve(
+        name="three_way_valve", control=Control(name="three_way_valve_control")
+    )
     network.connect_systems(three_way_valve, space_1.first_emission())
     network.connect_systems(three_way_valve, space_2.first_emission())
     network.connect_systems(space_1.last_emission(), split_valve)
@@ -830,19 +826,6 @@ def buildings_simple_hydronic_two_zones(space_1: Space, space_2: Space) -> Netwo
     network.connect_systems(three_way_valve, split_valve)
     network.connect_systems(split_valve, boiler)
 
-    # check if controllable
-    if pump.get_controllable_ports():
-        pump_control = Control(name="pump_control")
-        network.graph.add_edge(pump, pump_control)
-
-    if three_way_valve.get_controllable_ports():
-        three_way_valve_control = Control(name="three_way_valve_control")
-        network.graph.add_edge(three_way_valve, three_way_valve_control)
-    # undirected_graph = network.graph.to_undirected() # noqa : E800
-    # space_controls = [ # noqa : E800
-    #     node for node in undirected_graph.nodes if isinstance(node, SpaceControl) # noqa : E800
-    # ] # noqa : E800
-    # paths = shortest_path(undirected_graph, pump_control, space_controls[0]) # noqa : E800
     return network
 
 

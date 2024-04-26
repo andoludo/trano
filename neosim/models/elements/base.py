@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
-from neosim.library.buildings.buildings import buildings_ports
 from neosim.models.constants import Flow
 
 if TYPE_CHECKING:
@@ -149,11 +148,6 @@ class BaseElement(BaseModel):
 
     def __hash__(self) -> int:
         return hash(f"{self.name}-{type(self).__name__}")
-
-    @field_validator("ports")
-    @classmethod
-    def ports_validator(cls, ports: list[Port]) -> list[Port]:
-        return buildings_ports().get(cls.__name__, [])
 
 
 def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:

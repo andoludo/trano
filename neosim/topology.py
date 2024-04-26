@@ -9,8 +9,8 @@ from networkx import DiGraph, shortest_path
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
-from neosim.library.buildings.buildings import buildings_ports
-from neosim.library.ideas.ideas import extract_data, ideas_ports
+from neosim.library.buildings.buildings import BuildingsLibrary, DefaultLibrary
+from neosim.library.ideas.ideas import extract_data
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
 from neosim.models.elements.control import Control
@@ -25,20 +25,22 @@ def tilts_processing_ideas(element: MergedExternalWall) -> List[str]:
 
 
 class Network:
-    def __init__(self, name: str, merged_external_boundaries: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        merged_external_boundaries: bool = False,
+        library: Optional[DefaultLibrary] = None,
+    ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
         self.name: str = name
         self._system_controls: List[Control] = []
         self.merged_external_boundaries: bool = merged_external_boundaries
-        self.ports_dict: Any = (
-            ideas_ports() if merged_external_boundaries else buildings_ports()
-        )
+        self.library = library or BuildingsLibrary()
 
     def add_node(self, node: BaseElement) -> None:
         # TODO: temporary
-        if self.merged_external_boundaries:
-            node.ports = self.ports_dict.get(node.type, list)()
+        node.ports = self.library.assign_ports(node)
         self.graph.add_node(node)
 
     def add_space(self, space: "Space") -> None:
