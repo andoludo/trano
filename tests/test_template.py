@@ -82,7 +82,7 @@ def test_template_buildings_simple_hydronic_three_zones_draw(
 def test_template_ideas_free_float_single_zone(
     ideas_free_float_single_zone: Network,
 ) -> None:
-    model_ = ideas_free_float_single_zone.model("ideas.jinja2")
+    model_ = ideas_free_float_single_zone.model()
     model_ = remove_annotation(model_)
     assert set(model_.replace("record", ";").split(";")) == _read(
         ideas_free_float_single_zone.name
@@ -92,7 +92,7 @@ def test_template_ideas_free_float_single_zone(
 def test_template_ideas_free_float_three_zones(
     ideas_free_float_three_zones: Network,
 ) -> None:
-    model_ = ideas_free_float_three_zones.model("ideas.jinja2")
+    model_ = ideas_free_float_three_zones.model()
     model_ = remove_annotation(model_)
     assert set(model_.replace("record", ";").split(";")) == _read(
         ideas_free_float_three_zones.name
@@ -103,7 +103,7 @@ def test_ideas_simple_hydronic_three_zones(
     ideas_simple_hydronic_three_zones: Network,
 ) -> None:
     ideas_simple_hydronic_three_zones.plot()
-    model_ = ideas_simple_hydronic_three_zones.model("ideas.jinja2")
+    model_ = ideas_simple_hydronic_three_zones.model()
     model_ = remove_annotation(model_)
     assert set(model_.replace("record", ";").split(";")) == _read(
         ideas_simple_hydronic_three_zones.name
@@ -113,7 +113,7 @@ def test_ideas_simple_hydronic_three_zones(
 def test_ideas_simple_hydronic_no_occupancy(
     ideas_simple_hydronic_no_occupancy: Network,
 ) -> None:
-    model_ = ideas_simple_hydronic_no_occupancy.model("ideas.jinja2")
+    model_ = ideas_simple_hydronic_no_occupancy.model()
     model_ = remove_annotation(model_)
     assert set(model_.replace("record", ";").split(";")) == _read(
         ideas_simple_hydronic_no_occupancy.name

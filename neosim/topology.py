@@ -9,8 +9,8 @@ from networkx import DiGraph, shortest_path
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
-from neosim.library.buildings.buildings import BuildingsLibrary, DefaultLibrary
-from neosim.library.ideas.ideas import extract_data
+from neosim.library.base import DefaultLibrary
+from neosim.library.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
 from neosim.models.elements.control import Control
@@ -28,14 +28,12 @@ class Network:
     def __init__(
         self,
         name: str,
-        merged_external_boundaries: bool = False,
         library: Optional[DefaultLibrary] = None,
     ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
         self.name: str = name
         self._system_controls: List[Control] = []
-        self.merged_external_boundaries: bool = merged_external_boundaries
         self.library = library or BuildingsLibrary()
 
     def add_node(self, node: BaseElement) -> None:
@@ -45,7 +43,7 @@ class Network:
 
     def add_space(self, space: "Space") -> None:
         self.add_node(space)
-        if self.merged_external_boundaries:
+        if self.library.merged_external_boundaries:
             external_boundaries = space.merged_external_boundaries
         else:
             external_boundaries = space.external_boundaries  # type: ignore
@@ -211,7 +209,7 @@ class Network:
             for system_control in self._system_controls:
                 shortest_path(undirected_graph, system_control, space_control)
 
-    def model(self, library: str = "buildings.jinja2") -> str:
+    def model(self) -> str:
         self.generate_graphs()
         self._connect_space_controls()
         environment = Environment(
@@ -222,11 +220,10 @@ class Network:
         )
         environment.filters["frozenset"] = frozenset
 
-        template = environment.get_template(library)
+        template = environment.get_template(self.library.template)
         template.globals.update({"tilts_processing_ideas": tilts_processing_ideas})
-        data = None
-        if self.merged_external_boundaries:
-            data = extract_data(self.graph.nodes)
+
+        data = self.library.extract_data(self.graph.nodes)
         return template.render(network=self, data=data)
 
     def add_boiler_plate_spaces(self, spaces: list[Space]) -> None:

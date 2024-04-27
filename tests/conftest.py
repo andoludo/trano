@@ -8,6 +8,7 @@ import pytest
 
 from neosim.construction import Constructions
 from neosim.glass import Glasses
+from neosim.library.ideas import IdeasLibrary
 from neosim.models.constants import Azimuth, Tilt
 from neosim.models.elements.control import Control, SpaceControl
 from neosim.models.elements.space import Space
@@ -172,9 +173,7 @@ def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space) -> Ne
 
 @pytest.fixture
 def ideas_free_float_single_zone(simple_space_1: Space) -> Network:
-    network = Network(
-        name="ideas_free_float_single_zone", merged_external_boundaries=True
-    )
+    network = Network(name="ideas_free_float_single_zone", library=IdeasLibrary())
     network.add_boiler_plate_spaces([simple_space_1])
     return network
 
@@ -604,9 +603,7 @@ def buildings_free_float_three_zones(
 def ideas_free_float_three_zones(
     ideas_free_float_three_zones_spaces: list,
 ) -> Network:
-    network = Network(
-        name="ideas_free_float_three_zones", merged_external_boundaries=True
-    )
+    network = Network(name="ideas_free_float_three_zones", library=IdeasLibrary())
     network.add_boiler_plate_spaces(ideas_free_float_three_zones_spaces)
     return network
 
@@ -878,9 +875,7 @@ def buildings_simple_hydronic_three_zones(
 def ideas_simple_hydronic_three_zones(
     space_1: Space, space_2: Space, space_3: Space
 ) -> Network:
-    network = Network(
-        name="ideas_simple_hydronic_three_zones", merged_external_boundaries=True
-    )
+    network = Network(name="ideas_simple_hydronic_three_zones", library=IdeasLibrary())
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
     pump = Pump(name="pump", control=Control(name="pump_control"))
@@ -980,15 +975,15 @@ def space_1_no_occupancy() -> Space:
 
 @pytest.fixture
 def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
-    network = Network(
-        name="ideas_simple_hydronic_no_occupancy", merged_external_boundaries=True
-    )
+    network = Network(name="ideas_simple_hydronic_no_occupancy", library=IdeasLibrary())
     network.add_boiler_plate_spaces([space_1_no_occupancy])
 
-    pump = Pump(name="pump")
+    pump = Pump(name="pump", control=Control(name="pump_control"))
     boiler = Boiler(name="boiler")
     split_valve = SplitValve(name="split_valve")
-    three_way_valve = ThreeWayValve(name="three_way_valve")
+    three_way_valve = ThreeWayValve(
+        name="three_way_valve", control=Control(name="three_way_valve_control")
+    )
     network.connect_systems(three_way_valve, space_1_no_occupancy.first_emission())
     network.connect_systems(space_1_no_occupancy.last_emission(), split_valve)
     network.connect_systems(boiler, pump)

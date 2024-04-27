@@ -1,5 +1,6 @@
 from typing import Any, Callable, List
 
+from networkx.classes.reportviews import NodeView
 from pydantic import BaseModel, Field
 
 from neosim.models.constants import Flow
@@ -14,7 +15,7 @@ class LibraryData(BaseModel):
     ports_factory: Callable[[], List[Port]]
 
 
-class BuildingsSpace(LibraryData):
+class BaseSpace(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=InternalElement, names=["surf_surBou"], multi_connection=True),
@@ -26,7 +27,7 @@ class BuildingsSpace(LibraryData):
     )
 
 
-class BuildingsEmission(LibraryData):
+class BaseEmission(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=Space, names=["heatPortCon", "heatPortRad"]),
@@ -36,7 +37,7 @@ class BuildingsEmission(LibraryData):
     )
 
 
-class BuildingsValve(LibraryData):
+class BaseValve(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(names=["port_a"], flow=Flow.inlet),
@@ -46,7 +47,7 @@ class BuildingsValve(LibraryData):
     )
 
 
-class BuildingsBoiler(LibraryData):
+class BaseBoiler(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -65,7 +66,7 @@ class BuildingsBoiler(LibraryData):
     )
 
 
-class BuildingsPump(LibraryData):
+class BasePump(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -85,7 +86,7 @@ class BuildingsPump(LibraryData):
     )
 
 
-class BuildingsSplitValve(LibraryData):
+class BaseSplitValve(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -100,7 +101,7 @@ class BuildingsSplitValve(LibraryData):
     )
 
 
-class BuildingsThreeWayValve(LibraryData):
+class BaseThreeWayValve(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(names=["port_1"], flow=Flow.inlet),
@@ -116,7 +117,7 @@ class BuildingsThreeWayValve(LibraryData):
     )
 
 
-class BuildingsOccupancy(LibraryData):
+class BaseOccupancy(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=Space, names=["y"]),
@@ -124,7 +125,7 @@ class BuildingsOccupancy(LibraryData):
     )
 
 
-class BuildingsWeather(LibraryData):
+class BaseWeather(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -134,7 +135,7 @@ class BuildingsWeather(LibraryData):
     )
 
 
-class BuildingsInternalElement(LibraryData):
+class BaseInternalElement(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=Space, names=["port_a"]),
@@ -143,7 +144,7 @@ class BuildingsInternalElement(LibraryData):
     )
 
 
-class BuildingsSpaceControl(LibraryData):
+class BaseSpaceControl(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=Space, names=["port"]),
@@ -152,7 +153,7 @@ class BuildingsSpaceControl(LibraryData):
     )
 
 
-class BuildingsControl(LibraryData):
+class BaseControl(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=System, names=["y"]),
@@ -161,25 +162,28 @@ class BuildingsControl(LibraryData):
 
 
 class DefaultLibrary(BaseModel):
-    control: LibraryData = Field(default=BuildingsControl())
-    spacecontrol: LibraryData = Field(default=BuildingsSpaceControl())
-    internalelement: LibraryData = Field(default=BuildingsInternalElement())
-    weather: LibraryData = Field(default=BuildingsWeather())
-    occupancy: LibraryData = Field(default=BuildingsOccupancy())
-    threewayvalve: LibraryData = Field(default=BuildingsThreeWayValve())
-    splitvalve: LibraryData = Field(default=BuildingsSplitValve())
-    pump: LibraryData = Field(default=BuildingsPump())
-    boiler: LibraryData = Field(default=BuildingsBoiler())
-    valve: LibraryData = Field(default=BuildingsValve())
-    emission: LibraryData = Field(default=BuildingsEmission())
-    space: LibraryData = Field(default=BuildingsSpace())
+    template: str
+    merged_external_boundaries: bool = False
+    control: LibraryData = Field(default=BaseControl())
+    spacecontrol: LibraryData = Field(default=BaseSpaceControl())
+    internalelement: LibraryData = Field(default=BaseInternalElement())
+    weather: LibraryData = Field(default=BaseWeather())
+    occupancy: LibraryData = Field(default=BaseOccupancy())
+    threewayvalve: LibraryData = Field(default=BaseThreeWayValve())
+    splitvalve: LibraryData = Field(default=BaseSplitValve())
+    pump: LibraryData = Field(default=BasePump())
+    boiler: LibraryData = Field(default=BaseBoiler())
+    valve: LibraryData = Field(default=BaseValve())
+    emission: LibraryData = Field(default=BaseEmission())
+    space: LibraryData = Field(default=BaseSpace())
     externalwall: LibraryData = Field(default=LibraryData(ports_factory=list))
     flooronground: LibraryData = Field(default=LibraryData(ports_factory=list))
     window: LibraryData = Field(default=LibraryData(ports_factory=list))
+    mergedexternalwall: LibraryData = Field(default=LibraryData(ports_factory=list))
+    mergedwindows: LibraryData = Field(default=LibraryData(ports_factory=list))
 
     def assign_ports(self, element: BaseElement) -> Any:  # noqa : ANN401
         return getattr(self, type(element).__name__.lower()).ports_factory()
 
-
-class BuildingsLibrary(DefaultLibrary):
-    ...
+    def extract_data(self, nodes: NodeView) -> Any:  # noqa : ANN401
+        ...
