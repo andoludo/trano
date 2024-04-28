@@ -8,8 +8,8 @@ import pytest
 
 from neosim.construction import Constructions
 from neosim.glass import Glasses
-from neosim.library.buildings import BuildingsLibrary
-from neosim.library.ideas import IdeasLibrary
+from neosim.library.buildings.buildings import BuildingsLibrary
+from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.constants import Azimuth, Tilt
 from neosim.models.elements.control import Control, SpaceControl
 from neosim.models.elements.space import Space

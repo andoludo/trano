@@ -10,7 +10,7 @@ from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
 from neosim.library.base import DefaultLibrary
-from neosim.library.buildings import BuildingsLibrary
+from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
 from neosim.models.elements.control import Control

@@ -14,7 +14,13 @@ from neosim.library.base import (
     DefaultLibrary,
     LibraryData,
 )
-from neosim.library.data.base import BaseConstructionData, BaseData
+from neosim.library.ideas.constants import CONSTANTS
+from neosim.library.ideas.data import (
+    IdeasConstruction,
+    IdeasData,
+    IdeasGlazing,
+    IdeasMaterial,
+)
 from neosim.models.constants import Flow
 from neosim.models.elements.base import Port
 from neosim.models.elements.control import Control, SpaceControl
@@ -22,51 +28,6 @@ from neosim.models.elements.merged_wall import MergedBaseWall, MergedExternalWal
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import Emission, Occupancy
 from neosim.models.elements.wall import BaseSimpleWall, BaseWall
-
-CONSTANTS = """
-replaceable package Medium = IDEAS.Media.Air
-constrainedby Modelica.Media.Interfaces.PartialMedium
-"Medium in the component"
-annotation (choicesAllMatching = true);
-package MediumW = IDEAS.Media.Water "Medium model";
- parameter Integer nRoo = 2 "Number of rooms";
-  parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";
-  parameter Modelica.Units.SI.Power Q_flow_nominal=2200
-    "Nominal power of heating plant";
- // Due to the night setback, in which the radiator do not provide heat input into the room,
- // we scale the design power of the radiator loop
- parameter Real scaFacRad = 1.5
-    "Scaling factor to scale the power (and mass flow rate) of the radiator loop";
-  parameter Modelica.Units.SI.Temperature TSup_nominal=273.15 + 50 + 5
-    "Nominal supply temperature for radiators";
-  parameter Modelica.Units.SI.Temperature TRet_nominal=273.15 + 40 + 5
-    "Nominal return temperature for radiators";
-  parameter Modelica.Units.SI.Temperature dTRad_nominal=TSup_nominal -
-      TRet_nominal "Nominal temperature difference for radiator loop";
-  parameter Modelica.Units.SI.Temperature dTBoi_nominal=20
-    "Nominal temperature difference for boiler loop";
-  parameter Modelica.Units.SI.MassFlowRate mRad_flow_nominal=scaFacRad*
-      Q_flow_nominal/dTRad_nominal/4200
-    "Nominal mass flow rate of radiator loop";
-  parameter Modelica.Units.SI.MassFlowRate mBoi_flow_nominal=scaFacRad*
-      Q_flow_nominal/dTBoi_nominal/4200 "Nominal mass flow rate of boiler loop";
-  parameter Modelica.Units.SI.PressureDifference dpPip_nominal=10000
-    "Pressure difference of pipe (without valve)";
-  parameter Modelica.Units.SI.PressureDifference dpVal_nominal=6000
-    "Pressure difference of valve";
-  parameter Modelica.Units.SI.PressureDifference dpRoo_nominal=6000
-    "Pressure difference of flow leg that serves a room";
-  parameter Modelica.Units.SI.PressureDifference dpThrWayVal_nominal=6000
-    "Pressure difference of three-way valve";
-  parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +
-      dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
-    "Pressure difference of loop";
-  inner IDEAS.BoundaryConditions.SimInfoManager sim(interZonalAirFlowType=
-  IDEAS.BoundaryConditions.Types.
-  InterZonalAirFlow.OnePort)
-                                              "Data reader"
-    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));
-"""
 
 
 class IdeasSpace(BaseSpace):
@@ -210,103 +171,6 @@ class IdeasPump(LibraryData):
             Port(target=Control, names=["m_flow_in"]),
         ]
     )
-
-
-class IdeasConstruction(BaseData):
-    template: str = Field(
-        default="""      record {{ construction.name }}
-    "{{ construction.name }}"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-{#      incLastLay = IDEAS.Types.Tilt.Wall,#}
-      mats={
-        {%- for layer in construction.layers -%}
-        {{ package_name }}.Data.Materials.{{ layer.material.name }}
-        (d={{ layer.thickness }}){{ "," if not loop.last }}
-        {%- endfor %}
-    });
-    end {{ construction.name }};"""
-    )
-
-
-class IdeasMaterial(BaseData):
-    template: str = Field(
-        default="""
-    record {{ construction.name }} = IDEAS.Buildings.Data.Interfaces.Material (
- k={{construction.thermal_conductivity}},
-      c={{construction.specific_heat_capacity}},
-      rho={{construction.density}},
-      epsLw=0.88,
-      epsSw=0.55);"""
-    )
-
-
-class IdeasGlazing(BaseData):
-    template: str = Field(
-        default="""record  {{ construction.name }} = IDEAS.Buildings.Data.Interfaces.Glazing (
-          final nLay={{ construction.layers|length }},
-      final checkLowPerformanceGlazing=false,
-          mats={
-        {%- for layer in construction.layers -%}
-        {{ package_name }}.Data.Materials.{{ layer.material.name }}
-        (d={{ layer.thickness }}){{ "," if not loop.last }}
-        {%- endfor %}
-    },
-    final SwTrans=[0, 0.721;
-                    10, 0.720;
-                    20, 0.718;
-                    30, 0.711;
-                    40, 0.697;
-                    50, 0.665;
-                    60, 0.596;
-                    70, 0.454;
-                    80, 0.218;
-                    90, 0.000],
-      final SwAbs=[0, 0.082, 0, 0.062;
-                  10, 0.082, 0, 0.062;
-                  20, 0.084, 0, 0.063;
-                  30, 0.086, 0, 0.065;
-                  40, 0.090, 0, 0.067;
-                  50, 0.094, 0, 0.068;
-                  60, 0.101, 0, 0.067;
-                  70, 0.108, 0, 0.061;
-                  80, 0.112, 0, 0.045;
-                  90, 0.000, 0, 0.000],
-      final SwTransDif=0.619,
-      final SwAbsDif={0.093, 0,  0.063},
-      final U_value=2.9,
-      final g_value=0.78
-
-    ) "{{ package_name }}";"""
-    )
-
-
-class IdeasData(BaseConstructionData):
-    template: str = """package Data "Data for transient thermal building simulation"
-extends Modelica.Icons.MaterialPropertiesPackage;
-
-package Glazing "Library of building glazing systems"
-extends Modelica.Icons.MaterialPropertiesPackage;
-{% for g in glazing %}
-    {{ g|safe }}
-{% endfor %}
-end Glazing;
-
-package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;
-{%- for m in material -%}
-    {{ m|safe }}
-{%- endfor %}
-end Materials;
-package Constructions "Library of building envelope constructions"
-{%- for c in construction -%}
-    {{ c|safe}}
-{%- endfor %}
-
-end Constructions;
-end Data;"""
-    construction: IdeasConstruction
-    material: IdeasMaterial
-    glazing: IdeasGlazing
 
 
 def tilts_processing_ideas(element: MergedExternalWall) -> List[str]:
