@@ -178,7 +178,6 @@ def tilts_processing_ideas(element: MergedExternalWall) -> List[str]:
 
 
 class IdeasLibrary(DefaultLibrary):
-    template: str = "ideas.jinja2"
     constants: str = CONSTANTS
     merged_external_boundaries: bool = True
     functions: Dict[str, Callable[[Any], Any]] = {  # noqa: RUF012

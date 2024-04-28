@@ -209,7 +209,6 @@ class BaseControl(LibraryData):
 
 
 class DefaultLibrary(BaseModel):
-    template: str
     constants: str
     merged_external_boundaries: bool = False
     functions: Dict[str, Callable[[Any], Any]] = Field(default={})

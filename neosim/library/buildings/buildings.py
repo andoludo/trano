@@ -26,7 +26,6 @@ from neosim.models.elements.wall import BaseSimpleWall
 
 
 class BuildingsLibrary(DefaultLibrary):
-    template: str = "buildings.jinja2"
     constants: str = BUILDINGS_CONSTANTS
     internalelement: LibraryData = Field(
         default=BaseInternalElement(
