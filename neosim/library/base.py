@@ -242,5 +242,10 @@ class DefaultLibrary(BaseModel):
             return element.template
         return getattr(self, type(element).__name__.lower()).template
 
+    def assign_properties(self, element: BaseElement) -> BaseElement:
+        element.ports = self.assign_ports(element)
+        element.template = self.assign_template(element)
+        return element
+
     def extract_data(self, package_name: str, nodes: NodeView) -> Any:  # noqa : ANN401
         ...

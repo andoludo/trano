@@ -32,8 +32,7 @@ class Network:
         self.library = library or BuildingsLibrary()
 
     def add_node(self, node: BaseElement) -> None:
-        node.ports = self.library.assign_ports(node)
-        node.template = self.library.assign_template(node)
+        node = self.library.assign_properties(node)
         self.graph.add_node(node)
 
     def add_space(self, space: "Space") -> None:
@@ -79,8 +78,7 @@ class Network:
                 space,
             )
             for space_emission in space.emissions:
-                space_emission.ports = self.library.assign_ports(space_emission)
-                space_emission.template = self.library.assign_template(space_emission)
+                self.library.assign_properties(space_emission)
             controllable_emission = space.get_controllable_emission()
             if controllable_emission is None:
                 raise Exception(
