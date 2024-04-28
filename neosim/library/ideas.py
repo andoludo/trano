@@ -1,13 +1,11 @@
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
-from jinja2 import BaseLoader, Environment
 from networkx.classes.reportviews import NodeView
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from neosim.construction import Construction
 from neosim.glass import Glass
 from neosim.library.base import (
-    BaseData,
     BaseEmission,
     BaseSpace,
     BaseSplitValve,
@@ -16,6 +14,7 @@ from neosim.library.base import (
     DefaultLibrary,
     LibraryData,
 )
+from neosim.library.data.base import BaseConstructionData, BaseData
 from neosim.models.constants import Flow
 from neosim.models.elements.base import Port
 from neosim.models.elements.control import Control, SpaceControl
@@ -281,7 +280,7 @@ class IdeasGlazing(BaseData):
     )
 
 
-class IdeasData(BaseModel):
+class IdeasData(BaseConstructionData):
     template: str = """package Data "Data for transient thermal building simulation"
 extends Modelica.Icons.MaterialPropertiesPackage;
 
@@ -309,26 +308,6 @@ end Data;"""
     material: IdeasMaterial
     glazing: IdeasGlazing
 
-    def generate_data(self, package_name: str) -> str:
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=BaseLoader(),
-            autoescape=True,
-        )
-        models = {"material": [], "construction": [], "glazing": []}
-        for construction_type_name in models:
-            construction_type = getattr(self, construction_type_name)
-            for construction in construction_type.constructions:
-                template = environment.from_string(construction_type.template)
-                model = template.render(
-                    construction=construction, package_name=package_name
-                )
-                models[construction_type_name].append(model)
-        template = environment.from_string(self.template)
-        model = template.render(**models, package_name=package_name)
-        return model
-
 
 def tilts_processing_ideas(element: MergedExternalWall) -> List[str]:
     return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
@@ -338,7 +317,7 @@ class IdeasLibrary(DefaultLibrary):
     template: str = "ideas.jinja2"
     constants: str = CONSTANTS
     merged_external_boundaries: bool = True
-    functions: Dict[str, Callable] = {  # noqa: RUF012
+    functions: Dict[str, Callable[[Any], Any]] = {  # noqa: RUF012
         "tilts_processing_ideas": tilts_processing_ideas
     }
     space: LibraryData = Field(default=IdeasSpace())

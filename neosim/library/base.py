@@ -1,11 +1,8 @@
-from typing import Any, Callable, List, Union
+from typing import Any, Callable, Dict, List
 
 from networkx.classes.reportviews import NodeView
 from pydantic import BaseModel, Field
 
-from neosim.construction import Construction
-from neosim.glass import Glass
-from neosim.material import Material
 from neosim.models.constants import Flow
 from neosim.models.elements.base import BaseElement, Port
 from neosim.models.elements.control import Control, SpaceControl
@@ -193,6 +190,7 @@ class DefaultLibrary(BaseModel):
     template: str
     constants: str
     merged_external_boundaries: bool = False
+    functions: Dict[str, Callable[[Any], Any]] = Field(default={})
     control: LibraryData = Field(default=BaseControl())
     spacecontrol: LibraryData = Field(default=BaseSpaceControl())
     internalelement: LibraryData = Field(default=BaseInternalElement())
@@ -219,8 +217,3 @@ class DefaultLibrary(BaseModel):
 
     def extract_data(self, package_name: str, nodes: NodeView) -> Any:  # noqa : ANN401
         ...
-
-
-class BaseData(BaseModel):
-    template: str
-    constructions: List[Union[Construction, Material, Glass]]

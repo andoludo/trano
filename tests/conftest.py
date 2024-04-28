@@ -8,6 +8,7 @@ import pytest
 
 from neosim.construction import Constructions
 from neosim.glass import Glasses
+from neosim.library.buildings import BuildingsLibrary
 from neosim.library.ideas import IdeasLibrary
 from neosim.models.constants import Azimuth, Tilt
 from neosim.models.elements.control import Control, SpaceControl
@@ -166,7 +167,13 @@ def simple_space_1_with_occupancy() -> Space:
 
 @pytest.fixture
 def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space) -> Network:
-    network = Network(name="buildings_free_float_single_zone")
+    network = Network(
+        name="buildings_free_float_single_zone",
+        library=BuildingsLibrary(
+            constants="""package Medium = Buildings.Media.Air "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
     network.add_boiler_plate_spaces([simple_space_1_with_occupancy])
     return network
 
@@ -278,7 +285,13 @@ def buildings_free_float_two_zones() -> Network:
         ],
     )
 
-    network = Network(name="buildings_free_float_two_zones")
+    network = Network(
+        name="buildings_free_float_two_zones",
+        library=BuildingsLibrary(
+            constants="""package Medium = Buildings.Media.Air "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
     network.add_boiler_plate_spaces([space_1, space_2])
     return network
 
@@ -606,7 +619,13 @@ def ideas_free_float_three_zones_spaces() -> list:
 def buildings_free_float_three_zones(
     buildings_free_float_three_zones_spaces: list,
 ) -> Network:
-    network = Network(name="buildings_free_float_three_zones")
+    network = Network(
+        name="buildings_free_float_three_zones",
+        library=BuildingsLibrary(
+            constants="""package Medium = Buildings.Media.Air "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
     network.add_boiler_plate_spaces(buildings_free_float_three_zones_spaces)
     return network
 
