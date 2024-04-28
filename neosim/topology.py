@@ -78,6 +78,9 @@ class Network:
                 space.control,
                 space,
             )
+            for space_emission in space.emissions:
+                space_emission.ports = self.library.assign_ports(space_emission)
+                space_emission.template = self.library.assign_template(space_emission)
             controllable_emission = space.get_controllable_emission()
             if controllable_emission is None:
                 raise Exception(

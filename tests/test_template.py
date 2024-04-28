@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 from typing import Set
 
+from neosim.models.elements.space import Space
 from neosim.topology import Network
 
 
@@ -126,3 +127,12 @@ def test_ideas_simple_hydronic_no_occupancy(
     assert clean_model(model_, ideas_simple_hydronic_no_occupancy.name) == set(
         _read(ideas_simple_hydronic_no_occupancy.name)
     )
+
+
+def test_space_1_ideal_heating(
+    space_1_ideal_heating: Space,
+) -> None:
+    network = Network(name="space_1_ideal_heating")
+    network.add_boiler_plate_spaces([space_1_ideal_heating])
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))

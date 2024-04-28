@@ -16,6 +16,7 @@ from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
     Boiler,
     Emission,
+    IdealHeatingEmission,
     Occupancy,
     Pump,
     SplitValve,
@@ -1035,3 +1036,61 @@ def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
     network.connect_systems(split_valve, boiler)
 
     return network
+
+
+@pytest.fixture
+def space_1_ideal_heating() -> Space:
+    space_1 = Space(
+        name="space_1",
+        volume=100,
+        floor_area=50,
+        height=2,
+        elevation=2,
+        occupancy=Occupancy(name="occupancy_0"),
+        external_boundaries=[
+            ExternalWall(
+                name="w1_1",
+                surface=10,
+                azimuth=Azimuth.west,
+                layer_name="layer",
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w2_1",
+                surface=10,
+                azimuth=Azimuth.north,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w3_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w4_1",
+                surface=10,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            FloorOnGround(
+                name="floor_2", surface=10, construction=Constructions.external_wall
+            ),
+            Window(
+                name="win1_1",
+                surface=1,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+        emissions=[IdealHeatingEmission(name="emission")],
+        control=SpaceControl(name="space_control"),
+    )
+    return space_1

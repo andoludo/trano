@@ -14,6 +14,10 @@ class Emission(System):
     ...
 
 
+class IdealHeatingEmission(Emission):
+    ...
+
+
 class Valve(System):
     ...
 

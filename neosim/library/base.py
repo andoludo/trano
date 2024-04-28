@@ -7,7 +7,13 @@ from neosim.models.constants import Flow
 from neosim.models.elements.base import BaseElement, Port
 from neosim.models.elements.control import Control, SpaceControl
 from neosim.models.elements.space import Space
-from neosim.models.elements.system import Emission, Occupancy, System, Weather
+from neosim.models.elements.system import (
+    Emission,
+    IdealHeatingEmission,
+    Occupancy,
+    System,
+    Weather,
+)
 from neosim.models.elements.wall import InternalElement
 
 
@@ -23,6 +29,7 @@ class BaseSpace(LibraryData):
             Port(target=Occupancy, names=["qGai_flow"]),
             Port(target=Weather, names=["weaBus"]),
             Port(target=Emission, names=["heaPorAir", "heaPorRad"]),
+            Port(target=IdealHeatingEmission, names=["heaPorAir", "heaPorRad"]),
             Port(target=SpaceControl, names=["heaPorAir"]),
         ]
     )
@@ -34,6 +41,21 @@ class BaseEmission(LibraryData):
             Port(target=Space, names=["heatPortCon", "heatPortRad"]),
             Port(names=["port_a"], flow=Flow.inlet),
             Port(names=["port_b"], flow=Flow.outlet),
+        ]
+    )
+
+
+class BaseIdealHeatingEmission(LibraryData):
+    template: str = """
+    Neosim.HeatTransfer.IdealHeatingSystem.IdealHeatEmission {{ element.name }}
+    annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(target=Space, names=["heatPortCon", "heatPortRad"]),
+            Port(target=Control, names=["y"]),
         ]
     )
 
@@ -202,6 +224,7 @@ class DefaultLibrary(BaseModel):
     boiler: LibraryData = Field(default=BaseBoiler())
     valve: LibraryData = Field(default=BaseValve())
     emission: LibraryData = Field(default=BaseEmission())
+    idealheatingemission: LibraryData = Field(default=BaseIdealHeatingEmission())
     space: LibraryData = Field(default=BaseSpace())
     externalwall: LibraryData = Field(default=LibraryData(ports_factory=list))
     flooronground: LibraryData = Field(default=LibraryData(ports_factory=list))
@@ -210,9 +233,13 @@ class DefaultLibrary(BaseModel):
     mergedwindows: LibraryData = Field(default=LibraryData(ports_factory=list))
 
     def assign_ports(self, element: BaseElement) -> Any:  # noqa : ANN401
+        if element.ports:
+            return element.ports
         return getattr(self, type(element).__name__.lower()).ports_factory()
 
     def assign_template(self, element: BaseElement) -> Any:  # noqa : ANN401
+        if element.template:
+            return element.template
         return getattr(self, type(element).__name__.lower()).template
 
     def extract_data(self, package_name: str, nodes: NodeView) -> Any:  # noqa : ANN401

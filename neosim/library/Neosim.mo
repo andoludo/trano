@@ -131,22 +131,103 @@ package Neosim
   model Simple
 
   extends Buildings.Fluid.Interfaces.PartialTwoPort;
-  Buildings.Fluid.Sources.Boundary_pT bou(use_T_in = true, nPorts = 2, redeclare final package Medium = Medium)  annotation(
+  Buildings.Fluid.Sources.Boundary_pT bou(use_T_in = true, nPorts = 2, redeclare
+            final package                                                                      Medium = Medium)  annotation (
           Placement(transformation(origin = {90, 188}, extent = {{-82, -180}, {-62, -160}})));
-  Modelica.Blocks.Sources.Constant constant1(k = 273 + 70)  annotation(
+  Modelica.Blocks.Sources.Constant constant1(k = 273 + 70)  annotation (
           Placement(transformation(origin = {-32, 20}, extent = {{-10, -10}, {10, 10}})));
-      equation
-  connect(constant1.y, bou.T_in) annotation(
+  equation
+  connect(constant1.y, bou.T_in) annotation (
           Line(points = {{-20, 20}, {6, 20}, {6, 22}}, color = {0, 0, 127}));
-  connect(bou.ports[1], port_b) annotation(
+  connect(bou.ports[1], port_b) annotation (
           Line(points = {{28, 18}, {100, 18}, {100, 0}}, color = {0, 127, 255}));
-  connect(bou.ports[2], port_a) annotation(
+  connect(bou.ports[2], port_a) annotation (
           Line(points = {{28, 18}, {-100, 18}, {-100, 0}}, color = {0, 127, 255}));
-      annotation(
+      annotation (
           Icon(graphics = {Rectangle(fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}}), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255}, fillPattern = FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
-end Simple;
-    end Boilers;
+  end Simple;
+  end Boilers;
   end Fluid;
+
+  package HeatTransfer
+  package IdealHeatingSystem
+  model IdealHeatEmission
+    parameter Real frad=0.3 "radiative fraction";
+      parameter Real power=2000 "heating power";
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortCon
+      "Heat port for convective heat transfer with room air temperature"
+      annotation (Placement(transformation(extent={{-30,62},{-10,82}})));
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortRad
+      "Heat port for radiative heat transfer with room radiation temperature"
+      annotation (Placement(transformation(extent={{10,62},{30,82}})));
+    Modelica.Blocks.Interfaces.RealInput y
+      annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+    Modelica.Blocks.Math.Gain HeatingPower(k=power)
+          annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
+    Modelica.Blocks.Math.Gain convectiveGain(k=1 - frad)
+      annotation (Placement(transformation(extent={{2,-60},{22,-40}})));
+    Modelica.Blocks.Math.Gain radiativeGain(k=frad)
+      annotation (Placement(transformation(extent={{2,-90},{22,-70}})));
+        Modelica.Blocks.Nonlinear.Limiter limiter(uMax=1, uMin=0)
+          annotation (Placement(transformation(extent={{-86,-10},{-66,10}})));
+      protected
+    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumCon(final
+        alpha=0)
+      "Heat input into radiator from convective heat transfer"
+      annotation (Placement(transformation(extent={{52,-60},{72,-40}})));
+    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumRad(final
+        alpha=0)
+      "Heat input into radiator from radiative heat transfer"
+      annotation (Placement(transformation(extent={{52,-90},{72,-70}})));
+  equation
+
+    connect(preSumCon.port,heatPortCon)        annotation (Line(
+        points={{72,-50},{80,-50},{80,40},{-20,40},{-20,72}},
+        color={191,0,0}));
+    connect(preSumRad.port,heatPortRad)         annotation (Line(
+        points={{72,-80},{86,-80},{86,50},{20,50},{20,72}},
+        color={191,0,0}));
+    connect(preSumCon.Q_flow, convectiveGain.y)
+      annotation (Line(points={{52,-50},{23,-50}}, color={0,0,127}));
+    connect(radiativeGain.y, preSumRad.Q_flow)
+      annotation (Line(points={{23,-80},{52,-80}}, color={0,0,127}));
+        connect(HeatingPower.y, convectiveGain.u) annotation (Line(points={{-19,
+                0},{-6,0},{-6,-50},{0,-50}}, color={0,0,127}));
+        connect(HeatingPower.y, radiativeGain.u) annotation (Line(points={{-19,
+                0},{-6,0},{-6,-80},{0,-80}}, color={0,0,127}));
+        connect(y, limiter.u)
+          annotation (Line(points={{-120,0},{-88,0}}, color={0,0,127}));
+        connect(limiter.y, HeatingPower.u)
+          annotation (Line(points={{-65,0},{-42,0}}, color={0,0,127}));
+    annotation (Icon(graphics={
+          Ellipse(
+            extent={{-20,20},{20,-22}},
+            fillColor={127,0,0},
+            fillPattern=FillPattern.Solid,
+            pattern=LinePattern.None),
+          Ellipse(
+            extent={{-20,20},{20,-22}},
+            fillColor={127,0,0},
+            fillPattern=FillPattern.Solid,
+            pattern=LinePattern.None),
+          Rectangle(
+            extent={{-80,58},{80,-62}},
+            lineColor={0,0,0},
+            fillColor={127,0,0},
+            fillPattern=FillPattern.Solid),
+          Line(
+            points={{-66,28},{66,28}}),
+          Line(
+            points={{-66,0},{66,0}}),
+          Line(
+            points={{-66,-32},{66,-32}}),
+          Line(
+            points={{-66,58},{-66,-62}}),
+          Line(
+            points={{66,58},{66,-62}})}));
+  end IdealHeatEmission;
+  end IdealHeatingSystem;
+  end HeatTransfer;
   annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
