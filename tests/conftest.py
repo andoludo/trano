@@ -173,7 +173,19 @@ def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space) -> Ne
 
 @pytest.fixture
 def ideas_free_float_single_zone(simple_space_1: Space) -> Network:
-    network = Network(name="ideas_free_float_single_zone", library=IdeasLibrary())
+    network = Network(
+        name="ideas_free_float_single_zone",
+        library=IdeasLibrary(
+            constants="""
+replaceable package Medium = IDEAS.Media.Air
+constrainedby Modelica.Media.Interfaces.PartialMedium
+"Medium in the component"
+annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
+sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
+                                              "Data reader"
+    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
+        ),
+    )
     network.add_boiler_plate_spaces([simple_space_1])
     return network
 
@@ -603,7 +615,19 @@ def buildings_free_float_three_zones(
 def ideas_free_float_three_zones(
     ideas_free_float_three_zones_spaces: list,
 ) -> Network:
-    network = Network(name="ideas_free_float_three_zones", library=IdeasLibrary())
+    network = Network(
+        name="ideas_free_float_three_zones",
+        library=IdeasLibrary(
+            constants="""
+replaceable package Medium = IDEAS.Media.Air
+constrainedby Modelica.Media.Interfaces.PartialMedium
+"Medium in the component"
+annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
+sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
+                                              "Data reader"
+    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
+        ),
+    )
     network.add_boiler_plate_spaces(ideas_free_float_three_zones_spaces)
     return network
 
@@ -991,12 +1015,4 @@ def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
     network.connect_systems(three_way_valve, split_valve)
     network.connect_systems(split_valve, boiler)
 
-    # check if controllable
-    if pump.get_controllable_ports():
-        pump_control = Control(name="pump_control")
-        network.graph.add_edge(pump, pump_control)
-
-    if three_way_valve.get_controllable_ports():
-        three_way_valve_control = Control(name="three_way_valve_control")
-        network.graph.add_edge(three_way_valve, three_way_valve_control)
     return network

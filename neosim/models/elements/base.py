@@ -100,6 +100,7 @@ class BaseElement(BaseModel):
     name: str
     position: Optional[List[float]] = None
     ports: list[Port] = Field(default=[], validate_default=True)
+    template: Optional[str] = None
 
     def get_position(self, layout: Dict["BaseElement", Any]) -> None:
         if not self.position:

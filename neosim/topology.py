@@ -14,14 +14,9 @@ from neosim.library.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
 from neosim.models.elements.control import Control
-from neosim.models.elements.merged_wall import MergedExternalWall
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import System, Weather
 from neosim.models.elements.wall import InternalElement
-
-
-def tilts_processing_ideas(element: MergedExternalWall) -> List[str]:
-    return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
 
 
 class Network:
@@ -37,8 +32,8 @@ class Network:
         self.library = library or BuildingsLibrary()
 
     def add_node(self, node: BaseElement) -> None:
-        # TODO: temporary
         node.ports = self.library.assign_ports(node)
+        node.template = self.library.assign_template(node)
         self.graph.add_node(node)
 
     def add_space(self, space: "Space") -> None:
@@ -212,6 +207,7 @@ class Network:
     def model(self) -> str:
         self.generate_graphs()
         self._connect_space_controls()
+        element_models = self.build_element_models()
         environment = Environment(
             trim_blocks=True,
             lstrip_blocks=True,
@@ -220,11 +216,29 @@ class Network:
         )
         environment.filters["frozenset"] = frozenset
 
-        template = environment.get_template(self.library.template)
-        template.globals.update({"tilts_processing_ideas": tilts_processing_ideas})
+        template = environment.get_template("base.jinja2")
 
-        data = self.library.extract_data(self.graph.nodes)
-        return template.render(network=self, data=data)
+        data = self.library.extract_data(self.name, self.graph.nodes)
+        return template.render(
+            network=self, data=data, element_models=element_models, library=self.library
+        )
+
+    def build_element_models(self) -> List[str]:
+        environment = Environment(
+            trim_blocks=True,
+            lstrip_blocks=True,
+            loader=FileSystemLoader(str(Path(__file__).parent.joinpath("templates"))),
+            autoescape=True,
+        )
+        models = []
+        for node in self.graph.nodes:
+            environment.globals.update(self.library.functions)
+            rtemplate = environment.from_string(
+                "{% import 'macros.jinja2' as macros %}" + node.template
+            )
+            model = rtemplate.render(element=node, package_name=self.name)
+            models.append(model)
+        return models
 
     def add_boiler_plate_spaces(self, spaces: list[Space]) -> None:
         for space in spaces:

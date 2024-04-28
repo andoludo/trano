@@ -1,8 +1,11 @@
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Union
 
 from networkx.classes.reportviews import NodeView
 from pydantic import BaseModel, Field
 
+from neosim.construction import Construction
+from neosim.glass import Glass
+from neosim.material import Material
 from neosim.models.constants import Flow
 from neosim.models.elements.base import BaseElement, Port
 from neosim.models.elements.control import Control, SpaceControl
@@ -12,6 +15,7 @@ from neosim.models.elements.wall import InternalElement
 
 
 class LibraryData(BaseModel):
+    template: str = ""
     ports_factory: Callable[[], List[Port]]
 
 
@@ -48,6 +52,13 @@ class BaseValve(LibraryData):
 
 
 class BaseBoiler(LibraryData):
+    template: str = """
+    Neosim.Fluid.Boilers.Simple {{ element.name }}(
+    redeclare package Medium = MediumW) "Boiler"
+    annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -118,6 +129,11 @@ class BaseThreeWayValve(LibraryData):
 
 
 class BaseOccupancy(LibraryData):
+    template: str = """
+    Neosim.Occupancy.SimpleOccupancy {{ element.name }} annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=Space, names=["y"]),
@@ -145,6 +161,12 @@ class BaseInternalElement(LibraryData):
 
 
 class BaseSpaceControl(LibraryData):
+    template: str = """
+    Neosim.Controls.SpaceControls.PID {{ element.name }}(setPoint = 295.15, yMax = 1, yMin = 0)
+    annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=Space, names=["port"]),
@@ -154,6 +176,12 @@ class BaseSpaceControl(LibraryData):
 
 
 class BaseControl(LibraryData):
+    template: str = """
+    Modelica.Blocks.Sources.Constant {{ element.name }}(k= 1)
+    annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(target=System, names=["y"]),
@@ -163,6 +191,7 @@ class BaseControl(LibraryData):
 
 class DefaultLibrary(BaseModel):
     template: str
+    constants: str
     merged_external_boundaries: bool = False
     control: LibraryData = Field(default=BaseControl())
     spacecontrol: LibraryData = Field(default=BaseSpaceControl())
@@ -185,5 +214,13 @@ class DefaultLibrary(BaseModel):
     def assign_ports(self, element: BaseElement) -> Any:  # noqa : ANN401
         return getattr(self, type(element).__name__.lower()).ports_factory()
 
-    def extract_data(self, nodes: NodeView) -> Any:  # noqa : ANN401
+    def assign_template(self, element: BaseElement) -> Any:  # noqa : ANN401
+        return getattr(self, type(element).__name__.lower()).template
+
+    def extract_data(self, package_name: str, nodes: NodeView) -> Any:  # noqa : ANN401
         ...
+
+
+class BaseData(BaseModel):
+    template: str
+    constructions: List[Union[Construction, Material, Glass]]

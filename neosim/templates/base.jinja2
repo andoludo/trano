@@ -1,0 +1,21 @@
+{% import 'macros.jinja2' as macros %}
+model {{ network.name }}
+
+{{ data|safe }}
+
+{{ library.constants|safe }}
+
+{% for element_model in element_models %}
+    {{ element_model|safe }}
+{% endfor %}
+
+
+equation
+{%- for edge in network.edge_attributes -%}
+    {#line break#}
+    {{ macros.connect(edge) }}
+{%- endfor %}
+
+
+
+end {{ network.name }};

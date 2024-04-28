@@ -1,0 +1,17 @@
+{%- macro join_list(values) -%}
+    {% raw %}{{% endraw %} {{ values | join(', ') }} {% raw %}}{% endraw %}
+{%- endmacro %}
+
+{%- macro connect(edge) -%}
+connect({{ edge.left.equation }},{{ edge.right.equation }})
+annotation (Line(
+points={{ connect_path(edge.path) }},
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));
+{%- endmacro %}
+
+{%- macro connect_path(paths) -%}
+    {% raw %}{{% endraw %}{%- for path in paths -%}{% raw %}{{% endraw %} {{ path | join(', ') }} {% raw %}}{% endraw %}
+    {{ "," if not loop.last }}{%- endfor %}{% raw %}}{% endraw %}
+{%- endmacro %}
