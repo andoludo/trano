@@ -68,6 +68,14 @@ class Constructions:
             Layer(material=Materials.plywood, thickness=0.1),
         ],
     )
+    test_wall: Construction = Construction(
+        name="test_wall",
+        layers=[
+            Layer(material=Materials.concrete, thickness=0.4),
+            Layer(material=Materials.insulation_board, thickness=0.2),
+            Layer(material=Materials.plywood, thickness=0.4),
+        ],
+    )
     internal_wall: Construction = Construction(
         name="internal_wall",
         layers=[

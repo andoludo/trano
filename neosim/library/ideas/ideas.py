@@ -60,7 +60,7 @@ class IdeasSpace(BaseSpace):
 class IdeasMergedExternalWall(LibraryData):
     template: str = """
     {% set tilts = tilts_processing_ideas(element) %}
-    IDEAS.Buildings.Components.OuterWall[{{ element.constructions | length }}]
+    IDEAS.Buildings.Components.OuterWall[{{ element.surfaces | length }}]
     {{ element.name }}(
     redeclare parameter {{ package_name }}.Data.Constructions.
     {{ element.constructions[0].name }}
@@ -87,7 +87,7 @@ class IdeasMergedExternalWall(LibraryData):
 class IdeasMergedWindows(LibraryData):
     template: str = """
     {% set tilts = tilts_processing_ideas(element) %}
-    IDEAS.Buildings.Components.Window[{{ element.constructions | length }}]
+    IDEAS.Buildings.Components.Window[{{ element.surfaces | length }}]
     {{ element.name }}(
     redeclare parameter {{ package_name }}.Data.Glazing.
     {{ element.constructions[0].name }} glazing,

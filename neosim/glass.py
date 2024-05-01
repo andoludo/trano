@@ -125,3 +125,12 @@ class Glasses:
             GlassLayer(thickness=0.003, material=GlassMaterials.id_100),
         ],
     )
+    simple_glazing: Glass = Glass(
+        name="simple_glazing",
+        u_value_frame=1.4,
+        layers=[
+            GlassLayer(thickness=0.003, material=GlassMaterials.id_100),
+            GasLayer(thickness=0.0127, material=GasMaterials.air),
+            GlassLayer(thickness=0.003, material=GlassMaterials.id_100),
+        ],
+    )

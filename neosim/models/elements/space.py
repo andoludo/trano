@@ -62,11 +62,15 @@ class Space(BaseElement):
         ]
         merged_external_walls = MergedExternalWall.from_base_elements(external_walls)
         merged_windows = MergedWindows.from_base_windows(windows)  # type: ignore
-        external_boundaries = [merged_external_walls, merged_windows] + [
-            boundary
-            for boundary in self.external_boundaries
-            if boundary.type not in ["ExternalWall", "Window"]
-        ]
+        external_boundaries = (
+            merged_external_walls
+            + merged_windows
+            + [
+                boundary
+                for boundary in self.external_boundaries
+                if boundary.type not in ["ExternalWall", "Window"]
+            ]
+        )
         return external_boundaries
 
     def get_controllable_emission(self) -> Optional["System"]:

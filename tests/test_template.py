@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 from typing import Set
 
+from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.elements.space import Space
 from neosim.topology import Network
 
@@ -134,5 +135,17 @@ def test_space_1_ideal_heating(
 ) -> None:
     network = Network(name="space_1_ideal_heating")
     network.add_boiler_plate_spaces([space_1_ideal_heating])
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_space_1_different_construction_types(
+    space_1_different_construction_types: Space,
+) -> None:
+
+    network = Network(
+        name="space_1_different_construction_types", library=IdeasLibrary()
+    )
+    network.add_boiler_plate_spaces([space_1_different_construction_types])
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
