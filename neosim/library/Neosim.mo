@@ -68,6 +68,23 @@ package Neosim
                 Icon,
         Diagram);
       end BaseSpaceControl;
+
+      partial model BaseSubstanceSpaceControl
+        replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+          "Medium model" annotation (choicesAllMatching=true);
+        Modelica.Fluid.Interfaces.FluidPort_a port_a(
+          redeclare final package Medium = Medium)
+          "Fluid connector a (positive design flow direction is from port_a to port_b)"
+          annotation (Placement(transformation(extent={{-116,-16},{-82,16}}),
+              iconTransformation(extent={{-110,-9},{-90,9}})));
+        Modelica.Blocks.Interfaces.RealOutput y annotation (
+                Placement(transformation(origin = {106, 0}, extent = {{-10, -10}, {10, 10}}), iconTransformation(origin = {106, 0}, extent = {{-10, -10}, {10, 10}})));
+      equation
+
+            annotation (
+                Icon,
+        Diagram);
+      end BaseSubstanceSpaceControl;
       annotation (
         Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
                 fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25), Polygon(origin = {20, 0}, lineColor = {64, 64, 64}, fillColor = {255, 255, 255},
@@ -114,6 +131,50 @@ package Neosim
                   fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-80, 90}, {-88, 68}, {-72, 68}, {-80, 90}}), Line(points = {{-90, -80}, {82, -80}}, color = {192, 192, 192}), Polygon(lineColor = {192, 192, 192}, fillColor = {192, 192, 192},
                   fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{90, -80}, {68, -72}, {68, -88}, {90, -80}}), Line(points = {{-80, -80}, {-80, -20}, {60, 80}}, color = {0, 0, 127}), Text(textColor = {192, 192, 192}, extent = {{-20, -60}, {80, -20}}, textString = "PID")}));
       end PID;
+
+      model PIDSubstance
+
+        replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+          "Medium model" annotation (choicesAllMatching=true);
+              extends Neosim.Controls.Interfaces.BaseSubstanceSpaceControl;
+
+                parameter .Modelica.Blocks.Types.SimpleController controllerType=
+                 .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
+          parameter Real k(min=0, unit="1") = 1 "Gain of controller";
+          parameter Modelica.Units.SI.Time Ti(min=Modelica.Constants.small)=0.5
+            "Time constant of Integrator block" annotation (Dialog(enable=
+                  controllerType == .Modelica.Blocks.Types.SimpleController.PI or
+                  controllerType == .Modelica.Blocks.Types.SimpleController.PID));
+          parameter Modelica.Units.SI.Time Td(min=0)=0.1
+            "Time constant of Derivative block" annotation (Dialog(enable=
+                  controllerType == .Modelica.Blocks.Types.SimpleController.PD or
+                  controllerType == .Modelica.Blocks.Types.SimpleController.PID));
+          parameter Real yMax(start=1) "Upper limit of output";
+          parameter Real yMin=-yMax "Lower limit of output";
+          parameter Modelica.Units.SI.Temperature setPoint;
+        Buildings.Fluid.Sensors.PPM                             TRoo( redeclare
+            package                                                                     Medium = Medium) annotation (
+                Placement(transformation(origin = {-542, -226}, extent = {{480, 216}, {500, 236}})));
+        Modelica.Blocks.Continuous.LimPID conRoo(yMax = yMax, yMin = yMin, controllerType = controllerType, k = k, Ti = Ti, Td = Td)  annotation (
+                Placement(transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}})));
+        Modelica.Blocks.Sources.RealExpression realExpression(y=setPoint)
+          annotation (Placement(transformation(extent={{-42,38},{-22,58}})));
+      equation
+        connect(conRoo.y, y) annotation (
+                Line(points={{61,0},{106,0}},      color = {0, 0, 127}));
+        connect(realExpression.y, conRoo.u_s) annotation (Line(points={{-21,48},
+                {32,48},{32,0},{38,0}},
+                                color={0,0,127}));
+        connect(TRoo.ppm, conRoo.u_m) annotation (Line(points={{-41,0},{30,0},{30,-18},
+                {50,-18},{50,-12}}, color={0,0,127}));
+        connect(port_a, TRoo.port) annotation (Line(points={{-99,0},{-68,0},{
+                -68,-14},{-52,-14},{-52,-10}}, color={0,127,255}));
+            annotation (
+                Icon(graphics={  Rectangle(lineColor = {0, 0, 127}, fillColor = {255, 255, 255},
+                  fillPattern =                                                                                FillPattern.Solid, extent = {{-100, -100}, {100, 100}}), Line(points = {{-80, 78}, {-80, -90}}, color = {192, 192, 192}), Polygon(lineColor = {192, 192, 192}, fillColor = {192, 192, 192},
+                  fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-80, 90}, {-88, 68}, {-72, 68}, {-80, 90}}), Line(points = {{-90, -80}, {82, -80}}, color = {192, 192, 192}), Polygon(lineColor = {192, 192, 192}, fillColor = {192, 192, 192},
+                  fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{90, -80}, {68, -72}, {68, -88}, {90, -80}}), Line(points = {{-80, -80}, {-80, -20}, {60, 80}}, color = {0, 0, 127}), Text(textColor = {192, 192, 192}, extent = {{-20, -60}, {80, -20}}, textString = "PID")}));
+      end PIDSubstance;
       annotation (
         Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
                 fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
@@ -144,9 +205,158 @@ package Neosim
   connect(bou.ports[2], port_a) annotation (
           Line(points = {{28, 18}, {-100, 18}, {-100, 0}}, color = {0, 127, 255}));
       annotation (
-          Icon(graphics = {Rectangle(fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}}), Rectangle(fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255}, fillPattern = FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
+          Icon(graphics={  Rectangle(fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}}), Rectangle(fillColor = {255, 255, 255},
+                  fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
+                  fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
   end Simple;
   end Boilers;
+
+    package Ventilation
+      model SimpleHVAC
+
+        replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+          "Medium model" annotation (choicesAllMatching=true);
+        IDEAS.Fluid.Movers.FlowControlled_dp
+                                       fanSup(
+          energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+          use_inputFilter=false,
+          inputType=IDEAS.Fluid.Types.InputType.Constant,
+          nominalValuesDefineDefaultPressureCurve=true,
+          redeclare package Medium = Medium,
+          dp_nominal=200,
+          m_flow_nominal=1 + 1) "Supply fan"
+          annotation (Placement(transformation(extent={{4,6},{24,26}})));
+        IDEAS.Fluid.Movers.FlowControlled_dp
+                                       fanRet(
+          energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+          use_inputFilter=false,
+          inputType=IDEAS.Fluid.Types.InputType.Constant,
+          nominalValuesDefineDefaultPressureCurve=true,
+          redeclare package Medium = Medium,
+          dp_nominal=200,
+          m_flow_nominal=1 + 1) "Return fan"
+          annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
+        IDEAS.Fluid.HeatExchangers.ConstantEffectiveness
+                                                   hex(
+          redeclare package Medium1 = Medium,
+          redeclare package Medium2 = Medium,
+          m1_flow_nominal=1,
+          m2_flow_nominal=1,
+          dp1_nominal=100,
+          dp2_nominal=100) "Heat exchanger with constant heat recovery effectivity"
+          annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
+        Modelica.Fluid.Interfaces.FluidPort_b port_b(
+          redeclare final package Medium = Medium)
+          "Fluid connector b (positive design flow direction is from port_a to port_b)"
+          annotation (Placement(transformation(extent={{118,1},{86,31}}),
+              iconTransformation(extent={{110,31},{90,49}})));
+
+        Modelica.Fluid.Interfaces.FluidPort_a port_a(
+          redeclare final package Medium = Medium)
+          "Fluid connector a (positive design flow direction is from port_a to port_b)"
+          annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
+              iconTransformation(extent={{90,-49},{110,-31}})));
+        IDEAS.Fluid.Sources.OutsideAir outsideAir(nPorts=2, redeclare package
+            Medium = Medium) annotation (
+          Placement(transformation(origin = {-64, 2}, extent = {{-10, -10}, {10, 10}})));
+      equation
+        connect(hex.port_b1, fanSup.port_a) annotation (
+          Line(points = {{-6, 2}, {-6, 16}, {4, 16}}, color = {0, 127, 255}));
+        connect(hex.port_a2, fanRet.port_b) annotation (
+          Line(points = {{-6, -10}, {-6, -24}, {4, -24}}, color = {0, 127, 255}));
+        connect(fanSup.port_b, port_b) annotation (
+          Line(points = {{24, 16}, {102, 16}}, color = {0, 127, 255}));
+        connect(fanRet.port_a, port_a) annotation (
+          Line(points = {{24, -24}, {101, -24}}, color = {0, 127, 255}));
+        connect(
+          outsideAir.ports[1], hex.port_a1) annotation (
+          Line(points = {{-54, 2}, {-26, 2}}, color = {0, 127, 255}));
+        connect(
+          outsideAir.ports[2], hex.port_b2) annotation (
+          Line(points = {{-54, 2}, {-26, 2}, {-26, -10}}, color = {0, 127, 255}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-60},
+                  {100,60}}), graphics={Rectangle(
+                extent={{-100,60},{100,-60}},
+                lineColor={255,128,0},
+                fillColor={255,128,0},
+                fillPattern=FillPattern.Forward)}), Diagram(coordinateSystem(
+                preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
+      end SimpleHVAC;
+
+      model SimpleVAV
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)));
+      end SimpleVAV;
+
+      model SimpleHVACBuildings
+
+        replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+          "Medium model" annotation (choicesAllMatching=true);
+        Buildings.Fluid.Movers.FlowControlled_dp
+                                       fanSup(
+          energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+          use_inputFilter=false,
+          inputType=Buildings.Fluid.Types.InputType.Constant,
+          nominalValuesDefineDefaultPressureCurve=true,
+          redeclare package Medium = Medium,
+          dp_nominal=200,
+          m_flow_nominal=1 + 1) "Supply fan"
+          annotation (Placement(transformation(extent={{4,6},{24,26}})));
+        Buildings.Fluid.Movers.FlowControlled_dp
+                                       fanRet(
+          energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+          use_inputFilter=false,
+          inputType=Buildings.Fluid.Types.InputType.Constant,
+          nominalValuesDefineDefaultPressureCurve=true,
+          redeclare package Medium = Medium,
+          dp_nominal=200,
+          m_flow_nominal=1 + 1) "Return fan"
+          annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
+        Buildings.Fluid.HeatExchangers.ConstantEffectiveness
+                                                   hex(
+          redeclare package Medium1 = Medium,
+          redeclare package Medium2 = Medium,
+          m1_flow_nominal=1,
+          m2_flow_nominal=1,
+          dp1_nominal=100,
+          dp2_nominal=100) "Heat exchanger with constant heat recovery effectivity"
+          annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
+        Modelica.Fluid.Interfaces.FluidPort_b port_b(
+          redeclare final package Medium = Medium)
+          "Fluid connector b (positive design flow direction is from port_a to port_b)"
+          annotation (Placement(transformation(extent={{118,1},{86,31}}),
+              iconTransformation(extent={{110,31},{90,49}})));
+
+        Modelica.Fluid.Interfaces.FluidPort_a port_a(
+          redeclare final package Medium = Medium)
+          "Fluid connector a (positive design flow direction is from port_a to port_b)"
+          annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
+              iconTransformation(extent={{90,-49},{110,-31}})));
+        Buildings.Fluid.Sources.Boundary_pT bou(T=295.15, nPorts=2,    redeclare
+            package                                                                      Medium = Medium)
+          annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
+      equation
+        connect(hex.port_b1, fanSup.port_a) annotation (
+          Line(points = {{-6, 2}, {-6, 16}, {4, 16}}, color = {0, 127, 255}));
+        connect(hex.port_a2, fanRet.port_b) annotation (
+          Line(points = {{-6, -10}, {-6, -24}, {4, -24}}, color = {0, 127, 255}));
+        connect(fanSup.port_b, port_b) annotation (
+          Line(points = {{24, 16}, {102, 16}}, color = {0, 127, 255}));
+        connect(fanRet.port_a, port_a) annotation (
+          Line(points = {{24, -24}, {101, -24}}, color = {0, 127, 255}));
+        connect(bou.ports[1], hex.port_b2) annotation (Line(points={{-58,-2},{-32,-2},
+                {-32,-10},{-26,-10}}, color={0,127,255}));
+        connect(bou.ports[2], hex.port_a1) annotation (Line(points={{-58,-6},{-32,-6},
+                {-32,2},{-26,2}}, color={0,127,255}));
+        annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-60},
+                  {100,60}}), graphics={Rectangle(
+                extent={{-100,60},{100,-60}},
+                lineColor={255,128,0},
+                fillColor={255,128,0},
+                fillPattern=FillPattern.Forward)}), Diagram(coordinateSystem(
+                preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
+      end SimpleHVACBuildings;
+    end Ventilation;
   end Fluid;
 
   package HeatTransfer
@@ -228,7 +438,8 @@ package Neosim
   end IdealHeatEmission;
   end IdealHeatingSystem;
   end HeatTransfer;
-  annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0")),
+  annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0"),
+      IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
 end Neosim;

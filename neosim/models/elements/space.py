@@ -4,7 +4,11 @@ from networkx import Graph
 from pydantic import Field, computed_field
 
 from neosim.models.elements.base import BaseElement
-from neosim.models.elements.control import SpaceControl
+from neosim.models.elements.control import (
+    SpaceControl,
+    SpaceSubstanceVentilationControl,
+    SpaceVentilationControl,
+)
 from neosim.models.elements.merged_wall import (
     MergedBaseWall,
     MergedExternalWall,
@@ -22,6 +26,19 @@ from neosim.models.parameters import WallParameters, WindowedWallParameters
 counter = 0
 
 
+def _get_controllable_element(elements: List[System]) -> Optional["System"]:
+    controllable_elements = []
+    for element in elements:
+        controllable_ports = element.get_controllable_ports()
+        if controllable_ports:
+            controllable_elements.append(element)
+    if len(controllable_elements) > 1:
+        raise NotImplementedError
+    if not controllable_elements:
+        return None
+    return controllable_elements[0]
+
+
 class Space(BaseElement):
     name: str
     volume: float | int
@@ -32,6 +49,9 @@ class Space(BaseElement):
     internal_elements: List["InternalElement"] = Field(default=[])
     boundaries: Optional[List[WallParameters]] = None
     emissions: List[System] = Field(default=[])
+    ventilation_inlets: List[System] = Field(default=[])
+    ventilation_outlets: List[System] = Field(default=[])
+    ventilation_control: Optional[SpaceVentilationControl] = None
     control: Optional[SpaceControl] = None
     occupancy: Optional[Occupancy] = None
 
@@ -43,6 +63,15 @@ class Space(BaseElement):
                 boundary.length
                 for boundary in self.merged_external_boundaries + self.internal_elements
             ]
+        )
+
+    @computed_field  # type: ignore
+    @property
+    def number_ventilation_ports(self) -> int:
+        return (
+            bool(self.ventilation_inlets)
+            + bool(self.ventilation_outlets)
+            + isinstance(self.ventilation_control, SpaceSubstanceVentilationControl)
         )
 
     @computed_field  # type: ignore
@@ -74,16 +103,7 @@ class Space(BaseElement):
         return external_boundaries
 
     def get_controllable_emission(self) -> Optional["System"]:
-        cotrollable_emissions = []
-        for emission in self.emissions:
-            controllable_ports = emission.get_controllable_ports()
-            if controllable_ports:
-                cotrollable_emissions.append(emission)
-        if len(cotrollable_emissions) > 1:
-            raise NotImplementedError
-        if not cotrollable_emissions:
-            return None
-        return cotrollable_emissions[0]
+        return _get_controllable_element(self.emissions)
 
     def assign_position(self) -> None:
         global counter  # noqa: PLW0603
@@ -116,6 +136,26 @@ class Space(BaseElement):
     def last_emission(self) -> Optional["System"]:
         if self.emissions:
             return self.emissions[-1]
+        return None
+
+    def get_ventilation_inlet(self) -> Optional["System"]:
+        if self.ventilation_inlets:
+            return self.ventilation_inlets[-1]
+        return None
+
+    def get_last_ventilation_inlet(self) -> Optional["System"]:
+        if self.ventilation_inlets:
+            return self.ventilation_inlets[0]
+        return None
+
+    def get_ventilation_outlet(self) -> Optional["System"]:
+        if self.ventilation_outlets:
+            return self.ventilation_outlets[0]
+        return None
+
+    def get_last_ventilation_outlet(self) -> Optional["System"]:
+        if self.ventilation_outlets:
+            return self.ventilation_outlets[-1]
         return None
 
     def get_neighhors(self, graph: Graph) -> None:

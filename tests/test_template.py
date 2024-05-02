@@ -4,6 +4,7 @@ from typing import Set
 
 from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.elements.space import Space
+from neosim.models.elements.system import AirHandlingUnit
 from neosim.topology import Network
 
 
@@ -147,5 +148,22 @@ def test_space_1_different_construction_types(
         name="space_1_different_construction_types", library=IdeasLibrary()
     )
     network.add_boiler_plate_spaces([space_1_different_construction_types])
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_space_1_simple_ventilation(
+    space_1_simple_ventilation: Space,
+) -> None:
+
+    network = Network(name="space_1_simple_ventilation")
+    network.add_boiler_plate_spaces([space_1_simple_ventilation])
+    ahu = AirHandlingUnit(name="ahu")
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))

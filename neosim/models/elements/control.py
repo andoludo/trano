@@ -10,3 +10,11 @@ class Control(BaseElement):
 
 class SpaceControl(Control):
     ...
+
+
+class SpaceVentilationControl(Control):
+    ...
+
+
+class SpaceSubstanceVentilationControl(SpaceVentilationControl):
+    ...

@@ -134,6 +134,9 @@ class BuildingsLibrary(DefaultLibrary):
     redeclare package Medium = Medium,
     AFlo={{ element.floor_area }},
     hRoo={{ element.height }},
+    {%- if element.number_ventilation_ports != 0 -%}
+    nPorts = {{ element.number_ventilation_ports }},
+    {%- endif %}
     {%- for boundary in element.boundaries -%}
         {%- if boundary.type == 'ExternalWall' and boundary.number -%}
             {%- if boundary.number %}

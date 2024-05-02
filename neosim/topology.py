@@ -14,7 +14,7 @@ from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
 from neosim.models.elements.control import Control
-from neosim.models.elements.space import Space
+from neosim.models.elements.space import Space, _get_controllable_element
 from neosim.models.elements.system import System, Weather
 from neosim.models.elements.wall import InternalElement
 
@@ -50,7 +50,32 @@ class Network:
         self._build_space_emission(space)  # TODO: perhaps move to space
         self._build_control(space)  # TODO: perhaps move to space
         self._build_occupancy(space)
+        self._build_space_ventilation(space)
+        self._build_ventilation_control(space)
         space.assign_position()
+
+    def _add_subsequent_systems(self, systems: List[System]) -> None:
+        for system1, system2 in zip(systems[:-1], systems[1:]):
+            if not self.graph.has_node(system1):  # type: ignore
+                self.add_node(system1)
+            if not self.graph.has_node(system2):  # type: ignore
+                self.add_node(system2)
+            self.graph.add_edge(
+                system1,
+                system2,
+            )
+
+    def _build_space_ventilation(self, space: "Space") -> None:
+        # Assumption: first element always the one connected to the space.
+        if space.get_ventilation_inlet():
+            self.add_node(space.get_ventilation_inlet())  # type: ignore
+            self.graph.add_edge(space.get_ventilation_inlet(), space)
+        if space.get_ventilation_outlet():
+            self.add_node(space.get_ventilation_outlet())  # type: ignore
+            self.graph.add_edge(space, space.get_ventilation_outlet())
+        # The rest is connected to each other
+        self._add_subsequent_systems(space.ventilation_outlets)
+        self._add_subsequent_systems(space.ventilation_inlets)
 
     def _build_space_emission(self, space: "Space") -> None:
         emission = space.find_emission()
@@ -60,15 +85,7 @@ class Network:
                 space,
                 emission,
             )
-            for system1, system2 in zip(space.emissions[:-1], space.emissions[1:]):
-                if not self.graph.has_node(system1):  # type: ignore
-                    self.add_node(system1)
-                if not self.graph.has_node(system2):  # type: ignore
-                    self.add_node(system2)
-                self.graph.add_edge(
-                    system1,
-                    system2,
-                )
+            self._add_subsequent_systems(space.emissions)
 
     def _build_control(self, space: "Space") -> None:
         if space.control:
@@ -86,6 +103,36 @@ class Network:
                     f"not linked to controllable emission."
                 )
             self.graph.add_edge(space.control, controllable_emission)
+
+    def _build_ventilation_control(self, space: "Space") -> None:
+        if space.ventilation_control:
+            self.add_node(space.ventilation_control)
+            self.graph.add_edge(
+                space.ventilation_control,
+                space,
+            )
+            for ventilation_element in (
+                space.ventilation_inlets + space.ventilation_outlets
+            ):
+                self.library.assign_properties(ventilation_element)
+            controllable_ventilation_elements = list(
+                filter(
+                    None,
+                    [
+                        _get_controllable_element(space.ventilation_inlets),
+                        _get_controllable_element(space.ventilation_outlets),
+                    ],
+                )
+            )
+            if not controllable_ventilation_elements:
+                raise Exception(
+                    f"Space {space.name} is controllable but is "
+                    f"not linked to controllable emission."
+                )
+            for controllable_ventilation_element in controllable_ventilation_elements:
+                self.graph.add_edge(
+                    space.ventilation_control, controllable_ventilation_element
+                )
 
     def _build_occupancy(self, space: "Space") -> None:
         if space.occupancy:

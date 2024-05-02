@@ -44,3 +44,23 @@ class Occupancy(System):
 
 class Weather(System):
     ...
+
+
+class Ventilation(System):
+    ...
+
+
+class AirHandlingUnit(Ventilation):
+    ...
+
+
+class Duct(Ventilation):
+    ...
+
+
+class Damper(Ventilation):
+    ...
+
+
+class VAV(Damper):
+    ...

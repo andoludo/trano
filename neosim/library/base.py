@@ -19,6 +19,10 @@ from neosim.models.elements.wall import InternalElement
 
 class LibraryData(BaseModel):
     template: str = ""
+    annotation_template: str = """annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
     ports_factory: Callable[[], List[Port]]
 
 
@@ -31,6 +35,12 @@ class BaseSpace(LibraryData):
             Port(target=Emission, names=["heaPorAir", "heaPorRad"]),
             Port(target=IdealHeatingEmission, names=["heaPorAir", "heaPorRad"]),
             Port(target=SpaceControl, names=["heaPorAir"]),
+            Port(
+                target=BaseElement,
+                names=["ports"],
+                multi_connection=True,
+                flow=Flow.inlet_or_outlet,
+            ),
         ]
     )
 
@@ -208,6 +218,72 @@ class BaseControl(LibraryData):
     )
 
 
+class BaseDamper(LibraryData):
+    template: str = """  Buildings.Fluid.Actuators.Dampers.Exponential {{ element.name }}(
+    redeclare package Medium = Medium,
+    m_flow_nominal=1,
+    dpDamper_nominal=20,
+    allowFlowReversal=false,
+    dpFixed_nominal=130) "VAV box for room" annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(names=["port_a"], flow=Flow.inlet),
+            Port(names=["port_b"], flow=Flow.outlet),
+            Port(target=Control, names=["y"]),
+        ]
+    )
+
+
+class BaseAirHandlingUnit(LibraryData):
+    template: str = """Neosim.Fluid.Ventilation.SimpleHVACBuildings {{ element.name }}
+    (redeclare package Medium = Medium)
+    annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(names=["port_a"], flow=Flow.inlet),
+            Port(names=["port_b"], flow=Flow.outlet),
+        ]
+    )
+
+
+class BaseDuct(LibraryData):
+    template: str = """  Buildings.Fluid.FixedResistances.PressureDrop {{ element.name }}(
+    m_flow_nominal=1,
+    redeclare package Medium = Medium,
+    dp_nominal=40) "Pressure drop for return duct" annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(names=["port_a"], flow=Flow.inlet),
+            Port(names=["port_b"], flow=Flow.outlet),
+        ]
+    )
+
+
+class BaseVentilationControl(LibraryData):
+    template: str = """    Neosim.Controls.SpaceControls.PIDSubstance
+    {{ element.name }}(redeclare package
+      Medium = Medium) annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
+
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(target=Space, names=["port_a"], flow=Flow.inlet),
+            Port(target=System, names=["y"], multi_connection=True, use_counter=False),
+        ]
+    )
+
+
 class DefaultLibrary(BaseModel):
     constants: str
     merged_external_boundaries: bool = False
@@ -230,16 +306,33 @@ class DefaultLibrary(BaseModel):
     window: LibraryData = Field(default=LibraryData(ports_factory=list))
     mergedexternalwall: LibraryData = Field(default=LibraryData(ports_factory=list))
     mergedwindows: LibraryData = Field(default=LibraryData(ports_factory=list))
+    damper: LibraryData = Field(default=BaseDamper())
+    airhandlingunit: LibraryData = Field(default=BaseAirHandlingUnit())
+    duct: LibraryData = Field(default=BaseDuct())
+    spacesubstanceventilationcontrol: LibraryData = Field(
+        default=BaseVentilationControl()
+    )
+
+    def _get_field_value(self, element: BaseElement) -> Any:  # noqa: ANN401
+        element_names = [
+            type(element).__name__.lower(),
+            type(element).__base__.__name__.lower(),  # type: ignore
+            type(element).__base__.__base__.__name__.lower(),  # type: ignore
+        ]
+        for element_name in element_names:
+            if hasattr(self, element_name):
+                return getattr(self, element_name)
+        raise ValueError(f"Element {element_names[0]} not found in library")
 
     def assign_ports(self, element: BaseElement) -> Any:  # noqa : ANN401
         if element.ports:
             return element.ports
-        return getattr(self, type(element).__name__.lower()).ports_factory()
+        return self._get_field_value(element).ports_factory()
 
     def assign_template(self, element: BaseElement) -> Any:  # noqa : ANN401
         if element.template:
             return element.template
-        return getattr(self, type(element).__name__.lower()).template
+        return self._get_field_value(element).template
 
     def assign_properties(self, element: BaseElement) -> BaseElement:
         element.ports = self.assign_ports(element)
