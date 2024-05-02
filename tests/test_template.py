@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 from typing import Set
 
+from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import AirHandlingUnit
@@ -156,7 +157,13 @@ def test_space_1_simple_ventilation(
     space_1_simple_ventilation: Space,
 ) -> None:
 
-    network = Network(name="space_1_simple_ventilation")
+    network = Network(
+        name="space_1_simple_ventilation",
+        library=BuildingsLibrary(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
     network.add_boiler_plate_spaces([space_1_simple_ventilation])
     ahu = AirHandlingUnit(name="ahu")
     network.connect_systems(
