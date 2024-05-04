@@ -40,7 +40,7 @@ class Connection(BaseModel):
 
 class Port(BaseModel):
     names: list[str]
-    target: Optional[Any] = None
+    targets: Optional[List[Any]] = None
     available: bool = True
     flow: Flow = Field(default=Flow.undirected)
     multi_connection: bool = False
@@ -55,7 +55,9 @@ class Port(BaseModel):
     def is_controllable(self) -> bool:
         from neosim.models.elements.control import Control
 
-        return self.target is not None and self.target == Control
+        return self.targets is not None and all(
+            target == Control for target in self.targets
+        )
 
     def link(
         self, node: "BaseElement", connected_node: "BaseElement"
@@ -119,14 +121,16 @@ class BaseElement(BaseModel):
         ports = [
             port
             for port in self.ports
-            if port.target and isinstance(target, port.target) and port.is_available()
+            if port.targets
+            and any(isinstance(target, target_) for target_ in port.targets)
+            and port.is_available()
         ]
         if ports:
             return ports[0]
         ports = [
             port
             for port in self.ports
-            if not port.target
+            if not port.targets
             and port.is_available()
             and port.flow == Flow.inlet_or_outlet
             and _has_inlet_or_outlet(target)
@@ -138,7 +142,7 @@ class BaseElement(BaseModel):
         ports = [
             port
             for port in self.ports
-            if not port.target and port.is_available() and port.flow == flow
+            if not port.targets and port.is_available() and port.flow == flow
         ]
         if ports:
             if len(ports) > 1:

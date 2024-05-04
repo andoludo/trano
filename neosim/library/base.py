@@ -12,6 +12,7 @@ from neosim.models.elements.system import (
     IdealHeatingEmission,
     Occupancy,
     System,
+    Ventilation,
     Weather,
 )
 from neosim.models.elements.wall import InternalElement
@@ -29,14 +30,16 @@ class LibraryData(BaseModel):
 class BaseSpace(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=InternalElement, names=["surf_surBou"], multi_connection=True),
-            Port(target=Occupancy, names=["qGai_flow"]),
-            Port(target=Weather, names=["weaBus"]),
-            Port(target=Emission, names=["heaPorAir", "heaPorRad"]),
-            Port(target=IdealHeatingEmission, names=["heaPorAir", "heaPorRad"]),
-            Port(target=SpaceControl, names=["heaPorAir"]),
             Port(
-                target=BaseElement,
+                targets=[InternalElement], names=["surf_surBou"], multi_connection=True
+            ),
+            Port(targets=[Occupancy], names=["qGai_flow"]),
+            Port(targets=[Weather], names=["weaBus"]),
+            Port(targets=[Emission], names=["heaPorAir", "heaPorRad"]),
+            Port(targets=[IdealHeatingEmission], names=["heaPorAir", "heaPorRad"]),
+            Port(targets=[SpaceControl], names=["heaPorAir"]),
+            Port(
+                targets=[Ventilation, Control],
                 names=["ports"],
                 multi_connection=True,
                 flow=Flow.inlet_or_outlet,
@@ -48,7 +51,7 @@ class BaseSpace(LibraryData):
 class BaseEmission(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=Space, names=["heatPortCon", "heatPortRad"]),
+            Port(targets=[Space], names=["heatPortCon", "heatPortRad"]),
             Port(names=["port_a"], flow=Flow.inlet),
             Port(names=["port_b"], flow=Flow.outlet),
         ]
@@ -64,8 +67,8 @@ class BaseIdealHeatingEmission(LibraryData):
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=Space, names=["heatPortCon", "heatPortRad"]),
-            Port(target=Control, names=["y"]),
+            Port(targets=[Space], names=["heatPortCon", "heatPortRad"]),
+            Port(targets=[Control], names=["y"]),
         ]
     )
 
@@ -75,7 +78,7 @@ class BaseValve(LibraryData):
         default=lambda: [
             Port(names=["port_a"], flow=Flow.inlet),
             Port(names=["port_b"], flow=Flow.outlet),
-            Port(target=Control, names=["y"]),
+            Port(targets=[Control], names=["y"]),
         ]
     )
 
@@ -121,7 +124,7 @@ class BasePump(LibraryData):
                 multi_connection=True,
                 use_counter=False,
             ),
-            Port(target=Control, names=["y"]),
+            Port(targets=[Control], names=["y"]),
         ]
     )
 
@@ -152,7 +155,7 @@ class BaseThreeWayValve(LibraryData):
                 use_counter=False,
             ),
             Port(names=["port_3"], flow=Flow.inlet_or_outlet),
-            Port(target=Control, names=["y"]),
+            Port(targets=[Control], names=["y"]),
         ]
     )
 
@@ -165,7 +168,7 @@ class BaseOccupancy(LibraryData):
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=Space, names=["y"]),
+            Port(targets=[Space], names=["y"]),
         ]
     )
 
@@ -174,7 +177,10 @@ class BaseWeather(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
-                target=Space, names=["weaBus"], multi_connection=True, use_counter=False
+                targets=[Space],
+                names=["weaBus"],
+                multi_connection=True,
+                use_counter=False,
             ),
         ]
     )
@@ -183,8 +189,8 @@ class BaseWeather(LibraryData):
 class BaseInternalElement(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=Space, names=["port_a"]),
-            Port(target=Space, names=["port_b"]),
+            Port(targets=[Space], names=["port_a"]),
+            Port(targets=[Space], names=["port_b"]),
         ]
     )
 
@@ -198,8 +204,8 @@ class BaseSpaceControl(LibraryData):
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=Space, names=["port"]),
-            Port(target=System, names=["y"]),
+            Port(targets=[Space], names=["port"]),
+            Port(targets=[System], names=["y"]),
         ]
     )
 
@@ -213,7 +219,7 @@ class BaseControl(LibraryData):
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=System, names=["y"]),
+            Port(targets=[System], names=["y"]),
         ]
     )
 
@@ -232,7 +238,7 @@ class BaseDamper(LibraryData):
         default=lambda: [
             Port(names=["port_a"], flow=Flow.inlet),
             Port(names=["port_b"], flow=Flow.outlet),
-            Port(target=Control, names=["y"]),
+            Port(targets=[Control], names=["y"]),
         ]
     )
 
@@ -288,8 +294,10 @@ class BaseVentilationControl(LibraryData):
 
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=Space, names=["port_a"], flow=Flow.inlet),
-            Port(target=System, names=["y"], multi_connection=True, use_counter=False),
+            Port(targets=[Space], names=["port_a"], flow=Flow.inlet),
+            Port(
+                targets=[System], names=["y"], multi_connection=True, use_counter=False
+            ),
         ]
     )
 

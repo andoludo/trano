@@ -45,14 +45,14 @@ class IdeasSpace(BaseSpace):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
-                target=BaseWall,
+                targets=[BaseWall],
                 names=["propsBus"],
                 multi_connection=True,
                 bus_connection=True,
             ),
-            Port(target=Occupancy, names=["yOcc"]),
-            Port(target=Emission, names=["gainCon", "gainRad"]),
-            Port(target=SpaceControl, names=["gainCon"]),
+            Port(targets=[Occupancy], names=["yOcc"]),
+            Port(targets=[Emission], names=["gainCon", "gainRad"]),
+            Port(targets=[SpaceControl], names=["gainCon"]),
         ]
     )
 
@@ -74,7 +74,7 @@ class IdeasMergedExternalWall(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
-                target=Space,
+                targets=[Space],
                 names=["propsBus_a"],
                 multi_connection=True,
                 multi_object=True,
@@ -100,7 +100,7 @@ class IdeasMergedWindows(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
-                target=Space,
+                targets=[Space],
                 names=["propsBus_a"],
                 multi_connection=True,
                 multi_object=True,
@@ -121,7 +121,7 @@ class IdeasFloorOnGround(LibraryData):
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=Space, names=["propsBus_a"], multi_connection=False),
+            Port(targets=[Space], names=["propsBus_a"], multi_connection=False),
         ]
     )
 
@@ -140,8 +140,8 @@ class IdeasInternalElement(LibraryData):
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(target=Space, names=["propsBus_a"], multi_connection=False),
-            Port(target=Space, names=["propsBus_b"], multi_connection=False),
+            Port(targets=[Space], names=["propsBus_a"], multi_connection=False),
+            Port(targets=[Space], names=["propsBus_b"], multi_connection=False),
         ]
     )
 
@@ -168,7 +168,7 @@ class IdeasPump(LibraryData):
                 multi_connection=True,
                 use_counter=False,
             ),
-            Port(target=Control, names=["m_flow_in"]),
+            Port(targets=[Control], names=["m_flow_in"]),
         ]
     )
 
