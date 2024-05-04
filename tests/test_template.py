@@ -207,3 +207,33 @@ package MediumW = Buildings.Media.Water "Medium model";"""
     )
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_ideas_space_1_simple_ventilation(
+    space_1_simple_ventilation: Space,
+) -> None:
+
+    network = Network(
+        name="ideas_space_1_simple_ventilation",
+        library=IdeasLibrary(
+            constants="""
+replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
+constrainedby Modelica.Media.Interfaces.PartialMedium
+"Medium in the component"
+annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
+sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
+                                              "Data reader"
+    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
+        ),
+    )
+    network.add_boiler_plate_spaces([space_1_simple_ventilation])
+    ahu = AirHandlingUnit(name="ahu")
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))

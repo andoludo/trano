@@ -79,30 +79,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record plywood = IDEAS.Buil
       c=1210.0,
       rho=540.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
-      epsLw=0.88,
       epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.03,
       c=1200.0,
       rho=40.0,
-      epsLw=0.88,
-      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
       epsLw=0.88,
       epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
       c=840.0,
       rho=2500.0,
       epsLw=0.88,
+      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.025,
+      c=1005.0,
+      rho=1.2,
+      epsLw=0.88,
       epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2240.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record external_wall
@@ -174,8 +174,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
 
 
     IDEAS.Buildings.Components.Zone space_1(
-    mSenFac=0.822,
-    V=100,
+    mSenFac=0.822,    V=100,
     n50=0.822*0.5*space_1.n50toAch,
     redeclare package Medium = Medium,
     nSurf=7,
@@ -191,8 +190,9 @@ package MediumW = IDEAS.Media.Water "Medium model";
     constructionType,
     A={ 10, 10 },
     final azi={ 135, 45 },
+    redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { 125.65757311179618, -150.74510322259167 }, extent =
+    Placement(transformation(origin = { -172.7701079869989, -107.11026448036343 }, extent =
 {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -202,8 +202,9 @@ package MediumW = IDEAS.Media.Water "Medium model";
     constructionType,
     A={ 10 },
     final azi={ 0 },
+    redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { -70.79481680759861, 162.59198021968183 }, extent =
+    Placement(transformation(origin = { -189.0273939224997, 3.3504870204799153 }, extent =
 {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -213,8 +214,9 @@ package MediumW = IDEAS.Media.Water "Medium model";
     constructionType,
     A={ 10 },
     final azi={ 90 },
+    redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { -161.38013901845437, -98.51952517148439 }, extent =
+    Placement(transformation(origin = { 25.920260175765964, 188.5925804108925 }, extent =
 {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -223,8 +225,9 @@ package MediumW = IDEAS.Media.Water "Medium model";
     double_glazing glazing,
     A={ 1 },
     final azi={ 45 },
+    redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { -191.43783177314634, 10.183528071575981 }
+    Placement(transformation(origin = { 110.02359197164235, -131.86319826158845 }
     , extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -233,15 +236,17 @@ package MediumW = IDEAS.Media.Water "Medium model";
     simple_glazing glazing,
     A={ 1 },
     final azi={ 45 },
+    redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { 170.72987852049565, 41.243209453663276 }
+    Placement(transformation(origin = { 126.71404715556504, 144.4771561243453 }
     , extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_2(
     redeclare parameter space_1_different_construction_types.Data.Constructions.
     external_wall constructionType,
+    redeclare package Medium = Medium,
     A=10)  annotation(
-    Placement(transformation(origin = { -94.40005896377387, -186.46284208077645 },
+    Placement(transformation(origin = { 200.0, 56.66971283490549 },
     extent = {{-10, -10}, {10, 10}}
 )));
         Neosim.HeatTransfer.IdealHeatingSystem.IdealHeatEmission emission
@@ -263,32 +268,32 @@ package MediumW = IDEAS.Media.Water "Medium model";
 
 equation    connect(space_1.propsBus[1:2],merged_w1_1_w3_1[1:2].propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 62.82878655589809, 50.0 }    ,{ 62.82878655589809, -150.74510322259167 }    ,{ 125.65757311179618, -150.74510322259167 }    },
+points={{ 0.0, 50.0 }    ,{ -86.38505399349945, 50.0 }    ,{ -86.38505399349945, -107.11026448036343 }    ,{ -172.7701079869989, -107.11026448036343 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[3],merged_w2_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -35.397408403799304, 50.0 }    ,{ -35.397408403799304, 162.59198021968183 }    ,{ -70.79481680759861, 162.59198021968183 }    },
+points={{ 0.0, 50.0 }    ,{ -94.51369696124985, 50.0 }    ,{ -94.51369696124985, 3.3504870204799153 }    ,{ -189.0273939224997, 3.3504870204799153 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[4],merged_w4_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -80.69006950922719, 50.0 }    ,{ -80.69006950922719, -98.51952517148439 }    ,{ -161.38013901845437, -98.51952517148439 }    },
+points={{ 0.0, 50.0 }    ,{ 12.960130087882982, 50.0 }    ,{ 12.960130087882982, 188.5925804108925 }    ,{ 25.920260175765964, 188.5925804108925 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[5],merged_win1_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -95.71891588657317, 50.0 }    ,{ -95.71891588657317, 10.183528071575981 }    ,{ -191.43783177314634, 10.183528071575981 }    },
+points={{ 0.0, 50.0 }    ,{ 55.01179598582117, 50.0 }    ,{ 55.01179598582117, -131.86319826158845 }    ,{ 110.02359197164235, -131.86319826158845 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[6],merged_win1_2[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 85.36493926024782, 50.0 }    ,{ 85.36493926024782, 41.243209453663276 }    ,{ 170.72987852049565, 41.243209453663276 }    },
+points={{ 0.0, 50.0 }    ,{ 63.35702357778252, 50.0 }    ,{ 63.35702357778252, 144.4771561243453 }    ,{ 126.71404715556504, 144.4771561243453 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[7],floor_2.propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -47.200029481886936, 50.0 }    ,{ -47.200029481886936, -186.46284208077645 }    ,{ -94.40005896377387, -186.46284208077645 }    },
+points={{ 0.0, 50.0 }    ,{ 100.0, 50.0 }    ,{ 100.0, 56.66971283490549 }    ,{ 200.0, 56.66971283490549 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.gainCon,emission.heatPortCon)

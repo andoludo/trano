@@ -6,6 +6,7 @@ from pydantic import Field
 from neosim.construction import Construction
 from neosim.glass import Glass
 from neosim.library.base import (
+    BaseAirHandlingUnit,
     BaseEmission,
     BaseSpace,
     BaseSplitValve,
@@ -26,13 +27,16 @@ from neosim.models.elements.base import Port
 from neosim.models.elements.control import Control, SpaceControl
 from neosim.models.elements.merged_wall import MergedBaseWall, MergedExternalWall
 from neosim.models.elements.space import Space
-from neosim.models.elements.system import Emission, Occupancy
+from neosim.models.elements.system import Emission, Occupancy, Ventilation
 from neosim.models.elements.wall import BaseSimpleWall, BaseWall
 
 
 class IdeasSpace(BaseSpace):
     template: str = """IDEAS.Buildings.Components.Zone {{ element.name }}(
     mSenFac=0.822,
+        {%- if element.number_ventilation_ports != 0 -%}
+    nPorts = {{ element.number_ventilation_ports }},
+    {%- endif %}
     V={{ element.volume }},
     n50=0.822*0.5*{{ element.name }}.n50toAch,
     redeclare package Medium = Medium,
@@ -53,6 +57,12 @@ class IdeasSpace(BaseSpace):
             Port(targets=[Occupancy], names=["yOcc"]),
             Port(targets=[Emission], names=["gainCon", "gainRad"]),
             Port(targets=[SpaceControl], names=["gainCon"]),
+            Port(
+                targets=[Ventilation, Control],
+                names=["ports"],
+                multi_connection=True,
+                flow=Flow.inlet_or_outlet,
+            ),
         ]
     )
 
@@ -67,6 +77,7 @@ class IdeasMergedExternalWall(LibraryData):
     constructionType,
     A={{  macros.join_list(element.surfaces)}},
     final azi={{macros.join_list(element.azimuths)}},
+    redeclare package Medium = Medium,
     final inc={{macros.join_list(tilts)}})  annotation(
     Placement(transformation(origin = {{ macros.join_list(element.position) }}, extent =
     {% raw %}{{-10, -10}, {10, 10}}
@@ -93,6 +104,7 @@ class IdeasMergedWindows(LibraryData):
     {{ element.constructions[0].name }} glazing,
     A={{  macros.join_list(element.surfaces)}},
     final azi={{macros.join_list(element.azimuths)}},
+    redeclare package Medium = Medium,
     final inc={{macros.join_list(tilts)}})  annotation(
     Placement(transformation(origin = {{ macros.join_list(element.position) }}
     , extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -115,6 +127,7 @@ class IdeasFloorOnGround(LibraryData):
     IDEAS.Buildings.Components.SlabOnGround {{ element.name }}(
     redeclare parameter {{ package_name }}.Data.Constructions.
     {{ element.construction.name }} constructionType,
+    redeclare package Medium = Medium,
     A={{  element.surface}})  annotation(
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -131,6 +144,7 @@ class IdeasInternalElement(LibraryData):
     IDEAS.Buildings.Components.InternalWall {{ element.name }}
     (redeclare parameter {{ package_name }}.
     Data.Constructions.{{ element.construction.name }} constructionType,
+    redeclare package Medium = Medium,
     A = {{ element.surface }}, inc = IDEAS.Types.Tilt.
     {{ element.tilt.value | capitalize }}, azi =
     {{ element.azimuth }}) "Partition wall between the two
@@ -178,6 +192,7 @@ def tilts_processing_ideas(element: MergedExternalWall) -> List[str]:
 
 
 class IdeasLibrary(DefaultLibrary):
+    library_name: str = "IDEAS"
     constants: str = CONSTANTS
     merged_external_boundaries: bool = True
     functions: Dict[str, Callable[[Any], Any]] = {  # noqa: RUF012
@@ -229,6 +244,16 @@ class IdeasLibrary(DefaultLibrary):
             template="""
     IDEAS.Fluid.HeatExchangers.Radiators.RadiatorEN442_2 {{ element.name }}(
     redeclare package Medium = MediumW) "Radiator"
+    annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
+        )
+    )
+    airhandlingunit: LibraryData = Field(
+        default=BaseAirHandlingUnit(
+            template="""Neosim.Fluid.Ventilation.SimpleHVAC {{ element.name }}
+    (redeclare package Medium = Medium)
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}

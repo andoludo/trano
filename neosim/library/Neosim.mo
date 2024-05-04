@@ -256,7 +256,8 @@ package Neosim
           "Fluid connector a (positive design flow direction is from port_a to port_b)"
           annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
               iconTransformation(extent={{90,-49},{110,-31}})));
-        IDEAS.Fluid.Sources.OutsideAir outsideAir(nPorts=2, redeclare package
+        IDEAS.Fluid.Sources.OutsideAir outsideAir(
+          azi=0,                                  nPorts=2, redeclare package
             Medium = Medium) annotation (
           Placement(transformation(origin = {-64, 2}, extent = {{-10, -10}, {10, 10}})));
       equation
@@ -270,10 +271,11 @@ package Neosim
           Line(points = {{24, -24}, {101, -24}}, color = {0, 127, 255}));
         connect(
           outsideAir.ports[1], hex.port_a1) annotation (
-          Line(points = {{-54, 2}, {-26, 2}}, color = {0, 127, 255}));
+          Line(points={{-54,4},{-40,4},{-40,2},{-26,2}},
+                                              color = {0, 127, 255}));
         connect(
           outsideAir.ports[2], hex.port_b2) annotation (
-          Line(points = {{-54, 2}, {-26, 2}, {-26, -10}}, color = {0, 127, 255}));
+          Line(points={{-54,0},{-26,0},{-26,-10}},        color = {0, 127, 255}));
         annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-60},
                   {100,60}}), graphics={Rectangle(
                 extent={{-100,60},{100,-60}},

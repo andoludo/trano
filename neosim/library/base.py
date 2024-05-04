@@ -225,7 +225,8 @@ class BaseControl(LibraryData):
 
 
 class BaseDamper(LibraryData):
-    template: str = """  Buildings.Fluid.Actuators.Dampers.Exponential {{ element.name }}(
+    template: str = """  {{ library_name }}.Fluid.Actuators.Dampers.Exponential
+    {{ element.name }}(
     redeclare package Medium = Medium,
     m_flow_nominal=1,
     dpDamper_nominal=20,
@@ -269,7 +270,8 @@ class BaseAirHandlingUnit(LibraryData):
 
 
 class BaseDuct(LibraryData):
-    template: str = """  Buildings.Fluid.FixedResistances.PressureDrop {{ element.name }}(
+    template: str = """  {{ library_name }}.Fluid.FixedResistances.PressureDrop
+    {{ element.name }}(
     m_flow_nominal=1,
     redeclare package Medium = Medium,
     dp_nominal=40) "Pressure drop for return duct" annotation (
@@ -303,6 +305,7 @@ class BaseVentilationControl(LibraryData):
 
 
 class DefaultLibrary(BaseModel):
+    library_name: str
     constants: str
     merged_external_boundaries: bool = False
     functions: Dict[str, Callable[[Any], Any]] = Field(default={})

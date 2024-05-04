@@ -284,7 +284,11 @@ class Network:
             rtemplate = environment.from_string(
                 "{% import 'macros.jinja2' as macros %}" + node.template
             )
-            model = rtemplate.render(element=node, package_name=self.name)
+            model = rtemplate.render(
+                element=node,
+                package_name=self.name,
+                library_name=self.library.library_name,
+            )
             models.append(model)
         return models
 

@@ -26,6 +26,7 @@ from neosim.models.elements.wall import BaseSimpleWall
 
 
 class BuildingsLibrary(DefaultLibrary):
+    library_name: str = "Buildings"
     constants: str = BUILDINGS_CONSTANTS
     internalelement: LibraryData = Field(
         default=BaseInternalElement(
