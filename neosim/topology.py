@@ -33,6 +33,8 @@ class Network:
 
     def add_node(self, node: BaseElement) -> None:
         node = self.library.assign_properties(node)
+        if node in self.graph.nodes:
+            raise Exception(f"Node {node.name} already exists.")
         self.graph.add_node(node)
 
     def add_space(self, space: "Space") -> None:

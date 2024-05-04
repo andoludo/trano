@@ -1228,17 +1228,17 @@ def space_2_simple_ventilation() -> Space:
         occupancy=Occupancy(name="occupancy_1"),
         external_boundaries=[
             ExternalWall(
-                name="w2_1",
+                name="w2_2",
                 surface=10,
                 azimuth=Azimuth.east,
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
             FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
+                name="floor_3", surface=10, construction=Constructions.external_wall
             ),
             Window(
-                name="win1_1",
+                name="win1_2",
                 surface=1,
                 azimuth=Azimuth.east,
                 tilt=Tilt.wall,

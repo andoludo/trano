@@ -91,6 +91,7 @@ class Port(BaseModel):
                 self.counter += 1
             else:
                 equation = f"{node.name}.{name}"
+
             partial_connections.append(
                 PartialConnection(equation=equation, position=node.position)
             )
