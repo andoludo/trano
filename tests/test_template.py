@@ -174,3 +174,36 @@ package MediumW = Buildings.Media.Water "Medium model";"""
     )
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_many_spaces_simple_ventilation(
+    space_1_simple_ventilation: Space,
+    space_2_simple_ventilation: Space,
+) -> None:
+
+    network = Network(
+        name="many_spaces_simple_ventilation",
+        library=BuildingsLibrary(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
+    network.add_boiler_plate_spaces(
+        [space_1_simple_ventilation, space_2_simple_ventilation]
+    )
+    ahu = AirHandlingUnit(name="ahu")
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+
+    network.connect_systems(
+        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))

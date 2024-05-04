@@ -246,8 +246,18 @@ class BaseAirHandlingUnit(LibraryData):
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(names=["port_a"], flow=Flow.inlet),
-            Port(names=["port_b"], flow=Flow.outlet),
+            Port(
+                names=["port_a"],
+                flow=Flow.inlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                names=["port_b"],
+                flow=Flow.outlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
         ]
     )
 

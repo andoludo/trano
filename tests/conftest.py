@@ -1215,3 +1215,46 @@ def space_1_simple_ventilation() -> Space:
     )
 
     return space_1
+
+
+@pytest.fixture
+def space_2_simple_ventilation() -> Space:
+    space_2 = Space(
+        name="space_2",
+        volume=100,
+        floor_area=50,
+        height=2,
+        elevation=2,
+        occupancy=Occupancy(name="occupancy_1"),
+        external_boundaries=[
+            ExternalWall(
+                name="w2_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            FloorOnGround(
+                name="floor_2", surface=10, construction=Constructions.external_wall
+            ),
+            Window(
+                name="win1_1",
+                surface=1,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+        ventilation_inlets=[Duct(name="pressure_drop_duct_in_1"), VAV(name="vav_in_2")],
+        ventilation_outlets=[
+            VAV(name="vav_out_2"),
+            Duct(name="pressure_drop_duct_out_2"),
+        ],
+        ventilation_control=SpaceSubstanceVentilationControl(
+            name="ventilation_control_2"
+        ),
+    )
+
+    return space_2
