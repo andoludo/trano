@@ -14,6 +14,7 @@ from neosim.library.base import (
     BaseWeather,
     DefaultLibrary,
     LibraryData,
+    MaterialProperties,
 )
 from neosim.library.buildings.constants import BUILDINGS_CONSTANTS
 from neosim.library.buildings.data import (
@@ -44,8 +45,7 @@ class BuildingsLibrary(DefaultLibrary):
         default=BaseWeather(
             template="""    Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             {{ element.name }}(filNam =
-    Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/
-    USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
+    Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -190,7 +190,9 @@ class BuildingsLibrary(DefaultLibrary):
         )
     )
 
-    def extract_data(self, package_name: str, nodes: NodeView) -> str:  # noqa: PLR6301
+    def extract_data(
+        self, package_name: str, nodes: NodeView  # noqa: PLR6301
+    ) -> MaterialProperties:
 
         constructions = {
             node.construction
@@ -203,4 +205,6 @@ class BuildingsLibrary(DefaultLibrary):
             glazing=BuildingsGlazing(constructions=glazing),
             material=BuildingsMaterial(),
         )
-        return buildings_data.generate_data(package_name)
+        return MaterialProperties(
+            data=buildings_data.generate_data(package_name), is_package=False
+        )

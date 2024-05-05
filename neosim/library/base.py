@@ -1,3 +1,4 @@
+import abc
 from typing import Any, Callable, Dict, List
 
 from networkx.classes.reportviews import NodeView
@@ -60,7 +61,7 @@ class BaseEmission(LibraryData):
 
 class BaseIdealHeatingEmission(LibraryData):
     template: str = """
-    Neosim.HeatTransfer.IdealHeatingSystem.IdealHeatEmission {{ element.name }}
+    {{package_name}}.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission {{ element.name }}
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -85,7 +86,7 @@ class BaseValve(LibraryData):
 
 class BaseBoiler(LibraryData):
     template: str = """
-    Neosim.Fluid.Boilers.Simple {{ element.name }}(
+    {{package_name}}.Common.Fluid.Boilers.Simple {{ element.name }}(
     redeclare package Medium = MediumW) "Boiler"
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
@@ -162,7 +163,7 @@ class BaseThreeWayValve(LibraryData):
 
 class BaseOccupancy(LibraryData):
     template: str = """
-    Neosim.Occupancy.SimpleOccupancy {{ element.name }} annotation (
+    {{package_name}}.Common.Occupancy.SimpleOccupancy {{ element.name }} annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
@@ -197,7 +198,8 @@ class BaseInternalElement(LibraryData):
 
 class BaseSpaceControl(LibraryData):
     template: str = """
-    Neosim.Controls.SpaceControls.PID {{ element.name }}(setPoint = 295.15, yMax = 1, yMin = 0)
+    {{package_name}}.Common.Controls.SpaceControls.PID
+    {{ element.name }}(setPoint = 295.15, yMax = 1, yMin = 0)
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -245,7 +247,8 @@ class BaseDamper(LibraryData):
 
 
 class BaseAirHandlingUnit(LibraryData):
-    template: str = """Neosim.Fluid.Ventilation.SimpleHVACBuildings {{ element.name }}
+    template: str = """{{package_name}}.Common.Fluid.Ventilation.SimpleHVACBuildings
+    {{ element.name }}
     (redeclare package Medium = Medium)
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
@@ -287,7 +290,7 @@ class BaseDuct(LibraryData):
 
 
 class BaseVentilationControl(LibraryData):
-    template: str = """    Neosim.Controls.SpaceControls.PIDSubstance
+    template: str = """    {{package_name}}.Common.Controls.SpaceControls.PIDSubstance
     {{ element.name }}(redeclare package
       Medium = Medium) annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
@@ -302,6 +305,11 @@ class BaseVentilationControl(LibraryData):
             ),
         ]
     )
+
+
+class MaterialProperties(BaseModel):
+    data: str
+    is_package: bool
 
 
 class DefaultLibrary(BaseModel):
@@ -360,5 +368,8 @@ class DefaultLibrary(BaseModel):
         element.template = self.assign_template(element)
         return element
 
-    def extract_data(self, package_name: str, nodes: NodeView) -> Any:  # noqa : ANN401
+    @abc.abstractmethod
+    def extract_data(
+        self, package_name: str, nodes: NodeView
+    ) -> MaterialProperties:  # : ANN401
         ...

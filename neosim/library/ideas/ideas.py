@@ -14,6 +14,7 @@ from neosim.library.base import (
     BaseValve,
     DefaultLibrary,
     LibraryData,
+    MaterialProperties,
 )
 from neosim.library.ideas.constants import CONSTANTS
 from neosim.library.ideas.data import (
@@ -252,7 +253,8 @@ class IdeasLibrary(DefaultLibrary):
     )
     airhandlingunit: LibraryData = Field(
         default=BaseAirHandlingUnit(
-            template="""Neosim.Fluid.Ventilation.SimpleHVAC {{ element.name }}
+            template="""{{ package_name }}.Common.Fluid.
+            Ventilation.SimpleHVAC {{ element.name }}
     (redeclare package Medium = Medium)
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
@@ -261,7 +263,9 @@ class IdeasLibrary(DefaultLibrary):
         )
     )
 
-    def extract_data(self, package_name: str, nodes: NodeView) -> str:  # noqa: PLR6301
+    def extract_data(
+        self, package_name: str, nodes: NodeView  # noqa: PLR6301
+    ) -> MaterialProperties:
 
         merged_constructions = {
             construction
@@ -288,4 +292,6 @@ class IdeasLibrary(DefaultLibrary):
             construction=IdeasConstruction(constructions=wall_constructions),
             glazing=IdeasGlazing(constructions=glazing),
         )
-        return ideas_data.generate_data(package_name)
+        return MaterialProperties(
+            data=ideas_data.generate_data(package_name), is_package=True
+        )

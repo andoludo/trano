@@ -1,7 +1,15 @@
 {% import 'macros.jinja2' as macros %}
-model {{ network.name }}
+{% import 'common.jinja2' as common %}
+package {{ network.name }}
+{{ common.common_library() }}
+{% if data.is_package %}
+{{ data.data|safe }}
+model building
+{% else %}
+model building
+{{ data.data|safe }}
+{% endif %}
 
-{{ data|safe }}
 
 {{ library.constants|safe }}
 
@@ -15,7 +23,7 @@ equation
     {#line break#}
     {{ macros.connect(edge) }}
 {%- endfor %}
-
+end building;
 
 
 end {{ network.name }};
