@@ -76,8 +76,6 @@ def test_simulate_ideas_free_float_three_zones(
     ideas_free_float_three_zones: Network,
     container: docker.models.containers.Container,
 ) -> None:
-    with create_mos_file(
-        ideas_free_float_three_zones, library="ideas.jinja2"
-    ) as mos_file_name:
+    with create_mos_file(ideas_free_float_three_zones) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)

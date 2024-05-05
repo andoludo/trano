@@ -34,8 +34,8 @@ from neosim.topology import Network
 
 
 @contextmanager
-def create_mos_file(network: Network, library: str = "buildings.jinja2") -> str:
-    model = network.model(library=library)
+def create_mos_file(network: Network) -> str:
+    model = network.model()
     with tempfile.NamedTemporaryFile(
         mode="w", dir=Path(__file__).parent, suffix=".mo"
     ) as temp_model_file, tempfile.NamedTemporaryFile(
@@ -46,10 +46,9 @@ def create_mos_file(network: Network, library: str = "buildings.jinja2") -> str:
         template = environment.from_string(
             """
 getVersion();
-loadFile("/neosim/neosim/library/Neosim.mo");
 loadFile("/neosim/tests/{{model_file}}");
-checkModel({{model_name}});
-simulate({{model_name}},startTime = 0, stopTime = 3600);
+checkModel({{model_name}}.building);
+simulate({{model_name}}.building,startTime = 0, stopTime = 3600);
 """
         )
         mos_file = template.render(

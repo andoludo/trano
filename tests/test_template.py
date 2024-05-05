@@ -8,6 +8,8 @@ from neosim.models.elements.space import Space
 from neosim.models.elements.system import AirHandlingUnit
 from neosim.topology import Network
 
+OVERWRITE_MODELS = False
+
 
 def remove_annotation(model: str) -> str:
     model = model.replace(" ", "").replace("\n", "")
@@ -17,6 +19,10 @@ def remove_annotation(model: str) -> str:
 
 
 def clean_model(model: str, model_name: str) -> set:
+    if OVERWRITE_MODELS:
+        path_file = Path(__file__).parent.joinpath("data", f"{model_name}.mo")
+        with path_file.open("w") as f:
+            f.write(model)
     model_ = remove_annotation(model)
     return set(
         model_.replace("record", ";").replace(f"model{model_name}", "").split(";")
