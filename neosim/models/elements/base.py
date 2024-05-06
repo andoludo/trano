@@ -116,16 +116,53 @@ class BaseElement(BaseModel):
     def type(self) -> str:
         return type(self).__name__
 
-    def _get_target_compatible_port(
+    def _get_target_compatible_port(  # noqa: C901, PLR0911
         self, target: "BaseElement", flow: Flow
     ) -> Optional["Port"]:
+        # TODO: function too complex. To be refactored
         ports = [
             port
             for port in self.ports
             if port.targets
             and any(isinstance(target, target_) for target_ in port.targets)
             and port.is_available()
+            and port.flow == Flow.interchangeable_port
         ]
+        if ports:
+            return ports[0]
+        ports = [
+            port
+            for port in self.ports
+            if port.targets
+            and any(isinstance(target, target_) for target_ in port.targets)
+            and port.is_available()
+            and port.flow == Flow.undirected
+        ]
+        if ports and len(ports) != 1:
+            raise NotImplementedError
+        if ports:
+            return ports[0]
+        ports = [
+            port
+            for port in self.ports
+            if port.targets
+            and any(isinstance(target, target_) for target_ in port.targets)
+            and port.is_available()
+            and port.flow == Flow.inlet_or_outlet
+            and _is_inlet_or_outlet(target)
+        ]
+        if ports:
+            return ports[0]
+        ports = [
+            port
+            for port in self.ports
+            if port.targets
+            and any(isinstance(target, target_) for target_ in port.targets)
+            and port.is_available()
+            and port.flow == flow
+        ]
+        if ports and len(ports) != 1:
+            raise NotImplementedError
         if ports:
             return ports[0]
         ports = [
@@ -174,3 +211,9 @@ def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:
 
 def _has_inlet_or_outlet(target: "BaseElement") -> bool:
     return bool([port for port in target.ports if port.flow == Flow.inlet_or_outlet])
+
+
+def _is_inlet_or_outlet(target: "BaseElement") -> bool:
+    return bool(
+        [port for port in target.ports if port.flow in [Flow.inlet, Flow.outlet]]
+    )

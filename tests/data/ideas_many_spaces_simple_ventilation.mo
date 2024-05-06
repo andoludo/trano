@@ -542,25 +542,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
+extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2240.0,
       epsLw=0.88,
       epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.12,
       c=1210.0,
       rho=540.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
       epsLw=0.88,
       epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.89,
@@ -572,20 +562,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Building
       c=840.0,
       rho=2500.0,
       epsLw=0.88,
+      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.025,
+      c=1005.0,
+      rho=1.2,
+      epsLw=0.88,
+      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.03,
+      c=1200.0,
+      rho=40.0,
+      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={ideas_many_spaces_simple_ventilation.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;      record external_wall
+package Constructions "Library of building envelope constructions"      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={ideas_many_spaces_simple_ventilation.Data.Materials.concrete
         (d=0.2),ideas_many_spaces_simple_ventilation.Data.Materials.insulation_board
         (d=0.02),ideas_many_spaces_simple_ventilation.Data.Materials.plywood
         (d=0.1)    });
-    end external_wall;
+    end external_wall;      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={ideas_many_spaces_simple_ventilation.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;
 end Constructions;
 end Data;
 model building
@@ -619,7 +619,7 @@ model building
     final azi={ 135, 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { 10.077958180488531, -185.76890678860067 }, extent =
+    Placement(transformation(origin = { 17.052535796250957, 190.0282912320531 }, extent =
 {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -630,7 +630,7 @@ model building
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { 144.8000047345566, -126.97565460070984 }
+    Placement(transformation(origin = { -126.18803240566052, 145.70782867744745 }
     , extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_2(
@@ -638,7 +638,7 @@ model building
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10)  annotation(
-    Placement(transformation(origin = { -199.99999999999997, -20.082917964174726 },
+    Placement(transformation(origin = { 36.8439643879809, -200.00000000000003 },
     extent = {{-10, -10}, {10, 10}}
 )));
         ideas_many_spaces_simple_ventilation.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
@@ -652,7 +652,7 @@ model building
     dpDamper_nominal=20,
     allowFlowReversal=false,
     dpFixed_nominal=130) "VAV box for room" annotation (
-    Placement(transformation(origin = { -160.40289903894774, -65.72380567740066 },
+    Placement(transformation(origin = { 86.82254892509148, -175.75356003535995 },
     extent = {{-10, -10}, {10, 10}}
 )));
       IDEAS.Fluid.Actuators.Dampers.Exponential
@@ -662,7 +662,7 @@ model building
     dpDamper_nominal=20,
     allowFlowReversal=false,
     dpFixed_nominal=130) "VAV box for room" annotation (
-    Placement(transformation(origin = { 86.55995486300816, 176.07334577314074 },
+    Placement(transformation(origin = { -186.1968371951606, -30.399601152382683 },
     extent = {{-10, -10}, {10, 10}}
 )));
       IDEAS.Fluid.FixedResistances.PressureDrop
@@ -670,7 +670,7 @@ model building
     m_flow_nominal=1,
     redeclare package Medium = Medium,
     dp_nominal=40) "Pressure drop for return duct" annotation (
-    Placement(transformation(origin = { -18.262562209140743, 183.11602717329785 },
+    Placement(transformation(origin = { -34.642733467474564, 194.80354844566176 },
     extent = {{-10, -10}, {10, 10}}
 )));
       IDEAS.Fluid.FixedResistances.PressureDrop
@@ -678,13 +678,13 @@ model building
     m_flow_nominal=1,
     redeclare package Medium = Medium,
     dp_nominal=40) "Pressure drop for return duct" annotation (
-    Placement(transformation(origin = { -85.7915707995056, -140.10391870526215 },
+    Placement(transformation(origin = { 117.2226144650507, 157.97871828615308 },
     extent = {{-10, -10}, {10, 10}}
 )));
         ideas_many_spaces_simple_ventilation.Common.Controls.SpaceControls.PIDSubstance
     ventilation_control(redeclare package
       Medium = Medium, yMax = 0.9, yMin = 0.1, setPoint = 400) annotation (
-    Placement(transformation(origin = { -131.38660950658763, -166.87147060425002 },
+    Placement(transformation(origin = { -175.2657151942576, 17.792198725694924 },
     extent = {{-10, -10}, {10, 10}}
 )));
     IDEAS.Buildings.Components.Zone space_2(
@@ -706,7 +706,7 @@ model building
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { -113.98332742630423, 153.9149841364089 }, extent =
+    Placement(transformation(origin = { 116.3425185756572, -136.73295090624632 }, extent =
 {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -717,7 +717,7 @@ model building
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall })  annotation(
-    Placement(transformation(origin = { 183.22608308885955, -92.23492761486312 }
+    Placement(transformation(origin = { 142.59054123768504, 114.01739243178532 }
     , extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_3(
@@ -725,7 +725,7 @@ model building
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10)  annotation(
-    Placement(transformation(origin = { 138.57786536688624, 142.309827717946 },
+    Placement(transformation(origin = { -185.82650414544537, 63.415963318365826 },
     extent = {{-10, -10}, {10, 10}}
 )));
         ideas_many_spaces_simple_ventilation.Common.Occupancy.SimpleOccupancy occupancy_1 annotation (
@@ -739,7 +739,7 @@ model building
     dpDamper_nominal=20,
     allowFlowReversal=false,
     dpFixed_nominal=130) "VAV box for room" annotation (
-    Placement(transformation(origin = { 187.20861973551445, 73.41080704265654 },
+    Placement(transformation(origin = { 172.76846054745891, -16.14856457257071 },
     extent = {{-10, -10}, {10, 10}}
 )));
       IDEAS.Fluid.Actuators.Dampers.Exponential
@@ -749,7 +749,7 @@ model building
     dpDamper_nominal=20,
     allowFlowReversal=false,
     dpFixed_nominal=130) "VAV box for room" annotation (
-    Placement(transformation(origin = { 193.04028766204726, 16.24900138262511 },
+    Placement(transformation(origin = { 188.5106464387806, 27.459530326457433 },
     extent = {{-10, -10}, {10, 10}}
 )));
       IDEAS.Fluid.FixedResistances.PressureDrop
@@ -757,7 +757,7 @@ model building
     m_flow_nominal=1,
     redeclare package Medium = Medium,
     dp_nominal=40) "Pressure drop for return duct" annotation (
-    Placement(transformation(origin = { 62.54998384520937, -172.62235830740374 },
+    Placement(transformation(origin = { -142.1552047724873, -118.81251122027415 },
     extent = {{-10, -10}, {10, 10}}
 )));
       IDEAS.Fluid.FixedResistances.PressureDrop
@@ -765,13 +765,13 @@ model building
     m_flow_nominal=1,
     redeclare package Medium = Medium,
     dp_nominal=40) "Pressure drop for return duct" annotation (
-    Placement(transformation(origin = { 140.3371130013994, 95.66856626742043 },
+    Placement(transformation(origin = { 182.05211280143698, 78.16176851849366 },
     extent = {{-10, -10}, {10, 10}}
 )));
         ideas_many_spaces_simple_ventilation.Common.Controls.SpaceControls.PIDSubstance
     ventilation_control_2(redeclare package
       Medium = Medium, yMax = 0.9, yMin = 0.1, setPoint = 400) annotation (
-    Placement(transformation(origin = { -129.56624368364018, 107.80024609175183 },
+    Placement(transformation(origin = { -84.34971621821535, 177.0319167633628 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.InternalWall internal_space_1_space_2
@@ -790,29 +790,29 @@ model building
             Ventilation.SimpleHVAC ahu
     (redeclare package Medium = Medium)
     annotation (
-    Placement(transformation(origin = { -46.52742957093444, -180.21666359461952 },
+    Placement(transformation(origin = { -169.97142849266427, 116.31701383090325 },
     extent = {{-10, -10}, {10, 10}}
 )));
         ideas_many_spaces_simple_ventilation.Common.Controls.SpaceControls.DataServer
     data_bus annotation (
-    Placement(transformation(origin = { -73.02074617508761, 188.75445958910623 },
+    Placement(transformation(origin = { -109.64502069567304, -158.5877094918158 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
 equation    connect(space_1.propsBus[1:2],merged_w1_1_w2_1[1:2].propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 5.038979090244266, 50.0 }    ,{ 5.038979090244266, -185.76890678860067 }    ,{ 10.077958180488531, -185.76890678860067 }    },
+points={{ 0.0, 50.0 }    ,{ 8.526267898125479, 50.0 }    ,{ 8.526267898125479, 190.0282912320531 }    ,{ 17.052535796250957, 190.0282912320531 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[3],merged_win1_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 72.4000023672783, 50.0 }    ,{ 72.4000023672783, -126.97565460070984 }    ,{ 144.8000047345566, -126.97565460070984 }    },
+points={{ 0.0, 50.0 }    ,{ -63.09401620283026, 50.0 }    ,{ -63.09401620283026, 145.70782867744745 }    ,{ -126.18803240566052, 145.70782867744745 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[4],floor_2.propsBus_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -99.99999999999999, 50.0 }    ,{ -99.99999999999999, -20.082917964174726 }    ,{ -199.99999999999997, -20.082917964174726 }    },
+points={{ 0.0, 50.0 }    ,{ 18.42198219399045, 50.0 }    ,{ 18.42198219399045, -200.00000000000003 }    ,{ 36.8439643879809, -200.00000000000003 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.yOcc,occupancy_0.y)
@@ -822,7 +822,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],vav_out.port_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 43.27997743150408, 50.0 }    ,{ 43.27997743150408, 176.07334577314074 }    ,{ 86.55995486300816, 176.07334577314074 }    },
+points={{ 0.0, 50.0 }    ,{ -93.0984185975803, 50.0 }    ,{ -93.0984185975803, -30.399601152382683 }    ,{ -186.1968371951606, -30.399601152382683 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(space_1.ports[2],ventilation_control.port_a)
+annotation (Line(
+points={{ 0.0, 50.0 }    ,{ -87.6328575971288, 50.0 }    ,{ -87.6328575971288, 17.792198725694924 }    ,{ -175.2657151942576, 17.792198725694924 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[5],internal_space_1_space_2.propsBus_a)
@@ -830,54 +835,49 @@ annotation (Line(
 points={{ 0.0, 50.0 }    ,{ 50.0, 50.0 }    ,{ 50.0, 50.0 }    ,{ 100.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(vav_in.port_b,space_1.ports[2])
+smooth=Smooth.None));    connect(vav_in.port_b,space_1.ports[3])
 annotation (Line(
-points={{ -160.40289903894774, -65.72380567740066 }    ,{ -80.20144951947387, -65.72380567740066 }    ,{ -80.20144951947387, 50.0 }    ,{ 0.0, 50.0 }    },
+points={{ 86.82254892509148, -175.75356003535995 }    ,{ 43.41127446254574, -175.75356003535995 }    ,{ 43.41127446254574, 50.0 }    ,{ 0.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(vav_out.port_b,pressure_drop_duct_out.port_a)
 annotation (Line(
-points={{ 86.55995486300816, 176.07334577314074 }    ,{ 34.14869632693371, 176.07334577314074 }    ,{ 34.1486963269337, 183.11602717329785 }    ,{ -18.262562209140743, 183.11602717329785 }    },
+points={{ -186.1968371951606, -30.399601152382683 }    ,{ -110.41978533131758, -30.399601152382683 }    ,{ -110.4197853313176, 194.80354844566176 }    ,{ -34.642733467474564, 194.80354844566176 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_out.port_b,ahu.port_a)
 annotation (Line(
-points={{ -18.262562209140743, 183.11602717329785 }    ,{ -32.39499589003759, 183.11602717329785 }    ,{ -32.39499589003759, -180.21666359461952 }    ,{ -46.52742957093444, -180.21666359461952 }    },
+points={{ -34.642733467474564, 194.80354844566176 }    ,{ -102.30708098006943, 194.80354844566176 }    ,{ -102.30708098006941, 116.31701383090325 }    ,{ -169.97142849266427, 116.31701383090325 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_in.port_b,vav_in.port_a)
 annotation (Line(
-points={{ -85.7915707995056, -140.10391870526215 }    ,{ -123.09723491922668, -140.10391870526215 }    ,{ -123.09723491922668, -65.72380567740066 }    ,{ -160.40289903894774, -65.72380567740066 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(ventilation_control.port_a,space_1.ports[3])
-annotation (Line(
-points={{ -131.38660950658763, -166.87147060425002 }    ,{ -65.69330475329382, -166.87147060425002 }    ,{ -65.69330475329382, 50.0 }    ,{ 0.0, 50.0 }    },
+points={{ 117.2226144650507, 157.97871828615308 }    ,{ 102.0225816950711, 157.97871828615308 }    ,{ 102.0225816950711, -175.75356003535995 }    ,{ 86.82254892509148, -175.75356003535995 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ventilation_control.y,vav_in.y)
 annotation (Line(
-points={{ -131.38660950658763, -166.87147060425002 }    ,{ -145.89475427276767, -166.87147060425002 }    ,{ -145.89475427276767, -65.72380567740066 }    ,{ -160.40289903894774, -65.72380567740066 }    },
+points={{ -175.2657151942576, 17.792198725694924 }    ,{ -44.22158313458306, 17.792198725694924 }    ,{ -44.22158313458307, -175.75356003535995 }    ,{ 86.82254892509148, -175.75356003535995 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ventilation_control.y,vav_out.y)
 annotation (Line(
-points={{ -131.38660950658763, -166.87147060425002 }    ,{ -22.413327321789737, -166.87147060425002 }    ,{ -22.413327321789737, 176.07334577314074 }    ,{ 86.55995486300816, 176.07334577314074 }    },
+points={{ -175.2657151942576, 17.792198725694924 }    ,{ -180.7312761947091, 17.792198725694924 }    ,{ -180.7312761947091, -30.399601152382683 }    ,{ -186.1968371951606, -30.399601152382683 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[1],merged_w2_2[1].propsBus_a)
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 43.00833628684788, 50.0 }    ,{ 43.00833628684789, 153.9149841364089 }    ,{ -113.98332742630423, 153.9149841364089 }    },
+points={{ 200.0, 50.0 }    ,{ 158.1712592878286, 50.0 }    ,{ 158.1712592878286, -136.73295090624632 }    ,{ 116.3425185756572, -136.73295090624632 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[2],merged_win1_2[1].propsBus_a)
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 191.6130415444298, 50.0 }    ,{ 191.6130415444298, -92.23492761486312 }    ,{ 183.22608308885955, -92.23492761486312 }    },
+points={{ 200.0, 50.0 }    ,{ 171.29527061884252, 50.0 }    ,{ 171.29527061884252, 114.01739243178532 }    ,{ 142.59054123768504, 114.01739243178532 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[3],floor_3.propsBus_a)
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 169.28893268344314, 50.0 }    ,{ 169.28893268344314, 142.309827717946 }    ,{ 138.57786536688624, 142.309827717946 }    },
+points={{ 200.0, 50.0 }    ,{ 7.086747927277315, 50.0 }    ,{ 7.086747927277315, 63.415963318365826 }    ,{ -185.82650414544537, 63.415963318365826 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.yOcc,occupancy_1.y)
@@ -887,7 +887,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.ports[1],vav_out_2.port_a)
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 196.52014383102363, 50.0 }    ,{ 196.52014383102363, 16.24900138262511 }    ,{ 193.04028766204726, 16.24900138262511 }    },
+points={{ 200.0, 50.0 }    ,{ 194.2553232193903, 50.0 }    ,{ 194.2553232193903, 27.459530326457433 }    ,{ 188.5106464387806, 27.459530326457433 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(space_2.ports[2],ventilation_control_2.port_a)
+annotation (Line(
+points={{ 200.0, 50.0 }    ,{ 57.825141890892326, 50.0 }    ,{ 57.825141890892326, 177.0319167633628 }    ,{ -84.34971621821535, 177.0319167633628 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[4],internal_space_1_space_2.propsBus_b)
@@ -895,59 +900,54 @@ annotation (Line(
 points={{ 200.0, 50.0 }    ,{ 150.0, 50.0 }    ,{ 150.0, 50.0 }    ,{ 100.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(vav_in_2.port_b,space_2.ports[2])
+smooth=Smooth.None));    connect(vav_in_2.port_b,space_2.ports[3])
 annotation (Line(
-points={{ 187.20861973551445, 73.41080704265654 }    ,{ 193.60430986775722, 73.41080704265654 }    ,{ 193.60430986775722, 50.0 }    ,{ 200.0, 50.0 }    },
+points={{ 172.76846054745891, -16.14856457257071 }    ,{ 186.38423027372946, -16.14856457257071 }    ,{ 186.38423027372946, 50.0 }    ,{ 200.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(vav_out_2.port_b,pressure_drop_duct_out_2.port_a)
 annotation (Line(
-points={{ 193.04028766204726, 16.24900138262511 }    ,{ 127.79513575362832, 16.24900138262511 }    ,{ 127.79513575362832, -172.62235830740374 }    ,{ 62.54998384520937, -172.62235830740374 }    },
+points={{ 188.5106464387806, 27.459530326457433 }    ,{ 23.17772083314665, 27.459530326457433 }    ,{ 23.17772083314665, -118.81251122027415 }    ,{ -142.1552047724873, -118.81251122027415 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_out_2.port_b,ahu.port_a)
 annotation (Line(
-points={{ 62.54998384520937, -172.62235830740374 }    ,{ 8.01127713713747, -172.62235830740374 }    ,{ 8.011277137137462, -180.21666359461952 }    ,{ -46.52742957093444, -180.21666359461952 }    },
+points={{ -142.1552047724873, -118.81251122027415 }    ,{ -156.06331663257578, -118.81251122027415 }    ,{ -156.06331663257578, 116.31701383090325 }    ,{ -169.97142849266427, 116.31701383090325 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_in_1.port_b,vav_in_2.port_a)
 annotation (Line(
-points={{ 140.3371130013994, 95.66856626742043 }    ,{ 163.7728663684569, 95.66856626742043 }    ,{ 163.7728663684569, 73.41080704265654 }    ,{ 187.20861973551445, 73.41080704265654 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(ventilation_control_2.port_a,space_2.ports[3])
-annotation (Line(
-points={{ -129.56624368364018, 107.80024609175183 }    ,{ 35.216878158179924, 107.80024609175183 }    ,{ 35.216878158179895, 50.0 }    ,{ 200.0, 50.0 }    },
+points={{ 182.05211280143698, 78.16176851849366 }    ,{ 177.41028667444795, 78.16176851849366 }    ,{ 177.41028667444795, -16.14856457257071 }    ,{ 172.76846054745891, -16.14856457257071 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ventilation_control_2.y,vav_in_2.y)
 annotation (Line(
-points={{ -129.56624368364018, 107.80024609175183 }    ,{ 28.82118802593712, 107.80024609175183 }    ,{ 28.821188025937147, 73.41080704265654 }    ,{ 187.20861973551445, 73.41080704265654 }    },
+points={{ -84.34971621821535, 177.0319167633628 }    ,{ 44.20937216462178, 177.0319167633628 }    ,{ 44.20937216462178, -16.14856457257071 }    ,{ 172.76846054745891, -16.14856457257071 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ventilation_control_2.y,vav_out_2.y)
 annotation (Line(
-points={{ -129.56624368364018, 107.80024609175183 }    ,{ 31.737021989203555, 107.80024609175183 }    ,{ 31.737021989203527, 16.24900138262511 }    ,{ 193.04028766204726, 16.24900138262511 }    },
+points={{ -84.34971621821535, 177.0319167633628 }    ,{ 52.08046511028263, 177.0319167633628 }    ,{ 52.08046511028263, 27.459530326457433 }    ,{ 188.5106464387806, 27.459530326457433 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ahu.port_b,pressure_drop_duct_in.port_a)
 annotation (Line(
-points={{ -46.52742957093444, -180.21666359461952 }    ,{ -66.15950018522003, -180.21666359461952 }    ,{ -66.15950018522003, -140.10391870526215 }    ,{ -85.7915707995056, -140.10391870526215 }    },
+points={{ -169.97142849266427, 116.31701383090325 }    ,{ -26.374407013806803, 116.31701383090325 }    ,{ -26.374407013806774, 157.97871828615308 }    ,{ 117.2226144650507, 157.97871828615308 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ahu.port_b,pressure_drop_duct_in_1.port_a)
 annotation (Line(
-points={{ -46.52742957093444, -180.21666359461952 }    ,{ 46.90484171523247, -180.21666359461952 }    ,{ 46.90484171523248, 95.66856626742043 }    ,{ 140.3371130013994, 95.66856626742043 }    },
+points={{ -169.97142849266427, 116.31701383090325 }    ,{ 6.040342154386366, 116.31701383090325 }    ,{ 6.040342154386337, 78.16176851849366 }    ,{ 182.05211280143698, 78.16176851849366 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(data_bus.port[1],space_1.gainCon)
 annotation (Line(
-points={{ -73.02074617508761, 188.75445958910623 }    ,{ -36.510373087543805, 188.75445958910623 }    ,{ -36.510373087543805, 50.0 }    ,{ 0.0, 50.0 }    },
+points={{ -109.64502069567304, -158.5877094918158 }    ,{ -54.82251034783652, -158.5877094918158 }    ,{ -54.82251034783652, 50.0 }    ,{ 0.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(data_bus.port[2],space_2.gainCon)
 annotation (Line(
-points={{ -73.02074617508761, 188.75445958910623 }    ,{ 63.48962691245619, 188.75445958910623 }    ,{ 63.4896269124562, 50.0 }    ,{ 200.0, 50.0 }    },
+points={{ -109.64502069567304, -158.5877094918158 }    ,{ 45.17748965216349, -158.5877094918158 }    ,{ 45.17748965216347, 50.0 }    ,{ 200.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

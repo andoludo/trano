@@ -710,7 +710,7 @@ parameter Integer nRoo = 2 "Number of rooms";
 )));
         buildings_simple_hydronic.Common.Controls.SpaceControls.DataServer
     data_bus annotation (
-    Placement(transformation(origin = { -191.65099437270425, 56.60844490583349 },
+    Placement(transformation(origin = { 14.93914360643244, -194.9452851596974 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -792,7 +792,7 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(data_bus.port[1],space_1.heaPorAir)
 annotation (Line(
-points={{ -191.65099437270425, 56.60844490583349 }    ,{ -95.82549718635212, 56.60844490583349 }    ,{ -95.82549718635212, 50.0 }    ,{ 0.0, 50.0 }    },
+points={{ 14.93914360643244, -194.9452851596974 }    ,{ 7.46957180321622, -194.9452851596974 }    ,{ 7.46957180321622, 50.0 }    ,{ 0.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

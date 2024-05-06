@@ -191,8 +191,8 @@ class BaseWeather(LibraryData):
 class BaseInternalElement(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(targets=[Space], names=["port_a"]),
-            Port(targets=[Space], names=["port_b"]),
+            Port(targets=[Space], names=["port_a"], flow=Flow.interchangeable_port),
+            Port(targets=[Space], names=["port_b"], flow=Flow.interchangeable_port),
         ]
     )
 

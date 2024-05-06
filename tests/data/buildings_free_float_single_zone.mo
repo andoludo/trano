@@ -597,7 +597,7 @@ package MediumW = Buildings.Media.Water "Medium model";
 )));
         buildings_free_float_single_zone.Common.Controls.SpaceControls.DataServer
     data_bus annotation (
-    Placement(transformation(origin = { -199.99999999999997, 26.42533142747241 },
+    Placement(transformation(origin = { -128.0176711431906, 142.50757266235266 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -614,7 +614,7 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(data_bus.port[1],space_1.heaPorAir)
 annotation (Line(
-points={{ -199.99999999999997, 26.42533142747241 }    ,{ -99.99999999999999, 26.42533142747241 }    ,{ -99.99999999999999, 50.0 }    ,{ 0.0, 50.0 }    },
+points={{ -128.0176711431906, 142.50757266235266 }    ,{ -64.0088355715953, 142.50757266235266 }    ,{ -64.0088355715953, 50.0 }    ,{ 0.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

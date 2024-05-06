@@ -126,8 +126,8 @@ class Network:
         if space.ventilation_control:
             self.add_node(space.ventilation_control)
             self.graph.add_edge(
-                space.ventilation_control,
                 space,
+                space.ventilation_control,
             )
             for ventilation_element in (
                 space.ventilation_inlets + space.ventilation_outlets

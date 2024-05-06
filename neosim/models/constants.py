@@ -19,3 +19,4 @@ class Flow(Enum):
     outlet = "outlet"
     inlet_or_outlet = "inlet_or_outlet"
     undirected = "undirected"
+    interchangeable_port = "interchangeable_port"

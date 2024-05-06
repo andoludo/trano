@@ -35,7 +35,7 @@ from neosim.topology import Network
 
 
 @contextmanager
-def create_mos_file(network: Network) -> str:
+def create_mos_file(network: Network, check_only: bool = False) -> str:
     model = network.model()
     with tempfile.NamedTemporaryFile(
         mode="w", dir=Path(__file__).parent, suffix=".mo"
@@ -44,14 +44,23 @@ def create_mos_file(network: Network) -> str:
     ) as temp_mos_file:
         Path(temp_model_file.name).write_text(model)
         environment = jinja2.Environment()
-        template = environment.from_string(
-            """
-getVersion();
-loadFile("/neosim/tests/{{model_file}}");
-checkModel({{model_name}}.building);
-simulate({{model_name}}.building,startTime = 0, stopTime = 3600);
-"""
-        )
+        if check_only:
+            template = environment.from_string(
+                """
+    getVersion();
+    loadFile("/neosim/tests/{{model_file}}");
+    checkModel({{model_name}}.building);
+    """
+            )
+        else:
+            template = environment.from_string(
+                """
+    getVersion();
+    loadFile("/neosim/tests/{{model_file}}");
+    checkModel({{model_name}}.building);
+    simulate({{model_name}}.building,startTime = 0, stopTime = 3600);
+    """
+            )
         mos_file = template.render(
             model_file=Path(temp_model_file.name).name, model_name=network.name
         )

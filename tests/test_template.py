@@ -2,6 +2,8 @@ import re
 from pathlib import Path
 from typing import Set
 
+import pytest
+
 from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.elements.space import Space
@@ -146,16 +148,25 @@ def test_space_1_ideal_heating(
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-def test_space_1_different_construction_types(
+@pytest.fixture
+def space_1_different_construction_types_network(
     space_1_different_construction_types: Space,
-) -> None:
-
+) -> Network:
     network = Network(
         name="space_1_different_construction_types", library=IdeasLibrary()
     )
     network.add_boiler_plate_spaces([space_1_different_construction_types])
-    model_ = network.model()
-    assert clean_model(model_, network.name) == set(_read(network.name))
+    return network
+
+
+def test_space_1_different_construction_types(
+    space_1_different_construction_types_network: Network,
+) -> None:
+
+    model_ = space_1_different_construction_types_network.model()
+    assert clean_model(
+        model_, space_1_different_construction_types_network.name
+    ) == set(_read(space_1_different_construction_types_network.name))
 
 
 def test_space_1_simple_ventilation(

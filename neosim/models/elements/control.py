@@ -20,6 +20,8 @@ class SpaceSubstanceVentilationControl(SpaceVentilationControl):
     ...
 
 
-class DataBus(Control):
+class DataBus(BaseElement):
+    name: str
+    position: Optional[List[float]] = None
     number_of_spaces: int
     space_names: List[str]

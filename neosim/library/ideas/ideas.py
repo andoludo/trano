@@ -57,7 +57,12 @@ class IdeasSpace(BaseSpace):
             ),
             Port(targets=[Occupancy], names=["yOcc"]),
             Port(targets=[Emission], names=["gainCon", "gainRad"]),
-            Port(targets=[SpaceControl, DataBus], names=["gainCon"]),
+            Port(
+                targets=[SpaceControl, DataBus],
+                names=["gainCon"],
+                multi_connection=True,
+                use_counter=False,
+            ),
             Port(
                 targets=[Ventilation, Control],
                 names=["ports"],
@@ -155,8 +160,18 @@ class IdeasInternalElement(LibraryData):
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(targets=[Space], names=["propsBus_a"], multi_connection=False),
-            Port(targets=[Space], names=["propsBus_b"], multi_connection=False),
+            Port(
+                targets=[Space],
+                names=["propsBus_a"],
+                multi_connection=False,
+                flow=Flow.interchangeable_port,
+            ),
+            Port(
+                targets=[Space],
+                names=["propsBus_b"],
+                multi_connection=False,
+                flow=Flow.interchangeable_port,
+            ),
         ]
     )
 
