@@ -69,7 +69,10 @@ def create_mos_file(network: Network, check_only: bool = False) -> str:
 
 
 def is_success(results: docker.models.containers.ExecResult) -> bool:
-    return "The simulation finished successfully" in results.output.decode()
+    return (
+        "The simulation finished successfully" in results.output.decode()
+        or "completed successfully" in results.output.decode()
+    )
 
 
 @pytest.fixture
