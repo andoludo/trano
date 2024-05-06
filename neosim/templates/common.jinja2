@@ -195,6 +195,8 @@ constructed by the signals connected to this bus.
       end PIDSubstance;
 {% endraw %}
       model DataServer
+      replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+    "Medium model" annotation (choicesAllMatching=true);
         Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[{{ databus.number_of_spaces }}] TRoo {% raw %}annotation (
                 Placement(transformation(origin={-544,-226},    extent = {{480, 216}, {500, 236}})));{% endraw %}
         Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ databus.number_of_spaces }}] port {% raw %}annotation (
@@ -202,6 +204,14 @@ constructed by the signals connected to this bus.
         BaseClasses.DataBus controlBus annotation (Placement(transformation(
                 extent={{80,-20},{120,20}}), iconTransformation(extent={{90,-10},
                   {110,10}})));{% endraw %}
+      Buildings.Fluid.Sensors.PPM[{{ databus.number_of_spaces }}]                             TRoo1(redeclare
+      package Medium = Medium)                                                                     {% raw %}annotation (
+          Placement(transformation(origin={-542,-268},    extent = {{480, 216}, {500, 236}})));{% endraw %}
+  Modelica.Fluid.Interfaces.FluidPort_a[{{ databus.number_of_spaces }}] port_a(redeclare package Medium
+      = Medium)
+    "Fluid connector a (positive design flow direction is from port_a to port_b)"
+    {% raw %}annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
+  iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  {% endraw %}
       equation
     {% for index, space in databus.space_names|enumerate %}
               connect(port[{{index + 1}}],TRoo[{{index + 1}}]. port)
@@ -216,6 +226,16 @@ constructed by the signals connected to this bus.
             extent={{6,3},{6,3}},
             horizontalAlignment=TextAlignment.Left));
         {% endraw %}
+          connect(port_a[{{index + 1}}], TRoo1[{{index + 1}}].port)
+        {% raw %}annotation (Line(points={{-99,-42},{-68,-42},{-68,
+          -56},{-52,-56},{-52,-52}}, color={0,127,255}));{% endraw %}
+  connect(TRoo1[{{index + 1}}].ppm, controlBus.ppm_{{space}})
+        {% raw %}annotation (Line(points={{-41,-42},{74,
+          -42},{74,0},{100,0}}, color={0,0,127}), Text(
+      string="%second",
+      index=1,
+      extent={{6,3},{6,3}},
+      horizontalAlignment=TextAlignment.Left));{% endraw %}
     {% endfor %}
 {% raw %}
         annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
@@ -271,29 +291,27 @@ constructed by the signals connected to this bus.
         IDEAS.Fluid.Movers.FlowControlled_dp
                                        fanSup(
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-          use_inputFilter=false,
           inputType=IDEAS.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
           dp_nominal=200,
-          m_flow_nominal=1 + 1) "Supply fan"
+          m_flow_nominal=2*100*1.2/3600) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         IDEAS.Fluid.Movers.FlowControlled_dp
                                        fanRet(
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-          use_inputFilter=false,
           inputType=IDEAS.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
           dp_nominal=200,
-          m_flow_nominal=1 + 1) "Return fan"
+          m_flow_nominal=2*100*1.2/3600) "Return fan"
           annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
         IDEAS.Fluid.HeatExchangers.ConstantEffectiveness
                                                    hex(
           redeclare package Medium1 = Medium,
           redeclare package Medium2 = Medium,
-          m1_flow_nominal=1,
-          m2_flow_nominal=1,
+          m1_flow_nominal=2*100*1.2/3600,
+          m2_flow_nominal=2*100*1.2/3600,
           dp1_nominal=100,
           dp2_nominal=100) "Heat exchanger with constant heat recovery effectivity"
           annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
@@ -354,7 +372,7 @@ constructed by the signals connected to this bus.
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
           dp_nominal=200,
-          m_flow_nominal=1 + 1) "Supply fan"
+          m_flow_nominal=2*100*1.2/3600) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
                                        fanRet(
@@ -364,14 +382,14 @@ constructed by the signals connected to this bus.
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
           dp_nominal=200,
-          m_flow_nominal=1 + 1) "Return fan"
+          m_flow_nominal=2*100*1.2/3600) "Return fan"
           annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
         Buildings.Fluid.HeatExchangers.ConstantEffectiveness
                                                    hex(
           redeclare package Medium1 = Medium,
           redeclare package Medium2 = Medium,
-          m1_flow_nominal=1,
-          m2_flow_nominal=1,
+          m1_flow_nominal=2*100*1.2/3600,
+          m2_flow_nominal=2*100*1.2/3600,
           dp1_nominal=100,
           dp2_nominal=100) "Heat exchanger with constant heat recovery effectivity"
           annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));

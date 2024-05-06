@@ -117,12 +117,13 @@ class BaseElement(BaseModel):
         return type(self).__name__
 
     def _get_target_compatible_port(  # noqa: C901, PLR0911
-        self, target: "BaseElement", flow: Flow
+        self, target: "BaseElement", flow: Flow, ports_to_skip: List[Port]
     ) -> Optional["Port"]:
         # TODO: function too complex. To be refactored
+        self_ports = [port for port in self.ports if port not in ports_to_skip]
         ports = [
             port
-            for port in self.ports
+            for port in self_ports
             if port.targets
             and any(isinstance(target, target_) for target_ in port.targets)
             and port.is_available()
@@ -132,7 +133,7 @@ class BaseElement(BaseModel):
             return ports[0]
         ports = [
             port
-            for port in self.ports
+            for port in self_ports
             if port.targets
             and any(isinstance(target, target_) for target_ in port.targets)
             and port.is_available()
@@ -144,7 +145,7 @@ class BaseElement(BaseModel):
             return ports[0]
         ports = [
             port
-            for port in self.ports
+            for port in self_ports
             if port.targets
             and any(isinstance(target, target_) for target_ in port.targets)
             and port.is_available()
@@ -155,7 +156,7 @@ class BaseElement(BaseModel):
             return ports[0]
         ports = [
             port
-            for port in self.ports
+            for port in self_ports
             if port.targets
             and any(isinstance(target, target_) for target_ in port.targets)
             and port.is_available()
@@ -167,7 +168,7 @@ class BaseElement(BaseModel):
             return ports[0]
         ports = [
             port
-            for port in self.ports
+            for port in self_ports
             if not port.targets
             and port.is_available()
             and port.flow == Flow.inlet_or_outlet
@@ -179,7 +180,7 @@ class BaseElement(BaseModel):
             return ports[0]
         ports = [
             port
-            for port in self.ports
+            for port in self_ports
             if not port.targets and port.is_available() and port.flow == flow
         ]
         if ports:
@@ -197,15 +198,24 @@ def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:
     connections = []
     edge_first = edge[0]
     edge_second = edge[1]
-    current_port = edge_first._get_target_compatible_port(edge_second, Flow.outlet)
-    other_port = edge_second._get_target_compatible_port(edge_first, Flow.inlet)
-    if any(port is None for port in [current_port, other_port]):
-        return []
-    for left, right in zip(
-        current_port.link(edge_first, edge_second),  # type: ignore
-        other_port.link(edge_second, edge_first),  # type: ignore
-    ):
-        connections.append(Connection(left=left, right=right))
+    edge_first_ports_to_skip: List[Port] = []
+    edge_second_ports_to_skip: List[Port] = []
+    while True:
+        current_port = edge_first._get_target_compatible_port(
+            edge_second, Flow.outlet, ports_to_skip=edge_first_ports_to_skip
+        )
+        other_port = edge_second._get_target_compatible_port(
+            edge_first, Flow.inlet, ports_to_skip=edge_second_ports_to_skip
+        )
+        if any(port is None for port in [current_port, other_port]):
+            break
+        for left, right in zip(
+            current_port.link(edge_first, edge_second),  # type: ignore
+            other_port.link(edge_second, edge_first),  # type: ignore
+        ):
+            connections.append(Connection(left=left, right=right))
+        edge_first_ports_to_skip.append(current_port)  # type: ignore
+        edge_second_ports_to_skip.append(other_port)  # type: ignore
     return connections
 
 

@@ -85,9 +85,7 @@ def test_simulate_ideas_simple_hydronic_no_occupancy(
     ideas_simple_hydronic_no_occupancy: Network,
     container: docker.models.containers.Container,
 ) -> None:
-    with create_mos_file(
-        ideas_simple_hydronic_no_occupancy, check_only=True
-    ) as mos_file_name:
+    with create_mos_file(ideas_simple_hydronic_no_occupancy) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
 
@@ -105,9 +103,7 @@ def test_simulate_ideas_simple_hydronic_three_zones(
     ideas_simple_hydronic_three_zones: Network,
     container: docker.models.containers.Container,
 ) -> None:
-    with create_mos_file(
-        ideas_simple_hydronic_three_zones, check_only=True
-    ) as mos_file_name:
+    with create_mos_file(ideas_simple_hydronic_three_zones) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
 
@@ -116,9 +112,7 @@ def test_ideas_many_spaces_simple_ventilation(
     ideas_many_spaces_simple_ventilation: Network,
     container: docker.models.containers.Container,
 ) -> None:
-    with create_mos_file(
-        ideas_many_spaces_simple_ventilation, check_only=True
-    ) as mos_file_name:
+    with create_mos_file(ideas_many_spaces_simple_ventilation) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
 
@@ -127,8 +121,6 @@ def test_many_spaces_simple_ventilation(
     many_spaces_simple_ventilation: Network,
     container: docker.models.containers.Container,
 ) -> None:
-    with create_mos_file(
-        many_spaces_simple_ventilation, check_only=True
-    ) as mos_file_name:
+    with create_mos_file(many_spaces_simple_ventilation) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)

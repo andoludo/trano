@@ -71,7 +71,7 @@ class Space(BaseElement):
             bool(self.ventilation_inlets)
             + bool(self.ventilation_outlets)
             + isinstance(self.ventilation_control, SpaceSubstanceVentilationControl)
-        )
+        ) + 1  # databus
 
     @computed_field  # type: ignore
     @property

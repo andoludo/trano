@@ -41,7 +41,7 @@ class BaseSpace(LibraryData):
             Port(targets=[IdealHeatingEmission], names=["heaPorAir", "heaPorRad"]),
             Port(targets=[SpaceControl], names=["heaPorAir"]),
             Port(
-                targets=[Ventilation, Control],
+                targets=[Ventilation, Control, DataBus],
                 names=["ports"],
                 multi_connection=True,
                 flow=Flow.inlet_or_outlet,
@@ -228,13 +228,13 @@ class BaseControl(LibraryData):
 
 
 class BaseDamper(LibraryData):
-    template: str = """  {{ library_name }}.Fluid.Actuators.Dampers.Exponential
+    template: str = """  {{ library_name }}.Fluid.Actuators.Dampers.PressureIndependent
     {{ element.name }}(
     redeclare package Medium = Medium,
-    m_flow_nominal=1,
-    dpDamper_nominal=20,
+    m_flow_nominal=100*1.2/3600,
+    dpDamper_nominal=50,
     allowFlowReversal=false,
-    dpFixed_nominal=130) "VAV box for room" annotation (
+    dpFixed_nominal=50) "VAV box for room" annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
@@ -276,8 +276,9 @@ class BaseAirHandlingUnit(LibraryData):
 class BaseDuct(LibraryData):
     template: str = """  {{ library_name }}.Fluid.FixedResistances.PressureDrop
     {{ element.name }}(
-    m_flow_nominal=1,
+    m_flow_nominal=100*1.2/3600,
     redeclare package Medium = Medium,
+    allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct" annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -310,7 +311,8 @@ class BaseVentilationControl(LibraryData):
 
 class BaseDataBus(LibraryData):
     template: str = """    {{package_name}}.Common.Controls.SpaceControls.DataServer
-    {{ element.name }} annotation (
+    {{ element.name }} (redeclare package
+      Medium = Medium) annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
@@ -318,6 +320,13 @@ class BaseDataBus(LibraryData):
         default=lambda: [
             Port(
                 targets=[Space], names=["port"], multi_connection=True, use_counter=True
+            ),
+            Port(
+                targets=[Space],
+                names=["port_a"],
+                flow=Flow.inlet,
+                multi_connection=True,
+                use_counter=True,
             ),
         ]
     )

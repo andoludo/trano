@@ -119,7 +119,7 @@ class Network:
         )
         self.add_node(data_bus)
         for space in spaces:
-            self.graph.add_edge(data_bus, space)
+            self.graph.add_edge(space, data_bus)
         return data_bus
 
     def _build_ventilation_control(self, space: "Space") -> None:
