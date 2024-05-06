@@ -79,3 +79,21 @@ def test_simulate_ideas_free_float_three_zones(
     with create_mos_file(ideas_free_float_three_zones) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
+
+
+def test_ideas_many_spaces_simple_ventilation(
+    ideas_many_spaces_simple_ventilation: Network,
+    container: docker.models.containers.Container,
+) -> None:
+    with create_mos_file(ideas_many_spaces_simple_ventilation) as mos_file_name:
+        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
+        assert is_success(results)
+
+
+def test_many_spaces_simple_ventilation(
+    many_spaces_simple_ventilation: Network,
+    container: docker.models.containers.Container,
+) -> None:
+    with create_mos_file(many_spaces_simple_ventilation) as mos_file_name:
+        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
+        assert is_success(results)

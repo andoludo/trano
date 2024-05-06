@@ -270,7 +270,7 @@ constructed by the signals connected to this bus.
           "Medium model" annotation (choicesAllMatching=true);
         IDEAS.Fluid.Movers.FlowControlled_dp
                                        fanSup(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           use_inputFilter=false,
           inputType=IDEAS.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
@@ -280,7 +280,7 @@ constructed by the signals connected to this bus.
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         IDEAS.Fluid.Movers.FlowControlled_dp
                                        fanRet(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           use_inputFilter=false,
           inputType=IDEAS.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
@@ -348,7 +348,7 @@ constructed by the signals connected to this bus.
           "Medium model" annotation (choicesAllMatching=true);
         Buildings.Fluid.Movers.FlowControlled_dp
                                        fanSup(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           use_inputFilter=false,
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
@@ -358,7 +358,7 @@ constructed by the signals connected to this bus.
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
                                        fanRet(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState,
+          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           use_inputFilter=false,
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,

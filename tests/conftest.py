@@ -19,6 +19,7 @@ from neosim.models.elements.control import (
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
     VAV,
+    AirHandlingUnit,
     Boiler,
     Duct,
     Emission,
@@ -1257,3 +1258,71 @@ def space_2_simple_ventilation() -> Space:
     )
 
     return space_2
+
+
+@pytest.fixture
+def ideas_many_spaces_simple_ventilation(
+    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space
+) -> Network:
+    network = Network(
+        name="ideas_many_spaces_simple_ventilation",
+        library=IdeasLibrary(
+            constants="""
+    replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
+    constrainedby Modelica.Media.Interfaces.PartialMedium
+    "Medium in the component"
+    annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
+    sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
+                                                  "Data reader"
+        annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
+        ),
+    )
+    network.add_boiler_plate_spaces(
+        [space_1_simple_ventilation, space_2_simple_ventilation]
+    )
+    ahu = AirHandlingUnit(name="ahu")
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+
+    network.connect_systems(
+        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    return network
+
+
+@pytest.fixture
+def many_spaces_simple_ventilation(
+    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space
+) -> Network:
+    network = Network(
+        name="many_spaces_simple_ventilation",
+        library=BuildingsLibrary(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+    package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
+    network.add_boiler_plate_spaces(
+        [space_1_simple_ventilation, space_2_simple_ventilation]
+    )
+    ahu = AirHandlingUnit(name="ahu")
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+
+    network.connect_systems(
+        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    return network

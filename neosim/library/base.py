@@ -293,7 +293,7 @@ class BaseDuct(LibraryData):
 class BaseVentilationControl(LibraryData):
     template: str = """    {{package_name}}.Common.Controls.SpaceControls.PIDSubstance
     {{ element.name }}(redeclare package
-      Medium = Medium) annotation (
+      Medium = Medium, yMax = 0.9, yMin = 0.1, setPoint = 400) annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""

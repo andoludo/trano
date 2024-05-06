@@ -182,36 +182,13 @@ package MediumW = Buildings.Media.Water "Medium model";"""
 
 
 def test_many_spaces_simple_ventilation(
-    space_1_simple_ventilation: Space,
-    space_2_simple_ventilation: Space,
+    many_spaces_simple_ventilation: Network,
 ) -> None:
 
-    network = Network(
-        name="many_spaces_simple_ventilation",
-        library=BuildingsLibrary(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+    model_ = many_spaces_simple_ventilation.model()
+    assert clean_model(model_, many_spaces_simple_ventilation.name) == set(
+        _read(many_spaces_simple_ventilation.name)
     )
-    network.add_boiler_plate_spaces(
-        [space_1_simple_ventilation, space_2_simple_ventilation]
-    )
-    ahu = AirHandlingUnit(name="ahu")
-    network.connect_systems(
-        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
-
-    network.connect_systems(
-        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
-    model_ = network.model()
-    assert clean_model(model_, network.name) == set(_read(network.name))
 
 
 def test_ideas_space_1_simple_ventilation(
@@ -245,42 +222,13 @@ sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePo
 
 
 def test_ideas_many_spaces_simple_ventilation(
-    space_1_simple_ventilation: Space,
-    space_2_simple_ventilation: Space,
+    ideas_many_spaces_simple_ventilation: Network,
 ) -> None:
 
-    network = Network(
-        name="ideas_many_spaces_simple_ventilation",
-        library=IdeasLibrary(
-            constants="""
-replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
-constrainedby Modelica.Media.Interfaces.PartialMedium
-"Medium in the component"
-annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
-sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
-                                              "Data reader"
-    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
-        ),
+    model_ = ideas_many_spaces_simple_ventilation.model()
+    assert clean_model(model_, ideas_many_spaces_simple_ventilation.name) == set(
+        _read(ideas_many_spaces_simple_ventilation.name)
     )
-    network.add_boiler_plate_spaces(
-        [space_1_simple_ventilation, space_2_simple_ventilation]
-    )
-    ahu = AirHandlingUnit(name="ahu")
-    network.connect_systems(
-        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
-
-    network.connect_systems(
-        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
-    model_ = network.model()
-    assert clean_model(model_, network.name) == set(_read(network.name))
 
 
 def test_template_buildings_simple_hydronic_three_zones_with_data_bus(
