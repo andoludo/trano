@@ -1338,3 +1338,14 @@ def many_spaces_simple_ventilation(
         space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
     )
     return network
+
+
+@pytest.fixture
+def space_1_different_construction_types_network(
+    space_1_different_construction_types: Space,
+) -> Network:
+    network = Network(
+        name="space_1_different_construction_types", library=IdeasLibrary()
+    )
+    network.add_boiler_plate_spaces([space_1_different_construction_types])
+    return network
