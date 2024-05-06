@@ -25,7 +25,7 @@ from neosim.library.ideas.data import (
 )
 from neosim.models.constants import Flow
 from neosim.models.elements.base import Port
-from neosim.models.elements.control import Control, SpaceControl
+from neosim.models.elements.control import Control, DataBus, SpaceControl
 from neosim.models.elements.merged_wall import MergedBaseWall, MergedExternalWall
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import Emission, Occupancy, Ventilation
@@ -57,7 +57,7 @@ class IdeasSpace(BaseSpace):
             ),
             Port(targets=[Occupancy], names=["yOcc"]),
             Port(targets=[Emission], names=["gainCon", "gainRad"]),
-            Port(targets=[SpaceControl], names=["gainCon"]),
+            Port(targets=[SpaceControl, DataBus], names=["gainCon"]),
             Port(
                 targets=[Ventilation, Control],
                 names=["ports"],

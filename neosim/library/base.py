@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 from neosim.models.constants import Flow
 from neosim.models.elements.base import BaseElement, Port
-from neosim.models.elements.control import Control, SpaceControl
+from neosim.models.elements.control import Control, DataBus, SpaceControl
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
     Emission,
@@ -37,6 +37,7 @@ class BaseSpace(LibraryData):
             Port(targets=[Occupancy], names=["qGai_flow"]),
             Port(targets=[Weather], names=["weaBus"]),
             Port(targets=[Emission], names=["heaPorAir", "heaPorRad"]),
+            Port(targets=[DataBus], names=["heaPorAir"]),
             Port(targets=[IdealHeatingEmission], names=["heaPorAir", "heaPorRad"]),
             Port(targets=[SpaceControl], names=["heaPorAir"]),
             Port(
@@ -307,6 +308,21 @@ class BaseVentilationControl(LibraryData):
     )
 
 
+class BaseDataBus(LibraryData):
+    template: str = """    {{package_name}}.Common.Controls.SpaceControls.DataServer
+    {{ element.name }} annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(
+                targets=[Space], names=["port"], multi_connection=True, use_counter=True
+            ),
+        ]
+    )
+
+
 class MaterialProperties(BaseModel):
     data: str
     is_package: bool
@@ -341,6 +357,7 @@ class DefaultLibrary(BaseModel):
     spacesubstanceventilationcontrol: LibraryData = Field(
         default=BaseVentilationControl()
     )
+    databus: LibraryData = Field(default=BaseDataBus())
 
     def _get_field_value(self, element: BaseElement) -> Any:  # noqa: ANN401
         element_names = [

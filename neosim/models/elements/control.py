@@ -18,3 +18,8 @@ class SpaceVentilationControl(Control):
 
 class SpaceSubstanceVentilationControl(SpaceVentilationControl):
     ...
+
+
+class DataBus(Control):
+    number_of_spaces: int
+    space_names: List[str]

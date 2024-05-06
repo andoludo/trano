@@ -13,7 +13,7 @@ from neosim.library.base import DefaultLibrary
 from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
-from neosim.models.elements.control import Control
+from neosim.models.elements.control import Control, DataBus
 from neosim.models.elements.space import Space, _get_controllable_element
 from neosim.models.elements.system import System, Weather
 from neosim.models.elements.wall import InternalElement
@@ -105,6 +105,22 @@ class Network:
                     f"not linked to controllable emission."
                 )
             self.graph.add_edge(space.control, controllable_emission)
+
+    def _build_data_bus(self) -> DataBus:
+
+        spaces = sorted(
+            [node for node in self.graph.nodes if isinstance(node, Space)],
+            key=lambda x: x.name,
+        )
+        data_bus = DataBus(
+            name="data_bus",
+            number_of_spaces=len(spaces),
+            space_names=[space.name for space in spaces],
+        )
+        self.add_node(data_bus)
+        for space in spaces:
+            self.graph.add_edge(data_bus, space)
+        return data_bus
 
     def _build_ventilation_control(self, space: "Space") -> None:
         if space.ventilation_control:
@@ -255,8 +271,10 @@ class Network:
                 shortest_path(undirected_graph, system_control, space_control)
 
     def model(self) -> str:
+        data_bus = self._build_data_bus()
         self.generate_graphs()
         self._connect_space_controls()
+
         element_models = self.build_element_models()
         environment = Environment(
             trim_blocks=True,
@@ -265,12 +283,17 @@ class Network:
             autoescape=True,
         )
         environment.filters["frozenset"] = frozenset
+        environment.filters["enumerate"] = enumerate
 
         template = environment.get_template("base.jinja2")
 
         data = self.library.extract_data(self.name, self.graph.nodes)
         return template.render(
-            network=self, data=data, element_models=element_models, library=self.library
+            network=self,
+            data=data,
+            element_models=element_models,
+            library=self.library,
+            databus=data_bus,
         )
 
     def build_element_models(self) -> List[str]:
@@ -280,6 +303,7 @@ class Network:
             loader=FileSystemLoader(str(Path(__file__).parent.joinpath("templates"))),
             autoescape=True,
         )
+        environment.filters["enumerate"] = enumerate
         models = []
         for node in self.graph.nodes:
             environment.globals.update(self.library.functions)

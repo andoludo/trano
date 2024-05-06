@@ -85,7 +85,6 @@ def test_template_buildings_simple_hydronic_two_zones(
     )
 
 
-# @pytest.mark.skip("To be checked")
 def test_template_buildings_simple_hydronic_three_zones(
     buildings_simple_hydronic_three_zones: Network,
 ) -> None:
@@ -282,3 +281,12 @@ sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePo
     )
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_template_buildings_simple_hydronic_three_zones_with_data_bus(
+    buildings_simple_hydronic_three_zones: Network,
+) -> None:
+    model_ = buildings_simple_hydronic_three_zones.model()
+    assert clean_model(model_, buildings_simple_hydronic_three_zones.name) == set(
+        _read(buildings_simple_hydronic_three_zones.name)
+    )
