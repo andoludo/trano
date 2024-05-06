@@ -64,7 +64,7 @@ class IdeasSpace(BaseSpace):
                 use_counter=False,
             ),
             Port(
-                targets=[Ventilation, Control],
+                targets=[Ventilation, Control, DataBus],
                 names=["ports"],
                 multi_connection=True,
                 flow=Flow.inlet_or_outlet,
@@ -225,7 +225,8 @@ class IdeasLibrary(DefaultLibrary):
         default=BaseThreeWayValve(
             template="""
     IDEAS.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear {{ element.name }}(
-    redeclare package Medium = MediumW) "Three-way valve"
+    redeclare package Medium = MediumW, m_flow_nominal = 0.1,
+    dpValve_nominal = 1000) "Three-way valve"
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -236,7 +237,8 @@ class IdeasLibrary(DefaultLibrary):
         default=BaseSplitValve(
             template="""
     IDEAS.Fluid.FixedResistances.Junction {{ element.name }} (
-    redeclare package Medium = MediumW)
+    redeclare package Medium = MediumW, m_flow_nominal = {0.1, 0.1, 0.1},
+    dp_nominal = {40, 40, 40})
     "Flow splitter"
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
@@ -248,7 +250,8 @@ class IdeasLibrary(DefaultLibrary):
         default=BaseValve(
             template="""
     IDEAS.Fluid.Actuators.Valves.TwoWayEqualPercentage {{ element.name }}(
-    redeclare package Medium = MediumW) "Radiator valve"
+    redeclare package Medium = MediumW, m_flow_nominal = 0.1, dpValve_nominal = 200,
+    allowFlowReversal = false, dpFixed_nominal = 200, linearized = false) "Radiator valve"
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -259,7 +262,9 @@ class IdeasLibrary(DefaultLibrary):
         default=BaseEmission(
             template="""
     IDEAS.Fluid.HeatExchangers.Radiators.RadiatorEN442_2 {{ element.name }}(
-    redeclare package Medium = MediumW) "Radiator"
+    redeclare package Medium = MediumW, allowFlowReversal = false, Q_flow_nominal = 500,
+    T_a_nominal = 318.15, T_b_nominal = 308.15, m_flow_nominal = 100*1.2/3600,
+    energyDynamics = Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator"
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}

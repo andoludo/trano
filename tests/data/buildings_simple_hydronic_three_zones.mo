@@ -611,7 +611,7 @@ model building
 
 
 
-package Medium = Buildings.Media.Air "Medium model";
+package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";
 parameter Integer nRoo = 2 "Number of rooms";
   parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";
@@ -973,7 +973,7 @@ parameter Integer nRoo = 2 "Number of rooms";
         buildings_simple_hydronic_three_zones.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 102.56718590040349, -167.76271671671356 },
+    Placement(transformation(origin = { -14.425998380769277, 179.86575423034355 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -1010,12 +1010,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 51.283592950201744, 50.0 }    ,{ 51.283592950201744, -167.76271671671356 }    ,{ 102.56718590040349, -167.76271671671356 }    },
+points={{ 0.0, 50.0 }    ,{ -7.212999190384639, 50.0 }    ,{ -7.212999190384639, 179.86575423034355 }    ,{ -14.425998380769277, 179.86575423034355 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 51.283592950201744, 50.0 }    ,{ 51.283592950201744, -167.76271671671356 }    ,{ 102.56718590040349, -167.76271671671356 }    },
+points={{ 0.0, 50.0 }    ,{ -7.212999190384639, 50.0 }    ,{ -7.212999190384639, 179.86575423034355 }    ,{ -14.425998380769277, 179.86575423034355 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(emission.port_b,split_valve.port_1)
@@ -1070,12 +1070,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.heaPorAir,data_bus.port[2])
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 151.28359295020175, 50.0 }    ,{ 151.28359295020175, -167.76271671671356 }    ,{ 102.56718590040349, -167.76271671671356 }    },
+points={{ 200.0, 50.0 }    ,{ 92.78700080961536, 50.0 }    ,{ 92.78700080961536, 179.86575423034355 }    ,{ -14.425998380769277, 179.86575423034355 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.ports[1],data_bus.port_a[2])
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 151.28359295020175, 50.0 }    ,{ 151.28359295020175, -167.76271671671356 }    ,{ 102.56718590040349, -167.76271671671356 }    },
+points={{ 200.0, 50.0 }    ,{ 92.78700080961536, 50.0 }    ,{ 92.78700080961536, 179.86575423034355 }    ,{ -14.425998380769277, 179.86575423034355 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(emission_2.port_b,split_valve.port_1)
@@ -1130,12 +1130,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.heaPorAir,data_bus.port[3])
 annotation (Line(
-points={{ 400.0, 50.0 }    ,{ 251.28359295020175, 50.0 }    ,{ 251.28359295020175, -167.76271671671356 }    ,{ 102.56718590040349, -167.76271671671356 }    },
+points={{ 400.0, 50.0 }    ,{ 192.78700080961536, 50.0 }    ,{ 192.78700080961536, 179.86575423034355 }    ,{ -14.425998380769277, 179.86575423034355 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.ports[1],data_bus.port_a[3])
 annotation (Line(
-points={{ 400.0, 50.0 }    ,{ 251.28359295020175, 50.0 }    ,{ 251.28359295020175, -167.76271671671356 }    ,{ 102.56718590040349, -167.76271671671356 }    },
+points={{ 400.0, 50.0 }    ,{ 192.78700080961536, 50.0 }    ,{ 192.78700080961536, 179.86575423034355 }    ,{ -14.425998380769277, 179.86575423034355 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(emission_3.port_b,split_valve_2.port_1)

@@ -1,5 +1,5 @@
 BUILDINGS_CONSTANTS = """
-package Medium = Buildings.Media.Air "Medium model";
+package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";
 parameter Integer nRoo = 2 "Number of rooms";
   parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";

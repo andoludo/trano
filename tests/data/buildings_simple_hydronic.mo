@@ -562,7 +562,7 @@ model building
 
 
 
-package Medium = Buildings.Media.Air "Medium model";
+package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";
 parameter Integer nRoo = 2 "Number of rooms";
   parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";
@@ -725,7 +725,7 @@ parameter Integer nRoo = 2 "Number of rooms";
         buildings_simple_hydronic.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 60.060375042559954, 200.0 },
+    Placement(transformation(origin = { -190.903217845662, -82.38275227788702 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -752,12 +752,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 30.030187521279977, 50.0 }    ,{ 30.030187521279977, 200.0 }    ,{ 60.060375042559954, 200.0 }    },
+points={{ 0.0, 50.0 }    ,{ -95.451608922831, 50.0 }    ,{ -95.451608922831, -82.38275227788702 }    ,{ -190.903217845662, -82.38275227788702 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 30.030187521279977, 50.0 }    ,{ 30.030187521279977, 200.0 }    ,{ 60.060375042559954, 200.0 }    },
+points={{ 0.0, 50.0 }    ,{ -95.451608922831, 50.0 }    ,{ -95.451608922831, -82.38275227788702 }    ,{ -190.903217845662, -82.38275227788702 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(emission.port_b,split_valve.port_1)

@@ -1,5 +1,5 @@
 CONSTANTS = """
-replaceable package Medium = IDEAS.Media.Air
+replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
 "Medium in the component"
 annotation (choicesAllMatching = true);

@@ -561,7 +561,7 @@ model building
     annotation (Placement(transformation(extent={{20,84},{34,98}})));
 
 
-package Medium = Buildings.Media.Air "Medium model";
+package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";
 
     Buildings.ThermalZones.Detailed.MixedAir space_1(
@@ -612,7 +612,7 @@ package MediumW = Buildings.Media.Water "Medium model";
         buildings_free_float_single_zone.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { -183.8044738159221, -87.42225305815768 },
+    Placement(transformation(origin = { -150.4719800204336, -85.29859423493716 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -629,12 +629,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -91.90223690796105, 50.0 }    ,{ -91.90223690796105, -87.42225305815768 }    ,{ -183.8044738159221, -87.42225305815768 }    },
+points={{ 0.0, 50.0 }    ,{ -75.2359900102168, 50.0 }    ,{ -75.2359900102168, -85.29859423493716 }    ,{ -150.4719800204336, -85.29859423493716 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -91.90223690796105, 50.0 }    ,{ -91.90223690796105, -87.42225305815768 }    ,{ -183.8044738159221, -87.42225305815768 }    },
+points={{ 0.0, 50.0 }    ,{ -75.2359900102168, 50.0 }    ,{ -75.2359900102168, -85.29859423493716 }    ,{ -150.4719800204336, -85.29859423493716 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

@@ -592,7 +592,7 @@ model building
     annotation (Placement(transformation(extent={{20,84},{34,98}})));
 
 
-package Medium = Buildings.Media.Air "Medium model";
+package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";
 
     Buildings.ThermalZones.Detailed.MixedAir space_1(
@@ -687,7 +687,7 @@ package MediumW = Buildings.Media.Water "Medium model";
         buildings_free_float_two_zones.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 43.33135927477736, -172.2143497385354 },
+    Placement(transformation(origin = { 142.1495793509615, 101.80769109038246 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -709,12 +709,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 21.66567963738868, 50.0 }    ,{ 21.66567963738868, -172.2143497385354 }    ,{ 43.33135927477736, -172.2143497385354 }    },
+points={{ 0.0, 50.0 }    ,{ 71.07478967548074, 50.0 }    ,{ 71.07478967548074, 101.80769109038246 }    ,{ 142.1495793509615, 101.80769109038246 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 21.66567963738868, 50.0 }    ,{ 21.66567963738868, -172.2143497385354 }    ,{ 43.33135927477736, -172.2143497385354 }    },
+points={{ 0.0, 50.0 }    ,{ 71.07478967548074, 50.0 }    ,{ 71.07478967548074, 101.80769109038246 }    ,{ 142.1495793509615, 101.80769109038246 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.qGai_flow,occupancy_1.y)
@@ -734,12 +734,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.heaPorAir,data_bus.port[2])
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 121.66567963738868, 50.0 }    ,{ 121.66567963738868, -172.2143497385354 }    ,{ 43.33135927477736, -172.2143497385354 }    },
+points={{ 200.0, 50.0 }    ,{ 171.07478967548076, 50.0 }    ,{ 171.07478967548076, 101.80769109038246 }    ,{ 142.1495793509615, 101.80769109038246 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.ports[1],data_bus.port_a[2])
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 121.66567963738868, 50.0 }    ,{ 121.66567963738868, -172.2143497385354 }    ,{ 43.33135927477736, -172.2143497385354 }    },
+points={{ 200.0, 50.0 }    ,{ 171.07478967548076, 50.0 }    ,{ 171.07478967548076, 101.80769109038246 }    ,{ 142.1495793509615, 101.80769109038246 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

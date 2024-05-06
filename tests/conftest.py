@@ -186,7 +186,7 @@ def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space) -> Ne
     network = Network(
         name="buildings_free_float_single_zone",
         library=BuildingsLibrary(
-            constants="""package Medium = Buildings.Media.Air "Medium model";
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";"""
         ),
     )
@@ -200,7 +200,7 @@ def ideas_free_float_single_zone(simple_space_1: Space) -> Network:
         name="ideas_free_float_single_zone",
         library=IdeasLibrary(
             constants="""
-replaceable package Medium = IDEAS.Media.Air
+replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
 "Medium in the component"
 annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
@@ -304,7 +304,7 @@ def buildings_free_float_two_zones() -> Network:
     network = Network(
         name="buildings_free_float_two_zones",
         library=BuildingsLibrary(
-            constants="""package Medium = Buildings.Media.Air "Medium model";
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";"""
         ),
     )
@@ -638,7 +638,7 @@ def buildings_free_float_three_zones(
     network = Network(
         name="buildings_free_float_three_zones",
         library=BuildingsLibrary(
-            constants="""package Medium = Buildings.Media.Air "Medium model";
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";"""
         ),
     )
@@ -654,7 +654,7 @@ def ideas_free_float_three_zones(
         name="ideas_free_float_three_zones",
         library=IdeasLibrary(
             constants="""
-replaceable package Medium = IDEAS.Media.Air
+replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
 "Medium in the component"
 annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
