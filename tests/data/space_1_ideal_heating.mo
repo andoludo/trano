@@ -610,7 +610,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     nConPar=0,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
     annotation (Placement(transformation(origin=
-    { 4600, 50 },extent={{-20,-20},{20,20}}
+    { 0, 50 },extent={{-20,-20},{20,20}}
 )));
 
 
@@ -620,17 +620,17 @@ parameter Integer nRoo = 2 "Number of rooms";
 
         space_1_ideal_heating.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission emission
     annotation (
-    Placement(transformation(origin = { 4600, -25 },
+    Placement(transformation(origin = { 0, -25 },
     extent = {{-10, -10}, {10, 10}}
 )));
         space_1_ideal_heating.Common.Controls.SpaceControls.PID
     space_control(setPoint = 295.15, yMax = 1, yMin = 0)
     annotation (
-    Placement(transformation(origin = { 4550, 0 },
+    Placement(transformation(origin = { -50, 0 },
     extent = {{-10, -10}, {10, 10}}
 )));
         space_1_ideal_heating.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
-    Placement(transformation(origin = { 4550, 50 },
+    Placement(transformation(origin = { -50, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
@@ -642,44 +642,44 @@ parameter Integer nRoo = 2 "Number of rooms";
 )));
         space_1_ideal_heating.Common.Controls.SpaceControls.DataServer
     data_bus annotation (
-    Placement(transformation(origin = { 182.64829683201074, -91.15468910279749 },
+    Placement(transformation(origin = { -193.09820696185847, -9.598896319220744 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
 equation    connect(space_1.heaPorAir,emission.heatPortCon)
 annotation (Line(
-points={{ 4600.0, 50.0 }    ,{ 4600.0, 50.0 }    ,{ 4600.0, -25.0 }    ,{ 4600.0, -25.0 }    },
+points={{ 0.0, 50.0 }    ,{ 0.0, 50.0 }    ,{ 0.0, -25.0 }    ,{ 0.0, -25.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorRad,emission.heatPortRad)
 annotation (Line(
-points={{ 4600.0, 50.0 }    ,{ 4600.0, 50.0 }    ,{ 4600.0, -25.0 }    ,{ 4600.0, -25.0 }    },
+points={{ 0.0, 50.0 }    ,{ 0.0, 50.0 }    ,{ 0.0, -25.0 }    ,{ 0.0, -25.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.qGai_flow,occupancy_0.y)
 annotation (Line(
-points={{ 4600.0, 50.0 }    ,{ 4575.0, 50.0 }    ,{ 4575.0, 50.0 }    ,{ 4550.0, 50.0 }    },
+points={{ 0.0, 50.0 }    ,{ -25.0, 50.0 }    ,{ -25.0, 50.0 }    ,{ -50.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.weaBus,weather.weaBus)
 annotation (Line(
-points={{ 4600.0, 50.0 }    ,{ 2250.0, 50.0 }    ,{ 2250.0, 200.0 }    ,{ -100.0, 200.0 }    },
+points={{ 0.0, 50.0 }    ,{ -50.0, 50.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_control.port,space_1.heaPorAir)
 annotation (Line(
-points={{ 4550.0, 0.0 }    ,{ 4575.0, 0.0 }    ,{ 4575.0, 50.0 }    ,{ 4600.0, 50.0 }    },
+points={{ -50.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, 50.0 }    ,{ 0.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_control.y,emission.y)
 annotation (Line(
-points={{ 4550.0, 0.0 }    ,{ 4575.0, 0.0 }    ,{ 4575.0, -25.0 }    ,{ 4600.0, -25.0 }    },
+points={{ -50.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, -25.0 }    ,{ 0.0, -25.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(data_bus.port[1],space_1.heaPorAir)
 annotation (Line(
-points={{ 182.64829683201074, -91.15468910279749 }    ,{ 2391.3241484160053, -91.15468910279749 }    ,{ 2391.3241484160053, 50.0 }    ,{ 4600.0, 50.0 }    },
+points={{ -193.09820696185847, -9.598896319220744 }    ,{ -96.54910348092923, -9.598896319220744 }    ,{ -96.54910348092923, 50.0 }    ,{ 0.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

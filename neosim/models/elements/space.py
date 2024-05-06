@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import ClassVar, List, Optional, Union
 
 from networkx import Graph
 from pydantic import Field, computed_field
@@ -23,8 +23,6 @@ from neosim.models.elements.wall import (
 )
 from neosim.models.parameters import WallParameters, WindowedWallParameters
 
-counter = 0
-
 
 def _get_controllable_element(elements: List[System]) -> Optional["System"]:
     controllable_elements = []
@@ -40,6 +38,7 @@ def _get_controllable_element(elements: List[System]) -> Optional["System"]:
 
 
 class Space(BaseElement):
+    counter: ClassVar[int] = 0
     name: str
     volume: float | int
     height: float | int
@@ -106,9 +105,8 @@ class Space(BaseElement):
         return _get_controllable_element(self.emissions)
 
     def assign_position(self) -> None:
-        global counter  # noqa: PLW0603
-        self.position = [200 * counter, 50]
-        counter += 1
+        self.position = [200 * Space.counter, 50]
+        Space.counter += 1
         x = self.position[0]
         y = self.position[1]
         for i, emission in enumerate(self.emissions):

@@ -603,7 +603,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     nConPar=0,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
     annotation (Placement(transformation(origin=
-    { 200, 50 },extent={{-20,-20},{20,20}}
+    { 0, 50 },extent={{-20,-20},{20,20}}
 )));
 
 
@@ -612,7 +612,7 @@ package MediumW = Buildings.Media.Water "Medium model";
 
 
         buildings_free_float_two_zones.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
-    Placement(transformation(origin = { 150, 50 },
+    Placement(transformation(origin = { -50, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
     Buildings.ThermalZones.Detailed.MixedAir space_2(
@@ -637,14 +637,14 @@ package MediumW = Buildings.Media.Water "Medium model";
                 nConExtWin=0,    nConPar=0,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
     annotation (Placement(transformation(origin=
-    { 400, 50 },extent={{-20,-20},{20,20}}
+    { 200, 50 },extent={{-20,-20},{20,20}}
 )));
 
 
 
 
         buildings_free_float_two_zones.Common.Occupancy.SimpleOccupancy occupancy_1 annotation (
-    Placement(transformation(origin = { 350, 50 },
+    Placement(transformation(origin = { 150, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
         Buildings.HeatTransfer.Conduction.MultiLayer internal_space_1_space_2(A =
@@ -652,7 +652,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     internal_wall, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
     rooms" annotation(
-    Placement(transformation(origin = { 300.0, 50 },
+    Placement(transformation(origin = { 100.0, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
@@ -664,49 +664,49 @@ package MediumW = Buildings.Media.Water "Medium model";
 )));
         buildings_free_float_two_zones.Common.Controls.SpaceControls.DataServer
     data_bus annotation (
-    Placement(transformation(origin = { -47.20202688211164, 187.32884628314602 },
+    Placement(transformation(origin = { 187.92653979883485, 49.593478366053176 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
 equation    connect(space_1.qGai_flow,occupancy_0.y)
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 175.0, 50.0 }    ,{ 175.0, 50.0 }    ,{ 150.0, 50.0 }    },
+points={{ 0.0, 50.0 }    ,{ -25.0, 50.0 }    ,{ -25.0, 50.0 }    ,{ -50.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.surf_surBou[1],internal_space_1_space_2.port_a)
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 250.0, 50.0 }    ,{ 250.0, 50.0 }    ,{ 300.0, 50.0 }    },
+points={{ 0.0, 50.0 }    ,{ 50.0, 50.0 }    ,{ 50.0, 50.0 }    ,{ 100.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.weaBus,weather.weaBus)
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 50.0, 50.0 }    ,{ 50.0, 200.0 }    ,{ -100.0, 200.0 }    },
+points={{ 0.0, 50.0 }    ,{ -50.0, 50.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.qGai_flow,occupancy_1.y)
 annotation (Line(
-points={{ 400.0, 50.0 }    ,{ 375.0, 50.0 }    ,{ 375.0, 50.0 }    ,{ 350.0, 50.0 }    },
+points={{ 200.0, 50.0 }    ,{ 175.0, 50.0 }    ,{ 175.0, 50.0 }    ,{ 150.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.surf_surBou[1],internal_space_1_space_2.port_b)
 annotation (Line(
-points={{ 400.0, 50.0 }    ,{ 350.0, 50.0 }    ,{ 350.0, 50.0 }    ,{ 300.0, 50.0 }    },
+points={{ 200.0, 50.0 }    ,{ 150.0, 50.0 }    ,{ 150.0, 50.0 }    ,{ 100.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.weaBus,weather.weaBus)
 annotation (Line(
-points={{ 400.0, 50.0 }    ,{ 150.0, 50.0 }    ,{ 150.0, 200.0 }    ,{ -100.0, 200.0 }    },
+points={{ 200.0, 50.0 }    ,{ 50.0, 50.0 }    ,{ 50.0, 200.0 }    ,{ -100.0, 200.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(data_bus.port[1],space_1.heaPorAir)
 annotation (Line(
-points={{ -47.20202688211164, 187.32884628314602 }    ,{ 76.39898655894417, 187.32884628314602 }    ,{ 76.39898655894419, 50.0 }    ,{ 200.0, 50.0 }    },
+points={{ 187.92653979883485, 49.593478366053176 }    ,{ 93.96326989941743, 49.593478366053176 }    ,{ 93.96326989941743, 50.0 }    ,{ 0.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(data_bus.port[2],space_2.heaPorAir)
 annotation (Line(
-points={{ -47.20202688211164, 187.32884628314602 }    ,{ 176.39898655894416, 187.32884628314602 }    ,{ 176.3989865589442, 50.0 }    ,{ 400.0, 50.0 }    },
+points={{ 187.92653979883485, 49.593478366053176 }    ,{ 193.9632698994174, 49.593478366053176 }    ,{ 193.9632698994174, 50.0 }    ,{ 200.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

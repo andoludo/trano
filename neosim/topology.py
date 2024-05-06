@@ -271,6 +271,7 @@ class Network:
                 shortest_path(undirected_graph, system_control, space_control)
 
     def model(self) -> str:
+        Space.counter = 0
         data_bus = self._build_data_bus()
         self.generate_graphs()
         self._connect_space_controls()
