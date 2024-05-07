@@ -26,7 +26,7 @@ from neosim.models.elements.system import (
     Boiler,
     Duct,
     Emission,
-    IdealHeatingEmission,
+    EmissionVariant,
     Occupancy,
     Pump,
     SplitValve,
@@ -1110,7 +1110,7 @@ def space_1_ideal_heating() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        emissions=[IdealHeatingEmission(name="emission")],
+        emissions=[Emission(name="emission", variant=EmissionVariant.ideal)],
         control=SpaceControl(name="space_control"),
     )
     return space_1
@@ -1177,7 +1177,7 @@ def space_1_different_construction_types() -> Space:
                 construction=Glasses.simple_glazing,
             ),
         ],
-        emissions=[IdealHeatingEmission(name="emission")],
+        emissions=[Emission(name="emission", variant=EmissionVariant.ideal)],
         control=SpaceControl(name="space_control"),
     )
     return space_1

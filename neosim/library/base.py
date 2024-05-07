@@ -2,17 +2,17 @@ import abc
 from typing import Any, Callable, Dict, List
 
 from networkx.classes.reportviews import NodeView
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from neosim.models.constants import Flow
-from neosim.models.elements.base import BaseElement, Port
+from neosim.models.elements.base import BaseElement, BaseVariant, Port
 from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.control import Control, DataBus, SpaceControl
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
     AirHandlingUnit,
     Emission,
-    IdealHeatingEmission,
+    EmissionVariant,
     Occupancy,
     System,
     Ventilation,
@@ -22,12 +22,14 @@ from neosim.models.elements.wall import InternalElement
 
 
 class LibraryData(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     template: str = ""
     annotation_template: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
     ports_factory: Callable[[], List[Port]]
+    variant: str = BaseVariant.default
 
 
 class BaseSpace(LibraryData):
@@ -40,7 +42,6 @@ class BaseSpace(LibraryData):
             Port(targets=[Weather], names=["weaBus"]),
             Port(targets=[Emission], names=["heaPorAir", "heaPorRad"]),
             Port(targets=[DataBus], names=["heaPorAir"]),
-            Port(targets=[IdealHeatingEmission], names=["heaPorAir", "heaPorRad"]),
             Port(targets=[SpaceControl], names=["heaPorAir"]),
             Port(
                 targets=[Ventilation, Control, DataBus],
@@ -53,6 +54,7 @@ class BaseSpace(LibraryData):
 
 
 class BaseEmission(LibraryData):
+    variant: str = EmissionVariant.radiator
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(targets=[Space], names=["heatPortCon", "heatPortRad"]),
@@ -63,6 +65,7 @@ class BaseEmission(LibraryData):
 
 
 class BaseIdealHeatingEmission(LibraryData):
+    variant: str = EmissionVariant.ideal
     template: str = """
     {{package_name}}.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission {{ element.name }}
     annotation (
@@ -364,32 +367,35 @@ class DefaultLibrary(BaseModel):
     constants: str
     merged_external_boundaries: bool = False
     functions: Dict[str, Callable[[Any], Any]] = Field(default={})
-    control: LibraryData = Field(default=BaseControl())
-    spacecontrol: LibraryData = Field(default=BaseSpaceControl())
-    internalelement: LibraryData = Field(default=BaseInternalElement())
-    weather: LibraryData = Field(default=BaseWeather())
-    occupancy: LibraryData = Field(default=BaseOccupancy())
-    threewayvalve: LibraryData = Field(default=BaseThreeWayValve())
-    splitvalve: LibraryData = Field(default=BaseSplitValve())
-    pump: LibraryData = Field(default=BasePump())
-    boiler: LibraryData = Field(default=BaseBoiler())
-    valve: LibraryData = Field(default=BaseValve())
-    emission: LibraryData = Field(default=BaseEmission())
-    idealheatingemission: LibraryData = Field(default=BaseIdealHeatingEmission())
-    space: LibraryData = Field(default=BaseSpace())
-    externalwall: LibraryData = Field(default=LibraryData(ports_factory=list))
-    flooronground: LibraryData = Field(default=LibraryData(ports_factory=list))
-    window: LibraryData = Field(default=LibraryData(ports_factory=list))
-    mergedexternalwall: LibraryData = Field(default=LibraryData(ports_factory=list))
-    mergedwindows: LibraryData = Field(default=LibraryData(ports_factory=list))
-    damper: LibraryData = Field(default=BaseDamper())
-    airhandlingunit: LibraryData = Field(default=BaseAirHandlingUnit())
-    duct: LibraryData = Field(default=BaseDuct())
-    spacesubstanceventilationcontrol: LibraryData = Field(
-        default=BaseVentilationControl()
+    control: List[LibraryData] = Field(default=[BaseControl()])
+    spacecontrol: List[LibraryData] = Field(default=[BaseSpaceControl()])
+    internalelement: List[LibraryData] = Field(default=[BaseInternalElement()])
+    weather: List[LibraryData] = Field(default=[BaseWeather()])
+    occupancy: List[LibraryData] = Field(default=[BaseOccupancy()])
+    threewayvalve: List[LibraryData] = Field(default=[BaseThreeWayValve()])
+    splitvalve: List[LibraryData] = Field(default=[BaseSplitValve()])
+    pump: List[LibraryData] = Field(default=[BasePump()])
+    boiler: List[LibraryData] = Field(default=[BaseBoiler()])
+    valve: List[LibraryData] = Field(default=[BaseValve()])
+    emission: List[LibraryData] = Field(
+        default=[BaseEmission(), BaseIdealHeatingEmission()]
     )
-    databus: LibraryData = Field(default=BaseDataBus())
-    boundary: LibraryData = Field(default=BaseBoundary())
+    space: List[LibraryData] = Field(default=[BaseSpace()])
+    externalwall: List[LibraryData] = Field(default=[LibraryData(ports_factory=list)])
+    flooronground: List[LibraryData] = Field(default=[LibraryData(ports_factory=list)])
+    window: List[LibraryData] = Field(default=[LibraryData(ports_factory=list)])
+    mergedexternalwall: List[LibraryData] = Field(
+        default=[LibraryData(ports_factory=list)]
+    )
+    mergedwindows: List[LibraryData] = Field(default=[LibraryData(ports_factory=list)])
+    damper: List[LibraryData] = Field(default=[BaseDamper()])
+    airhandlingunit: List[LibraryData] = Field(default=[BaseAirHandlingUnit()])
+    duct: List[LibraryData] = Field(default=[BaseDuct()])
+    spacesubstanceventilationcontrol: List[LibraryData] = Field(
+        default=[BaseVentilationControl()]
+    )
+    databus: List[LibraryData] = Field(default=[BaseDataBus()])
+    boundary: List[LibraryData] = Field(default=[BaseBoundary()])
 
     def _get_field_value(self, element: BaseElement) -> Any:  # noqa: ANN401
         element_names = [
@@ -399,8 +405,17 @@ class DefaultLibrary(BaseModel):
         ]
         for element_name in element_names:
             if hasattr(self, element_name):
-                return getattr(self, element_name)
-        raise ValueError(f"Element {element_names[0]} not found in library")
+                libraries_data = [
+                    ld
+                    for ld in getattr(self, element_name)
+                    if ld.variant == element.variant
+                ]
+                if libraries_data:
+                    return libraries_data[0]
+        raise ValueError(
+            f"Element '{element_names[0]}' with variant '{element.variant}' not "
+            f"found in library '{self.library_name}'."
+        )
 
     def assign_ports(self, element: BaseElement) -> Any:  # noqa : ANN401
         if element.ports:

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from neosim.models.constants import Flow
 
@@ -99,11 +99,17 @@ class Port(BaseModel):
         return partial_connections
 
 
+class BaseVariant:
+    default: str = "default"
+
+
 class BaseElement(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     name: str
     position: Optional[List[float]] = None
     ports: list[Port] = Field(default=[], validate_default=True)
     template: Optional[str] = None
+    variant: str = BaseVariant.default
 
     def get_position(self, layout: Dict["BaseElement", Any]) -> None:
         if not self.position:

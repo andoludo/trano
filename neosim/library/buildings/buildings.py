@@ -1,3 +1,5 @@
+from typing import List
+
 from networkx.classes.reportviews import NodeView
 from pydantic import Field
 
@@ -5,6 +7,7 @@ from neosim.construction import Construction
 from neosim.glass import Glass
 from neosim.library.base import (
     BaseEmission,
+    BaseIdealHeatingEmission,
     BaseInternalElement,
     BasePump,
     BaseSpace,
@@ -29,9 +32,11 @@ from neosim.models.elements.wall import BaseSimpleWall
 class BuildingsLibrary(DefaultLibrary):
     library_name: str = "Buildings"
     constants: str = BUILDINGS_CONSTANTS
-    internalelement: LibraryData = Field(
-        default=BaseInternalElement(
-            template="""    Buildings.HeatTransfer.Conduction.MultiLayer {{ element.name }}(A =
+    internalelement: List[LibraryData] = Field(
+        default=[
+            BaseInternalElement(
+                template="""    Buildings.HeatTransfer.Conduction.MultiLayer
+                {{ element.name }}(A =
             {{ element.surface }}, layers =
     {{ element.construction.name }}, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
@@ -39,22 +44,26 @@ class BuildingsLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    weather: LibraryData = Field(
-        default=BaseWeather(
-            template="""    Buildings.BoundaryConditions.WeatherData.ReaderTMY3
+    weather: List[LibraryData] = Field(
+        default=[
+            BaseWeather(
+                template="""    Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             {{ element.name }}(filNam =
     Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    threewayvalve: LibraryData = Field(
-        default=BaseThreeWayValve(
-            template="""    Buildings.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear
+    threewayvalve: List[LibraryData] = Field(
+        default=[
+            BaseThreeWayValve(
+                template="""    Buildings.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear
              {{ element.name }}(
     redeclare package Medium = MediumW,
     dpValve_nominal=dpThrWayVal_nominal,
@@ -68,11 +77,13 @@ class BuildingsLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
      extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    splitvalve: LibraryData = Field(
-        default=BaseSplitValve(
-            template="""    Buildings.Fluid.FixedResistances.Junction {{ element.name }} (
+    splitvalve: List[LibraryData] = Field(
+        default=[
+            BaseSplitValve(
+                template="""    Buildings.Fluid.FixedResistances.Junction {{ element.name }} (
     dp_nominal={0,0,0},
     m_flow_nominal=mRad_flow_nominal*{1,-1,-1},
     redeclare package Medium = MediumW,
@@ -82,11 +93,13 @@ class BuildingsLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    pump: LibraryData = Field(
-        default=BasePump(
-            template="""    Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y
+    pump: List[LibraryData] = Field(
+        default=[
+            BasePump(
+                template="""    Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y
             {{ element.name }}(
     redeclare package Medium = MediumW,
     m_flow_nominal=mRad_flow_nominal,
@@ -96,11 +109,13 @@ class BuildingsLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    valve: LibraryData = Field(
-        default=BaseValve(
-            template="""    Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage
+    valve: List[LibraryData] = Field(
+        default=[
+            BaseValve(
+                template="""    Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage
             {{ element.name }}(
     redeclare package Medium = MediumW,
     dpValve_nominal(displayUnit="Pa") = dpVal_nominal,
@@ -112,11 +127,13 @@ class BuildingsLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }}
     , extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    emission: LibraryData = Field(
-        default=BaseEmission(
-            template="""    Buildings.Fluid.HeatExchangers.Radiators.
+    emission: List[LibraryData] = Field(
+        default=[
+            BaseEmission(
+                template="""    Buildings.Fluid.HeatExchangers.Radiators.
             RadiatorEN442_2 {{ element.name }}(
     redeclare package Medium = MediumW,
     Q_flow_nominal=scaFacRad*Q_flow_nominal/nRoo,
@@ -127,11 +144,14 @@ class BuildingsLibrary(DefaultLibrary):
     Placement(transformation(origin =
     {{ macros.join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            ),
+            BaseIdealHeatingEmission(),
+        ]
     )
-    space: LibraryData = Field(
-        default=BaseSpace(
-            template="""Buildings.ThermalZones.Detailed.MixedAir {{ element.name }}(
+    space: List[LibraryData] = Field(
+        default=[
+            BaseSpace(
+                template="""Buildings.ThermalZones.Detailed.MixedAir {{ element.name }}(
     redeclare package Medium = Medium,
     AFlo={{ element.floor_area }},
     hRoo={{ element.height }},
@@ -187,7 +207,8 @@ class BuildingsLibrary(DefaultLibrary):
     annotation (Placement(transformation(origin=
     {{ macros.join_list(element.position) }},extent={% raw %}{{-20,-20},{20,20}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
 
     def extract_data(

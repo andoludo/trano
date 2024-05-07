@@ -1386,7 +1386,7 @@ parameter Integer nRoo = 2 "Number of rooms";
         buildings_simple_hydronic.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 34.63847497450735, 188.5452688940959 },
+    Placement(transformation(origin = { 153.53582256650947, -137.2008389877058 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -1413,12 +1413,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 17.319237487253677, 50.0 }    ,{ 17.319237487253677, 188.5452688940959 }    ,{ 34.63847497450735, 188.5452688940959 }    },
+points={{ 0.0, 50.0 }    ,{ 76.76791128325473, 50.0 }    ,{ 76.76791128325473, -137.2008389877058 }    ,{ 153.53582256650947, -137.2008389877058 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 17.319237487253677, 50.0 }    ,{ 17.319237487253677, 188.5452688940959 }    ,{ 34.63847497450735, 188.5452688940959 }    },
+points={{ 0.0, 50.0 }    ,{ 76.76791128325473, 50.0 }    ,{ 76.76791128325473, -137.2008389877058 }    ,{ 153.53582256650947, -137.2008389877058 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(emission.port_b,split_valve.port_1)

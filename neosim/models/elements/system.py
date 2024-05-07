@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from neosim.models.elements.base import BaseElement
+from neosim.models.elements.base import BaseElement, BaseVariant
 from neosim.models.elements.control import Control
 
 
@@ -10,12 +10,13 @@ class System(BaseElement):
     control: Optional["Control"] = None
 
 
+class EmissionVariant(BaseVariant):
+    radiator: str = "radiator"
+    ideal: str = "ideal"
+
+
 class Emission(System):
-    ...
-
-
-class IdealHeatingEmission(Emission):
-    ...
+    variant: str = EmissionVariant.radiator
 
 
 class Valve(System):

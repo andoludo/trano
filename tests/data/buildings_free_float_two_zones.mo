@@ -1217,19 +1217,6 @@ model building
     defaultComponentPrefixes="parameter",
     defaultComponentName="datGlaSys");
     parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
-        internal_wall(
-    final nLay=1,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
-    material={Buildings.HeatTransfer.Data.Solids.Generic(
-        x=0.2,
-        k=0.89,
-        c=790.0,
-        d=1920.0)    },
-    roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
-    annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         external_wall(
     final nLay=3,
     absIR_a=0.9,
@@ -1249,6 +1236,19 @@ model building
         k=0.12,
         c=1210.0,
         d=540.0)    },
+    roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
+    annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
+        internal_wall(
+    final nLay=1,
+    absIR_a=0.9,
+    absIR_b=0.9,
+    absSol_a=0.6,
+    absSol_b=0.6,
+    material={Buildings.HeatTransfer.Data.Solids.Generic(
+        x=0.2,
+        k=0.89,
+        c=790.0,
+        d=1920.0)    },
     roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
     annotation (Placement(transformation(extent={{20,84},{34,98}})));
 
@@ -1348,7 +1348,7 @@ package MediumW = Buildings.Media.Water "Medium model";
         buildings_free_float_two_zones.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 179.81973041772005, -36.25410402174896 },
+    Placement(transformation(origin = { -111.54060171842355, -174.98930748569325 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -1370,12 +1370,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 89.90986520886003, 50.0 }    ,{ 89.90986520886003, -36.25410402174896 }    ,{ 179.81973041772005, -36.25410402174896 }    },
+points={{ 0.0, 50.0 }    ,{ -55.77030085921177, 50.0 }    ,{ -55.77030085921177, -174.98930748569325 }    ,{ -111.54060171842355, -174.98930748569325 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 89.90986520886003, 50.0 }    ,{ 89.90986520886003, -36.25410402174896 }    ,{ 179.81973041772005, -36.25410402174896 }    },
+points={{ 0.0, 50.0 }    ,{ -55.77030085921177, 50.0 }    ,{ -55.77030085921177, -174.98930748569325 }    ,{ -111.54060171842355, -174.98930748569325 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.qGai_flow,occupancy_1.y)
@@ -1395,12 +1395,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.heaPorAir,data_bus.port[2])
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 189.90986520886003, 50.0 }    ,{ 189.90986520886003, -36.25410402174896 }    ,{ 179.81973041772005, -36.25410402174896 }    },
+points={{ 200.0, 50.0 }    ,{ 44.22969914078823, 50.0 }    ,{ 44.22969914078823, -174.98930748569325 }    ,{ -111.54060171842355, -174.98930748569325 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.ports[1],data_bus.port_a[2])
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 189.90986520886003, 50.0 }    ,{ 189.90986520886003, -36.25410402174896 }    ,{ 179.81973041772005, -36.25410402174896 }    },
+points={{ 200.0, 50.0 }    ,{ 44.22969914078823, 50.0 }    ,{ 44.22969914078823, -174.98930748569325 }    ,{ -111.54060171842355, -174.98930748569325 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

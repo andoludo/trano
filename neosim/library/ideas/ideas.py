@@ -8,6 +8,7 @@ from neosim.glass import Glass
 from neosim.library.base import (
     BaseAirHandlingUnit,
     BaseEmission,
+    BaseIdealHeatingEmission,
     BaseSpace,
     BaseSplitValve,
     BaseThreeWayValve,
@@ -214,16 +215,17 @@ class IdeasLibrary(DefaultLibrary):
     functions: Dict[str, Callable[[Any], Any]] = {  # noqa: RUF012
         "tilts_processing_ideas": tilts_processing_ideas
     }
-    space: LibraryData = Field(default=IdeasSpace())
-    externalwall: LibraryData = Field(default=IdeasMergedExternalWall())
-    flooronground: LibraryData = Field(default=IdeasFloorOnGround())
-    mergedexternalwall: LibraryData = Field(default=IdeasMergedExternalWall())
-    mergedwindows: LibraryData = Field(default=IdeasMergedWindows())
-    internalelement: LibraryData = Field(default=IdeasInternalElement())
-    pump: LibraryData = Field(default=IdeasPump())
-    threewayvalve: LibraryData = Field(
-        default=BaseThreeWayValve(
-            template="""
+    space: List[LibraryData] = Field(default=[IdeasSpace()])
+    externalwall: List[LibraryData] = Field(default=[IdeasMergedExternalWall()])
+    flooronground: List[LibraryData] = Field(default=[IdeasFloorOnGround()])
+    mergedexternalwall: List[LibraryData] = Field(default=[IdeasMergedExternalWall()])
+    mergedwindows: List[LibraryData] = Field(default=[IdeasMergedWindows()])
+    internalelement: List[LibraryData] = Field(default=[IdeasInternalElement()])
+    pump: List[LibraryData] = Field(default=[IdeasPump()])
+    threewayvalve: List[LibraryData] = Field(
+        default=[
+            BaseThreeWayValve(
+                template="""
     IDEAS.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear {{ element.name }}(
     redeclare package Medium = MediumW, m_flow_nominal = 0.1,
     dpValve_nominal = 1000) "Three-way valve"
@@ -231,11 +233,13 @@ class IdeasLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    splitvalve: LibraryData = Field(
-        default=BaseSplitValve(
-            template="""
+    splitvalve: List[LibraryData] = Field(
+        default=[
+            BaseSplitValve(
+                template="""
     IDEAS.Fluid.FixedResistances.Junction {{ element.name }} (
     redeclare package Medium = MediumW, m_flow_nominal = {0.1, 0.1, 0.1},
     dp_nominal = {40, 40, 40})
@@ -244,11 +248,13 @@ class IdeasLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    valve: LibraryData = Field(
-        default=BaseValve(
-            template="""
+    valve: List[LibraryData] = Field(
+        default=[
+            BaseValve(
+                template="""
     IDEAS.Fluid.Actuators.Valves.TwoWayEqualPercentage {{ element.name }}(
     redeclare package Medium = MediumW, m_flow_nominal = 0.1, dpValve_nominal = 200,
     allowFlowReversal = false, dpFixed_nominal = 200, linearized = false) "Radiator valve"
@@ -256,11 +262,13 @@ class IdeasLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
-    emission: LibraryData = Field(
-        default=BaseEmission(
-            template="""
+    emission: List[LibraryData] = Field(
+        default=[
+            BaseEmission(
+                template="""
     IDEAS.Fluid.HeatExchangers.Radiators.RadiatorEN442_2 {{ element.name }}(
     redeclare package Medium = MediumW, allowFlowReversal = false, Q_flow_nominal = 500,
     T_a_nominal = 318.15, T_b_nominal = 308.15, m_flow_nominal = 100*1.2/3600,
@@ -269,18 +277,22 @@ class IdeasLibrary(DefaultLibrary):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            ),
+            BaseIdealHeatingEmission(),
+        ]
     )
-    airhandlingunit: LibraryData = Field(
-        default=BaseAirHandlingUnit(
-            template="""{{ package_name }}.Common.Fluid.
+    airhandlingunit: List[LibraryData] = Field(
+        default=[
+            BaseAirHandlingUnit(
+                template="""{{ package_name }}.Common.Fluid.
             Ventilation.SimpleHVAC {{ element.name }}
     (redeclare package Medium = Medium)
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-        )
+            )
+        ]
     )
 
     def extract_data(
