@@ -151,12 +151,13 @@ def test_ideas_simple_hydronic_no_occupancy(
 
 
 def test_space_1_ideal_heating(
-    space_1_ideal_heating: Space,
+    space_1_ideal_heating_network: Network,
 ) -> None:
-    network = Network(name="space_1_ideal_heating")
-    network.add_boiler_plate_spaces([space_1_ideal_heating])
-    model_ = network.model()
-    assert clean_model(model_, network.name) == set(_read(network.name))
+
+    model_ = space_1_ideal_heating_network.model()
+    assert clean_model(model_, space_1_ideal_heating_network.name) == set(
+        _read(space_1_ideal_heating_network.name)
+    )
 
 
 def test_space_1_different_construction_types(

@@ -1427,3 +1427,10 @@ def buildings_free_float_single_zone_ahu_complex(
     weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
     network.connect_elements(boundary, weather)
     return network
+
+
+@pytest.fixture
+def space_1_ideal_heating_network(space_1_ideal_heating: Space) -> Network:
+    network = Network(name="space_1_ideal_heating")
+    network.add_boiler_plate_spaces([space_1_ideal_heating])
+    return network

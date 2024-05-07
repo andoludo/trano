@@ -133,3 +133,12 @@ def test_buildings_free_float_single_zone_complex(
     with create_mos_file(buildings_free_float_single_zone_ahu_complex) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
+
+
+def test_space_1_ideal_heating_network(
+    space_1_ideal_heating_network: Network,
+    container: docker.models.containers.Container,
+) -> None:
+    with create_mos_file(space_1_ideal_heating_network) as mos_file_name:
+        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
+        assert is_success(results)
