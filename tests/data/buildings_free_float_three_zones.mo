@@ -1235,6 +1235,19 @@ model building
     defaultComponentPrefixes="parameter",
     defaultComponentName="datGlaSys");
     parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
+        internal_wall(
+    final nLay=1,
+    absIR_a=0.9,
+    absIR_b=0.9,
+    absSol_a=0.6,
+    absSol_b=0.6,
+    material={Buildings.HeatTransfer.Data.Solids.Generic(
+        x=0.2,
+        k=0.89,
+        c=790.0,
+        d=1920.0)    },
+    roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
+    annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         external_wall(
     final nLay=3,
     absIR_a=0.9,
@@ -1254,19 +1267,6 @@ model building
         k=0.12,
         c=1210.0,
         d=540.0)    },
-    roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
-    annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
-        internal_wall(
-    final nLay=1,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
-    material={Buildings.HeatTransfer.Data.Solids.Generic(
-        x=0.2,
-        k=0.89,
-        c=790.0,
-        d=1920.0)    },
     roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
     annotation (Placement(transformation(extent={{20,84},{34,98}})));
 
@@ -1302,17 +1302,38 @@ package MediumW = Buildings.Media.Water "Medium model";
                 wWin={ 1.0, 1.0 },
                 hWin={ 1.0, 1.0 }),
     nConPar=0,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
-    annotation (Placement(transformation(origin=
-    { 0, 50 },extent={{-20,-20},{20,20}}
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
+    Placement(transformation(origin = { 0, 50 },
+    extent = {{-10, -10}, {10, 10}}
 )));
-
-
-
-
-
-
-
+     annotation (
+    Placement(transformation(origin = { 112.61319421507842, 133.7448778963494 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -132.6003769009803, 164.3208707631799 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -103.86503807770751, -159.86625512731325 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -171.40287269766216, 113.65708278295911 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -187.36188542946297, 17.535901923763102 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 113.06085415547082, -125.83797898656152 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -174.02741688102145, -61.863214823272 },
+    extent = {{-10, -10}, {10, 10}}
+)));
         buildings_free_float_three_zones.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
     Placement(transformation(origin = { -50, 50 },
     extent = {{-10, -10}, {10, 10}}
@@ -1345,16 +1366,34 @@ package MediumW = Buildings.Media.Water "Medium model";
                 wWin={ 1.0, 1.0 },
                 hWin={ 1.0, 1.0 }),
     nConPar=0,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
-    annotation (Placement(transformation(origin=
-    { 200, 50 },extent={{-20,-20},{20,20}}
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
+    Placement(transformation(origin = { 200, 50 },
+    extent = {{-10, -10}, {10, 10}}
 )));
-
-
-
-
-
-
+     annotation (
+    Placement(transformation(origin = { 18.16103079430096, -184.08315910890775 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 190.05722312849167, -40.20612713881312 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 58.40037685368488, -172.92002409509038 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 151.6366048656788, 125.35293585197833 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -187.62289078482178, 63.6022082321683 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 103.26758700691244, -166.0927466271115 },
+    extent = {{-10, -10}, {10, 10}}
+)));
         buildings_free_float_three_zones.Common.Occupancy.SimpleOccupancy occupancy_1 annotation (
     Placement(transformation(origin = { 150, 50 },
     extent = {{-10, -10}, {10, 10}}
@@ -1387,54 +1426,72 @@ package MediumW = Buildings.Media.Water "Medium model";
                 wWin={ 1.0 },
                 hWin={ 1.0 }),
     nConPar=0,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
-    annotation (Placement(transformation(origin=
-    { 400, 50 },extent={{-20,-20},{20,20}}
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
+    Placement(transformation(origin = { 400, 50 },
+    extent = {{-10, -10}, {10, 10}}
 )));
-
-
-
-
-
+     annotation (
+    Placement(transformation(origin = { -122.40180928874433, 112.39188244156912 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 183.57127107634696, -87.94017709514148 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -18.954232352959746, -196.98603112520766 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 175.41885890541295, 82.66986940196594 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 151.67935309620003, -115.82271685523938 },
+    extent = {{-10, -10}, {10, 10}}
+)));
         buildings_free_float_three_zones.Common.Occupancy.SimpleOccupancy occupancy_2 annotation (
     Placement(transformation(origin = { 350, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        Buildings.HeatTransfer.Conduction.MultiLayer internal_space_1_space_2(A =
+        Buildings.HeatTransfer.Conduction.MultiLayer
+                internal_space_1_space_2(A =
             10, layers =
     internal_wall, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
-    rooms" annotation(
+    rooms"  annotation (
     Placement(transformation(origin = { 100.0, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        Buildings.HeatTransfer.Conduction.MultiLayer internal_space_1_space_3(A =
+        Buildings.HeatTransfer.Conduction.MultiLayer
+                internal_space_1_space_3(A =
             10, layers =
     internal_wall, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
-    rooms" annotation(
+    rooms"  annotation (
     Placement(transformation(origin = { 200.0, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        Buildings.HeatTransfer.Conduction.MultiLayer internal_space_2_space_3(A =
+        Buildings.HeatTransfer.Conduction.MultiLayer
+                internal_space_2_space_3(A =
             10, layers =
     internal_wall, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
-    rooms" annotation(
+    rooms"  annotation (
     Placement(transformation(origin = { 300.0, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             weather(filNam =
     Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
-    annotation (
+ annotation (
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
         buildings_free_float_three_zones.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { -161.0928387804031, -96.20205181056195 },
+    Placement(transformation(origin = { -3.8077896439257546, 176.43597116534838 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -1461,12 +1518,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -80.54641939020155, 50.0 }    ,{ -80.54641939020155, -96.20205181056195 }    ,{ -161.0928387804031, -96.20205181056195 }    },
+points={{ 0.0, 50.0 }    ,{ -1.9038948219628773, 50.0 }    ,{ -1.9038948219628773, 176.43597116534838 }    ,{ -3.8077896439257546, 176.43597116534838 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -80.54641939020155, 50.0 }    ,{ -80.54641939020155, -96.20205181056195 }    ,{ -161.0928387804031, -96.20205181056195 }    },
+points={{ 0.0, 50.0 }    ,{ -1.9038948219628773, 50.0 }    ,{ -1.9038948219628773, 176.43597116534838 }    ,{ -3.8077896439257546, 176.43597116534838 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.qGai_flow,occupancy_1.y)
@@ -1491,12 +1548,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.heaPorAir,data_bus.port[2])
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 19.45358060979845, 50.0 }    ,{ 19.45358060979845, -96.20205181056195 }    ,{ -161.0928387804031, -96.20205181056195 }    },
+points={{ 200.0, 50.0 }    ,{ 98.09610517803712, 50.0 }    ,{ 98.09610517803712, 176.43597116534838 }    ,{ -3.8077896439257546, 176.43597116534838 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.ports[1],data_bus.port_a[2])
 annotation (Line(
-points={{ 200.0, 50.0 }    ,{ 19.45358060979845, 50.0 }    ,{ 19.45358060979845, -96.20205181056195 }    ,{ -161.0928387804031, -96.20205181056195 }    },
+points={{ 200.0, 50.0 }    ,{ 98.09610517803712, 50.0 }    ,{ 98.09610517803712, 176.43597116534838 }    ,{ -3.8077896439257546, 176.43597116534838 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.qGai_flow,occupancy_2.y)
@@ -1521,12 +1578,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.heaPorAir,data_bus.port[3])
 annotation (Line(
-points={{ 400.0, 50.0 }    ,{ 119.45358060979845, 50.0 }    ,{ 119.45358060979845, -96.20205181056195 }    ,{ -161.0928387804031, -96.20205181056195 }    },
+points={{ 400.0, 50.0 }    ,{ 198.09610517803713, 50.0 }    ,{ 198.0961051780371, 176.43597116534838 }    ,{ -3.8077896439257546, 176.43597116534838 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.ports[1],data_bus.port_a[3])
 annotation (Line(
-points={{ 400.0, 50.0 }    ,{ 119.45358060979845, 50.0 }    ,{ 119.45358060979845, -96.20205181056195 }    ,{ -161.0928387804031, -96.20205181056195 }    },
+points={{ 400.0, 50.0 }    ,{ 198.09610517803713, 50.0 }    ,{ 198.0961051780371, 176.43597116534838 }    ,{ -3.8077896439257546, 176.43597116534838 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

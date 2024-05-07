@@ -1,4 +1,4 @@
-package ideas_simple_hydronic_no_occupancy
+package buildings_free_float_single_zone_ahu_complex
 
 package Common
   package Occupancy
@@ -1166,332 +1166,279 @@ end AhuWithEconomizer;
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
 end Common;
 
-package Data "Data for transient thermal building simulation"
-extends Modelica.Icons.MaterialPropertiesPackage;
-
-package Glazing "Library of building glazing systems"
-extends Modelica.Icons.MaterialPropertiesPackage;
-    record  double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
-          final nLay=3,
-      final checkLowPerformanceGlazing=false,
-          mats={ideas_simple_hydronic_no_occupancy.Data.Materials.id_100
-        (d=0.003),ideas_simple_hydronic_no_occupancy.Data.Materials.Air
-        (d=0.0127),ideas_simple_hydronic_no_occupancy.Data.Materials.id_100
-        (d=0.003)    },
-    final SwTrans=[0, 0.721;
-                    10, 0.720;
-                    20, 0.718;
-                    30, 0.711;
-                    40, 0.697;
-                    50, 0.665;
-                    60, 0.596;
-                    70, 0.454;
-                    80, 0.218;
-                    90, 0.000],
-      final SwAbs=[0, 0.082, 0, 0.062;
-                  10, 0.082, 0, 0.062;
-                  20, 0.084, 0, 0.063;
-                  30, 0.086, 0, 0.065;
-                  40, 0.090, 0, 0.067;
-                  50, 0.094, 0, 0.068;
-                  60, 0.101, 0, 0.067;
-                  70, 0.108, 0, 0.061;
-                  80, 0.112, 0, 0.045;
-                  90, 0.000, 0, 0.000],
-      final SwTransDif=0.619,
-      final SwAbsDif={0.093, 0,  0.063},
-      final U_value=2.9,
-      final g_value=0.78
-
-    ) "ideas_simple_hydronic_no_occupancy";
-end Glazing;
-
-package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.12,
-      c=1210.0,
-      rho=540.0,
-      epsLw=0.88,
-      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
-      epsLw=0.88,
-      epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record external_wall
-    "external_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={ideas_simple_hydronic_no_occupancy.Data.Materials.concrete
-        (d=0.2),ideas_simple_hydronic_no_occupancy.Data.Materials.insulation_board
-        (d=0.02),ideas_simple_hydronic_no_occupancy.Data.Materials.plywood
-        (d=0.1)    });
-    end external_wall;
-end Constructions;
-end Data;
 model building
+            parameter Buildings.HeatTransfer.Data.GlazingSystems.Generic double_glazing(
+    final glass={
+        Buildings.HeatTransfer.Data.Glasses.Generic(
+        x=0.003,
+        k=1.0,
+        tauSol={ 0.646 },
+        rhoSol_a={ 0.062 },
+        rhoSol_b={ 0.063 },
+        tauIR=0.0,
+        absIR_a=0.84,
+        absIR_b=0.84)
+        ,
+        Buildings.HeatTransfer.Data.Glasses.Generic(
+        x=0.003,
+        k=1.0,
+        tauSol={ 0.646 },
+        rhoSol_a={ 0.062 },
+        rhoSol_b={ 0.063 },
+        tauIR=0.0,
+        absIR_a=0.84,
+        absIR_b=0.84)
+
+    },
+    final gas={
+            Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
+
+    },
+    UFra=1.4)
+    annotation (
+    defaultComponentPrefixes="parameter",
+    defaultComponentName="datGlaSys");
+    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
+        external_wall(
+    final nLay=3,
+    absIR_a=0.9,
+    absIR_b=0.9,
+    absSol_a=0.6,
+    absSol_b=0.6,
+    material={Buildings.HeatTransfer.Data.Solids.Generic(
+        x=0.2,
+        k=1.4,
+        c=840.0,
+        d=2240.0),Buildings.HeatTransfer.Data.Solids.Generic(
+        x=0.02,
+        k=0.03,
+        c=1200.0,
+        d=40.0),Buildings.HeatTransfer.Data.Solids.Generic(
+        x=0.1,
+        k=0.12,
+        c=1210.0,
+        d=540.0)    },
+    roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
+    annotation (Placement(transformation(extent={{20,84},{34,98}})));
 
 
+package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+        package MediumW = Buildings.Media.Water "Medium model";
 
-replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
-constrainedby Modelica.Media.Interfaces.PartialMedium
-"Medium in the component"
-annotation (choicesAllMatching = true);
-package MediumW = IDEAS.Media.Water "Medium model";
- parameter Integer nRoo = 2 "Number of rooms";
-  parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";
-  parameter Modelica.Units.SI.Power Q_flow_nominal=2200
-    "Nominal power of heating plant";
- // Due to the night setback, in which the radiator do not provide heat input into the room,
- // we scale the design power of the radiator loop
- parameter Real scaFacRad = 1.5
-    "Scaling factor to scale the power (and mass flow rate) of the radiator loop";
-  parameter Modelica.Units.SI.Temperature TSup_nominal=273.15 + 50 + 5
-    "Nominal supply temperature for radiators";
-  parameter Modelica.Units.SI.Temperature TRet_nominal=273.15 + 40 + 5
-    "Nominal return temperature for radiators";
-  parameter Modelica.Units.SI.Temperature dTRad_nominal=TSup_nominal -
-      TRet_nominal "Nominal temperature difference for radiator loop";
-  parameter Modelica.Units.SI.Temperature dTBoi_nominal=20
-    "Nominal temperature difference for boiler loop";
-  parameter Modelica.Units.SI.MassFlowRate mRad_flow_nominal=scaFacRad*
-      Q_flow_nominal/dTRad_nominal/4200
-    "Nominal mass flow rate of radiator loop";
-  parameter Modelica.Units.SI.MassFlowRate mBoi_flow_nominal=scaFacRad*
-      Q_flow_nominal/dTBoi_nominal/4200 "Nominal mass flow rate of boiler loop";
-  parameter Modelica.Units.SI.PressureDifference dpPip_nominal=10000
-    "Pressure difference of pipe (without valve)";
-  parameter Modelica.Units.SI.PressureDifference dpVal_nominal=6000
-    "Pressure difference of valve";
-  parameter Modelica.Units.SI.PressureDifference dpRoo_nominal=6000
-    "Pressure difference of flow leg that serves a room";
-  parameter Modelica.Units.SI.PressureDifference dpThrWayVal_nominal=6000
-    "Pressure difference of three-way valve";
-  parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +
-      dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
-    "Pressure difference of loop";
-  inner IDEAS.BoundaryConditions.SimInfoManager sim(interZonalAirFlowType=
-  IDEAS.BoundaryConditions.Types.
-  InterZonalAirFlow.OnePort)
-                                              "Data reader"
-    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));
-
-
-    IDEAS.Buildings.Components.Zone space_1(
-    mSenFac=0.822,nPorts = 1,    V=100,
-    n50=0.822*0.5*space_1.n50toAch,
+    Buildings.ThermalZones.Detailed.MixedAir space_1(
     redeclare package Medium = Medium,
-    nSurf=6,
-    hZone=2,
-    T_start=293.15) annotation (
+    AFlo=50,
+    hRoo=2,nPorts = 4,                nConExt=2,
+                datConExt(
+                layers={ external_wall, external_wall },
+    A={ 10.0, 10.0 },
+    til={Buildings.Types.Tilt.Wall,Buildings.Types.Tilt.Wall},
+                azi={ 135.0, 45.0 }),
+                nSurBou=0,                nConBou=1,
+                datConBou(
+                layers={ external_wall },
+    A={ 10.0 },
+    til={Buildings.Types.Tilt.Floor},
+                azi={ 90.0 }),
+                nConExtWin=1,
+                datConExtWin(
+                layers={ external_wall },
+    A={ 10.0 },
+    til={Buildings.Types.Tilt.Wall},
+                glaSys={ double_glazing },
+                wWin={ 1.0 },
+                hWin={ 1.0 }),
+    nConPar=0,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
     Placement(transformation(origin = { 0, 50 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        IDEAS.Buildings.Components.OuterWall[4]
-    merged_w1_1_w2_1_w3_1_w4_1(
-    redeclare parameter ideas_simple_hydronic_no_occupancy.Data.Constructions.
-    external_wall
-    constructionType,
-    A={ 10, 10, 10, 10 },
-    final azi={ 135, 0, 45, 90 },
-    redeclare package Medium = Medium,
-    final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -26.84007554707867, 200.0 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-        IDEAS.Buildings.Components.Window[1]
-    merged_win1_1(
-    redeclare parameter ideas_simple_hydronic_no_occupancy.Data.Glazing.
-    double_glazing glazing,
-    A={ 1 },
-    final azi={ 45 },
-    redeclare package Medium = Medium,
-    final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -196.09244953255507, 38.84649753681357 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-        IDEAS.Buildings.Components.SlabOnGround floor_2(
-    redeclare parameter ideas_simple_hydronic_no_occupancy.Data.Constructions.
-    external_wall constructionType,
-    redeclare package Medium = Medium,
-    A=10) annotation (
-    Placement(transformation(origin = { -194.92549926029378, -47.74956100330874 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-        IDEAS.Fluid.HeatExchangers.Radiators.RadiatorEN442_2 emission(
-    redeclare package Medium = MediumW, allowFlowReversal = false, Q_flow_nominal = 500,
-    T_a_nominal = 318.15, T_b_nominal = 308.15, m_flow_nominal = 100*1.2/3600,
-    energyDynamics = Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator"  annotation (
-    Placement(transformation(origin = { 30, -25 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-        IDEAS.Fluid.Actuators.Valves.TwoWayEqualPercentage valve(
-    redeclare package Medium = MediumW, m_flow_nominal = 0.1, dpValve_nominal = 200,
-    allowFlowReversal = false, dpFixed_nominal = 200, linearized = false) "Radiator valve"
      annotation (
-    Placement(transformation(origin = { 0, -25 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-        ideas_simple_hydronic_no_occupancy.Common.Controls.SpaceControls.PID
-    space_control(setPoint = 295.15, yMax = 1, yMin = 0) annotation (
-    Placement(transformation(origin = { -50, 0 },
+    Placement(transformation(origin = { 141.6997341097336, 133.14016801353065 },
     extent = {{-10, -10}, {10, 10}}
 )));
      annotation (
+    Placement(transformation(origin = { -154.66271981079188, -66.44169004322197 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 49.72500148678746, -166.01420401433867 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 12.211470979750372, 192.24486382925056 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+        buildings_free_float_single_zone_ahu_complex.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
+    Placement(transformation(origin = { -50, 50 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+      Buildings.Fluid.Actuators.Dampers.PressureIndependent
+    vav_in(
+    redeclare package Medium = Medium,
+    m_flow_nominal=100*1.2/3600,
+    dpDamper_nominal=50,
+    allowFlowReversal=false,
+    dpFixed_nominal=50) "VAV box for room"  annotation (
+    Placement(transformation(origin = { 76.31154522534662, 160.58253109726897 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+      Buildings.Fluid.Actuators.Dampers.PressureIndependent
+    vav_out(
+    redeclare package Medium = Medium,
+    m_flow_nominal=100*1.2/3600,
+    dpDamper_nominal=50,
+    allowFlowReversal=false,
+    dpFixed_nominal=50) "VAV box for room"  annotation (
+    Placement(transformation(origin = { -171.82517717565938, 79.29232836338234 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+      Buildings.Fluid.FixedResistances.PressureDrop
+    pressure_drop_duct_out(
+    m_flow_nominal=100*1.2/3600,
+    redeclare package Medium = Medium,
+    allowFlowReversal = false,
+    dp_nominal=40) "Pressure drop for return duct"  annotation (
+    Placement(transformation(origin = { -60.865897813643386, 175.33821277728842 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+      Buildings.Fluid.FixedResistances.PressureDrop
+    pressure_drop_duct_in(
+    m_flow_nominal=100*1.2/3600,
+    redeclare package Medium = Medium,
+    allowFlowReversal = false,
+    dp_nominal=40) "Pressure drop for return duct"  annotation (
+    Placement(transformation(origin = { -141.1831694864154, -158.60812272934479 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+        buildings_free_float_single_zone_ahu_complex.Common.Controls.SpaceControls.PIDSubstance
+    ventilation_control(redeclare package
+      Medium = Medium, yMax = 0.9, yMin = 0.1, setPoint = 400) annotation (
+    Placement(transformation(origin = { -192.86781247436824, -0.7932119721633439 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+        Buildings.BoundaryConditions.WeatherData.ReaderTMY3
+            weather(filNam =
+    Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
+ annotation (
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        IDEAS.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear three_way_valve(
-    redeclare package Medium = MediumW, m_flow_nominal = 0.1,
-    dpValve_nominal = 1000) "Three-way valve"  annotation (
-    Placement(transformation(origin = { -100, -125 },
+      buildings_free_float_single_zone_ahu_complex.Common.Fluid.Ventilation.AhuWithEconomizer ahu(redeclare
+        package
+              MediumA =                                                                    Medium,
+      VRoo={100,100},
+      AFlo={20,20},
+      mCooVAV_flow_nominal={0.01,0.01})
+    annotation (
+    Placement(transformation(origin = { -129.3402618503623, 147.65525876596087 },
+    extent = {{-10, -10}, {10, 10}}
+))); annotation (
+    Placement(transformation(origin = { -129.3402618503623, 147.65525876596087 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        Modelica.Blocks.Sources.Constant three_way_valve_control(k= 1)
-     annotation (
-    Placement(transformation(origin = { -150, -125 },
+      buildings_free_float_single_zone_ahu_complex.Common.Controls.ventilation.AHU_G36 ahu_control
+    annotation (
+    Placement(transformation(origin = { 180.8691576651215, 67.21951728490066 },
+    extent = {{-10, -10}, {10, 10}}
+))); annotation (
+    Placement(transformation(origin = { 180.8691576651215, 67.21951728490066 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        IDEAS.Fluid.FixedResistances.Junction split_valve (
-    redeclare package Medium = MediumW, m_flow_nominal = {0.1, 0.1, 0.1},
-    dp_nominal = {40, 40, 40})
-    "Flow splitter"  annotation (
-    Placement(transformation(origin = { 130, -125 },
+      Buildings.Fluid.Sources.Outside boundary
+    (nPorts=2,redeclare package Medium = Medium) annotation (
+    Placement(transformation(origin = { -200, 100 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        ideas_simple_hydronic_no_occupancy.Common.Fluid.Boilers.Simple boiler(
-    redeclare package Medium = MediumW) "Boiler"  annotation (
-    Placement(transformation(origin = { 230, -225 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-        IDEAS.Fluid.Movers.FlowControlled_m_flow pump(
-    redeclare package Medium = MediumW, m_flow_nominal = 1, dp_nominal = 100) annotation (
-    Placement(transformation(origin = { -200, -225 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-        Modelica.Blocks.Sources.Constant pump_control(k= 1)
-     annotation (
-    Placement(transformation(origin = { -250, -225 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-        ideas_simple_hydronic_no_occupancy.Common.Controls.SpaceControls.DataServer
+        buildings_free_float_single_zone_ahu_complex.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 145.637074893217, 158.3742049798411 },
+    Placement(transformation(origin = { 123.72826862235884, -143.16180725730098 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
-equation    connect(space_1.propsBus[1:4],merged_w1_1_w2_1_w3_1_w4_1[1:4].propsBus_a)
+equation    connect(space_1.qGai_flow,occupancy_0.y)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -13.420037773539335, 50.0 }    ,{ -13.420037773539335, 200.0 }    ,{ -26.84007554707867, 200.0 }    },
+points={{ 0.0, 50.0 }    ,{ -25.0, 50.0 }    ,{ -25.0, 50.0 }    ,{ -50.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_1.propsBus[5],merged_win1_1[1].propsBus_a)
+smooth=Smooth.None));    connect(space_1.ports[1],vav_out.port_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -98.04622476627753, 50.0 }    ,{ -98.04622476627753, 38.84649753681357 }    ,{ -196.09244953255507, 38.84649753681357 }    },
+points={{ 0.0, 50.0 }    ,{ -85.91258858782969, 50.0 }    ,{ -85.91258858782969, 79.29232836338234 }    ,{ -171.82517717565938, 79.29232836338234 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_1.propsBus[6],floor_2.propsBus_a)
+smooth=Smooth.None));    connect(space_1.ports[2],ventilation_control.port_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -97.46274963014689, 50.0 }    ,{ -97.46274963014689, -47.74956100330874 }    ,{ -194.92549926029378, -47.74956100330874 }    },
+points={{ 0.0, 50.0 }    ,{ -96.43390623718412, 50.0 }    ,{ -96.43390623718412, -0.7932119721633439 }    ,{ -192.86781247436824, -0.7932119721633439 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_1.gainCon,emission.heatPortCon)
+smooth=Smooth.None));    connect(space_1.weaBus,weather.weaBus)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 15.0, 50.0 }    ,{ 15.0, -25.0 }    ,{ 30.0, -25.0 }    },
+points={{ 0.0, 50.0 }    ,{ -50.0, 50.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_1.gainRad,emission.heatPortRad)
+smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 15.0, 50.0 }    ,{ 15.0, -25.0 }    ,{ 30.0, -25.0 }    },
+points={{ 0.0, 50.0 }    ,{ 61.86413431117942, 50.0 }    ,{ 61.86413431117942, -143.16180725730098 }    ,{ 123.72826862235884, -143.16180725730098 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_1.gainCon,data_bus.port[1])
+smooth=Smooth.None));    connect(space_1.ports[3],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 72.8185374466085, 50.0 }    ,{ 72.8185374466085, 158.3742049798411 }    ,{ 145.637074893217, 158.3742049798411 }    },
+points={{ 0.0, 50.0 }    ,{ 61.86413431117942, 50.0 }    ,{ 61.86413431117942, -143.16180725730098 }    ,{ 123.72826862235884, -143.16180725730098 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
+smooth=Smooth.None));    connect(vav_in.port_b,space_1.ports[4])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 72.8185374466085, 50.0 }    ,{ 72.8185374466085, 158.3742049798411 }    ,{ 145.637074893217, 158.3742049798411 }    },
+points={{ 76.31154522534662, 160.58253109726897 }    ,{ 38.15577261267331, 160.58253109726897 }    ,{ 38.15577261267331, 50.0 }    ,{ 0.0, 50.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(emission.port_b,split_valve.port_1)
+smooth=Smooth.None));    connect(vav_out.port_b,pressure_drop_duct_out.port_a)
 annotation (Line(
-points={{ 30.0, -25.0 }    ,{ 80.0, -25.0 }    ,{ 80.0, -125.0 }    ,{ 130.0, -125.0 }    },
+points={{ -171.82517717565938, 79.29232836338234 }    ,{ -116.34553749465138, 79.29232836338234 }    ,{ -116.34553749465138, 175.33821277728842 }    ,{ -60.865897813643386, 175.33821277728842 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(valve.port_b,emission.port_a)
+smooth=Smooth.None));    connect(pressure_drop_duct_out.port_b,ahu.port_a)
 annotation (Line(
-points={{ 0.0, -25.0 }    ,{ 15.0, -25.0 }    ,{ 15.0, -25.0 }    ,{ 30.0, -25.0 }    },
+points={{ -60.865897813643386, 175.33821277728842 }    ,{ -95.10307983200285, 175.33821277728842 }    ,{ -95.10307983200285, 147.65525876596087 }    ,{ -129.3402618503623, 147.65525876596087 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_control.port,space_1.gainCon)
+smooth=Smooth.None));    connect(pressure_drop_duct_in.port_b,vav_in.port_a)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, 50.0 }    ,{ 0.0, 50.0 }    },
+points={{ -141.1831694864154, -158.60812272934479 }    ,{ -32.4358121305344, -158.60812272934479 }    ,{ -32.43581213053439, 160.58253109726897 }    ,{ 76.31154522534662, 160.58253109726897 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_control.y,valve.y)
+smooth=Smooth.None));    connect(ventilation_control.y,vav_in.y)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, -25.0 }    ,{ 0.0, -25.0 }    },
+points={{ -192.86781247436824, -0.7932119721633439 }    ,{ -58.278133624510815, -0.7932119721633439 }    ,{ -58.2781336245108, 160.58253109726897 }    ,{ 76.31154522534662, 160.58253109726897 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(three_way_valve.y,three_way_valve_control.y)
+smooth=Smooth.None));    connect(ventilation_control.y,vav_out.y)
 annotation (Line(
-points={{ -100.0, -125.0 }    ,{ -125.0, -125.0 }    ,{ -125.0, -125.0 }    ,{ -150.0, -125.0 }    },
+points={{ -192.86781247436824, -0.7932119721633439 }    ,{ -182.3464948250138, -0.7932119721633439 }    ,{ -182.3464948250138, 79.29232836338234 }    ,{ -171.82517717565938, 79.29232836338234 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(three_way_valve.port_2,valve.port_a)
+smooth=Smooth.None));    connect(ahu.dataBus,ahu_control.dataBus)
 annotation (Line(
-points={{ -100.0, -125.0 }    ,{ -50.0, -125.0 }    ,{ -50.0, -25.0 }    ,{ 0.0, -25.0 }    },
+points={{ -129.3402618503623, 147.65525876596087 }    ,{ 25.764447907379576, 147.65525876596087 }    ,{ 25.764447907379605, 67.21951728490066 }    ,{ 180.8691576651215, 67.21951728490066 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(three_way_valve.port_3,split_valve.port_3)
+smooth=Smooth.None));    connect(ahu.port_b,pressure_drop_duct_in.port_a)
 annotation (Line(
-points={{ -100.0, -125.0 }    ,{ 15.0, -125.0 }    ,{ 15.0, -125.0 }    ,{ 130.0, -125.0 }    },
+points={{ -129.3402618503623, 147.65525876596087 }    ,{ -135.26171566838886, 147.65525876596087 }    ,{ -135.26171566838886, -158.60812272934479 }    ,{ -141.1831694864154, -158.60812272934479 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(three_way_valve.port_2,split_valve.port_1)
+smooth=Smooth.None));    connect(boundary.ports,ahu.ports)
 annotation (Line(
-points={{ -100.0, -125.0 }    ,{ 15.0, -125.0 }    ,{ 15.0, -125.0 }    ,{ 130.0, -125.0 }    },
+points={{ -200.0, 100.0 }    ,{ -164.67013092518116, 100.0 }    ,{ -164.67013092518116, 147.65525876596087 }    ,{ -129.3402618503623, 147.65525876596087 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(split_valve.port_2,boiler.port_a)
+smooth=Smooth.None));    connect(boundary.weaBus,weather.weaBus)
 annotation (Line(
-points={{ 130.0, -125.0 }    ,{ 180.0, -125.0 }    ,{ 180.0, -225.0 }    ,{ 230.0, -225.0 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(boiler.port_b,pump.port_a)
-annotation (Line(
-points={{ 230.0, -225.0 }    ,{ 15.0, -225.0 }    ,{ 15.0, -225.0 }    ,{ -200.0, -225.0 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(pump.m_flow_in,pump_control.y)
-annotation (Line(
-points={{ -200.0, -225.0 }    ,{ -225.0, -225.0 }    ,{ -225.0, -225.0 }    ,{ -250.0, -225.0 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(pump.port_b,three_way_valve.port_1)
-annotation (Line(
-points={{ -200.0, -225.0 }    ,{ -150.0, -225.0 }    ,{ -150.0, -125.0 }    ,{ -100.0, -125.0 }    },
+points={{ -200.0, 100.0 }    ,{ -150.0, 100.0 }    ,{ -150.0, 200.0 }    ,{ -100.0, 200.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;
 
 
-end ideas_simple_hydronic_no_occupancy;
+end buildings_free_float_single_zone_ahu_complex;

@@ -1358,7 +1358,7 @@ def buildings_free_float_single_zone_ahu_complex(
     space_1_simple_ventilation: Space,
 ) -> Network:
     network = Network(
-        name="single_space_ahu",
+        name="buildings_free_float_single_zone_ahu_complex",
         library=BuildingsLibrary(
             constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
         package MediumW = Buildings.Media.Water "Medium model";"""

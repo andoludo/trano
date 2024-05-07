@@ -1249,16 +1249,34 @@ package MediumW = Buildings.Media.Water "Medium model";
                 wWin={ 1.0 },
                 hWin={ 1.0 }),
     nConPar=0,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
-    annotation (Placement(transformation(origin=
-    { 0, 50 },extent={{-20,-20},{20,20}}
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
+    Placement(transformation(origin = { 0, 50 },
+    extent = {{-10, -10}, {10, 10}}
 )));
-
-
-
-
-
-
+     annotation (
+    Placement(transformation(origin = { 114.60228188338318, 118.28914323147211 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -178.02393367199957, 86.00434928579779 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 31.430248491900237, 183.17128591666548 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 189.22386413515412, 56.63617796124157 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 97.53648904218126, -176.34558314298783 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -35.00762450986329, -200.0 },
+    extent = {{-10, -10}, {10, 10}}
+)));
         buildings_free_float_single_zone.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
     Placement(transformation(origin = { -50, 50 },
     extent = {{-10, -10}, {10, 10}}
@@ -1266,14 +1284,14 @@ package MediumW = Buildings.Media.Water "Medium model";
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             weather(filNam =
     Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
-    annotation (
+ annotation (
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
         buildings_free_float_single_zone.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { -198.17400797526415, 2.7216588946717613 },
+    Placement(transformation(origin = { 176.01303849207514, -77.7671060970616 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -1290,12 +1308,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -99.08700398763207, 50.0 }    ,{ -99.08700398763207, 2.7216588946717613 }    ,{ -198.17400797526415, 2.7216588946717613 }    },
+points={{ 0.0, 50.0 }    ,{ 88.00651924603757, 50.0 }    ,{ 88.00651924603757, -77.7671060970616 }    ,{ 176.01303849207514, -77.7671060970616 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -99.08700398763207, 50.0 }    ,{ -99.08700398763207, 2.7216588946717613 }    ,{ -198.17400797526415, 2.7216588946717613 }    },
+points={{ 0.0, 50.0 }    ,{ 88.00651924603757, 50.0 }    ,{ 88.00651924603757, -77.7671060970616 }    ,{ 176.01303849207514, -77.7671060970616 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));end building;

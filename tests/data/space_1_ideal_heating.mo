@@ -1283,24 +1283,41 @@ parameter Integer nRoo = 2 "Number of rooms";
                 wWin={ 1.0 },
                 hWin={ 1.0 }),
     nConPar=0,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
-    annotation (Placement(transformation(origin=
-    { 0, 50 },extent={{-20,-20},{20,20}}
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
+    Placement(transformation(origin = { 0, 50 },
+    extent = {{-10, -10}, {10, 10}}
 )));
-
-
-
-
-
-
-        space_1_ideal_heating.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission emission
-    annotation (
+     annotation (
+    Placement(transformation(origin = { 156.62608759372557, -58.69158206341761 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -112.63627804135939, 137.04063762709595 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 109.81483796444219, -150.62534299939435 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -157.24478735852077, -128.10902337219784 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 87.76774684842995, 178.60464882264083 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 200.0, 47.49680936056025 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+        space_1_ideal_heating.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
+    emission annotation (
     Placement(transformation(origin = { 0, -25 },
     extent = {{-10, -10}, {10, 10}}
 )));
         space_1_ideal_heating.Common.Controls.SpaceControls.PID
-    space_control(setPoint = 295.15, yMax = 1, yMin = 0)
-    annotation (
+    space_control(setPoint = 295.15, yMax = 1, yMin = 0) annotation (
     Placement(transformation(origin = { -50, 0 },
     extent = {{-10, -10}, {10, 10}}
 )));
@@ -1311,14 +1328,14 @@ parameter Integer nRoo = 2 "Number of rooms";
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             weather(filNam =
     Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
-    annotation (
+ annotation (
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
         space_1_ideal_heating.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 172.15338161627434, -80.95446157704787 },
+    Placement(transformation(origin = { 23.24294713975989, -165.31414688566173 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -1345,12 +1362,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 86.07669080813717, 50.0 }    ,{ 86.07669080813717, -80.95446157704787 }    ,{ 172.15338161627434, -80.95446157704787 }    },
+points={{ 0.0, 50.0 }    ,{ 11.621473569879946, 50.0 }    ,{ 11.621473569879946, -165.31414688566173 }    ,{ 23.24294713975989, -165.31414688566173 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 86.07669080813717, 50.0 }    ,{ 86.07669080813717, -80.95446157704787 }    ,{ 172.15338161627434, -80.95446157704787 }    },
+points={{ 0.0, 50.0 }    ,{ 11.621473569879946, 50.0 }    ,{ 11.621473569879946, -165.31414688566173 }    ,{ 23.24294713975989, -165.31414688566173 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_control.port,space_1.heaPorAir)

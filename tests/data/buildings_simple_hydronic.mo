@@ -1283,26 +1283,43 @@ parameter Integer nRoo = 2 "Number of rooms";
                 wWin={ 1.0 },
                 hWin={ 1.0 }),
     nConPar=0,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
-    annotation (Placement(transformation(origin=
-    { 0, 50 },extent={{-20,-20},{20,20}}
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
+    Placement(transformation(origin = { 0, 50 },
+    extent = {{-10, -10}, {10, 10}}
 )));
-
-
-
-
-
-
+     annotation (
+    Placement(transformation(origin = { 123.28528421799231, -161.8909281165514 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -132.94993657500893, -156.573661168088 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 97.27360322782172, 174.0651155362213 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -186.5859124241747, -35.214105061401725 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { -133.82225170790144, 149.3629953963333 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+     annotation (
+    Placement(transformation(origin = { 182.6114039141776, -57.899433883597716 },
+    extent = {{-10, -10}, {10, 10}}
+)));
         Buildings.Fluid.HeatExchangers.Radiators.
             RadiatorEN442_2 emission(
     redeclare package Medium = MediumW,
     Q_flow_nominal=scaFacRad*Q_flow_nominal/nRoo,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     T_a_nominal=323.15,
-    T_b_nominal=313.15) "Radiator"
-    annotation (
-    Placement(transformation(origin =
-    { 30, -25 }, extent = {{-10, -10}, {10, 10}}
+    T_b_nominal=313.15) "Radiator"  annotation (
+    Placement(transformation(origin = { 30, -25 },
+    extent = {{-10, -10}, {10, 10}}
 )));
         Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage
             valve(
@@ -1311,14 +1328,12 @@ parameter Integer nRoo = 2 "Number of rooms";
     m_flow_nominal=mRad_flow_nominal/nRoo,
     dpFixed_nominal=dpRoo_nominal,
     from_dp=true,
-    use_inputFilter=false) "Radiator valve"
-    annotation (
-    Placement(transformation(origin = { 0, -25 }
-    , extent = {{-10, -10}, {10, 10}}
+    use_inputFilter=false) "Radiator valve"  annotation (
+    Placement(transformation(origin = { 0, -25 },
+    extent = {{-10, -10}, {10, 10}}
 )));
         buildings_simple_hydronic.Common.Controls.SpaceControls.PID
-    space_control(setPoint = 295.15, yMax = 1, yMin = 0)
-    annotation (
+    space_control(setPoint = 295.15, yMax = 1, yMin = 0) annotation (
     Placement(transformation(origin = { -50, 0 },
     extent = {{-10, -10}, {10, 10}}
 )));
@@ -1329,7 +1344,7 @@ parameter Integer nRoo = 2 "Number of rooms";
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             weather(filNam =
     Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
-    annotation (
+ annotation (
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
@@ -1342,13 +1357,12 @@ parameter Integer nRoo = 2 "Number of rooms";
     m_flow_nominal=mRad_flow_nominal,
     dpFixed_nominal={100,0},
     use_inputFilter=false,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-way valve"
-    annotation (
+    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-wayvalve"  annotation (
     Placement(transformation(origin = { -100, -125 },
-     extent = {{-10, -10}, {10, 10}}
+    extent = {{-10, -10}, {10, 10}}
 )));
         Modelica.Blocks.Sources.Constant three_way_valve_control(k= 1)
-    annotation (
+     annotation (
     Placement(transformation(origin = { -150, -125 },
     extent = {{-10, -10}, {10, 10}}
 )));
@@ -1357,14 +1371,12 @@ parameter Integer nRoo = 2 "Number of rooms";
     m_flow_nominal=mRad_flow_nominal*{1,-1,-1},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
-    "Flow splitter"
-    annotation (
+    "Flow splitter"  annotation (
     Placement(transformation(origin = { 130, -125 },
     extent = {{-10, -10}, {10, 10}}
 )));
         buildings_simple_hydronic.Common.Fluid.Boilers.Simple boiler(
-    redeclare package Medium = MediumW) "Boiler"
-    annotation (
+    redeclare package Medium = MediumW) "Boiler"  annotation (
     Placement(transformation(origin = { 230, -225 },
     extent = {{-10, -10}, {10, 10}}
 )));
@@ -1374,19 +1386,19 @@ parameter Integer nRoo = 2 "Number of rooms";
     m_flow_nominal=mRad_flow_nominal,
     dp_nominal=dp_nominal,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
-    annotation (
+     annotation (
     Placement(transformation(origin = { -200, -225 },
     extent = {{-10, -10}, {10, 10}}
 )));
         Modelica.Blocks.Sources.Constant pump_control(k= 1)
-    annotation (
+     annotation (
     Placement(transformation(origin = { -250, -225 },
     extent = {{-10, -10}, {10, 10}}
 )));
         buildings_simple_hydronic.Common.Controls.SpaceControls.DataServer
     data_bus (redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 153.53582256650947, -137.2008389877058 },
+    Placement(transformation(origin = { -73.75008473670549, 142.4576190218512 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -1413,12 +1425,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 76.76791128325473, 50.0 }    ,{ 76.76791128325473, -137.2008389877058 }    ,{ 153.53582256650947, -137.2008389877058 }    },
+points={{ 0.0, 50.0 }    ,{ -36.875042368352744, 50.0 }    ,{ -36.875042368352744, 142.4576190218512 }    ,{ -73.75008473670549, 142.4576190218512 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 76.76791128325473, 50.0 }    ,{ 76.76791128325473, -137.2008389877058 }    ,{ 153.53582256650947, -137.2008389877058 }    },
+points={{ 0.0, 50.0 }    ,{ -36.875042368352744, 50.0 }    ,{ -36.875042368352744, 142.4576190218512 }    ,{ -73.75008473670549, 142.4576190218512 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(emission.port_b,split_valve.port_1)

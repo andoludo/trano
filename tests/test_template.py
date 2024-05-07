@@ -8,7 +8,7 @@ from neosim.models.elements.space import Space
 from neosim.models.elements.system import AirHandlingUnit
 from neosim.topology import Network
 
-OVERWRITE_MODELS = False
+OVERWRITE_MODELS = True
 
 
 def remove_annotation(model: str) -> str:
