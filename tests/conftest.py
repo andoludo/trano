@@ -10,8 +10,11 @@ from neosim.construction import Constructions
 from neosim.glass import Glasses
 from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.library.ideas.ideas import IdeasLibrary
-from neosim.models.constants import Azimuth, Tilt
+from neosim.models.constants import Azimuth, Flow, Tilt
+from neosim.models.elements.base import Port
+from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.control import (
+    AhuControl,
     Control,
     SpaceControl,
     SpaceSubstanceVentilationControl,
@@ -27,8 +30,10 @@ from neosim.models.elements.system import (
     Occupancy,
     Pump,
     SplitValve,
+    System,
     ThreeWayValve,
     Valve,
+    Weather,
 )
 from neosim.models.elements.wall import ExternalWall, FloorOnGround, Window
 from neosim.topology import Network
@@ -1345,4 +1350,80 @@ def space_1_different_construction_types_network(
         name="space_1_different_construction_types", library=IdeasLibrary()
     )
     network.add_boiler_plate_spaces([space_1_different_construction_types])
+    return network
+
+
+@pytest.fixture
+def buildings_free_float_single_zone_ahu_complex(
+    space_1_simple_ventilation: Space,
+) -> Network:
+    network = Network(
+        name="single_space_ahu",
+        library=BuildingsLibrary(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+        package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
+    network.add_boiler_plate_spaces([space_1_simple_ventilation])
+    boundary = Boundary(name="boundary")
+    ahu = AirHandlingUnit(
+        name="ahu",
+        template="""  {{package_name}}.Common.Fluid.Ventilation.AhuWithEconomizer {{element.name}}(redeclare
+        package
+              MediumA =                                                                    Medium,
+      VRoo={100,100},
+      AFlo={20,20},
+      mCooVAV_flow_nominal={0.01,0.01})
+    annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));""",
+        ports=[
+            Port(
+                targets=[System],
+                names=["port_a"],
+                flow=Flow.inlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                targets=[System],
+                names=["port_b"],
+                flow=Flow.outlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                targets=[Boundary],
+                names=["ports"],
+            ),
+            Port(
+                targets=[AhuControl],
+                names=["dataBus"],
+            ),
+        ],
+        control=AhuControl(
+            name="ahu_control",
+            template="""  {{package_name}}.Common.Controls.ventilation.AHU_G36 {{element.name}}
+    annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));""",
+            ports=[
+                Port(
+                    targets=[AirHandlingUnit],
+                    names=["dataBus"],
+                ),
+            ],
+        ),
+    )
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    network.connect_elements(boundary, ahu)
+    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    network.connect_elements(boundary, weather)
     return network

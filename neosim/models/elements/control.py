@@ -20,6 +20,10 @@ class SpaceSubstanceVentilationControl(SpaceVentilationControl):
     ...
 
 
+class AhuControl(Control):
+    ...
+
+
 class DataBus(BaseElement):
     name: str
     position: Optional[List[float]] = None

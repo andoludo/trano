@@ -18,11 +18,22 @@ def remove_annotation(model: str) -> str:
     return model
 
 
+def remove_common_package(model: str) -> str:
+    for annotation in re.findall(r"package Common(.*?)end Common;", model, re.DOTALL):
+        model = (
+            model.replace(annotation, "")
+            .replace("package Common", "")
+            .replace("end Common;", "")
+        )
+    return model
+
+
 def clean_model(model: str, model_name: str) -> set:
     if OVERWRITE_MODELS:
         path_file = Path(__file__).parent.joinpath("data", f"{model_name}.mo")
         with path_file.open("w") as f:
             f.write(model)
+    model = remove_common_package(model)
     model_ = remove_annotation(model)
     return set(
         model_.replace("record", ";").replace(f"model{model_name}", "").split(";")
@@ -236,3 +247,12 @@ def test_template_buildings_simple_hydronic_three_zones_with_data_bus(
     assert clean_model(model_, buildings_simple_hydronic_three_zones.name) == set(
         _read(buildings_simple_hydronic_three_zones.name)
     )
+
+
+def test_buildings_free_float_single_zone_ahu_complex(
+    buildings_free_float_single_zone_ahu_complex: Network,
+) -> None:
+    model_ = buildings_free_float_single_zone_ahu_complex.model()
+    assert clean_model(
+        model_, buildings_free_float_single_zone_ahu_complex.name
+    ) == set(_read(buildings_free_float_single_zone_ahu_complex.name))

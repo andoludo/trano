@@ -200,18 +200,25 @@ class Network:
         # TODO: change position to object
         if system_1.position and not system_2.position:
             system_2.position = [system_1.position[0] + 100, system_1.position[1] - 100]
-            if system_2.control:
+            if hasattr(system_2, "control") and system_2.control:
                 system_2.control.position = [
                     system_2.position[0] - 50,
                     system_2.position[1],
                 ]
         if system_2.position and not system_1.position:
             system_1.position = [system_2.position[0] - 100, system_2.position[1] - 100]
-            if system_1.control:
+            if hasattr(system_1, "control") and system_1.control:
                 system_1.control.position = [
                     system_1.position[0] - 50,
                     system_1.position[1],
                 ]
+
+    def connect_elements(self, element_1: BaseElement, element_2: BaseElement) -> None:
+        for element in [element_1, element_2]:
+            if element not in self.graph.nodes:
+                self.add_node(element)
+        self.graph.add_edge(element_1, element_2)
+        self._assign_position(element_1, element_2)  # type: ignore
 
     def connect_systems(self, system_1: System, system_2: System) -> None:
 

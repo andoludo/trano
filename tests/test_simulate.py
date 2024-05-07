@@ -16,7 +16,7 @@ def client() -> docker.DockerClient:
 @pytest.fixture(scope="session")
 def container(client: docker.DockerClient) -> None:
     container = client.containers.run(
-        "openmodelica/openmodelica:v1.22.0-ompython",
+        "openmodelica/openmodelica:v1.22.4-ompython",
         command="tail -f /dev/null",
         volumes=[f"{str(Path(__file__).parents[1])}:/neosim"],
         detach=True,
@@ -122,5 +122,14 @@ def test_many_spaces_simple_ventilation(
     container: docker.models.containers.Container,
 ) -> None:
     with create_mos_file(many_spaces_simple_ventilation) as mos_file_name:
+        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
+        assert is_success(results)
+
+
+def test_buildings_free_float_single_zone_complex(
+    buildings_free_float_single_zone_ahu_complex: Network,
+    container: docker.models.containers.Container,
+) -> None:
+    with create_mos_file(buildings_free_float_single_zone_ahu_complex) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
