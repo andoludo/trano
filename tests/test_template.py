@@ -8,7 +8,7 @@ from neosim.models.elements.space import Space
 from neosim.models.elements.system import AirHandlingUnit
 from neosim.topology import Network
 
-OVERWRITE_MODELS = False
+OVERWRITE_MODELS = True
 
 
 def remove_annotation(model: str) -> str:
@@ -43,7 +43,9 @@ def clean_model(model: str, model_name: str) -> set:
 def _read(file_name: str) -> Set:
     return set(
         remove_annotation(
-            Path(__file__).parent.joinpath("data", f"{file_name}.mo").read_text()
+            remove_common_package(
+                Path(__file__).parent.joinpath("data", f"{file_name}.mo").read_text()
+            )
         )
         .replace("record", ";")
         .replace(f"model{file_name}", "")
