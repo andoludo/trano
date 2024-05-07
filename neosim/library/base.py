@@ -67,11 +67,8 @@ class BaseEmission(LibraryData):
 class BaseIdealHeatingEmission(LibraryData):
     variant: str = EmissionVariant.ideal
     template: str = """
-    {{package_name}}.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission {{ element.name }}
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    {{package_name}}.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
+    {{ element.name }}"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(targets=[Space], names=["heatPortCon", "heatPortRad"]),
@@ -93,11 +90,7 @@ class BaseValve(LibraryData):
 class BaseBoiler(LibraryData):
     template: str = """
     {{package_name}}.Common.Fluid.Boilers.Simple {{ element.name }}(
-    redeclare package Medium = MediumW) "Boiler"
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    redeclare package Medium = MediumW) "Boiler" """
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -169,10 +162,7 @@ class BaseThreeWayValve(LibraryData):
 
 class BaseOccupancy(LibraryData):
     template: str = """
-    {{package_name}}.Common.Occupancy.SimpleOccupancy {{ element.name }} annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    {{package_name}}.Common.Occupancy.SimpleOccupancy {{ element.name }}"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(targets=[Space], names=["y"]),
@@ -205,11 +195,7 @@ class BaseInternalElement(LibraryData):
 class BaseSpaceControl(LibraryData):
     template: str = """
     {{package_name}}.Common.Controls.SpaceControls.PID
-    {{ element.name }}(setPoint = 295.15, yMax = 1, yMin = 0)
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    {{ element.name }}(setPoint = 295.15, yMax = 1, yMin = 0)"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(targets=[Space], names=["port"]),
@@ -221,10 +207,7 @@ class BaseSpaceControl(LibraryData):
 class BaseControl(LibraryData):
     template: str = """
     Modelica.Blocks.Sources.Constant {{ element.name }}(k= 1)
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    """
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(targets=[System], names=["y"]),
@@ -239,10 +222,7 @@ class BaseDamper(LibraryData):
     m_flow_nominal=100*1.2/3600,
     dpDamper_nominal=50,
     allowFlowReversal=false,
-    dpFixed_nominal=50) "VAV box for room" annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    dpFixed_nominal=50) "VAV box for room" """
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(names=["port_a"], flow=Flow.inlet),
@@ -255,11 +235,7 @@ class BaseDamper(LibraryData):
 class BaseAirHandlingUnit(LibraryData):
     template: str = """{{package_name}}.Common.Fluid.Ventilation.SimpleHVACBuildings
     {{ element.name }}
-    (redeclare package Medium = Medium)
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    (redeclare package Medium = Medium)"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -284,10 +260,7 @@ class BaseDuct(LibraryData):
     m_flow_nominal=100*1.2/3600,
     redeclare package Medium = Medium,
     allowFlowReversal = false,
-    dp_nominal=40) "Pressure drop for return duct" annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    dp_nominal=40) "Pressure drop for return duct" """
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(names=["port_a"], flow=Flow.inlet),
@@ -299,10 +272,7 @@ class BaseDuct(LibraryData):
 class BaseVentilationControl(LibraryData):
     template: str = """    {{package_name}}.Common.Controls.SpaceControls.PIDSubstance
     {{ element.name }}(redeclare package
-      Medium = Medium, yMax = 0.9, yMin = 0.1, setPoint = 400) annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+      Medium = Medium, yMax = 0.9, yMin = 0.1, setPoint = 400)"""
 
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
@@ -317,10 +287,7 @@ class BaseVentilationControl(LibraryData):
 class BaseDataBus(LibraryData):
     template: str = """    {{package_name}}.Common.Controls.SpaceControls.DataServer
     {{ element.name }} (redeclare package
-      Medium = Medium) annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+      Medium = Medium)"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -339,11 +306,7 @@ class BaseDataBus(LibraryData):
 
 class BaseBoundary(LibraryData):
     template: str = """  Buildings.Fluid.Sources.Outside {{ element.name }}
-    (nPorts=2,redeclare package Medium = Medium)
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    (nPorts=2,redeclare package Medium = Medium)"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(targets=[Weather], names=["weaBus"]),
@@ -422,6 +385,11 @@ class DefaultLibrary(BaseModel):
             return element.ports
         return self._get_field_value(element).ports_factory()
 
+    def assign_annotation_template(self, element: BaseElement) -> Any:  # noqa : ANN401
+        if element.annotation_template:
+            return element.annotation_template
+        return self._get_field_value(element).annotation_template
+
     def assign_template(self, element: BaseElement) -> Any:  # noqa : ANN401
         if element.template:
             return element.template
@@ -430,6 +398,7 @@ class DefaultLibrary(BaseModel):
     def assign_properties(self, element: BaseElement) -> BaseElement:
         element.ports = self.assign_ports(element)
         element.template = self.assign_template(element)
+        element.annotation_template = self.assign_annotation_template(element)
         return element
 
     @abc.abstractmethod

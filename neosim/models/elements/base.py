@@ -109,6 +109,7 @@ class BaseElement(BaseModel):
     position: Optional[List[float]] = None
     ports: list[Port] = Field(default=[], validate_default=True)
     template: Optional[str] = None
+    annotation_template: Optional[str] = None
     variant: str = BaseVariant.default
 
     def get_position(self, layout: Dict["BaseElement", Any]) -> None:

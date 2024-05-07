@@ -44,10 +44,7 @@ class IdeasSpace(BaseSpace):
     redeclare package Medium = Medium,
     nSurf={{ element.number_merged_external_boundaries }},
     hZone={{ element.height }},
-    T_start=293.15)
-    annotation (Placement(transformation(origin={{ macros.join_list(element.position) }},
-    extent={% raw %}{{-20,-20},{20,20}}
-    {% endraw %})));"""
+    T_start=293.15)"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -85,10 +82,7 @@ class IdeasMergedExternalWall(LibraryData):
     A={{  macros.join_list(element.surfaces)}},
     final azi={{macros.join_list(element.azimuths)}},
     redeclare package Medium = Medium,
-    final inc={{macros.join_list(tilts)}})  annotation(
-    Placement(transformation(origin = {{ macros.join_list(element.position) }}, extent =
-    {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    final inc={{macros.join_list(tilts)}})"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -112,10 +106,7 @@ class IdeasMergedWindows(LibraryData):
     A={{  macros.join_list(element.surfaces)}},
     final azi={{macros.join_list(element.azimuths)}},
     redeclare package Medium = Medium,
-    final inc={{macros.join_list(tilts)}})  annotation(
-    Placement(transformation(origin = {{ macros.join_list(element.position) }}
-    , extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    final inc={{macros.join_list(tilts)}})"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -135,10 +126,7 @@ class IdeasFloorOnGround(LibraryData):
     redeclare parameter {{ package_name }}.Data.Constructions.
     {{ element.construction.name }} constructionType,
     redeclare package Medium = Medium,
-    A={{  element.surface}})  annotation(
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    A={{  element.surface}})"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(targets=[Space], names=["propsBus_a"], multi_connection=False),
@@ -155,10 +143,7 @@ class IdeasInternalElement(LibraryData):
     A = {{ element.surface }}, inc = IDEAS.Types.Tilt.
     {{ element.tilt.value | capitalize }}, azi =
     {{ element.azimuth }}) "Partition wall between the two
-    rooms" annotation(
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    rooms" """
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -180,11 +165,7 @@ class IdeasInternalElement(LibraryData):
 class IdeasPump(LibraryData):
     template: str = """
     IDEAS.Fluid.Movers.FlowControlled_m_flow {{ element.name }}(
-    redeclare package Medium = MediumW, m_flow_nominal = 1, dp_nominal = 100)
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    redeclare package Medium = MediumW, m_flow_nominal = 1, dp_nominal = 100)"""
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -228,11 +209,7 @@ class IdeasLibrary(DefaultLibrary):
                 template="""
     IDEAS.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear {{ element.name }}(
     redeclare package Medium = MediumW, m_flow_nominal = 0.1,
-    dpValve_nominal = 1000) "Three-way valve"
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    dpValve_nominal = 1000) "Three-way valve" """
             )
         ]
     )
@@ -243,11 +220,7 @@ class IdeasLibrary(DefaultLibrary):
     IDEAS.Fluid.FixedResistances.Junction {{ element.name }} (
     redeclare package Medium = MediumW, m_flow_nominal = {0.1, 0.1, 0.1},
     dp_nominal = {40, 40, 40})
-    "Flow splitter"
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    "Flow splitter" """
             )
         ]
     )
@@ -258,10 +231,7 @@ class IdeasLibrary(DefaultLibrary):
     IDEAS.Fluid.Actuators.Valves.TwoWayEqualPercentage {{ element.name }}(
     redeclare package Medium = MediumW, m_flow_nominal = 0.1, dpValve_nominal = 200,
     allowFlowReversal = false, dpFixed_nominal = 200, linearized = false) "Radiator valve"
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    """
             )
         ]
     )
@@ -272,11 +242,7 @@ class IdeasLibrary(DefaultLibrary):
     IDEAS.Fluid.HeatExchangers.Radiators.RadiatorEN442_2 {{ element.name }}(
     redeclare package Medium = MediumW, allowFlowReversal = false, Q_flow_nominal = 500,
     T_a_nominal = 318.15, T_b_nominal = 308.15, m_flow_nominal = 100*1.2/3600,
-    energyDynamics = Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator"
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    energyDynamics = Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator" """
             ),
             BaseIdealHeatingEmission(),
         ]
@@ -286,11 +252,7 @@ class IdeasLibrary(DefaultLibrary):
             BaseAirHandlingUnit(
                 template="""{{ package_name }}.Common.Fluid.
             Ventilation.SimpleHVAC {{ element.name }}
-    (redeclare package Medium = Medium)
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    (redeclare package Medium = Medium)"""
             )
         ]
     )

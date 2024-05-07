@@ -316,7 +316,10 @@ class Network:
         for node in self.graph.nodes:
             environment.globals.update(self.library.functions)
             rtemplate = environment.from_string(
-                "{% import 'macros.jinja2' as macros %}" + node.template
+                "{% import 'macros.jinja2' as macros %}"
+                + node.template
+                + " "
+                + node.annotation_template
             )
             model = rtemplate.render(
                 element=node,

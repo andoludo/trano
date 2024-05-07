@@ -40,10 +40,7 @@ class BuildingsLibrary(DefaultLibrary):
             {{ element.surface }}, layers =
     {{ element.construction.name }}, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
-    rooms" annotation(
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    rooms" """
             )
         ]
     )
@@ -53,10 +50,7 @@ class BuildingsLibrary(DefaultLibrary):
                 template="""    Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             {{ element.name }}(filNam =
     Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+"""
             )
         ]
     )
@@ -72,11 +66,7 @@ class BuildingsLibrary(DefaultLibrary):
     m_flow_nominal=mRad_flow_nominal,
     dpFixed_nominal={100,0},
     use_inputFilter=false,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-way valve"
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-     extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-wayvalve" """
             )
         ]
     )
@@ -88,11 +78,7 @@ class BuildingsLibrary(DefaultLibrary):
     m_flow_nominal=mRad_flow_nominal*{1,-1,-1},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
-    "Flow splitter"
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    "Flow splitter" """
             )
         ]
     )
@@ -105,10 +91,7 @@ class BuildingsLibrary(DefaultLibrary):
     m_flow_nominal=mRad_flow_nominal,
     dp_nominal=dp_nominal,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    """
             )
         ]
     )
@@ -122,11 +105,7 @@ class BuildingsLibrary(DefaultLibrary):
     m_flow_nominal=mRad_flow_nominal/nRoo,
     dpFixed_nominal=dpRoo_nominal,
     from_dp=true,
-    use_inputFilter=false) "Radiator valve"
-    annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }}
-    , extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    use_inputFilter=false) "Radiator valve" """
             )
         ]
     )
@@ -139,11 +118,7 @@ class BuildingsLibrary(DefaultLibrary):
     Q_flow_nominal=scaFacRad*Q_flow_nominal/nRoo,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     T_a_nominal=323.15,
-    T_b_nominal=313.15) "Radiator"
-    annotation (
-    Placement(transformation(origin =
-    {{ macros.join_list(element.position) }}, extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
+    T_b_nominal=313.15) "Radiator" """
             ),
             BaseIdealHeatingEmission(),
         ]
@@ -203,10 +178,7 @@ class BuildingsLibrary(DefaultLibrary):
         {%- endif %}
     {%- endfor %}
     nConPar=0,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
-    annotation (Placement(transformation(origin=
-    {{ macros.join_list(element.position) }},extent={% raw %}{{-20,-20},{20,20}}
-    {% endraw %})));"""
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)"""
             )
         ]
     )
