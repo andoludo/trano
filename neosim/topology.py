@@ -13,9 +13,9 @@ from neosim.library.base import DefaultLibrary
 from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
-from neosim.models.elements.control import Control, DataBus
+from neosim.models.elements.control import Control, DataBus, SpaceControl
 from neosim.models.elements.space import Space, _get_controllable_element
-from neosim.models.elements.system import System, Weather
+from neosim.models.elements.system import AirHandlingUnit, System, Weather
 from neosim.models.elements.wall import InternalElement
 
 
@@ -30,12 +30,18 @@ class Network:
         self.name: str = name
         self._system_controls: List[Control] = []
         self.library = library or BuildingsLibrary()
+        self.dynamic_components: dict = {"ventilation": [], "control": []}
 
     def add_node(self, node: BaseElement) -> None:
         node = self.library.assign_properties(node)
-        if node in self.graph.nodes:
-            raise Exception(f"Node {node.name} already exists.")
-        self.graph.add_node(node)
+        if node not in self.graph.nodes:
+            self.graph.add_node(node)
+        if hasattr(node, "control") and node.control:
+            if node.control not in self.graph.nodes:
+                node_control = self.library.assign_properties(node.control)
+                self.graph.add_node(node_control)
+                self.graph.add_edge(node, node_control)
+                node_control.controllable_element = node
 
     def add_space(self, space: "Space") -> None:
         self.add_node(space)
@@ -53,7 +59,7 @@ class Network:
         self._build_control(space)  # TODO: perhaps move to space
         self._build_occupancy(space)
         self._build_space_ventilation(space)
-        self._build_ventilation_control(space)
+        # self._build_ventilation_control(space)
         space.assign_position()
 
     def _add_subsequent_systems(self, systems: List[System]) -> None:
@@ -112,22 +118,36 @@ class Network:
             [node for node in self.graph.nodes if isinstance(node, Space)],
             key=lambda x: x.name,
         )
+        controls = sorted(
+            [node for node in self.graph.nodes if isinstance(node, Control)],
+            key=lambda x: x.name,
+        )
+        ahus = sorted(
+            [node for node in self.graph.nodes if isinstance(node, AirHandlingUnit)],
+            key=lambda x: x.name,
+        )
         data_bus = DataBus(
             name="data_bus",
-            number_of_spaces=len(spaces),
-            space_names=[space.name for space in spaces],
+            spaces=[space.name for space in spaces],
         )
         self.add_node(data_bus)
         for space in spaces:
             self.graph.add_edge(space, data_bus)
+        for control in controls:
+            self.graph.add_edge(control, data_bus)
+        for ahu in ahus:
+            self.graph.add_edge(ahu, data_bus)
         return data_bus
 
-    def _build_ventilation_control(self, space: "Space") -> None:
-        if space.ventilation_control:
-            self.add_node(space.ventilation_control)
-            self.graph.add_edge(
-                space,
-                space.ventilation_control,
+    def _build_full_space_control(self) -> None:
+        spaces = [node for node in self.graph.nodes if isinstance(node, Space)]
+
+        for space in spaces:
+            neighbors = list(
+                set(
+                    list(self.graph.predecessors(space.get_last_ventilation_inlet()))
+                    + list(self.graph.successors(space.get_last_ventilation_outlet()))
+                )
             )
             for ventilation_element in (
                 space.ventilation_inlets + space.ventilation_outlets
@@ -142,15 +162,27 @@ class Network:
                     ],
                 )
             )
-            if not controllable_ventilation_elements:
-                raise Exception(
-                    f"Space {space.name} is controllable but is "
-                    f"not linked to controllable emission."
+            for controllable_element in controllable_ventilation_elements:
+                if not controllable_element.control:
+                    raise Exception(
+                        f"Controllable element {controllable_element.name} "
+                        f"does not have a control."
+                    )
+                if not isinstance(controllable_element.control, SpaceControl):
+                    raise Exception(
+                        f"Controllable element {controllable_element.name} "
+                        f"control is not a SpaceControl."
+                    )
+                self.add_node(controllable_element)
+                self.add_node(controllable_element.control)
+                self.graph.add_edge(space, controllable_element.control)
+                self.graph.add_edge(controllable_element, controllable_element.control)
+                self._assign_position(
+                    controllable_element, controllable_element.control
                 )
-            for controllable_ventilation_element in controllable_ventilation_elements:
-                self.graph.add_edge(
-                    space.ventilation_control, controllable_ventilation_element
-                )
+                controllable_element.control.controllable_element = controllable_element
+                controllable_element.control.space = space
+                controllable_element.control.neighbors = neighbors
 
     def _build_occupancy(self, space: "Space") -> None:
         if space.occupancy:
@@ -279,8 +311,34 @@ class Network:
 
     def model(self) -> str:
         Space.counter = 0
+        self._build_full_space_control()
         data_bus = self._build_data_bus()
+        ports = {
+            "RealOutput": [],
+            "RealInput": [],
+            "IntegerOutput": [],
+            "IntegerInput": [],
+            "BooleanOutput": [],
+            "BooleanInput": [],
+        }
+        for node in self.graph.nodes:
+            if node.component_template and node.component_template.bus:
+                node_ports = node.component_template.bus.list_ports(node)
+                ports["RealOutput"] += node_ports["RealOutput"]
+                ports["RealInput"] += node_ports["RealInput"]
+                ports["IntegerOutput"] += node_ports["IntegerOutput"]
+                ports["IntegerInput"] += node_ports["IntegerInput"]
+                ports["BooleanOutput"] += node_ports["BooleanOutput"]
+                ports["BooleanInput"] += node_ports["BooleanInput"]
+        ports["RealOutput"] = set(ports["RealOutput"])
+        ports["RealInput"] = set(ports["RealInput"])
+        ports["IntegerOutput"] = set(ports["IntegerOutput"])
+        ports["IntegerInput"] = set(ports["IntegerInput"])
+        ports["BooleanOutput"] = set(ports["BooleanOutput"])
+        ports["BooleanInput"] = set(ports["BooleanInput"])
+
         self.generate_graphs()
+
         self._connect_space_controls()
 
         element_models = self.build_element_models()
@@ -302,7 +360,12 @@ class Network:
             element_models=element_models,
             library=self.library,
             databus=data_bus,
+            dynamic_components=self.dynamic_components,
         )
+
+    def build_dynamic_component_template(self, node: BaseElement) -> None:
+        component = node.component_template.render(self.name, node)
+        self.dynamic_components[node.component_template.category].append(component)
 
     def build_element_models(self) -> List[str]:
         environment = Environment(
@@ -313,6 +376,9 @@ class Network:
         )
         environment.filters["enumerate"] = enumerate
         models = []
+        # for node in self.graph.nodes:
+        #     if node.component_template and node.component_template.bus:
+        #         node.component_template.bus.get_inputs(node, **node.component_template.function(node))
         for node in self.graph.nodes:
             environment.globals.update(self.library.functions)
             rtemplate = environment.from_string(
@@ -321,6 +387,8 @@ class Network:
                 + " "
                 + node.annotation_template
             )
+            if node.component_template:
+                self.build_dynamic_component_template(node)
             model = rtemplate.render(
                 element=node,
                 package_name=self.name,

@@ -1,7 +1,7 @@
 {% import 'macros.jinja2' as macros %}
 {% import 'common.jinja2' as common %}
 package {{ network.name }}
-{{ common.common_library(databus) }}
+{{ common.common_library(databus, dynamic_components) }}
 {% if data.is_package %}
 {{ data.data|safe }}
 model building

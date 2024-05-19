@@ -6,8 +6,6 @@ from pydantic import Field, computed_field
 from neosim.models.elements.base import BaseElement
 from neosim.models.elements.control import (
     SpaceControl,
-    SpaceSubstanceVentilationControl,
-    SpaceVentilationControl,
 )
 from neosim.models.elements.merged_wall import (
     MergedBaseWall,
@@ -50,7 +48,6 @@ class Space(BaseElement):
     emissions: List[System] = Field(default=[])
     ventilation_inlets: List[System] = Field(default=[])
     ventilation_outlets: List[System] = Field(default=[])
-    ventilation_control: Optional[SpaceVentilationControl] = None
     control: Optional[SpaceControl] = None
     occupancy: Optional[Occupancy] = None
 
@@ -68,9 +65,7 @@ class Space(BaseElement):
     @property
     def number_ventilation_ports(self) -> int:
         return (
-            bool(self.ventilation_inlets)
-            + bool(self.ventilation_outlets)
-            + isinstance(self.ventilation_control, SpaceSubstanceVentilationControl)
+            bool(self.ventilation_inlets) + bool(self.ventilation_outlets)
         ) + 1  # databus
 
     @computed_field  # type: ignore

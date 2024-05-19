@@ -1,7 +1,10 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple
 
+from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, ConfigDict, Field
 
+from neosim.controller.parser import ControllerBus
 from neosim.models.constants import Flow
 
 if TYPE_CHECKING:
@@ -55,7 +58,7 @@ class Port(BaseModel):
     def is_controllable(self) -> bool:
         from neosim.models.elements.control import Control
 
-        return self.targets is not None and all(
+        return self.targets is not None and any(
             target == Control for target in self.targets
         )
 
@@ -103,6 +106,37 @@ class BaseVariant:
     default: str = "default"
 
 
+class DynamicComponentTemplate(BaseModel):
+
+    template: Optional[str] = None
+    category: Optional[Literal["ventilation", "control"]] = None
+    function: Callable = Field(default=lambda _: {})
+    bus: Optional[ControllerBus] = None
+
+    def render(self, package_name, element: "BaseElement") -> str:
+        ports = list(self.bus.bus_ports(element))
+        environment = Environment(
+            trim_blocks=True,
+            lstrip_blocks=True,
+            loader=FileSystemLoader(
+                str(Path(__file__).parents[2].joinpath("templates"))
+            ),
+            autoescape=True,
+        )
+        environment.filters["enumerate"] = enumerate
+        rtemplate = environment.from_string(
+            "{% import 'macros.jinja2' as macros %}" + self.template
+        )
+        component = rtemplate.render(
+            element=element,
+            package_name=package_name,
+            bus_template=self.bus.template,
+            bus_ports="\n".join(ports),
+            **self.function(element),
+        )
+        return component
+
+
 class BaseElement(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     name: str
@@ -110,6 +144,7 @@ class BaseElement(BaseModel):
     ports: list[Port] = Field(default=[], validate_default=True)
     template: Optional[str] = None
     annotation_template: Optional[str] = None
+    component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
 
     def get_position(self, layout: Dict["BaseElement", Any]) -> None:

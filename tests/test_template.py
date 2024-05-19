@@ -259,3 +259,10 @@ def test_buildings_free_float_single_zone_ahu_complex(
     assert clean_model(
         model_, buildings_free_float_single_zone_ahu_complex.name
     ) == set(_read(buildings_free_float_single_zone_ahu_complex.name))
+
+
+def test_vav_ventilation_control(vav_ventilation_control: Network) -> None:
+    model_ = vav_ventilation_control.model()
+    assert clean_model(model_, vav_ventilation_control.name) == set(
+        _read(vav_ventilation_control.name)
+    )

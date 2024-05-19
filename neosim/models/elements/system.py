@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+
 from neosim.models.elements.base import BaseElement, BaseVariant
 from neosim.models.elements.control import Control
 
@@ -15,11 +16,19 @@ class EmissionVariant(BaseVariant):
     ideal: str = "ideal"
 
 
-class Emission(System):
+class DamperVariant(BaseVariant):
+    complex: str = "complex"
+
+
+class SpaceSystem(System):
+    linked_space: Optional[str] = None
+
+
+class Emission(SpaceSystem):
     variant: str = EmissionVariant.radiator
 
 
-class Valve(System):
+class Valve(SpaceSystem):
     ...
 
 
@@ -47,7 +56,7 @@ class Weather(System):
     ...
 
 
-class Ventilation(System):
+class Ventilation(SpaceSystem):
     ...
 
 
@@ -64,4 +73,4 @@ class Damper(Ventilation):
 
 
 class VAV(Damper):
-    ...
+    variant: str = DamperVariant.default

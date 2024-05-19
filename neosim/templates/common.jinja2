@@ -1,4 +1,4 @@
-{%- macro common_library(databus) -%}
+{%- macro common_library(databus, dynamic_components) -%}
 {% raw %}
 package Common
   package Occupancy
@@ -193,59 +193,8 @@ constructed by the signals connected to this bus.
                   fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-80, 90}, {-88, 68}, {-72, 68}, {-80, 90}}), Line(points = {{-90, -80}, {82, -80}}, color = {192, 192, 192}), Polygon(lineColor = {192, 192, 192}, fillColor = {192, 192, 192},
                   fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{90, -80}, {68, -72}, {68, -88}, {90, -80}}), Line(points = {{-80, -80}, {-80, -20}, {60, 80}}, color = {0, 0, 127}), Text(textColor = {192, 192, 192}, extent = {{-20, -60}, {80, -20}}, textString = "PID")}));
       end PIDSubstance;
-{% endraw %}
-      model DataServer
-      replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
-    "Medium model" annotation (choicesAllMatching=true);
-        Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[{{ databus.number_of_spaces }}] TRoo {% raw %}annotation (
-                Placement(transformation(origin={-544,-226},    extent = {{480, 216}, {500, 236}})));{% endraw %}
-        Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ databus.number_of_spaces }}] port {% raw %}annotation (
-                Placement(transformation(extent={{-112,-10},{-92,10}}),      iconTransformation(extent = {{-110, -10}, {-90, 10}})));
-        BaseClasses.DataBus controlBus annotation (Placement(transformation(
-                extent={{80,-20},{120,20}}), iconTransformation(extent={{90,-10},
-                  {110,10}})));{% endraw %}
-      Buildings.Fluid.Sensors.PPM[{{ databus.number_of_spaces }}]                             TRoo1(redeclare
-      package Medium = Medium)                                                                     {% raw %}annotation (
-          Placement(transformation(origin={-542,-268},    extent = {{480, 216}, {500, 236}})));{% endraw %}
-  Modelica.Fluid.Interfaces.FluidPort_a[{{ databus.number_of_spaces }}] port_a(redeclare package Medium
-      = Medium)
-    "Fluid connector a (positive design flow direction is from port_a to port_b)"
-    {% raw %}annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
-  iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  {% endraw %}
-      equation
-    {% for index, space in databus.space_names|enumerate %}
-              connect(port[{{index + 1}}],TRoo[{{index + 1}}]. port)
-        {% raw %}annotation (
-                Line(points={{-102,0},{-64,0}},      color = {191, 0, 0}));
-        {% endraw %}
-        connect(TRoo[{{index + 1}}].T, controlBus.temperature_{{space}})
-        {% raw %}
-            annotation (Line(points={{-43,0},{100,0}}, color={0,0,127}), Text(
-            string="%second",
-            index=1,
-            extent={{6,3},{6,3}},
-            horizontalAlignment=TextAlignment.Left));
-        {% endraw %}
-          connect(port_a[{{index + 1}}], TRoo1[{{index + 1}}].port)
-        {% raw %}annotation (Line(points={{-99,-42},{-68,-42},{-68,
-          -56},{-52,-56},{-52,-52}}, color={0,127,255}));{% endraw %}
-  connect(TRoo1[{{index + 1}}].ppm, controlBus.ppm_{{space}})
-        {% raw %}annotation (Line(points={{-41,-42},{74,
-          -42},{74,0},{100,0}}, color={0,0,127}), Text(
-      string="%second",
-      index=1,
-      extent={{6,3},{6,3}},
-      horizontalAlignment=TextAlignment.Left));{% endraw %}
-    {% endfor %}
-{% raw %}
-        annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
-                Rectangle(
-                extent={{-102,100},{100,-100}},
-                lineColor={28,108,200},
-                fillColor={255,255,85},
-                fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
-                preserveAspectRatio=false)));
-      end DataServer;
+
+
 
       annotation (
         Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
@@ -446,6 +395,13 @@ constructed by the signals connected to this bus.
               fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
               preserveAspectRatio=false)));
   end AHU_G36;
+        {% endraw %}
+    {% if dynamic_components.control %}
+    {% for v in  dynamic_components.control %}
+        {{  v |safe }}
+    {% endfor %}
+    {% endif %}
+    {% raw %}
 end ventilation;
     end Controls;
 
@@ -552,72 +508,88 @@ end ventilation;
 
       model SimpleHVACBuildings
 
-        replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
-          "Medium model" annotation (choicesAllMatching=true);
-        Buildings.Fluid.Movers.FlowControlled_dp
-                                       fanSup(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-          use_inputFilter=false,
-          inputType=Buildings.Fluid.Types.InputType.Constant,
-          nominalValuesDefineDefaultPressureCurve=true,
-          redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Supply fan"
-          annotation (Placement(transformation(extent={{4,6},{24,26}})));
-        Buildings.Fluid.Movers.FlowControlled_dp
-                                       fanRet(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-          use_inputFilter=false,
-          inputType=Buildings.Fluid.Types.InputType.Constant,
-          nominalValuesDefineDefaultPressureCurve=true,
-          redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Return fan"
-          annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
-        Buildings.Fluid.HeatExchangers.ConstantEffectiveness
-                                                   hex(
-          redeclare package Medium1 = Medium,
-          redeclare package Medium2 = Medium,
-          m1_flow_nominal=2*100*1.2/3600,
-          m2_flow_nominal=2*100*1.2/3600,
-          dp1_nominal=100,
-          dp2_nominal=100) "Heat exchanger with constant heat recovery effectivity"
-          annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
-        Modelica.Fluid.Interfaces.FluidPort_b port_b(
-          redeclare final package Medium = Medium)
-          "Fluid connector b (positive design flow direction is from port_a to port_b)"
-          annotation (Placement(transformation(extent={{118,1},{86,31}}),
-              iconTransformation(extent={{110,31},{90,49}})));
+  replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+    "Medium model" annotation (choicesAllMatching=true);
+  Buildings.Fluid.Movers.FlowControlled_dp
+                                 fanSup(
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    use_inputFilter=false,
+    inputType=Buildings.Fluid.Types.InputType.Constant,
+    nominalValuesDefineDefaultPressureCurve=true,
+    redeclare package Medium = Medium,
+    dp_nominal=200,
+    m_flow_nominal=2*100*1.2/3600) "Supply fan"
+    annotation (Placement(transformation(extent={{4,6},{24,26}})));
+  Buildings.Fluid.Movers.FlowControlled_dp
+                                 fanRet(
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    use_inputFilter=false,
+    inputType=Buildings.Fluid.Types.InputType.Constant,
+    nominalValuesDefineDefaultPressureCurve=true,
+    redeclare package Medium = Medium,
+    dp_nominal=200,
+    m_flow_nominal=2*100*1.2/3600) "Return fan"
+    annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
+  Buildings.Fluid.HeatExchangers.ConstantEffectiveness
+                                             hex(
+    redeclare package Medium1 = Medium,
+    redeclare package Medium2 = Medium,
+    m1_flow_nominal=2*100*1.2/3600,
+    m2_flow_nominal=2*100*1.2/3600,
+    dp1_nominal=100,
+    dp2_nominal=100) "Heat exchanger with constant heat recovery effectivity"
+    annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b(
+    redeclare final package Medium = Medium)
+    "Fluid connector b (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{118,1},{86,31}}),
+        iconTransformation(extent={{110,31},{90,49}})));
 
-        Modelica.Fluid.Interfaces.FluidPort_a port_a(
-          redeclare final package Medium = Medium)
-          "Fluid connector a (positive design flow direction is from port_a to port_b)"
-          annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
-              iconTransformation(extent={{90,-49},{110,-31}})));
-        Buildings.Fluid.Sources.Boundary_pT bou(T=295.15, nPorts=2,    redeclare
-            package                                                                      Medium = Medium)
-          annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
-      equation
-        connect(hex.port_b1, fanSup.port_a) annotation (
-          Line(points = {{-6, 2}, {-6, 16}, {4, 16}}, color = {0, 127, 255}));
-        connect(hex.port_a2, fanRet.port_b) annotation (
-          Line(points = {{-6, -10}, {-6, -24}, {4, -24}}, color = {0, 127, 255}));
-        connect(fanSup.port_b, port_b) annotation (
-          Line(points = {{24, 16}, {102, 16}}, color = {0, 127, 255}));
-        connect(fanRet.port_a, port_a) annotation (
-          Line(points = {{24, -24}, {101, -24}}, color = {0, 127, 255}));
-        connect(bou.ports[1], hex.port_b2) annotation (Line(points={{-58,-2},{-32,-2},
-                {-32,-10},{-26,-10}}, color={0,127,255}));
-        connect(bou.ports[2], hex.port_a1) annotation (Line(points={{-58,-6},{-32,-6},
-                {-32,2},{-26,2}}, color={0,127,255}));
-        annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-60},
-                  {100,60}}), graphics={Rectangle(
-                extent={{-100,60},{100,-60}},
-                lineColor={255,128,0},
-                fillColor={255,128,0},
-                fillPattern=FillPattern.Forward)}), Diagram(coordinateSystem(
-                preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
-      end SimpleHVACBuildings;
+  Modelica.Fluid.Interfaces.FluidPort_a port_a(
+    redeclare final package Medium = Medium)
+    "Fluid connector a (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
+        iconTransformation(extent={{90,-49},{110,-31}})));
+  Buildings.Fluid.Sources.Boundary_pT bou(T=295.15, nPorts=2,    redeclare
+      package                                                                      Medium = Medium)
+    annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+    redeclare package Medium = Medium,
+    m_flow_nominal=2*100*1.2/3600,
+    allowFlowReversal=false)
+annotation (Placement(transformation(extent={{48,6},{68,26}})));
+  Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(
+          extent={{-120,22},{-80,62}}), iconTransformation(extent={{-208,22},{-188,
+            42}})));
+equation
+  connect(hex.port_b1, fanSup.port_a) annotation (
+    Line(points = {{-6, 2}, {-6, 16}, {4, 16}}, color = {0, 127, 255}));
+  connect(hex.port_a2, fanRet.port_b) annotation (
+    Line(points = {{-6, -10}, {-6, -24}, {4, -24}}, color = {0, 127, 255}));
+  connect(fanRet.port_a, port_a) annotation (
+    Line(points = {{24, -24}, {101, -24}}, color = {0, 127, 255}));
+  connect(bou.ports[1], hex.port_b2) annotation (Line(points={{-58,-2},{-32,-2},
+          {-32,-10},{-26,-10}}, color={0,127,255}));
+  connect(bou.ports[2], hex.port_a1) annotation (Line(points={{-58,-6},{-32,-6},
+          {-32,2},{-26,2}}, color={0,127,255}));
+  connect(fanSup.port_b, TSup.port_a)
+    annotation (Line(points={{24,16},{48,16}}, color={0,127,255}));
+  connect(TSup.port_b, port_b)
+    annotation (Line(points={{68,16},{102,16}}, color={0,127,255}));
+  connect(TSup.T, dataBus.TSupAhu) annotation (Line(points={{58,27},{58,42},{
+          -100,42}}, color={0,0,127}), Text(
+      string="%second",
+      index=1,
+      extent={{-6,3},{-6,3}},
+      horizontalAlignment=TextAlignment.Right));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-60},
+            {100,60}}), graphics={Rectangle(
+          extent={{-100,60},{100,-60}},
+          lineColor={255,128,0},
+          fillColor={255,128,0},
+          fillPattern=FillPattern.Forward)}), Diagram(coordinateSystem(
+          preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
+end SimpleHVACBuildings;
 
     model AhuWithEconomizer
     replaceable package MediumA = Modelica.Media.Interfaces.PartialMedium
@@ -1089,6 +1061,480 @@ equation
                                          Diagram(coordinateSystem(
             preserveAspectRatio=false, extent={{-100,-180},{540,100}})));
 end AhuWithEconomizer;
+        partial model PartialAhu
+replaceable package MediumA = Modelica.Media.Interfaces.PartialMedium
+"Medium model" annotation (choicesAllMatching=true);
+
+  constant Integer numZon(min=2)=2 "Total number of served VAV boxes";
+
+  parameter Modelica.Units.SI.Volume VRoo[numZon] "Room volume per zone";
+  parameter Modelica.Units.SI.Area AFlo[numZon] "Floor area per zone";
+
+  final parameter Modelica.Units.SI.Area ATot=sum(AFlo)
+"Total floor area for all zone";
+
+  constant Real conv=1.2/3600 "Conversion factor for nominal mass flow rate";
+
+  parameter Modelica.Units.SI.HeatFlowRate QHeaAHU_flow_nominal(min=0)=
+    mHeaAir_flow_nominal*Buildings.Utilities.Psychrometrics.Constants.cpAir*(
+    THeaAirSup_nominal - THeaAirMix_nominal)
+"Nominal heating heat flow rate of air handler unit coil";
+
+  parameter Modelica.Units.SI.HeatFlowRate QCooAHU_flow_nominal(max=0) = 1.3*
+    mCooAir_flow_nominal*Buildings.Utilities.Psychrometrics.Constants.cpAir*(
+    TCooAirSup_nominal - TCooAirMix_nominal)
+"Nominal total cooling heat flow rate of air handler unit coil (negative number)";
+
+  parameter Modelica.Units.SI.MassFlowRate mCooVAV_flow_nominal[numZon]
+"Design mass flow rate per zone for cooling"
+annotation (Dialog(group="Nominal mass flow rate"));
+
+  parameter Modelica.Units.SI.MassFlowRate mHeaVAV_flow_nominal[numZon]=0.3*
+      mCooVAV_flow_nominal
+"Design mass flow rate per zone for heating"
+annotation (Dialog(group="Nominal mass flow rate"));
+
+  parameter Modelica.Units.SI.MassFlowRate mAir_flow_nominal=
+      mCooAir_flow_nominal
+"Nominal mass flow rate for fan"
+annotation (Dialog(group="Nominal mass flow rate"));
+  parameter Modelica.Units.SI.MassFlowRate mCooAir_flow_nominal=0.7*sum(
+      mCooVAV_flow_nominal)
+"Nominal mass flow rate for fan"
+annotation (Dialog(group="Nominal mass flow rate"));
+  parameter Modelica.Units.SI.MassFlowRate mHeaAir_flow_nominal=0.7*sum(
+      mHeaVAV_flow_nominal)
+"Nominal mass flow rate for fan"
+annotation (Dialog(group="Nominal mass flow rate"));
+
+  parameter Modelica.Units.SI.MassFlowRate mHeaWat_flow_nominal=
+  QHeaAHU_flow_nominal/Buildings.Utilities.Psychrometrics.Constants.cpWatLiq/10
+"Nominal water mass flow rate for heating coil in AHU"
+annotation (Dialog(group="Nominal mass flow rate"));
+  parameter Modelica.Units.SI.MassFlowRate mCooWat_flow_nominal=
+  QCooAHU_flow_nominal/Buildings.Utilities.Psychrometrics.Constants.cpWatLiq/(-6)
+"Nominal water mass flow rate for cooling coil"
+annotation (Dialog(group="Nominal mass flow rate"));
+
+  parameter Real ratOAFlo_A(final unit="m3/(s.m2)") = 0.3e-3
+"Outdoor airflow rate required per unit area";
+  parameter Real ratOAFlo_P=2.5e-3
+"Outdoor airflow rate required per person";
+  parameter Real ratP_A=5e-2
+"Occupant density";
+  parameter Real effZ(final unit="1") = 0.8
+"Zone air distribution effectiveness (limiting value)";
+  parameter Real divP(final unit="1") = 0.7
+"Occupant diversity ratio";
+
+  parameter Modelica.Units.SI.VolumeFlowRate VZonOA_flow_nominal[numZon]=
+                                                                     (
+  ratOAFlo_P*ratP_A + ratOAFlo_A)*AFlo/effZ
+"Zone outdoor air flow rate of each VAV box";
+
+  parameter Modelica.Units.SI.VolumeFlowRate Vou_flow_nominal=
+                                                          (divP*ratOAFlo_P*
+  ratP_A + ratOAFlo_A)*sum(AFlo) "System uncorrected outdoor air flow rate";
+  parameter Real effVen(final unit="1") = if divP < 0.6 then
+0.88 * divP + 0.22 else 0.75
+"System ventilation efficiency";
+  parameter Modelica.Units.SI.VolumeFlowRate Vot_flow_nominal=Vou_flow_nominal/
+  effVen "System design outdoor air flow rate";
+
+  parameter Modelica.Units.SI.Temperature THeaOn=293.15
+"Heating setpoint during on"
+annotation (Dialog(group="Room temperature setpoints"));
+  parameter Modelica.Units.SI.Temperature THeaOff=285.15
+"Heating setpoint during off"
+annotation (Dialog(group="Room temperature setpoints"));
+  parameter Modelica.Units.SI.Temperature TCooOn=297.15
+"Cooling setpoint during on"
+annotation (Dialog(group="Room temperature setpoints"));
+  parameter Modelica.Units.SI.Temperature TCooOff=303.15
+"Cooling setpoint during off"
+annotation (Dialog(group="Room temperature setpoints"));
+  parameter Modelica.Units.SI.PressureDifference dpBuiStaSet(min=0) = 12
+"Building static pressure";
+  parameter Real yFanMin=0.1 "Minimum fan speed";
+
+  parameter Modelica.Units.SI.Temperature TCooAirMix_nominal(displayUnit="degC")=
+       303.15
+"Mixed air temperature during cooling nominal conditions (used to size cooling coil)"
+annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+  parameter Modelica.Units.SI.Temperature TCooAirSup_nominal(displayUnit="degC")=
+       285.15
+"Supply air temperature during cooling nominal conditions (used to size cooling coil)"
+annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+  parameter Modelica.Units.SI.MassFraction wCooAirMix_nominal=0.017
+"Humidity ratio of mixed air at a nominal conditions used to size cooling coil (in kg/kg dry total)"
+annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+  parameter Modelica.Units.SI.Temperature TCooWatInl_nominal(displayUnit="degC")=
+       279.15
+"Cooling coil nominal inlet water temperature"
+annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+
+  parameter Modelica.Units.SI.Temperature THeaAirMix_nominal(displayUnit="degC")=
+       277.15
+"Mixed air temperature during heating nominal conditions (used to size heating coil)"
+annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+  parameter Modelica.Units.SI.Temperature THeaAirSup_nominal(displayUnit="degC")=
+       285.15
+"Supply air temperature during heating nominal conditions (used to size heating coil)"
+annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+  parameter Modelica.Units.SI.Temperature THeaWatInl_nominal(displayUnit="degC")
+"Reheat coil nominal inlet water temperature"
+annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+
+  parameter Boolean allowFlowReversal=false
+"= false to simplify equations, assuming, but not enforcing, no flow reversal"
+annotation (Evaluate=true);
+
+  Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup(
+  redeclare package Medium = MediumA,
+  m_flow_nominal=mAir_flow_nominal,
+  dp_nominal=780 + 10 + dpBuiStaSet,
+  energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
+                                                           "Supply air fan"
+annotation (Placement(transformation(extent={{246,-82},{266,-62}})));
+  Buildings.Fluid.Sensors.VolumeFlowRate senSupFlo(redeclare package Medium =
+             MediumA, m_flow_nominal=mAir_flow_nominal)
+"Sensor for supply fan flow rate"
+annotation (Placement(transformation(extent={{346,-82},{366,-62}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+  redeclare package Medium = MediumA,
+  m_flow_nominal=mAir_flow_nominal,
+  allowFlowReversal=allowFlowReversal)
+annotation (Placement(transformation(extent={{276,-82},{296,-62}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort TMix(
+  redeclare package Medium = MediumA,
+  m_flow_nominal=mAir_flow_nominal,
+  allowFlowReversal=allowFlowReversal,
+  transferHeat=true) "Mixed air temperature sensor"
+annotation (Placement(transformation(extent={{82,-82},{102,-62}})));
+  Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
+      MediumA, m_flow_nominal=mAir_flow_nominal)
+"Outside air volume flow rate"
+annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
+  Buildings.Fluid.Actuators.Dampers.Exponential
+                                  damRet(
+  redeclare package Medium = MediumA,
+  m_flow_nominal=mAir_flow_nominal,
+  from_dp=false,
+  riseTime=15,
+  dpDamper_nominal=5,
+  dpFixed_nominal=5)
+                   "Return air damper" annotation (Placement(transformation(
+    origin={52,-6},
+    extent={{10,-10},{-10,10}},
+    rotation=90)));
+  Buildings.Fluid.Actuators.Dampers.Exponential
+                                  damOut(
+  redeclare package Medium = MediumA,
+  m_flow_nominal=mAir_flow_nominal,
+  from_dp=false,
+  riseTime=15,
+  dpDamper_nominal=5,
+  dpFixed_nominal=5)
+                   "Outdoor air damper"
+annotation (Placement(transformation(extent={{2,-80},{22,-60}})));
+  Buildings.Fluid.FixedResistances.PressureDrop
+                                  dpSupDuc(
+  m_flow_nominal=mAir_flow_nominal,
+  redeclare package Medium = MediumA,
+  allowFlowReversal=allowFlowReversal,
+  dp_nominal=200 + 200 + 100 + 40)
+                                 "Pressure drop for supply duct"
+annotation (Placement(transformation(extent={{196,-82},{216,-62}})));
+  Buildings.Fluid.FixedResistances.Junction
+                              splRetOut(
+  redeclare package Medium = MediumA,
+  tau=15,
+  m_flow_nominal=mAir_flow_nominal*{1,1,1},
+  energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+  dp_nominal(each displayUnit="Pa") = {0,0,0},
+  portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+       else Modelica.Fluid.Types.PortFlowDirection.Entering,
+  portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+       else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+  portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+       else Modelica.Fluid.Types.PortFlowDirection.Entering,
+  linearized=true)
+"Flow splitter"
+annotation (Placement(transformation(
+    extent={{-10,10},{10,-10}},
+    rotation=0,
+    origin={52,-70})));
+  Buildings.Fluid.Actuators.Dampers.Exponential damExh(
+  from_dp=false,
+  riseTime=15,
+  dpFixed_nominal=5,
+  redeclare package Medium = MediumA,
+  m_flow_nominal=mAir_flow_nominal,
+  dpDamper_nominal=5)
+                    "Exhaust air damper"
+annotation (Placement(transformation(extent={{-16,-14},{-36,6}})));
+  Buildings.Fluid.FixedResistances.PressureDrop dpRetDuc(
+  m_flow_nominal=mAir_flow_nominal,
+  redeclare package Medium = MediumA,
+  allowFlowReversal=allowFlowReversal,
+  dp_nominal=40)
+               "Pressure drop for return duct"
+annotation (Placement(transformation(extent={{368,0},{348,20}})));
+  Buildings.Fluid.Sensors.VolumeFlowRate senRetFlo(redeclare package Medium =
+             MediumA, m_flow_nominal=mAir_flow_nominal)
+"Sensor for return fan flow rate"
+annotation (Placement(transformation(extent={{234,0},{214,20}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort TRet(
+  redeclare package Medium = MediumA,
+  m_flow_nominal=mAir_flow_nominal,
+  allowFlowReversal=allowFlowReversal)
+                                     "Return air temperature sensor"
+annotation (Placement(transformation(extent={{138,0},{118,20}})));
+  Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup1(
+  redeclare package Medium = MediumA,
+  m_flow_nominal=mAir_flow_nominal,
+  dp_nominal=780 + 10 + dpBuiStaSet,
+  energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
+                                                           "Supply air fan"
+annotation (Placement(transformation(extent={{278,0},{258,20}})));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
+    MediumA)
+"Fluid connector b (positive design flow direction is from port_a to port_b)"
+annotation (Placement(transformation(extent={{556,-5},{524,25}}),
+    iconTransformation(extent={{552,11},{532,29}})));
+  Modelica.Fluid.Interfaces.FluidPort_a port_a(redeclare final package Medium =
+    MediumA)
+"Fluid connector a (positive design flow direction is from port_a to port_b)"
+annotation (Placement(transformation(extent={{522,-90},{556,-58}}),
+    iconTransformation(extent={{532,-69},{552,-51}})));
+  Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
+           MediumA, each m_flow(max=if flowDirection == Modelica.Fluid.Types.PortFlowDirection.Leaving
+       then 0 else +Modelica.Constants.inf, min=if flowDirection ==
+      Modelica.Fluid.Types.PortFlowDirection.Entering then 0 else -Modelica.Constants.inf))
+"Fluid ports"
+annotation (Placement(transformation(extent={{-110,26},{-90,-54}}),
+    iconTransformation(extent={{-110,26},{-90,-54}})));
+  Buildings.Fluid.Sensors.RelativePressure dpDisSupFan(redeclare package Medium =
+    MediumA) "Supply fan static discharge pressure" annotation (Placement(
+    transformation(
+    extent={{-18,22},{18,-22}},
+    rotation=90,
+    origin={404,-28})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort TOut(
+redeclare package Medium = MediumA,
+m_flow_nominal=mAir_flow_nominal,
+allowFlowReversal=allowFlowReversal,
+transferHeat=true) "Mixed air temperature sensor"
+annotation (Placement(transformation(extent={{-32,-80},{-12,-60}})));
+
+protected
+  parameter Modelica.Fluid.Types.PortFlowDirection flowDirection=Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+"Allowed flow direction" annotation (Evaluate=true, Dialog(tab="Advanced"));
+equation
+  connect(
+      TSup.port_a,fanSup. port_b) annotation (Line(
+  points={{276,-72},{266,-72}},
+  color={0,127,255},
+  smooth=Smooth.None,
+  thickness=0.5));
+  connect(
+      TSup.port_b,senSupFlo. port_a)
+annotation (Line(points={{296,-72},{346,-72}}, color={0,127,255}));
+  connect(
+      dpSupDuc.port_b,fanSup. port_a)
+annotation (Line(points={{216,-72},{246,-72}}, color={0,127,255}));
+  connect(
+      damOut.port_b,splRetOut. port_1)
+annotation (Line(points={{22,-70},{42,-70}},   color={0,127,255}));
+  connect(
+      splRetOut.port_2,TMix. port_a)
+annotation (Line(points={{62,-70},{72,-70},{72,-72},{82,-72}},
+                                             color={0,127,255}));
+  connect(
+      damRet.port_b,splRetOut. port_3) annotation (Line(points={{52,-16},{52,
+      -60}},                                    color={0,127,255}));
+connect(dpSupDuc.port_a, TMix.port_b) annotation (Line(points={{196,-72},{102,
+      -72}},               color={0,127,255}));
+  connect(
+      senRetFlo.port_b,TRet. port_a) annotation (Line(points={{214,10},{138,
+      10}},                color={0,127,255}));
+connect(TRet.port_b, damRet.port_a) annotation (Line(points={{118,10},{52,10},
+      {52,4}},                 color={0,127,255}));
+connect(TRet.port_b, damExh.port_a) annotation (Line(points={{118,10},{-6,10},
+      {-6,-4},{-16,-4}},                                        color=
+       {0,127,255}));
+connect(senRetFlo.port_a, fanSup1.port_b)
+  annotation (Line(points={{234,10},{258,10}},   color={0,127,255}));
+connect(fanSup1.port_a, dpRetDuc.port_b)
+  annotation (Line(points={{278,10},{348,10}},   color={0,127,255}));
+  connect(
+      senSupFlo.port_b, port_a) annotation (Line(points={{366,-72},{516,-72},
+      {516,-74},{539,-74}}, color={0,127,255}));
+  connect(
+      dpRetDuc.port_a, port_b)
+annotation (Line(points={{368,10},{540,10}}, color={0,127,255}));
+  connect(
+      damExh.port_b, ports[1]) annotation (Line(points={{-36,-4},{-84,-4},{-84,
+      6},{-100,6}}, color={0,127,255}));
+  connect(
+      VOut1.port_a, ports[2]) annotation (Line(points={{-68,-70},{-84,-70},{
+      -84,-34},{-100,-34}}, color={0,127,255}));
+  connect(
+      dpDisSupFan.port_a, port_a) annotation (Line(points={{404,-46},{404,-72},
+      {516,-72},{516,-74},{539,-74}}, color={0,127,255}));
+  connect(
+      VOut1.port_a, dpDisSupFan.port_b) annotation (Line(points={{-68,-70},{
+      -84,-70},{-84,-26},{376,-26},{376,0},{404,0},{404,-10}}, color={0,127,
+      255}));
+  connect(
+      VOut1.port_b, TOut.port_a)
+annotation (Line(points={{-48,-70},{-32,-70}}, color={0,127,255}));
+  connect(
+      TOut.port_b, damOut.port_a)
+annotation (Line(points={{-12,-70},{2,-70}}, color={0,127,255}));
+annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-180},
+        {540,100}}), graphics={Rectangle(
+      extent={{-98,102},{542,-138}},
+      lineColor={28,108,200},
+      fillColor={244,125,35},
+      fillPattern=FillPattern.Solid)}),
+                                     Diagram(coordinateSystem(
+        preserveAspectRatio=false, extent={{-100,-180},{540,100}})));
+end PartialAhu;
+
+
+    partial model PartialVAVBox
+  "Supply box of a VAV system with a hot water reheat coil"
+  extends
+      Modelica.Blocks.Icons.Block;
+  replaceable package MediumA = Modelica.Media.Interfaces.PartialMedium
+      "Medium model for air" annotation (choicesAllMatching=true);
+
+
+  parameter Boolean allowFlowReversal=true
+"= false to simplify equations, assuming, but not enforcing, no flow reversal";
+  parameter Modelica.Units.SI.MassFlowRate mCooAir_flow_nominal
+"Nominal air mass flow rate from cooling sizing calculations";
+  parameter Modelica.Units.SI.MassFlowRate mHeaAir_flow_nominal
+"Nominal air mass flow rate from heating sizing calculations";
+  final parameter Modelica.Units.SI.MassFlowRate mHeaWat_flow_nominal=
+  QHea_flow_nominal/(cpWatLiq*(THeaWatInl_nominal - THeaWatOut_nominal))
+"Nominal mass flow rate of hot water to reheat coil";
+  parameter Modelica.Units.SI.Volume VRoo "Room volume";
+  parameter Modelica.Units.SI.Temperature THeaWatInl_nominal(start=55 + 273.15,
+  displayUnit="degC") "Reheat coil nominal inlet water temperature";
+  parameter Modelica.Units.SI.Temperature THeaWatOut_nominal(start=
+    THeaWatInl_nominal - 10, displayUnit="degC")
+"Reheat coil nominal outlet water temperature";
+  parameter Modelica.Units.SI.Temperature THeaAirInl_nominal(start=12 + 273.15,
+  displayUnit="degC")
+"Inlet air nominal temperature into VAV box during heating";
+  parameter Modelica.Units.SI.Temperature THeaAirDis_nominal(start=28 + 273.15,
+  displayUnit="degC")
+"Discharge air temperature from VAV box during heating";
+  parameter Modelica.Units.SI.HeatFlowRate QHea_flow_nominal=
+  mHeaAir_flow_nominal * cpAir * (THeaAirDis_nominal-THeaAirInl_nominal)
+"Nominal heating heat flow rate";
+  Modelica.Fluid.Interfaces.FluidPort_a port_aAir(
+redeclare package Medium=MediumA)
+"Fluid connector a1 (positive design flow direction is from port_a1 to port_b1)"
+annotation (Placement(transformation(extent={{-10,-110},{10,-90}}),
+    iconTransformation(extent={{-10,-110},{10,-90}})));
+  Modelica.Fluid.Interfaces.FluidPort_a port_bAir(
+redeclare package Medium=MediumA)
+"Fluid connector b (positive design flow direction is from port_a1 to port_b1)"
+annotation (Placement(transformation(extent={{-10,90},{10,110}}),
+    iconTransformation(extent={{-10,90},{10,110}})));
+  Buildings.Fluid.Actuators.Dampers.Exponential vav(
+redeclare package Medium = MediumA,
+m_flow_nominal=mCooAir_flow_nominal,
+dpDamper_nominal=20,
+allowFlowReversal=allowFlowReversal,
+dpFixed_nominal=130) "VAV box for room" annotation (Placement(
+    transformation(
+    extent={{-10,-10},{10,10}},
+    rotation=90,
+    origin={0,10})));
+
+  Buildings.Fluid.Sensors.TemperatureTwoPort senTem(
+redeclare package Medium = MediumA,
+initType=Modelica.Blocks.Types.Init.InitialState,
+m_flow_nominal=mCooAir_flow_nominal,
+allowFlowReversal=allowFlowReversal) "Supply air temperature sensor"
+annotation (Placement(transformation(
+    extent={{-10,10},{10,-10}},
+    rotation=90,
+    origin={0,40})));
+  Buildings.Fluid.Sensors.VolumeFlowRate senVolFlo(
+redeclare package Medium = MediumA,
+initType=Modelica.Blocks.Types.Init.InitialState,
+m_flow_nominal=mCooAir_flow_nominal,
+allowFlowReversal=allowFlowReversal)
+"Supply air volumetric flow rate sensor" annotation (Placement(
+    transformation(
+    extent={{-10,10},{10,-10}},
+    rotation=90,
+    origin={0,80})));
+protected
+  constant Modelica.Units.SI.SpecificHeatCapacity cpAir=Buildings.Utilities.Psychrometrics.Constants.cpAir
+"Air specific heat capacity";
+  constant Modelica.Units.SI.SpecificHeatCapacity cpWatLiq=Buildings.Utilities.Psychrometrics.Constants.cpWatLiq
+"Water specific heat capacity";
+equation
+  connect(
+      vav.port_b, senTem.port_a) annotation (Line(points={{6.66134e-16,20},{
+      0,20},{0,30},{-4.44089e-16,30}}, color={0,127,255}));
+  connect(
+      senTem.port_b, senVolFlo.port_a)
+annotation (Line(points={{0,50},{0,70},{-6.66134e-16,70}},
+                                         color={0,127,255}));
+  connect(
+      senVolFlo.port_b, port_bAir)
+annotation (Line(points={{4.44089e-16,90},{0,90},{0,100}},
+                                                 color={0,127,255}));
+  connect(
+      vav.port_a, port_aAir)
+annotation (Line(points={{-5.55112e-16,0},{0,-100}}, color={0,127,255}));
+  annotation (Icon(
+graphics={
+    Rectangle(
+      extent={{-108.07,-16.1286},{93.93,-20.1286}},
+      lineColor={0,0,0},
+      fillPattern=FillPattern.HorizontalCylinder,
+      fillColor={0,127,255},
+      origin={-18.1286,6.07},
+      rotation=90),
+    Rectangle(
+      extent={{100.8,-22},{128.8,-44}},
+      lineColor={0,0,0},
+      fillPattern=FillPattern.HorizontalCylinder,
+      fillColor={192,192,192},
+      origin={-32,-76.8},
+      rotation=90),
+    Rectangle(
+      extent={{102.2,-11.6667},{130.2,-25.6667}},
+      lineColor={0,0,0},
+      fillPattern=FillPattern.HorizontalCylinder,
+      fillColor={0,127,255},
+      origin={-17.6667,-78.2},
+      rotation=90),
+    Polygon(
+      points={{-12,32},{16,48},{16,46},{-12,30},{-12,32}},
+      pattern=LinePattern.None,
+      smooth=Smooth.None,
+      fillColor={0,0,0},
+      fillPattern=FillPattern.Solid,
+      lineColor={0,0,0}),
+    Line(points={{-100,80},{-38,80},{-38,38},{-10,38}}, color={255,255,0},
+      thickness=1)}));
+end PartialVAVBox;
+    {% endraw %}
+    {% if dynamic_components.ventilation %}
+    {% for v in  dynamic_components.ventilation %}
+        {{  v |safe }}
+    {% endfor %}
+    {% endif %}
+    {% raw %}
     end Ventilation;
   end Fluid;
 

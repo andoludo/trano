@@ -171,7 +171,7 @@ constructed by the signals connected to this bus.
           parameter Real yMin=-yMax "Lower limit of output";
           parameter Modelica.Units.SI.Temperature setPoint;
         Buildings.Fluid.Sensors.PPM                             TRoo( redeclare
-            package                                                                     Medium = Medium) annotation (
+              package                                                                   Medium = Medium) annotation (
                 Placement(transformation(origin = {-542, -226}, extent = {{480, 216}, {500, 236}})));
         Modelica.Blocks.Continuous.LimPID conRoo(yMax = yMax, yMin = yMin, controllerType = controllerType, k = k, Ti = Ti, Td = Td)  annotation (
                 Placement(transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}})));
@@ -193,35 +193,41 @@ constructed by the signals connected to this bus.
                   fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-80, 90}, {-88, 68}, {-72, 68}, {-80, 90}}), Line(points = {{-90, -80}, {82, -80}}, color = {192, 192, 192}), Polygon(lineColor = {192, 192, 192}, fillColor = {192, 192, 192},
                   fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{90, -80}, {68, -72}, {68, -88}, {90, -80}}), Line(points = {{-80, -80}, {-80, -20}, {60, 80}}, color = {0, 0, 127}), Text(textColor = {192, 192, 192}, extent = {{-20, -60}, {80, -20}}, textString = "PID")}));
       end PIDSubstance;
+
       model DataServer
       replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
-    "Medium model" annotation (choicesAllMatching=true);
+            "Medium model" annotation (choicesAllMatching=true);
         Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[1] TRoo annotation (
-                Placement(transformation(origin={-544,-226},    extent = {{480, 216}, {500, 236}})));        Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[1] port annotation (
+                Placement(transformation(origin={-544,-226},    extent = {{480, 216}, {500, 236}})));
+                                                                                                             Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[1] port annotation (
                 Placement(transformation(extent={{-112,-10},{-92,10}}),      iconTransformation(extent = {{-110, -10}, {-90, 10}})));
         BaseClasses.DataBus controlBus annotation (Placement(transformation(
                 extent={{80,-20},{120,20}}), iconTransformation(extent={{90,-10},
-                  {110,10}})));      Buildings.Fluid.Sensors.PPM[1]                             TRoo1(redeclare
-      package Medium = Medium)                                                                     annotation (
-          Placement(transformation(origin={-542,-268},    extent = {{480, 216}, {500, 236}})));  Modelica.Fluid.Interfaces.FluidPort_a[1] port_a(redeclare package Medium
-      = Medium)
-    "Fluid connector a (positive design flow direction is from port_a to port_b)"
-annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
-  iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));        equation
-              connect(port[1],TRoo[1]. port)
-annotation (
+                  {110,10}})));
+                                     Buildings.Fluid.Sensors.PPM[1]                             TRoo1(redeclare
+              package
+              Medium = Medium)                                                                     annotation (
+          Placement(transformation(origin={-542,-268},    extent = {{480, 216}, {500, 236}})));
+                                                                                                 Modelica.Fluid.Interfaces.FluidPort_a[1] port_a(redeclare
+              package                                                                                                                                              Medium =
+        Medium)
+            "Fluid connector a (positive design flow direction is from port_a to port_b)"
+            annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
+                iconTransformation(origin={-2,-42}, extent={{-110,-9},{-90,9}})));
+      equation
+              connect(port[1],TRoo[1]. port) annotation (
                 Line(points={{-102,0},{-64,0}},      color = {191, 0, 0}));
         connect(TRoo[1].T, controlBus.temperature_space_1)
-
             annotation (Line(points={{-43,0},{100,0}}, color={0,0,127}), Text(
             string="%second",
             index=1,
             extent={{6,3},{6,3}},
             horizontalAlignment=TextAlignment.Left));
-          connect(port_a[1], TRoo1[1].port)
-annotation (Line(points={{-99,-42},{-68,-42},{-68,
+
+          connect(port_a[1], TRoo1[1].port) annotation (Line(points={{-99,-42},
+                  {-68,-42},{-68,
           -56},{-52,-56},{-52,-52}}, color={0,127,255}));  connect(TRoo1[1].ppm, controlBus.ppm_space_1)
-annotation (Line(points={{-41,-42},{74,
+            annotation (Line(points={{-41,-42},{74,
           -42},{74,0},{100,0}}, color={0,0,127}), Text(
       string="%second",
       index=1,
@@ -240,203 +246,198 @@ annotation (Line(points={{-41,-42},{74,
         Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
                 fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
     end SpaceControls;
+
+
+    package ventilation
+      model AHU_G36
+        parameter Real VUncDesOutAir_flow=0.03;
+        parameter Real VDesTotOutAir_flow=0.03;
+            Buildings.Controls.OBC.ASHRAE.G36.AHUs.MultiZone.VAV.Controller
+              mulAHUCon(
+              eneStd=Buildings.Controls.OBC.ASHRAE.G36.Types.EnergyStandard.ASHRAE90_1,
+              venStd=Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard.ASHRAE62_1,
+              ashCliZon=Buildings.Controls.OBC.ASHRAE.G36.Types.ASHRAEClimateZone.Zone_1A,
+              have_frePro=false,
+              minOADes=Buildings.Controls.OBC.ASHRAE.G36.Types.OutdoorAirSection.DedicatedDampersAirflow,
+              buiPreCon=Buildings.Controls.OBC.ASHRAE.G36.Types.PressureControl.BarometricRelief,
+              ecoHigLimCon=Buildings.Controls.OBC.ASHRAE.G36.Types.ControlEconomizer.FixedDryBulb,
+              cooCoi=Buildings.Controls.OBC.ASHRAE.G36.Types.CoolingCoil.None,
+              heaCoi=Buildings.Controls.OBC.ASHRAE.G36.Types.HeatingCoil.None,
+              have_perZonRehBox=false, VUncDesOutAir_flow = VUncDesOutAir_flow, VDesTotOutAir_flow = VDesTotOutAir_flow)
+              annotation (Placement(transformation(extent={{-12,-14},{28,74}})));
+
+            BaseClasses.DataBus dataBus annotation (Placement(transformation(
+                    extent={{-120,-20},{-80,20}}), iconTransformation(extent={{
+                      -112,-10},{-92,10}})));
+      equation
+            connect(mulAHUCon.ySupFan, dataBus.ySupFan) annotation (Line(points={
+                    {30,27.8},{36,27.8},{36,-20},{-74,-20},{-74,0},{-100,0}},
+                  color={0,0,127}), Text(
+                string="%second",
+                index=1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(mulAHUCon.y1SupFan, dataBus.y1SupFan) annotation (Line(points=
+                   {{30,30},{38,30},{38,-22},{-76,-22},{-76,0},{-100,0}}, color={
+                    255,0,255}), Text(
+                string="%second",
+                index=1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(mulAHUCon.yOutDam, dataBus.yOutDam) annotation (Line(points={
+                    {30,37},{36,37},{36,20},{34,20},{34,-18},{-70,-18},{-70,0},{
+                    -100,0}}, color={0,0,127}), Text(
+                string="%second",
+                index=1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(mulAHUCon.yRetDam, dataBus.yRetDam) annotation (Line(points={
+                    {30,43},{36,43},{36,78},{-74,78},{-74,0},{-100,0}}, color={0,
+                    0,127}), Text(
+                string="%second",
+                index=1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(mulAHUCon.yMinOutDam, dataBus.yMinOutDam) annotation (Line(
+                  points={{30,49},{38,49},{38,80},{-78,80},{-78,24},{-76,24},{-76,
+                    0},{-100,0}}, color={0,0,127}), Text(
+                string="%second",
+                index=1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(mulAHUCon.VEffAirOut_flow_min, dataBus.VEffAirOut_flow_min)
+              annotation (Line(points={{30,53},{30,58},{34,58},{34,76},{-72,76},{
+                    -72,0},{-100,0}}, color={0,0,127}), Text(
+                string="%second",
+                index=1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(mulAHUCon.TAirSupSet, dataBus.TAirSupSet) annotation (Line(
+                  points={{30,64},{34,64},{34,70},{32,70},{32,76},{-20,76},{-20,0},
+                    {-100,0}}, color={0,0,127}), Text(
+                string="%second",
+                index=1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.VAirOut_flow, mulAHUCon.VAirOut_flow) annotation (
+                Line(
+                points={{-100,0},{-22,0},{-22,37},{-14,37}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.uOutAirFra_max, mulAHUCon.uOutAirFra_max) annotation (
+               Line(
+                points={{-100,0},{-24,0},{-24,47},{-14,47}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.VSumZonPri_flow, mulAHUCon.VSumZonPri_flow)
+              annotation (Line(
+                points={{-100,0},{-26,0},{-26,50},{-14,50}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.VSumAdjAreBreZon_flow, mulAHUCon.VSumAdjAreBreZon_flow)
+              annotation (Line(
+                points={{-100,0},{-28,0},{-28,53},{-14,53}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.TAirSup, mulAHUCon.TAirSup) annotation (Line(
+                points={{-100,0},{-30,0},{-30,58},{-14,58}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.u1SupFan, mulAHUCon.u1SupFan) annotation (Line(
+                points={{-100,0},{-32,0},{-32,61},{-14,61}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.uZonTemResReq, mulAHUCon.uZonTemResReq) annotation (
+                Line(
+                points={{-100,0},{-34,0},{-34,63},{-14,63}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.TOut, mulAHUCon.TOut) annotation (Line(
+                points={{-100,0},{-36,0},{-36,66},{-14,66}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.dpDuc, mulAHUCon.dpDuc) annotation (Line(
+                points={{-100,0},{-38,0},{-38,68},{-14,68}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.uZonPreResReq, mulAHUCon.uZonPreResReq) annotation (
+                Line(
+                points={{-100,0},{-40,0},{-40,71},{-14,71}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.uAhuOpeMod, mulAHUCon.uAhuOpeMod) annotation (Line(
+                points={{-100,0},{-42,0},{-42,73},{-14,73}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-6,3},{-6,3}},
+                horizontalAlignment=TextAlignment.Right));
+            connect(dataBus.VSumAdjPopBreZon_flow, mulAHUCon.VSumAdjPopBreZon_flow)
+              annotation (Line(
+                points={{-100,0},{-14,0},{-14,55}},
+                color={255,204,51},
+                thickness=0.5), Text(
+                string="%first",
+                index=-1,
+                extent={{-3,-6},{-3,-6}},
+                horizontalAlignment=TextAlignment.Right));
+            annotation (Icon(coordinateSystem(preserveAspectRatio=false),
+                  graphics={Rectangle(
+                    extent={{-100,98},{98,-100}},
+                    lineColor={28,108,200},
+                    fillColor={28,108,200},
+                    fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
+                    preserveAspectRatio=false)));
+      end AHU_G36;
+    end ventilation;
   annotation (
       Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
               fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
               fillPattern =                                                                                                                                                                                                        FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(origin = {0, 35.1488}, fillColor = {255, 255, 255}, extent = {{-30, -20.1488}, {30, 20.1488}}), Rectangle(origin = {0, -34.8512}, fillColor = {255, 255, 255}, extent = {{-30, -20.1488}, {30, 20.1488}}), Line(origin = {-51.25, 0}, points = {{21.25, -35}, {-13.75, -35}, {-13.75, 35}, {6.25, 35}}), Polygon(origin = {-40, 35}, pattern = LinePattern.None,
               fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{10, 0}, {-5, 5}, {-5, -5}, {10, 0}}), Line(origin = {51.25, 0}, points = {{-21.25, 35}, {13.75, 35}, {13.75, -35}, {-6.25, -35}}), Polygon(origin = {40, -35}, pattern = LinePattern.None,
               fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-10, 0}, {5, 5}, {5, -5}, {-10, 0}})}));
-
-
-    package ventilation
-  model AHU_G36
-  parameter Real VUncDesOutAir_flow=0.03;
-  parameter Real VDesTotOutAir_flow=0.03;
-      Buildings.Controls.OBC.ASHRAE.G36.AHUs.MultiZone.VAV.Controller
-        mulAHUCon(
-        eneStd=Buildings.Controls.OBC.ASHRAE.G36.Types.EnergyStandard.ASHRAE90_1,
-
-        venStd=Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard.ASHRAE62_1,
-
-        ashCliZon=Buildings.Controls.OBC.ASHRAE.G36.Types.ASHRAEClimateZone.Zone_1A,
-
-        have_frePro=false,
-        minOADes=Buildings.Controls.OBC.ASHRAE.G36.Types.OutdoorAirSection.DedicatedDampersAirflow,
-
-        buiPreCon=Buildings.Controls.OBC.ASHRAE.G36.Types.PressureControl.BarometricRelief,
-
-        ecoHigLimCon=Buildings.Controls.OBC.ASHRAE.G36.Types.ControlEconomizer.FixedDryBulb,
-
-        cooCoi=Buildings.Controls.OBC.ASHRAE.G36.Types.CoolingCoil.None,
-        heaCoi=Buildings.Controls.OBC.ASHRAE.G36.Types.HeatingCoil.None,
-        have_perZonRehBox=false, VUncDesOutAir_flow = VUncDesOutAir_flow, VDesTotOutAir_flow = VDesTotOutAir_flow)
-        annotation (Placement(transformation(extent={{-12,-14},{28,74}})));
-      BaseClasses.DataBus dataBus annotation (Placement(transformation(
-              extent={{-120,-20},{-80,20}}), iconTransformation(extent={{
-                -112,-10},{-92,10}})));
-  equation
-      connect(mulAHUCon.ySupFan, dataBus.ySupFan) annotation (Line(points={
-              {30,27.8},{36,27.8},{36,-20},{-74,-20},{-74,0},{-100,0}},
-            color={0,0,127}), Text(
-          string="%second",
-          index=1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(mulAHUCon.y1SupFan, dataBus.y1SupFan) annotation (Line(points
-            ={{30,30},{38,30},{38,-22},{-76,-22},{-76,0},{-100,0}}, color={
-              255,0,255}), Text(
-          string="%second",
-          index=1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(mulAHUCon.yOutDam, dataBus.yOutDam) annotation (Line(points={
-              {30,37},{36,37},{36,20},{34,20},{34,-18},{-70,-18},{-70,0},{
-              -100,0}}, color={0,0,127}), Text(
-          string="%second",
-          index=1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(mulAHUCon.yRetDam, dataBus.yRetDam) annotation (Line(points={
-              {30,43},{36,43},{36,78},{-74,78},{-74,0},{-100,0}}, color={0,
-              0,127}), Text(
-          string="%second",
-          index=1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(mulAHUCon.yMinOutDam, dataBus.yMinOutDam) annotation (Line(
-            points={{30,49},{38,49},{38,80},{-78,80},{-78,24},{-76,24},{-76,
-              0},{-100,0}}, color={0,0,127}), Text(
-          string="%second",
-          index=1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(mulAHUCon.VEffAirOut_flow_min, dataBus.VEffAirOut_flow_min)
-        annotation (Line(points={{30,53},{30,58},{34,58},{34,76},{-72,76},{
-              -72,0},{-100,0}}, color={0,0,127}), Text(
-          string="%second",
-          index=1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(mulAHUCon.TAirSupSet, dataBus.TAirSupSet) annotation (Line(
-            points={{30,64},{34,64},{34,70},{32,70},{32,76},{-20,76},{-20,0},
-              {-100,0}}, color={0,0,127}), Text(
-          string="%second",
-          index=1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.VAirOut_flow, mulAHUCon.VAirOut_flow) annotation (
-          Line(
-          points={{-100,0},{-22,0},{-22,37},{-14,37}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.uOutAirFra_max, mulAHUCon.uOutAirFra_max) annotation
-        (Line(
-          points={{-100,0},{-24,0},{-24,47},{-14,47}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.VSumZonPri_flow, mulAHUCon.VSumZonPri_flow)
-        annotation (Line(
-          points={{-100,0},{-26,0},{-26,50},{-14,50}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.VSumAdjAreBreZon_flow, mulAHUCon.VSumAdjAreBreZon_flow)
-        annotation (Line(
-          points={{-100,0},{-28,0},{-28,53},{-14,53}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.TAirSup, mulAHUCon.TAirSup) annotation (Line(
-          points={{-100,0},{-30,0},{-30,58},{-14,58}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.u1SupFan, mulAHUCon.u1SupFan) annotation (Line(
-          points={{-100,0},{-32,0},{-32,61},{-14,61}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.uZonTemResReq, mulAHUCon.uZonTemResReq) annotation (
-          Line(
-          points={{-100,0},{-34,0},{-34,63},{-14,63}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.TOut, mulAHUCon.TOut) annotation (Line(
-          points={{-100,0},{-36,0},{-36,66},{-14,66}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.dpDuc, mulAHUCon.dpDuc) annotation (Line(
-          points={{-100,0},{-38,0},{-38,68},{-14,68}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.uZonPreResReq, mulAHUCon.uZonPreResReq) annotation (
-          Line(
-          points={{-100,0},{-40,0},{-40,71},{-14,71}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.uAhuOpeMod, mulAHUCon.uAhuOpeMod) annotation (Line(
-          points={{-100,0},{-42,0},{-42,73},{-14,73}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-6,3},{-6,3}},
-          horizontalAlignment=TextAlignment.Right));
-      connect(dataBus.VSumAdjPopBreZon_flow, mulAHUCon.VSumAdjPopBreZon_flow)
-        annotation (Line(
-          points={{-100,0},{-14,0},{-14,55}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-3,-6},{-3,-6}},
-          horizontalAlignment=TextAlignment.Right));
-      annotation (Icon(coordinateSystem(preserveAspectRatio=false),
-            graphics={Rectangle(
-              extent={{-100,98},{98,-100}},
-              lineColor={28,108,200},
-              fillColor={28,108,200},
-              fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
-              preserveAspectRatio=false)));
-  end AHU_G36;
-end ventilation;
-    end Controls;
+  end Controls;
 
   package Fluid
   package Boilers
@@ -444,7 +445,7 @@ end ventilation;
 
   extends Buildings.Fluid.Interfaces.PartialTwoPort;
   Buildings.Fluid.Sources.Boundary_pT bou(use_T_in = true, nPorts = 2, redeclare
-            final package                                                                      Medium = Medium)  annotation (
+              final package                                                                    Medium = Medium)  annotation (
           Placement(transformation(origin = {90, 188}, extent = {{-82, -180}, {-62, -160}})));
   Modelica.Blocks.Sources.Constant constant1(k = 273 + 70)  annotation (
           Placement(transformation(origin = {-32, 20}, extent = {{-10, -10}, {10, 10}})));
@@ -584,7 +585,7 @@ end ventilation;
           annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
               iconTransformation(extent={{90,-49},{110,-31}})));
         Buildings.Fluid.Sources.Boundary_pT bou(T=295.15, nPorts=2,    redeclare
-            package                                                                      Medium = Medium)
+              package                                                                    Medium = Medium)
           annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
       equation
         connect(hex.port_b1, fanSup.port_a) annotation (
@@ -614,145 +615,167 @@ end ventilation;
 
       constant Integer numZon(min=2)=2 "Total number of served VAV boxes";
 
-  parameter Modelica.Units.SI.Volume VRoo[numZon] "Room volume per zone";
-  parameter Modelica.Units.SI.Area AFlo[numZon] "Floor area per zone";
+          parameter Modelica.Units.SI.Volume VRoo[numZon]
+            "Room volume per zone";
+          parameter Modelica.Units.SI.Area AFlo[numZon] "Floor area per zone";
 
-  final parameter Modelica.Units.SI.Area ATot=sum(AFlo)
+          final parameter Modelica.Units.SI.Area ATot=sum(AFlo)
     "Total floor area for all zone";
 
-  constant Real conv=1.2/3600 "Conversion factor for nominal mass flow rate";
+          constant Real conv=1.2/3600
+            "Conversion factor for nominal mass flow rate";
 
 
-  parameter Modelica.Units.SI.HeatFlowRate QHeaAHU_flow_nominal(min=0) = mHeaAir_flow_nominal * Buildings.Utilities.Psychrometrics.Constants.cpAir * (THeaAirSup_nominal-THeaAirMix_nominal)
+          parameter Modelica.Units.SI.HeatFlowRate QHeaAHU_flow_nominal(min=0)
+             = mHeaAir_flow_nominal*Buildings.Utilities.Psychrometrics.Constants.cpAir
+            *(THeaAirSup_nominal - THeaAirMix_nominal)
     "Nominal heating heat flow rate of air handler unit coil";
 
-  parameter Modelica.Units.SI.HeatFlowRate QCooAHU_flow_nominal(max=0) = 1.3 * mCooAir_flow_nominal * Buildings.Utilities.Psychrometrics.Constants.cpAir *(TCooAirSup_nominal-TCooAirMix_nominal)
+          parameter Modelica.Units.SI.HeatFlowRate QCooAHU_flow_nominal(max=0)
+             = 1.3*mCooAir_flow_nominal*Buildings.Utilities.Psychrometrics.Constants.cpAir
+            *(TCooAirSup_nominal - TCooAirMix_nominal)
     "Nominal total cooling heat flow rate of air handler unit coil (negative number)";
 
-  parameter Modelica.Units.SI.MassFlowRate mCooVAV_flow_nominal[numZon]
+          parameter Modelica.Units.SI.MassFlowRate mCooVAV_flow_nominal[numZon]
     "Design mass flow rate per zone for cooling"
     annotation (Dialog(group="Nominal mass flow rate"));
 
-  parameter Modelica.Units.SI.MassFlowRate mHeaVAV_flow_nominal[numZon] = 0.3*mCooVAV_flow_nominal
+          parameter Modelica.Units.SI.MassFlowRate mHeaVAV_flow_nominal[numZon]
+            =0.3*mCooVAV_flow_nominal
     "Design mass flow rate per zone for heating"
     annotation (Dialog(group="Nominal mass flow rate"));
 
-  parameter Modelica.Units.SI.MassFlowRate mAir_flow_nominal=mCooAir_flow_nominal
+          parameter Modelica.Units.SI.MassFlowRate mAir_flow_nominal=
+              mCooAir_flow_nominal
     "Nominal mass flow rate for fan"
     annotation (Dialog(group="Nominal mass flow rate"));
-  parameter Modelica.Units.SI.MassFlowRate mCooAir_flow_nominal=0.7*sum(mCooVAV_flow_nominal)
+          parameter Modelica.Units.SI.MassFlowRate mCooAir_flow_nominal=0.7*sum(
+              mCooVAV_flow_nominal)
     "Nominal mass flow rate for fan"
     annotation (Dialog(group="Nominal mass flow rate"));
-  parameter Modelica.Units.SI.MassFlowRate mHeaAir_flow_nominal = 0.7*sum(mHeaVAV_flow_nominal)
+          parameter Modelica.Units.SI.MassFlowRate mHeaAir_flow_nominal=0.7*sum(
+              mHeaVAV_flow_nominal)
     "Nominal mass flow rate for fan"
     annotation (Dialog(group="Nominal mass flow rate"));
 
-  parameter Modelica.Units.SI.MassFlowRate mHeaWat_flow_nominal=
+          parameter Modelica.Units.SI.MassFlowRate mHeaWat_flow_nominal=
       QHeaAHU_flow_nominal/Buildings.Utilities.Psychrometrics.Constants.cpWatLiq/10
     "Nominal water mass flow rate for heating coil in AHU"
     annotation (Dialog(group="Nominal mass flow rate"));
-  parameter Modelica.Units.SI.MassFlowRate mCooWat_flow_nominal=
+          parameter Modelica.Units.SI.MassFlowRate mCooWat_flow_nominal=
       QCooAHU_flow_nominal/Buildings.Utilities.Psychrometrics.Constants.cpWatLiq/(-6)
     "Nominal water mass flow rate for cooling coil"
     annotation (Dialog(group="Nominal mass flow rate"));
 
-  parameter Real ratOAFlo_A(final unit="m3/(s.m2)") = 0.3e-3
+          parameter Real ratOAFlo_A(final unit="m3/(s.m2)") = 0.3e-3
     "Outdoor airflow rate required per unit area";
-  parameter Real ratOAFlo_P = 2.5e-3
+          parameter Real ratOAFlo_P=2.5e-3
     "Outdoor airflow rate required per person";
-  parameter Real ratP_A = 5e-2
+          parameter Real ratP_A=5e-2
     "Occupant density";
-  parameter Real effZ(final unit="1") = 0.8
+          parameter Real effZ(final unit="1") = 0.8
     "Zone air distribution effectiveness (limiting value)";
-  parameter Real divP(final unit="1") = 0.7
+          parameter Real divP(final unit="1") = 0.7
     "Occupant diversity ratio";
 
-  parameter Modelica.Units.SI.VolumeFlowRate VZonOA_flow_nominal[numZon]=(
+          parameter Modelica.Units.SI.VolumeFlowRate VZonOA_flow_nominal[numZon]
+            =                                                            (
       ratOAFlo_P*ratP_A + ratOAFlo_A)*AFlo/effZ
     "Zone outdoor air flow rate of each VAV box";
 
-  parameter Modelica.Units.SI.VolumeFlowRate Vou_flow_nominal=(divP*ratOAFlo_P*
+          parameter Modelica.Units.SI.VolumeFlowRate Vou_flow_nominal=
+                                                              (divP*ratOAFlo_P*
       ratP_A + ratOAFlo_A)*sum(AFlo) "System uncorrected outdoor air flow rate";
-  parameter Real effVen(final unit="1") = if divP < 0.6 then
+          parameter Real effVen(final unit="1") = if divP < 0.6 then
     0.88 * divP + 0.22 else 0.75
     "System ventilation efficiency";
-  parameter Modelica.Units.SI.VolumeFlowRate Vot_flow_nominal=Vou_flow_nominal/
+          parameter Modelica.Units.SI.VolumeFlowRate Vot_flow_nominal=
+              Vou_flow_nominal/
       effVen "System design outdoor air flow rate";
 
-  parameter Modelica.Units.SI.Temperature THeaOn=293.15
+          parameter Modelica.Units.SI.Temperature THeaOn=293.15
     "Heating setpoint during on"
     annotation (Dialog(group="Room temperature setpoints"));
-  parameter Modelica.Units.SI.Temperature THeaOff=285.15
+          parameter Modelica.Units.SI.Temperature THeaOff=285.15
     "Heating setpoint during off"
     annotation (Dialog(group="Room temperature setpoints"));
-  parameter Modelica.Units.SI.Temperature TCooOn=297.15
+          parameter Modelica.Units.SI.Temperature TCooOn=297.15
     "Cooling setpoint during on"
     annotation (Dialog(group="Room temperature setpoints"));
-  parameter Modelica.Units.SI.Temperature TCooOff=303.15
+          parameter Modelica.Units.SI.Temperature TCooOff=303.15
     "Cooling setpoint during off"
     annotation (Dialog(group="Room temperature setpoints"));
-  parameter Modelica.Units.SI.PressureDifference dpBuiStaSet(min=0) = 12
+          parameter Modelica.Units.SI.PressureDifference dpBuiStaSet(min=0) =
+            12
     "Building static pressure";
-  parameter Real yFanMin = 0.1 "Minimum fan speed";
+          parameter Real yFanMin=0.1 "Minimum fan speed";
 
 
-  parameter Modelica.Units.SI.Temperature TCooAirMix_nominal(displayUnit="degC")=303.15
+          parameter Modelica.Units.SI.Temperature TCooAirMix_nominal(
+              displayUnit="degC") = 303.15
     "Mixed air temperature during cooling nominal conditions (used to size cooling coil)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-  parameter Modelica.Units.SI.Temperature TCooAirSup_nominal(displayUnit="degC")=285.15
+          parameter Modelica.Units.SI.Temperature TCooAirSup_nominal(
+              displayUnit="degC") = 285.15
     "Supply air temperature during cooling nominal conditions (used to size cooling coil)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-  parameter Modelica.Units.SI.MassFraction wCooAirMix_nominal = 0.017
+          parameter Modelica.Units.SI.MassFraction wCooAirMix_nominal=0.017
     "Humidity ratio of mixed air at a nominal conditions used to size cooling coil (in kg/kg dry total)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-   parameter Modelica.Units.SI.Temperature TCooWatInl_nominal(displayUnit="degC") = 279.15
+          parameter Modelica.Units.SI.Temperature TCooWatInl_nominal(
+              displayUnit="degC") = 279.15
     "Cooling coil nominal inlet water temperature"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
 
 
-  parameter Modelica.Units.SI.Temperature THeaAirMix_nominal(displayUnit="degC")=277.15
+          parameter Modelica.Units.SI.Temperature THeaAirMix_nominal(
+              displayUnit="degC") = 277.15
     "Mixed air temperature during heating nominal conditions (used to size heating coil)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-  parameter Modelica.Units.SI.Temperature THeaAirSup_nominal(displayUnit="degC")=285.15
+          parameter Modelica.Units.SI.Temperature THeaAirSup_nominal(
+              displayUnit="degC") = 285.15
     "Supply air temperature during heating nominal conditions (used to size heating coil)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-  parameter Modelica.Units.SI.Temperature THeaWatInl_nominal(displayUnit="degC")
+          parameter Modelica.Units.SI.Temperature THeaWatInl_nominal(
+              displayUnit="degC")
     "Reheat coil nominal inlet water temperature"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
 
-  parameter Boolean allowFlowReversal=false
+          parameter Boolean allowFlowReversal=false
     "= false to simplify equations, assuming, but not enforcing, no flow reversal"
     annotation (Evaluate=true);
 
 
 
-  Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup(
+          Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup(
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       dp_nominal=780 + 10 + dpBuiStaSet,
       energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
                                                                "Supply air fan"
     annotation (Placement(transformation(extent={{246,-82},{266,-62}})));
-  Buildings.Fluid.Sensors.VolumeFlowRate senSupFlo(redeclare package Medium =
+          Buildings.Fluid.Sensors.VolumeFlowRate senSupFlo(redeclare package
+              Medium =
                  MediumA, m_flow_nominal=mAir_flow_nominal)
     "Sensor for supply fan flow rate"
     annotation (Placement(transformation(extent={{346,-82},{366,-62}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+          Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       allowFlowReversal=allowFlowReversal)
     annotation (Placement(transformation(extent={{276,-82},{296,-62}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort TMix(
+          Buildings.Fluid.Sensors.TemperatureTwoPort TMix(
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       allowFlowReversal=allowFlowReversal,
       transferHeat=true) "Mixed air temperature sensor"
     annotation (Placement(transformation(extent={{82,-82},{102,-62}})));
-  Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
+          Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium
+              =
           MediumA, m_flow_nominal=mAir_flow_nominal)
     "Outside air volume flow rate"
     annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
-  Buildings.Fluid.Actuators.Dampers.Exponential
+          Buildings.Fluid.Actuators.Dampers.Exponential
                                       damRet(
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
@@ -764,7 +787,7 @@ end ventilation;
         origin={52,-6},
         extent={{10,-10},{-10,10}},
         rotation=90)));
-  Buildings.Fluid.Actuators.Dampers.Exponential
+          Buildings.Fluid.Actuators.Dampers.Exponential
                                       damOut(
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
@@ -774,7 +797,7 @@ end ventilation;
       dpFixed_nominal=5)
                        "Outdoor air damper"
     annotation (Placement(transformation(extent={{2,-80},{22,-60}})));
-  Buildings.Fluid.FixedResistances.PressureDrop
+          Buildings.Fluid.FixedResistances.PressureDrop
                                       dpSupDuc(
       m_flow_nominal=mAir_flow_nominal,
       redeclare package Medium = MediumA,
@@ -782,7 +805,7 @@ end ventilation;
       dp_nominal=200 + 200 + 100 + 40)
                                      "Pressure drop for supply duct"
     annotation (Placement(transformation(extent={{196,-82},{216,-62}})));
-  Buildings.Fluid.FixedResistances.Junction
+          Buildings.Fluid.FixedResistances.Junction
                                   splRetOut(
       redeclare package Medium = MediumA,
       tau=15,
@@ -801,7 +824,7 @@ end ventilation;
         extent={{-10,10},{10,-10}},
         rotation=0,
         origin={52,-70})));
-  Buildings.Fluid.Actuators.Dampers.Exponential damExh(
+          Buildings.Fluid.Actuators.Dampers.Exponential damExh(
       from_dp=false,
       riseTime=15,
       dpFixed_nominal=5,
@@ -810,113 +833,136 @@ end ventilation;
       dpDamper_nominal=5)
                         "Exhaust air damper"
     annotation (Placement(transformation(extent={{-16,-14},{-36,6}})));
-  Buildings.Fluid.FixedResistances.PressureDrop dpRetDuc(
+          Buildings.Fluid.FixedResistances.PressureDrop dpRetDuc(
       m_flow_nominal=mAir_flow_nominal,
       redeclare package Medium = MediumA,
       allowFlowReversal=allowFlowReversal,
       dp_nominal=40)
                    "Pressure drop for return duct"
     annotation (Placement(transformation(extent={{368,0},{348,20}})));
-  Buildings.Fluid.Sensors.VolumeFlowRate senRetFlo(redeclare package Medium =
+          Buildings.Fluid.Sensors.VolumeFlowRate senRetFlo(redeclare package
+              Medium =
                  MediumA, m_flow_nominal=mAir_flow_nominal)
     "Sensor for return fan flow rate"
     annotation (Placement(transformation(extent={{234,0},{214,20}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort TRet(
+          Buildings.Fluid.Sensors.TemperatureTwoPort TRet(
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       allowFlowReversal=allowFlowReversal)
                                          "Return air temperature sensor"
     annotation (Placement(transformation(extent={{138,0},{118,20}})));
-  Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup1(
+          Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup1(
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       dp_nominal=780 + 10 + dpBuiStaSet,
       energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
                                                                "Supply air fan"
     annotation (Placement(transformation(extent={{278,0},{258,20}})));
-  Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
+          Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package
+              Medium =
         MediumA)
     "Fluid connector b (positive design flow direction is from port_a to port_b)"
     annotation (Placement(transformation(extent={{556,-5},{524,25}}),
         iconTransformation(extent={{552,11},{532,29}})));
-  Modelica.Fluid.Interfaces.FluidPort_a port_a(redeclare final package Medium =
+          Modelica.Fluid.Interfaces.FluidPort_a port_a(redeclare final package
+              Medium =
         MediumA)
     "Fluid connector a (positive design flow direction is from port_a to port_b)"
     annotation (Placement(transformation(extent={{522,-90},{556,-58}}),
         iconTransformation(extent={{532,-69},{552,-51}})));
-  Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
+          Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each
+              package Medium =
                MediumA, each m_flow(max=if flowDirection == Modelica.Fluid.Types.PortFlowDirection.Leaving
            then 0 else +Modelica.Constants.inf, min=if flowDirection ==
           Modelica.Fluid.Types.PortFlowDirection.Entering then 0 else -Modelica.Constants.inf))
     "Fluid ports"
     annotation (Placement(transformation(extent={{-110,26},{-90,-54}}),
         iconTransformation(extent={{-110,26},{-90,-54}})));
-  Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(
+          Controls.BaseClasses.DataBus dataBus annotation (Placement(
+                transformation(
           extent={{-90,78},{-50,118}}), iconTransformation(extent={{-84,54},{-34,
             96}})));
-  Modelica.Blocks.Math.RealToBoolean u1SupFan(threshold=0.2)
+          Modelica.Blocks.Math.RealToBoolean u1SupFan(threshold=0.2)
     "Convert real to integer"
     annotation (Placement(transformation(extent={{316,30},{356,70}})));
-  Buildings.Controls.OBC.CDL.Integers.Sources.Constant opeMod(final k=Buildings.Controls.OBC.ASHRAE.G36.Types.OperationModes.occupied)
+          Buildings.Controls.OBC.CDL.Integers.Sources.Constant opeMod(final k=
+                Buildings.Controls.OBC.ASHRAE.G36.Types.OperationModes.occupied)
     "AHU operation mode is occupied"
     annotation (Placement(transformation(extent={{-66,-170},{-46,-150}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant sumDesPopBreZon(final k=0.0125)
+          Buildings.Controls.OBC.CDL.Reals.Sources.Constant sumDesPopBreZon(
+              final k=0.0125)
     "Sum of the population component design breathing zone flow rate"
     annotation (Placement(transformation(extent={{200,-160},{220,-140}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant sumDesAreBreZon(final k=0.03)
+          Buildings.Controls.OBC.CDL.Reals.Sources.Constant sumDesAreBreZon(
+              final k=0.03)
     "Sum of the area component design breathing zone flow rate"
     annotation (Placement(transformation(extent={{324,-160},{344,-140}})));
-  Buildings.Fluid.Sensors.RelativePressure dpDisSupFan(redeclare package Medium =
+          Buildings.Fluid.Sensors.RelativePressure dpDisSupFan(redeclare
+              package Medium =
         MediumA) "Supply fan static discharge pressure" annotation (Placement(
         transformation(
         extent={{-18,22},{18,-22}},
         rotation=90,
         origin={404,-28})));
-  Buildings.Controls.OBC.CDL.Integers.Sources.Constant ducPreResReq(final k=2)
+          Buildings.Controls.OBC.CDL.Integers.Sources.Constant ducPreResReq(
+              final k=2)
     "AHU operation mode is occupied"
     annotation (Placement(transformation(extent={{-64,-218},{-44,-198}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort TOut(
+          Buildings.Fluid.Sensors.TemperatureTwoPort TOut(
     redeclare package Medium = MediumA,
     m_flow_nominal=mAir_flow_nominal,
     allowFlowReversal=allowFlowReversal,
     transferHeat=true) "Mixed air temperature sensor"
     annotation (Placement(transformation(extent={{-32,-80},{-12,-60}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant sumDesPopBreZon1(final k=0.04)
+          Buildings.Controls.OBC.CDL.Reals.Sources.Constant sumDesPopBreZon1(
+              final k=0.04)
     "Sum of the population component design breathing zone flow rate"
     annotation (Placement(transformation(extent={{264,-160},{284,-140}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant VSumZonPri_flow(final k=0.03)
+          Buildings.Controls.OBC.CDL.Reals.Sources.Constant VSumZonPri_flow(
+              final k=0.03)
     "Sum of the area component design breathing zone flow rate"
     annotation (Placement(transformation(extent={{444,-112},{464,-92}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant uOutAirFra_max(final k=0.5)
+          Buildings.Controls.OBC.CDL.Reals.Sources.Constant uOutAirFra_max(
+              final k=0.5)
     "Sum of the area component design breathing zone flow rate"
     annotation (Placement(transformation(extent={{498,-122},{518,-102}})));
-  Buildings.Controls.OBC.CDL.Integers.Sources.Constant maxSupResReq(final k=6)
+          Buildings.Controls.OBC.CDL.Integers.Sources.Constant maxSupResReq(
+              final k=6)
     "AHU operation mode is occupied"
     annotation (Placement(transformation(extent={{-74,-268},{-54,-248}})));
 
-  protected
-  parameter Modelica.Fluid.Types.PortFlowDirection flowDirection=Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+        protected
+          parameter Modelica.Fluid.Types.PortFlowDirection flowDirection=
+              Modelica.Fluid.Types.PortFlowDirection.Bidirectional
     "Allowed flow direction" annotation (Evaluate=true, Dialog(tab="Advanced"));
-equation
-  connect(TSup.port_a,fanSup. port_b) annotation (Line(
+    equation
+          connect(
+          TSup.port_a,fanSup. port_b) annotation (Line(
       points={{276,-72},{266,-72}},
       color={0,127,255},
       smooth=Smooth.None,
       thickness=0.5));
-  connect(TSup.port_b,senSupFlo. port_a)
+          connect(
+          TSup.port_b,senSupFlo. port_a)
     annotation (Line(points={{296,-72},{346,-72}}, color={0,127,255}));
-  connect(dpSupDuc.port_b,fanSup. port_a)
+          connect(
+          dpSupDuc.port_b,fanSup. port_a)
     annotation (Line(points={{216,-72},{246,-72}}, color={0,127,255}));
-  connect(damOut.port_b,splRetOut. port_1)
+          connect(
+          damOut.port_b,splRetOut. port_1)
     annotation (Line(points={{22,-70},{42,-70}},   color={0,127,255}));
-  connect(splRetOut.port_2,TMix. port_a)
+          connect(
+          splRetOut.port_2,TMix. port_a)
     annotation (Line(points={{62,-70},{72,-70},{72,-72},{82,-72}},
                                                  color={0,127,255}));
-  connect(damRet.port_b,splRetOut. port_3) annotation (Line(points={{52,-16},{52,
+          connect(
+          damRet.port_b,splRetOut. port_3) annotation (Line(points={{52,-16},{
+                  52,
           -60}},                                    color={0,127,255}));
     connect(dpSupDuc.port_a, TMix.port_b) annotation (Line(points={{196,-72},{102,
           -72}},               color={0,127,255}));
-  connect(senRetFlo.port_b,TRet. port_a) annotation (Line(points={{214,10},{138,
+          connect(
+          senRetFlo.port_b,TRet. port_a) annotation (Line(points={{214,10},{138,
           10}},                color={0,127,255}));
     connect(TRet.port_b, damRet.port_a) annotation (Line(points={{118,10},{52,10},
           {52,4}},                 color={0,127,255}));
@@ -927,15 +973,22 @@ equation
       annotation (Line(points={{234,10},{258,10}},   color={0,127,255}));
     connect(fanSup1.port_a, dpRetDuc.port_b)
       annotation (Line(points={{278,10},{348,10}},   color={0,127,255}));
-  connect(senSupFlo.port_b, port_a) annotation (Line(points={{366,-72},{516,-72},
+          connect(
+          senSupFlo.port_b, port_a) annotation (Line(points={{366,-72},{516,-72},
           {516,-74},{539,-74}}, color={0,127,255}));
-  connect(dpRetDuc.port_a, port_b)
+          connect(
+          dpRetDuc.port_a, port_b)
     annotation (Line(points={{368,10},{540,10}}, color={0,127,255}));
-  connect(damExh.port_b, ports[1]) annotation (Line(points={{-36,-4},{-84,-4},{-84,
+          connect(
+          damExh.port_b, ports[1]) annotation (Line(points={{-36,-4},{-84,-4},{
+                  -84,
           6},{-100,6}}, color={0,127,255}));
-  connect(VOut1.port_a, ports[2]) annotation (Line(points={{-68,-70},{-84,-70},{
+          connect(
+          VOut1.port_a, ports[2]) annotation (Line(points={{-68,-70},{-84,-70},
+                  {
           -84,-34},{-100,-34}}, color={0,127,255}));
-  connect(dataBus.yRetDam, damRet.y) annotation (Line(
+          connect(
+          dataBus.yRetDam, damRet.y) annotation (Line(
       points={{-70,98},{-70,-24},{32,-24},{32,-6},{40,-6}},
       color={255,204,51},
       thickness=0.5), Text(
@@ -943,7 +996,8 @@ equation
       index=-1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(dataBus.yOutDam, damOut.y) annotation (Line(
+          connect(
+          dataBus.yOutDam, damOut.y) annotation (Line(
       points={{-70,98},{-70,-48},{12,-48},{12,-58}},
       color={255,204,51},
       thickness=0.5), Text(
@@ -951,7 +1005,8 @@ equation
       index=-1,
       extent={{-3,6},{-3,6}},
       horizontalAlignment=TextAlignment.Right));
-  connect(dataBus.ySupFan, fanSup1.y) annotation (Line(
+          connect(
+          dataBus.ySupFan, fanSup1.y) annotation (Line(
       points={{-70,98},{-70,32},{268,32},{268,22}},
       color={255,204,51},
       thickness=0.5), Text(
@@ -959,7 +1014,8 @@ equation
       index=-1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(dataBus.ySupFan, fanSup.y) annotation (Line(
+          connect(
+          dataBus.ySupFan, fanSup.y) annotation (Line(
       points={{-70,98},{-70,32},{248,32},{248,-52},{256,-52},{256,-60}},
       color={255,204,51},
       thickness=0.5), Text(
@@ -967,7 +1023,8 @@ equation
       index=-1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(dataBus.yOutDam, damExh.y) annotation (Line(
+          connect(
+          dataBus.yOutDam, damExh.y) annotation (Line(
       points={{-70,98},{-70,18},{-26,18},{-26,8}},
       color={255,204,51},
       thickness=0.5), Text(
@@ -975,42 +1032,53 @@ equation
       index=-1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(opeMod.y, dataBus.uAhuOpeMod) annotation (Line(points={{-44,-160},{-34,
+          connect(
+          opeMod.y, dataBus.uAhuOpeMod) annotation (Line(points={{-44,-160},{-34,
           -160},{-34,-158},{-36,-158},{-36,-154},{-34,-154},{-34,-86},{-38,-86},
           {-38,-52},{-70,-52},{-70,98}}, color={255,127,0}), Text(
       string="%second",
       index=1,
       extent={{6,3},{6,3}},
       horizontalAlignment=TextAlignment.Left));
-  connect(dpDisSupFan.port_a, port_a) annotation (Line(points={{404,-46},{404,-72},
+          connect(
+          dpDisSupFan.port_a, port_a) annotation (Line(points={{404,-46},{404,-72},
           {516,-72},{516,-74},{539,-74}}, color={0,127,255}));
-  connect(VOut1.port_a, dpDisSupFan.port_b) annotation (Line(points={{-68,-70},{
+          connect(
+          VOut1.port_a, dpDisSupFan.port_b) annotation (Line(points={{-68,-70},
+                  {
           -84,-70},{-84,-26},{376,-26},{376,0},{404,0},{404,-10}}, color={0,127,
           255}));
-  connect(dpDisSupFan.p_rel, dataBus.dpDuc) annotation (Line(points={{384.2,-28},
+          connect(
+          dpDisSupFan.p_rel, dataBus.dpDuc) annotation (Line(points={{384.2,-28},
           {-70,-28},{-70,98}}, color={0,0,127}), Text(
       string="%second",
       index=1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(ducPreResReq.y, dataBus.uZonPreResReq) annotation (Line(points={{-42,-208},
+          connect(
+          ducPreResReq.y, dataBus.uZonPreResReq) annotation (Line(points={{-42,
+                  -208},
           {-38,-208},{-38,-204},{-40,-204},{-40,-200},{-38,-200},{-38,-178},{-70,
           -178},{-70,98}}, color={255,127,0}), Text(
       string="%second",
       index=1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(VOut1.port_b, TOut.port_a)
+          connect(
+          VOut1.port_b, TOut.port_a)
     annotation (Line(points={{-48,-70},{-32,-70}}, color={0,127,255}));
-  connect(TOut.port_b, damOut.port_a)
+          connect(
+          TOut.port_b, damOut.port_a)
     annotation (Line(points={{-12,-70},{2,-70}}, color={0,127,255}));
-  connect(TSup.T, dataBus.TAirSup) annotation (Line(points={{286,-61},{136,-61},
+          connect(
+          TSup.T, dataBus.TAirSup) annotation (Line(points={{286,-61},{136,-61},
           {136,38},{-70,38},{-70,98}}, color={0,0,127}), Text(
       string="%second",
       index=1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(dataBus.ySupFan, u1SupFan.u) annotation (Line(
+          connect(
+          dataBus.ySupFan, u1SupFan.u) annotation (Line(
       points={{-70,98},{-70,50},{312,50}},
       color={255,204,51},
       thickness=0.5), Text(
@@ -1018,52 +1086,64 @@ equation
       index=-1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(u1SupFan.y, dataBus.u1SupFan) annotation (Line(points={{358,50},{366,50},
+          connect(
+          u1SupFan.y, dataBus.u1SupFan) annotation (Line(points={{358,50},{366,
+                  50},
           {366,76},{-44,76},{-44,72},{-70,72},{-70,98}}, color={255,0,255}),
       Text(
       string="%second",
       index=1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(sumDesPopBreZon.y, dataBus.VSumAdjPopBreZon_flow) annotation (Line(
+          connect(
+          sumDesPopBreZon.y, dataBus.VSumAdjPopBreZon_flow) annotation (Line(
         points={{222,-150},{230,-150},{230,-6},{200,-6},{200,48},{-70,48},{-70,98}},
         color={0,0,127}), Text(
       string="%second",
       index=1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(sumDesAreBreZon.y, dataBus.VSumAdjAreBreZon_flow) annotation (Line(
+          connect(
+          sumDesAreBreZon.y, dataBus.VSumAdjAreBreZon_flow) annotation (Line(
         points={{346,-150},{364,-150},{364,-26},{-70,-26},{-70,98}}, color={0,0,
           127}), Text(
       string="%second",
       index=1,
       extent={{6,3},{6,3}},
       horizontalAlignment=TextAlignment.Left));
-  connect(TOut.T, dataBus.TOut) annotation (Line(points={{-22,-59},{-22,-50},{-70,
+          connect(
+          TOut.T, dataBus.TOut) annotation (Line(points={{-22,-59},{-22,-50},{-70,
           -50},{-70,98}}, color={0,0,127}), Text(
       string="%second",
       index=1,
       extent={{-3,6},{-3,6}},
       horizontalAlignment=TextAlignment.Right));
-  connect(VOut1.V_flow, dataBus.VAirOut_flow) annotation (Line(points={{-58,-59},
+          connect(
+          VOut1.V_flow, dataBus.VAirOut_flow) annotation (Line(points={{-58,-59},
           {-38,-59},{-38,98},{-70,98}}, color={0,0,127}), Text(
       string="%second",
       index=1,
       extent={{6,3},{6,3}},
       horizontalAlignment=TextAlignment.Left));
-  connect(VSumZonPri_flow.y, dataBus.VSumZonPri_flow) annotation (Line(points={{
+          connect(
+          VSumZonPri_flow.y, dataBus.VSumZonPri_flow) annotation (Line(points={
+                  {
           466,-102},{200,-102},{200,98},{-70,98}}, color={0,0,127}), Text(
       string="%second",
       index=1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(uOutAirFra_max.y, dataBus.uOutAirFra_max) annotation (Line(points={{520,
+          connect(
+          uOutAirFra_max.y, dataBus.uOutAirFra_max) annotation (Line(points={{
+                  520,
           -112},{226,-112},{226,98},{-70,98}}, color={0,0,127}), Text(
       string="%second",
       index=1,
       extent={{-6,3},{-6,3}},
       horizontalAlignment=TextAlignment.Right));
-  connect(maxSupResReq.y, dataBus.uZonTemResReq) annotation (Line(points={{-52,-258},
+          connect(
+          maxSupResReq.y, dataBus.uZonTemResReq) annotation (Line(points={{-52,
+                  -258},
           {-44,-258},{-44,-224},{-70,-224},{-70,98}}, color={255,127,0}), Text(
       string="%second",
       index=1,
@@ -1077,7 +1157,348 @@ equation
           fillPattern=FillPattern.Solid)}),
                                          Diagram(coordinateSystem(
             preserveAspectRatio=false, extent={{-100,-180},{540,100}})));
-end AhuWithEconomizer;
+    end AhuWithEconomizer;
+
+    partial model PartialAhu
+    replaceable package MediumA = Modelica.Media.Interfaces.PartialMedium
+    "Medium model" annotation (choicesAllMatching=true);
+
+      constant Integer numZon(min=2)=2 "Total number of served VAV boxes";
+
+      parameter Modelica.Units.SI.Volume VRoo[numZon] "Room volume per zone";
+      parameter Modelica.Units.SI.Area AFlo[numZon] "Floor area per zone";
+
+      final parameter Modelica.Units.SI.Area ATot=sum(AFlo)
+    "Total floor area for all zone";
+
+      constant Real conv=1.2/3600 "Conversion factor for nominal mass flow rate";
+
+      parameter Modelica.Units.SI.HeatFlowRate QHeaAHU_flow_nominal(min=0)=
+        mHeaAir_flow_nominal*Buildings.Utilities.Psychrometrics.Constants.cpAir*(
+        THeaAirSup_nominal - THeaAirMix_nominal)
+    "Nominal heating heat flow rate of air handler unit coil";
+
+      parameter Modelica.Units.SI.HeatFlowRate QCooAHU_flow_nominal(max=0) = 1.3*
+        mCooAir_flow_nominal*Buildings.Utilities.Psychrometrics.Constants.cpAir*(
+        TCooAirSup_nominal - TCooAirMix_nominal)
+    "Nominal total cooling heat flow rate of air handler unit coil (negative number)";
+
+      parameter Modelica.Units.SI.MassFlowRate mCooVAV_flow_nominal[numZon]
+    "Design mass flow rate per zone for cooling"
+    annotation (Dialog(group="Nominal mass flow rate"));
+
+      parameter Modelica.Units.SI.MassFlowRate mHeaVAV_flow_nominal[numZon]=0.3*
+          mCooVAV_flow_nominal
+    "Design mass flow rate per zone for heating"
+    annotation (Dialog(group="Nominal mass flow rate"));
+
+      parameter Modelica.Units.SI.MassFlowRate mAir_flow_nominal=
+          mCooAir_flow_nominal
+    "Nominal mass flow rate for fan"
+    annotation (Dialog(group="Nominal mass flow rate"));
+      parameter Modelica.Units.SI.MassFlowRate mCooAir_flow_nominal=0.7*sum(
+          mCooVAV_flow_nominal)
+    "Nominal mass flow rate for fan"
+    annotation (Dialog(group="Nominal mass flow rate"));
+      parameter Modelica.Units.SI.MassFlowRate mHeaAir_flow_nominal=0.7*sum(
+          mHeaVAV_flow_nominal)
+    "Nominal mass flow rate for fan"
+    annotation (Dialog(group="Nominal mass flow rate"));
+
+      parameter Modelica.Units.SI.MassFlowRate mHeaWat_flow_nominal=
+      QHeaAHU_flow_nominal/Buildings.Utilities.Psychrometrics.Constants.cpWatLiq/10
+    "Nominal water mass flow rate for heating coil in AHU"
+    annotation (Dialog(group="Nominal mass flow rate"));
+      parameter Modelica.Units.SI.MassFlowRate mCooWat_flow_nominal=
+      QCooAHU_flow_nominal/Buildings.Utilities.Psychrometrics.Constants.cpWatLiq/(-6)
+    "Nominal water mass flow rate for cooling coil"
+    annotation (Dialog(group="Nominal mass flow rate"));
+
+      parameter Real ratOAFlo_A(final unit="m3/(s.m2)") = 0.3e-3
+    "Outdoor airflow rate required per unit area";
+      parameter Real ratOAFlo_P=2.5e-3
+    "Outdoor airflow rate required per person";
+      parameter Real ratP_A=5e-2
+    "Occupant density";
+      parameter Real effZ(final unit="1") = 0.8
+    "Zone air distribution effectiveness (limiting value)";
+      parameter Real divP(final unit="1") = 0.7
+    "Occupant diversity ratio";
+
+      parameter Modelica.Units.SI.VolumeFlowRate VZonOA_flow_nominal[numZon]=
+                                                                         (
+      ratOAFlo_P*ratP_A + ratOAFlo_A)*AFlo/effZ
+    "Zone outdoor air flow rate of each VAV box";
+
+      parameter Modelica.Units.SI.VolumeFlowRate Vou_flow_nominal=
+                                                              (divP*ratOAFlo_P*
+      ratP_A + ratOAFlo_A)*sum(AFlo) "System uncorrected outdoor air flow rate";
+      parameter Real effVen(final unit="1") = if divP < 0.6 then
+    0.88 * divP + 0.22 else 0.75
+    "System ventilation efficiency";
+      parameter Modelica.Units.SI.VolumeFlowRate Vot_flow_nominal=Vou_flow_nominal/
+      effVen "System design outdoor air flow rate";
+
+      parameter Modelica.Units.SI.Temperature THeaOn=293.15
+    "Heating setpoint during on"
+    annotation (Dialog(group="Room temperature setpoints"));
+      parameter Modelica.Units.SI.Temperature THeaOff=285.15
+    "Heating setpoint during off"
+    annotation (Dialog(group="Room temperature setpoints"));
+      parameter Modelica.Units.SI.Temperature TCooOn=297.15
+    "Cooling setpoint during on"
+    annotation (Dialog(group="Room temperature setpoints"));
+      parameter Modelica.Units.SI.Temperature TCooOff=303.15
+    "Cooling setpoint during off"
+    annotation (Dialog(group="Room temperature setpoints"));
+      parameter Modelica.Units.SI.PressureDifference dpBuiStaSet(min=0) = 12
+    "Building static pressure";
+      parameter Real yFanMin=0.1 "Minimum fan speed";
+
+      parameter Modelica.Units.SI.Temperature TCooAirMix_nominal(displayUnit="degC")=
+           303.15
+    "Mixed air temperature during cooling nominal conditions (used to size cooling coil)"
+    annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+      parameter Modelica.Units.SI.Temperature TCooAirSup_nominal(displayUnit="degC")=
+           285.15
+    "Supply air temperature during cooling nominal conditions (used to size cooling coil)"
+    annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+      parameter Modelica.Units.SI.MassFraction wCooAirMix_nominal=0.017
+    "Humidity ratio of mixed air at a nominal conditions used to size cooling coil (in kg/kg dry total)"
+    annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+      parameter Modelica.Units.SI.Temperature TCooWatInl_nominal(displayUnit="degC")=
+           279.15
+    "Cooling coil nominal inlet water temperature"
+    annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+
+      parameter Modelica.Units.SI.Temperature THeaAirMix_nominal(displayUnit="degC")=
+           277.15
+    "Mixed air temperature during heating nominal conditions (used to size heating coil)"
+    annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+      parameter Modelica.Units.SI.Temperature THeaAirSup_nominal(displayUnit="degC")=
+           285.15
+    "Supply air temperature during heating nominal conditions (used to size heating coil)"
+    annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+      parameter Modelica.Units.SI.Temperature THeaWatInl_nominal(displayUnit="degC")
+    "Reheat coil nominal inlet water temperature"
+    annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
+
+      parameter Boolean allowFlowReversal=false
+    "= false to simplify equations, assuming, but not enforcing, no flow reversal"
+    annotation (Evaluate=true);
+
+      Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup(
+      redeclare package Medium = MediumA,
+      m_flow_nominal=mAir_flow_nominal,
+      dp_nominal=780 + 10 + dpBuiStaSet,
+      energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
+                                                               "Supply air fan"
+    annotation (Placement(transformation(extent={{246,-82},{266,-62}})));
+      Buildings.Fluid.Sensors.VolumeFlowRate senSupFlo(redeclare package Medium =
+                 MediumA, m_flow_nominal=mAir_flow_nominal)
+    "Sensor for supply fan flow rate"
+    annotation (Placement(transformation(extent={{346,-82},{366,-62}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+      redeclare package Medium = MediumA,
+      m_flow_nominal=mAir_flow_nominal,
+      allowFlowReversal=allowFlowReversal)
+    annotation (Placement(transformation(extent={{276,-82},{296,-62}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TMix(
+      redeclare package Medium = MediumA,
+      m_flow_nominal=mAir_flow_nominal,
+      allowFlowReversal=allowFlowReversal,
+      transferHeat=true) "Mixed air temperature sensor"
+    annotation (Placement(transformation(extent={{82,-82},{102,-62}})));
+      Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
+          MediumA, m_flow_nominal=mAir_flow_nominal)
+    "Outside air volume flow rate"
+    annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
+      Buildings.Fluid.Actuators.Dampers.Exponential
+                                      damRet(
+      redeclare package Medium = MediumA,
+      m_flow_nominal=mAir_flow_nominal,
+      from_dp=false,
+      riseTime=15,
+      dpDamper_nominal=5,
+      dpFixed_nominal=5)
+                       "Return air damper" annotation (Placement(transformation(
+        origin={52,-6},
+        extent={{10,-10},{-10,10}},
+        rotation=90)));
+      Buildings.Fluid.Actuators.Dampers.Exponential
+                                      damOut(
+      redeclare package Medium = MediumA,
+      m_flow_nominal=mAir_flow_nominal,
+      from_dp=false,
+      riseTime=15,
+      dpDamper_nominal=5,
+      dpFixed_nominal=5)
+                       "Outdoor air damper"
+    annotation (Placement(transformation(extent={{2,-80},{22,-60}})));
+      Buildings.Fluid.FixedResistances.PressureDrop
+                                      dpSupDuc(
+      m_flow_nominal=mAir_flow_nominal,
+      redeclare package Medium = MediumA,
+      allowFlowReversal=allowFlowReversal,
+      dp_nominal=200 + 200 + 100 + 40)
+                                     "Pressure drop for supply duct"
+    annotation (Placement(transformation(extent={{196,-82},{216,-62}})));
+      Buildings.Fluid.FixedResistances.Junction
+                                  splRetOut(
+      redeclare package Medium = MediumA,
+      tau=15,
+      m_flow_nominal=mAir_flow_nominal*{1,1,1},
+      energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+      dp_nominal(each displayUnit="Pa") = {0,0,0},
+      portFlowDirection_1=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+           else Modelica.Fluid.Types.PortFlowDirection.Entering,
+      portFlowDirection_2=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+           else Modelica.Fluid.Types.PortFlowDirection.Leaving,
+      portFlowDirection_3=if allowFlowReversal then Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+           else Modelica.Fluid.Types.PortFlowDirection.Entering,
+      linearized=true)
+    "Flow splitter"
+    annotation (Placement(transformation(
+        extent={{-10,10},{10,-10}},
+        rotation=0,
+        origin={52,-70})));
+      Buildings.Fluid.Actuators.Dampers.Exponential damExh(
+      from_dp=false,
+      riseTime=15,
+      dpFixed_nominal=5,
+      redeclare package Medium = MediumA,
+      m_flow_nominal=mAir_flow_nominal,
+      dpDamper_nominal=5)
+                        "Exhaust air damper"
+    annotation (Placement(transformation(extent={{-16,-14},{-36,6}})));
+      Buildings.Fluid.FixedResistances.PressureDrop dpRetDuc(
+      m_flow_nominal=mAir_flow_nominal,
+      redeclare package Medium = MediumA,
+      allowFlowReversal=allowFlowReversal,
+      dp_nominal=40)
+                   "Pressure drop for return duct"
+    annotation (Placement(transformation(extent={{368,0},{348,20}})));
+      Buildings.Fluid.Sensors.VolumeFlowRate senRetFlo(redeclare package Medium =
+                 MediumA, m_flow_nominal=mAir_flow_nominal)
+    "Sensor for return fan flow rate"
+    annotation (Placement(transformation(extent={{234,0},{214,20}})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TRet(
+      redeclare package Medium = MediumA,
+      m_flow_nominal=mAir_flow_nominal,
+      allowFlowReversal=allowFlowReversal)
+                                         "Return air temperature sensor"
+    annotation (Placement(transformation(extent={{138,0},{118,20}})));
+      Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup1(
+      redeclare package Medium = MediumA,
+      m_flow_nominal=mAir_flow_nominal,
+      dp_nominal=780 + 10 + dpBuiStaSet,
+      energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
+                                                               "Supply air fan"
+    annotation (Placement(transformation(extent={{278,0},{258,20}})));
+      Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
+        MediumA)
+    "Fluid connector b (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{556,-5},{524,25}}),
+        iconTransformation(extent={{552,11},{532,29}})));
+      Modelica.Fluid.Interfaces.FluidPort_a port_a(redeclare final package Medium =
+        MediumA)
+    "Fluid connector a (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{522,-90},{556,-58}}),
+        iconTransformation(extent={{532,-69},{552,-51}})));
+      Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
+               MediumA, each m_flow(max=if flowDirection == Modelica.Fluid.Types.PortFlowDirection.Leaving
+           then 0 else +Modelica.Constants.inf, min=if flowDirection ==
+          Modelica.Fluid.Types.PortFlowDirection.Entering then 0 else -Modelica.Constants.inf))
+    "Fluid ports"
+    annotation (Placement(transformation(extent={{-110,26},{-90,-54}}),
+        iconTransformation(extent={{-110,26},{-90,-54}})));
+      Buildings.Fluid.Sensors.RelativePressure dpDisSupFan(redeclare package Medium =
+        MediumA) "Supply fan static discharge pressure" annotation (Placement(
+        transformation(
+        extent={{-18,22},{18,-22}},
+        rotation=90,
+        origin={404,-28})));
+      Buildings.Fluid.Sensors.TemperatureTwoPort TOut(
+    redeclare package Medium = MediumA,
+    m_flow_nominal=mAir_flow_nominal,
+    allowFlowReversal=allowFlowReversal,
+    transferHeat=true) "Mixed air temperature sensor"
+    annotation (Placement(transformation(extent={{-32,-80},{-12,-60}})));
+
+        protected
+      parameter Modelica.Fluid.Types.PortFlowDirection flowDirection=Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+    "Allowed flow direction" annotation (Evaluate=true, Dialog(tab="Advanced"));
+    equation
+      connect(
+          TSup.port_a,fanSup. port_b) annotation (Line(
+      points={{276,-72},{266,-72}},
+      color={0,127,255},
+      smooth=Smooth.None,
+      thickness=0.5));
+      connect(
+          TSup.port_b,senSupFlo. port_a)
+    annotation (Line(points={{296,-72},{346,-72}}, color={0,127,255}));
+      connect(
+          dpSupDuc.port_b,fanSup. port_a)
+    annotation (Line(points={{216,-72},{246,-72}}, color={0,127,255}));
+      connect(
+          damOut.port_b,splRetOut. port_1)
+    annotation (Line(points={{22,-70},{42,-70}},   color={0,127,255}));
+      connect(
+          splRetOut.port_2,TMix. port_a)
+    annotation (Line(points={{62,-70},{72,-70},{72,-72},{82,-72}},
+                                                 color={0,127,255}));
+      connect(
+          damRet.port_b,splRetOut. port_3) annotation (Line(points={{52,-16},{52,
+          -60}},                                    color={0,127,255}));
+    connect(dpSupDuc.port_a, TMix.port_b) annotation (Line(points={{196,-72},{102,
+          -72}},               color={0,127,255}));
+      connect(
+          senRetFlo.port_b,TRet. port_a) annotation (Line(points={{214,10},{138,
+          10}},                color={0,127,255}));
+    connect(TRet.port_b, damRet.port_a) annotation (Line(points={{118,10},{52,10},
+          {52,4}},                 color={0,127,255}));
+    connect(TRet.port_b, damExh.port_a) annotation (Line(points={{118,10},{-6,10},
+          {-6,-4},{-16,-4}},                                        color=
+           {0,127,255}));
+    connect(senRetFlo.port_a, fanSup1.port_b)
+      annotation (Line(points={{234,10},{258,10}},   color={0,127,255}));
+    connect(fanSup1.port_a, dpRetDuc.port_b)
+      annotation (Line(points={{278,10},{348,10}},   color={0,127,255}));
+      connect(
+          senSupFlo.port_b, port_a) annotation (Line(points={{366,-72},{516,-72},
+          {516,-74},{539,-74}}, color={0,127,255}));
+      connect(
+          dpRetDuc.port_a, port_b)
+    annotation (Line(points={{368,10},{540,10}}, color={0,127,255}));
+      connect(
+          damExh.port_b, ports[1]) annotation (Line(points={{-36,-4},{-84,-4},{-84,
+          6},{-100,6}}, color={0,127,255}));
+      connect(
+          VOut1.port_a, ports[2]) annotation (Line(points={{-68,-70},{-84,-70},{
+          -84,-34},{-100,-34}}, color={0,127,255}));
+      connect(
+          dpDisSupFan.port_a, port_a) annotation (Line(points={{404,-46},{404,-72},
+          {516,-72},{516,-74},{539,-74}}, color={0,127,255}));
+      connect(
+          VOut1.port_a, dpDisSupFan.port_b) annotation (Line(points={{-68,-70},{
+          -84,-70},{-84,-26},{376,-26},{376,0},{404,0},{404,-10}}, color={0,127,
+          255}));
+      connect(
+          VOut1.port_b, TOut.port_a)
+    annotation (Line(points={{-48,-70},{-32,-70}}, color={0,127,255}));
+      connect(
+          TOut.port_b, damOut.port_a)
+    annotation (Line(points={{-12,-70},{2,-70}}, color={0,127,255}));
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-180},
+            {540,100}}), graphics={Rectangle(
+          extent={{-98,102},{542,-138}},
+          lineColor={28,108,200},
+          fillColor={244,125,35},
+          fillPattern=FillPattern.Solid)}),
+                                         Diagram(coordinateSystem(
+            preserveAspectRatio=false, extent={{-100,-180},{540,100}})));
+    end PartialAhu;
     end Ventilation;
   end Fluid;
 
@@ -1102,7 +1523,7 @@ end AhuWithEconomizer;
       annotation (Placement(transformation(extent={{2,-90},{22,-70}})));
         Modelica.Blocks.Nonlinear.Limiter limiter(uMax=1, uMin=0)
           annotation (Placement(transformation(extent={{-86,-10},{-66,10}})));
-      protected
+        protected
     Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumCon(final
         alpha=0)
       "Heat input into radiator from convective heat transfer"
@@ -1172,32 +1593,28 @@ model building
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.003,
         k=1.0,
-        tauSol={ 0.646 },
-        rhoSol_a={ 0.062 },
-        rhoSol_b={ 0.063 },
+        tauSol={ 0.646},
+        rhoSol_a={ 0.062},
+        rhoSol_b={ 0.063},
         tauIR=0.0,
         absIR_a=0.84,
-        absIR_b=0.84)
-        ,
+        absIR_b=0.84),
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.003,
         k=1.0,
-        tauSol={ 0.646 },
-        rhoSol_a={ 0.062 },
-        rhoSol_b={ 0.063 },
+        tauSol={ 0.646},
+        rhoSol_a={ 0.062},
+        rhoSol_b={ 0.063},
         tauIR=0.0,
         absIR_a=0.84,
-        absIR_b=0.84)
-
-    },
+        absIR_b=0.84)},
     final gas={
-            Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
-
-    },
+            Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)},
     UFra=1.4)
     annotation (
     defaultComponentPrefixes="parameter",
     defaultComponentName="datGlaSys");
+
     parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         external_wall(
     final nLay=3,
@@ -1217,7 +1634,7 @@ model building
         x=0.1,
         k=0.12,
         c=1210.0,
-        d=540.0)    },
+        d=540.0)},
     roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
     annotation (Placement(transformation(extent={{20,84},{34,98}})));
 
@@ -1230,49 +1647,31 @@ package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model
     AFlo=50,
     hRoo=2,nPorts = 4,                nConExt=2,
                 datConExt(
-                layers={ external_wall, external_wall },
-    A={ 10.0, 10.0 },
+                layers={ external_wall, external_wall},
+    A={ 10.0, 10.0},
     til={Buildings.Types.Tilt.Wall,Buildings.Types.Tilt.Wall},
-                azi={ 135.0, 45.0 }),
+                azi={ 135.0, 45.0}),
                 nSurBou=0,                nConBou=1,
                 datConBou(
-                layers={ external_wall },
-    A={ 10.0 },
+                layers={ external_wall},
+    A={ 10.0},
     til={Buildings.Types.Tilt.Floor},
-                azi={ 90.0 }),
+                azi={ 90.0}),
                 nConExtWin=1,
                 datConExtWin(
-                layers={ external_wall },
-    A={ 10.0 },
+                layers={ external_wall},
+    A={ 10.0},
     til={Buildings.Types.Tilt.Wall},
-                glaSys={ double_glazing },
-                wWin={ 1.0 },
-                hWin={ 1.0 }),
+                glaSys={ double_glazing},
+                wWin={ 1.0},
+                hWin={ 1.0}),
     nConPar=0,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { 0, 50 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-     annotation (
-    Placement(transformation(origin = { 141.6997341097336, 133.14016801353065 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-     annotation (
-    Placement(transformation(origin = { -154.66271981079188, -66.44169004322197 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-     annotation (
-    Placement(transformation(origin = { 49.72500148678746, -166.01420401433867 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-     annotation (
-    Placement(transformation(origin = { 12.211470979750372, 192.24486382925056 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { 0, 50},
+    extent = {{-10, -10}, {10, 10}})));
         buildings_free_float_single_zone_ahu_complex.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
-    Placement(transformation(origin = { -50, 50 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { -50, 50},
+    extent = {{-10, -10}, {10, 10}})));
       Buildings.Fluid.Actuators.Dampers.PressureIndependent
     vav_in(
     redeclare package Medium = Medium,
@@ -1280,9 +1679,8 @@ package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model
     dpDamper_nominal=50,
     allowFlowReversal=false,
     dpFixed_nominal=50) "VAV box for room"  annotation (
-    Placement(transformation(origin = { 76.31154522534662, 160.58253109726897 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { 76.31154522534662, 160.58253109726897},
+    extent = {{-10, -10}, {10, 10}})));
       Buildings.Fluid.Actuators.Dampers.PressureIndependent
     vav_out(
     redeclare package Medium = Medium,
@@ -1290,40 +1688,35 @@ package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model
     dpDamper_nominal=50,
     allowFlowReversal=false,
     dpFixed_nominal=50) "VAV box for room"  annotation (
-    Placement(transformation(origin = { -171.82517717565938, 79.29232836338234 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { -171.82517717565938, 79.29232836338234},
+    extent = {{-10, -10}, {10, 10}})));
       Buildings.Fluid.FixedResistances.PressureDrop
     pressure_drop_duct_out(
     m_flow_nominal=100*1.2/3600,
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { -60.865897813643386, 175.33821277728842 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { -60.865897813643386, 175.33821277728842},
+    extent = {{-10, -10}, {10, 10}})));
       Buildings.Fluid.FixedResistances.PressureDrop
     pressure_drop_duct_in(
     m_flow_nominal=100*1.2/3600,
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { -141.1831694864154, -158.60812272934479 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { -141.1831694864154, -158.60812272934479},
+    extent = {{-10, -10}, {10, 10}})));
         buildings_free_float_single_zone_ahu_complex.Common.Controls.SpaceControls.PIDSubstance
     ventilation_control(redeclare package
       Medium = Medium, yMax = 0.9, yMin = 0.1, setPoint = 400) annotation (
-    Placement(transformation(origin = { -192.86781247436824, -0.7932119721633439 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { -192.86781247436824, -0.7932119721633439},
+    extent = {{-10, -10}, {10, 10}})));
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
-            weather(filNam =
+            weather(filNam=
     Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
  annotation (
-    Placement(transformation(origin = { -100, 200 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { -100, 200},
+    extent = {{-10, -10}, {10, 10}})));
       buildings_free_float_single_zone_ahu_complex.Common.Fluid.Ventilation.AhuWithEconomizer ahu(redeclare
         package
               MediumA =                                                                    Medium,
@@ -1331,114 +1724,126 @@ package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model
       AFlo={20,20},
       mCooVAV_flow_nominal={0.01,0.01})
     annotation (
-    Placement(transformation(origin = { -129.3402618503623, 147.65525876596087 },
-    extent = {{-10, -10}, {10, 10}}
-))); annotation (
-    Placement(transformation(origin = { -129.3402618503623, 147.65525876596087 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { -129.3402618503623, 147.65525876596087},
+    extent = {{-10, -10}, {10, 10}})));
       buildings_free_float_single_zone_ahu_complex.Common.Controls.ventilation.AHU_G36 ahu_control
     annotation (
-    Placement(transformation(origin = { 180.8691576651215, 67.21951728490066 },
-    extent = {{-10, -10}, {10, 10}}
-))); annotation (
-    Placement(transformation(origin = { 180.8691576651215, 67.21951728490066 },
-    extent = {{-10, -10}, {10, 10}}
-)));
-      Buildings.Fluid.Sources.Outside boundary
-    (nPorts=2,redeclare package Medium = Medium) annotation (
-    Placement(transformation(origin = { -200, 100 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { 180.8691576651215, 67.21951728490066},
+    extent = {{-10, -10}, {10, 10}})));
+      Buildings.Fluid.Sources.Outside boundary(
+     nPorts=2,redeclare package Medium = Medium) annotation (
+    Placement(transformation(origin = { -200, 100},
+    extent = {{-10, -10}, {10, 10}})));
         buildings_free_float_single_zone_ahu_complex.Common.Controls.SpaceControls.DataServer
-    data_bus (redeclare package
+    data_bus( redeclare package
       Medium = Medium) annotation (
-    Placement(transformation(origin = { 123.72826862235884, -143.16180725730098 },
-    extent = {{-10, -10}, {10, 10}}
-)));
+    Placement(transformation(origin = { 123.72826862235884, -143.16180725730098},
+    extent = {{-10, -10}, {10, 10}})));
 
 
-equation    connect(space_1.qGai_flow,occupancy_0.y)
+equation
+            connect(space_1.qGai_flow,occupancy_0.y)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -25.0, 50.0 }    ,{ -25.0, 50.0 }    ,{ -50.0, 50.0 }    },
+points={{-10.8,54},{-25,54},{-25,50},{-39,50}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],vav_out.port_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -85.91258858782969, 50.0 }    ,{ -85.91258858782969, 79.29232836338234 }    ,{ -171.82517717565938, 79.29232836338234 }    },
+points={{-7.5,43.5},{-85.9126,43.5},{-85.9126,79.2923},{-181.825,79.2923}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[2],ventilation_control.port_a)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -96.43390623718412, 50.0 }    ,{ -96.43390623718412, -0.7932119721633439 }    ,{ -192.86781247436824, -0.7932119721633439 }    },
+points={{-7.5,44.5},{-96.4339,44.5},{-96.4339,-0.793212},{-202.868,-0.793212}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.weaBus,weather.weaBus)
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ -50.0, 50.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0 }    },
+points={{8.95,58.95},{-50,58.95},{-50,200},{-90,200}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 61.86413431117942, 50.0 }    ,{ 61.86413431117942, -143.16180725730098 }    ,{ 123.72826862235884, -143.16180725730098 }    },
+points={{-0.5,50},{61.8641,50},{61.8641,-143.162},{113.728,-143.162}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[3],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 50.0 }    ,{ 61.86413431117942, 50.0 }    ,{ 61.86413431117942, -143.16180725730098 }    ,{ 123.72826862235884, -143.16180725730098 }    },
+points={{-7.5,45.5},{61.8641,45.5},{61.8641,-147.362},{113.528,-147.362}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(vav_in.port_b,space_1.ports[4])
 annotation (Line(
-points={{ 76.31154522534662, 160.58253109726897 }    ,{ 38.15577261267331, 160.58253109726897 }    ,{ 38.15577261267331, 50.0 }    ,{ 0.0, 50.0 }    },
+points={{86.3115,160.583},{38.1558,160.583},{38.1558,46.5},{-7.5,46.5}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(vav_out.port_b,pressure_drop_duct_out.port_a)
 annotation (Line(
-points={{ -171.82517717565938, 79.29232836338234 }    ,{ -116.34553749465138, 79.29232836338234 }    ,{ -116.34553749465138, 175.33821277728842 }    ,{ -60.865897813643386, 175.33821277728842 }    },
+points={{-161.825,79.2923},{-116.346,79.2923},{-116.346,175.338},{-70.8659,
+            175.338}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_out.port_b,ahu.port_a)
 annotation (Line(
-points={{ -60.865897813643386, 175.33821277728842 }    ,{ -95.10307983200285, 175.33821277728842 }    ,{ -95.10307983200285, 147.65525876596087 }    ,{ -129.3402618503623, 147.65525876596087 }    },
+points={{-50.8659,175.338},{-95.1031,175.338},{-95.1031,146.227},{-119.278,
+            146.227}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_in.port_b,vav_in.port_a)
 annotation (Line(
-points={{ -141.1831694864154, -158.60812272934479 }    ,{ -32.4358121305344, -158.60812272934479 }    ,{ -32.43581213053439, 160.58253109726897 }    ,{ 76.31154522534662, 160.58253109726897 }    },
+points={{-131.183,-158.608},{-32.4358,-158.608},{-32.4358,160.583},{66.3115,
+            160.583}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ventilation_control.y,vav_in.y)
 annotation (Line(
-points={{ -192.86781247436824, -0.7932119721633439 }    ,{ -58.278133624510815, -0.7932119721633439 }    ,{ -58.2781336245108, 160.58253109726897 }    ,{ 76.31154522534662, 160.58253109726897 }    },
+points={{-182.268,-0.793212},{-58.2781,-0.793212},{-58.2781,172.583},{76.3115,
+            172.583}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ventilation_control.y,vav_out.y)
 annotation (Line(
-points={{ -192.86781247436824, -0.7932119721633439 }    ,{ -182.3464948250138, -0.7932119721633439 }    ,{ -182.3464948250138, 79.29232836338234 }    ,{ -171.82517717565938, 79.29232836338234 }    },
+points={{-182.268,-0.793212},{-182.346,-0.793212},{-182.346,91.2923},{-171.825,
+            91.2923}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ahu.dataBus,ahu_control.dataBus)
 annotation (Line(
-points={{ -129.3402618503623, 147.65525876596087 }    ,{ 25.764447907379576, 147.65525876596087 }    ,{ 25.764447907379605, 67.21951728490066 }    ,{ 180.8691576651215, 67.21951728490066 }    },
+points={{-138.059,155.87},{25.7644,155.87},{25.7644,67.2195},{170.669,67.2195}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ahu.port_b,pressure_drop_duct_in.port_a)
 annotation (Line(
-points={{ -129.3402618503623, 147.65525876596087 }    ,{ -135.26171566838886, 147.65525876596087 }    ,{ -135.26171566838886, -158.60812272934479 }    ,{ -141.1831694864154, -158.60812272934479 }    },
+points={{-119.278,151.941},{-135.262,151.941},{-135.262,-158.608},{-151.183,
+            -158.608}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(boundary.ports,ahu.ports)
 annotation (Line(
-points={{ -200.0, 100.0 }    ,{ -164.67013092518116, 100.0 }    ,{ -164.67013092518116, 147.65525876596087 }    ,{ -129.3402618503623, 147.65525876596087 }    },
+points={{-190,100},{-164.67,100},{-164.67,149.512},{-139.34,149.512}},
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(boundary.weaBus,weather.weaBus)
 annotation (Line(
-points={{ -200.0, 100.0 }    ,{ -150.0, 100.0 }    ,{ -150.0, 200.0 }    ,{ -100.0, 200.0 }    },
+points={{-210,100.2},{-150,100.2},{-150,200},{-90,200}},
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));end building;
+smooth=Smooth.None));
+     annotation (
+    Placement(transformation(origin = { 141.6997341097336, 133.14016801353065},
+    extent = {{-10, -10}, {10, 10}})),
+    Placement(transformation(origin = { -154.66271981079188, -66.44169004322197},
+    extent = {{-10, -10}, {10, 10}})),
+    Placement(transformation(origin = { 49.72500148678746, -166.01420401433867},
+    extent = {{-10, -10}, {10, 10}})),
+    Placement(transformation(origin = { 12.211470979750372, 192.24486382925056},
+    extent = {{-10, -10}, {10, 10}})),
+    Placement(transformation(origin = { -129.3402618503623, 147.65525876596087},
+    extent = {{-10, -10}, {10, 10}})),
+    Placement(transformation(origin = { 180.8691576651215, 67.21951728490066},
+    extent = {{-10, -10}, {10, 10}})));
+end building;
 
 
+  annotation (uses(Modelica(version="4.0.0"), Buildings(version="11.0.0")));
 end buildings_free_float_single_zone_ahu_complex;

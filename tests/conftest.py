@@ -24,6 +24,7 @@ from neosim.models.elements.system import (
     VAV,
     AirHandlingUnit,
     Boiler,
+    DamperVariant,
     Duct,
     Emission,
     EmissionVariant,
@@ -1433,4 +1434,89 @@ def buildings_free_float_single_zone_ahu_complex(
 def space_1_ideal_heating_network(space_1_ideal_heating: Space) -> Network:
     network = Network(name="space_1_ideal_heating")
     network.add_boiler_plate_spaces([space_1_ideal_heating])
+    return network
+
+
+@pytest.fixture
+def space_1_simple_ventilation_vav_control() -> Space:
+    space_1 = Space(
+        name="space_1",
+        volume=100,
+        floor_area=50,
+        height=2,
+        elevation=2,
+        occupancy=Occupancy(name="occupancy_0"),
+        external_boundaries=[
+            ExternalWall(
+                name="w1_1",
+                surface=10,
+                azimuth=Azimuth.west,
+                layer_name="layer",
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w2_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            FloorOnGround(
+                name="floor_2", surface=10, construction=Constructions.external_wall
+            ),
+            Window(
+                name="win1_1",
+                surface=1,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+        ventilation_inlets=[
+            Duct(name="pressure_drop_duct_in"),
+            VAV(
+                name="vav_in",
+                control=SpaceControl(name="vav_in_control"),
+                variant=DamperVariant.complex,
+            ),
+        ],
+        ventilation_outlets=[
+            VAV(
+                name="vav_out",
+                control=SpaceControl(name="vav_out_control"),
+                variant=DamperVariant.complex,
+            ),
+            Duct(
+                name="pressure_drop_duct_out",
+            ),
+        ],
+    )
+
+    return space_1
+
+
+@pytest.fixture
+def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space) -> Network:
+    network = Network(
+        name="vav_ventilation_control",
+        library=BuildingsLibrary(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+    package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
+    boundary = Boundary(name="boundary")
+    network.add_boiler_plate_spaces([space_1_simple_ventilation_vav_control])
+    ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
+    network.connect_systems(
+        ahu, space_1_simple_ventilation_vav_control.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation_vav_control.get_last_ventilation_outlet(), ahu
+    )
+    network.connect_elements(boundary, ahu)
+    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    network.connect_elements(boundary, weather)
     return network

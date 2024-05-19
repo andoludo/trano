@@ -1,16 +1,29 @@
 import abc
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 from networkx.classes.reportviews import NodeView
 from pydantic import BaseModel, ConfigDict, Field
 
+from neosim.library.dynamic_components import (
+    dynamic_ahu_controller_template,
+    dynamic_ahu_template,
+    dynamic_data_server_template,
+    dynamic_vav_box_template,
+    dynamic_vav_control_template,
+)
 from neosim.models.constants import Flow
-from neosim.models.elements.base import BaseElement, BaseVariant, Port
+from neosim.models.elements.base import (
+    BaseElement,
+    BaseVariant,
+    DynamicComponentTemplate,
+    Port,
+)
 from neosim.models.elements.boundary import Boundary
-from neosim.models.elements.control import Control, DataBus, SpaceControl
+from neosim.models.elements.control import AhuControl, Control, DataBus, SpaceControl
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
     AirHandlingUnit,
+    DamperVariant,
     Emission,
     EmissionVariant,
     Occupancy,
@@ -28,6 +41,7 @@ class LibraryData(BaseModel):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
+    component_template: Optional[DynamicComponentTemplate] = None
     ports_factory: Callable[[], List[Port]]
     variant: str = BaseVariant.default
 
@@ -194,12 +208,34 @@ class BaseInternalElement(LibraryData):
 
 class BaseSpaceControl(LibraryData):
     template: str = """
-    {{package_name}}.Common.Controls.SpaceControls.PID
-    {{ element.name }}(setPoint = 295.15, yMax = 1, yMin = 0)"""
+    {{package_name}}.Common.Controls.ventilation.VAVControl{{ element.name | capitalize}}
+    {{ element.name }}"""
+    component_template: str = dynamic_vav_control_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
-            Port(targets=[Space], names=["port"]),
-            Port(targets=[System], names=["y"]),
+            Port(
+                targets=[System, DataBus],
+                names=["dataBus"],
+                multi_connection=True,
+                use_counter=False,
+            ),
+        ]
+    )
+
+
+class BaseAhuControl(LibraryData):
+    template: str = """
+    {{package_name}}.Common.Controls.ventilation.AhuControl{{ element.name | capitalize}}
+    {{ element.name }}"""
+    component_template: str = dynamic_ahu_controller_template
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(
+                targets=[System, DataBus],
+                names=["dataBus"],
+                multi_connection=True,
+                use_counter=False,
+            ),
         ]
     )
 
@@ -232,23 +268,63 @@ class BaseDamper(LibraryData):
     )
 
 
+class BaseDamperDetailed(LibraryData):
+    variant: str = DamperVariant.complex
+    template: str = """  {{ package_name }}.Common.Fluid.Ventilation.VAVBox{{ element.name | capitalize }}
+     {{ element.name }}(
+    redeclare package MediumA = Medium,
+    mCooAir_flow_nominal=100*1.2/3600,
+    mHeaAir_flow_nominal=100*1.2/3600,
+    VRoo=100,
+    allowFlowReversal=false,
+    THeaWatInl_nominal=90,
+    THeaWatOut_nominal=60,
+    THeaAirInl_nominal=30,
+    THeaAirDis_nominal=25
+    )"""
+    component_template: DynamicComponentTemplate = dynamic_vav_box_template
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(names=["port_aAir"], flow=Flow.inlet),
+            Port(names=["port_bAir"], flow=Flow.outlet),
+            Port(
+                targets=[Control, DataBus],
+                names=["dataBus"],
+                multi_connection=True,
+                use_counter=False,
+            ),
+        ]
+    )
+
+
 class BaseAirHandlingUnit(LibraryData):
-    template: str = """{{package_name}}.Common.Fluid.Ventilation.SimpleHVACBuildings
+    template: str = """{{package_name}}.Common.Fluid.Ventilation.Ahu{{ element.name | capitalize}}
     {{ element.name }}
-    (redeclare package Medium = Medium)"""
+    (redeclare package MediumA = Medium)"""
+    component_template: DynamicComponentTemplate = dynamic_ahu_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
+                targets=[System],
                 names=["port_a"],
                 flow=Flow.inlet,
                 multi_connection=True,
                 use_counter=False,
             ),
             Port(
+                targets=[System],
                 names=["port_b"],
                 flow=Flow.outlet,
                 multi_connection=True,
                 use_counter=False,
+            ),
+            Port(
+                targets=[Boundary],
+                names=["ports"],
+            ),
+            Port(
+                targets=[AhuControl],
+                names=["dataBus"],
             ),
         ]
     )
@@ -285,9 +361,10 @@ class BaseVentilationControl(LibraryData):
 
 
 class BaseDataBus(LibraryData):
-    template: str = """    {{package_name}}.Common.Controls.SpaceControls.DataServer
+    template: str = """    {{package_name}}.Common.Controls.ventilation.DataServer
     {{ element.name }} (redeclare package
       Medium = Medium)"""
+    component_template: DynamicComponentTemplate = dynamic_data_server_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -299,6 +376,12 @@ class BaseDataBus(LibraryData):
                 flow=Flow.inlet,
                 multi_connection=True,
                 use_counter=True,
+            ),
+            Port(
+                targets=[System, Control],
+                names=["dataBus"],
+                multi_connection=True,
+                use_counter=False,
             ),
         ]
     )
@@ -351,7 +434,7 @@ class DefaultLibrary(BaseModel):
         default=[LibraryData(ports_factory=list)]
     )
     mergedwindows: List[LibraryData] = Field(default=[LibraryData(ports_factory=list)])
-    damper: List[LibraryData] = Field(default=[BaseDamper()])
+    damper: List[LibraryData] = Field(default=[BaseDamper(), BaseDamperDetailed()])
     airhandlingunit: List[LibraryData] = Field(default=[BaseAirHandlingUnit()])
     duct: List[LibraryData] = Field(default=[BaseDuct()])
     spacesubstanceventilationcontrol: List[LibraryData] = Field(
@@ -359,6 +442,7 @@ class DefaultLibrary(BaseModel):
     )
     databus: List[LibraryData] = Field(default=[BaseDataBus()])
     boundary: List[LibraryData] = Field(default=[BaseBoundary()])
+    ahucontrol: List[LibraryData] = Field(default=[BaseAhuControl()])
 
     def _get_field_value(self, element: BaseElement) -> Any:  # noqa: ANN401
         element_names = [
@@ -390,6 +474,11 @@ class DefaultLibrary(BaseModel):
             return element.annotation_template
         return self._get_field_value(element).annotation_template
 
+    def assign_component_template(self, element: BaseElement) -> Any:  # noqa : ANN401
+        if element.component_template:
+            return element.component_template
+        return self._get_field_value(element).component_template
+
     def assign_template(self, element: BaseElement) -> Any:  # noqa : ANN401
         if element.template:
             return element.template
@@ -399,6 +488,7 @@ class DefaultLibrary(BaseModel):
         element.ports = self.assign_ports(element)
         element.template = self.assign_template(element)
         element.annotation_template = self.assign_annotation_template(element)
+        element.component_template = self.assign_component_template(element)
         return element
 
     @abc.abstractmethod
