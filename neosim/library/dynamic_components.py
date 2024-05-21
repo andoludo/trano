@@ -40,20 +40,30 @@ dynamic_ahu_template = DynamicComponentTemplate(
             ),
         ],
         real_outputs=[
-            RealOutput(name="TOut", target="element.name", component="TOut", port="T"),
+            RealOutput(
+                name="TOut", target="element.control.name", component="TOut", port="T"
+            ),
             RealOutput(
                 name="VAirOut_flow",
-                target="element.name",
+                target="element.control.name",
                 component="VOut1",
                 port="V_flow",
             ),
             RealOutput(
-                name="TAirSup", target="element.name", component="TSup", port="T"
+                name="TAirSup",
+                target="element.control.name",
+                component="TSup",
+                port="T",
             ),
-            RealOutput(name="TMix", target="element.name", component="TMix", port="T"),
+            RealOutput(
+                name="TAirMix",
+                target="element.control.name",
+                component="TMix",
+                port="T",
+            ),
             RealOutput(
                 name="dpDuc",
-                target="element.name",
+                target="element.control.name",
                 component="dpDisSupFan",
                 port="p_rel",
             ),
@@ -126,8 +136,10 @@ equation
  """,
     category="ventilation",
     bus=ControllerBus(
+        real_inputs=[
+            RealInput(name="yDam", target="element.name", component="vav", port="y")
+        ],
         real_outputs=[
-            RealOutput(name="yDam", target="element.name", component="vav", port="y"),
             RealOutput(
                 name="y_actual",
                 target="element.name",
@@ -136,12 +148,12 @@ equation
             ),
             RealOutput(
                 name="VDis_flow",
-                target="element.name",
+                target="element.control.name",
                 component="senVolFlo",
                 port="V_flow",
             ),
             RealOutput(
-                name="TDis", target="element.name", component="senTem", port="T"
+                name="TDis", target="element.control.name", component="senTem", port="T"
             ),
         ],
     ),

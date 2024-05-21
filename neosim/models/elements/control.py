@@ -1,22 +1,20 @@
 from typing import TYPE_CHECKING, List, Optional
 
-from pydantic import Field
-
 from neosim.models.elements.base import BaseElement
 
 if TYPE_CHECKING:
-    from neosim.models.elements.space import Space
+    pass
 
 
 class Control(BaseElement):
     name: str
     position: Optional[List[float]] = None
     controllable_element: Optional[BaseElement] = None
+    space_name: Optional[str] = None
 
 
 class SpaceControl(Control):
-    space: Optional["Space"] = None
-    neighbors: List[BaseElement] = Field(default=[])
+    ahu: BaseElement = None
 
 
 class SpaceVentilationControl(Control):

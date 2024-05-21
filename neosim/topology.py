@@ -13,7 +13,7 @@ from neosim.library.base import DefaultLibrary
 from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
-from neosim.models.elements.control import Control, DataBus, SpaceControl
+from neosim.models.elements.control import Control, DataBus
 from neosim.models.elements.space import Space, _get_controllable_element
 from neosim.models.elements.system import AirHandlingUnit, System, Weather
 from neosim.models.elements.wall import InternalElement
@@ -36,7 +36,7 @@ class Network:
         node = self.library.assign_properties(node)
         if node not in self.graph.nodes:
             self.graph.add_node(node)
-        if hasattr(node, "control") and node.control:
+        if isinstance(node, System) and node.control:
             if node.control not in self.graph.nodes:
                 node_control = self.library.assign_properties(node.control)
                 self.graph.add_node(node_control)
@@ -56,7 +56,7 @@ class Network:
                 boundary,
             )
         self._build_space_emission(space)  # TODO: perhaps move to space
-        self._build_control(space)  # TODO: perhaps move to space
+        # self._build_control(space)  # TODO: perhaps move to space
         self._build_occupancy(space)
         self._build_space_ventilation(space)
         # self._build_ventilation_control(space)
@@ -96,21 +96,22 @@ class Network:
             self._add_subsequent_systems(space.emissions)
 
     def _build_control(self, space: "Space") -> None:
-        if space.control:
-            self.add_node(space.control)
-            self.graph.add_edge(
-                space.control,
-                space,
-            )
-            for space_emission in space.emissions:
-                self.library.assign_properties(space_emission)
-            controllable_emission = space.get_controllable_emission()
-            if controllable_emission is None:
-                raise Exception(
-                    f"Space {space.name} is controllable but is "
-                    f"not linked to controllable emission."
-                )
-            self.graph.add_edge(space.control, controllable_emission)
+        ...
+        # if space.control:
+        #     self.add_node(space.control)
+        #     self.graph.add_edge(
+        #         space.control,
+        #         space,
+        #     )
+        #     for space_emission in space.emissions:
+        #         self.library.assign_properties(space_emission)
+        #     controllable_emission = space.get_controllable_emission()
+        #     if controllable_emission is None:
+        #         raise Exception(
+        #             f"Space {space.name} is controllable but is "
+        #             f"not linked to controllable emission."
+        #         )
+        #     self.graph.add_edge(space.control, controllable_emission)
 
     def _build_data_bus(self) -> DataBus:
 
@@ -149,10 +150,6 @@ class Network:
                     + list(self.graph.successors(space.get_last_ventilation_outlet()))
                 )
             )
-            for ventilation_element in (
-                space.ventilation_inlets + space.ventilation_outlets
-            ):
-                self.library.assign_properties(ventilation_element)
             controllable_ventilation_elements = list(
                 filter(
                     None,
@@ -163,26 +160,10 @@ class Network:
                 )
             )
             for controllable_element in controllable_ventilation_elements:
-                if not controllable_element.control:
-                    raise Exception(
-                        f"Controllable element {controllable_element.name} "
-                        f"does not have a control."
-                    )
-                if not isinstance(controllable_element.control, SpaceControl):
-                    raise Exception(
-                        f"Controllable element {controllable_element.name} "
-                        f"control is not a SpaceControl."
-                    )
-                self.add_node(controllable_element)
-                self.add_node(controllable_element.control)
-                self.graph.add_edge(space, controllable_element.control)
-                self.graph.add_edge(controllable_element, controllable_element.control)
-                self._assign_position(
-                    controllable_element, controllable_element.control
-                )
-                controllable_element.control.controllable_element = controllable_element
-                controllable_element.control.space = space
-                controllable_element.control.neighbors = neighbors
+                if controllable_element.control:
+                    controllable_element.control.ahu = [
+                        n for n in neighbors if isinstance(n, AirHandlingUnit)
+                    ][0]
 
     def _build_occupancy(self, space: "Space") -> None:
         if space.occupancy:
@@ -336,7 +317,7 @@ class Network:
         ports["IntegerInput"] = set(ports["IntegerInput"])
         ports["BooleanOutput"] = set(ports["BooleanOutput"])
         ports["BooleanInput"] = set(ports["BooleanInput"])
-
+        ports["RealInput"] - ports["RealOutput"].intersection(ports["RealInput"])
         self.generate_graphs()
 
         self._connect_space_controls()

@@ -6,7 +6,7 @@
             "port": "TZon",
             "name": "TZon",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression TZon(y=0.0);"
         },
         {
@@ -14,7 +14,7 @@
             "port": "TCooSet",
             "name": "TCooSet",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression TCooSet(y=0.0);"
         },
         {
@@ -22,7 +22,7 @@
             "port": "THeaSet",
             "name": "THeaSet",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression THeaSet(y=0.0);"
         },
         {
@@ -30,7 +30,7 @@
             "port": "ppmCO2Set",
             "name": "ppmCO2Set",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression ppmCO2Set(y=0.0);"
         },
         {
@@ -38,7 +38,7 @@
             "port": "ppmCO2",
             "name": "ppmCO2",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression ppmCO2(y=0.0);"
         },
         {
@@ -46,7 +46,7 @@
             "port": "TDis",
             "name": "TDis",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.name",
             "default_template": "Modelica.Blocks.Sources.RealExpression TDis(y=0.0);"
         },
         {
@@ -54,15 +54,15 @@
             "port": "VDis_flow",
             "name": "VDis_flow",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.name",
             "default_template": "Modelica.Blocks.Sources.RealExpression VDis_flow(y=0.0);"
         },
         {
             "component": "rehBoxCon",
             "port": "TSup",
-            "name": "TSup",
+            "name": "TAirSup",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.ahu.control.name",
             "default_template": "Modelica.Blocks.Sources.RealExpression TSup(y=0.0);"
         },
         {
@@ -70,7 +70,7 @@
             "port": "TSupSet",
             "name": "TSupSet",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression TSupSet(y=0.0);"
         }
     ],
@@ -145,7 +145,7 @@
             "port": "uOpeMod",
             "name": "uOpeMod",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.IntegerExpression uOpeMod(y=0.0);"
         },
         {
@@ -153,7 +153,7 @@
             "port": "oveFloSet",
             "name": "oveFloSet",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.IntegerExpression oveFloSet(y=0.0);"
         },
         {
@@ -161,7 +161,7 @@
             "port": "oveDamPos",
             "name": "oveDamPos",
             "default": 0.0,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.IntegerExpression oveDamPos(y=0.0);"
         }
     ],
@@ -236,7 +236,7 @@
             "port": "u1Win",
             "name": "u1Win",
             "default": false,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1Win(y=False);"
         },
         {
@@ -244,7 +244,7 @@
             "port": "u1Occ",
             "name": "u1Occ",
             "default": false,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1Occ(y=False);"
         },
         {
@@ -252,7 +252,7 @@
             "port": "uHeaOff",
             "name": "uHeaOff",
             "default": false,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression uHeaOff(y=False);"
         },
         {
@@ -260,7 +260,7 @@
             "port": "u1Fan",
             "name": "u1Fan",
             "default": false,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1Fan(y=False);"
         },
         {
@@ -268,7 +268,7 @@
             "port": "u1HotPla",
             "name": "u1HotPla",
             "default": false,
-            "target": "element.space.name",
+            "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1HotPla(y=False);"
         }
     ],

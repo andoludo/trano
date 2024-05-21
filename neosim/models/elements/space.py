@@ -4,9 +4,6 @@ from networkx import Graph
 from pydantic import Field, computed_field
 
 from neosim.models.elements.base import BaseElement
-from neosim.models.elements.control import (
-    SpaceControl,
-)
 from neosim.models.elements.merged_wall import (
     MergedBaseWall,
     MergedExternalWall,
@@ -48,8 +45,18 @@ class Space(BaseElement):
     emissions: List[System] = Field(default=[])
     ventilation_inlets: List[System] = Field(default=[])
     ventilation_outlets: List[System] = Field(default=[])
-    control: Optional[SpaceControl] = None
+    # control: Optional[SpaceControl] = None
     occupancy: Optional[Occupancy] = None
+
+    def model_post_init(self, __context):
+        self._assign_space()
+
+    def _assign_space(self):
+        for emission in (
+            self.emissions + self.ventilation_inlets + self.ventilation_outlets
+        ):
+            if emission.control:
+                emission.control.space_name = self.name
 
     @computed_field  # type: ignore
     @property
@@ -106,8 +113,8 @@ class Space(BaseElement):
         y = self.position[1]
         for i, emission in enumerate(self.emissions):
             emission.position = [x + i * 30, y - 75]
-        if self.control:
-            self.control.position = [x - 50, y - 50]
+        # if self.control:
+        #     self.control.position = [x - 50, y - 50]
         if self.occupancy:
             self.occupancy.position = [x - 50, y]
 
