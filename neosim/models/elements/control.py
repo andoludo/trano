@@ -33,6 +33,9 @@ class AhuControl(Control):
     vavs: Optional[List[str]] = None
 
 
+class EmissionControl(Control):
+    ...
+
 class DataBus(BaseElement):
     name: str
     position: Optional[List[float]] = None

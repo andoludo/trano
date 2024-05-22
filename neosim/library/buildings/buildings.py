@@ -98,7 +98,7 @@ class BuildingsLibrary(DefaultLibrary):
     valve: List[LibraryData] = Field(
         default=[
             BaseValve(
-                template="""    Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage
+                template="""    {{package_name}}.Common.Fluid.Ventilation.TwoWayEqualPercentage{{ element.name | capitalize}} 
             {{ element.name }}(
     redeclare package Medium = MediumW,
     dpValve_nominal(displayUnit="Pa") = dpVal_nominal,

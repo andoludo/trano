@@ -18,6 +18,7 @@ from neosim.models.elements.control import (
     Control,
     SpaceControl,
     SpaceSubstanceVentilationControl,
+    EmissionControl,
 )
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
@@ -725,8 +726,10 @@ def space_1() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        emissions=[Valve(name="valve"), Emission(name="emission")],
-        control=SpaceControl(name="space_control"),
+        emissions=[
+            Valve(name="valve", control=EmissionControl(name="emission_valve_control")),
+            Emission(name="emission"),
+        ],
     )
     return space_1
 

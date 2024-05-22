@@ -234,3 +234,54 @@ end DataServer;
         ],
     ),
 )
+
+dynamic_emission_control_template = DynamicComponentTemplate(
+    template="""model EmissionControl{{ element.name | capitalize}}
+Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops emissionControl()
+{% raw %}annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); {% endraw %}
+{{bus_template}}
+equation
+{{bus_ports | safe}}
+end EmissionControl{{ element.name  | capitalize}};""",
+    category="control",
+    bus=ControllerBus(
+        real_outputs=[
+            RealOutput(
+
+                name="yCoo",
+                target="element.controllable_element.name",
+                component="emissionControl",
+                port="yCoo",
+            ),
+            RealOutput(
+
+                name="yHea",
+                target="element.controllable_element.name",
+                component="emissionControl",
+                port="yHea",
+            ),
+        ],
+        real_inputs=[
+            RealInput(
+                default=25,
+                name="TCooSet",
+                target="element.space_name",
+                component="emissionControl",
+                port="TCooSet",
+            ),
+            RealInput(
+                default=21,
+                name="THeaSet",
+                target="element.space_name",
+                component="emissionControl",
+                port="THeaSet",
+            ),
+            RealInput(
+                name="TZon",
+                target="element.space_name",
+                component="emissionControl",
+                port="TZon",
+            ),
+        ],
+    ),
+)

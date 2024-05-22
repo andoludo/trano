@@ -156,8 +156,14 @@ class ControllerBus(BaseModel):
                                 f"{input.component}[{i+1}].{input.port});"
                             )
                 else:
-                    ports.append(
-                        f"connect(dataBus.{input.name}{target_value.capitalize()}, "
-                        f"{input.component}.{input.port});"
-                    )
+                    if input.port:
+                        ports.append(
+                            f"connect(dataBus.{input.name}{target_value.capitalize()}, "
+                            f"{input.component}.{input.port});"
+                        )
+                    else:
+                        ports.append(
+                            f"connect(dataBus.{input.name}{target_value.capitalize()}, "
+                            f"{input.component});"
+                        )
         return ports

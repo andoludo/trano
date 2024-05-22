@@ -142,3 +142,8 @@ def test_space_1_ideal_heating_network(
     with create_mos_file(space_1_ideal_heating_network) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
+
+def test_simulate_vav_ventilation_control(vav_ventilation_control: Network,container: docker.models.containers.Container) -> None:
+    with create_mos_file(vav_ventilation_control) as mos_file_name:
+        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
+        assert is_success(results)
