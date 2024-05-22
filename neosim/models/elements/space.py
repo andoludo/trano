@@ -71,9 +71,7 @@ class Space(BaseElement):
     @computed_field  # type: ignore
     @property
     def number_ventilation_ports(self) -> int:
-        return (
-            bool(self.ventilation_inlets) + bool(self.ventilation_outlets)
-        ) + 1  # databus
+        return 2 + 1  # databus
 
     @computed_field  # type: ignore
     @property

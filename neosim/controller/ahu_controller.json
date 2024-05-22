@@ -26,53 +26,43 @@
             "default_template": "Modelica.Blocks.Sources.RealExpression TAirSup(y=0.0);"
         },
         {
-            "component": "mulAHUCon",
-            "port": "VSumAdjPopBreZon_flow",
-            "name": "VSumAdjPopBreZon_flow",
+            "component": "sumZon",
+            "port": "VAdjPopBreZon_flow",
+            "name": "VAdjPopBreZon_flow",
             "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression VSumAdjPopBreZon_flow(y=0.0);"
+            "target": "[vav.control.name for vav in element.vavs]",
+            "default_template": "Modelica.Blocks.Sources.RealExpression VSumAdjPopBreZon_flow(y=0.0);",
+            "multi": true
         },
         {
-            "component": "mulAHUCon",
-            "port": "VSumAdjAreBreZon_flow",
-            "name": "VSumAdjAreBreZon_flow",
+            "component": "sumZon",
+            "port": "VAdjAreBreZon_flow",
+            "name": "VAdjAreBreZon_flow",
             "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression VSumAdjAreBreZon_flow(y=0.0);"
+            "target": "[vav.control.name for vav in element.vavs]",
+            "default_template": "Modelica.Blocks.Sources.RealExpression VSumAdjAreBreZon_flow(y=0.0);",
+            "multi": true
         },
         {
-            "component": "mulAHUCon",
-            "port": "VSumZonPri_flow",
-            "name": "VSumZonPri_flow",
+            "component": "sumZon",
+            "port": "VZonPri_flow",
+            "name": "VDis_flow",
             "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression VSumZonPri_flow(y=0.0);"
+            "target": "[vav.control.name for vav in element.vavs]",
+            "default_template": "Modelica.Blocks.Sources.RealExpression VSumZonPri_flow(y=0.0);",
+            "multi": true
         },
-        {
-            "component": "mulAHUCon",
-            "port": "uOutAirFra_max",
-            "name": "uOutAirFra_max",
+                {
+            "component": "sumZon",
+            "port": "VMinOA_flow",
+            "name": "VMinOA_flow",
             "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression uOutAirFra_max(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "VSumZonAbsMin_flow",
-            "name": "VSumZonAbsMin_flow",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression VSumZonAbsMin_flow(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "VSumZonDesMin_flow",
-            "name": "VSumZonDesMin_flow",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression VSumZonDesMin_flow(y=0.0);"
-        },
+            "target": "[vav.control.name for vav in element.vavs]",
+            "default_template": "Modelica.Blocks.Sources.RealExpression VMinOA_flow(y=0.0);",
+                "multi": true},
+
+
+
         {
             "component": "mulAHUCon",
             "port": "VAirOut_flow",
@@ -81,46 +71,8 @@
             "target": "element.name",
             "default_template": "Modelica.Blocks.Sources.RealExpression VAirOut_flow(y=0.0);"
         },
-        {
-            "component": "mulAHUCon",
-            "port": "uCO2Loo_max",
-            "name": "uCO2Loo_max",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression uCO2Loo_max(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "dpMinOutDam",
-            "name": "dpMinOutDam",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression dpMinOutDam(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "TAirRet",
-            "name": "TAirRet",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression TAirRet(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "hAirOut",
-            "name": "hAirOut",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression hAirOut(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "hAirRet",
-            "name": "hAirRet",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression hAirRet(y=0.0);"
-        },
+
+
         {
             "component": "mulAHUCon",
             "port": "TAirMix",
@@ -128,31 +80,8 @@
             "default": 0.0,
             "target": "element.name",
             "default_template": "Modelica.Blocks.Sources.RealExpression TAirMix(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "dpBui",
-            "name": "dpBui",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression dpBui(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "VAirSup_flow",
-            "name": "VAirSup_flow",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression VAirSup_flow(y=0.0);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "VAirRet_flow",
-            "name": "VAirRet_flow",
-            "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.RealExpression VAirRet_flow(y=0.0);"
         }
+
     ],
     "real_outputs": [
         {
@@ -256,21 +185,31 @@
             "target": "element.name",
             "default_template": "Modelica.Blocks.Sources.IntegerExpression uAhuOpeMod(y=0.0);"
         },
-        {
-            "component": "mulAHUCon",
-            "port": "uZonPreResReq",
-            "name": "uZonPreResReq",
+                {
+            "component": "sumZon",
+            "port": "uOpeMod[1]",
+            "name": "uAhuOpeMod",
             "default": 0.0,
             "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.IntegerExpression uZonPreResReq(y=0.0);"
+            "default_template": "Modelica.Blocks.Sources.IntegerExpression uAhuOpeMod(y=0.0);"
         },
         {
-            "component": "mulAHUCon",
-            "port": "uZonTemResReq",
-            "name": "uZonTemResReq",
+            "component": "preRetReq",
+            "port": "u",
+            "name": "yZonPreResReq",
             "default": 0.0,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.IntegerExpression uZonTemResReq(y=0.0);"
+            "target": "[vav.control.name for vav in element.vavs]",
+            "default_template": "Modelica.Blocks.Sources.IntegerExpression uZonPreResReq(y=0.0);",
+            "multi": true
+        },
+        {
+            "component": "temResReq",
+            "port": "u",
+            "name": "yZonTemResReq",
+            "default": 0.0,
+            "target": "[vav.control.name for vav in element.vavs]",
+            "default_template": "Modelica.Blocks.Sources.IntegerExpression uZonTemResReq(y=0.0);",
+            "multi": true
         }
     ],
     "integer_outputs": [
@@ -315,33 +254,9 @@
             "component": "mulAHUCon",
             "port": "u1SupFan",
             "name": "u1SupFan",
-            "default": false,
+            "default": "false",
             "target": "element.name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1SupFan(y=False);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "u1FreSta",
-            "name": "u1FreSta",
-            "default": false,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.BooleanExpression u1FreSta(y=False);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "u1SofSwiRes",
-            "name": "u1SofSwiRes",
-            "default": false,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.BooleanExpression u1SofSwiRes(y=False);"
-        },
-        {
-            "component": "mulAHUCon",
-            "port": "u1RelFan",
-            "name": "u1RelFan",
-            "default": false,
-            "target": "element.name",
-            "default_template": "Modelica.Blocks.Sources.BooleanExpression u1RelFan(y=False);"
         }
     ],
     "boolean_outputs": [
@@ -349,42 +264,42 @@
             "component": "mulAHUCon",
             "port": "y1MinOutDam",
             "name": "y1MinOutDam",
-            "default": false,
+            "default": "false",
             "target": "element.controllable_element.name"
         },
         {
             "component": "mulAHUCon",
             "port": "y1EneCHWPum",
             "name": "y1EneCHWPum",
-            "default": false,
+            "default": "false",
             "target": "element.controllable_element.name"
         },
         {
             "component": "mulAHUCon",
             "port": "y1SupFan",
             "name": "y1SupFan",
-            "default": false,
+            "default": "false",
             "target": "element.controllable_element.name"
         },
         {
             "component": "mulAHUCon",
             "port": "y1RetFan",
             "name": "y1RetFan",
-            "default": false,
+            "default": "false",
             "target": "element.controllable_element.name"
         },
         {
             "component": "mulAHUCon",
             "port": "y1RelFan",
             "name": "y1RelFan",
-            "default": false,
+            "default": "false",
             "target": "element.controllable_element.name"
         },
         {
             "component": "mulAHUCon",
             "port": "y1RelDam",
             "name": "y1RelDam",
-            "default": false,
+            "default": "false",
             "target": "element.controllable_element.name"
         }
     ]

@@ -101,21 +101,21 @@
             "port": "VAdjPopBreZon_flow",
             "name": "VAdjPopBreZon_flow",
             "default": 0.0,
-            "target": "element.controllable_element.name"
+            "target": "element.name"
         },
         {
             "component": "rehBoxCon",
             "port": "VAdjAreBreZon_flow",
             "name": "VAdjAreBreZon_flow",
             "default": 0.0,
-            "target": "element.controllable_element.name"
+            "target": "element.name"
         },
         {
             "component": "rehBoxCon",
             "port": "VMinOA_flow",
             "name": "VMinOA_flow",
             "default": 0.0,
-            "target": "element.controllable_element.name"
+            "target": "element.name"
         },
         {
             "component": "rehBoxCon",
@@ -171,21 +171,21 @@
             "port": "yZonTemResReq",
             "name": "yZonTemResReq",
             "default": 0.0,
-            "target": "element.controllable_element.name"
+            "target": "element.name"
         },
         {
             "component": "rehBoxCon",
             "port": "yZonPreResReq",
             "name": "yZonPreResReq",
             "default": 0.0,
-            "target": "element.controllable_element.name"
+            "target": "element.name"
         },
         {
             "component": "rehBoxCon",
             "port": "yHeaValResReq",
             "name": "yHeaValResReq",
             "default": 0.0,
-            "target": "element.controllable_element.name"
+            "target": "element.ahu.control.name"
         },
         {
             "component": "rehBoxCon",
@@ -235,7 +235,7 @@
             "component": "rehBoxCon",
             "port": "u1Win",
             "name": "u1Win",
-            "default": false,
+            "default": "false",
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1Win(y=False);"
         },
@@ -243,7 +243,7 @@
             "component": "rehBoxCon",
             "port": "u1Occ",
             "name": "u1Occ",
-            "default": false,
+            "default": "false",
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1Occ(y=False);"
         },
@@ -251,7 +251,7 @@
             "component": "rehBoxCon",
             "port": "uHeaOff",
             "name": "uHeaOff",
-            "default": false,
+            "default": "false",
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression uHeaOff(y=False);"
         },
@@ -259,7 +259,7 @@
             "component": "rehBoxCon",
             "port": "u1Fan",
             "name": "u1Fan",
-            "default": false,
+            "default": "false",
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1Fan(y=False);"
         },
@@ -267,7 +267,7 @@
             "component": "rehBoxCon",
             "port": "u1HotPla",
             "name": "u1HotPla",
-            "default": false,
+            "default": "false",
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.BooleanExpression u1HotPla(y=False);"
         }

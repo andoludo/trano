@@ -1,5 +1,8 @@
 from typing import TYPE_CHECKING, List, Optional
 
+from pydantic import Field
+
+from neosim.controller.parser import BaseInput
 from neosim.models.elements.base import BaseElement
 
 if TYPE_CHECKING:
@@ -26,10 +29,12 @@ class SpaceSubstanceVentilationControl(SpaceVentilationControl):
 
 
 class AhuControl(Control):
-    ...
+    spaces: Optional[List[str]] = None
+    vavs: Optional[List[str]] = None
 
 
 class DataBus(BaseElement):
     name: str
     position: Optional[List[float]] = None
     spaces: List[str]
+    non_connected_ports: List[BaseInput] = Field(default=[])

@@ -5,12 +5,20 @@ from pydantic import BaseModel, Field, computed_field
 
 
 class BaseInput(BaseModel):
+    name: str
     component: str
     port: str
+    multi: bool = False
+    target: str
+
+    def __hash__(self):
+        return hash((self.name, self.target))
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
 
 class RealInput(BaseInput):
-    name: str
     default: float = 0.0
     target: str = "Space"
 
@@ -22,7 +30,6 @@ class RealInput(BaseInput):
 
 
 class IntegerInput(BaseInput):
-    name: str
     default: int = 0.0
     target: str = "Space"
 
@@ -32,8 +39,7 @@ class IntegerInput(BaseInput):
 
 
 class BooleanInput(BaseInput):
-    name: str
-    default: bool = False
+    default: str = "false"
     target: str = "Space"
 
     @computed_field
@@ -42,19 +48,16 @@ class BooleanInput(BaseInput):
 
 
 class BooleanOutput(BaseInput):
-    name: str
-    default: bool = False
+    default: str = "false"
     target: str = "Controlled"
 
 
 class IntegerOutput(BaseInput):
-    name: str
     default: int = 0.0
     target: str = "Controlled"
 
 
 class RealOutput(BaseInput):
-    name: str
     default: float = 0.0
     target: str = "Controlled"
 
@@ -102,15 +105,27 @@ class ControllerBus(BaseModel):
         }
         for target, inputs in self._get_targets().items():
             target_value = eval(target)
+            if target_value is None:
+                a = 12
             for input in inputs:
                 if isinstance(target_value, list):
                     for i, target_ in enumerate(target_value):
                         ports[type(input).__name__].append(
-                            (input.name, target_.capitalize())
+                            type(input)(
+                                **(
+                                    input.model_dump()
+                                    | {"target": target_.capitalize()}
+                                )
+                            )
                         )
                 else:
                     ports[type(input).__name__].append(
-                        (input.name, target_value.capitalize())
+                        type(input)(
+                            **(
+                                input.model_dump()
+                                | {"target": target_value.capitalize()}
+                            )
+                        )
                     )
         return ports
 
@@ -120,18 +135,29 @@ class ControllerBus(BaseModel):
             target_value = eval(target)
             for input in inputs:
                 if isinstance(target_value, list):
+                    # if len(target_value) == 1:
+                    #     ports.append(
+                    #
+                    #         f"connect(dataBus.{input.name}{target_value[0].capitalize()}, "
+                    #         f"{input.component}.{input.port});"
+                    #
+                    #     )
+                    # else:
                     for i, target_ in enumerate(target_value):
-                        ports.append(
+                        if input.multi:
+                            ports.append(
+                                f"connect(dataBus.{input.name}{target_.capitalize()}, "
+                                f"{input.component}.{input.port}[{i + 1}]);"
+                            )
 
+                        else:
+                            ports.append(
                                 f"connect(dataBus.{input.name}{target_.capitalize()}, "
                                 f"{input.component}[{i+1}].{input.port});"
-
-                        )
+                            )
                 else:
                     ports.append(
-
-                            f"connect(dataBus.{input.name}{target_value.capitalize()}, "
-                            f"{input.component}.{input.port});"
-
+                        f"connect(dataBus.{input.name}{target_value.capitalize()}, "
+                        f"{input.component}.{input.port});"
                     )
         return ports

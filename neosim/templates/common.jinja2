@@ -620,7 +620,7 @@ end SimpleHVACBuildings;
     "Design mass flow rate per zone for heating"
     annotation (Dialog(group="Nominal mass flow rate"));
 
-  parameter Modelica.Units.SI.MassFlowRate mAir_flow_nominal=mCooAir_flow_nominal
+  parameter Modelica.Units.SI.MassFlowRate mAir_flow_nominal=0.01
     "Nominal mass flow rate for fan"
     annotation (Dialog(group="Nominal mass flow rate"));
   parameter Modelica.Units.SI.MassFlowRate mCooAir_flow_nominal=0.7*sum(mCooVAV_flow_nominal)
@@ -1095,7 +1095,7 @@ annotation (Dialog(group="Nominal mass flow rate"));
 annotation (Dialog(group="Nominal mass flow rate"));
 
   parameter Modelica.Units.SI.MassFlowRate mAir_flow_nominal=
-      mCooAir_flow_nominal
+      0.01
 "Nominal mass flow rate for fan"
 annotation (Dialog(group="Nominal mass flow rate"));
   parameter Modelica.Units.SI.MassFlowRate mCooAir_flow_nominal=0.7*sum(

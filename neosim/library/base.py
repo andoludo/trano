@@ -300,19 +300,23 @@ class BaseDamperDetailed(LibraryData):
 class BaseAirHandlingUnit(LibraryData):
     template: str = """{{package_name}}.Common.Fluid.Ventilation.Ahu{{ element.name | capitalize}}
     {{ element.name }}
-    (redeclare package MediumA = Medium)"""
+    (redeclare package MediumA = Medium,
+    {% raw %}
+    VRoo={100,100},
+    AFlo={20,20},
+    mCooVAV_flow_nominal={0.01,0.01}{% endraw %})"""
     component_template: DynamicComponentTemplate = dynamic_ahu_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
-                targets=[System],
+                targets=[System, Space],
                 names=["port_a"],
                 flow=Flow.inlet,
                 multi_connection=True,
                 use_counter=False,
             ),
             Port(
-                targets=[System],
+                targets=[System, Space],
                 names=["port_b"],
                 flow=Flow.outlet,
                 multi_connection=True,

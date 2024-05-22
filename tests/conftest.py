@@ -1483,16 +1483,7 @@ def space_1_simple_ventilation_vav_control() -> Space:
                 variant=DamperVariant.complex,
             ),
         ],
-        ventilation_outlets=[
-            VAV(
-                name="vav_out",
-                control=SpaceControl(name="vav_out_control"),
-                variant=DamperVariant.complex,
-            ),
-            Duct(
-                name="pressure_drop_duct_out",
-            ),
-        ],
+        ventilation_outlets=[],
     )
 
     return space_1
@@ -1513,9 +1504,7 @@ def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space) -> Ne
     network.connect_systems(
         ahu, space_1_simple_ventilation_vav_control.get_last_ventilation_inlet()
     )
-    network.connect_systems(
-        space_1_simple_ventilation_vav_control.get_last_ventilation_outlet(), ahu
-    )
+    network.connect_systems(space_1_simple_ventilation_vav_control, ahu)
     network.connect_elements(boundary, ahu)
     weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
     network.connect_elements(boundary, weather)

@@ -89,8 +89,32 @@ dynamic_ahu_controller_template = DynamicComponentTemplate(
         have_perZonRehBox=false, VUncDesOutAir_flow = VUncDesOutAir_flow, VDesTotOutAir_flow = VDesTotOutAir_flow)
         {% raw %}annotation (Placement(transformation(extent={{-12,-14},{28,74}})));{% endraw %}
 {{bus_template}}
+
+  Buildings.Controls.OBC.ASHRAE.G36.AHUs.MultiZone.VAV.SetPoints.OutdoorAirFlow.ASHRAE62_1.SumZone
+    sumZon(nZon={{element.vavs | length }}, nGro=1,     final zonGroMat=[1],
+    final zonGroMatTra=[1])
+    {% raw %}annotation (Placement(transformation(extent={{-72,32},{-52,52}})));{% endraw %}
+      Buildings.Controls.OBC.CDL.Integers.MultiSum preRetReq(final nin={{element.vavs | length }})
+    {% raw %}annotation (Placement(transformation(extent={{-72,80},{-60,92}})));{% endraw %}
+  Buildings.Controls.OBC.CDL.Integers.MultiSum temResReq(final nin={{element.vavs | length }})
+    {% raw %}annotation (Placement(transformation(extent={{-72,56},{-60,68}})));{% endraw %}
 equation
 {{bus_ports | safe}}
+{% raw %}
+  connect(sumZon.VSumAdjPopBreZon_flow, mulAHUCon.VSumAdjPopBreZon_flow)
+    annotation (Line(points={{-50,50},{-22,50},{-22,55},{-14,55}}, color={0,0,127}));
+  connect(sumZon.VSumAdjAreBreZon_flow, mulAHUCon.VSumAdjAreBreZon_flow)
+    annotation (Line(points={{-50,46},{-20,46},{-20,53},{-14,53}}, color={0,0,127}));
+  connect(sumZon.VSumZonPri_flow, mulAHUCon.VSumZonPri_flow) annotation (Line(
+        points={{-50,38},{-38,38},{-38,44},{-14,44},{-14,50}}, color={0,0,127}));
+  connect(sumZon.uOutAirFra_max, mulAHUCon.uOutAirFra_max) annotation (Line(
+        points={{-50,34},{-34,34},{-34,40},{-20,40},{-20,42},{-14,42},{-14,47}},
+        color={0,0,127}));
+      connect(temResReq.y, mulAHUCon.uZonTemResReq) annotation (Line(points={{-58.8,
+          62},{-58.8,63},{-14,63}}, color={255,127,0}));
+  connect(preRetReq.y, mulAHUCon.uZonPreResReq) annotation (Line(points={{-58.8,
+          86},{-22,86},{-22,71},{-14,71}}, color={255,127,0}));
+        {% endraw %}
 end AhuControl{{ element.name  | capitalize}};""",
     category="control",
     bus=ControllerBus.from_configuration(
@@ -101,6 +125,7 @@ end AhuControl{{ element.name  | capitalize}};""",
 dynamic_vav_control_template = DynamicComponentTemplate(
     template="""model VAVControl{{ element.name | capitalize}}
 Buildings.Controls.OBC.ASHRAE.G36.TerminalUnits.Reheat.Controller rehBoxCon(
+venStd=Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard.ASHRAE62_1,
 have_winSen=true,
 have_occSen=true,
 have_CO2Sen=true,
@@ -176,12 +201,19 @@ Modelica.Fluid.Interfaces.FluidPort_a[{{ element.spaces | length}}] port_a(redec
 = Medium){% raw %}annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
   iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  {% endraw %}
 {{bus_template}}
+{% for input in element.non_connected_ports %}
+{{ input.default_template | safe}}
+{% endfor %}
 equation
 {% for index, space in element.spaces|enumerate %}
 connect(port[{{index + 1}}],TRoo[{{index + 1}}]. port);
 connect(port_a[{{index + 1}}], TRoo1[{{index + 1}}].port);
 {% endfor %}
 {{bus_ports | safe}}
+
+{% for input in element.non_connected_ports %}
+connect(dataBus.{{ input.name }}{{ input.target }}, {{ input.name }}.y);
+{% endfor %}
 end DataServer;
       """,
     category="control",

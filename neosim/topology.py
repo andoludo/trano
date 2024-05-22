@@ -15,7 +15,13 @@ from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
 from neosim.models.elements.control import Control, DataBus
 from neosim.models.elements.space import Space, _get_controllable_element
-from neosim.models.elements.system import AirHandlingUnit, System, Weather
+from neosim.models.elements.system import (
+    VAV,
+    AirHandlingUnit,
+    System,
+    Ventilation,
+    Weather,
+)
 from neosim.models.elements.wall import InternalElement
 
 
@@ -144,12 +150,16 @@ class Network:
         spaces = [node for node in self.graph.nodes if isinstance(node, Space)]
 
         for space in spaces:
-            neighbors = list(
-                set(
-                    list(self.graph.predecessors(space.get_last_ventilation_inlet()))
-                    + list(self.graph.successors(space.get_last_ventilation_outlet()))
+            _neighbors = []
+            if space.get_last_ventilation_inlet():
+                _neighbors += list(
+                    self.graph.predecessors(space.get_last_ventilation_inlet())
                 )
-            )
+            if space.get_last_ventilation_outlet():
+                _neighbors += list(
+                    self.graph.predecessors(space.get_last_ventilation_outlet())
+                )
+            neighbors = list(set(_neighbors))
             controllable_ventilation_elements = list(
                 filter(
                     None,
@@ -290,10 +300,39 @@ class Network:
             for system_control in self._system_controls:
                 shortest_path(undirected_graph, system_control, space_control)
 
+    def get_ahu_spaces(self, ahu):
+        spaces_ = []
+        spaces = [node for node in self.graph.nodes if isinstance(node, Space)]
+        for space in spaces:
+            paths = nx.shortest_path(self.graph, ahu, space)
+            p = paths[1:-1]
+            if p and all(isinstance(p_, Ventilation) for p_ in p):
+                spaces_.append(space)
+        return spaces_
+
+    def get_ahu_vavs(self, ahu):
+        spaces_ = []
+        spaces = [node for node in self.graph.nodes if isinstance(node, VAV)]
+        for space in spaces:
+            paths = nx.shortest_path(self.graph, ahu, space)
+            p = paths[1:-1]
+            if p and all(isinstance(p_, Ventilation) for p_ in p):
+                spaces_.append(space)
+        return spaces_
+
+    def configure_ahu_control(self):
+        ahus = [node for node in self.graph.nodes if isinstance(node, AirHandlingUnit)]
+        for ahu in ahus:
+            if ahu.control:
+
+                ahu.control.spaces = self.get_ahu_spaces(ahu)
+                ahu.control.vavs = self.get_ahu_vavs(ahu)
+
     def model(self) -> str:
         Space.counter = 0
         self._build_full_space_control()
         data_bus = self._build_data_bus()
+        self.configure_ahu_control()
         ports = {
             "RealOutput": [],
             "RealInput": [],
@@ -318,6 +357,28 @@ class Network:
         ports["BooleanOutput"] = set(ports["BooleanOutput"])
         ports["BooleanInput"] = set(ports["BooleanInput"])
         ports["RealInput"] - ports["RealOutput"].intersection(ports["RealInput"])
+        ports["IntegerInput"] - ports["IntegerOutput"].intersection(
+            ports["IntegerInput"]
+        )
+        ports["BooleanInput"] - ports["BooleanOutput"].intersection(
+            ports["BooleanInput"]
+        )
+
+        data_bus.non_connected_ports = (
+            list(
+                ports["RealInput"]
+                - ports["RealOutput"].intersection(ports["RealInput"])
+            )
+            + list(
+                ports["IntegerInput"]
+                - ports["IntegerOutput"].intersection(ports["IntegerInput"])
+            )
+            + list(
+                ports["BooleanInput"]
+                - ports["BooleanOutput"].intersection(ports["BooleanInput"])
+            )
+        )
+
         self.generate_graphs()
 
         self._connect_space_controls()
