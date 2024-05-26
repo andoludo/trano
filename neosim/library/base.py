@@ -4,13 +4,15 @@ from typing import Any, Callable, Dict, List, Optional
 from networkx.classes.reportviews import NodeView
 from pydantic import BaseModel, ConfigDict, Field
 
-from neosim.controller.parser import ControllerBus, RealInput
 from neosim.library.dynamic_components import (
     dynamic_ahu_controller_template,
     dynamic_ahu_template,
+    dynamic_collector_control_template,
     dynamic_data_server_template,
+    dynamic_emission_control_template,
+    dynamic_pump_template,
     dynamic_vav_box_template,
-    dynamic_vav_control_template, dynamic_emission_control_template,
+    dynamic_vav_control_template,
 )
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
@@ -97,25 +99,9 @@ class BaseValve(LibraryData):
         default=lambda: [
             Port(names=["port_a"], flow=Flow.inlet),
             Port(names=["port_b"], flow=Flow.outlet),
-            Port(targets=[Control], names=["dataBus"]),
+            Port(targets=[Control], names=["y"]),
         ]
     )
-    component_template: DynamicComponentTemplate = DynamicComponentTemplate(
-    template="""
-model TwoWayEqualPercentage{{ element.name | capitalize}}
-extends Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage;
-{{bus_template}}
-equation
-{{bus_ports | safe}}
- end TwoWayEqualPercentage{{ element.name | capitalize}};
- """,
-    category="ventilation",
-    bus=ControllerBus(
-        real_inputs=[
-            RealInput(name="yHea", target="element.name", component="y", port="")
-        ]
-    ),
-)
 
 
 class BaseBoiler(LibraryData):
@@ -141,6 +127,11 @@ class BaseBoiler(LibraryData):
 
 
 class BasePump(LibraryData):
+    template: str = """  {{ package_name }}.Common.Fluid.Ventilation.Pump{{ element.name | capitalize }}
+     {{ element.name }}(
+    redeclare package Medium = MediumW
+    )"""
+    component_template: DynamicComponentTemplate = dynamic_pump_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -155,7 +146,12 @@ class BasePump(LibraryData):
                 multi_connection=True,
                 use_counter=False,
             ),
-            Port(targets=[Control], names=["y"]),
+            Port(
+                targets=[Control, DataBus],
+                names=["dataBus"],
+                multi_connection=True,
+                use_counter=False,
+            ),
         ]
     )
 
@@ -256,6 +252,7 @@ class BaseAhuControl(LibraryData):
         ]
     )
 
+
 class BaseEmissionControl(LibraryData):
     template: str = """
     {{package_name}}.Common.Controls.ventilation.EmissionControl{{ element.name | capitalize}}
@@ -264,13 +261,38 @@ class BaseEmissionControl(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
-                targets=[System, DataBus],
+                targets=[DataBus],
+                names=["dataBus"],
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                targets=[System],
+                names=["y"],
+                multi_connection=True,
+                use_counter=False,
+            ),
+        ]
+    )
+
+
+class BaseCollectorControl(LibraryData):
+    template: str = """
+    {{package_name}}.Common.Controls.ventilation.CollectorControl{{ element.name | capitalize}}
+    {{ element.name }}"""
+    component_template: str = dynamic_collector_control_template
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(
+                targets=[DataBus, System],
                 names=["dataBus"],
                 multi_connection=True,
                 use_counter=False,
             ),
         ]
     )
+
+
 class BaseControl(LibraryData):
     template: str = """
     Modelica.Blocks.Sources.Constant {{ element.name }}(k= 1)
@@ -479,6 +501,7 @@ class DefaultLibrary(BaseModel):
     boundary: List[LibraryData] = Field(default=[BaseBoundary()])
     ahucontrol: List[LibraryData] = Field(default=[BaseAhuControl()])
     emissioncontrol: List[LibraryData] = Field(default=[BaseEmissionControl()])
+    collectorcontrol: List[LibraryData] = Field(default=[BaseCollectorControl()])
 
     def _get_field_value(self, element: BaseElement) -> Any:  # noqa: ANN401
         element_names = [

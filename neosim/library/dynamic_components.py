@@ -185,6 +185,38 @@ equation
 )
 
 
+dynamic_pump_template = DynamicComponentTemplate(
+    template="""
+model Pump{{ element.name | capitalize}}
+extends {{ package_name }}.Common.Fluid.Ventilation.PartialPump;
+{{bus_template}}
+equation
+{{bus_ports | safe}}
+ end Pump{{ element.name | capitalize}};
+ """,
+    category="ventilation",
+    bus=ControllerBus(
+        real_inputs=[
+            RealInput(name="y", target="element.name", component="pumRad", port="y")
+        ],
+        real_outputs=[
+            RealOutput(
+                name="y_gain",
+                target="element.name",
+                component="gain",
+                port="y",
+            ),
+            RealOutput(
+                name="T",
+                target="element.control.name",
+                component="temSup",
+                port="T",
+            ),
+        ],
+    ),
+)
+
+
 dynamic_data_server_template = DynamicComponentTemplate(
     template="""
 model DataServer
@@ -239,22 +271,24 @@ dynamic_emission_control_template = DynamicComponentTemplate(
     template="""model EmissionControl{{ element.name | capitalize}}
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops emissionControl()
 {% raw %}annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); {% endraw %}
+  Modelica.Blocks.Interfaces.RealOutput y
+    {% raw %}annotation (Placement(transformation(extent={{100,-8},{120,12}})));{% endraw %}
 {{bus_template}}
 equation
+  connect(emissionControl.yHea, y) {% raw %}annotation (Line(points={{34.4,-21.2},{96,-21.2},
+          {96,2},{110,2}}, color={0,0,127}));{% endraw %}
 {{bus_ports | safe}}
 end EmissionControl{{ element.name  | capitalize}};""",
     category="control",
     bus=ControllerBus(
         real_outputs=[
             RealOutput(
-
                 name="yCoo",
                 target="element.controllable_element.name",
                 component="emissionControl",
                 port="yCoo",
             ),
             RealOutput(
-
                 name="yHea",
                 target="element.controllable_element.name",
                 component="emissionControl",
@@ -281,6 +315,74 @@ end EmissionControl{{ element.name  | capitalize}};""",
                 target="element.space_name",
                 component="emissionControl",
                 port="TZon",
+            ),
+        ],
+    ),
+)
+
+
+dynamic_collector_control_template = DynamicComponentTemplate(
+    template="""model CollectorControl{{ element.name | capitalize}}
+  Buildings.Controls.OBC.CDL.Reals.PIDWithReset
+                                      conPum(
+    yMax=1,
+    Td=60,
+    yMin=0.05,
+    k=0.5,
+    Ti=15) "Controller for pump"
+    {% raw %}annotation (Placement(transformation(extent={{54,-10},{74,10}})));{% endraw %}
+  Buildings.Controls.OBC.CDL.Reals.MultiMax
+                                  mulMax(nin={{ element.valves | length }})
+    "Maximum radiator valve position"
+    {% raw %}annotation (Placement(transformation(extent={{-76,-10},{-56,10}})));{% endraw %}
+  Buildings.Controls.OBC.CDL.Reals.Hysteresis
+                                    hysPum(uLow=0.01, uHigh=0.5)
+               "Hysteresis for pump"
+    {% raw %}annotation (Placement(transformation(extent={{-26,-10},{-6,10}})));{% endraw %}
+  Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToRea
+    "Conversion from boolean to real signal"
+    {% raw %}annotation (Placement(transformation(extent={{14,-10},{34,10}})));{% endraw %}
+    {{bus_template}}
+equation
+  connect(mulMax.y,hysPum. u) {% raw %}annotation (Line(
+      points={{-54,0},{-28,0}},
+      color={0,0,127},
+      smooth=Smooth.None));{% endraw %}
+  connect(hysPum.y,conPum. trigger) {% raw %}annotation (Line(points={{-4,0},{4,0},{4,-18},
+          {58,-18},{58,-12}},     color={255,0,255}));{% endraw %}
+  connect(hysPum.y,booToRea. u)
+    {% raw %}annotation (Line(points={{-4,0},{12,0}},   color={255,0,255}));{% endraw %}
+  connect(booToRea.y,conPum. u_s)
+    {% raw %}annotation (Line(points={{36,0},{52,0}},     color={0,0,127}));{% endraw %}
+  {% raw %}annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+        coordinateSystem(preserveAspectRatio=false)));{% endraw %}
+{{bus_ports | safe}}
+end CollectorControl{{ element.name | capitalize}};""",
+    category="control",
+    bus=ControllerBus(
+        real_outputs=[
+            RealOutput(
+                name="y",
+                target="element.controllable_element.name",
+                component="conPum",
+                port="y",
+            ),
+        ],
+        real_inputs=[
+            RealInput(
+                default=25,
+                name="y_gain",
+                target="element.controllable_element.name",
+                component="conPum",
+                port="u_m",
+            ),
+            RealInput(
+                default=25,
+                name="yHea",
+                target="[vav.name for vav in element.valves]",
+                component="mulMax",
+                multi=True,
+                port="u",
             ),
         ],
     ),

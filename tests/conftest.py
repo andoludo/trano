@@ -15,10 +15,11 @@ from neosim.models.elements.base import Port
 from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.control import (
     AhuControl,
+    CollectorControl,
     Control,
+    EmissionControl,
     SpaceControl,
     SpaceSubstanceVentilationControl,
-    EmissionControl,
 )
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
@@ -855,7 +856,7 @@ def buildings_simple_hydronic(space_1: Space) -> Network:
     network = Network(name="buildings_simple_hydronic")
     network.add_boiler_plate_spaces([space_1])
 
-    pump = Pump(name="pump", control=Control(name="pump_control"))
+    pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
     boiler = Boiler(name="boiler")
     split_valve = SplitValve(name="split_valve")
     three_way_valve = ThreeWayValve(

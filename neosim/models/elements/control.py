@@ -36,6 +36,11 @@ class AhuControl(Control):
 class EmissionControl(Control):
     ...
 
+
+class CollectorControl(Control):
+    valves: Optional[List[str]] = None
+
+
 class DataBus(BaseElement):
     name: str
     position: Optional[List[float]] = None

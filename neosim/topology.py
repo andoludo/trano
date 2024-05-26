@@ -13,12 +13,14 @@ from neosim.library.base import DefaultLibrary
 from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, connect
-from neosim.models.elements.control import Control, DataBus
+from neosim.models.elements.control import CollectorControl, Control, DataBus
 from neosim.models.elements.space import Space, _get_controllable_element
 from neosim.models.elements.system import (
     VAV,
     AirHandlingUnit,
+    Pump,
     System,
+    Valve,
     Ventilation,
     Weather,
 )
@@ -328,11 +330,31 @@ class Network:
                 ahu.control.spaces = self.get_ahu_spaces(ahu)
                 ahu.control.vavs = self.get_ahu_vavs(ahu)
 
+    def get_linked_valves(self, pump_collector):
+        valves_ = []
+        valves = [node for node in self.graph.nodes if isinstance(node, Valve)]
+        for valve in valves:
+            paths = nx.shortest_path(self.graph, pump_collector, valve)
+            p = paths[1:-1]
+            if p and all(isinstance(p_, System) for p_ in p):
+                valves_.append(valve)
+        return valves_
+
+    def configure_collector_control(self):
+        pump_collectors = [
+            node
+            for node in self.graph.nodes
+            if isinstance(node, Pump) and isinstance(node.control, CollectorControl)
+        ]
+        for pump_collector in pump_collectors:
+            pump_collector.control.valves = self.get_linked_valves(pump_collector)
+
     def model(self) -> str:
         Space.counter = 0
         self._build_full_space_control()
         data_bus = self._build_data_bus()
         self.configure_ahu_control()
+        self.configure_collector_control()
         ports = {
             "RealOutput": [],
             "RealInput": [],

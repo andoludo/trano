@@ -9,7 +9,6 @@ from neosim.library.base import (
     BaseEmission,
     BaseIdealHeatingEmission,
     BaseInternalElement,
-    BasePump,
     BaseSpace,
     BaseSplitValve,
     BaseThreeWayValve,
@@ -82,23 +81,23 @@ class BuildingsLibrary(DefaultLibrary):
             )
         ]
     )
-    pump: List[LibraryData] = Field(
-        default=[
-            BasePump(
-                template="""    Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y
-            {{ element.name }}(
-    redeclare package Medium = MediumW,
-    m_flow_nominal=mRad_flow_nominal,
-    dp_nominal=dp_nominal,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
-    """
-            )
-        ]
-    )
+    # pump: List[LibraryData] = Field(
+    #     default=[
+    #         BasePump(
+    #             template="""    Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y
+    #         {{ element.name }}(
+    # redeclare package Medium = MediumW,
+    # m_flow_nominal=mRad_flow_nominal,
+    # dp_nominal=dp_nominal,
+    # energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
+    # """
+    #         )
+    #     ]
+    # )
     valve: List[LibraryData] = Field(
         default=[
             BaseValve(
-                template="""    {{package_name}}.Common.Fluid.Ventilation.TwoWayEqualPercentage{{ element.name | capitalize}} 
+                template="""    Buildings.Fluid.Actuators.Valves.TwoWayEqualPercentage
             {{ element.name }}(
     redeclare package Medium = MediumW,
     dpValve_nominal(displayUnit="Pa") = dpVal_nominal,
