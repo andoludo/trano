@@ -19,7 +19,7 @@ from neosim.models.elements.control import (
     Control,
     EmissionControl,
     SpaceControl,
-    SpaceSubstanceVentilationControl,
+    SpaceSubstanceVentilationControl, ThreeWayValveControl,
 )
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
@@ -36,7 +36,7 @@ from neosim.models.elements.system import (
     System,
     ThreeWayValve,
     Valve,
-    Weather,
+    Weather, TemperatureSensor,
 )
 from neosim.models.elements.wall import ExternalWall, FloorOnGround, Window
 from neosim.topology import Network
@@ -787,8 +787,7 @@ def space_2() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        emissions=[Valve(name="valve_2"), Emission(name="emission_2")],
-        control=SpaceControl(name="space_control_2"),
+        emissions=[Valve(name="valve_2", control=EmissionControl(name="emission_valve_control_2")), Emission(name="emission_2")],
     )
     return space_2
 
@@ -852,6 +851,32 @@ def space_3() -> Space:
 
 
 @pytest.fixture
+def buildings_simple_hydronic_two_zones_new(space_1: Space, space_2: Space) -> Network:
+    network = Network(name="buildings_simple_hydronic_two_zones")
+    network.add_boiler_plate_spaces([space_1, space_2])
+
+    pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
+    boiler = Boiler(name="boiler")
+    split_valve = SplitValve(name="split_valve")
+    three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
+    three_way_valve = ThreeWayValve(
+        name="three_way_valve", control=three_way_valve_control
+    )
+    temperature_sensor = TemperatureSensor(name="temperature_sensor")
+    network.connect_systems(temperature_sensor, space_1.first_emission())
+    network.connect_systems(temperature_sensor, space_2.first_emission())
+    network.connect_systems(space_1.last_emission(), split_valve)
+    network.connect_systems(space_2.last_emission(), split_valve)
+    network.connect_systems(pump, temperature_sensor)
+    network.connect_systems(three_way_valve, pump)
+    network.connect_systems(boiler, three_way_valve)
+    network.connect_systems(three_way_valve, split_valve)
+    network.connect_systems(split_valve, boiler)
+    network.connect_systems(three_way_valve_control, temperature_sensor)
+
+    return network
+
+@pytest.fixture
 def buildings_simple_hydronic(space_1: Space) -> Network:
     network = Network(name="buildings_simple_hydronic")
     network.add_boiler_plate_spaces([space_1])
@@ -862,6 +887,7 @@ def buildings_simple_hydronic(space_1: Space) -> Network:
     three_way_valve = ThreeWayValve(
         name="three_way_valve", control=Control(name="three_way_valve_control")
     )
+    temperature_sensor = TemperatureSensor(name="temperature_sensor")
     network.connect_systems(three_way_valve, space_1.first_emission())
     network.connect_systems(space_1.last_emission(), split_valve)
     network.connect_systems(boiler, pump)

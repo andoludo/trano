@@ -80,6 +80,11 @@ def test_template_buildings_free_float_three_zones(
     )
 
 
+def test_buildings_simple_hydronic_two_zones_new(buildings_simple_hydronic_two_zones_new):
+    model_ = buildings_simple_hydronic_two_zones_new.model()
+    assert clean_model(model_, buildings_simple_hydronic_two_zones_new.name) == set(
+        _read(buildings_simple_hydronic_two_zones_new.name)
+    )
 def test_template_buildings_simple_hydronic(
     buildings_simple_hydronic: Network,
 ) -> None:

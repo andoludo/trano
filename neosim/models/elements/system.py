@@ -10,6 +10,10 @@ class System(BaseElement):
     position: Optional[List[float]] = None
     control: Optional["Control"] = None
 
+class Sensor(System):
+    ...
+class TemperatureSensor(Sensor):
+    ...
 
 class EmissionVariant(BaseVariant):
     radiator: str = "radiator"

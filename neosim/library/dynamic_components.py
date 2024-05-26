@@ -1,6 +1,12 @@
 from pathlib import Path
 
-from neosim.controller.parser import ControllerBus, IntegerOutput, RealInput, RealOutput
+from neosim.controller.parser import (
+    ControllerBus,
+    IntegerOutput,
+    RealInput,
+    RealOutput,
+    BooleanInput,
+)
 from neosim.models.elements.base import DynamicComponentTemplate
 
 dynamic_ahu_template = DynamicComponentTemplate(
@@ -384,6 +390,89 @@ end CollectorControl{{ element.name | capitalize}};""",
                 multi=True,
                 port="u",
             ),
+        ],
+    ),
+)
+
+
+dynamic_three_way_valve_control_template = DynamicComponentTemplate(
+    template="""model ThreeWayValveControl{{ element.name | capitalize}}
+  Buildings.Controls.OBC.CDL.Reals.PIDWithReset
+                                      conVal(
+    yMax=1,
+    yMin=0,
+    xi_start=1,
+    Td=60,
+    k=0.1,
+    Ti=120) "Controller for pump"
+    {% raw %}annotation (Placement(transformation(extent={{-12,-10},{8,10}})));{% endraw %}
+  Modelica.Blocks.Interfaces.RealOutput y
+    {% raw %}annotation (Placement(transformation(extent={{100,-10},{120,10}})));{% endraw %}
+  Modelica.Blocks.Interfaces.RealInput u
+    {% raw %}annotation (Placement(transformation(extent={{-138,-20},{-98,20}})));{% endraw %}
+        {{bus_template}}
+equation 
+{{bus_ports | safe}}
+  connect(conVal.y, y)
+    {% raw %}annotation (Line(points={{10,0},{110,0}}, color={0,0,127}));{% endraw %}
+  connect(u, conVal.u_m) {% raw %}annotation (Line(points={{-118,0},{-22,0},{-22,-20},{0,
+          -20},{0,-16},{-2,-16},{-2,-12}}, color={0,0,127}));{% endraw %}
+  {% raw %}annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+        coordinateSystem(preserveAspectRatio=false)));{% endraw %}
+end ThreeWayValveControl{{ element.name | capitalize}};""",
+    category="control",
+    bus=ControllerBus(
+        real_inputs=[
+            RealInput(
+                default=90,
+                name="TColSet",
+                target="element.name",
+                component="conVal",
+                port="u_s",
+            ),
+        ],
+        boolean_inputs=[
+            BooleanInput(
+                default="true",
+                name="trigger",
+                target="element.name",
+                component="conVal",
+                port="trigger",
+            ),
+        ],
+    ),
+)
+
+
+dynamic_boiler_template = DynamicComponentTemplate(
+    template="""
+    model BoilerWithStorage{{ element.name | capitalize}}
+    extends {{ package_name }}.Common.Fluid.Boilers.PartialBoilerWithStorage;
+    {{bus_template}}
+    equation
+    {{bus_ports | safe}}
+     end BoilerWithStorage{{ element.name | capitalize}};
+     """,
+    category="boiler",
+    bus=ControllerBus(
+        real_inputs=[
+            RealInput(
+                name="yBoiCon", target="element.name", component="boi", port="y"
+            ),
+            RealInput(
+                name="yPumBoi", target="element.name", component="pumBoi", port="y"
+            )
+        ],
+        real_outputs=[
+            RealOutput(
+                name="TStoTop", target="element.name", component="tanTemTop", port="T"
+            ),
+            RealOutput(
+                name="TStoBot",
+                target="element.name",
+                component="tanTemBot",
+                port="T",
+            )
         ],
     ),
 )

@@ -427,6 +427,129 @@ end ventilation;
                   fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
                   fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
   end Simple;
+        partial model PartialBoilerWithStorage
+replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
+"Medium model" annotation (choicesAllMatching=true);
+extends Buildings.Fluid.Interfaces.PartialTwoPort;
+  Buildings.Fluid.Movers.SpeedControlled_y pumBoi(
+    redeclare package Medium = MediumW,
+    per(pressure(V_flow=mBoi_flow_nominal/1000*{0.5,1}, dp=(3000 + 2000)*{2,1})),
+    use_inputFilter=false,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
+    "Pump for boiler circuit" annotation (Placement(transformation(extent={{-10,
+            -10},{10,10}}, origin={-14,10})));
+
+  Buildings.Fluid.Boilers.BoilerPolynomial boi(
+    a={0.9},
+    effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant,
+    redeclare package Medium = MediumW,
+    Q_flow_nominal=Q_flow_nominal,
+    m_flow_nominal=mBoi_flow_nominal,
+    fue=Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue(),
+    dp_nominal=3000 + 2000,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    T_start=293.15) "Boiler"
+    annotation (Placement(transformation(extent={{-70,0},{-50,20}})));
+  Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=288.15)
+    "Ambient temperature in boiler room"
+    annotation (Placement(transformation(extent={{-14,74},{6,94}})));
+  Buildings.Fluid.Storage.StratifiedEnhanced tan1(
+    m_flow_nominal=mRad_flow_nominal,
+    dIns=0.3,
+    redeclare package Medium = MediumW,
+    hTan=2,
+    nSeg=5,
+    show_T=true,
+    VTan=0.2,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Storage tank"
+    annotation (Placement(transformation(extent={{-2,-50},{38,-10}})));
+  Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor tanTemBot
+    "Tank temperature"
+    annotation (Placement(transformation(extent={{68,-66},{88,-46}})));
+  Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor tanTemTop
+    "Tank temperature"
+    annotation (Placement(transformation(extent={{68,-34},{88,-14}})));
+  Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium =
+        MediumW)
+    "Fixed boundary condition, needed to provide a pressure in the system"
+    annotation (Placement(transformation(extent={{-74,68},{-54,88}})));
+  Buildings.Fluid.FixedResistances.Junction splVal3(
+    dp_nominal={0,0,0},
+    m_flow_nominal=mBoi_flow_nominal*{-1,1,1},
+    redeclare package Medium = MediumW,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
+    "Flow splitter" annotation (Placement(transformation(
+        extent={{10,-10},{-10,10}},
+        rotation=180,
+        origin={18,-84})));
+  Buildings.Fluid.FixedResistances.Junction splVal4(
+    dp_nominal={0,0,0},
+    m_flow_nominal=mBoi_flow_nominal*{1,-1,-1},
+    redeclare package Medium = MediumW,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
+    "Flow splitter" annotation (Placement(transformation(
+        extent={{10,10},{-10,-10}},
+        rotation=180,
+        origin={18,10})));
+equation
+  connect(TAmb.port,boi. heatPort) annotation (Line(
+      points={{6,84},{20,84},{20,30},{-60,30},{-60,17.2}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(boi.port_b,pumBoi. port_a) annotation (Line(
+      points={{-50,10},{-24,10}},
+      color={0,127,255},
+      smooth=Smooth.None));
+  connect(tan1.heaPorVol[1], tanTemTop.port) annotation (Line(
+      points={{18,-30.96},{-6,-30.96},{-6,-56},{58,-56},{58,-24},{68,-24}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(tanTemBot.port, tan1.heaPorVol[tan.nSeg]) annotation (Line(
+      points={{68,-56},{-6,-56},{-6,-30},{18,-30}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(tan1.heaPorTop, TAmb.port) annotation (Line(
+      points={{22,-15.2},{22,-6},{6,-6},{6,30},{12,30},{12,84},{6,84}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(TAmb.port, tan1.heaPorSid) annotation (Line(
+      points={{6,84},{12,84},{12,22},{6,22},{6,-6},{34,-6},{34,-8},{56,-8},{56,-30},
+          {29.2,-30}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(TAmb.port, tan1.heaPorBot) annotation (Line(
+      points={{6,84},{12,84},{12,22},{6,22},{6,-6},{34,-6},{34,-8},{56,-8},{56,-30},
+          {42,-30},{42,-44.8},{22,-44.8}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(bou.ports[1],boi. port_a) annotation (Line(
+      points={{-54,78},{-48,78},{-48,32},{-80,32},{-80,10},{-70,10}},
+      color={0,127,255},
+      smooth=Smooth.None));
+  connect(tan1.port_b, splVal3.port_3)
+    annotation (Line(points={{18,-50},{18,-74}}, color={0,127,255}));
+  connect(splVal4.port_3, tan1.port_a)
+    annotation (Line(points={{18,0},{18,-10}}, color={0,127,255}));
+  connect(splVal4.port_1,pumBoi. port_b)
+    annotation (Line(points={{8,10},{-4,10}},       color={0,127,255}));
+  connect(splVal3.port_1,boi. port_a) annotation (Line(points={{8,-84},{-76,-84},
+          {-76,10},{-70,10}},   color={0,127,255}));
+  connect(port_a, splVal4.port_2) annotation (Line(points={{-100,0},{-90,0},{-90,
+          50},{46,50},{46,10},{28,10}}, color={0,127,255}));
+  connect(splVal3.port_2, port_b) annotation (Line(points={{28,-84},{114,-84},{114,
+          14},{86,14},{86,0},{100,0}}, color={0,127,255}));
+    annotation (
+        Icon(graphics={  Rectangle(fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}}), Rectangle(fillColor = {255, 255, 255},
+                fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
+                fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
+end PartialBoilerWithStorage;
+    {% endraw %}
+    {% if dynamic_components.boiler %}
+    {% for v in  dynamic_components.boiler %}
+        {{  v |safe }}
+    {% endfor %}
+    {% endif %}
+    {% raw %}
   end Boilers;
 
     package Ventilation

@@ -38,7 +38,7 @@ class Network:
         self.name: str = name
         self._system_controls: List[Control] = []
         self.library = library or BuildingsLibrary()
-        self.dynamic_components: dict = {"ventilation": [], "control": []}
+        self.dynamic_components: dict = {"ventilation": [], "control": [], "boiler": []}
 
     def add_node(self, node: BaseElement) -> None:
         node = self.library.assign_properties(node)

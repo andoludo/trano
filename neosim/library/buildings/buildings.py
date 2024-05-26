@@ -16,7 +16,7 @@ from neosim.library.base import (
     BaseWeather,
     DefaultLibrary,
     LibraryData,
-    MaterialProperties,
+    MaterialProperties, BaseTemperatureSensor,
 )
 from neosim.library.buildings.constants import BUILDINGS_CONSTANTS
 from neosim.library.buildings.data import (
@@ -118,6 +118,16 @@ class BuildingsLibrary(DefaultLibrary):
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     T_a_nominal=323.15,
     T_b_nominal=313.15) "Radiator" """
+            ),
+            BaseIdealHeatingEmission(),
+        ]
+    )
+    temperaturesensor: List[LibraryData] = Field(
+        default=[
+            BaseTemperatureSensor(
+                template="""    Buildings.Fluid.Sensors.TemperatureTwoPort {{ element.name }}(
+    redeclare package Medium = MediumW,
+    m_flow_nominal=mRad_flow_nominal) "Radiator" """
             ),
             BaseIdealHeatingEmission(),
         ]

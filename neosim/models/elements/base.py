@@ -109,7 +109,7 @@ class BaseVariant:
 class DynamicComponentTemplate(BaseModel):
 
     template: Optional[str] = None
-    category: Optional[Literal["ventilation", "control", "fluid"]] = None
+    category: Optional[Literal["ventilation", "control", "fluid", "boiler"]] = None
     function: Callable = Field(default=lambda _: {})
     bus: Optional[ControllerBus] = None
 

@@ -12,7 +12,7 @@ from neosim.library.dynamic_components import (
     dynamic_emission_control_template,
     dynamic_pump_template,
     dynamic_vav_box_template,
-    dynamic_vav_control_template,
+    dynamic_vav_control_template, dynamic_three_way_valve_control_template, dynamic_boiler_template,
 )
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
@@ -32,7 +32,7 @@ from neosim.models.elements.system import (
     Occupancy,
     System,
     Ventilation,
-    Weather,
+    Weather, ThreeWayValve, TemperatureSensor,
 )
 from neosim.models.elements.wall import InternalElement
 
@@ -106,8 +106,9 @@ class BaseValve(LibraryData):
 
 class BaseBoiler(LibraryData):
     template: str = """
-    {{package_name}}.Common.Fluid.Boilers.Simple {{ element.name }}(
+    {{package_name}}.Common.Fluid.Boilers.BoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(
     redeclare package Medium = MediumW) "Boiler" """
+    component_template: Optional[DynamicComponentTemplate] = dynamic_boiler_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -119,6 +120,12 @@ class BaseBoiler(LibraryData):
             Port(
                 names=["port_b"],
                 flow=Flow.outlet,
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                targets=[Control, DataBus],
+                names=["dataBus"],
                 multi_connection=True,
                 use_counter=False,
             ),
@@ -178,8 +185,8 @@ class BaseThreeWayValve(LibraryData):
             Port(
                 names=["port_2"],
                 flow=Flow.outlet,
-                multi_connection=True,
-                use_counter=False,
+                # multi_connection=True,
+                # use_counter=False,
             ),
             Port(names=["port_3"], flow=Flow.inlet_or_outlet),
             Port(targets=[Control], names=["y"]),
@@ -275,6 +282,30 @@ class BaseEmissionControl(LibraryData):
         ]
     )
 
+class BaseThreeWayValveControl(LibraryData):
+    template: str = """
+    {{package_name}}.Common.Controls.ventilation.ThreeWayValveControl{{ element.name | capitalize}}
+    {{ element.name }}"""
+    component_template: str = dynamic_three_way_valve_control_template
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(
+                targets=[DataBus],
+                names=["dataBus"],
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                targets=[ThreeWayValve],
+                names=["y"],
+            ),
+            Port(
+                targets=[TemperatureSensor],
+                names=["u"],
+            ),
+        ]
+    )
+
 
 class BaseCollectorControl(LibraryData):
     template: str = """
@@ -320,6 +351,14 @@ class BaseDamper(LibraryData):
         ]
     )
 
+class BaseTemperatureSensor(LibraryData):
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(names=["port_a"], flow=Flow.inlet, multi_connection=True, use_counter=False),
+            Port(names=["port_b"], flow=Flow.outlet, multi_connection=True, use_counter=False),
+            Port(targets=[Control], names=["T"]),
+        ]
+    )
 
 class BaseDamperDetailed(LibraryData):
     variant: str = DamperVariant.complex
@@ -502,6 +541,8 @@ class DefaultLibrary(BaseModel):
     ahucontrol: List[LibraryData] = Field(default=[BaseAhuControl()])
     emissioncontrol: List[LibraryData] = Field(default=[BaseEmissionControl()])
     collectorcontrol: List[LibraryData] = Field(default=[BaseCollectorControl()])
+    temperaturesensor: List[LibraryData] = Field(default=[BaseTemperatureSensor()])
+    threewayvalvecontrol: List[LibraryData] = Field(default=[BaseThreeWayValveControl()])
 
     def _get_field_value(self, element: BaseElement) -> Any:  # noqa: ANN401
         element_names = [
