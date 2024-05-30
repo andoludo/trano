@@ -240,7 +240,7 @@ Modelica.Fluid.Interfaces.FluidPort_a[{{ element.spaces | length}}] port_a(redec
   iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  {% endraw %}
 {{bus_template}}
 {% for input in element.non_connected_ports %}
-{{ input.default_template | safe}}
+{{ input.input_model | safe}}
 {% endfor %}
 equation
 {% for index, space in element.spaces|enumerate %}
@@ -250,7 +250,7 @@ connect(port_a[{{index + 1}}], TRoo1[{{index + 1}}].port);
 {{bus_ports | safe}}
 
 {% for input in element.non_connected_ports %}
-connect(dataBus.{{ input.name }}{{ input.target }}, {{ input.name }}.y);
+connect(dataBus.{{ input.name }}{{ input.target }}, {{ input.name }}{{input.evaluated_element_name | capitalize}}.y);
 {% endfor %}
 end DataServer;
       """,
@@ -504,7 +504,7 @@ dynamic_boiler_control_template = DynamicComponentTemplate(
             RealInput(
                 name="TStoTop",
                 target="element.controllable_element.name",
-                component="lesThr",
+                component="sub1",
                 port="u1",
             ),
             RealInput(

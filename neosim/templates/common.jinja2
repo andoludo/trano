@@ -404,11 +404,12 @@ constructed by the signals connected to this bus.
     {% raw %}
 
         partial model PartialBoilerControl
-  parameter Real TSup_nominal=80+273.15;
+  parameter Real TSup_nominal=80 + 273.15;
   Buildings.Controls.OBC.CDL.Reals.GreaterThreshold greThr(t=TSup_nominal + 5)
     "Check for temperature at the bottom of the tank"
     annotation (Placement(transformation(extent={{-114,-142},{-94,-122}})));
-  Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToReaPum "Signal converter for pump"
+  Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToReaPum
+    "Signal converter for pump"
     annotation (Placement(transformation(extent={{-94,-32},{-114,-12}})));
   Buildings.Controls.OBC.CDL.Reals.Greater lesThr
     "Check for temperature at the top of the tank"
@@ -418,7 +419,8 @@ constructed by the signals connected to this bus.
   Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToReaBoi
     "Signal converter for boiler"
     annotation (Placement(transformation(extent={{-94,-2},{-114,18}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr(k=1) "Threshold to switch boiler off"
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr(k=1)
+    "Threshold to switch boiler off"
     annotation (Placement(transformation(extent={{-204,-112},{-184,-92}})));
   Buildings.Controls.OBC.CDL.Reals.Subtract sub1
     annotation (Placement(transformation(extent={{-164,-88},{-144,-68}})));
@@ -429,24 +431,24 @@ constructed by the signals connected to this bus.
     "Logical test to enable pump and subsequently the boiler"
     annotation (Placement(transformation(extent={{-74,38},{-54,58}})));
   Modelica.StateGraph.InitialStep off(nIn=1, nOut=1)
-                                      "Pump and furnace off"
+                              "Pump and furnace off"
     annotation (Placement(transformation(extent={{-74,78},{-54,98}})));
   Modelica.StateGraph.TransitionWithSignal T1 "Transition to pump on"
     annotation (Placement(transformation(extent={{-44,78},{-24,98}})));
   Modelica.StateGraph.StepWithSignal pumOn(nIn=1, nOut=1)
-                                           "Pump on"
+                                   "Pump on"
     annotation (Placement(transformation(extent={{-14,78},{6,98}})));
   Modelica.StateGraph.Transition T3(enableTimer=true, waitTime=10)
     "Transition to boiler on"
     annotation (Placement(transformation(extent={{16,78},{36,98}})));
   Modelica.StateGraph.StepWithSignal boiOn(nIn=1, nOut=1)
-                                           "Boiler on"
+                                   "Boiler on"
     annotation (Placement(transformation(extent={{46,78},{66,98}})));
   Modelica.StateGraph.TransitionWithSignal T2
     "Transition that switches boiler off"
     annotation (Placement(transformation(extent={{76,78},{96,98}})));
   Modelica.StateGraph.StepWithSignal pumOn2(nIn=1, nOut=1)
-                                            "Pump on"
+                                    "Pump on"
     annotation (Placement(transformation(extent={{106,78},{126,98}})));
   Modelica.StateGraph.Transition T4(enableTimer=true, waitTime=10)
     "Transition to boiler on"
@@ -454,61 +456,87 @@ constructed by the signals connected to this bus.
   inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
     "Root of the state graph"
     annotation (Placement(transformation(extent={{-134,98},{-114,118}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr1(k=80 + 273.15)
+    "Threshold to switch boiler off"
+    annotation (Placement(transformation(extent={{-208,-22},{-188,-2}})));
 equation
-  connect(booToReaPum.u,pumOnSig. y) annotation (Line(
+  connect(
+  booToReaPum.u,pumOnSig. y) annotation (Line(
       points={{-92,-22},{176,-22},{176,8},{167.5,8}},
       color={255,0,255},
       smooth=Smooth.None));
-  connect(sub1.y,lesThr. u2) annotation (Line(
+  connect(
+  sub1.y,lesThr. u2) annotation (Line(
       points={{-142,-78},{-116,-78}},
       color={0,0,127},
       smooth=Smooth.None));
-  connect(dTThr.y,sub1. u2) annotation (Line(
+  connect(
+  dTThr.y,sub1. u2) annotation (Line(
       points={{-182,-102},{-174,-102},{-174,-84},{-166,-84}},
       color={0,0,127},
       smooth=Smooth.None));
-  connect(lesThr.y,and1. u2) annotation (Line(
+  connect(
+  lesThr.y,and1. u2) annotation (Line(
       points={{-92,-70},{-84,-70},{-84,40},{-76,40}},
       color={255,0,255},
       smooth=Smooth.None));
-  connect(lesThrTOut.y,and1. u1) annotation (Line(
+  connect(
+  lesThrTOut.y,and1. u1) annotation (Line(
       points={{-93,48},{-76,48}},
       color={255,0,255},
       smooth=Smooth.None));
-  connect(and1.y,T1. condition) annotation (Line(points={{-52,48},{-44,48},{-44,
-          42},{-36,42},{-36,58},{-34,58},{-34,76}},
-                color={255,0,255}));
-  connect(greThr.y,T2. condition) annotation (Line(points={{-92,-132},{86,-132},
-          {86,76}},             color={255,0,255}));
-  connect(boiOn.active,booToReaBoi. u) annotation (Line(points={{56,77},{56,8},{
-          -92,8}},    color={255,0,255}));
-  connect(pumOn2.active,pumOnSig. u[1]) annotation (Line(points={{116,77},{116,12.6667},
-          {146,12.6667}},  color={255,0,255}));
-  connect(boiOn.active,pumOnSig. u[2]) annotation (Line(points={{56,77},{56,8},{
-          146,8}},                        color={255,0,255}));
-  connect(pumOn.active,pumOnSig. u[3]) annotation (Line(points={{-4,77},{-4,3.33333},
-          {146,3.33333}},  color={255,0,255}));
-  connect(off.outPort[1],T1. inPort)
-    annotation (Line(points={{-53.5,88},{-38,88}},             color={0,0,0}));
-  connect(T1.outPort,pumOn. inPort[1])
-    annotation (Line(points={{-32.5,88},{-15,88}},          color={0,0,0}));
-  connect(pumOn.outPort[1],T3. inPort) annotation (Line(points={{6.5,88},{22,88}},
-                                     color={0,0,0}));
-  connect(T3.outPort,boiOn. inPort[1])
-    annotation (Line(points={{27.5,88},{45,88}},            color={0,0,0}));
-  connect(boiOn.outPort[1],T2. inPort)
-    annotation (Line(points={{66.5,88},{82,88}},            color={0,0,0}));
-  connect(T2.outPort,pumOn2. inPort[1])
-    annotation (Line(points={{87.5,88},{105,88}},           color={0,0,0}));
-  connect(pumOn2.outPort[1],T4. inPort)
-    annotation (Line(points={{126.5,88},{142,88}},          color={0,0,0}));
-  connect(T4.outPort,off. inPort[1]) annotation (Line(points={{147.5,88},{166,88},
-          {166,118},{-94,118},{-94,88},{-75,88}},
-                                                color={0,0,0}));
+  connect(
+  and1.y,T1. condition) annotation (Line(points={{-52,48},{-44,48},{-44,
+  42},{-36,42},{-36,58},{-34,58},{-34,76}},
+        color={255,0,255}));
+  connect(
+  greThr.y,T2. condition) annotation (Line(points={{-92,-132},{86,-132},
+  {86,76}},             color={255,0,255}));
+  connect(
+  boiOn.active,booToReaBoi. u) annotation (Line(points={{56,77},{56,8},{
+  -92,8}},    color={255,0,255}));
+  connect(
+  pumOn2.active,pumOnSig. u[1]) annotation (Line(points={{116,77},{116,12.6667},
+          {146,12.6667}},
+                   color={255,0,255}));
+  connect(
+  boiOn.active,pumOnSig. u[2]) annotation (Line(points={{56,77},{56,8},{
+  146,8}},                        color={255,0,255}));
+  connect(
+  pumOn.active,pumOnSig. u[3]) annotation (Line(points={{-4,77},{-4,3.33333},
+  {146,3.33333}},  color={255,0,255}));
+  connect(
+  off.outPort[1],T1. inPort)
+    annotation (Line(points={{-53.5,88},{-38,88}}, color={0,0,0}));
+  connect(
+  T1.outPort,pumOn. inPort[1])
+    annotation (Line(points={{-32.5,88},{-15,88}}, color={0,0,0}));
+  connect(
+  pumOn.outPort[1],T3. inPort) annotation (Line(points={{6.5,88},{22,88}},
+                             color={0,0,0}));
+  connect(
+  T3.outPort,boiOn. inPort[1])
+    annotation (Line(points={{27.5,88},{45,88}}, color={0,0,0}));
+  connect(
+  boiOn.outPort[1],T2. inPort)
+    annotation (Line(points={{66.5,88},{82,88}}, color={0,0,0}));
+  connect(
+  T2.outPort,pumOn2. inPort[1])
+    annotation (Line(points={{87.5,88},{105,88}}, color={0,0,0}));
+  connect(
+  pumOn2.outPort[1],T4. inPort)
+    annotation (Line(points={{126.5,88},{142,88}}, color={0,0,0}));
+  connect(
+  T4.outPort,off. inPort[1]) annotation (Line(points={{147.5,88},{166,88},
+  {166,118},{-94,118},{-94,88},{-75,88}},
+                                        color={0,0,0}));
+  connect(dTThr1.y, lesThr.u1) annotation (Line(points={{-186,-12},{-124,-12},{-124,
+          -70},{-116,-70}}, color={0,0,127}));
   annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-260,-180},
-            {260,160}})), Diagram(coordinateSystem(preserveAspectRatio=false,
-          extent={{-260,-180},{260,160}})));
+    {260,160}})), Diagram(coordinateSystem(preserveAspectRatio=false,
+  extent={{-260,-180},{260,160}})));
 end PartialBoilerControl;
+
 
 end ventilation;
     end Controls;
@@ -537,20 +565,19 @@ end ventilation;
   end Simple;
         partial model PartialBoilerWithStorage
   replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
-  "Medium model" annotation (choicesAllMatching=true);
-  extends
-  Buildings.Fluid.Interfaces.PartialTwoPort;
+    "Medium model" annotation (choicesAllMatching=true);
+  extends Buildings.Fluid.Interfaces.PartialTwoPort(redeclare package Medium = MediumW);
 
   parameter Real mBoi_flow_nominal=0.01;
-    parameter Real mRad_flow_nominal=0.01;
-    parameter Real Q_flow_nominal= 2000;
+  parameter Real mRad_flow_nominal=0.01;
+  parameter Real Q_flow_nominal=2000;
   Buildings.Fluid.Movers.SpeedControlled_y pumBoi(
     redeclare package Medium = MediumW,
     per(pressure(V_flow=mBoi_flow_nominal/1000*{0.5,1}, dp=(3000 + 2000)*{2,1})),
     use_inputFilter=false,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
     "Pump for boiler circuit" annotation (Placement(transformation(extent={{-10,
-    -10},{10,10}}, origin={-14,10})));
+            -10},{10,10}}, origin={-14,10})));
 
   Buildings.Fluid.Boilers.BoilerPolynomial boi(
     a={0.9},
@@ -583,7 +610,8 @@ end ventilation;
     "Tank temperature"
     annotation (Placement(transformation(extent={{68,-34},{88,-14}})));
   Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium =
-MediumW) "Fixed boundary condition, needed to provide a pressure in the system"
+        MediumW)
+    "Fixed boundary condition, needed to provide a pressure in the system"
     annotation (Placement(transformation(extent={{-74,68},{-54,88}})));
   Buildings.Fluid.FixedResistances.Junction splVal3(
     dp_nominal={0,0,0},
@@ -591,84 +619,84 @@ MediumW) "Fixed boundary condition, needed to provide a pressure in the system"
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Flow splitter"
     annotation (Placement(transformation(
-extent={{10,-10},{-10,10}},
-rotation=180,
-origin={18,-84})));
+        extent={{10,-10},{-10,10}},
+        rotation=180,
+        origin={18,-84})));
   Buildings.Fluid.FixedResistances.Junction splVal4(
     dp_nominal={0,0,0},
     m_flow_nominal=mBoi_flow_nominal*{1,-1,-1},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Flow splitter"
     annotation (Placement(transformation(
-extent={{10,10},{-10,-10}},
-rotation=180,
-origin={18,10})));
+        extent={{10,10},{-10,-10}},
+        rotation=180,
+        origin={18,10})));
 equation
-  connect(
-  TAmb.port,boi. heatPort) annotation (Line(
+  connect(TAmb.port, boi.heatPort)
+                   annotation (Line(
       points={{6,84},{20,84},{20,30},{-60,30},{-60,17.2}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(
-  boi.port_b,pumBoi. port_a) annotation (Line(
+  connect(boi.port_b, pumBoi.port_a)
+                     annotation (Line(
       points={{-50,10},{-24,10}},
       color={0,127,255},
       smooth=Smooth.None));
-  connect(
-  tan1.heaPorVol[1], tanTemTop.port) annotation (Line(
+  connect(tan1.heaPorVol[1], tanTemTop.port)
+                             annotation (Line(
       points={{18,-30.96},{-6,-30.96},{-6,-56},{58,-56},{58,-24},{68,-24}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(
-  tanTemBot.port, tan1.heaPorVol[tan1.nSeg]) annotation (Line(
+  connect(tanTemBot.port, tan1.heaPorVol[tan1.nSeg])
+                                     annotation (Line(
       points={{68,-56},{-6,-56},{-6,-30},{18,-30}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(
-  tan1.heaPorTop, TAmb.port) annotation (Line(
+  connect(tan1.heaPorTop, TAmb.port)
+                     annotation (Line(
       points={{22,-15.2},{22,-6},{6,-6},{6,30},{12,30},{12,84},{6,84}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(
-  TAmb.port, tan1.heaPorSid) annotation (Line(
+  connect(TAmb.port, tan1.heaPorSid)
+                     annotation (Line(
       points={{6,84},{12,84},{12,22},{6,22},{6,-6},{34,-6},{34,-8},{56,-8},{56,-30},
-  {29.2,-30}},
+          {29.2,-30}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(
-  TAmb.port, tan1.heaPorBot) annotation (Line(
+  connect(TAmb.port, tan1.heaPorBot)
+                     annotation (Line(
       points={{6,84},{12,84},{12,22},{6,22},{6,-6},{34,-6},{34,-8},{56,-8},{56,-30},
-  {42,-30},{42,-44.8},{22,-44.8}},
+          {42,-30},{42,-44.8},{22,-44.8}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(
-  bou.ports[1],boi. port_a) annotation (Line(
+  connect(bou.ports[1], boi.port_a)
+                    annotation (Line(
       points={{-54,78},{-48,78},{-48,32},{-80,32},{-80,10},{-70,10}},
       color={0,127,255},
       smooth=Smooth.None));
-  connect(
-  tan1.port_b, splVal3.port_3)
+  connect(tan1.port_b, splVal3.port_3)
     annotation (Line(points={{18,-50},{18,-74}}, color={0,127,255}));
-  connect(
-  splVal4.port_3, tan1.port_a)
+  connect(splVal4.port_3, tan1.port_a)
     annotation (Line(points={{18,0},{18,-10}}, color={0,127,255}));
-  connect(
-  splVal4.port_1,pumBoi. port_b)
+  connect(splVal4.port_1, pumBoi.port_b)
     annotation (Line(points={{8,10},{-4,10}}, color={0,127,255}));
-  connect(
-  splVal3.port_1,boi. port_a) annotation (Line(points={{8,-84},{-76,-84},
-  {-76,10},{-70,10}},   color={0,127,255}));
-  connect(
-  port_a, splVal4.port_2) annotation (Line(points={{-100,0},{-90,0},{-90,
-  50},{46,50},{46,10},{28,10}}, color={0,127,255}));
-  connect(
-  splVal3.port_2, port_b) annotation (Line(points={{28,-84},{114,-84},{114,
-  14},{86,14},{86,0},{100,0}}, color={0,127,255}));
-  annotation (
-Icon(graphics={  Rectangle(fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}}), Rectangle(fillColor = {255, 255, 255},
-        fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
-        fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
+  connect(splVal3.port_1, boi.port_a)
+                      annotation (Line(points={{8,-84},{-76,-84},{-76,10},{-70,10}},
+        color={0,127,255}));
+  connect(port_a, splVal4.port_2)
+                  annotation (Line(points={{-100,0},{-90,0},{-90,50},{46,50},{46,
+          10},{28,10}}, color={0,127,255}));
+  connect(splVal3.port_2, port_b)
+                  annotation (Line(points={{28,-84},{114,-84},{114,14},{86,14},{
+          86,0},{100,0}}, color={0,127,255}));
+  annotation (Icon(graphics={
+        Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
+        Rectangle(
+          fillColor={255,255,255},
+fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
+fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
 end PartialBoilerWithStorage;
+
 
     {% endraw %}
     {% if dynamic_components.boiler %}

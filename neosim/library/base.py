@@ -112,7 +112,7 @@ class BaseValve(LibraryData):
 class BaseBoiler(LibraryData):
     template: str = """
     {{package_name}}.Common.Fluid.Boilers.BoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(
-    redeclare package Medium = MediumW) "Boiler" """
+    redeclare package MediumW = MediumW) "Boiler" """
     component_template: Optional[DynamicComponentTemplate] = dynamic_boiler_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [

@@ -10,6 +10,9 @@ class BaseInput(BaseModel):
     port: str
     multi: bool = False
     target: str
+    input_template: str
+    default: float | str | int
+    evaluated_element_name: str = ""
 
     def __hash__(self):
         return hash((self.name, self.target))
@@ -17,49 +20,47 @@ class BaseInput(BaseModel):
     def __eq__(self, other):
         return hash(self) == hash(other)
 
+    @computed_field
+    @property
+    def input_model(self) -> str:
+        if self.evaluated_element_name:
+            return f"""{self.input_template} {self.name}{self.evaluated_element_name.capitalize()}(y={self.default});"""
+
 
 class RealInput(BaseInput):
     default: float = 0.0
     target: str = "Space"
-
-    @computed_field
-    def default_template(self) -> str:
-        return (
-            f"""Modelica.Blocks.Sources.RealExpression {self.name}(y={self.default});"""
-        )
+    input_template: str = "Modelica.Blocks.Sources.RealExpression"
 
 
 class IntegerInput(BaseInput):
     default: int = 0.0
     target: str = "Space"
-
-    @computed_field
-    def default_template(self) -> str:
-        return f"""Modelica.Blocks.Sources.IntegerExpression {self.name}(y={self.default});"""
+    input_template: str = "Modelica.Blocks.Sources.IntegerExpression"
 
 
 class BooleanInput(BaseInput):
     default: str = "false"
     target: str = "Space"
-
-    @computed_field
-    def default_template(self) -> str:
-        return f"""Modelica.Blocks.Sources.BooleanExpression {self.name}(y={self.default});"""
+    input_template: str = "Modelica.Blocks.Sources.BooleanExpression"
 
 
 class BooleanOutput(BaseInput):
     default: str = "false"
     target: str = "Controlled"
+    input_template: str = "Modelica.Blocks.Sources.BooleanExpression"
 
 
 class IntegerOutput(BaseInput):
     default: int = 0.0
     target: str = "Controlled"
+    input_template: str = "Modelica.Blocks.Sources.IntegerExpression"
 
 
 class RealOutput(BaseInput):
     default: float = 0.0
     target: str = "Controlled"
+    input_template: str = "Modelica.Blocks.Sources.RealExpression"
 
 
 class ControllerBus(BaseModel):
@@ -106,7 +107,7 @@ class ControllerBus(BaseModel):
         for target, inputs in self._get_targets().items():
             target_value = eval(target)
             if target_value is None:
-                a = 12
+                raise Exception("Target value is None")
             for input in inputs:
                 if isinstance(target_value, list):
                     for i, target_ in enumerate(target_value):
@@ -114,7 +115,10 @@ class ControllerBus(BaseModel):
                             type(input)(
                                 **(
                                     input.model_dump()
-                                    | {"target": target_.capitalize()}
+                                    | {
+                                        "target": target_.capitalize(),
+                                        "evaluated_element_name": element.name,
+                                    }
                                 )
                             )
                         )
@@ -123,7 +127,10 @@ class ControllerBus(BaseModel):
                         type(input)(
                             **(
                                 input.model_dump()
-                                | {"target": target_value.capitalize()}
+                                | {
+                                    "target": target_value.capitalize(),
+                                    "evaluated_element_name": element.name,
+                                }
                             )
                         )
                     )
