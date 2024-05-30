@@ -15,11 +15,13 @@ from neosim.models.elements.base import Port
 from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.control import (
     AhuControl,
+    BoilerControl,
     CollectorControl,
     Control,
     EmissionControl,
     SpaceControl,
-    SpaceSubstanceVentilationControl, ThreeWayValveControl,
+    SpaceSubstanceVentilationControl,
+    ThreeWayValveControl,
 )
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
@@ -34,9 +36,10 @@ from neosim.models.elements.system import (
     Pump,
     SplitValve,
     System,
+    TemperatureSensor,
     ThreeWayValve,
     Valve,
-    Weather, TemperatureSensor,
+    Weather,
 )
 from neosim.models.elements.wall import ExternalWall, FloorOnGround, Window
 from neosim.topology import Network
@@ -787,7 +790,12 @@ def space_2() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        emissions=[Valve(name="valve_2", control=EmissionControl(name="emission_valve_control_2")), Emission(name="emission_2")],
+        emissions=[
+            Valve(
+                name="valve_2", control=EmissionControl(name="emission_valve_control_2")
+            ),
+            Emission(name="emission_2"),
+        ],
     )
     return space_2
 
@@ -856,7 +864,7 @@ def buildings_simple_hydronic_two_zones_new(space_1: Space, space_2: Space) -> N
     network.add_boiler_plate_spaces([space_1, space_2])
 
     pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
-    boiler = Boiler(name="boiler")
+    boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
     split_valve = SplitValve(name="split_valve")
     three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
     three_way_valve = ThreeWayValve(
@@ -875,6 +883,7 @@ def buildings_simple_hydronic_two_zones_new(space_1: Space, space_2: Space) -> N
     network.connect_systems(three_way_valve_control, temperature_sensor)
 
     return network
+
 
 @pytest.fixture
 def buildings_simple_hydronic(space_1: Space) -> Network:

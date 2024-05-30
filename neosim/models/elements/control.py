@@ -40,8 +40,14 @@ class EmissionControl(Control):
 class CollectorControl(Control):
     valves: Optional[List[str]] = None
 
+
 class ThreeWayValveControl(Control):
     ...
+
+
+class BoilerControl(Control):
+    ...
+
 
 class DataBus(BaseElement):
     name: str

@@ -1,11 +1,11 @@
 from pathlib import Path
 
 from neosim.controller.parser import (
+    BooleanInput,
     ControllerBus,
     IntegerOutput,
     RealInput,
     RealOutput,
-    BooleanInput,
 )
 from neosim.models.elements.base import DynamicComponentTemplate
 
@@ -411,7 +411,7 @@ dynamic_three_way_valve_control_template = DynamicComponentTemplate(
   Modelica.Blocks.Interfaces.RealInput u
     {% raw %}annotation (Placement(transformation(extent={{-138,-20},{-98,20}})));{% endraw %}
         {{bus_template}}
-equation 
+equation
 {{bus_ports | safe}}
   connect(conVal.y, y)
     {% raw %}annotation (Line(points={{10,0},{110,0}}, color={0,0,127}));{% endraw %}
@@ -456,12 +456,10 @@ dynamic_boiler_template = DynamicComponentTemplate(
     category="boiler",
     bus=ControllerBus(
         real_inputs=[
-            RealInput(
-                name="yBoiCon", target="element.name", component="boi", port="y"
-            ),
+            RealInput(name="yBoiCon", target="element.name", component="boi", port="y"),
             RealInput(
                 name="yPumBoi", target="element.name", component="pumBoi", port="y"
-            )
+            ),
         ],
         real_outputs=[
             RealOutput(
@@ -472,7 +470,55 @@ dynamic_boiler_template = DynamicComponentTemplate(
                 target="element.name",
                 component="tanTemBot",
                 port="T",
-            )
+            ),
+        ],
+    ),
+)
+
+dynamic_boiler_control_template = DynamicComponentTemplate(
+    template="""
+    model BoilerControl{{ element.name | capitalize}}
+    extends {{ package_name }}.Common.Controls.ventilation.PartialBoilerControl;
+    {{bus_template}}
+    equation
+    {{bus_ports | safe}}
+     end BoilerControl{{ element.name | capitalize}};
+     """,
+    category="control",
+    bus=ControllerBus(
+        real_outputs=[
+            RealOutput(
+                name="yBoiCon",
+                target="element.controllable_element.name",
+                component="booToReaBoi",
+                port="y",
+            ),
+            RealOutput(
+                name="yPumBoi",
+                target="element.controllable_element.name",
+                component="booToReaPum",
+                port="y",
+            ),
+        ],
+        real_inputs=[
+            RealInput(
+                name="TStoTop",
+                target="element.controllable_element.name",
+                component="lesThr",
+                port="u1",
+            ),
+            RealInput(
+                name="TStoBot",
+                target="element.controllable_element.name",
+                component="greThr",
+                port="u",
+            ),
+            RealInput(
+                name="TAirOut",
+                target="element.controllable_element.name",
+                component="lesThrTOut",
+                port="u",
+            ),
         ],
     ),
 )
