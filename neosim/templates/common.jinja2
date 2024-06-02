@@ -568,25 +568,56 @@ end ventilation;
     "Medium model" annotation (choicesAllMatching=true);
   extends Buildings.Fluid.Interfaces.PartialTwoPort(redeclare package Medium = MediumW);
 
-  parameter Real mBoi_flow_nominal=0.01;
-  parameter Real mRad_flow_nominal=0.01;
-  parameter Real Q_flow_nominal=2000;
+
+parameter Real a[:] = {0.9} "Coefficients for efficiency curve";
+parameter Buildings.Fluid.Types.EfficiencyCurves
+    effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
+    "Curve used to compute the efficiency";
+parameter Modelica.Units.SI.Temperature T_nominal=353.15
+    "Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)"
+    annotation (Dialog(enable=(effCur == Buildings.Fluid.Types.EfficiencyCurves.QuadraticLinear)));
+
+
+parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
+   annotation (choicesAllMatching = true);
+
+parameter Modelica.Units.SI.Power Q_flow_nominal "Nominal heating power";
+parameter Boolean linearizeFlowResistance = false
+    "= true, use linear relation between m_flow and dp for any flow rate"
+    annotation(Dialog(enable = computeFlowResistance,
+               tab="Flow resistance"));
+parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit=
+        "Pa") "Pressure difference"
+    annotation (Dialog(group="Nominal condition"));
+parameter Real deltaM = 0.1
+    "Fraction of nominal flow rate where flow transitions to laminar";
+parameter Modelica.Units.SI.MassFlowRate m_flow_nominal;
+parameter Boolean show_T = false;
+
+
+parameter Modelica.Units.SI.Volume VTan "Tank volume";
+parameter Modelica.Units.SI.Length hTan "Height of tank (without insulation)";
+parameter Modelica.Units.SI.Length dIns "Thickness of insulation";
+parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
+    "Specific heat conductivity of insulation";
+parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+
+
   Buildings.Fluid.Movers.SpeedControlled_y pumBoi(
     redeclare package Medium = MediumW,
-    per(pressure(V_flow=mBoi_flow_nominal/1000*{0.5,1}, dp=(3000 + 2000)*{2,1})),
     use_inputFilter=false,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
     "Pump for boiler circuit" annotation (Placement(transformation(extent={{-10,
             -10},{10,10}}, origin={-14,10})));
 
   Buildings.Fluid.Boilers.BoilerPolynomial boi(
-    a={0.9},
-    effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant,
+    a=a,
+    effCur=effCur,
     redeclare package Medium = MediumW,
     Q_flow_nominal=Q_flow_nominal,
-    m_flow_nominal=mBoi_flow_nominal,
-    fue=Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue(),
-    dp_nominal=3000 + 2000,
+    m_flow_nominal=m_flow_nominal,
+    fue=fue,
+    dp_nominal=dp_nominal,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     T_start=293.15) "Boiler"
     annotation (Placement(transformation(extent={{-70,0},{-50,20}})));
@@ -594,13 +625,13 @@ end ventilation;
     "Ambient temperature in boiler room"
     annotation (Placement(transformation(extent={{-14,74},{6,94}})));
   Buildings.Fluid.Storage.StratifiedEnhanced tan1(
-    m_flow_nominal=mRad_flow_nominal,
-    dIns=0.3,
+    m_flow_nominal=m_flow_nominal,
+    dIns=dIns,
     redeclare package Medium = MediumW,
-    hTan=2,
-    nSeg=5,
+    hTan=hTan,
+    nSeg=nSeg,
     show_T=true,
-    VTan=0.2,
+    VTan=VTan,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Storage tank"
     annotation (Placement(transformation(extent={{-2,-50},{38,-10}})));
   Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor tanTemBot
@@ -615,7 +646,7 @@ end ventilation;
     annotation (Placement(transformation(extent={{-74,68},{-54,88}})));
   Buildings.Fluid.FixedResistances.Junction splVal3(
     dp_nominal={0,0,0},
-    m_flow_nominal=mBoi_flow_nominal*{-1,1,1},
+    m_flow_nominal=m_flow_nominal*{-1,1,1},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Flow splitter"
     annotation (Placement(transformation(
@@ -624,7 +655,7 @@ end ventilation;
         origin={18,-84})));
   Buildings.Fluid.FixedResistances.Junction splVal4(
     dp_nominal={0,0,0},
-    m_flow_nominal=mBoi_flow_nominal*{1,-1,-1},
+    m_flow_nominal=m_flow_nominal*{1,-1,-1},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Flow splitter"
     annotation (Placement(transformation(
@@ -1683,39 +1714,14 @@ partial model PartialPump
    replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
        "Medium model for air" annotation (choicesAllMatching=true);
 
-         parameter Modelica.Units.SI.Power Q_flow_nominal=2200
-   "Nominal power of heating plant";
-// Due to the night setback, in which the radiator do not provide heat input into the room,
-// we scale the design power of the radiator loop
-parameter Real scaFacRad = 1.5
-   "Scaling factor to scale the power (and mass flow rate) of the radiator loop";
- parameter Modelica.Units.SI.Temperature TSup_nominal=273.15 + 50 + 5
-   "Nominal supply temperature for radiators";
- parameter Modelica.Units.SI.Temperature TRet_nominal=273.15 + 40 + 5
-   "Nominal return temperature for radiators";
- parameter Modelica.Units.SI.Temperature dTRad_nominal=TSup_nominal -
-     TRet_nominal "Nominal temperature difference for radiator loop";
- parameter Modelica.Units.SI.Temperature dTBoi_nominal=20
-   "Nominal temperature difference for boiler loop";
- parameter Modelica.Units.SI.MassFlowRate mRad_flow_nominal=scaFacRad*
-     Q_flow_nominal/dTRad_nominal/4200
+ parameter Modelica.Units.SI.MassFlowRate m_flow_nominal
    "Nominal mass flow rate of radiator loop";
- parameter Modelica.Units.SI.MassFlowRate mBoi_flow_nominal=scaFacRad*
-     Q_flow_nominal/dTBoi_nominal/4200 "Nominal mass flow rate of boiler loop";
- parameter Modelica.Units.SI.PressureDifference dpPip_nominal=10000
-   "Pressure difference of pipe (without valve)";
- parameter Modelica.Units.SI.PressureDifference dpVal_nominal=6000
-   "Pressure difference of valve";
- parameter Modelica.Units.SI.PressureDifference dpRoo_nominal=6000
-   "Pressure difference of flow leg that serves a room";
- parameter Modelica.Units.SI.PressureDifference dpThrWayVal_nominal=6000
-   "Pressure difference of three-way valve";
- parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +
-     dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
+ parameter Modelica.Units.SI.PressureDifference dp_nominal
    "Pressure difference of loop";
+
  Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y pumRad(
    redeclare package Medium = Medium,
-   m_flow_nominal=mRad_flow_nominal,
+   m_flow_nominal=m_flow_nominal,
    dp_nominal=dp_nominal,
    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
    "Pump that serves the radiators" annotation (Placement(transformation(
@@ -1728,7 +1734,7 @@ parameter Real scaFacRad = 1.5
        rotation=180,
        origin={-6,32})));
  Buildings.Fluid.Sensors.TemperatureTwoPort temSup(redeclare package Medium =
-       Medium, m_flow_nominal=mRad_flow_nominal)
+       Medium, m_flow_nominal=m_flow_nominal)
    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
        rotation=0,
        origin={42,0})));

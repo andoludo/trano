@@ -17,6 +17,12 @@ thickness=0.5,
 smooth=Smooth.None));
 {%- endmacro %}
 
+{%- macro render_parameters(parameters)  %}
+{% for key, value in parameters.items() %}
+    {{ key }}={{ value }},
+{% endfor %}
+{%- endmacro %}
+
 {%- macro convert_tilts(boundary_tilts) -%}
     {% set tilts = ({"wall":"Buildings.Types.Tilt.Wall",
 "ceiling":"Buildings.Types.Tilt.Ceiling",

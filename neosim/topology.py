@@ -12,18 +12,18 @@ from neosim.construction import Constructions
 from neosim.library.base import DefaultLibrary
 from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
-from neosim.models.elements.base import BaseElement, Connection, connect
+from neosim.models.elements.base import BaseElement, Connection, Libraries, connect
 from neosim.models.elements.control import CollectorControl, Control, DataBus
+from neosim.models.elements.pump import Pump
 from neosim.models.elements.space import Space, _get_controllable_element
 from neosim.models.elements.system import (
     VAV,
     AirHandlingUnit,
-    Pump,
     System,
-    Valve,
     Ventilation,
     Weather,
 )
+from neosim.models.elements.valve import Valve
 from neosim.models.elements.wall import InternalElement
 
 
@@ -32,6 +32,7 @@ class Network:
         self,
         name: str,
         library: Optional[DefaultLibrary] = None,
+        library_name: Libraries = "buildings",
     ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
@@ -39,14 +40,22 @@ class Network:
         self._system_controls: List[Control] = []
         self.library = library or BuildingsLibrary()
         self.dynamic_components: dict = {"ventilation": [], "control": [], "boiler": []}
+        self.library_name = library_name
 
     def add_node(self, node: BaseElement) -> None:
-        node = self.library.assign_properties(node)
+        if node.libraries_data:
+            node.assign_library_property(self.library_name)
+        else:
+            node = self.library.assign_properties(node)
         if node not in self.graph.nodes:
             self.graph.add_node(node)
         if isinstance(node, System) and node.control:
             if node.control not in self.graph.nodes:
-                node_control = self.library.assign_properties(node.control)
+                node_control = node.control
+                if node_control.libraries_data:
+                    node_control.assign_library_property(self.library_name)
+                else:
+                    node_control = self.library.assign_properties(node_control)
                 self.graph.add_node(node_control)
                 self.graph.add_edge(node, node_control)
                 node_control.controllable_element = node
@@ -456,7 +465,8 @@ class Network:
             model = rtemplate.render(
                 element=node,
                 package_name=self.name,
-                library_name=self.library.library_name,
+                library_name=self.library_name.capitalize(),
+                parameters=node.processed_parameters(self.library_name),
             )
             models.append(model)
         return models

@@ -14,7 +14,6 @@ from neosim.library.base import (
     BaseThreeWayValve,
     BaseValve,
     DefaultLibrary,
-    LibraryData,
     MaterialProperties,
 )
 from neosim.library.ideas.constants import CONSTANTS
@@ -25,7 +24,7 @@ from neosim.library.ideas.data import (
     IdeasMaterial,
 )
 from neosim.models.constants import Flow
-from neosim.models.elements.base import Port
+from neosim.models.elements.base import LibraryData, Port
 from neosim.models.elements.control import Control, DataBus, SpaceControl
 from neosim.models.elements.merged_wall import MergedBaseWall, MergedExternalWall
 from neosim.models.elements.space import Space

@@ -2,7 +2,7 @@ import abc
 from typing import Any, Callable, Dict, List, Optional
 
 from networkx.classes.reportviews import NodeView
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 from neosim.library.dynamic_components import (
     dynamic_ahu_controller_template,
@@ -20,8 +20,8 @@ from neosim.library.dynamic_components import (
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
     BaseElement,
-    BaseVariant,
     DynamicComponentTemplate,
+    LibraryData,
     Port,
 )
 from neosim.models.elements.boundary import Boundary
@@ -35,23 +35,11 @@ from neosim.models.elements.system import (
     Occupancy,
     System,
     TemperatureSensor,
-    ThreeWayValve,
     Ventilation,
     Weather,
 )
+from neosim.models.elements.three_way_valve import ThreeWayValve
 from neosim.models.elements.wall import InternalElement
-
-
-class LibraryData(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-    template: str = ""
-    annotation_template: str = """annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
-    component_template: Optional[DynamicComponentTemplate] = None
-    ports_factory: Callable[[], List[Port]]
-    variant: str = BaseVariant.default
 
 
 class BaseSpace(LibraryData):

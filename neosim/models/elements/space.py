@@ -1,16 +1,32 @@
-from typing import ClassVar, List, Optional, Union
+from typing import Callable, ClassVar, List, Literal, Optional, Union
 
 from networkx import Graph
 from pydantic import Field, computed_field
 
-from neosim.models.elements.base import BaseElement
+from neosim.models.constants import Flow
+from neosim.models.elements.base import (
+    AvailableLibraries,
+    BaseElement,
+    BaseParameter,
+    LibraryData,
+    Port,
+    change_alias,
+)
+from neosim.models.elements.control import Control, DataBus, SpaceControl
 from neosim.models.elements.merged_wall import (
     MergedBaseWall,
     MergedExternalWall,
     MergedWindows,
 )
-from neosim.models.elements.system import Emission, Occupancy, System
+from neosim.models.elements.system import (
+    Emission,
+    Occupancy,
+    System,
+    Ventilation,
+    Weather,
+)
 from neosim.models.elements.wall import (
+    BaseWall,
     ExternalWall,
     FloorOnGround,
     InternalElement,
@@ -32,21 +48,166 @@ def _get_controllable_element(elements: List[System]) -> Optional["System"]:
     return controllable_elements[0]
 
 
+class SpaceParameter(BaseParameter):
+    sensible_thermal_mass_scaling_factor: float = Field(
+        1,
+        description="Factor for scaling the sensible thermal mass of the zone air volume",
+        alias="mSenFac",
+    )
+    floor_area: float = Field(20, description="Floor area [m2]", alias="AFlo")
+    average_room_height: float = Field(
+        2, description="Average room height [m]", alias="hRoo"
+    )
+    linearize_emissive_power: Literal["true", "false"] = Field(
+        default="true",
+        description="Set to true to linearize emissive power",
+        alias="linearizeRadiation",
+    )
+    nominal_mass_flow_rate: float = Field(
+        0.01, description="Nominal mass flow rate [kg/s]", alias="m_flow_nominal"
+    )
+
+    @computed_field
+    def volume(self) -> float:
+        return self.floor_area * self.average_room_height
+
+
+class BuildingsSpace(LibraryData):
+    template: str = """Buildings.ThermalZones.Detailed.MixedAir {{ element.name }}(
+        redeclare package Medium = Medium,
+        {{ macros.render_parameters(parameters) | safe}}
+        {%- if element.number_ventilation_ports != 0 -%}
+        nPorts = {{ element.number_ventilation_ports }},
+        {%- endif %}
+        {%- for boundary in element.boundaries -%}
+            {%- if boundary.type == 'ExternalWall' and boundary.number -%}
+                {%- if boundary.number %}
+                    nConExt={{ boundary.number }},
+                    datConExt(
+                    {{ macros.element_parameters(boundary) }},
+                    azi={{ macros.join_list(boundary.azimuths) }}),
+                {% else %}
+                    nConExt=0,
+                {%- endif %}
+            {%- endif %}
+            {%- if boundary.type == "InternalElement"-%}
+                {%- if boundary.number %}
+                    nSurBou={{ boundary.number }},
+                    surBou(
+                    A={{ macros.join_list(boundary.surfaces) }},
+                    til={{ macros.convert_tilts(boundary.tilts) }}),
+                {% else %}
+                    nSurBou=0,
+                {%- endif %}
+            {%- endif %}
+            {%- if boundary.type == "WindowedWall" -%}
+                {%- if boundary.number %}
+                    nConExtWin={{ boundary.number }},
+                    datConExtWin(
+                    {{ macros.element_parameters(boundary) }},
+                    glaSys={{ macros.join_list(boundary.window_layers) }},
+                    wWin={{ macros.join_list(boundary.window_width) }},
+                    hWin={{ macros.join_list(boundary.window_height) }}),
+                {% else %}
+                    nConExtWin=0,
+                {%- endif %}
+            {%- endif %}
+            {%- if boundary.type == "FloorOnGround" -%}
+                {%- if boundary.number %}
+                    nConBou={{ boundary.number }},
+                    datConBou(
+                    {{ macros.element_parameters(boundary) }},
+                    azi={{ macros.join_list(boundary.azimuths) }}),
+                {% else %}
+                    nConBou=0,
+                {%- endif %}
+            {%- endif %}
+        {%- endfor %}
+        nConPar=0,
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)"""
+    parameter_processing: Callable[
+        [SpaceParameter], dict
+    ] = lambda parameter: parameter.model_dump(by_alias=True, exclude={"volume"})
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(
+                targets=[InternalElement], names=["surf_surBou"], multi_connection=True
+            ),
+            Port(targets=[Occupancy], names=["qGai_flow"]),
+            Port(targets=[Weather], names=["weaBus"]),
+            Port(targets=[Emission], names=["heaPorAir", "heaPorRad"]),
+            Port(targets=[DataBus], names=["heaPorAir"]),
+            Port(targets=[SpaceControl], names=["heaPorAir"]),
+            Port(
+                targets=[Ventilation, Control, DataBus],
+                names=["ports"],
+                multi_connection=True,
+                flow=Flow.inlet_or_outlet,
+            ),
+        ]
+    )
+
+
+class IdeasSpace(LibraryData):
+    template: str = """IDEAS.Buildings.Components.Zone {{ element.name }}(
+    mSenFac=0.822,
+        {%- if element.number_ventilation_ports != 0 -%}
+    nPorts = {{ element.number_ventilation_ports }},
+    {%- endif %}
+    {{ macros.render_parameters(parameters) | safe}}
+    n50=0.822*0.5*{{ element.name }}.n50toAch,
+    redeclare package Medium = Medium,
+    nSurf={{ element.number_merged_external_boundaries }},
+    T_start=293.15)"""
+    parameter_processing: Callable[
+        [SpaceParameter], dict
+    ] = lambda parameter: change_alias(
+        SpaceParameter, {"average_room_height": "hZone", "volume": "V"}
+    )(
+        **parameter.model_dump()
+    ).model_dump(
+        by_alias=True, include={"average_room_height", "volume"}
+    )
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(
+                targets=[BaseWall],
+                names=["propsBus"],
+                multi_connection=True,
+                bus_connection=True,
+            ),
+            Port(targets=[Occupancy], names=["yOcc"]),
+            Port(targets=[Emission], names=["gainCon", "gainRad"]),
+            Port(
+                targets=[SpaceControl, DataBus],
+                names=["gainCon"],
+                multi_connection=True,
+                use_counter=False,
+            ),
+            Port(
+                targets=[Ventilation, Control, DataBus],
+                names=["ports"],
+                multi_connection=True,
+                flow=Flow.inlet_or_outlet,
+            ),
+        ]
+    )
+
+
 class Space(BaseElement):
     counter: ClassVar[int] = 0
+    parameters: SpaceParameter = Field(default=SpaceParameter())
     name: str
-    volume: float | int
-    height: float | int
-    floor_area: float | int
-    elevation: float | int
     external_boundaries: list[Union["ExternalWall", "Window", "FloorOnGround"]]
     internal_elements: List["InternalElement"] = Field(default=[])
     boundaries: Optional[List[WallParameters]] = None
     emissions: List[System] = Field(default=[])
     ventilation_inlets: List[System] = Field(default=[])
     ventilation_outlets: List[System] = Field(default=[])
-    # control: Optional[SpaceControl] = None
     occupancy: Optional[Occupancy] = None
+    libraries_data: List[AvailableLibraries] = AvailableLibraries(
+        ideas=[IdeasSpace()], buildings=[BuildingsSpace()]
+    )
 
     def model_post_init(self, __context):
         self._assign_space()

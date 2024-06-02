@@ -1,19 +1,50 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+)
 
 from jinja2 import Environment, FileSystemLoader
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, create_model
 
 from neosim.controller.parser import ControllerBus
 from neosim.models.constants import Flow
 
 if TYPE_CHECKING:
     pass
+Libraries = Literal["ideas", "buildings"]
+Boolean = Literal["true", "false"]
 
 
 class PartialConnection(BaseModel):
     equation: str
     position: List[float]
+
+
+class AvailableLibraries(BaseModel):
+    ideas: List["LibraryData"]
+    buildings: List["LibraryData"]
+
+    def get_library_data(
+        self, library_name: Libraries, variant: "BaseVariant"
+    ) -> "LibraryData":
+        if variant == BaseVariant.default:
+            return getattr(self, library_name)[0]
+        selected_variant = [
+            variant
+            for variant in getattr(self, library_name)
+            if variant.variant == variant
+        ]
+        if not selected_variant:
+            raise ValueError(f"Variant {variant} not found in library {library_name}")
+        return selected_variant[0]
 
 
 class Connection(BaseModel):
@@ -137,8 +168,14 @@ class DynamicComponentTemplate(BaseModel):
         return component
 
 
+class BaseParameter(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+    ...
+
+
 class BaseElement(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
+    parameters: Optional[BaseParameter] = None
     name: str
     position: Optional[List[float]] = None
     ports: list[Port] = Field(default=[], validate_default=True)
@@ -146,6 +183,26 @@ class BaseElement(BaseModel):
     annotation_template: Optional[str] = None
     component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
+    libraries_data: List[AvailableLibraries] = None
+
+    def assign_library_property(self, library_name: Libraries) -> None:
+        library_data = self.libraries_data.get_library_data(library_name, self.variant)
+        if not self.ports:
+            self.ports = library_data.ports_factory()
+        if not self.template:
+            self.template = library_data.template
+        if not self.annotation_template:
+            self.annotation_template = library_data.annotation_template
+        if not self.component_template:
+            self.component_template = library_data.component_template
+
+    def processed_parameters(self, library_name: Libraries) -> dict:
+        if self.libraries_data:
+            library_data = self.libraries_data.get_library_data(
+                library_name, self.variant
+            )
+            return library_data.parameter_processing(self.parameters)
+        return {}
 
     def get_position(self, layout: Dict["BaseElement", Any]) -> None:
         if not self.position:
@@ -269,3 +326,33 @@ def _is_inlet_or_outlet(target: "BaseElement") -> bool:
     return bool(
         [port for port in target.ports if port.flow in [Flow.inlet, Flow.outlet]]
     )
+
+
+def change_alias(
+    parameter: Type[BaseParameter], mapping: dict = None
+) -> Type[BaseModel]:
+    mapping = mapping or {}
+    new_param = {}
+    for name, field in parameter.model_fields.items():
+        if mapping.get(name):
+            field.alias = mapping[name]
+        new_param[name] = (
+            field.annotation,
+            Field(field.default, alias=field.alias, description=field.description),
+        )
+    return create_model("new_model", **new_param)
+
+
+class LibraryData(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    template: str = ""
+    annotation_template: str = """annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
+    component_template: Optional[DynamicComponentTemplate] = None
+    ports_factory: Callable[[], List[Port]]
+    variant: str = BaseVariant.default
+    parameter_processing: Callable[
+        [BaseParameter], dict
+    ] = lambda parameter: parameter.model_dump(by_alias=True, exclude_none=True)

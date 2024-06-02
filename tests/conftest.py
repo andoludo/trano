@@ -12,6 +12,7 @@ from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.constants import Azimuth, Flow, Tilt
 from neosim.models.elements.base import Port
+from neosim.models.elements.boiler import Boiler
 from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.control import (
     AhuControl,
@@ -23,24 +24,24 @@ from neosim.models.elements.control import (
     SpaceSubstanceVentilationControl,
     ThreeWayValveControl,
 )
+from neosim.models.elements.pump import Pump
+from neosim.models.elements.radiator import Radiator
 from neosim.models.elements.space import Space
+from neosim.models.elements.split_valve import SplitValve
 from neosim.models.elements.system import (
     VAV,
     AirHandlingUnit,
-    Boiler,
     DamperVariant,
     Duct,
     Emission,
     EmissionVariant,
     Occupancy,
-    Pump,
-    SplitValve,
     System,
     TemperatureSensor,
-    ThreeWayValve,
-    Valve,
     Weather,
 )
+from neosim.models.elements.three_way_valve import ThreeWayValve
+from neosim.models.elements.valve import Valve
 from neosim.models.elements.wall import ExternalWall, FloorOnGround, Window
 from neosim.topology import Network
 
@@ -732,7 +733,7 @@ def space_1() -> Space:
         ],
         emissions=[
             Valve(name="valve", control=EmissionControl(name="emission_valve_control")),
-            Emission(name="emission"),
+            Radiator(name="emission"),
         ],
     )
     return space_1
@@ -794,7 +795,7 @@ def space_2() -> Space:
             Valve(
                 name="valve_2", control=EmissionControl(name="emission_valve_control_2")
             ),
-            Emission(name="emission_2"),
+            Radiator(name="emission_2"),
         ],
     )
     return space_2

@@ -191,38 +191,6 @@ equation
 )
 
 
-dynamic_pump_template = DynamicComponentTemplate(
-    template="""
-model Pump{{ element.name | capitalize}}
-extends {{ package_name }}.Common.Fluid.Ventilation.PartialPump;
-{{bus_template}}
-equation
-{{bus_ports | safe}}
- end Pump{{ element.name | capitalize}};
- """,
-    category="ventilation",
-    bus=ControllerBus(
-        real_inputs=[
-            RealInput(name="y", target="element.name", component="pumRad", port="y")
-        ],
-        real_outputs=[
-            RealOutput(
-                name="y_gain",
-                target="element.name",
-                component="gain",
-                port="y",
-            ),
-            RealOutput(
-                name="T",
-                target="element.control.name",
-                component="temSup",
-                port="T",
-            ),
-        ],
-    ),
-)
-
-
 dynamic_data_server_template = DynamicComponentTemplate(
     template="""
 model DataServer
@@ -518,6 +486,36 @@ dynamic_boiler_control_template = DynamicComponentTemplate(
                 target="element.controllable_element.name",
                 component="lesThrTOut",
                 port="u",
+            ),
+        ],
+    ),
+)
+dynamic_pump_template = DynamicComponentTemplate(
+    template="""
+model Pump{{ element.name | capitalize}}
+extends {{ package_name }}.Common.Fluid.Ventilation.PartialPump;
+{{bus_template}}
+equation
+{{bus_ports | safe}}
+ end Pump{{ element.name | capitalize}};
+ """,
+    category="ventilation",
+    bus=ControllerBus(
+        real_inputs=[
+            RealInput(name="y", target="element.name", component="pumRad", port="y")
+        ],
+        real_outputs=[
+            RealOutput(
+                name="y_gain",
+                target="element.name",
+                component="gain",
+                port="y",
+            ),
+            RealOutput(
+                name="T",
+                target="element.control.name",
+                component="temSup",
+                port="T",
             ),
         ],
     ),

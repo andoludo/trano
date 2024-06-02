@@ -11,12 +11,12 @@ from neosim.library.base import (
     BaseInternalElement,
     BaseSpace,
     BaseSplitValve,
+    BaseTemperatureSensor,
     BaseThreeWayValve,
     BaseValve,
     BaseWeather,
     DefaultLibrary,
-    LibraryData,
-    MaterialProperties, BaseTemperatureSensor,
+    MaterialProperties,
 )
 from neosim.library.buildings.constants import BUILDINGS_CONSTANTS
 from neosim.library.buildings.data import (
@@ -25,6 +25,7 @@ from neosim.library.buildings.data import (
     BuildingsGlazing,
     BuildingsMaterial,
 )
+from neosim.models.elements.base import LibraryData
 from neosim.models.elements.wall import BaseSimpleWall
 
 
