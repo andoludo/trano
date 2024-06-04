@@ -1,6 +1,6 @@
 from typing import Callable, List, Optional
 
-from pydantic import Field
+from pydantic import Field, computed_field
 
 from neosim.controller.parser import ControllerBus, RealInput, RealOutput
 from neosim.models.constants import Flow
@@ -17,7 +17,21 @@ from neosim.models.elements.system import System
 
 
 class BoilerParameters(BaseParameter):
-    # boiler
+    sca_fac_rad: float = Field(
+        1.5,
+        alias="scaFacRad",
+        title="Scaling factor to scale the power (and mass flow rate) of the radiator loop",
+    )
+    dt_boi_nominal: float = Field(
+        20,
+        alias="dTBoi_nominal",
+        title="Nominal temperature difference for boiler loop",
+    )
+    dt_rad_nominal: float = Field(
+        10,
+        alias="dTRad_nominal",
+        title="Nominal temperature difference for radiator loop",
+    )
     coefficients_for_efficiency_curve: str = Field(
         "{0.9}", alias="a", title="Coefficients for efficiency curve"
     )
@@ -48,10 +62,6 @@ class BoilerParameters(BaseParameter):
         alias="deltaM",
         title="Fraction of nominal flow rate where flow transitions to laminar",
     )
-    nominal_mass_flow_rate: Optional[float] = Field(
-        0.008, alias="m_flow_nominal", title="Nominal mass flow rate"
-    )
-
     if_actual_temperature_at_port_is_computed: Boolean = Field(
         "false",
         alias="show_T",
@@ -67,9 +77,23 @@ class BoilerParameters(BaseParameter):
     thickness_of_insulation: int = Field(
         0.002, alias="dIns", title="Thickness of insulation"
     )
+    dp: str = Field("(3000 + 2000)*{2,1}", alias="dp", title="")
 
-    class Config:
-        allow_population_by_field_name = True
+    @computed_field(title="Nominal mass flow rate boiler")
+    def nominal_mass_flow_rate_boiler(self) -> float:
+        return (
+            self.sca_fac_rad * self.nominal_heating_power / self.dt_boi_nominal / 4200
+        )
+
+    @computed_field(title="Nominal mass flow rate boiler")
+    def nominal_mass_flow_radiator_loop(self) -> float:
+        return (
+            self.sca_fac_rad * self.nominal_heating_power / self.dt_rad_nominal / 4200
+        )
+
+    @computed_field(alias="V_flow", title="")
+    def v_flow(self) -> str:
+        return f"{self.nominal_mass_flow_rate_boiler}" "/1000*{0.5,1}"
 
 
 dynamic_boiler_template = DynamicComponentTemplate(
@@ -110,6 +134,13 @@ class BaseBoiler(LibraryData):
     {{ macros.render_parameters(parameters) | safe}}
     redeclare package MediumW = MediumW) "Boiler" """
     component_template: Optional[DynamicComponentTemplate] = dynamic_boiler_template
+    parameter_processing: Callable[
+        [BaseParameter], dict
+    ] = lambda parameter: parameter.model_dump(
+        by_alias=True,
+        exclude_none=True,
+        exclude={"sca_fac_rad", "dt_boi_nominal", "dt_rad_nominal"},
+    )
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(

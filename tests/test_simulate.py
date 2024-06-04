@@ -18,11 +18,15 @@ def container(client: docker.DockerClient) -> None:
     container = client.containers.run(
         "openmodelica/openmodelica:v1.22.4-ompython",
         command="tail -f /dev/null",
-        volumes=[f"{str(Path(__file__).parents[1])}:/neosim"],
+        volumes=[
+            f"{str(Path(__file__).parents[1])}:/neosim",
+            f"{str(Path(__file__).parents[1])}/results:/results",
+        ],
         detach=True,
     )
     container.exec_run(cmd="omc /neosim/neosim/library/install_package.mos")
     yield container
+    container.exec_run(cmd='find / -name "*_res.mat" -exec cp {} /results \;')
     container.stop()
     container.remove()
 
@@ -32,6 +36,14 @@ def test_simulate_buildings_free_float_single_zone(
     container: docker.models.containers.Container,
 ) -> None:
     with create_mos_file(buildings_free_float_single_zone) as mos_file_name:
+        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
+        assert is_success(results)
+
+
+def test_simulate_buildings_simple_hydronic_two_zones_new(
+    buildings_two_rooms_with_storage, container: docker.models.containers.Container
+):
+    with create_mos_file(buildings_two_rooms_with_storage) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
 
@@ -143,7 +155,10 @@ def test_space_1_ideal_heating_network(
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
 
-def test_simulate_vav_ventilation_control(vav_ventilation_control: Network,container: docker.models.containers.Container) -> None:
+
+def test_simulate_vav_ventilation_control(
+    vav_ventilation_control: Network, container: docker.models.containers.Container
+) -> None:
     with create_mos_file(vav_ventilation_control) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)

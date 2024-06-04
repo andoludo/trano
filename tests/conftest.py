@@ -12,7 +12,7 @@ from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.constants import Azimuth, Flow, Tilt
 from neosim.models.elements.base import Port
-from neosim.models.elements.boiler import Boiler
+from neosim.models.elements.boiler import Boiler, BoilerParameters
 from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.control import (
     AhuControl,
@@ -24,10 +24,10 @@ from neosim.models.elements.control import (
     SpaceSubstanceVentilationControl,
     ThreeWayValveControl,
 )
-from neosim.models.elements.pump import Pump
+from neosim.models.elements.pump import Pump, PumpParameters
 from neosim.models.elements.radiator import Radiator
 from neosim.models.elements.space import Space
-from neosim.models.elements.split_valve import SplitValve
+from neosim.models.elements.split_valve import SplitValve, SplitValveParameters
 from neosim.models.elements.system import (
     VAV,
     AirHandlingUnit,
@@ -40,7 +40,10 @@ from neosim.models.elements.system import (
     TemperatureSensor,
     Weather,
 )
-from neosim.models.elements.three_way_valve import ThreeWayValve
+from neosim.models.elements.three_way_valve import (
+    ThreeWayValve,
+    ThreeWayValveParameters,
+)
 from neosim.models.elements.valve import Valve
 from neosim.models.elements.wall import ExternalWall, FloorOnGround, Window
 from neosim.topology import Network
@@ -70,7 +73,7 @@ def create_mos_file(network: Network, check_only: bool = False) -> str:
     getVersion();
     loadFile("/neosim/tests/{{model_file}}");
     checkModel({{model_name}}.building);
-    simulate({{model_name}}.building,startTime = 0, stopTime = 3600);
+    simulate({{model_name}}.building,startTime = 0, stopTime = 604800);
     """
             )
         mos_file = template.render(
@@ -860,16 +863,79 @@ def space_3() -> Space:
 
 
 @pytest.fixture
-def buildings_simple_hydronic_two_zones_new(space_1: Space, space_2: Space) -> Network:
-    network = Network(name="buildings_simple_hydronic_two_zones")
+def buildings_two_rooms_with_storage(space_1: Space, space_2: Space) -> Network:
+    """
+        parameter Integer nRoo = 2 "Number of rooms";
+     parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";
+     parameter Modelica.Units.SI.Power Q_flow_nominal=2200
+       "Nominal power of heating plant";
+    // Due to the night setback, in which the radiator do not provide heat input into the room,
+    // we scale the design power of the radiator loop
+    parameter Real scaFacRad = 1.5
+       "Scaling factor to scale the power (and mass flow rate) of the radiator loop";
+         parameter Modelica.Units.SI.Temperature dTBoi_nominal=20
+       "Nominal temperature difference for boiler loop";
+     parameter Modelica.Units.SI.Temperature TSup_nominal=273.15 + 50 + 5
+       "Nominal supply temperature for radiators";
+     parameter Modelica.Units.SI.Temperature TRet_nominal=273.15 + 40 + 5
+       "Nominal return temperature for radiators";
+     parameter Modelica.Units.SI.Temperature dTRad_nominal=TSup_nominal -
+         TRet_nominal "Nominal temperature difference for radiator loop";
+
+     parameter Modelica.Units.SI.MassFlowRate mRad_flow_nominal=scaFacRad*
+         Q_flow_nominal/dTRad_nominal/4200
+       "Nominal mass flow rate of radiator loop";
+     parameter Modelica.Units.SI.MassFlowRate mBoi_flow_nominal=scaFacRad*
+         Q_flow_nominal/dTBoi_nominal/4200 "Nominal mass flow rate of boiler loop";
+     parameter Modelica.Units.SI.PressureDifference dpPip_nominal=10000
+       "Pressure difference of pipe (without valve)";
+     parameter Modelica.Units.SI.PressureDifference dpVal_nominal=6000
+       "Pressure difference of valve";
+     parameter Modelica.Units.SI.PressureDifference dpRoo_nominal=6000
+       "Pressure difference of flow leg that serves a room";
+     parameter Modelica.Units.SI.PressureDifference dpThrWayVal_nominal=6000
+       "Pressure difference of three-way valve";
+     parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +
+         dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
+       "Pressure difference of loop";
+
+    """
+    Q_flow_nominal = 2200
+    scaFacRad = 1.5
+    TSup_nominal = 273.15 + 50 + 5
+    TRet_nominal = 273.15 + 40 + 5
+    dTRad_nominal = TSup_nominal - TRet_nominal
+    dTBoi_nominal = 20
+    mRad_flow_nominal = scaFacRad * Q_flow_nominal / dTRad_nominal / 4200
+    mBoi_flow_nominal = scaFacRad * Q_flow_nominal / dTBoi_nominal / 4200
+    dpPip_nominal = 10000
+    dpVal_nominal = 6000
+    dpRoo_nominal = 6000
+    dpThrWayVal_nominal = 6000
+    dp_nominal = dpPip_nominal + dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
+
+    network = Network(name="buildings_two_rooms_with_storage")
     network.add_boiler_plate_spaces([space_1, space_2])
 
-    pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
+    pump = Pump(
+        name="pump",
+        control=CollectorControl(name="pump_control"),
+        parameters=PumpParameters(
+            dp_nominal=dp_nominal, m_flow_nominal=mRad_flow_nominal
+        ),
+    )
     boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
-    split_valve = SplitValve(name="split_valve")
+    split_valve = SplitValve(
+        name="split_valve",
+        parameters=SplitValveParameters(m_flow_nominal=mRad_flow_nominal),
+    )
     three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
     three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=three_way_valve_control
+        name="three_way_valve",
+        control=three_way_valve_control,
+        parameters=ThreeWayValveParameters(
+            m_flow_nominal=mRad_flow_nominal, dp_valve_nominal=dpThrWayVal_nominal
+        ),
     )
     temperature_sensor = TemperatureSensor(name="temperature_sensor")
     network.connect_systems(temperature_sensor, space_1.first_emission())

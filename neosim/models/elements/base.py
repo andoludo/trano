@@ -169,8 +169,7 @@ class DynamicComponentTemplate(BaseModel):
 
 
 class BaseParameter(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-    ...
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
 
 class BaseElement(BaseModel):

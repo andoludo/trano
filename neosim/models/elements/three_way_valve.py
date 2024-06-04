@@ -51,21 +51,19 @@ class ThreeWayValveParameters(BaseParameter):
     m_flow_nominal: Optional[float] = Field(
         0.0078, alias="m_flow_nominal", title="Nominal mass flow rate"
     )
-    dpValve_nominal: Optional[float] = Field(6000, alias="dpValve_nominal", title="Pa")
+    dp_valve_nominal: Optional[float] = Field(6000, alias="dpValve_nominal", title="Pa")
     rhoStd: Optional[float] = Field(
         None,
         alias="rhoStd",
         title="Inlet density for which valve coefficients are defined",
     )
 
-    class Config:
-        allow_population_by_field_name = True
-
 
 class BaseThreeWayValve(LibraryData):
     template: str = """    {{library_name}}.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear
              {{ element.name }}(
     redeclare package Medium = MediumW,
+    use_inputFilter=false,
     {{ macros.render_parameters(parameters) | safe}}
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-wayvalve" """
     ports_factory: Callable[[], List[Port]] = Field(

@@ -16,13 +16,13 @@ from neosim.models.elements.system import System
 
 
 class PumpParameters(BaseParameter):
-    nominal_mass_flow_rate_for_configuration_of_pressure_curve: Optional[float] = Field(
+    m_flow_nominal: Optional[float] = Field(
         0.008,
         alias="m_flow_nominal",
         title="Nominal mass flow rate for configuration of pressure curve",
     )
-    nominal_pressure_head_for_configuration_of_pressure_curve: Optional[float] = Field(
-        10,
+    dp_nominal: Optional[float] = Field(
+        10000,
         alias="dp_nominal",
         title="Nominal pressure head for configuration of pressure curve",
     )

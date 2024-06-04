@@ -1,6 +1,6 @@
 from typing import Callable, List, Optional
 
-from pydantic import Field
+from pydantic import Field, field_serializer
 
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
@@ -14,9 +14,8 @@ from neosim.models.elements.system import System
 
 
 class SplitValveParameters(BaseParameter):
-    mass_flow_rate_set_negative_at_outflowing_ports: str = Field(
-        "0.008*{1, -1, -1}",
-        alias="m_flow_nominal",
+    m_flow_nominal: float = Field(
+        0.008,
         title="Mass flow rate. Set negative at outflowing ports.",
     )
     dp_nominal: str = Field("{10000,-1,-1}", alias="dp_nominal", title="Pa")
@@ -43,8 +42,9 @@ class SplitValveParameters(BaseParameter):
         title="Nominal mass flow rate for dynamic momentum and energy balance",
     )
 
-    class Config:
-        allow_population_by_field_name = True
+    @field_serializer("m_flow_nominal")
+    def m_flow_nominal_serializer(m_flow_nominal: float) -> str:
+        return f"{m_flow_nominal}" + "*{1, -1, -1}"
 
 
 class BaseSplitValve(LibraryData):

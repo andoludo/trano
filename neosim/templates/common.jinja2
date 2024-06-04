@@ -456,7 +456,7 @@ constructed by the signals connected to this bus.
   inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
     "Root of the state graph"
     annotation (Placement(transformation(extent={{-134,98},{-114,118}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr1(k=80 + 273.15)
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr1(k=20 + 273.15)
     "Threshold to switch boiler off"
     annotation (Placement(transformation(extent={{-208,-22},{-188,-2}})));
 equation
@@ -563,69 +563,73 @@ end ventilation;
                   fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
                   fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
   end Simple;
-        partial model PartialBoilerWithStorage
+
+partial model PartialBoilerWithStorage
   replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
-    "Medium model" annotation (choicesAllMatching=true);
-  extends Buildings.Fluid.Interfaces.PartialTwoPort(redeclare package Medium = MediumW);
+      "Medium model" annotation (choicesAllMatching=true);
+  extends Buildings.Fluid.Interfaces.PartialTwoPort(
+                                            redeclare package Medium = MediumW);
 
 
-parameter Real a[:] = {0.9} "Coefficients for efficiency curve";
-parameter Buildings.Fluid.Types.EfficiencyCurves
-    effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
+  parameter Real a[:]={0.9} "Coefficients for efficiency curve";
+  parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
     "Curve used to compute the efficiency";
-parameter Modelica.Units.SI.Temperature T_nominal=353.15
+  parameter Modelica.Units.SI.Temperature T_nominal=353.15
     "Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)"
     annotation (Dialog(enable=(effCur == Buildings.Fluid.Types.EfficiencyCurves.QuadraticLinear)));
 
 
-parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
-   annotation (choicesAllMatching = true);
+  parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
+    annotation (choicesAllMatching=true);
 
-parameter Modelica.Units.SI.Power Q_flow_nominal "Nominal heating power";
-parameter Boolean linearizeFlowResistance = false
+  parameter Modelica.Units.SI.Power Q_flow_nominal "Nominal heating power";
+  parameter Boolean linearizeFlowResistance=false
     "= true, use linear relation between m_flow and dp for any flow rate"
-    annotation(Dialog(enable = computeFlowResistance,
-               tab="Flow resistance"));
-parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit=
-        "Pa") "Pressure difference"
-    annotation (Dialog(group="Nominal condition"));
-parameter Real deltaM = 0.1
+    annotation (Dialog(enable=computeFlowResistance,
+       tab="Flow resistance"));
+  parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit=
+"Pa") "Pressure difference" annotation (Dialog(group="Nominal condition"));
+parameter Modelica.Units.SI.Pressure dp[:]=(3000 + 2000)*{2,1} "Pressure";
+parameter Real V_flow[:] = 0.001/1000*{0.5,1};
+  parameter Real deltaM=0.1
     "Fraction of nominal flow rate where flow transitions to laminar";
-parameter Modelica.Units.SI.MassFlowRate m_flow_nominal;
-parameter Boolean show_T = false;
+parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_rate_boiler;
+parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
+  parameter Boolean show_T=false;
 
 
-parameter Modelica.Units.SI.Volume VTan "Tank volume";
-parameter Modelica.Units.SI.Length hTan "Height of tank (without insulation)";
-parameter Modelica.Units.SI.Length dIns "Thickness of insulation";
-parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
+  parameter Modelica.Units.SI.Volume VTan "Tank volume";
+  parameter Modelica.Units.SI.Length hTan "Height of tank (without insulation)";
+  parameter Modelica.Units.SI.Length dIns "Thickness of insulation";
+  parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
     "Specific heat conductivity of insulation";
-parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+  parameter Integer nSeg(min=2) = 2 "Number of volume segments";
 
 
   Buildings.Fluid.Movers.SpeedControlled_y pumBoi(
     redeclare package Medium = MediumW,
+per(pressure(V_flow=V_flow, dp=dp)),
     use_inputFilter=false,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
     "Pump for boiler circuit" annotation (Placement(transformation(extent={{-10,
-            -10},{10,10}}, origin={-14,10})));
+    -10},{10,10}}, origin={-8,10})));
 
   Buildings.Fluid.Boilers.BoilerPolynomial boi(
     a=a,
     effCur=effCur,
     redeclare package Medium = MediumW,
     Q_flow_nominal=Q_flow_nominal,
-    m_flow_nominal=m_flow_nominal,
+    m_flow_nominal=nominal_mass_flow_rate_boiler,
     fue=fue,
     dp_nominal=dp_nominal,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     T_start=293.15) "Boiler"
-    annotation (Placement(transformation(extent={{-70,0},{-50,20}})));
+    annotation (Placement(transformation(extent={{-74,0},{-54,20}})));
   Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=288.15)
     "Ambient temperature in boiler room"
     annotation (Placement(transformation(extent={{-14,74},{6,94}})));
   Buildings.Fluid.Storage.StratifiedEnhanced tan1(
-    m_flow_nominal=m_flow_nominal,
+    m_flow_nominal=nominal_mass_flow_radiator_loop,
     dIns=dIns,
     redeclare package Medium = MediumW,
     hTan=hTan,
@@ -633,7 +637,7 @@ parameter Integer nSeg(min=2) = 2 "Number of volume segments";
     show_T=true,
     VTan=VTan,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Storage tank"
-    annotation (Placement(transformation(extent={{-2,-50},{38,-10}})));
+    annotation (Placement(transformation(extent={{12,-72},{52,-32}})));
   Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor tanTemBot
     "Tank temperature"
     annotation (Placement(transformation(extent={{68,-66},{88,-46}})));
@@ -641,93 +645,161 @@ parameter Integer nSeg(min=2) = 2 "Number of volume segments";
     "Tank temperature"
     annotation (Placement(transformation(extent={{68,-34},{88,-14}})));
   Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium =
-        MediumW)
-    "Fixed boundary condition, needed to provide a pressure in the system"
+MediumW) "Fixed boundary condition, needed to provide a pressure in the system"
     annotation (Placement(transformation(extent={{-74,68},{-54,88}})));
   Buildings.Fluid.FixedResistances.Junction splVal3(
     dp_nominal={0,0,0},
-    m_flow_nominal=m_flow_nominal*{-1,1,1},
+    m_flow_nominal=nominal_mass_flow_rate_boiler*{-1,-1,1},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Flow splitter"
     annotation (Placement(transformation(
-        extent={{10,-10},{-10,10}},
-        rotation=180,
-        origin={18,-84})));
+extent={{10,-10},{-10,10}},
+rotation=180,
+origin={30,-98})));
   Buildings.Fluid.FixedResistances.Junction splVal4(
     dp_nominal={0,0,0},
-    m_flow_nominal=m_flow_nominal*{1,-1,-1},
+    m_flow_nominal=nominal_mass_flow_rate_boiler*{1,1,-1},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Flow splitter"
     annotation (Placement(transformation(
-        extent={{10,10},{-10,-10}},
-        rotation=180,
-        origin={18,10})));
+extent={{10,10},{-10,-10}},
+rotation=180,
+origin={32,10})));
+        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor1(
+      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+                                      "Radiator"  annotation (
+    Placement(transformation(origin={-36,11},
+    extent = {{-10, -10}, {10, 10}},
+        rotation=0)));
+        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor2(
+      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+                                      "Radiator"  annotation (
+    Placement(transformation(origin={66,-85},
+    extent = {{-10, -10}, {10, 10}},
+        rotation=0)));
+        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor3(
+      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+                                      "Radiator"  annotation (
+    Placement(transformation(origin={32,-16.5},
+    extent={{-8.5,-8},{8.5,8}},
+        rotation=-90)));
+        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor4(
+      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+                                      "Radiator"  annotation (
+    Placement(transformation(origin={-34,-97},
+    extent = {{-10, -10}, {10, 10}},
+        rotation=0)));
+  Buildings.Fluid.Sensors.MassFlowRate senMasFlo1(redeclare package Medium =
+        MediumW)
+    annotation (Placement(transformation(extent={{10,-10},{-10,10}},
+        rotation=90,
+        origin={46,30})));
+  Buildings.Fluid.Sensors.MassFlowRate senMasFlo2(redeclare package Medium =
+        MediumW)
+    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+        rotation=90,
+        origin={-78,-46})));
+  Buildings.Fluid.Sensors.MassFlowRate senMasFlo3(redeclare package Medium =
+        MediumW)
+    annotation (Placement(transformation(extent={{-6,-7},{6,7}},
+        rotation=0,
+        origin={13,10})));
+  Buildings.Fluid.Sensors.MassFlowRate senMasFlo4(redeclare package Medium =
+        MediumW)
+    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+        rotation=0,
+        origin={94,-86})));
 equation
-  connect(TAmb.port, boi.heatPort)
-                   annotation (Line(
-      points={{6,84},{20,84},{20,30},{-60,30},{-60,17.2}},
+  connect(
+  TAmb.port, boi.heatPort)
+           annotation (Line(
+      points={{6,84},{20,84},{20,30},{-64,30},{-64,17.2}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(boi.port_b, pumBoi.port_a)
+  connect(
+  tan1.heaPorVol[1], tanTemTop.port)
                      annotation (Line(
-      points={{-50,10},{-24,10}},
-      color={0,127,255},
+      points={{32,-52.3},{32,-52},{64,-52},{64,-24},{68,-24}},
+      color={191,0,0},
       smooth=Smooth.None));
-  connect(tan1.heaPorVol[1], tanTemTop.port)
+  connect(
+  tanTemBot.port, tan1.heaPorVol[tan1.nSeg])
                              annotation (Line(
-      points={{18,-30.96},{-6,-30.96},{-6,-56},{58,-56},{58,-24},{68,-24}},
+      points={{68,-56},{56,-56},{56,-52},{32,-52}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(tanTemBot.port, tan1.heaPorVol[tan1.nSeg])
-                                     annotation (Line(
-      points={{68,-56},{-6,-56},{-6,-30},{18,-30}},
+  connect(
+  tan1.heaPorTop, TAmb.port)
+             annotation (Line(
+      points={{36,-37.2},{62,-37.2},{62,84},{6,84}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(tan1.heaPorTop, TAmb.port)
-                     annotation (Line(
-      points={{22,-15.2},{22,-6},{6,-6},{6,30},{12,30},{12,84},{6,84}},
+  connect(
+  TAmb.port, tan1.heaPorSid)
+             annotation (Line(
+      points={{6,84},{62,84},{62,-50},{54,-50},{54,-52},{43.2,-52}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(TAmb.port, tan1.heaPorSid)
-                     annotation (Line(
-      points={{6,84},{12,84},{12,22},{6,22},{6,-6},{34,-6},{34,-8},{56,-8},{56,-30},
-          {29.2,-30}},
+  connect(
+  TAmb.port, tan1.heaPorBot)
+             annotation (Line(
+      points={{6,84},{62,84},{62,-50},{54,-50},{54,-52},{8,-52},{8,-80},{36,-80},
+          {36,-66.8}},
       color={191,0,0},
       smooth=Smooth.None));
-  connect(TAmb.port, tan1.heaPorBot)
-                     annotation (Line(
-      points={{6,84},{12,84},{12,22},{6,22},{6,-6},{34,-6},{34,-8},{56,-8},{56,-30},
-          {42,-30},{42,-44.8},{22,-44.8}},
-      color={191,0,0},
-      smooth=Smooth.None));
-  connect(bou.ports[1], boi.port_a)
-                    annotation (Line(
-      points={{-54,78},{-48,78},{-48,32},{-80,32},{-80,10},{-70,10}},
+  connect(
+  bou.ports[1], boi.port_a)
+            annotation (Line(
+      points={{-54,78},{-48,78},{-48,32},{-80,32},{-80,10},{-74,10}},
       color={0,127,255},
       smooth=Smooth.None));
-  connect(tan1.port_b, splVal3.port_3)
-    annotation (Line(points={{18,-50},{18,-74}}, color={0,127,255}));
-  connect(splVal4.port_3, tan1.port_a)
-    annotation (Line(points={{18,0},{18,-10}}, color={0,127,255}));
-  connect(splVal4.port_1, pumBoi.port_b)
-    annotation (Line(points={{8,10},{-4,10}}, color={0,127,255}));
-  connect(splVal3.port_1, boi.port_a)
-                      annotation (Line(points={{8,-84},{-76,-84},{-76,10},{-70,10}},
-        color={0,127,255}));
-  connect(port_a, splVal4.port_2)
-                  annotation (Line(points={{-100,0},{-90,0},{-90,50},{46,50},{46,
-          10},{28,10}}, color={0,127,255}));
-  connect(splVal3.port_2, port_b)
-                  annotation (Line(points={{28,-84},{114,-84},{114,14},{86,14},{
-          86,0},{100,0}}, color={0,127,255}));
-  annotation (Icon(graphics={
-        Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
-        Rectangle(
-          fillColor={255,255,255},
-fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
-fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
+  connect(
+  tan1.port_b, splVal3.port_3) annotation (Line(points={{32,-72},{32,-84},{30,-84},
+          {30,-88}}, color={0,127,255}));
+  connect(boi.port_b, temperature_sensor1.port_a) annotation (Line(points={{-54,
+          10},{-50,10},{-50,11},{-46,11}}, color={0,127,255}));
+  connect(temperature_sensor1.port_b, pumBoi.port_a) annotation (Line(points={{-26,11},
+          {-23,11},{-23,10},{-18,10}},     color={0,127,255}));
+  connect(splVal3.port_2, temperature_sensor2.port_a) annotation (Line(points={{40,-98},
+          {52,-98},{52,-85},{56,-85}},         color={0,127,255}));
+  connect(splVal4.port_3, temperature_sensor3.port_a)
+    annotation (Line(points={{32,0},{32,-8}}, color={0,127,255}));
+  connect(temperature_sensor3.port_b, tan1.port_a)
+    annotation (Line(points={{32,-25},{32,-32}}, color={0,127,255}));
+  connect(splVal3.port_1, temperature_sensor4.port_b) annotation (Line(points={{20,-98},
+          {18,-97},{-24,-97}},                 color={0,127,255}));
+  connect(senMasFlo1.port_b, splVal4.port_2) annotation (Line(points={{46,20},{46,
+          16},{42,16},{42,10}}, color={0,127,255}));
+  connect(boi.port_a, senMasFlo2.port_b)
+    annotation (Line(points={{-74,10},{-78,10},{-78,-36}}, color={0,127,255}));
+  connect(temperature_sensor4.port_a, senMasFlo2.port_a) annotation (Line(
+        points={{-44,-97},{-44,-98},{-78,-98},{-78,-56}}, color={0,127,255}));
+  connect(splVal4.port_1, senMasFlo3.port_b)
+    annotation (Line(points={{22,10},{19,10}}, color={0,127,255}));
+  connect(senMasFlo3.port_a, pumBoi.port_b)
+    annotation (Line(points={{7,10},{2,10}}, color={0,127,255}));
+  connect(temperature_sensor2.port_b, senMasFlo4.port_a) annotation (Line(
+        points={{76,-85},{80,-85},{80,-86},{84,-86}}, color={0,127,255}));
+  connect(senMasFlo1.port_a, port_b) annotation (Line(points={{46,40},{46,44},{86,
+          44},{86,0},{100,0}}, color={0,127,255}));
+  connect(port_a, senMasFlo4.port_b) annotation (Line(points={{-100,0},{-84,0},{
+          -84,-32},{-96,-32},{-96,-114},{110,-114},{110,-86},{104,-86}}, color={
+          0,127,255}));
+  annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
+Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
+Rectangle(
+  fillColor={255,255,255},
+          fillPattern=FillPattern.Solid,
+          extent={{-68,70},{70,-70}}),
+        Polygon(
+          lineColor={0,0,255},
+          fillColor={0,0,255},
+          fillPattern=FillPattern.Solid,
+          points={{-68,18},{-68,18},{-54,32},{-28,16},{0,30},{26,16},{46,32},{70,
+              18},{70,18},{70,-70},{70,-70},{-68,-70},{-68,-70},{-68,18}},
+          smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
+            {100,100}})));
 end PartialBoilerWithStorage;
-
 
     {% endraw %}
     {% if dynamic_components.boiler %}

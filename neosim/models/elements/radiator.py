@@ -33,12 +33,12 @@ class RadiatorParameter(BaseParameter):
         title="Nominal heating power (positive for heating)",
     )
     water_inlet_temperature_at_nominal_condition: Optional[float] = Field(
-        273.15 + 80,
+        273.15 + 90,
         alias="T_a_nominal",
         title="Water inlet temperature at nominal condition",
     )
     water_outlet_temperature_at_nominal_condition: Optional[float] = Field(
-        273.15 + 90,
+        273.15 + 80,
         alias="T_b_nominal",
         title="Water outlet temperature at nominal condition",
     )

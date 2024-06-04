@@ -271,14 +271,14 @@ end EmissionControl{{ element.name  | capitalize}};""",
         ],
         real_inputs=[
             RealInput(
-                default=25,
+                default=273.15 + 25,
                 name="TCooSet",
                 target="element.space_name",
                 component="emissionControl",
                 port="TCooSet",
             ),
             RealInput(
-                default=21,
+                default=273.15 + 21,
                 name="THeaSet",
                 target="element.space_name",
                 component="emissionControl",
@@ -392,7 +392,7 @@ end ThreeWayValveControl{{ element.name | capitalize}};""",
     bus=ControllerBus(
         real_inputs=[
             RealInput(
-                default=90,
+                default=273.15 + 90,
                 name="TColSet",
                 target="element.name",
                 component="conVal",
