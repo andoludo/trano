@@ -11,7 +11,8 @@ from neosim.models.elements.base import (
     LibraryData,
     Port,
 )
-from neosim.models.elements.control import Control, DataBus
+from neosim.models.elements.bus import DataBus
+from neosim.models.elements.controls.base import Control
 from neosim.models.elements.system import System
 
 
@@ -85,7 +86,7 @@ equation
 class BasePump(LibraryData):
     template: str = """  {{ package_name }}.Common.Fluid.Ventilation.Pump{{ element.name | capitalize }}
      {{ element.name }}(
-     {{ macros.render_parameters(parameters) | safe}}
+     {{ macros.render_parameters(parameters) | safe}},
     redeclare package Medium = MediumW
 
     )"""
@@ -117,6 +118,6 @@ class BasePump(LibraryData):
 class Pump(System):
     parameters: PumpParameters = Field(default=PumpParameters())
     libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BasePump()],
-        buildings=[BasePump()],
+        ideas=[BasePump],
+        buildings=[BasePump],
     )

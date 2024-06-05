@@ -403,140 +403,138 @@ constructed by the signals connected to this bus.
     {% endif %}
     {% raw %}
 
-        partial model PartialBoilerControl
-  parameter Real TSup_nominal=80 + 273.15;
-  Buildings.Controls.OBC.CDL.Reals.GreaterThreshold greThr(t=TSup_nominal + 5)
-    "Check for temperature at the bottom of the tank"
-    annotation (Placement(transformation(extent={{-114,-142},{-94,-122}})));
+      partial model PartialBoilerControl
+  parameter Modelica.Units.SI.Temperature TSup_nominal=80 + 273.15 "Check for temperature at the bottom of the tank";
+    parameter Modelica.Units.SI.Temperature threshold_outdoor_air_cutoff=15 + 273.15 "Output true if outdoor air is below heating cut-off limit";
+    parameter Modelica.Units.SI.Temperature threshold_to_switch_off_boiler=15 + 273.15 "Threshold to switch boiler off";
+  Buildings.Controls.OBC.CDL.Reals.GreaterThreshold greThr(t=
+        TSup_nominal + 5)
+    "Check for temperature at the bottom of the tank" annotation (
+      Placement(transformation(extent={{-114,-142},{-94,-122}})));
   Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToReaPum
-    "Signal converter for pump"
-    annotation (Placement(transformation(extent={{-94,-32},{-114,-12}})));
+    "Signal converter for pump" annotation (Placement(transformation(
+          extent={{-94,-32},{-114,-12}})));
   Buildings.Controls.OBC.CDL.Reals.Greater lesThr
-    "Check for temperature at the top of the tank"
-    annotation (Placement(transformation(extent={{-114,-80},{-94,-60}})));
-  Modelica.Blocks.MathBoolean.Or pumOnSig(nu=3) "Signal for pump being on"
+    "Check for temperature at the top of the tank" annotation (
+      Placement(transformation(extent={{-114,-80},{-94,-60}})));
+  Modelica.Blocks.MathBoolean.Or pumOnSig(nu=3)
+    "Signal for pump being on"
     annotation (Placement(transformation(extent={{146,-2},{166,18}})));
   Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToReaBoi
     "Signal converter for boiler"
     annotation (Placement(transformation(extent={{-94,-2},{-114,18}})));
   Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr(k=1)
-    "Threshold to switch boiler off"
-    annotation (Placement(transformation(extent={{-204,-112},{-184,-92}})));
-  Buildings.Controls.OBC.CDL.Reals.Subtract sub1
-    annotation (Placement(transformation(extent={{-164,-88},{-144,-68}})));
-  Modelica.Blocks.Logical.LessThreshold lesThrTOut(threshold=15 + 273.15)
+    "Threshold to switch boiler off" annotation (Placement(
+        transformation(extent={{-204,-112},{-184,-92}})));
+  Buildings.Controls.OBC.CDL.Reals.Subtract sub1 annotation (Placement(
+        transformation(extent={{-164,-88},{-144,-68}})));
+  Modelica.Blocks.Logical.LessThreshold lesThrTOut(threshold=threshold_outdoor_air_cutoff)
     "Output true if outdoor air is below heating cut-off limit"
     annotation (Placement(transformation(extent={{-114,38},{-94,58}})));
   Buildings.Controls.OBC.CDL.Logical.And and1
     "Logical test to enable pump and subsequently the boiler"
     annotation (Placement(transformation(extent={{-74,38},{-54,58}})));
   Modelica.StateGraph.InitialStep off(nIn=1, nOut=1)
-                              "Pump and furnace off"
+                      "Pump and furnace off"
     annotation (Placement(transformation(extent={{-74,78},{-54,98}})));
   Modelica.StateGraph.TransitionWithSignal T1 "Transition to pump on"
     annotation (Placement(transformation(extent={{-44,78},{-24,98}})));
   Modelica.StateGraph.StepWithSignal pumOn(nIn=1, nOut=1)
-                                   "Pump on"
+                           "Pump on"
     annotation (Placement(transformation(extent={{-14,78},{6,98}})));
   Modelica.StateGraph.Transition T3(enableTimer=true, waitTime=10)
     "Transition to boiler on"
     annotation (Placement(transformation(extent={{16,78},{36,98}})));
   Modelica.StateGraph.StepWithSignal boiOn(nIn=1, nOut=1)
-                                   "Boiler on"
+                           "Boiler on"
     annotation (Placement(transformation(extent={{46,78},{66,98}})));
   Modelica.StateGraph.TransitionWithSignal T2
     "Transition that switches boiler off"
     annotation (Placement(transformation(extent={{76,78},{96,98}})));
   Modelica.StateGraph.StepWithSignal pumOn2(nIn=1, nOut=1)
-                                    "Pump on"
+                            "Pump on"
     annotation (Placement(transformation(extent={{106,78},{126,98}})));
   Modelica.StateGraph.Transition T4(enableTimer=true, waitTime=10)
     "Transition to boiler on"
     annotation (Placement(transformation(extent={{136,78},{156,98}})));
   inner Modelica.StateGraph.StateGraphRoot stateGraphRoot
-    "Root of the state graph"
-    annotation (Placement(transformation(extent={{-134,98},{-114,118}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr1(k=20 + 273.15)
-    "Threshold to switch boiler off"
-    annotation (Placement(transformation(extent={{-208,-22},{-188,-2}})));
+    "Root of the state graph" annotation (Placement(transformation(
+          extent={{-134,98},{-114,118}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr1(k=threshold_to_switch_off_boiler) "Threshold to switch boiler off" annotation (Placement(
+        transformation(extent={{-208,-22},{-188,-2}})));
 equation
-  connect(
-  booToReaPum.u,pumOnSig. y) annotation (Line(
+  connect(booToReaPum.u, pumOnSig.y)
+                     annotation (Line(
       points={{-92,-22},{176,-22},{176,8},{167.5,8}},
       color={255,0,255},
       smooth=Smooth.None));
-  connect(
-  sub1.y,lesThr. u2) annotation (Line(
+  connect(sub1.y, lesThr.u2)
+             annotation (Line(
       points={{-142,-78},{-116,-78}},
       color={0,0,127},
       smooth=Smooth.None));
-  connect(
-  dTThr.y,sub1. u2) annotation (Line(
+  connect(dTThr.y, sub1.u2)
+            annotation (Line(
       points={{-182,-102},{-174,-102},{-174,-84},{-166,-84}},
       color={0,0,127},
       smooth=Smooth.None));
-  connect(
-  lesThr.y,and1. u2) annotation (Line(
+  connect(lesThr.y, and1.u2)
+             annotation (Line(
       points={{-92,-70},{-84,-70},{-84,40},{-76,40}},
       color={255,0,255},
       smooth=Smooth.None));
-  connect(
-  lesThrTOut.y,and1. u1) annotation (Line(
+  connect(lesThrTOut.y, and1.u1)
+                 annotation (Line(
       points={{-93,48},{-76,48}},
       color={255,0,255},
       smooth=Smooth.None));
-  connect(
-  and1.y,T1. condition) annotation (Line(points={{-52,48},{-44,48},{-44,
-  42},{-36,42},{-36,58},{-34,58},{-34,76}},
+  connect(and1.y, T1.condition)
+                annotation (Line(points={{-52,48},{-44,48},{-44,42},{-36,
+          42},{-36,58},{-34,58},{-34,76}},
+color={255,0,255}));
+  connect(greThr.y, T2.condition)
+                  annotation (Line(points={{-92,-132},{86,-132},{86,76}},
         color={255,0,255}));
-  connect(
-  greThr.y,T2. condition) annotation (Line(points={{-92,-132},{86,-132},
-  {86,76}},             color={255,0,255}));
-  connect(
-  boiOn.active,booToReaBoi. u) annotation (Line(points={{56,77},{56,8},{
-  -92,8}},    color={255,0,255}));
-  connect(
-  pumOn2.active,pumOnSig. u[1]) annotation (Line(points={{116,77},{116,12.6667},
-          {146,12.6667}},
-                   color={255,0,255}));
-  connect(
-  boiOn.active,pumOnSig. u[2]) annotation (Line(points={{56,77},{56,8},{
-  146,8}},                        color={255,0,255}));
-  connect(
-  pumOn.active,pumOnSig. u[3]) annotation (Line(points={{-4,77},{-4,3.33333},
-  {146,3.33333}},  color={255,0,255}));
-  connect(
-  off.outPort[1],T1. inPort)
+  connect(boiOn.active, booToReaBoi.u)
+                       annotation (Line(points={{56,77},{56,8},{-92,8}},
+        color={255,0,255}));
+  connect(pumOn2.active, pumOnSig.u[1])
+                        annotation (Line(points={{116,77},{116,5.66667},
+          {146,5.66667}},
+           color={255,0,255}));
+  connect(boiOn.active, pumOnSig.u[2])
+                       annotation (Line(points={{56,77},{56,8},{146,8}},
+        color={255,0,255}));
+  connect(pumOn.active, pumOnSig.u[3])
+                       annotation (Line(points={{-4,77},{-4,10.3333},{146,10.3333}},
+                         color={255,0,255}));
+  connect(off.outPort[1], T1.inPort)
     annotation (Line(points={{-53.5,88},{-38,88}}, color={0,0,0}));
-  connect(
-  T1.outPort,pumOn. inPort[1])
+  connect(T1.outPort, pumOn.inPort[1])
     annotation (Line(points={{-32.5,88},{-15,88}}, color={0,0,0}));
-  connect(
-  pumOn.outPort[1],T3. inPort) annotation (Line(points={{6.5,88},{22,88}},
-                             color={0,0,0}));
-  connect(
-  T3.outPort,boiOn. inPort[1])
+  connect(pumOn.outPort[1], T3.inPort)
+                       annotation (Line(points={{6.5,88},{22,88}},
+                     color={0,0,0}));
+  connect(T3.outPort, boiOn.inPort[1])
     annotation (Line(points={{27.5,88},{45,88}}, color={0,0,0}));
-  connect(
-  boiOn.outPort[1],T2. inPort)
+  connect(boiOn.outPort[1], T2.inPort)
     annotation (Line(points={{66.5,88},{82,88}}, color={0,0,0}));
-  connect(
-  T2.outPort,pumOn2. inPort[1])
+  connect(T2.outPort, pumOn2.inPort[1])
     annotation (Line(points={{87.5,88},{105,88}}, color={0,0,0}));
-  connect(
-  pumOn2.outPort[1],T4. inPort)
+  connect(pumOn2.outPort[1], T4.inPort)
     annotation (Line(points={{126.5,88},{142,88}}, color={0,0,0}));
+  connect(T4.outPort, off.inPort[1])
+                     annotation (Line(points={{147.5,88},{166,88},{166,118},
+          {-94,118},{-94,88},{-75,88}},
+                                color={0,0,0}));
   connect(
-  T4.outPort,off. inPort[1]) annotation (Line(points={{147.5,88},{166,88},
-  {166,118},{-94,118},{-94,88},{-75,88}},
-                                        color={0,0,0}));
-  connect(dTThr1.y, lesThr.u1) annotation (Line(points={{-186,-12},{-124,-12},{-124,
-          -70},{-116,-70}}, color={0,0,127}));
-  annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-260,-180},
-    {260,160}})), Diagram(coordinateSystem(preserveAspectRatio=false,
-  extent={{-260,-180},{260,160}})));
+  dTThr1.y, lesThr.u1) annotation (Line(points={{-186,-12},{-124,-12},{
+          -124,
+  -70},{-116,-70}}, color={0,0,127}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={
+            {-260,-180},{260,160}})), Diagram(coordinateSystem(
+          preserveAspectRatio=false, extent={{-260,-180},{260,160}})));
 end PartialBoilerControl;
-
 
 end ventilation;
     end Controls;

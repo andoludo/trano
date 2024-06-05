@@ -11,7 +11,9 @@ from neosim.controller.parser import (
     RealOutput,
 )
 from neosim.models.elements.base import DynamicComponentTemplate
-from neosim.models.elements.control import AhuControl, DataBus, SpaceControl
+from neosim.models.elements.bus import DataBus
+from neosim.models.elements.control import SpaceControl
+from neosim.models.elements.controls.ahu import AhuControl
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import VAV, AirHandlingUnit
 

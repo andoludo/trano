@@ -9,7 +9,7 @@ from neosim.models.elements.base import (
     LibraryData,
     Port,
 )
-from neosim.models.elements.control import Control
+from neosim.models.elements.controls.base import Control
 from neosim.models.elements.system import System
 
 
@@ -64,7 +64,7 @@ class BaseThreeWayValve(LibraryData):
              {{ element.name }}(
     redeclare package Medium = MediumW,
     use_inputFilter=false,
-    {{ macros.render_parameters(parameters) | safe}}
+    {{ macros.render_parameters(parameters) | safe}},
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-wayvalve" """
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
@@ -84,6 +84,6 @@ class BaseThreeWayValve(LibraryData):
 class ThreeWayValve(System):
     parameters: ThreeWayValveParameters = Field(default=ThreeWayValveParameters())
     libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseThreeWayValve()],
-        buildings=[BaseThreeWayValve()],
+        ideas=[BaseThreeWayValve],
+        buildings=[BaseThreeWayValve],
     )

@@ -1,16 +1,21 @@
-from typing import Dict, List, Union
+from typing import TYPE_CHECKING, Dict, List, Union
 
 from neosim.construction import Construction
 from neosim.glass import Glass
 from neosim.models.constants import Tilt
-from neosim.models.elements.wall import BaseWall, ExternalWall, FloorOnGround, Window
+from neosim.models.elements.envelope.base import BaseWall
+
+if TYPE_CHECKING:
+    from neosim.models.elements.envelope.external_wall import ExternalWall
+    from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
+    from neosim.models.elements.envelope.window import Window
 
 
 def _get_element(
     construction_type: str,
-    base_walls: List[ExternalWall | FloorOnGround | Window],
+    base_walls: List[Union["ExternalWall", "FloorOnGround", "Window"]],
     construction: Construction | Glass,
-) -> List[ExternalWall | Window | FloorOnGround]:
+) -> List[Union["ExternalWall", "FloorOnGround", "Window"]]:
     return [
         getattr(base_wall, construction_type)
         for base_wall in base_walls
@@ -26,7 +31,7 @@ class MergedBaseWall(BaseWall):
 
     @classmethod
     def from_base_elements(
-        cls, base_walls: List[ExternalWall | FloorOnGround | Window]
+        cls, base_walls: List[Union["ExternalWall", "FloorOnGround", "Window"]]
     ) -> List["MergedBaseWall"]:
         merged_walls = []
         unique_constructions = {base_wall.construction for base_wall in base_walls}
@@ -68,12 +73,14 @@ class MergedWindows(MergedBaseWall):
     heights: List[float | int]
 
     @classmethod
-    def from_base_windows(cls, base_walls: List[Window]) -> List["MergedWindows"]:
+    def from_base_windows(cls, base_walls: List["Window"]) -> List["MergedWindows"]:
         merged_windows = []
         unique_constructions = {base_wall.construction for base_wall in base_walls}
 
         for construction in unique_constructions:
-            data: Dict[str, List[ExternalWall | Window | FloorOnGround | str]] = {
+            data: Dict[
+                str, List[Union["ExternalWall", "FloorOnGround", "Window", str]]
+            ] = {
                 "azimuth": [],
                 "tilt": [],
                 "name": [],

@@ -13,18 +13,15 @@ from neosim.library.base import DefaultLibrary
 from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement, Connection, Libraries, connect
-from neosim.models.elements.control import CollectorControl, Control, DataBus
+from neosim.models.elements.bus import DataBus
+from neosim.models.elements.controls.base import Control
+from neosim.models.elements.controls.collector import CollectorControl
+from neosim.models.elements.envelope.internal_element import InternalElement
 from neosim.models.elements.pump import Pump
 from neosim.models.elements.space import Space, _get_controllable_element
-from neosim.models.elements.system import (
-    VAV,
-    AirHandlingUnit,
-    System,
-    Ventilation,
-    Weather,
-)
+from neosim.models.elements.system import VAV, AirHandlingUnit, System, Ventilation
 from neosim.models.elements.valve import Valve
-from neosim.models.elements.wall import InternalElement
+from neosim.models.elements.weather import Weather
 
 
 class Network:
@@ -43,8 +40,11 @@ class Network:
         self.library_name = library_name
 
     def add_node(self, node: BaseElement) -> None:
+
         if node.libraries_data:
-            node.assign_library_property(self.library_name)
+            found_library = node.assign_library_property(self.library_name)
+            if not found_library:
+                return
         else:
             node = self.library.assign_properties(node)
         if node not in self.graph.nodes:
@@ -437,7 +437,9 @@ class Network:
         )
 
     def build_dynamic_component_template(self, node: BaseElement) -> None:
-        component = node.component_template.render(self.name, node)
+        component = node.component_template.render(
+            self.name, node, node.processed_parameters(self.library_name)
+        )
         self.dynamic_components[node.component_template.category].append(component)
 
     def build_element_models(self) -> List[str]:
@@ -453,6 +455,8 @@ class Network:
         #     if node.component_template and node.component_template.bus:
         #         node.component_template.bus.get_inputs(node, **node.component_template.function(node))
         for node in self.graph.nodes:
+            if not node.template:
+                continue
             environment.globals.update(self.library.functions)
             rtemplate = environment.from_string(
                 "{% import 'macros.jinja2' as macros %}"

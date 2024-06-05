@@ -15,15 +15,20 @@ from neosim.models.elements.base import Port
 from neosim.models.elements.boiler import Boiler, BoilerParameters
 from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.control import (
-    AhuControl,
-    BoilerControl,
-    CollectorControl,
-    Control,
-    EmissionControl,
     SpaceControl,
     SpaceSubstanceVentilationControl,
-    ThreeWayValveControl,
 )
+from neosim.models.elements.controls.ahu import AhuControl
+from neosim.models.elements.controls.base import Control
+from neosim.models.elements.controls.boiler import BoilerControl
+from neosim.models.elements.controls.collector import CollectorControl
+from neosim.models.elements.controls.emission import EmissionControl
+from neosim.models.elements.controls.three_way_valve import ThreeWayValveControl
+from neosim.models.elements.duct import Duct
+from neosim.models.elements.envelope.external_wall import ExternalWall
+from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
+from neosim.models.elements.envelope.window import Window
+from neosim.models.elements.occupancy import Occupancy
 from neosim.models.elements.pump import Pump, PumpParameters
 from neosim.models.elements.radiator import Radiator
 from neosim.models.elements.space import Space
@@ -32,20 +37,17 @@ from neosim.models.elements.system import (
     VAV,
     AirHandlingUnit,
     DamperVariant,
-    Duct,
     Emission,
     EmissionVariant,
-    Occupancy,
     System,
-    TemperatureSensor,
-    Weather,
 )
+from neosim.models.elements.temperature_sensor import TemperatureSensor
 from neosim.models.elements.three_way_valve import (
     ThreeWayValve,
     ThreeWayValveParameters,
 )
 from neosim.models.elements.valve import Valve
-from neosim.models.elements.wall import ExternalWall, FloorOnGround, Window
+from neosim.models.elements.weather import Weather
 from neosim.topology import Network
 
 

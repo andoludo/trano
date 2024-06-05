@@ -25,11 +25,14 @@ from neosim.library.ideas.data import (
 )
 from neosim.models.constants import Flow
 from neosim.models.elements.base import LibraryData, Port
-from neosim.models.elements.control import Control, DataBus, SpaceControl
+from neosim.models.elements.bus import DataBus
+from neosim.models.elements.control import SpaceControl
+from neosim.models.elements.controls.base import Control
+from neosim.models.elements.envelope.base import BaseSimpleWall, BaseWall
 from neosim.models.elements.merged_wall import MergedBaseWall, MergedExternalWall
+from neosim.models.elements.occupancy import Occupancy
 from neosim.models.elements.space import Space
-from neosim.models.elements.system import Emission, Occupancy, Ventilation
-from neosim.models.elements.wall import BaseSimpleWall, BaseWall
+from neosim.models.elements.system import Emission, Ventilation
 
 
 class IdeasSpace(BaseSpace):

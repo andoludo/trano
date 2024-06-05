@@ -25,21 +25,24 @@ from neosim.models.elements.base import (
     Port,
 )
 from neosim.models.elements.boundary import Boundary
-from neosim.models.elements.control import AhuControl, Control, DataBus, SpaceControl
+from neosim.models.elements.bus import DataBus
+from neosim.models.elements.control import SpaceControl
+from neosim.models.elements.controls.ahu import AhuControl
+from neosim.models.elements.controls.base import Control
+from neosim.models.elements.envelope.internal_element import InternalElement
+from neosim.models.elements.occupancy import Occupancy
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import (
     AirHandlingUnit,
     DamperVariant,
     Emission,
     EmissionVariant,
-    Occupancy,
     System,
-    TemperatureSensor,
     Ventilation,
-    Weather,
 )
+from neosim.models.elements.temperature_sensor import TemperatureSensor
 from neosim.models.elements.three_way_valve import ThreeWayValve
-from neosim.models.elements.wall import InternalElement
+from neosim.models.elements.weather import Weather
 
 
 class BaseSpace(LibraryData):

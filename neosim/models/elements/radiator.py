@@ -11,7 +11,7 @@ from neosim.models.elements.base import (
     Port,
     change_alias,
 )
-from neosim.models.elements.control import Control
+from neosim.models.elements.controls.base import Control
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import Emission
 
@@ -83,7 +83,7 @@ class RadiatorParameter(BaseParameter):
 class BaseRadiator(LibraryData):
     template: str = """    {{library_name}}.Fluid.HeatExchangers.Radiators.
             RadiatorEN442_2 {{ element.name }}(
-            {{ macros.render_parameters(parameters) | safe}}
+            {{ macros.render_parameters(parameters) | safe}},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator" """
     parameter_processing: Callable[
@@ -131,6 +131,6 @@ class BaseIdealRadiator(LibraryData):
 class Radiator(Emission):
     parameters: RadiatorParameter = Field(default=RadiatorParameter())
     libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseRadiator(), BaseIdealRadiator()],
-        buildings=[BaseRadiator(), BaseIdealRadiator()],
+        ideas=[BaseRadiator, BaseIdealRadiator],
+        buildings=[BaseRadiator, BaseIdealRadiator],
     )

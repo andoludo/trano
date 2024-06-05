@@ -10,7 +10,7 @@ from neosim.models.elements.base import (
     LibraryData,
     Port,
 )
-from neosim.models.elements.control import Control
+from neosim.models.elements.controls.base import Control
 from neosim.models.elements.system import SpaceSystem
 
 
@@ -60,7 +60,7 @@ class ValveParameters(BaseParameter):
 class BaseValve(LibraryData):
     template: str = """    {{ library_name }}.Fluid.Actuators.Valves.TwoWayEqualPercentage
             {{ element.name }}(
-                {{ macros.render_parameters(parameters) | safe}}
+                {{ macros.render_parameters(parameters) | safe}},
     redeclare package Medium = MediumW
 
     ) "Radiator valve" """
@@ -76,6 +76,6 @@ class BaseValve(LibraryData):
 class Valve(SpaceSystem):
     parameters: ValveParameters = Field(default=ValveParameters())
     libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseValve()],
-        buildings=[BaseValve()],
+        ideas=[BaseValve],
+        buildings=[BaseValve],
     )

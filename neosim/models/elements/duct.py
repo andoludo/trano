@@ -1,0 +1,29 @@
+from typing import Callable, List
+
+from pydantic import Field
+
+from neosim.models.constants import Flow
+from neosim.models.elements.base import AvailableLibraries, LibraryData, Port
+from neosim.models.elements.system import Ventilation
+
+
+class BaseDuct(LibraryData):
+    template: str = """  {{ library_name }}.Fluid.FixedResistances.PressureDrop
+    {{ element.name }}(
+    m_flow_nominal=100*1.2/3600,
+    redeclare package Medium = Medium,
+    allowFlowReversal = false,
+    dp_nominal=40) "Pressure drop for return duct" """
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(names=["port_a"], flow=Flow.inlet),
+            Port(names=["port_b"], flow=Flow.outlet),
+        ]
+    )
+
+
+class Duct(Ventilation):
+    libraries_data: AvailableLibraries = AvailableLibraries(
+        ideas=[BaseDuct],
+        buildings=[BaseDuct],
+    )

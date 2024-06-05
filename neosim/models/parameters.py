@@ -4,7 +4,9 @@ from pydantic import BaseModel
 
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement
-from neosim.models.elements.wall import BaseSimpleWall, ExternalWall, Window
+from neosim.models.elements.envelope.base import BaseSimpleWall
+from neosim.models.elements.envelope.external_wall import ExternalWall
+from neosim.models.elements.envelope.window import Window
 
 
 class WallParameters(BaseModel):

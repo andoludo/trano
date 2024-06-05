@@ -49,7 +49,7 @@ class SplitValveParameters(BaseParameter):
 
 class BaseSplitValve(LibraryData):
     template: str = """    {{library_name}}.Fluid.FixedResistances.Junction {{ element.name }} (
-    {{ macros.render_parameters(parameters) | safe}}
+    {{ macros.render_parameters(parameters) | safe}},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
     "Flow splitter" """
@@ -70,6 +70,6 @@ class BaseSplitValve(LibraryData):
 class SplitValve(System):
     parameters: SplitValveParameters = Field(default=SplitValveParameters())
     libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseSplitValve()],
-        buildings=[BaseSplitValve()],
+        ideas=[BaseSplitValve],
+        buildings=[BaseSplitValve],
     )

@@ -29,14 +29,14 @@ class PartialConnection(BaseModel):
 
 
 class AvailableLibraries(BaseModel):
-    ideas: List["LibraryData"]
-    buildings: List["LibraryData"]
+    ideas: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
+    buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
 
     def get_library_data(
         self, library_name: Libraries, variant: "BaseVariant"
     ) -> "LibraryData":
         if variant == BaseVariant.default:
-            return getattr(self, library_name)[0]
+            return getattr(self, library_name)[0]()
         selected_variant = [
             variant
             for variant in getattr(self, library_name)
@@ -44,7 +44,7 @@ class AvailableLibraries(BaseModel):
         ]
         if not selected_variant:
             raise ValueError(f"Variant {variant} not found in library {library_name}")
-        return selected_variant[0]
+        return selected_variant[0]()
 
 
 class Connection(BaseModel):
@@ -87,7 +87,7 @@ class Port(BaseModel):
         return self.multi_connection or self.available
 
     def is_controllable(self) -> bool:
-        from neosim.models.elements.control import Control
+        from neosim.models.elements.controls.base import Control
 
         return self.targets is not None and any(
             target == Control for target in self.targets
@@ -144,7 +144,7 @@ class DynamicComponentTemplate(BaseModel):
     function: Callable = Field(default=lambda _: {})
     bus: Optional[ControllerBus] = None
 
-    def render(self, package_name, element: "BaseElement") -> str:
+    def render(self, package_name, element: "BaseElement", parameters) -> str:
         ports = list(self.bus.bus_ports(element))
         environment = Environment(
             trim_blocks=True,
@@ -163,6 +163,7 @@ class DynamicComponentTemplate(BaseModel):
             package_name=package_name,
             bus_template=self.bus.template,
             bus_ports="\n".join(ports),
+            parameters=parameters,
             **self.function(element),
         )
         return component
@@ -184,8 +185,10 @@ class BaseElement(BaseModel):
     variant: str = BaseVariant.default
     libraries_data: List[AvailableLibraries] = None
 
-    def assign_library_property(self, library_name: Libraries) -> None:
+    def assign_library_property(self, library_name: Libraries) -> bool:
         library_data = self.libraries_data.get_library_data(library_name, self.variant)
+        if not library_data:
+            return False
         if not self.ports:
             self.ports = library_data.ports_factory()
         if not self.template:
@@ -194,13 +197,15 @@ class BaseElement(BaseModel):
             self.annotation_template = library_data.annotation_template
         if not self.component_template:
             self.component_template = library_data.component_template
+        return True
 
     def processed_parameters(self, library_name: Libraries) -> dict:
         if self.libraries_data:
             library_data = self.libraries_data.get_library_data(
                 library_name, self.variant
             )
-            return library_data.parameter_processing(self.parameters)
+            if library_data:
+                return library_data.parameter_processing(self.parameters)
         return {}
 
     def get_position(self, layout: Dict["BaseElement", Any]) -> None:
@@ -352,6 +357,8 @@ class LibraryData(BaseModel):
     component_template: Optional[DynamicComponentTemplate] = None
     ports_factory: Callable[[], List[Port]]
     variant: str = BaseVariant.default
-    parameter_processing: Callable[
-        [BaseParameter], dict
-    ] = lambda parameter: parameter.model_dump(by_alias=True, exclude_none=True)
+    parameter_processing: Callable[[BaseParameter], dict] = (
+        lambda parameter: parameter.model_dump(by_alias=True, exclude_none=True)
+        if parameter
+        else {}
+    )

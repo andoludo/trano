@@ -26,7 +26,7 @@ from neosim.library.buildings.data import (
     BuildingsMaterial,
 )
 from neosim.models.elements.base import LibraryData
-from neosim.models.elements.wall import BaseSimpleWall
+from neosim.models.elements.envelope.base import BaseSimpleWall
 
 
 class BuildingsLibrary(DefaultLibrary):

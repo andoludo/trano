@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from neosim.models.elements.base import BaseElement, BaseVariant
-from neosim.models.elements.control import Control
+from neosim.models.elements.controls.base import Control
 
 
 class System(BaseElement):
@@ -11,10 +11,6 @@ class System(BaseElement):
 
 
 class Sensor(System):
-    ...
-
-
-class TemperatureSensor(Sensor):
     ...
 
 
@@ -35,23 +31,11 @@ class Emission(SpaceSystem):
     ...
 
 
-class Occupancy(System):
-    ...
-
-
-class Weather(System):
-    ...
-
-
 class Ventilation(SpaceSystem):
     ...
 
 
 class AirHandlingUnit(Ventilation):
-    ...
-
-
-class Duct(Ventilation):
     ...
 
 

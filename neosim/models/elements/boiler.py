@@ -12,7 +12,8 @@ from neosim.models.elements.base import (
     LibraryData,
     Port,
 )
-from neosim.models.elements.control import Control, DataBus
+from neosim.models.elements.bus import DataBus
+from neosim.models.elements.controls.base import Control
 from neosim.models.elements.system import System
 
 
@@ -131,7 +132,7 @@ dynamic_boiler_template = DynamicComponentTemplate(
 class BaseBoiler(LibraryData):
     template: str = """
     {{package_name}}.Common.Fluid.Boilers.BoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(
-    {{ macros.render_parameters(parameters) | safe}}
+    {{ macros.render_parameters(parameters) | safe}},
     redeclare package MediumW = MediumW) "Boiler" """
     component_template: Optional[DynamicComponentTemplate] = dynamic_boiler_template
     parameter_processing: Callable[
@@ -168,6 +169,6 @@ class BaseBoiler(LibraryData):
 class Boiler(System):
     parameters: BoilerParameters = Field(default=BoilerParameters())
     libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseBoiler()],
-        buildings=[BaseBoiler()],
+        ideas=[BaseBoiler],
+        buildings=[BaseBoiler],
     )

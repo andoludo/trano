@@ -12,26 +12,22 @@ from neosim.models.elements.base import (
     Port,
     change_alias,
 )
-from neosim.models.elements.control import Control, DataBus, SpaceControl
+from neosim.models.elements.bus import DataBus
+from neosim.models.elements.control import SpaceControl
+from neosim.models.elements.controls.base import Control
+from neosim.models.elements.envelope.base import BaseWall
+from neosim.models.elements.envelope.external_wall import ExternalWall
+from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
+from neosim.models.elements.envelope.internal_element import InternalElement
+from neosim.models.elements.envelope.window import Window
 from neosim.models.elements.merged_wall import (
     MergedBaseWall,
     MergedExternalWall,
     MergedWindows,
 )
-from neosim.models.elements.system import (
-    Emission,
-    Occupancy,
-    System,
-    Ventilation,
-    Weather,
-)
-from neosim.models.elements.wall import (
-    BaseWall,
-    ExternalWall,
-    FloorOnGround,
-    InternalElement,
-    Window,
-)
+from neosim.models.elements.occupancy import Occupancy
+from neosim.models.elements.system import Emission, System, Ventilation
+from neosim.models.elements.weather import Weather
 from neosim.models.parameters import WallParameters, WindowedWallParameters
 
 
@@ -75,7 +71,7 @@ class SpaceParameter(BaseParameter):
 class BuildingsSpace(LibraryData):
     template: str = """Buildings.ThermalZones.Detailed.MixedAir {{ element.name }}(
         redeclare package Medium = Medium,
-        {{ macros.render_parameters(parameters) | safe}}
+        {{ macros.render_parameters(parameters) | safe}},
         {%- if element.number_ventilation_ports != 0 -%}
         nPorts = {{ element.number_ventilation_ports }},
         {%- endif %}
@@ -154,7 +150,7 @@ class IdeasSpace(LibraryData):
         {%- if element.number_ventilation_ports != 0 -%}
     nPorts = {{ element.number_ventilation_ports }},
     {%- endif %}
-    {{ macros.render_parameters(parameters) | safe}}
+    {{ macros.render_parameters(parameters) | safe}},
     n50=0.822*0.5*{{ element.name }}.n50toAch,
     redeclare package Medium = Medium,
     nSurf={{ element.number_merged_external_boundaries }},
@@ -206,7 +202,7 @@ class Space(BaseElement):
     ventilation_outlets: List[System] = Field(default=[])
     occupancy: Optional[Occupancy] = None
     libraries_data: List[AvailableLibraries] = AvailableLibraries(
-        ideas=[IdeasSpace()], buildings=[BuildingsSpace()]
+        ideas=[IdeasSpace], buildings=[BuildingsSpace]
     )
 
     def model_post_init(self, __context):
