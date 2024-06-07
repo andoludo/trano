@@ -13,18 +13,15 @@ from neosim.models.elements.base import (
     change_alias,
 )
 from neosim.models.elements.bus import DataBus
-from neosim.models.elements.control import SpaceControl
 from neosim.models.elements.controls.base import Control
-from neosim.models.elements.envelope.base import BaseWall
+from neosim.models.elements.controls.vav import VAVControl
+from neosim.models.elements.envelope.base import BaseWall, MergedBaseWall
 from neosim.models.elements.envelope.external_wall import ExternalWall
 from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
 from neosim.models.elements.envelope.internal_element import InternalElement
+from neosim.models.elements.envelope.merged_wall import MergedExternalWall
+from neosim.models.elements.envelope.merged_windows import MergedWindows
 from neosim.models.elements.envelope.window import Window
-from neosim.models.elements.merged_wall import (
-    MergedBaseWall,
-    MergedExternalWall,
-    MergedWindows,
-)
 from neosim.models.elements.occupancy import Occupancy
 from neosim.models.elements.system import Emission, System, Ventilation
 from neosim.models.elements.weather import Weather
@@ -133,7 +130,7 @@ class BuildingsSpace(LibraryData):
             Port(targets=[Weather], names=["weaBus"]),
             Port(targets=[Emission], names=["heaPorAir", "heaPorRad"]),
             Port(targets=[DataBus], names=["heaPorAir"]),
-            Port(targets=[SpaceControl], names=["heaPorAir"]),
+            Port(targets=[VAVControl], names=["heaPorAir"]),
             Port(
                 targets=[Ventilation, Control, DataBus],
                 names=["ports"],
@@ -175,7 +172,7 @@ class IdeasSpace(LibraryData):
             Port(targets=[Occupancy], names=["yOcc"]),
             Port(targets=[Emission], names=["gainCon", "gainRad"]),
             Port(
-                targets=[SpaceControl, DataBus],
+                targets=[VAVControl, DataBus],
                 names=["gainCon"],
                 multi_connection=True,
                 use_counter=False,

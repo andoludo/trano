@@ -4,7 +4,7 @@ from pydantic import Field
 
 from neosim.models.constants import Flow
 from neosim.models.elements.base import AvailableLibraries, LibraryData, Port
-from neosim.models.elements.control import Control
+from neosim.models.elements.controls.base import Control
 from neosim.models.elements.system import Sensor
 
 

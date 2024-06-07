@@ -19,10 +19,6 @@ class EmissionVariant(BaseVariant):
     ideal: str = "ideal"
 
 
-class DamperVariant(BaseVariant):
-    complex: str = "complex"
-
-
 class SpaceSystem(System):
     linked_space: Optional[str] = None
 
@@ -33,15 +29,3 @@ class Emission(SpaceSystem):
 
 class Ventilation(SpaceSystem):
     ...
-
-
-class AirHandlingUnit(Ventilation):
-    ...
-
-
-class Damper(Ventilation):
-    ...
-
-
-class VAV(Damper):
-    variant: str = DamperVariant.default

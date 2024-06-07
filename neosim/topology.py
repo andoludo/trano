@@ -9,17 +9,24 @@ from networkx import DiGraph, shortest_path
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
-from neosim.library.base import DefaultLibrary
-from neosim.library.buildings.buildings import BuildingsLibrary
 from neosim.models.constants import Tilt
-from neosim.models.elements.base import BaseElement, Connection, Libraries, connect
+from neosim.models.elements.ahu import AirHandlingUnit
+from neosim.models.elements.base import (
+    BaseElement,
+    Buildings,
+    Connection,
+    Libraries,
+    connect,
+)
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.controls.base import Control
 from neosim.models.elements.controls.collector import CollectorControl
+from neosim.models.elements.damper import VAV
 from neosim.models.elements.envelope.internal_element import InternalElement
+from neosim.models.elements.materials.properties import extract_properties
 from neosim.models.elements.pump import Pump
 from neosim.models.elements.space import Space, _get_controllable_element
-from neosim.models.elements.system import VAV, AirHandlingUnit, System, Ventilation
+from neosim.models.elements.system import System, Ventilation
 from neosim.models.elements.valve import Valve
 from neosim.models.elements.weather import Weather
 
@@ -28,34 +35,32 @@ class Network:
     def __init__(
         self,
         name: str,
-        library: Optional[DefaultLibrary] = None,
-        library_name: Libraries = "buildings",
+        library: Optional[Libraries] = None,
     ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
         self.name: str = name
         self._system_controls: List[Control] = []
-        self.library = library or BuildingsLibrary()
+        self.library = library or Buildings()
         self.dynamic_components: dict = {"ventilation": [], "control": [], "boiler": []}
-        self.library_name = library_name
 
     def add_node(self, node: BaseElement) -> None:
 
         if node.libraries_data:
-            found_library = node.assign_library_property(self.library_name)
+            found_library = node.assign_library_property(self.library)
             if not found_library:
                 return
         else:
-            node = self.library.assign_properties(node)
+            raise Exception("Referring to old approach")
         if node not in self.graph.nodes:
             self.graph.add_node(node)
         if isinstance(node, System) and node.control:
             if node.control not in self.graph.nodes:
                 node_control = node.control
                 if node_control.libraries_data:
-                    node_control.assign_library_property(self.library_name)
+                    node_control.assign_library_property(self.library)
                 else:
-                    node_control = self.library.assign_properties(node_control)
+                    raise Exception("Referring to old approach")
                 self.graph.add_node(node_control)
                 self.graph.add_edge(node, node_control)
                 node_control.controllable_element = node
@@ -426,7 +431,7 @@ class Network:
 
         template = environment.get_template("base.jinja2")
 
-        data = self.library.extract_data(self.name, self.graph.nodes)
+        data = extract_properties(self.library, self.name, self.graph.nodes)
         return template.render(
             network=self,
             data=data,
@@ -438,7 +443,7 @@ class Network:
 
     def build_dynamic_component_template(self, node: BaseElement) -> None:
         component = node.component_template.render(
-            self.name, node, node.processed_parameters(self.library_name)
+            self.name, node, node.processed_parameters(self.library)
         )
         self.dynamic_components[node.component_template.category].append(component)
 
@@ -469,8 +474,8 @@ class Network:
             model = rtemplate.render(
                 element=node,
                 package_name=self.name,
-                library_name=self.library_name.capitalize(),
-                parameters=node.processed_parameters(self.library_name),
+                library_name=self.library.name.capitalize(),
+                parameters=node.processed_parameters(self.library),
             )
             models.append(model)
         return models

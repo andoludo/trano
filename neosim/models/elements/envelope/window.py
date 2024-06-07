@@ -6,7 +6,7 @@ from neosim.models.elements.base import AvailableLibraries, LibraryData, Port
 from neosim.models.elements.envelope.base import BaseSimpleWall
 
 
-def ideas_merged_wall_factory():
+def ideas_merged_window_factory():
     from neosim.models.elements.space import Space
 
     class IdeasMergedWindows(LibraryData):
@@ -39,5 +39,5 @@ class Window(BaseSimpleWall):
     width: float | int
     height: float | int
     libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[ideas_merged_wall_factory]
+        ideas=[ideas_merged_window_factory]
     )

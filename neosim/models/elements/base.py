@@ -9,6 +9,7 @@ from typing import (
     Optional,
     Tuple,
     Type,
+    Union,
 )
 
 from jinja2 import Environment, FileSystemLoader
@@ -16,10 +17,39 @@ from pydantic import BaseModel, ConfigDict, Field, create_model
 
 from neosim.controller.parser import ControllerBus
 from neosim.models.constants import Flow
+from neosim.models.elements.constants.buildings import BUILDINGS_CONSTANTS
+from neosim.models.elements.constants.ideas import CONSTANTS
 
 if TYPE_CHECKING:
     pass
-Libraries = Literal["ideas", "buildings"]
+
+
+def tilts_processing_ideas(element) -> List[str]:
+    return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
+
+
+class Library(BaseModel):
+    name: str
+    merged_external_boundaries: bool = False
+    functions: Dict[str, Callable[[Any], Any]] = {
+        "tilts_processing_ideas": tilts_processing_ideas
+    }
+    constants: str = ""
+
+
+class Ideas(Library):
+    name: str = "ideas"
+    merged_external_boundaries: bool = True
+    constants: str = CONSTANTS
+
+
+class Buildings(Library):
+    name: str = "buildings"
+    merged_external_boundaries: bool = False
+    constants: str = BUILDINGS_CONSTANTS
+
+
+Libraries = Union[Ideas, Buildings]
 Boolean = Literal["true", "false"]
 
 
@@ -33,17 +63,17 @@ class AvailableLibraries(BaseModel):
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
 
     def get_library_data(
-        self, library_name: Libraries, variant: "BaseVariant"
+        self, library: Libraries, variant: "BaseVariant"
     ) -> "LibraryData":
         if variant == BaseVariant.default:
-            return getattr(self, library_name)[0]()
+            return getattr(self, library.name)[0]()
         selected_variant = [
             variant
-            for variant in getattr(self, library_name)
+            for variant in getattr(self, library.name)
             if variant.variant == variant
         ]
         if not selected_variant:
-            raise ValueError(f"Variant {variant} not found in library {library_name}")
+            raise ValueError(f"Variant {variant} not found in library {library.name}")
         return selected_variant[0]()
 
 
@@ -97,7 +127,7 @@ class Port(BaseModel):
         self, node: "BaseElement", connected_node: "BaseElement"
     ) -> list[PartialConnection]:
 
-        from neosim.models.elements.merged_wall import MergedBaseWall
+        from neosim.models.elements.envelope.base import MergedBaseWall
 
         self.available = False
         partial_connections = []
@@ -185,8 +215,8 @@ class BaseElement(BaseModel):
     variant: str = BaseVariant.default
     libraries_data: List[AvailableLibraries] = None
 
-    def assign_library_property(self, library_name: Libraries) -> bool:
-        library_data = self.libraries_data.get_library_data(library_name, self.variant)
+    def assign_library_property(self, library: Libraries) -> bool:
+        library_data = self.libraries_data.get_library_data(library, self.variant)
         if not library_data:
             return False
         if not self.ports:
@@ -199,11 +229,9 @@ class BaseElement(BaseModel):
             self.component_template = library_data.component_template
         return True
 
-    def processed_parameters(self, library_name: Libraries) -> dict:
+    def processed_parameters(self, library: Libraries) -> dict:
         if self.libraries_data:
-            library_data = self.libraries_data.get_library_data(
-                library_name, self.variant
-            )
+            library_data = self.libraries_data.get_library_data(library, self.variant)
             if library_data:
                 return library_data.parameter_processing(self.parameters)
         return {}

@@ -13,12 +13,13 @@ from neosim.controller.parser import (
     RealInput,
     RealOutput,
 )
+from neosim.models.elements.ahu import AirHandlingUnit
 from neosim.models.elements.base import DynamicComponentTemplate
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.control import SpaceControl
 from neosim.models.elements.controls.ahu import AhuControl
+from neosim.models.elements.damper import VAV
 from neosim.models.elements.space import Space, SpaceParameter
-from neosim.models.elements.system import VAV, AirHandlingUnit
 
 
 def get_first_set_before_break_or_parenthesis(text):

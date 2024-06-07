@@ -64,7 +64,7 @@ end DataServer;
 
 
 def data_bus_factory():
-    from neosim.models.elements.control import Control
+    from neosim.models.elements.controls.base import Control
     from neosim.models.elements.space import Space
     from neosim.models.elements.system import System
 

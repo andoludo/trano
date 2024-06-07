@@ -2,10 +2,11 @@ import re
 from pathlib import Path
 from typing import Set
 
-from neosim.library.buildings.buildings import BuildingsLibrary
-from neosim.library.ideas.ideas import IdeasLibrary
+from neosim.models.elements.ahu import AirHandlingUnit
+
+# from neosim.library.buildings.buildings import BuildingsLibrary
+# from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.elements.space import Space
-from neosim.models.elements.system import AirHandlingUnit
 from neosim.topology import Network
 
 OVERWRITE_MODELS = False
