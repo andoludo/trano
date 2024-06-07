@@ -1,39 +1,6 @@
-from typing import List, Optional, Union
-
 from pydantic import Field
 
-from neosim.construction import Construction
-from neosim.glass import Glass
-from neosim.library.data.base import BaseConstructionData, BaseData
-from neosim.material import Material
-
-
-class BuildingsConstruction(BaseData):
-    template: str = Field(
-        default="""    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
-        {{ construction.name }}(
-    final nLay={{ construction.layers|length }},
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
-    material={
-    {%- for layer in construction.layers -%}
-        Buildings.HeatTransfer.Data.Solids.Generic(
-        x={{ layer.thickness }},
-        k={{ layer.material.thermal_conductivity }},
-        c={{ layer.material.specific_heat_capacity }},
-        d={{ layer.material.density }}){{ "," if not loop.last }}
-    {%- endfor %}
-    },
-    roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
-    annotation (Placement(transformation(extent={% raw %}{{20,84},{34,98}}{% endraw %})));"""
-    )
-
-
-class BuildingsMaterial(BaseData):
-    template: Optional[str] = None
-    constructions: List[Union[Construction, Material, Glass]] = Field(default=[])
+from neosim.models.elements.materials.base import BaseData
 
 
 class BuildingsGlazing(BaseData):
@@ -71,15 +38,41 @@ class BuildingsGlazing(BaseData):
     )
 
 
-class BuildingsData(BaseConstructionData):
-    template: str = """
-{% for g in glazing %}
-    {{ g|safe }}
-{% endfor %}
-{%- for c in construction -%}
-    {{ c|safe}}
-{%- endfor %}
-"""
-    construction: BuildingsConstruction
-    material: BuildingsMaterial
-    glazing: BuildingsGlazing
+class IdeasGlazing(BaseData):
+    template: str = Field(
+        default="""record  {{ construction.name }} = IDEAS.Buildings.Data.Interfaces.Glazing (
+          final nLay={{ construction.layers|length }},
+      final checkLowPerformanceGlazing=false,
+          mats={
+        {%- for layer in construction.layers -%}
+        {{ package_name }}.Data.Materials.{{ layer.material.name }}
+        (d={{ layer.thickness }}){{ "," if not loop.last }}
+        {%- endfor %}
+    },
+    final SwTrans=[0, 0.721;
+                    10, 0.720;
+                    20, 0.718;
+                    30, 0.711;
+                    40, 0.697;
+                    50, 0.665;
+                    60, 0.596;
+                    70, 0.454;
+                    80, 0.218;
+                    90, 0.000],
+      final SwAbs=[0, 0.082, 0, 0.062;
+                  10, 0.082, 0, 0.062;
+                  20, 0.084, 0, 0.063;
+                  30, 0.086, 0, 0.065;
+                  40, 0.090, 0, 0.067;
+                  50, 0.094, 0, 0.068;
+                  60, 0.101, 0, 0.067;
+                  70, 0.108, 0, 0.061;
+                  80, 0.112, 0, 0.045;
+                  90, 0.000, 0, 0.000],
+      final SwTransDif=0.619,
+      final SwAbsDif={0.093, 0,  0.063},
+      final U_value=2.9,
+      final g_value=0.78
+
+    ) "{{ package_name }}";"""
+    )

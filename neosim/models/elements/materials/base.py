@@ -25,7 +25,7 @@ class BaseConstructionData(BaseModel):
             trim_blocks=True,
             lstrip_blocks=True,
             loader=FileSystemLoader(
-                str(Path(__file__).parents[2].joinpath("templates"))
+                str(Path(__file__).parents[3].joinpath("templates"))
             ),
             autoescape=True,
         )
@@ -50,3 +50,8 @@ class BaseConstructionData(BaseModel):
         )
         model = template.render(**models, package_name=package_name)
         return model
+
+
+class MaterialProperties(BaseModel):
+    data: str
+    is_package: bool
