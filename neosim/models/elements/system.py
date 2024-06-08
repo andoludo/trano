@@ -29,3 +29,11 @@ class Emission(SpaceSystem):
 
 class Ventilation(SpaceSystem):
     ...
+
+
+class BaseWeather(System):
+    ...
+
+
+class BaseOccupancy(System):
+    ...

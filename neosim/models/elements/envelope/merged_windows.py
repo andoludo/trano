@@ -1,27 +1,29 @@
 from typing import Dict, List, Union
 
 from neosim.models.elements.base import AvailableLibraries
-from neosim.models.elements.envelope.base import MergedBaseWall, _get_element
+from neosim.models.elements.envelope.base import (
+    BaseWindow,
+    MergedBaseWindow,
+    _get_element,
+)
 from neosim.models.elements.envelope.external_wall import ExternalWall
 from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
-from neosim.models.elements.envelope.window import Window, ideas_merged_window_factory
+from neosim.models.elements.envelope.window import IdeasMergedWindows
 
 
-class MergedWindows(MergedBaseWall):
+class MergedWindows(MergedBaseWindow):
     widths: List[float | int]
     heights: List[float | int]
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[ideas_merged_window_factory]
-    )
+    libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasMergedWindows])
 
     @classmethod
-    def from_base_windows(cls, base_walls: List["Window"]) -> List["MergedWindows"]:
+    def from_base_windows(cls, base_walls: List["BaseWindow"]) -> List["MergedWindows"]:
         merged_windows = []
         unique_constructions = {base_wall.construction for base_wall in base_walls}
 
         for construction in unique_constructions:
             data: Dict[
-                str, List[Union["ExternalWall", "FloorOnGround", "Window", str]]
+                str, List[Union["ExternalWall", "FloorOnGround", "BaseWindow", str]]
             ] = {
                 "azimuth": [],
                 "tilt": [],

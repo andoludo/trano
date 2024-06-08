@@ -31,6 +31,23 @@ class BaseSimpleWall(BaseWall):
     construction: Construction | Glass
 
 
+class BaseInternalElement(BaseSimpleWall):
+    ...
+
+
+class BaseFloorOnGround(BaseSimpleWall):
+    ...
+
+
+class BaseExternalWall(BaseSimpleWall):
+    ...
+
+
+class BaseWindow(BaseSimpleWall):
+    width: float | int
+    height: float | int
+
+
 def _get_element(
     construction_type: str,
     base_walls: List[Union["ExternalWall", "FloorOnGround", "Window"]],
@@ -81,3 +98,11 @@ class MergedBaseWall(BaseWall):
             )
             merged_walls.append(merged_wall)
         return sorted(merged_walls, key=lambda x: x.name)
+
+
+class MergedBaseWindow(MergedBaseWall):
+    ...
+
+
+class MergedBaseExternalWall(MergedBaseWall):
+    ...

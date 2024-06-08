@@ -375,3 +375,7 @@ class LibraryData(BaseModel):
         if parameter
         else {}
     )
+
+
+class BaseBoundary(BaseElement):
+    ...

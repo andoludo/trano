@@ -4,9 +4,7 @@ from pydantic import BaseModel
 
 from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement
-from neosim.models.elements.envelope.base import BaseSimpleWall
-from neosim.models.elements.envelope.external_wall import ExternalWall
-from neosim.models.elements.envelope.window import Window
+from neosim.models.elements.envelope.base import BaseSimpleWall, BaseWindow
 
 
 class WallParameters(BaseModel):
@@ -54,7 +52,11 @@ class WindowedWallParameters(WallParameters):
 
     @classmethod
     def from_neighbors(cls, neighbors: list["BaseElement"]) -> "WindowedWallParameters":  # type: ignore
-        windows = [neighbor for neighbor in neighbors if isinstance(neighbor, Window)]
+        from neosim.models.elements.envelope.external_wall import ExternalWall
+
+        windows = [
+            neighbor for neighbor in neighbors if isinstance(neighbor, BaseWindow)
+        ]
         surfaces = []
         azimuths = []
         layers = []

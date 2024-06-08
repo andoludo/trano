@@ -6,11 +6,11 @@ from neosim.controller.parser import ControllerBus, IntegerOutput, RealInput, Re
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
     AvailableLibraries,
+    BaseBoundary,
     DynamicComponentTemplate,
     LibraryData,
     Port,
 )
-from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.controls.ahu import AhuControl
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import System, Ventilation
@@ -110,7 +110,7 @@ class BaseAirHandlingUnit(LibraryData):
                 use_counter=False,
             ),
             Port(
-                targets=[Boundary],
+                targets=[BaseBoundary],
                 names=["ports"],
             ),
             Port(

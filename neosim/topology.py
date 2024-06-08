@@ -444,10 +444,11 @@ class Network:
         )
 
     def build_dynamic_component_template(self, node: BaseElement) -> None:
-        component = node.component_template.render(
-            self.name, node, node.processed_parameters(self.library)
-        )
-        self.dynamic_components[node.component_template.category].append(component)
+        if node.component_template:
+            component = node.component_template.render(
+                self.name, node, node.processed_parameters(self.library)
+            )
+            self.dynamic_components[node.component_template.category].append(component)
 
     def build_element_models(self) -> List[str]:
         environment = Environment(

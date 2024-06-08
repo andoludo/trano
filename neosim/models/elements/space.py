@@ -16,16 +16,21 @@ from neosim.models.elements.base import (
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.controls.base import Control
 from neosim.models.elements.controls.vav import VAVControl
-from neosim.models.elements.envelope.base import BaseWall, MergedBaseWall
-from neosim.models.elements.envelope.external_wall import ExternalWall
-from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
-from neosim.models.elements.envelope.internal_element import InternalElement
-from neosim.models.elements.envelope.merged_wall import MergedExternalWall
-from neosim.models.elements.envelope.merged_windows import MergedWindows
-from neosim.models.elements.envelope.window import Window
-from neosim.models.elements.occupancy import Occupancy
-from neosim.models.elements.system import Emission, System, Ventilation
-from neosim.models.elements.weather import Weather
+from neosim.models.elements.envelope.base import (
+    BaseExternalWall,
+    BaseFloorOnGround,
+    BaseInternalElement,
+    BaseWall,
+    BaseWindow,
+    MergedBaseWall,
+)
+from neosim.models.elements.system import (
+    BaseOccupancy,
+    BaseWeather,
+    Emission,
+    System,
+    Ventilation,
+)
 from neosim.models.parameters import WallParameters, WindowedWallParameters
 
 
@@ -125,10 +130,12 @@ class BuildingsSpace(LibraryData):
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
-                targets=[InternalElement], names=["surf_surBou"], multi_connection=True
+                targets=[BaseInternalElement],
+                names=["surf_surBou"],
+                multi_connection=True,
             ),
-            Port(targets=[Occupancy], names=["qGai_flow"]),
-            Port(targets=[Weather], names=["weaBus"]),
+            Port(targets=[BaseOccupancy], names=["qGai_flow"]),
+            Port(targets=[BaseWeather], names=["weaBus"]),
             Port(targets=[Emission], names=["heaPorAir", "heaPorRad"]),
             Port(targets=[DataBus], names=["heaPorAir"]),
             Port(targets=[VAVControl], names=["heaPorAir"]),
@@ -164,7 +171,7 @@ class IdeasSpace(LibraryData):
                 multi_connection=True,
                 bus_connection=True,
             ),
-            Port(targets=[Occupancy], names=["yOcc"]),
+            Port(targets=[BaseOccupancy], names=["yOcc"]),
             Port(targets=[Emission], names=["gainCon", "gainRad"]),
             Port(
                 targets=[VAVControl, DataBus],
@@ -186,13 +193,15 @@ class Space(BaseElement):
     counter: ClassVar[int] = 0
     parameters: SpaceParameter = Field(default=SpaceParameter())
     name: str
-    external_boundaries: list[Union["ExternalWall", "Window", "FloorOnGround"]]
-    internal_elements: List["InternalElement"] = Field(default=[])
+    external_boundaries: list[
+        Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]
+    ]
+    internal_elements: List["BaseInternalElement"] = Field(default=[])
     boundaries: Optional[List[WallParameters]] = None
     emissions: List[System] = Field(default=[])
     ventilation_inlets: List[System] = Field(default=[])
     ventilation_outlets: List[System] = Field(default=[])
-    occupancy: Optional[Occupancy] = None
+    occupancy: Optional[BaseOccupancy] = None
     libraries_data: List[AvailableLibraries] = AvailableLibraries(
         ideas=[IdeasSpace], buildings=[BuildingsSpace]
     )
@@ -226,7 +235,12 @@ class Space(BaseElement):
     @property
     def merged_external_boundaries(
         self,
-    ) -> List[Union["ExternalWall", "Window", "FloorOnGround", "MergedBaseWall"]]:
+    ) -> List[
+        Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]
+    ]:
+        from neosim.models.elements.envelope.merged_wall import MergedExternalWall
+        from neosim.models.elements.envelope.merged_windows import MergedWindows
+
         external_walls = [
             boundary
             for boundary in self.external_boundaries
@@ -306,9 +320,13 @@ class Space(BaseElement):
         return None
 
     def get_neighhors(self, graph: Graph) -> None:
+        from neosim.models.elements.envelope.external_wall import ExternalWall
+        from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
+        from neosim.models.elements.envelope.internal_element import InternalElement
+
         neighbors = list(graph.neighbors(self))  # type: ignore
         self.boundaries = []
-        for wall in [ExternalWall, Window, InternalElement, FloorOnGround]:
+        for wall in [ExternalWall, BaseWindow, InternalElement, FloorOnGround]:
             self.boundaries.append(WallParameters.from_neighbors(neighbors, wall))  # type: ignore
         self.boundaries += [WindowedWallParameters.from_neighbors(neighbors)]
 
