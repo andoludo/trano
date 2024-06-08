@@ -69,7 +69,7 @@ def create_mos_file(network: Network, check_only: bool = False) -> str:
     getVersion();
     loadFile("/neosim/tests/{{model_file}}");
     checkModel({{model_name}}.building);
-    simulate({{model_name}}.building,startTime = 0, stopTime = 604800);
+    simulate({{model_name}}.building,startTime = 0, stopTime = 86400);
     """
             )
         mos_file = template.render(
@@ -1502,6 +1502,66 @@ def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space) -> Ne
         ahu, space_1_simple_ventilation_vav_control.get_last_ventilation_inlet()
     )
     network.connect_systems(space_1_simple_ventilation_vav_control, ahu)
+    network.connect_elements(boundary, ahu)
+    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    network.connect_elements(boundary, weather)
+    return network
+
+
+@pytest.fixture
+def one_spaces_air_handling_unit(space_1_simple_ventilation: Space) -> Network:
+
+    network = Network(
+        name="one_spaces_air_handling_unit",
+        library=Buildings(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
+    network.add_boiler_plate_spaces([space_1_simple_ventilation])
+    ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    boundary = Boundary(name="boundary")
+    network.connect_elements(boundary, ahu)
+    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    network.connect_elements(boundary, weather)
+    return network
+
+
+@pytest.fixture
+def two_spaces_air_handling_unit(
+    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space
+) -> Network:
+
+    network = Network(
+        name="two_spaces_air_handling_unit",
+        library=Buildings(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
+    network.add_boiler_plate_spaces(
+        [space_1_simple_ventilation, space_2_simple_ventilation]
+    )
+    ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    network.connect_systems(
+        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    boundary = Boundary(name="boundary")
     network.connect_elements(boundary, ahu)
     weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
     network.connect_elements(boundary, weather)

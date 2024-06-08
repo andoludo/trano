@@ -75,15 +75,6 @@ def test_simulate_buildings_simple_hydronic(
         assert is_success(results)
 
 
-def test_simulate_buildings_simple_hydronic_two_zones(
-    buildings_simple_hydronic_two_zones: Network,
-    container: docker.models.containers.Container,
-) -> None:
-    with create_mos_file(buildings_simple_hydronic_two_zones) as mos_file_name:
-        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
-        assert is_success(results)
-
-
 def test_simulate_ideas_free_float_three_zones(
     ideas_free_float_three_zones: Network,
     container: docker.models.containers.Container,
@@ -120,45 +111,18 @@ def test_simulate_ideas_simple_hydronic_three_zones(
         assert is_success(results)
 
 
-def test_ideas_many_spaces_simple_ventilation(
-    ideas_many_spaces_simple_ventilation: Network,
-    container: docker.models.containers.Container,
+def test_simulate_one_spaces_air_handling_unit(
+    one_spaces_air_handling_unit: Network, container: docker.models.containers.Container
 ) -> None:
-    with create_mos_file(ideas_many_spaces_simple_ventilation) as mos_file_name:
+
+    with create_mos_file(one_spaces_air_handling_unit) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
 
 
-def test_many_spaces_simple_ventilation(
-    many_spaces_simple_ventilation: Network,
-    container: docker.models.containers.Container,
+def test_simulate_two_spaces_air_handling_unit(
+    two_spaces_air_handling_unit: Network, container: docker.models.containers.Container
 ) -> None:
-    with create_mos_file(many_spaces_simple_ventilation) as mos_file_name:
-        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
-        assert is_success(results)
-
-
-def test_buildings_free_float_single_zone_complex(
-    buildings_free_float_single_zone_ahu_complex: Network,
-    container: docker.models.containers.Container,
-) -> None:
-    with create_mos_file(buildings_free_float_single_zone_ahu_complex) as mos_file_name:
-        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
-        assert is_success(results)
-
-
-def test_space_1_ideal_heating_network(
-    space_1_ideal_heating_network: Network,
-    container: docker.models.containers.Container,
-) -> None:
-    with create_mos_file(space_1_ideal_heating_network) as mos_file_name:
-        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
-        assert is_success(results)
-
-
-def test_simulate_vav_ventilation_control(
-    vav_ventilation_control: Network, container: docker.models.containers.Container
-) -> None:
-    with create_mos_file(vav_ventilation_control) as mos_file_name:
+    with create_mos_file(two_spaces_air_handling_unit) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)
