@@ -13,7 +13,7 @@
             "component": "rehBoxCon",
             "port": "TCooSet",
             "name": "TCooSet",
-            "default": 0.0,
+            "default": 298.15,
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression TCooSet(y=0.0);"
         },
@@ -21,7 +21,7 @@
             "component": "rehBoxCon",
             "port": "THeaSet",
             "name": "THeaSet",
-            "default": 0.0,
+            "default": 293.15,
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression THeaSet(y=0.0);"
         },
@@ -69,7 +69,7 @@
             "component": "rehBoxCon",
             "port": "TSupSet",
             "name": "TSupSet",
-            "default": 0.0,
+            "default": 293.15,
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.RealExpression TSupSet(y=0.0);"
         }
@@ -144,7 +144,7 @@
             "component": "rehBoxCon",
             "port": "uOpeMod",
             "name": "uOpeMod",
-            "default": 0.0,
+            "default": 1,
             "target": "element.space_name",
             "default_template": "Modelica.Blocks.Sources.IntegerExpression uOpeMod(y=0.0);"
         },
@@ -185,7 +185,7 @@
             "port": "yHeaValResReq",
             "name": "yHeaValResReq",
             "default": 0.0,
-            "target": "element.ahu.control.name"
+            "target": "element.name"
         },
         {
             "component": "rehBoxCon",

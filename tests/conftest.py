@@ -23,6 +23,7 @@ from neosim.models.elements.controls.boiler import BoilerControl
 from neosim.models.elements.controls.collector import CollectorControl
 from neosim.models.elements.controls.emission import EmissionControl
 from neosim.models.elements.controls.three_way_valve import ThreeWayValveControl
+from neosim.models.elements.controls.vav import VAVControl
 from neosim.models.elements.damper import VAV, DamperVariant
 from neosim.models.elements.duct import Duct
 from neosim.models.elements.envelope.external_wall import ExternalWall
@@ -1190,17 +1191,12 @@ def space_1_different_construction_types() -> Space:
 def space_1_simple_ventilation() -> Space:
     space_1 = Space(
         name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -1224,11 +1220,15 @@ def space_1_simple_ventilation() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        ventilation_inlets=[Duct(name="pressure_drop_duct_in"), VAV(name="vav_in")],
-        ventilation_outlets=[VAV(name="vav_out"), Duct(name="pressure_drop_duct_out")],
-        ventilation_control=SpaceSubstanceVentilationControl(
-            name="ventilation_control"
-        ),
+        ventilation_inlets=[
+            Duct(name="pressure_drop_duct_in"),
+            VAV(
+                name="vav_in",
+                control=VAVControl(name="vav_in_control"),
+                variant="complex",
+            ),
+        ],
+        ventilation_outlets=[Duct(name="pressure_drop_duct_out")],
     )
 
     return space_1
@@ -1238,10 +1238,6 @@ def space_1_simple_ventilation() -> Space:
 def space_2_simple_ventilation() -> Space:
     space_2 = Space(
         name="space_2",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_1"),
         external_boundaries=[
             ExternalWall(
@@ -1264,14 +1260,15 @@ def space_2_simple_ventilation() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        ventilation_inlets=[Duct(name="pressure_drop_duct_in_1"), VAV(name="vav_in_2")],
-        ventilation_outlets=[
-            VAV(name="vav_out_2"),
-            Duct(name="pressure_drop_duct_out_2"),
+        ventilation_inlets=[
+            Duct(name="pressure_drop_duct_in_2"),
+            VAV(
+                name="vav_in_2",
+                control=VAVControl(name="vav_in_control_2"),
+                variant="complex",
+            ),
         ],
-        ventilation_control=SpaceSubstanceVentilationControl(
-            name="ventilation_control_2"
-        ),
+        ventilation_outlets=[Duct(name="pressure_drop_duct_out_2")],
     )
 
     return space_2

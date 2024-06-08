@@ -185,7 +185,7 @@
             "port": "yHeaValResReq",
             "name": "yHeaValResReq",
             "default": 0.0,
-            "target": "element.ahu.control.name"
+            "target": "element.name"
         },
         {
             "component": "rehBoxCon",

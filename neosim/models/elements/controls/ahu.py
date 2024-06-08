@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Callable, List, Optional
 
-from pydantic import Field
+from pydantic import Field, computed_field
 
 from neosim.controller.parser import ControllerBus
 from neosim.models.elements.base import (
@@ -34,8 +34,8 @@ dynamic_ahu_controller_template = DynamicComponentTemplate(
 {{bus_template}}
 
   Buildings.Controls.OBC.ASHRAE.G36.AHUs.MultiZone.VAV.SetPoints.OutdoorAirFlow.ASHRAE62_1.SumZone
-    sumZon(nZon={{element.vavs | length }}, nGro=1,     final zonGroMat=[1],
-    final zonGroMatTra=[1])
+    sumZon(nZon={{element.vavs | length }}, nGro=1,     final zonGroMat={{ element.zon_gro_mat }},
+    final zonGroMatTra={{ element.zon_gro_mat_tra }})
     {% raw %}annotation (Placement(transformation(extent={{-72,32},{-52,52}})));{% endraw %}
       Buildings.Controls.OBC.CDL.Integers.MultiSum preRetReq(final nin={{element.vavs | length }})
     {% raw %}annotation (Placement(transformation(extent={{-72,80},{-60,92}})));{% endraw %}
@@ -90,3 +90,11 @@ class AhuControl(Control):
         ideas=[BaseAhuControl],
         buildings=[BaseAhuControl],
     )
+
+    @computed_field
+    def zon_gro_mat(self) -> str:
+        return str([1] * len(self.vavs))
+
+    @computed_field
+    def zon_gro_mat_tra(self) -> str:
+        return str([1] * len(self.vavs)).replace(",", ";")

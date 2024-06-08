@@ -1,11 +1,12 @@
 from pathlib import Path
-from typing import Callable, List
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 from pydantic import Field
 
 from neosim.controller.parser import ControllerBus
 from neosim.models.elements.base import (
     AvailableLibraries,
+    BaseElement,
     DynamicComponentTemplate,
     LibraryData,
     Port,
@@ -13,6 +14,9 @@ from neosim.models.elements.base import (
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.controls.base import Control
 from neosim.models.elements.system import System
+
+if TYPE_CHECKING:
+    pass
 
 dynamic_vav_control_template = DynamicComponentTemplate(
     template="""model VAVControl{{ element.name | capitalize}}
@@ -64,3 +68,4 @@ class VAVControl(Control):
         ideas=[BaseVavControl],
         buildings=[BaseVavControl],
     )
+    ahu: Optional[BaseElement] = None

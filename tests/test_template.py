@@ -4,10 +4,13 @@ from typing import Set
 
 from neosim.library.library import Buildings, Ideas
 from neosim.models.elements.ahu import AirHandlingUnit
+from neosim.models.elements.boundary import Boundary
+from neosim.models.elements.controls.ahu import AhuControl
 
 # from neosim.library.buildings.buildings import BuildingsLibrary
 # from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.elements.space import Space
+from neosim.models.elements.weather import Weather
 from neosim.topology import Network
 
 OVERWRITE_MODELS = False
@@ -163,100 +166,61 @@ def test_space_1_different_construction_types(
     ) == set(_read(space_1_different_construction_types_network.name))
 
 
-#
-# def test_space_1_simple_ventilation(
-#     space_1_simple_ventilation: Space,
-# ) -> None:
-#
-#     network = Network(
-#         name="space_1_simple_ventilation",
-#         library=Buildings(
-#             constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-# package MediumW = Buildings.Media.Water "Medium model";"""
-#         ),
-#     )
-#     network.add_boiler_plate_spaces([space_1_simple_ventilation])
-#     ahu = AirHandlingUnit(name="ahu")
-#     network.connect_systems(
-#         ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-#     )
-#     network.connect_systems(
-#         space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-#     )
-#     model_ = network.model()
-#     assert clean_model(model_, network.name) == set(_read(network.name))
-#
-#
-# def test_many_spaces_simple_ventilation(
-#     many_spaces_simple_ventilation: Network,
-# ) -> None:
-#
-#     model_ = many_spaces_simple_ventilation.model()
-#     assert clean_model(model_, many_spaces_simple_ventilation.name) == set(
-#         _read(many_spaces_simple_ventilation.name)
-#     )
-#
-#
-# def test_ideas_space_1_simple_ventilation(
-#     space_1_simple_ventilation: Space,
-# ) -> None:
-#
-#     network = Network(
-#         name="ideas_space_1_simple_ventilation",
-#         library=Ideas(
-#             constants="""
-# replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
-# constrainedby Modelica.Media.Interfaces.PartialMedium
-# "Medium in the component"
-# annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
-# sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
-#                                               "Data reader"
-#     annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
-#         ),
-#     )
-#     network.add_boiler_plate_spaces([space_1_simple_ventilation])
-#     ahu = AirHandlingUnit(name="ahu")
-#     network.connect_systems(
-#         ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-#     )
-#     network.connect_systems(
-#         space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-#     )
-#
-#     model_ = network.model()
-#     assert clean_model(model_, network.name) == set(_read(network.name))
-#
-#
-# def test_ideas_many_spaces_simple_ventilation(
-#     ideas_many_spaces_simple_ventilation: Network,
-# ) -> None:
-#
-#     model_ = ideas_many_spaces_simple_ventilation.model()
-#     assert clean_model(model_, ideas_many_spaces_simple_ventilation.name) == set(
-#         _read(ideas_many_spaces_simple_ventilation.name)
-#     )
-#
-#
-# def test_template_buildings_simple_hydronic_three_zones_with_data_bus(
-#     buildings_simple_hydronic_three_zones: Network,
-# ) -> None:
-#     model_ = buildings_simple_hydronic_three_zones.model()
-#     assert clean_model(model_, buildings_simple_hydronic_three_zones.name) == set(
-#         _read(buildings_simple_hydronic_three_zones.name)
-#     )
-#
-#
-# def test_buildings_free_float_single_zone_ahu_complex(
-#     buildings_free_float_single_zone_ahu_complex: Network,
-# ) -> None:
-#     model_ = buildings_free_float_single_zone_ahu_complex.model()
-#     assert clean_model(
-#         model_, buildings_free_float_single_zone_ahu_complex.name
-#     ) == set(_read(buildings_free_float_single_zone_ahu_complex.name))
-#
-#
-# def test_vav_ventilation_control(vav_ventilation_control: Network) -> None:
-#     model_ = vav_ventilation_control.model()
-#     assert clean_model(model_, vav_ventilation_control.name) == set(
-#         _read(vav_ventilation_control.name)
-#     )
+def test_one_spaces_air_handling_unit(space_1_simple_ventilation: Space) -> None:
+
+    network = Network(
+        name="one_spaces_air_handling_unit",
+        library=Buildings(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
+    network.add_boiler_plate_spaces([space_1_simple_ventilation])
+    ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    boundary = Boundary(name="boundary")
+    network.connect_elements(boundary, ahu)
+    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    network.connect_elements(boundary, weather)
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_two_spaces_air_handling_unit(
+    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space
+) -> None:
+
+    network = Network(
+        name="two_spaces_air_handling_unit",
+        library=Buildings(
+            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+        ),
+    )
+    network.add_boiler_plate_spaces(
+        [space_1_simple_ventilation, space_2_simple_ventilation]
+    )
+    ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
+    network.connect_systems(
+        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
+    )
+    network.connect_systems(
+        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    network.connect_systems(
+        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
+    )
+    boundary = Boundary(name="boundary")
+    network.connect_elements(boundary, ahu)
+    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    network.connect_elements(boundary, weather)
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))

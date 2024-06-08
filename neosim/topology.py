@@ -186,9 +186,12 @@ class Network:
             )
             for controllable_element in controllable_ventilation_elements:
                 if controllable_element.control:
-                    controllable_element.control.ahu = [
-                        n for n in neighbors if isinstance(n, AirHandlingUnit)
-                    ][0]
+                    try:
+                        controllable_element.control.ahu = [
+                            n for n in neighbors if isinstance(n, AirHandlingUnit)
+                        ][0]
+                    except:
+                        a = 12
 
     def _build_occupancy(self, space: "Space") -> None:
         if space.occupancy:
