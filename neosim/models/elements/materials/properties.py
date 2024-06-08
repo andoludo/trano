@@ -1,8 +1,9 @@
+from typing import TYPE_CHECKING
+
 from networkx.classes.reportviews import NodeView
 
 from neosim.construction import Construction
 from neosim.glass import Glass
-from neosim.models.elements.base import Libraries
 from neosim.models.elements.envelope.base import BaseSimpleWall, MergedBaseWall
 from neosim.models.elements.materials.base import (
     BaseConstructionData,
@@ -14,6 +15,9 @@ from neosim.models.elements.materials.construction import (
 )
 from neosim.models.elements.materials.glazing import BuildingsGlazing, IdeasGlazing
 from neosim.models.elements.materials.material import BuildingsMaterial, IdeasMaterial
+
+if TYPE_CHECKING:
+    from neosim.library.library import Libraries
 
 
 class BuildingsData(BaseConstructionData):
@@ -59,9 +63,7 @@ end Data;"""
     glazing: IdeasGlazing
 
 
-def extract_buildings_data(
-    package_name: str, nodes: NodeView
-) -> MaterialProperties:
+def extract_buildings_data(package_name: str, nodes: NodeView) -> MaterialProperties:
 
     constructions = {
         node.construction
@@ -79,9 +81,7 @@ def extract_buildings_data(
     )
 
 
-def extract_ideas_data(
-    package_name: str, nodes: NodeView
-) -> MaterialProperties:
+def extract_ideas_data(package_name: str, nodes: NodeView) -> MaterialProperties:
 
     merged_constructions = {
         construction
@@ -114,10 +114,6 @@ def extract_ideas_data(
 
 
 def extract_properties(
-    library: Libraries, package_name: str, nodes: NodeView
+    library: "Libraries", package_name: str, nodes: NodeView
 ) -> MaterialProperties:
-    if library.name == "ideas":
-        return extract_ideas_data(package_name, nodes)
-    elif library.name == "buildings":
-        return extract_buildings_data(package_name, nodes)
-    raise ValueError(f"Unknown library name: {library.name}")
+    return library.extract_properties(package_name, nodes)

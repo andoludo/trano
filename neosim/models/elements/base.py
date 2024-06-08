@@ -9,7 +9,6 @@ from typing import (
     Optional,
     Tuple,
     Type,
-    Union,
 )
 
 from jinja2 import Environment, FileSystemLoader
@@ -17,39 +16,10 @@ from pydantic import BaseModel, ConfigDict, Field, create_model
 
 from neosim.controller.parser import ControllerBus
 from neosim.models.constants import Flow
-from neosim.models.elements.constants.buildings import BUILDINGS_CONSTANTS
-from neosim.models.elements.constants.ideas import CONSTANTS
 
 if TYPE_CHECKING:
-    pass
+    from neosim.library.library import Libraries
 
-
-def tilts_processing_ideas(element) -> List[str]:
-    return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
-
-
-class Library(BaseModel):
-    name: str
-    merged_external_boundaries: bool = False
-    functions: Dict[str, Callable[[Any], Any]] = {
-        "tilts_processing_ideas": tilts_processing_ideas
-    }
-    constants: str = ""
-
-
-class Ideas(Library):
-    name: str = "ideas"
-    merged_external_boundaries: bool = True
-    constants: str = CONSTANTS
-
-
-class Buildings(Library):
-    name: str = "buildings"
-    merged_external_boundaries: bool = False
-    constants: str = BUILDINGS_CONSTANTS
-
-
-Libraries = Union[Ideas, Buildings]
 Boolean = Literal["true", "false"]
 
 
@@ -63,14 +33,14 @@ class AvailableLibraries(BaseModel):
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
 
     def get_library_data(
-        self, library: Libraries, variant: "BaseVariant"
+        self, library: "Libraries", variant: "BaseVariant"
     ) -> "LibraryData":
         if variant == BaseVariant.default:
-            return getattr(self, library.name)[0]()
+            return getattr(self, library.name.lower())[0]()
         selected_variant = [
-            variant
-            for variant in getattr(self, library.name)
-            if variant.variant == variant
+            variant_
+            for variant_ in getattr(self, library.name.lower())
+            if variant_().variant == variant
         ]
         if not selected_variant:
             raise ValueError(f"Variant {variant} not found in library {library.name}")
@@ -204,7 +174,7 @@ class BaseParameter(BaseModel):
 
 
 class BaseElement(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
     parameters: Optional[BaseParameter] = None
     name: str
     position: Optional[List[float]] = None
@@ -215,7 +185,7 @@ class BaseElement(BaseModel):
     variant: str = BaseVariant.default
     libraries_data: List[AvailableLibraries] = None
 
-    def assign_library_property(self, library: Libraries) -> bool:
+    def assign_library_property(self, library: "Libraries") -> bool:
         library_data = self.libraries_data.get_library_data(library, self.variant)
         if not library_data:
             return False
@@ -229,7 +199,7 @@ class BaseElement(BaseModel):
             self.component_template = library_data.component_template
         return True
 
-    def processed_parameters(self, library: Libraries) -> dict:
+    def processed_parameters(self, library: "Libraries") -> dict:
         if self.libraries_data:
             library_data = self.libraries_data.get_library_data(library, self.variant)
             if library_data:
@@ -372,7 +342,22 @@ def change_alias(
             field.annotation,
             Field(field.default, alias=field.alias, description=field.description),
         )
-    return create_model("new_model", **new_param)
+
+    for name, field in parameter.model_computed_fields.items():
+        if mapping.get(name):
+            new_param[name] = (
+                Optional[field.return_type],
+                Field(None, alias=mapping[name], description=field.description),
+            )
+    return create_model(
+        "new_model", **new_param, __config__=ConfigDict(populate_by_name=True)
+    )
+
+
+def modify_alias(parameter: Type[BaseParameter], mapping: dict):
+    return change_alias(parameter, mapping)(**parameter.model_dump()).model_dump(
+        by_alias=True, include=set(list(mapping))
+    )
 
 
 class LibraryData(BaseModel):

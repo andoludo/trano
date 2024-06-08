@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Callable, ClassVar, List, Literal, Optional, Union
 
 from networkx import Graph
@@ -10,7 +11,7 @@ from neosim.models.elements.base import (
     BaseParameter,
     LibraryData,
     Port,
-    change_alias,
+    modify_alias,
 )
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.controls.base import Control
@@ -152,14 +153,8 @@ class IdeasSpace(LibraryData):
     redeclare package Medium = Medium,
     nSurf={{ element.number_merged_external_boundaries }},
     T_start=293.15)"""
-    parameter_processing: Callable[
-        [SpaceParameter], dict
-    ] = lambda parameter: change_alias(
-        SpaceParameter, {"average_room_height": "hZone", "volume": "V"}
-    )(
-        **parameter.model_dump()
-    ).model_dump(
-        by_alias=True, include={"average_room_height", "volume"}
+    parameter_processing: Callable[[SpaceParameter], dict] = partial(
+        modify_alias, mapping={"average_room_height": "hZone", "volume": "V"}
     )
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [

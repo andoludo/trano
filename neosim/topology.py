@@ -9,15 +9,10 @@ from networkx import DiGraph, shortest_path
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
+from neosim.library.library import Buildings, Libraries
 from neosim.models.constants import Tilt
 from neosim.models.elements.ahu import AirHandlingUnit
-from neosim.models.elements.base import (
-    BaseElement,
-    Buildings,
-    Connection,
-    Libraries,
-    connect,
-)
+from neosim.models.elements.base import BaseElement, Connection, connect
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.controls.base import Control
 from neosim.models.elements.controls.collector import CollectorControl
@@ -51,7 +46,9 @@ class Network:
             if not found_library:
                 return
         else:
-            raise Exception("Referring to old approach")
+            raise Exception(
+                f"No library data defined for NOde of type {type(node).__name__}"
+            )
         if node not in self.graph.nodes:
             self.graph.add_node(node)
         if isinstance(node, System) and node.control:
@@ -60,7 +57,9 @@ class Network:
                 if node_control.libraries_data:
                     node_control.assign_library_property(self.library)
                 else:
-                    raise Exception("Referring to old approach")
+                    raise Exception(
+                        f"No library data defined for NOde of type {type(node).__name__}"
+                    )
                 self.graph.add_node(node_control)
                 self.graph.add_edge(node, node_control)
                 node_control.controllable_element = node
@@ -474,7 +473,7 @@ class Network:
             model = rtemplate.render(
                 element=node,
                 package_name=self.name,
-                library_name=self.library.name.capitalize(),
+                library_name=self.library.name,
                 parameters=node.processed_parameters(self.library),
             )
             models.append(model)

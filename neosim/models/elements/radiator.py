@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Callable, List, Literal, Optional
 
 from pydantic import Field, computed_field
@@ -9,7 +10,7 @@ from neosim.models.elements.base import (
     BaseVariant,
     LibraryData,
     Port,
-    change_alias,
+    modify_alias,
 )
 from neosim.models.elements.controls.base import Control
 from neosim.models.elements.space import Space
@@ -109,21 +110,11 @@ class BaseIdealRadiator(LibraryData):
             Port(targets=[Control], names=["y"]),
         ]
     )
-    parameter_processing: Callable[
-        [RadiatorParameter], dict
-    ] = lambda parameter: change_alias(
-        RadiatorParameter,
-        {
+    parameter_processing: Callable[[RadiatorParameter], dict] = partial(
+        modify_alias,
+        mapping={
             "nominal_heating_power_positive_for_heating": "power",
             "fraction_radiant_heat_transfer": "frad",
-        },
-    )(
-        **parameter.model_dump()
-    ).model_dump(
-        by_alias=True,
-        include={
-            "nominal_heating_power_positive_for_heating",
-            "fraction_radiant_heat_transfer",
         },
     )
 

@@ -8,6 +8,7 @@ import pytest
 
 from neosim.construction import Constructions
 from neosim.glass import Glasses
+from neosim.library.library import Buildings, Ideas
 
 # from neosim.library.buildings.buildings import BuildingsLibrary
 # from neosim.library.ideas.ideas import IdeasLibrary
@@ -85,16 +86,11 @@ def is_success(results: docker.models.containers.ExecResult) -> bool:
 def simple_space_1() -> Space:
     return Space(
         name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -139,17 +135,12 @@ def simple_space_1() -> Space:
 def simple_space_1_with_occupancy() -> Space:
     return Space(
         name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -194,7 +185,7 @@ def simple_space_1_with_occupancy() -> Space:
 def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space) -> Network:
     network = Network(
         name="buildings_free_float_single_zone",
-        library=BuildingsLibrary(
+        library=Buildings(
             constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";"""
         ),
@@ -207,7 +198,7 @@ package MediumW = Buildings.Media.Water "Medium model";"""
 def ideas_free_float_single_zone(simple_space_1: Space) -> Network:
     network = Network(
         name="ideas_free_float_single_zone",
-        library=IdeasLibrary(
+        library=Ideas(
             constants="""
 replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
@@ -226,17 +217,12 @@ sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePo
 def buildings_free_float_two_zones() -> Network:
     space_1 = Space(
         name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -277,10 +263,6 @@ def buildings_free_float_two_zones() -> Network:
     )
     space_2 = Space(
         name="space_2",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=10,
         occupancy=Occupancy(name="occupancy_1"),
         external_boundaries=[
             ExternalWall(
@@ -312,7 +294,7 @@ def buildings_free_float_two_zones() -> Network:
 
     network = Network(
         name="buildings_free_float_two_zones",
-        library=BuildingsLibrary(
+        library=Buildings(
             constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";"""
         ),
@@ -325,17 +307,12 @@ package MediumW = Buildings.Media.Water "Medium model";"""
 def buildings_free_float_three_zones_spaces() -> list:
     space_1 = Space(
         name="space_1",
-        volume=10,
-        floor_area=10,
-        height=10,
-        elevation=10,
         occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -385,10 +362,6 @@ def buildings_free_float_three_zones_spaces() -> list:
     )
     space_2 = Space(
         name="space_2",
-        volume=10,
-        floor_area=10,
-        height=10,
-        elevation=10,
         occupancy=Occupancy(name="occupancy_1"),
         external_boundaries=[
             ExternalWall(
@@ -437,10 +410,6 @@ def buildings_free_float_three_zones_spaces() -> list:
     )
     space_3 = Space(
         name="space_3",
-        volume=10,
-        floor_area=10,
-        height=10,
-        elevation=10,
         occupancy=Occupancy(name="occupancy_2"),
         external_boundaries=[
             ExternalWall(
@@ -486,16 +455,11 @@ def buildings_free_float_three_zones_spaces() -> list:
 def ideas_free_float_three_zones_spaces() -> list:
     space_1 = Space(
         name="space_1",
-        volume=10,
-        floor_area=10,
-        height=10,
-        elevation=10,
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -545,10 +509,6 @@ def ideas_free_float_three_zones_spaces() -> list:
     )
     space_2 = Space(
         name="space_2",
-        volume=10,
-        floor_area=10,
-        height=10,
-        elevation=10,
         external_boundaries=[
             ExternalWall(
                 name="w1_2",
@@ -596,10 +556,6 @@ def ideas_free_float_three_zones_spaces() -> list:
     )
     space_3 = Space(
         name="space_3",
-        volume=10,
-        floor_area=10,
-        height=10,
-        elevation=10,
         external_boundaries=[
             ExternalWall(
                 name="w1_3",
@@ -646,7 +602,7 @@ def buildings_free_float_three_zones(
 ) -> Network:
     network = Network(
         name="buildings_free_float_three_zones",
-        library=BuildingsLibrary(
+        library=Buildings(
             constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
 package MediumW = Buildings.Media.Water "Medium model";"""
         ),
@@ -661,7 +617,7 @@ def ideas_free_float_three_zones(
 ) -> Network:
     network = Network(
         name="ideas_free_float_three_zones",
-        library=IdeasLibrary(
+        library=Ideas(
             constants="""
 replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
@@ -680,17 +636,12 @@ sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePo
 def space_1() -> Space:
     space_1 = Space(
         name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -740,17 +691,12 @@ def space_1() -> Space:
 def space_2() -> Space:
     space_2 = Space(
         name="space_2",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_1"),
         external_boundaries=[
             ExternalWall(
                 name="w1_2",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -802,17 +748,12 @@ def space_2() -> Space:
 def space_3() -> Space:
     space_3 = Space(
         name="space_3",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_2"),
         external_boundaries=[
             ExternalWall(
                 name="w1_3",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -850,58 +791,24 @@ def space_3() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        emissions=[Valve(name="valve_3"), Emission(name="emission_3")],
-        control=SpaceControl(name="space_control_3"),
+        emissions=[
+            Valve(
+                name="valve_3", control=EmissionControl(name="emission_valve_control_3")
+            ),
+            Radiator(name="emission_3"),
+        ],
     )
     return space_3
 
 
 @pytest.fixture
 def buildings_two_rooms_with_storage(space_1: Space, space_2: Space) -> Network:
-    """
-        parameter Integer nRoo = 2 "Number of rooms";
-     parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";
-     parameter Modelica.Units.SI.Power Q_flow_nominal=2200
-       "Nominal power of heating plant";
-    // Due to the night setback, in which the radiator do not provide heat input into the room,
-    // we scale the design power of the radiator loop
-    parameter Real scaFacRad = 1.5
-       "Scaling factor to scale the power (and mass flow rate) of the radiator loop";
-         parameter Modelica.Units.SI.Temperature dTBoi_nominal=20
-       "Nominal temperature difference for boiler loop";
-     parameter Modelica.Units.SI.Temperature TSup_nominal=273.15 + 50 + 5
-       "Nominal supply temperature for radiators";
-     parameter Modelica.Units.SI.Temperature TRet_nominal=273.15 + 40 + 5
-       "Nominal return temperature for radiators";
-     parameter Modelica.Units.SI.Temperature dTRad_nominal=TSup_nominal -
-         TRet_nominal "Nominal temperature difference for radiator loop";
-
-     parameter Modelica.Units.SI.MassFlowRate mRad_flow_nominal=scaFacRad*
-         Q_flow_nominal/dTRad_nominal/4200
-       "Nominal mass flow rate of radiator loop";
-     parameter Modelica.Units.SI.MassFlowRate mBoi_flow_nominal=scaFacRad*
-         Q_flow_nominal/dTBoi_nominal/4200 "Nominal mass flow rate of boiler loop";
-     parameter Modelica.Units.SI.PressureDifference dpPip_nominal=10000
-       "Pressure difference of pipe (without valve)";
-     parameter Modelica.Units.SI.PressureDifference dpVal_nominal=6000
-       "Pressure difference of valve";
-     parameter Modelica.Units.SI.PressureDifference dpRoo_nominal=6000
-       "Pressure difference of flow leg that serves a room";
-     parameter Modelica.Units.SI.PressureDifference dpThrWayVal_nominal=6000
-       "Pressure difference of three-way valve";
-     parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +
-         dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
-       "Pressure difference of loop";
-
-    """
     Q_flow_nominal = 2200
     scaFacRad = 1.5
     TSup_nominal = 273.15 + 50 + 5
     TRet_nominal = 273.15 + 40 + 5
     dTRad_nominal = TSup_nominal - TRet_nominal
-    dTBoi_nominal = 20
     mRad_flow_nominal = scaFacRad * Q_flow_nominal / dTRad_nominal / 4200
-    mBoi_flow_nominal = scaFacRad * Q_flow_nominal / dTBoi_nominal / 4200
     dpPip_nominal = 10000
     dpVal_nominal = 6000
     dpRoo_nominal = 6000
@@ -952,41 +859,19 @@ def buildings_simple_hydronic(space_1: Space) -> Network:
     network.add_boiler_plate_spaces([space_1])
 
     pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
-    boiler = Boiler(name="boiler")
+    boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
     split_valve = SplitValve(name="split_valve")
-    three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=Control(name="three_way_valve_control")
-    )
+    t = ThreeWayValveControl(name="three_way_valve_control")
+    three_way_valve = ThreeWayValve(name="three_way_valve", control=t)
     temperature_sensor = TemperatureSensor(name="temperature_sensor")
-    network.connect_systems(three_way_valve, space_1.first_emission())
+    network.connect_systems(temperature_sensor, space_1.first_emission())
+    network.connect_systems(three_way_valve, temperature_sensor)
     network.connect_systems(space_1.last_emission(), split_valve)
     network.connect_systems(boiler, pump)
     network.connect_systems(pump, three_way_valve)
     network.connect_systems(three_way_valve, split_valve)
     network.connect_systems(split_valve, boiler)
-
-    return network
-
-
-@pytest.fixture
-def buildings_simple_hydronic_two_zones(space_1: Space, space_2: Space) -> Network:
-    network = Network(name="buildings_simple_hydronic_two_zones")
-    network.add_boiler_plate_spaces([space_1, space_2])
-
-    pump = Pump(name="pump", control=Control(name="pump_control"))
-    boiler = Boiler(name="boiler")
-    split_valve = SplitValve(name="split_valve")
-    three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=Control(name="three_way_valve_control")
-    )
-    network.connect_systems(three_way_valve, space_1.first_emission())
-    network.connect_systems(three_way_valve, space_2.first_emission())
-    network.connect_systems(space_1.last_emission(), split_valve)
-    network.connect_systems(space_2.last_emission(), split_valve)
-    network.connect_systems(boiler, pump)
-    network.connect_systems(pump, three_way_valve)
-    network.connect_systems(three_way_valve, split_valve)
-    network.connect_systems(split_valve, boiler)
+    network.connect_systems(t, temperature_sensor)
 
     return network
 
@@ -998,19 +883,25 @@ def buildings_simple_hydronic_three_zones(
     network = Network(name="buildings_simple_hydronic_three_zones")
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
-    pump = Pump(name="pump", control=Control(name="pump_control"))
-    boiler = Boiler(name="boiler")
+    pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
+    boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
     split_valve = SplitValve(name="split_valve")
+    three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
+    three_way_valve_control_2 = ThreeWayValveControl(name="three_way_valve_control_2")
     three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=Control(name="three_way_valve_control")
+        name="three_way_valve", control=three_way_valve_control
     )
     split_valve_2 = SplitValve(name="split_valve_2")
     three_way_valve_2 = ThreeWayValve(
-        name="three_way_valve_2", control=Control(name="three_way_valve_control_2")
+        name="three_way_valve_2", control=three_way_valve_control_2
     )
-    network.connect_systems(three_way_valve, space_1.first_emission())
-    network.connect_systems(three_way_valve, space_2.first_emission())
-    network.connect_systems(three_way_valve_2, space_3.first_emission())
+    temperature_sensor = TemperatureSensor(name="temperature_sensor")
+    temperature_sensor_2 = TemperatureSensor(name="temperature_sensor_2")
+    network.connect_systems(temperature_sensor, space_1.first_emission())
+    network.connect_systems(temperature_sensor, space_2.first_emission())
+    network.connect_systems(three_way_valve, temperature_sensor)
+    network.connect_systems(temperature_sensor_2, space_3.first_emission())
+    network.connect_systems(three_way_valve_2, temperature_sensor_2)
     network.connect_systems(space_1.last_emission(), split_valve)
     network.connect_systems(space_2.last_emission(), split_valve)
     network.connect_systems(space_3.last_emission(), split_valve_2)
@@ -1021,6 +912,8 @@ def buildings_simple_hydronic_three_zones(
     network.connect_systems(three_way_valve_2, split_valve_2)
     network.connect_systems(split_valve, boiler)
     network.connect_systems(split_valve_2, boiler)
+    network.connect_systems(temperature_sensor, three_way_valve_control)
+    network.connect_systems(temperature_sensor_2, three_way_valve_control_2)
 
     # # check if controllable # noqa : E800
     # if pump.get_controllable_ports(): # noqa : E800
@@ -1040,22 +933,28 @@ def buildings_simple_hydronic_three_zones(
 def ideas_simple_hydronic_three_zones(
     space_1: Space, space_2: Space, space_3: Space
 ) -> Network:
-    network = Network(name="ideas_simple_hydronic_three_zones", library=IdeasLibrary())
+    network = Network(name="ideas_simple_hydronic_three_zones", library=Ideas())
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
-    pump = Pump(name="pump", control=Control(name="pump_control"))
-    boiler = Boiler(name="boiler")
+    pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
+    boiler = Boiler(name="boiler", control=BoilerControl(name="BoilerControl"))
     split_valve = SplitValve(name="split_valve")
+    three_way_valve_control_2 = ThreeWayValveControl(name="three_way_valve_control_2")
+    three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
     three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=Control(name="three_way_valve_control")
+        name="three_way_valve", control=three_way_valve_control
     )
     split_valve_2 = SplitValve(name="split_valve_2")
     three_way_valve_2 = ThreeWayValve(
-        name="three_way_valve_2", control=Control(name="three_way_valve_control_2")
+        name="three_way_valve_2", control=three_way_valve_control_2
     )
-    network.connect_systems(three_way_valve, space_1.first_emission())
-    network.connect_systems(three_way_valve, space_2.first_emission())
-    network.connect_systems(three_way_valve_2, space_3.first_emission())
+    temperature_sensor = TemperatureSensor(name="temperature_sensor")
+    temperature_sensor_2 = TemperatureSensor(name="temperature_sensor_2")
+    network.connect_systems(temperature_sensor, space_1.first_emission())
+    network.connect_systems(temperature_sensor, space_2.first_emission())
+    network.connect_systems(three_way_valve, temperature_sensor)
+    network.connect_systems(temperature_sensor_2, space_3.first_emission())
+    network.connect_systems(three_way_valve_2, temperature_sensor_2)
     network.connect_systems(space_1.last_emission(), split_valve)
     network.connect_systems(space_2.last_emission(), split_valve)
     network.connect_systems(space_3.last_emission(), split_valve_2)
@@ -1066,6 +965,8 @@ def ideas_simple_hydronic_three_zones(
     network.connect_systems(three_way_valve_2, split_valve_2)
     network.connect_systems(split_valve, boiler)
     network.connect_systems(split_valve_2, boiler)
+    network.connect_systems(temperature_sensor, three_way_valve_control)
+    network.connect_systems(temperature_sensor_2, three_way_valve_control_2)
 
     # # check if controllable # noqa : E800
     # if pump.get_controllable_ports(): # noqa : E800
@@ -1085,16 +986,11 @@ def ideas_simple_hydronic_three_zones(
 def space_1_no_occupancy() -> Space:
     space_1 = Space(
         name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -1132,29 +1028,35 @@ def space_1_no_occupancy() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        emissions=[Valve(name="valve"), Emission(name="emission")],
-        control=SpaceControl(name="space_control"),
+        emissions=[
+            Valve(name="valve", control=EmissionControl(name="emission_control")),
+            Radiator(name="emission"),
+        ],
     )
     return space_1
 
 
 @pytest.fixture
 def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
-    network = Network(name="ideas_simple_hydronic_no_occupancy", library=IdeasLibrary())
+    network = Network(name="ideas_simple_hydronic_no_occupancy", library=Ideas())
     network.add_boiler_plate_spaces([space_1_no_occupancy])
 
-    pump = Pump(name="pump", control=Control(name="pump_control"))
-    boiler = Boiler(name="boiler")
+    pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
+    boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
     split_valve = SplitValve(name="split_valve")
+    three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
     three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=Control(name="three_way_valve_control")
+        name="three_way_valve", control=three_way_valve_control
     )
-    network.connect_systems(three_way_valve, space_1_no_occupancy.first_emission())
+    temperature_sensor = TemperatureSensor(name="temperature_sensor")
+    network.connect_systems(temperature_sensor, space_1_no_occupancy.first_emission())
+    network.connect_systems(three_way_valve, temperature_sensor)
     network.connect_systems(space_1_no_occupancy.last_emission(), split_valve)
     network.connect_systems(boiler, pump)
     network.connect_systems(pump, three_way_valve)
     network.connect_systems(three_way_valve, split_valve)
     network.connect_systems(split_valve, boiler)
+    network.connect_systems(temperature_sensor, three_way_valve_control)
 
     return network
 
@@ -1163,17 +1065,12 @@ def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
 def space_1_ideal_heating() -> Space:
     space_1 = Space(
         name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -1211,8 +1108,13 @@ def space_1_ideal_heating() -> Space:
                 construction=Glasses.double_glazing,
             ),
         ],
-        emissions=[Emission(name="emission", variant=EmissionVariant.ideal)],
-        control=SpaceControl(name="space_control"),
+        emissions=[
+            Radiator(
+                name="emission",
+                variant="ideal",
+                control=EmissionControl(name="emission_control"),
+            )
+        ],
     )
     return space_1
 
@@ -1221,17 +1123,12 @@ def space_1_ideal_heating() -> Space:
 def space_1_different_construction_types() -> Space:
     space_1 = Space(
         name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
         occupancy=Occupancy(name="occupancy_0"),
         external_boundaries=[
             ExternalWall(
                 name="w1_1",
                 surface=10,
                 azimuth=Azimuth.west,
-                layer_name="layer",
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
@@ -1278,8 +1175,13 @@ def space_1_different_construction_types() -> Space:
                 construction=Glasses.simple_glazing,
             ),
         ],
-        emissions=[Emission(name="emission", variant=EmissionVariant.ideal)],
-        control=SpaceControl(name="space_control"),
+        emissions=[
+            Radiator(
+                name="emission",
+                variant="ideal",
+                control=EmissionControl(name="emission_control"),
+            )
+        ],
     )
     return space_1
 
@@ -1381,7 +1283,7 @@ def ideas_many_spaces_simple_ventilation(
 ) -> Network:
     network = Network(
         name="ideas_many_spaces_simple_ventilation",
-        library=IdeasLibrary(
+        library=Ideas(
             constants="""
     replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
     constrainedby Modelica.Media.Interfaces.PartialMedium
@@ -1418,7 +1320,7 @@ def many_spaces_simple_ventilation(
 ) -> Network:
     network = Network(
         name="many_spaces_simple_ventilation",
-        library=BuildingsLibrary(
+        library=Buildings(
             constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
     package MediumW = Buildings.Media.Water "Medium model";"""
         ),
@@ -1447,9 +1349,7 @@ def many_spaces_simple_ventilation(
 def space_1_different_construction_types_network(
     space_1_different_construction_types: Space,
 ) -> Network:
-    network = Network(
-        name="space_1_different_construction_types", library=IdeasLibrary()
-    )
+    network = Network(name="space_1_different_construction_types", library=Ideas())
     network.add_boiler_plate_spaces([space_1_different_construction_types])
     return network
 
@@ -1460,7 +1360,7 @@ def buildings_free_float_single_zone_ahu_complex(
 ) -> Network:
     network = Network(
         name="buildings_free_float_single_zone_ahu_complex",
-        library=BuildingsLibrary(
+        library=Buildings(
             constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
         package MediumW = Buildings.Media.Water "Medium model";"""
         ),
@@ -1593,7 +1493,7 @@ def space_1_simple_ventilation_vav_control() -> Space:
 def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space) -> Network:
     network = Network(
         name="vav_ventilation_control",
-        library=BuildingsLibrary(
+        library=Buildings(
             constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
     package MediumW = Buildings.Media.Water "Medium model";"""
         ),
