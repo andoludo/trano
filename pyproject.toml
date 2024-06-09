@@ -18,6 +18,10 @@ docker = "^6.1.3"
 jinja2 = "^3.1.2"
 pytest = "^7.4.3"
 pyvis = "^0.3.2"
+scipy = "^1.13.1"
+mat4py = "^0.6.0"
+pandas = "^2.2.2"
+buildingspy = "^5.1.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -51,9 +55,6 @@ show_absolute_path = true
 # for strict mypy: (this is the tricky one :-))
 disallow_untyped_defs = true
 strict = true
-init_forbid_extra = true
-init_typed = true
-warn_required_dynamic_aliases = true
 
 exclude = [
     "test_*",
