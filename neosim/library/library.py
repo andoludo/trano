@@ -10,9 +10,10 @@ from neosim.models.elements.materials.properties import (
     extract_buildings_data,
     extract_ideas_data,
 )
+from neosim.models.parameters import WallParameters
 
 
-def tilts_processing_ideas(element) -> List[str]:
+def tilts_processing_ideas(element: WallParameters) -> List[str]:
     return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
 
 

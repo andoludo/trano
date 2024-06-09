@@ -1,15 +1,5 @@
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Literal,
-    Optional,
-    Tuple,
-    Type,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, ConfigDict, Field, create_model
@@ -32,9 +22,7 @@ class AvailableLibraries(BaseModel):
     ideas: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
 
-    def get_library_data(
-        self, library: "Libraries", variant: "BaseVariant"
-    ) -> "LibraryData":
+    def get_library_data(self, library: "Libraries", variant: str) -> Any:
         if variant == BaseVariant.default:
             return getattr(self, library.name.lower())[0]()
         selected_variant = [
@@ -137,14 +125,19 @@ class BaseVariant:
     default: str = "default"
 
 
+DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
+
+
 class DynamicComponentTemplate(BaseModel):
 
-    template: Optional[str] = None
-    category: Optional[Literal["ventilation", "control", "fluid", "boiler"]] = None
-    function: Callable = Field(default=lambda _: {})
-    bus: Optional[ControllerBus] = None
+    template: str
+    category: Optional[DynamicTemplateCategories] = None
+    function: Callable[[Any], Any] = Field(default=lambda _: {})
+    bus: ControllerBus
 
-    def render(self, package_name, element: "BaseElement", parameters) -> str:
+    def render(
+        self, package_name: str, element: "BaseElement", parameters: Dict[str, Any]
+    ) -> str:
         ports = list(self.bus.bus_ports(element))
         environment = Environment(
             trim_blocks=True,
@@ -158,14 +151,17 @@ class DynamicComponentTemplate(BaseModel):
         rtemplate = environment.from_string(
             "{% import 'macros.jinja2' as macros %}" + self.template
         )
-        component = rtemplate.render(
-            element=element,
-            package_name=package_name,
-            bus_template=self.bus.template,
-            bus_ports="\n".join(ports),
-            parameters=parameters,
-            **self.function(element),
-        )
+        try:
+            component = rtemplate.render(
+                element=element,
+                package_name=package_name,
+                bus_template=self.bus.template,
+                bus_ports="\n".join(ports),
+                parameters=parameters,
+                **self.function(element),
+            )
+        except:
+            a = 12
         return component
 
 
@@ -183,9 +179,11 @@ class BaseElement(BaseModel):
     annotation_template: Optional[str] = None
     component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
-    libraries_data: List[AvailableLibraries] = None
+    libraries_data: Optional[AvailableLibraries] = None
 
     def assign_library_property(self, library: "Libraries") -> bool:
+        if self.libraries_data is None:
+            return False
         library_data = self.libraries_data.get_library_data(library, self.variant)
         if not library_data:
             return False
@@ -199,10 +197,10 @@ class BaseElement(BaseModel):
             self.component_template = library_data.component_template
         return True
 
-    def processed_parameters(self, library: "Libraries") -> dict:
+    def processed_parameters(self, library: "Libraries") -> Any:
         if self.libraries_data:
             library_data = self.libraries_data.get_library_data(library, self.variant)
-            if library_data:
+            if library_data and self.parameters:
                 return library_data.parameter_processing(self.parameters)
         return {}
 
@@ -331,8 +329,8 @@ def _is_inlet_or_outlet(target: "BaseElement") -> bool:
 
 
 def change_alias(
-    parameter: Type[BaseParameter], mapping: dict = None
-) -> Type[BaseModel]:
+    parameter: BaseParameter, mapping: Optional[Dict[str, str]] = None
+) -> Any:
     mapping = mapping or {}
     new_param = {}
     for name, field in parameter.model_fields.items():
@@ -343,18 +341,20 @@ def change_alias(
             Field(field.default, alias=field.alias, description=field.description),
         )
 
-    for name, field in parameter.model_computed_fields.items():
+    for name, field in parameter.model_computed_fields.items():  # type: ignore
         if mapping.get(name):
             new_param[name] = (
-                Optional[field.return_type],
+                Optional[field.return_type],  # type: ignore
                 Field(None, alias=mapping[name], description=field.description),
             )
-    return create_model(
-        "new_model", **new_param, __config__=ConfigDict(populate_by_name=True)
+    return create_model(  # type: ignore
+        __model_name="new_model",
+        **new_param,
+        __config__=ConfigDict(populate_by_name=True),
     )
 
 
-def modify_alias(parameter: Type[BaseParameter], mapping: dict):
+def modify_alias(parameter: BaseParameter, mapping: Dict[str, str]) -> Any:
     return change_alias(parameter, mapping)(**parameter.model_dump()).model_dump(
         by_alias=True, include=set(list(mapping))
     )
@@ -370,7 +370,7 @@ class LibraryData(BaseModel):
     component_template: Optional[DynamicComponentTemplate] = None
     ports_factory: Callable[[], List[Port]]
     variant: str = BaseVariant.default
-    parameter_processing: Callable[[BaseParameter], dict] = (
+    parameter_processing: Callable[[BaseParameter], Dict[str, Any]] = (
         lambda parameter: parameter.model_dump(by_alias=True, exclude_none=True)
         if parameter
         else {}

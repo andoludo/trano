@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import Callable, List
 
 from pydantic import Field
 
@@ -29,8 +29,6 @@ class BaseBoundaryComponent(LibraryData):
 
 
 class Boundary(BaseBoundary):
-    name: str
-    position: Optional[List[float]] = None
     libraries_data: AvailableLibraries = AvailableLibraries(
         ideas=[BaseBoundaryComponent],
         buildings=[BaseBoundaryComponent],

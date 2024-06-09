@@ -63,7 +63,7 @@ end DataServer;
 )
 
 
-def data_bus_factory():
+def data_bus_factory() -> LibraryData:
     from neosim.models.elements.controls.base import Control
     from neosim.models.elements.space import Space
     from neosim.models.elements.system import System

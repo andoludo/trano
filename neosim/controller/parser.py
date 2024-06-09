@@ -1,7 +1,12 @@
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from pydantic import BaseModel, Field, computed_field
+
+if TYPE_CHECKING:
+
+    from neosim.models.elements.base import BaseElement
 
 
 class BaseInput(BaseModel):
@@ -14,17 +19,18 @@ class BaseInput(BaseModel):
     default: float | str | int
     evaluated_element_name: str = ""
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.name, self.target))
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return hash(self) == hash(other)
 
-    @computed_field
+    @computed_field  # type: ignore
     @property
     def input_model(self) -> str:
         if self.evaluated_element_name:
             return f"""{self.input_template} {self.name}{self.evaluated_element_name.capitalize()}(y={self.default});"""
+        return ""
 
 
 class RealInput(BaseInput):
@@ -34,7 +40,7 @@ class RealInput(BaseInput):
 
 
 class IntegerInput(BaseInput):
-    default: int = 0.0
+    default: float = 0.0
     target: str = "Space"
     input_template: str = "Modelica.Blocks.Sources.IntegerExpression"
 
@@ -52,7 +58,7 @@ class BooleanOutput(BaseInput):
 
 
 class IntegerOutput(BaseInput):
-    default: int = 0.0
+    default: float = 0.0
     target: str = "Controlled"
     input_template: str = "Modelica.Blocks.Sources.IntegerExpression"
 
@@ -74,10 +80,19 @@ class ControllerBus(BaseModel):
     boolean_outputs: list[BooleanOutput] = Field(default=[])
 
     @classmethod
-    def from_configuration(cls, file_path: Path):
+    def from_configuration(cls, file_path: Path) -> "ControllerBus":
         return cls(**json.loads(file_path.read_text()))
 
-    def inputs(self):
+    def inputs(
+        self,
+    ) -> List[
+        BooleanInput
+        | IntegerOutput
+        | IntegerInput
+        | RealOutput
+        | RealInput
+        | BooleanOutput
+    ]:
         return (
             self.real_inputs
             + self.real_outputs
@@ -87,7 +102,7 @@ class ControllerBus(BaseModel):
             + self.boolean_outputs
         )
 
-    def _get_targets(self):
+    def _get_targets(self) -> Dict[str, List[BaseInput]]:
         return {
             input.target: [
                 input_ for input_ in self.inputs() if input_.target == input.target
@@ -95,8 +110,10 @@ class ControllerBus(BaseModel):
             for input in self.inputs()
         }
 
-    def list_ports(self, element, **kwargs) -> str:
-        ports = {
+    def list_ports(
+        self, element: "BaseElement", **kwargs: Any
+    ) -> Dict[str, List[BaseInput]]:
+        ports: Dict[str, List[BaseInput]] = {
             "RealOutput": [],
             "RealInput": [],
             "IntegerOutput": [],
@@ -136,20 +153,12 @@ class ControllerBus(BaseModel):
                     )
         return ports
 
-    def bus_ports(self, element, **kwargs) -> str:
-        ports = []
+    def bus_ports(self, element: "BaseElement", **kwargs: Any) -> List[str]:
+        ports: List[str] = []
         for target, inputs in self._get_targets().items():
             target_value = eval(target)
             for input in inputs:
                 if isinstance(target_value, list):
-                    # if len(target_value) == 1:
-                    #     ports.append(
-                    #
-                    #         f"connect(dataBus.{input.name}{target_value[0].capitalize()}, "
-                    #         f"{input.component}.{input.port});"
-                    #
-                    #     )
-                    # else:
                     for i, target_ in enumerate(target_value):
                         if input.multi:
                             ports.append(

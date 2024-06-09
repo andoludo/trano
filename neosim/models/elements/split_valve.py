@@ -29,7 +29,9 @@ class SplitValveParameters(BaseParameter):
         alias="linearized",
         title="= true, use linear relation between m_flow and dp for any flow rate",
     )
-    time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance: float = Field(
+    time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance: Optional[
+        float
+    ] = Field(
         None,
         alias="tau",
         title="Time constant at nominal flow for dynamic energy and momentum balance",
@@ -43,6 +45,7 @@ class SplitValveParameters(BaseParameter):
     )
 
     @field_serializer("m_flow_nominal")
+    @staticmethod
     def m_flow_nominal_serializer(m_flow_nominal: float) -> str:
         return f"{m_flow_nominal}" + "*{1, -1, -1}"
 

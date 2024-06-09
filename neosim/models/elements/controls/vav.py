@@ -50,7 +50,7 @@ class BaseVavControl(LibraryData):
     template: str = """
     {{package_name}}.Common.Controls.ventilation.VAVControl{{ element.name | capitalize}}
     {{ element.name }}"""
-    component_template: str = dynamic_vav_control_template
+    component_template: DynamicComponentTemplate = dynamic_vav_control_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(

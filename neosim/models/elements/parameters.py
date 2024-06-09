@@ -10,7 +10,7 @@ class RadiatorParameter(BaseModel):
     fraction_radiant_heat_transfer: float = Field(
         0, alias="fraRad", title="Fraction radiant heat transfer"
     )
-    nominal_heating_power_positive_for_heating: Optional[float] = Field(
+    nominal_heating_power_positive_for_heating: float = Field(
         2000,
         alias="Q_flow_nominal",
         title="Nominal heating power (positive for heating)",
@@ -53,11 +53,11 @@ class RadiatorParameter(BaseModel):
 
     @computed_field(alias="VWat", title="Water volume of radiator")
     def water_volume_of_radiator(self) -> float:
-        return self.water_volume_of_radiator
+        return (5.8 * (10**-6)) * self.nominal_heating_power_positive_for_heating
 
     @computed_field(
         alias="mDry",
         title="Dry mass of radiator that will be lumped to water heat capacity",
     )
     def dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity(self) -> float:
-        return self.dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity
+        return 0.0263 * self.nominal_heating_power_positive_for_heating

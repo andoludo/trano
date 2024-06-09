@@ -514,7 +514,7 @@ connect(dataBus.TAirOutBoiler, lesThrTOut.u);
 connect(dataBus.yBoiConBoiler, booToReaBoi.y);
 connect(dataBus.yPumBoiBoiler, booToReaPum.y);
      end BoilerControlBoilercontrol;
-     
+
         model CollectorControlPump_control
   Buildings.Controls.OBC.CDL.Reals.PIDWithReset
                                       conPum(    controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.PI,
@@ -599,7 +599,7 @@ connect(dataBus.THeaSetSpace_2, THeaSetEmission_valve_control_2.y);
 connect(dataBus.triggerThree_way_valve_control_2, triggerThree_way_valve_control_2.y);
 connect(dataBus.triggerThree_way_valve_control, triggerThree_way_valve_control.y);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl
@@ -1008,7 +1008,7 @@ connect(dataBus.yPumBoiBoiler, pumBoi.y);
 connect(dataBus.TStoTopBoiler, tanTemTop.T);
 connect(dataBus.TStoBotBoiler, tanTemBot.T);
      end BoilerWithStorageBoiler;
-     
+
 
   end Boilers;
 
@@ -2203,7 +2203,7 @@ connect(dataBus.yPump, pumRad.y);
 connect(dataBus.y_gainPump, gain.y);
 connect(dataBus.TPump_control, temSup.T);
  end PumpPump;
- 
+
 
     end Ventilation;
   end Fluid;

@@ -22,7 +22,7 @@ class ThreeWayValveParameters(BaseParameter):
         alias="delta0",
         title="Range of significant deviation from equal percentage law",
     )
-    dpFixed_nominal: Optional[float] = Field(
+    dpFixed_nominal: str = Field(
         "{100,0}",
         alias="dpFixed_nominal",
         title="Nominal pressure drop of pipes and other equipment in flow legs at port_1 and port_3",

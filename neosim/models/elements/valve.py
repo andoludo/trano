@@ -31,7 +31,7 @@ class ValveParameters(BaseParameter):
     use_m_flow_f_dp_else_dp_f_m_flow: Boolean = Field(
         "true", alias="from_dp", title="= true, use m_flow = f(dp) else dp = f(m_flow)"
     )
-    use_linear_relation_between_m_flow_and_dp_for_any_flow_rate: bool = Field(
+    use_linear_relation_between_m_flow_and_dp_for_any_flow_rate: Boolean = Field(
         "false",
         alias="linearized",
         title="= true, use linear relation between m_flow and dp for any flow rate",

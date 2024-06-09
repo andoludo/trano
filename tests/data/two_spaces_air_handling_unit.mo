@@ -660,7 +660,7 @@ connect(dataBus.u1SupFanAhu_control, u1SupFanAhu_control.y);
 connect(dataBus.uHeaOffSpace_1, uHeaOffVav_in_control.y);
 connect(dataBus.u1HotPlaSpace_2, u1HotPlaVav_in_control_2.y);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl
@@ -2254,7 +2254,7 @@ connect(dataBus.y_actualVav_in, vav.y_actual);
 connect(dataBus.VDis_flowVav_in_control, senVolFlo.V_flow);
 connect(dataBus.TDisVav_in_control, senTem.T);
  end VAVBoxVav_in;
- 
+
         model VAVBoxVav_in_2
 extends two_spaces_air_handling_unit.Common.Fluid.Ventilation.PartialVAVBox;
 Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(
@@ -2265,7 +2265,7 @@ connect(dataBus.y_actualVav_in_2, vav.y_actual);
 connect(dataBus.VDis_flowVav_in_control_2, senVolFlo.V_flow);
 connect(dataBus.TDisVav_in_control_2, senTem.T);
  end VAVBoxVav_in_2;
- 
+
             model AhuAhu
     extends two_spaces_air_handling_unit.Common.Fluid.Ventilation.PartialAhu;
     Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(
@@ -2283,7 +2283,7 @@ connect(dataBus.TAirSupAhu_control, TSup.T);
 connect(dataBus.TAirMixAhu_control, TMix.T);
 connect(dataBus.dpDucAhu_control, dpDisSupFan.p_rel);
      end AhuAhu;
-     
+
 
     end Ventilation;
   end Fluid;
@@ -2395,11 +2395,11 @@ model building
         tauIR=0.0,
         absIR_a=0.84,
         absIR_b=0.84)
-        
+
     },
     final gas={
             Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
-            
+
     },
     UFra=1.4)
     annotation (

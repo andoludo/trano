@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable, ClassVar, List, Literal, Optional, Union
+from typing import Any, Callable, ClassVar, Dict, List, Literal, Optional, Union
 
 from networkx import Graph
 from pydantic import Field, computed_field
@@ -125,7 +125,7 @@ class BuildingsSpace(LibraryData):
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)"""
     parameter_processing: Callable[
-        [SpaceParameter], dict
+        [SpaceParameter], Dict[str, Any]
     ] = lambda parameter: parameter.model_dump(by_alias=True, exclude={"volume"})
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
@@ -160,7 +160,7 @@ class IdeasSpace(LibraryData):
     redeclare package Medium = Medium,
     nSurf={{ element.number_merged_external_boundaries }},
     T_start=293.15)"""
-    parameter_processing: Callable[[SpaceParameter], dict] = partial(
+    parameter_processing: Callable[[SpaceParameter], Dict[str, Any]] = partial(
         modify_alias, mapping={"average_room_height": "hZone", "volume": "V"}
     )
     ports_factory: Callable[[], List[Port]] = Field(
@@ -202,14 +202,14 @@ class Space(BaseElement):
     ventilation_inlets: List[System] = Field(default=[])
     ventilation_outlets: List[System] = Field(default=[])
     occupancy: Optional[BaseOccupancy] = None
-    libraries_data: List[AvailableLibraries] = AvailableLibraries(
+    libraries_data: AvailableLibraries = AvailableLibraries(
         ideas=[IdeasSpace], buildings=[BuildingsSpace]
     )
 
-    def model_post_init(self, __context):
+    def model_post_init(self, __context: Any) -> None:
         self._assign_space()
 
-    def _assign_space(self):
+    def _assign_space(self) -> None:
         for emission in (
             self.emissions + self.ventilation_inlets + self.ventilation_outlets
         ):
@@ -334,6 +334,6 @@ class Space(BaseElement):
         self.name = (
             f"merge_{self.name.replace('merge', '')}_{other.name.replace('merge', '')}"
         )
-        self.volume = self.volume + other.volume
+        self.volume: float = self.volume + other.volume
         self.external_boundaries += other.external_boundaries
         return self

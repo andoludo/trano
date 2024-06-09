@@ -111,7 +111,7 @@ class BaseEmissionControl(LibraryData):
     template: str = """
     {{package_name}}.Common.Controls.ventilation.EmissionControl{{ element.name | capitalize}}
     {{ element.name }}"""
-    component_template: str = dynamic_emission_control_template
+    component_template: DynamicComponentTemplate = dynamic_emission_control_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(

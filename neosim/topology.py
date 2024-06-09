@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -10,10 +10,16 @@ from networkx.classes.reportviews import NodeView
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
+from neosim.controller.parser import BaseInput
 from neosim.library.library import Buildings, Libraries
 from neosim.models.constants import Tilt
 from neosim.models.elements.ahu import AirHandlingUnit
-from neosim.models.elements.base import BaseElement, Connection, connect
+from neosim.models.elements.base import (
+    BaseElement,
+    Connection,
+    DynamicTemplateCategories,
+    connect,
+)
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.controls.base import Control
 from neosim.models.elements.controls.collector import CollectorControl
@@ -38,7 +44,11 @@ class Network:
         self.name: str = name
         self._system_controls: List[Control] = []
         self.library = library or Buildings()
-        self.dynamic_components: dict = {"ventilation": [], "control": [], "boiler": []}
+        self.dynamic_components: Dict[DynamicTemplateCategories, List[str]] = {
+            "ventilation": [],
+            "control": [],
+            "boiler": [],
+        }
 
     def add_node(self, node: BaseElement) -> None:
 
@@ -169,11 +179,11 @@ class Network:
             _neighbors = []
             if space.get_last_ventilation_inlet():
                 _neighbors += list(
-                    self.graph.predecessors(space.get_last_ventilation_inlet())
+                    self.graph.predecessors(space.get_last_ventilation_inlet())  # type: ignore
                 )
             if space.get_last_ventilation_outlet():
                 _neighbors += list(
-                    self.graph.predecessors(space.get_last_ventilation_outlet())
+                    self.graph.predecessors(space.get_last_ventilation_outlet())  # type: ignore
                 )
             neighbors = list(set(_neighbors))
             controllable_ventilation_elements = list(
@@ -187,12 +197,9 @@ class Network:
             )
             for controllable_element in controllable_ventilation_elements:
                 if controllable_element.control:
-                    try:
-                        controllable_element.control.ahu = [
-                            n for n in neighbors if isinstance(n, AirHandlingUnit)
-                        ][0]
-                    except:
-                        a = 12
+                    controllable_element.control.ahu = [
+                        n for n in neighbors if isinstance(n, AirHandlingUnit)
+                    ][0]
 
     def _build_occupancy(self, space: "Space") -> None:
         if space.occupancy:
@@ -319,36 +326,27 @@ class Network:
             for system_control in self._system_controls:
                 shortest_path(undirected_graph, system_control, space_control)
 
-    def get_ahu_spaces(self, ahu):
-        spaces_ = []
-        spaces = [node for node in self.graph.nodes if isinstance(node, Space)]
-        for space in spaces:
-            paths = nx.shortest_path(self.graph, ahu, space)
+    def get_ahu_elements(
+        self, ahu: AirHandlingUnit, element_type: Type[Union[VAV, Space]]
+    ) -> List[Union[VAV, Space]]:
+        elements_: List[Union[VAV, Space]] = []
+        elements = [node for node in self.graph.nodes if isinstance(node, element_type)]
+        for element in elements:
+            paths = nx.shortest_path(self.graph, ahu, element)
             p = paths[1:-1]
             if p and all(isinstance(p_, Ventilation) for p_ in p):
-                spaces_.append(space)
-        return spaces_
+                elements_.append(element)
+        return elements_
 
-    def get_ahu_vavs(self, ahu):
-        spaces_ = []
-        spaces = [node for node in self.graph.nodes if isinstance(node, VAV)]
-        for space in spaces:
-            paths = nx.shortest_path(self.graph, ahu, space)
-            p = paths[1:-1]
-            if p and all(isinstance(p_, Ventilation) for p_ in p):
-                spaces_.append(space)
-        return spaces_
-
-    def configure_ahu_control(self):
+    def configure_ahu_control(self) -> None:
         ahus = [node for node in self.graph.nodes if isinstance(node, AirHandlingUnit)]
         for ahu in ahus:
             if ahu.control:
+                ahu.control.spaces = self.get_ahu_elements(ahu, Space)
+                ahu.control.vavs = self.get_ahu_elements(ahu, VAV)
 
-                ahu.control.spaces = self.get_ahu_spaces(ahu)
-                ahu.control.vavs = self.get_ahu_vavs(ahu)
-
-    def get_linked_valves(self, pump_collector):
-        valves_ = []
+    def get_linked_valves(self, pump_collector: BaseElement) -> List[Valve]:
+        valves_: List[Valve] = []
         valves = [node for node in self.graph.nodes if isinstance(node, Valve)]
         for valve in valves:
             paths = nx.shortest_path(self.graph, pump_collector, valve)
@@ -357,7 +355,7 @@ class Network:
                 valves_.append(valve)
         return valves_
 
-    def configure_collector_control(self):
+    def configure_collector_control(self) -> None:
         pump_collectors = [
             node
             for node in self.graph.nodes
@@ -406,7 +404,10 @@ class Network:
             component = node.component_template.render(
                 self.name, node, node.processed_parameters(self.library)
             )
-            self.dynamic_components[node.component_template.category].append(component)
+            if node.component_template.category:
+                self.dynamic_components[node.component_template.category].append(
+                    component
+                )
 
     def build_element_models(self) -> List[str]:
         environment = Environment(
@@ -469,15 +470,20 @@ class Network:
             plt.show()
 
 
-def get_non_connected_ports(nodes: List[NodeView]):
+def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInput]:
     port_types = ["Real", "Integer", "Boolean"]
-    ports = {
+    ports: Dict[str, List[BaseInput]] = {
         f"{port_type}{direction}": []
         for port_type in port_types
         for direction in ["Output", "Input"]
     }
 
     for node in nodes:
+        if not (
+            hasattr(node, "component_template")
+            and hasattr(node.component_template, "bus")
+        ):
+            continue
         if node.component_template and node.component_template.bus:
             node_ports = node.component_template.bus.list_ports(node)
             for port_type in port_types:
@@ -485,8 +491,8 @@ def get_non_connected_ports(nodes: List[NodeView]):
                 ports[f"{port_type}Input"] += node_ports[f"{port_type}Input"]
 
     for port_type in port_types:
-        ports[f"{port_type}Output"] = set(ports[f"{port_type}Output"])
-        ports[f"{port_type}Input"] = set(ports[f"{port_type}Input"])
+        ports[f"{port_type}Output"] = list(set(ports[f"{port_type}Output"]))
+        ports[f"{port_type}Input"] = list(set(ports[f"{port_type}Input"]))
 
     return list(
         itertools.chain(
@@ -500,5 +506,7 @@ def get_non_connected_ports(nodes: List[NodeView]):
     )
 
 
-def _get_non_connected_ports_intersection(input_ports, output_ports):
+def _get_non_connected_ports_intersection(
+    input_ports: List[BaseInput], output_ports: List[BaseInput]
+) -> List[BaseInput]:
     return list(set(input_ports) - set(output_ports).intersection(set(input_ports)))

@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable, List, Literal, Optional
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 from pydantic import Field, computed_field
 
@@ -28,7 +28,7 @@ class RadiatorParameter(BaseParameter):
     fraction_radiant_heat_transfer: float = Field(
         0.3, alias="fraRad", title="Fraction radiant heat transfer"
     )
-    nominal_heating_power_positive_for_heating: Optional[float] = Field(
+    nominal_heating_power_positive_for_heating: float = Field(
         2000,
         alias="Q_flow_nominal",
         title="Nominal heating power (positive for heating)",
@@ -88,7 +88,7 @@ class BaseRadiator(LibraryData):
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator" """
     parameter_processing: Callable[
-        [RadiatorParameter], dict
+        [RadiatorParameter], Dict[str, Any]
     ] = lambda parameter: parameter.model_dump(by_alias=True)
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
@@ -110,7 +110,7 @@ class BaseIdealRadiator(LibraryData):
             Port(targets=[Control], names=["y"]),
         ]
     )
-    parameter_processing: Callable[[RadiatorParameter], dict] = partial(
+    parameter_processing: Callable[[RadiatorParameter], Dict[str, Any]] = partial(
         modify_alias,
         mapping={
             "nominal_heating_power_positive_for_heating": "power",

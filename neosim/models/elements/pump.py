@@ -28,12 +28,12 @@ class PumpParameters(BaseParameter):
         title="Nominal pressure head for configuration of pressure curve",
     )
     per: Optional[str] = Field(None, alias="per", title="Record with performance data")
-    control_input_type: str = Field(
+    control_input_type: Optional[str] = Field(
         None,
         alias="inputType",
         title="Control input type",
     )
-    constant_input_set_point: float = Field(
+    constant_input_set_point: Optional[float] = Field(
         None, alias="constInput", title="Constant input set point"
     )
     vector_of_input_set_points_corresponding_to_stages: Optional[str] = Field(

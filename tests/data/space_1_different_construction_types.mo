@@ -437,7 +437,7 @@ connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.TCooSetSpace_1, TCooSetEmission_control.y);
 connect(dataBus.THeaSetSpace_1, THeaSetEmission_control.y);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl

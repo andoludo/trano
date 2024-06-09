@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import Field, computed_field
 
@@ -49,7 +49,7 @@ class BoilerParameters(BaseParameter):
         alias="fue",
         title="Fuel type",
     )
-    nominal_heating_power: Optional[float] = Field(
+    nominal_heating_power: float = Field(
         2000, alias="Q_flow_nominal", title="Nominal heating power"
     )
     dp_nominal: Optional[float] = Field(5000, alias="dp_nominal", title="Pa")
@@ -75,7 +75,7 @@ class BoilerParameters(BaseParameter):
     number_of_volume_segments: int = Field(
         4, alias="nSeg", title="Number of volume segments"
     )
-    thickness_of_insulation: int = Field(
+    thickness_of_insulation: float = Field(
         0.002, alias="dIns", title="Thickness of insulation"
     )
     dp: str = Field("(3000 + 2000)*{2,1}", alias="dp", title="")
@@ -134,9 +134,9 @@ class BaseBoiler(LibraryData):
     {{package_name}}.Common.Fluid.Boilers.BoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(
     {{ macros.render_parameters(parameters) | safe}},
     redeclare package MediumW = MediumW) "Boiler" """
-    component_template: Optional[DynamicComponentTemplate] = dynamic_boiler_template
+    component_template: DynamicComponentTemplate = dynamic_boiler_template
     parameter_processing: Callable[
-        [BaseParameter], dict
+        [BaseParameter], Dict[str, Any]
     ] = lambda parameter: parameter.model_dump(
         by_alias=True,
         exclude_none=True,

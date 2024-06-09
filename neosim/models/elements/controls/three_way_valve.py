@@ -62,7 +62,9 @@ class BaseThreeWayValveControl(LibraryData):
     template: str = """
     {{package_name}}.Common.Controls.ventilation.ThreeWayValveControl{{ element.name | capitalize}}
     {{ element.name }}"""
-    component_template: str = dynamic_three_way_valve_control_template
+    component_template: DynamicComponentTemplate = (
+        dynamic_three_way_valve_control_template
+    )
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(

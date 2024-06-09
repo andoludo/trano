@@ -8,9 +8,7 @@ from neosim.models.constants import Tilt
 from neosim.models.elements.base import BaseElement
 
 if TYPE_CHECKING:
-    from neosim.models.elements.envelope.external_wall import ExternalWall
-    from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
-    from neosim.models.elements.envelope.window import Window
+    pass
 
 
 class BaseWall(BaseElement):
@@ -50,9 +48,9 @@ class BaseWindow(BaseSimpleWall):
 
 def _get_element(
     construction_type: str,
-    base_walls: List[Union["ExternalWall", "FloorOnGround", "Window"]],
+    base_walls: list[BaseExternalWall | BaseWindow | BaseFloorOnGround],
     construction: Construction | Glass,
-) -> List[Union["ExternalWall", "FloorOnGround", "Window"]]:
+) -> List[Union[BaseExternalWall | BaseWindow | BaseFloorOnGround]]:
     return [
         getattr(base_wall, construction_type)
         for base_wall in base_walls
@@ -68,7 +66,7 @@ class MergedBaseWall(BaseWall):
 
     @classmethod
     def from_base_elements(
-        cls, base_walls: List[Union["ExternalWall", "FloorOnGround", "Window"]]
+        cls, base_walls: list[BaseExternalWall | BaseWindow | BaseFloorOnGround]
     ) -> List["MergedBaseWall"]:
         merged_walls = []
         unique_constructions = {base_wall.construction for base_wall in base_walls}
@@ -76,9 +74,7 @@ class MergedBaseWall(BaseWall):
         for construction in unique_constructions:
             data: Dict[
                 str,
-                Union[
-                    List[Union["ExternalWall", "FloorOnGround", "Window"]] | List[str]
-                ],
+                list[BaseExternalWall | BaseWindow | BaseFloorOnGround],
             ] = {
                 "azimuth": [],
                 "tilt": [],

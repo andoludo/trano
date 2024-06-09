@@ -70,7 +70,7 @@ class BaseAhuControl(LibraryData):
     template: str = """
     {{package_name}}.Common.Controls.ventilation.AhuControl{{ element.name | capitalize}}
     {{ element.name }}"""
-    component_template: str = dynamic_ahu_controller_template
+    component_template: DynamicComponentTemplate = dynamic_ahu_controller_template
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -93,8 +93,12 @@ class AhuControl(Control):
 
     @computed_field
     def zon_gro_mat(self) -> str:
+        if self.vavs is None:
+            return "[1]"
         return str([1] * len(self.vavs))
 
     @computed_field
     def zon_gro_mat_tra(self) -> str:
+        if self.vavs is None:
+            return "[1]"
         return str([1] * len(self.vavs)).replace(",", ";")
