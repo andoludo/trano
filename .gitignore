@@ -1,0 +1,4 @@
+.pytest_cache/
+/.venv*/
+/System Volume Information/
+/tests/example.html

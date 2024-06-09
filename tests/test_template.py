@@ -1,0 +1,174 @@
+import re
+from pathlib import Path
+from typing import Set
+
+from neosim.topology import Network
+
+OVERWRITE_MODELS = False
+
+
+def remove_annotation(model: str) -> str:
+    model = model.replace(" ", "").replace("\n", "")
+    for annotation in re.findall(r"annotation(.*?);", model):
+        model = model.replace(annotation, "").replace("annotation", "")
+    return model
+
+
+def remove_common_package(model: str) -> str:
+    for annotation in re.findall(r"package Common(.*?)end Common;", model, re.DOTALL):
+        model = (
+            model.replace(annotation, "")
+            .replace("package Common", "")
+            .replace("end Common;", "")
+        )
+    return model
+
+
+def clean_model(model: str, model_name: str) -> set:
+    if OVERWRITE_MODELS:
+        path_file = Path(__file__).parent.joinpath("data", f"{model_name}.mo")
+        with path_file.open("w") as f:
+            f.write(model)
+    model = remove_common_package(model)
+    model_ = remove_annotation(model)
+    return set(
+        model_.replace("record", ";").replace(f"model{model_name}", "").split(";")
+    )
+
+
+def _read(file_name: str) -> Set:
+    return set(
+        remove_annotation(
+            remove_common_package(
+                Path(__file__).parent.joinpath("data", f"{file_name}.mo").read_text()
+            )
+        )
+        .replace("record", ";")
+        .replace(f"model{file_name}", "")
+        .split(";")
+    )
+
+
+def test_template_buildings_free_float_single_zone(
+    buildings_free_float_single_zone: Network,
+) -> None:
+    model_ = buildings_free_float_single_zone.model()
+    assert clean_model(model_, buildings_free_float_single_zone.name) == set(
+        _read(buildings_free_float_single_zone.name)
+    )
+
+
+def test_template_buildings_free_float_two_zones(
+    buildings_free_float_two_zones: Network,
+) -> None:
+    model_ = buildings_free_float_two_zones.model()
+    assert clean_model(model_, buildings_free_float_two_zones.name) == set(
+        _read(buildings_free_float_two_zones.name)
+    )
+
+
+def test_template_buildings_free_float_three_zones(
+    buildings_free_float_three_zones: Network,
+) -> None:
+    model_ = buildings_free_float_three_zones.model()
+    assert clean_model(model_, buildings_free_float_three_zones.name) == set(
+        _read(buildings_free_float_three_zones.name)
+    )
+
+
+def test_buildings_two_rooms_with_storage(
+    buildings_two_rooms_with_storage: Network,
+) -> None:
+    model_ = buildings_two_rooms_with_storage.model()
+    assert clean_model(model_, buildings_two_rooms_with_storage.name) == set(
+        _read(buildings_two_rooms_with_storage.name)
+    )
+
+
+def test_template_buildings_simple_hydronic(
+    buildings_simple_hydronic: Network,
+) -> None:
+    model_ = buildings_simple_hydronic.model()
+    assert clean_model(model_, buildings_simple_hydronic.name) == set(
+        _read(buildings_simple_hydronic.name)
+    )
+
+
+def test_template_buildings_simple_hydronic_three_zones(
+    buildings_simple_hydronic_three_zones: Network,
+) -> None:
+    model_ = buildings_simple_hydronic_three_zones.model()
+    assert clean_model(model_, buildings_simple_hydronic_three_zones.name) == set(
+        _read(buildings_simple_hydronic_three_zones.name)
+    )
+
+
+def test_template_ideas_free_float_single_zone(
+    ideas_free_float_single_zone: Network,
+) -> None:
+    model_ = ideas_free_float_single_zone.model()
+    assert clean_model(model_, ideas_free_float_single_zone.name) == set(
+        _read(ideas_free_float_single_zone.name)
+    )
+
+
+def test_template_ideas_free_float_three_zones(
+    ideas_free_float_three_zones: Network,
+) -> None:
+    model_ = ideas_free_float_three_zones.model()
+    assert clean_model(model_, ideas_free_float_three_zones.name) == set(
+        _read(ideas_free_float_three_zones.name)
+    )
+
+
+def test_ideas_simple_hydronic_three_zones(
+    ideas_simple_hydronic_three_zones: Network,
+) -> None:
+    model_ = ideas_simple_hydronic_three_zones.model()
+    assert clean_model(model_, ideas_simple_hydronic_three_zones.name) == set(
+        _read(ideas_simple_hydronic_three_zones.name)
+    )
+
+
+def test_ideas_simple_hydronic_no_occupancy(
+    ideas_simple_hydronic_no_occupancy: Network,
+) -> None:
+    model_ = ideas_simple_hydronic_no_occupancy.model()
+    assert clean_model(model_, ideas_simple_hydronic_no_occupancy.name) == set(
+        _read(ideas_simple_hydronic_no_occupancy.name)
+    )
+
+
+def test_space_1_ideal_heating(
+    space_1_ideal_heating_network: Network,
+) -> None:
+
+    model_ = space_1_ideal_heating_network.model()
+    assert clean_model(model_, space_1_ideal_heating_network.name) == set(
+        _read(space_1_ideal_heating_network.name)
+    )
+
+
+def test_space_1_different_construction_types(
+    space_1_different_construction_types_network: Network,
+) -> None:
+
+    model_ = space_1_different_construction_types_network.model()
+    assert clean_model(
+        model_, space_1_different_construction_types_network.name
+    ) == set(_read(space_1_different_construction_types_network.name))
+
+
+def test_one_spaces_air_handling_unit(one_spaces_air_handling_unit: Network) -> None:
+
+    model_ = one_spaces_air_handling_unit.model()
+    assert clean_model(model_, one_spaces_air_handling_unit.name) == set(
+        _read(one_spaces_air_handling_unit.name)
+    )
+
+
+def test_two_spaces_air_handling_unit(two_spaces_air_handling_unit: Network) -> None:
+    model_ = two_spaces_air_handling_unit.model()
+    assert clean_model(model_, two_spaces_air_handling_unit.name) == set(
+        _read(two_spaces_air_handling_unit.name)
+    )

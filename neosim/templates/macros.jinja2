@@ -1,0 +1,38 @@
+{%- macro join_list(values) -%}
+    {% raw %}{{% endraw %} {{ values | join(', ') }} {% raw %}}{% endraw %}
+{%- endmacro %}
+
+{%- macro element_parameters(boundary) -%}
+    layers={{ join_list(boundary.layers) }},
+    A={{ join_list(boundary.surfaces) }},
+    til={{ convert_tilts(boundary.tilts) }}
+{%- endmacro %}
+
+{%- macro connect(edge) -%}
+connect({{ edge.left.equation }},{{ edge.right.equation }})
+annotation (Line(
+points={{ connect_path(edge.path) }},
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));
+{%- endmacro %}
+
+{%- macro render_parameters(parameters)  %}
+{% for key, value in parameters.items() %}
+    {{ key }}={{ value }}{{ "," if not loop.last }}
+{% endfor %}
+{%- endmacro %}
+
+{%- macro convert_tilts(boundary_tilts) -%}
+    {% set tilts = ({"wall":"Buildings.Types.Tilt.Wall",
+"ceiling":"Buildings.Types.Tilt.Ceiling",
+"roof":"Buildings.Types.Tilt.Roof",
+"floor":"Buildings.Types.Tilt.Floor"}) %}
+    {% raw %}{{% endraw %} {%- for tilt in boundary_tilts -%}
+    {{ tilts[tilt.value] }}{{ "," if not loop.last }} {%- endfor %}{% raw %}}{% endraw %}
+{%- endmacro %}
+
+{%- macro connect_path(paths) -%}
+    {% raw %}{{% endraw %}{%- for path in paths -%}{% raw %}{{% endraw %} {{ path | join(', ') }} {% raw %}}{% endraw %}
+    {{ "," if not loop.last }}{%- endfor %}{% raw %}}{% endraw %}
+{%- endmacro %}

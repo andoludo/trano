@@ -1,0 +1,29 @@
+{% import 'macros.jinja2' as macros %}
+{% import 'common.jinja2' as common %}
+package {{ network.name }}
+{{ common.common_library(databus, dynamic_components) }}
+{% if data.is_package %}
+{{ data.data|safe }}
+model building
+{% else %}
+model building
+{{ data.data|safe }}
+{% endif %}
+
+
+{{ library.constants|safe }}
+
+{% for element_model in element_models %}
+    {{ element_model|safe }}
+{% endfor %}
+
+
+equation
+{%- for edge in network.edge_attributes -%}
+    {#line break#}
+    {{ macros.connect(edge) }}
+{%- endfor %}
+end building;
+
+
+end {{ network.name }};
