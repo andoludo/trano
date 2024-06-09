@@ -3,6 +3,8 @@ import re
 from pathlib import Path
 from typing import Optional
 
+import pytest
+
 from neosim.controller.parser import (
     BooleanInput,
     BooleanOutput,
@@ -22,6 +24,7 @@ def get_first_set_before_break_or_parenthesis(text: str) -> Optional[str]:
         return None
 
 
+@pytest.mark.skip("not a test")
 def test_parse_controller() -> None:
     controller = Path(
         "/home/aan/Documents/neosim/Buildings/Controls/OBC/ASHRAE/G36/TerminalUnits/Reheat/Controller.mo"
@@ -112,6 +115,7 @@ def test_parse_controller() -> None:
     )
 
 
+@pytest.mark.skip("not a test")
 def test_parse_controller_ahu() -> None:
     controller = Path(
         "/home/aan/Documents/neosim/Buildings/Controls/OBC/ASHRAE/G36/AHUs/MultiZone/VAV/Controller.mo"
