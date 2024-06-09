@@ -701,6 +701,17 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "json2html"
+version = "1.3.0"
+description = "JSON to HTML Table Representation"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "json2html-1.3.0.tar.gz", hash = "sha256:8951a53662ae9cfd812685facdba693fc950ffc1c1fd1a8a2d3cf4c34600689c"},
+]
+
+[[package]]
 name = "jsonpickle"
 version = "3.0.3"
 description = "Python library for serializing any arbitrary object graph into JSON"
@@ -2521,4 +2532,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b2852b8fed253cac5bf61a18f3dd62879cc10614ead1b181e23c1bae69a04bde"
+content-hash = "ae0587419ba579fb924ab29ac24e1f9020104ee6e601be6235c7d010681fcde4"
