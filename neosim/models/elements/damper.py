@@ -73,7 +73,8 @@ class BaseDamper(LibraryData):
 
 class BaseDamperDetailed(LibraryData):
     variant: str = DamperVariant.complex
-    template: str = """  {{ package_name }}.Common.Fluid.Ventilation.VAVBox{{ element.name | capitalize }}
+    template: str = """  {{ package_name }}.Common.
+    Fluid.Ventilation.VAVBox{{ element.name | capitalize }}
      {{ element.name }}(
     redeclare package MediumA = Medium,
     mCooAir_flow_nominal=100*1.2/3600,

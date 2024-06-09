@@ -9,16 +9,12 @@ import pytest
 from neosim.construction import Constructions
 from neosim.glass import Glasses
 from neosim.library.library import Buildings, Ideas
-
-# from neosim.library.buildings.buildings import BuildingsLibrary
-# from neosim.library.ideas.ideas import IdeasLibrary
 from neosim.models.constants import Azimuth, Flow, Tilt
 from neosim.models.elements.ahu import AirHandlingUnit
 from neosim.models.elements.base import Port
-from neosim.models.elements.boiler import Boiler, BoilerParameters
+from neosim.models.elements.boiler import Boiler
 from neosim.models.elements.boundary import Boundary
 from neosim.models.elements.controls.ahu import AhuControl
-from neosim.models.elements.controls.base import Control
 from neosim.models.elements.controls.boiler import BoilerControl
 from neosim.models.elements.controls.collector import CollectorControl
 from neosim.models.elements.controls.emission import EmissionControl
@@ -34,7 +30,7 @@ from neosim.models.elements.pump import Pump, PumpParameters
 from neosim.models.elements.radiator import Radiator
 from neosim.models.elements.space import Space
 from neosim.models.elements.split_valve import SplitValve, SplitValveParameters
-from neosim.models.elements.system import Emission, EmissionVariant, System
+from neosim.models.elements.system import System
 from neosim.models.elements.temperature_sensor import TemperatureSensor
 from neosim.models.elements.three_way_valve import (
     ThreeWayValve,
@@ -804,17 +800,19 @@ def space_3() -> Space:
 
 @pytest.fixture
 def buildings_two_rooms_with_storage(space_1: Space, space_2: Space) -> Network:
-    Q_flow_nominal = 2200
-    scaFacRad = 1.5
-    TSup_nominal = 273.15 + 50 + 5
-    TRet_nominal = 273.15 + 40 + 5
-    dTRad_nominal = TSup_nominal - TRet_nominal
-    mRad_flow_nominal = scaFacRad * Q_flow_nominal / dTRad_nominal / 4200
-    dpPip_nominal = 10000
-    dpVal_nominal = 6000
-    dpRoo_nominal = 6000
-    dpThrWayVal_nominal = 6000
-    dp_nominal = dpPip_nominal + dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
+    Q_flow_nominal = 2200  # noqa: N806
+    scaFacRad = 1.5  # noqa: N806
+    TSup_nominal = 273.15 + 50 + 5  # noqa: N806
+    TRet_nominal = 273.15 + 40 + 5  # noqa: N806
+    dTRad_nominal = TSup_nominal - TRet_nominal  # noqa: N806
+    mRad_flow_nominal = scaFacRad * Q_flow_nominal / dTRad_nominal / 4200  # noqa: N806
+    dpPip_nominal = 10000  # noqa: N806
+    dpVal_nominal = 6000  # noqa: N806
+    dpRoo_nominal = 6000  # noqa: N806
+    dpThrWayVal_nominal = 6000  # noqa: N806
+    dp_nominal = (
+        dpPip_nominal + dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
+    )  # noqa: N806
 
     network = Network(name="buildings_two_rooms_with_storage")
     network.add_boiler_plate_spaces([space_1, space_2])
@@ -1476,7 +1474,7 @@ def space_1_simple_ventilation_vav_control() -> Space:
             Duct(name="pressure_drop_duct_in"),
             VAV(
                 name="vav_in",
-                control=SpaceControl(name="vav_in_control"),
+                control=VAVControl(name="vav_in_control"),
                 variant=DamperVariant.complex,
             ),
         ],

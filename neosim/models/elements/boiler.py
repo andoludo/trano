@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import Field, computed_field
@@ -11,6 +12,7 @@ from neosim.models.elements.base import (
     DynamicComponentTemplate,
     LibraryData,
     Port,
+    exclude_parameters,
 )
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.controls.base import Control
@@ -42,7 +44,8 @@ class BoilerParameters(BaseParameter):
     temperature_used_to_compute_nominal_efficiency: float = Field(
         353.15,
         alias="T_nominal",
-        title="Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)",
+        title="Temperature used to compute nominal efficiency "
+        "(only used if efficiency curve depends on temperature)",
     )
     fuel_type: Optional[str] = Field(
         "Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue()",
@@ -131,17 +134,16 @@ dynamic_boiler_template = DynamicComponentTemplate(
 
 class BaseBoiler(LibraryData):
     template: str = """
-    {{package_name}}.Common.Fluid.Boilers.BoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(
-    {{ macros.render_parameters(parameters) | safe}},
-    redeclare package MediumW = MediumW) "Boiler" """
+{{package_name}}.Common.Fluid.Boilers.
+BoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(
+{{ macros.render_parameters(parameters) | safe}},
+redeclare package MediumW = MediumW) "Boiler" """
     component_template: DynamicComponentTemplate = dynamic_boiler_template
-    parameter_processing: Callable[
-        [BaseParameter], Dict[str, Any]
-    ] = lambda parameter: parameter.model_dump(
-        by_alias=True,
-        exclude_none=True,
-        exclude={"sca_fac_rad", "dt_boi_nominal", "dt_rad_nominal"},
+    parameter_processing: Callable[[BaseParameter], Dict[str, Any]] = partial(
+        exclude_parameters,
+        exclude_parameters={"sca_fac_rad", "dt_boi_nominal", "dt_rad_nominal"},
     )
+
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(

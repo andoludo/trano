@@ -85,7 +85,8 @@ dynamic_ahu_template = DynamicComponentTemplate(
 
 
 class BaseAirHandlingUnit(LibraryData):
-    template: str = """{{package_name}}.Common.Fluid.Ventilation.Ahu{{ element.name | capitalize}}
+    template: str = """{{package_name}}.Common.Fluid.
+    Ventilation.Ahu{{ element.name | capitalize}}
     {{ element.name }}
     (redeclare package MediumA = Medium,
     {% raw %}

@@ -10,6 +10,7 @@ from neosim.models.elements.base import (
     BaseVariant,
     LibraryData,
     Port,
+    exclude_parameters,
     modify_alias,
 )
 from neosim.models.elements.controls.base import Control
@@ -89,7 +90,7 @@ class BaseRadiator(LibraryData):
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator" """
     parameter_processing: Callable[
         [RadiatorParameter], Dict[str, Any]
-    ] = lambda parameter: parameter.model_dump(by_alias=True)
+    ] = exclude_parameters
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(targets=[Space], names=["heatPortCon", "heatPortRad"]),

@@ -22,12 +22,13 @@ class ThreeWayValveParameters(BaseParameter):
         alias="delta0",
         title="Range of significant deviation from equal percentage law",
     )
-    dpFixed_nominal: str = Field(
+    dp_fixed_nominal: str = Field(
         "{100,0}",
         alias="dpFixed_nominal",
-        title="Nominal pressure drop of pipes and other equipment in flow legs at port_1 and port_3",
+        title="Nominal pressure drop of pipes and other "
+        "equipment in flow legs at port_1 and port_3",
     )
-    fraK: float = Field(0.7, alias="fraK", title=None)
+    fra_k: float = Field(0.7, alias="fraK", title=None)
     valve_leakage: str = Field(
         "{0.01,0.01}", alias="l", title="Valve leakage, l=Kv(y=0)/Kv(y=1)"
     )
@@ -52,7 +53,7 @@ class ThreeWayValveParameters(BaseParameter):
         0.0078, alias="m_flow_nominal", title="Nominal mass flow rate"
     )
     dp_valve_nominal: Optional[float] = Field(6000, alias="dpValve_nominal", title="Pa")
-    rhoStd: Optional[float] = Field(
+    rho_std: Optional[float] = Field(
         None,
         alias="rhoStd",
         title="Inlet density for which valve coefficients are defined",
@@ -72,8 +73,6 @@ class BaseThreeWayValve(LibraryData):
             Port(
                 names=["port_2"],
                 flow=Flow.outlet,
-                # multi_connection=True,
-                # use_counter=False,
             ),
             Port(names=["port_3"], flow=Flow.inlet_or_outlet),
             Port(targets=[Control], names=["y"]),

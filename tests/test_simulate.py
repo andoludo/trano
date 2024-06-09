@@ -26,7 +26,9 @@ def container(client: docker.DockerClient) -> None:
     )
     container.exec_run(cmd="omc /neosim/neosim/library/install_package.mos")
     yield container
-    container.exec_run(cmd='find / -name "*_res.mat" -exec cp {} /results \;')
+    container.exec_run(
+        cmd='find / -name "*_res.mat" -exec cp {} /results \;'  # noqa: W605
+    )  # noqa: W605
     container.stop()
     container.remove()
 
@@ -41,8 +43,9 @@ def test_simulate_buildings_free_float_single_zone(
 
 
 def test_simulate_buildings_simple_hydronic_two_zones_new(
-    buildings_two_rooms_with_storage, container: docker.models.containers.Container
-):
+    buildings_two_rooms_with_storage: Network,
+    container: docker.models.containers.Container,
+) -> None:
     with create_mos_file(buildings_two_rooms_with_storage) as mos_file_name:
         results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
         assert is_success(results)

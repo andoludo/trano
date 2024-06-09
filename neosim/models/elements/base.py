@@ -22,7 +22,9 @@ class AvailableLibraries(BaseModel):
     ideas: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
 
-    def get_library_data(self, library: "Libraries", variant: str) -> Any:
+    def get_library_data(
+        self, library: "Libraries", variant: str
+    ) -> Any:  # noqa: ANN401
         if variant == BaseVariant.default:
             return getattr(self, library.name.lower())[0]()
         selected_variant = [
@@ -151,17 +153,15 @@ class DynamicComponentTemplate(BaseModel):
         rtemplate = environment.from_string(
             "{% import 'macros.jinja2' as macros %}" + self.template
         )
-        try:
-            component = rtemplate.render(
-                element=element,
-                package_name=package_name,
-                bus_template=self.bus.template,
-                bus_ports="\n".join(ports),
-                parameters=parameters,
-                **self.function(element),
-            )
-        except:
-            a = 12
+        component = rtemplate.render(
+            element=element,
+            package_name=package_name,
+            bus_template=self.bus.template,
+            bus_ports="\n".join(ports),
+            parameters=parameters,
+            **self.function(element),
+        )
+
         return component
 
 
@@ -197,7 +197,7 @@ class BaseElement(BaseModel):
             self.component_template = library_data.component_template
         return True
 
-    def processed_parameters(self, library: "Libraries") -> Any:
+    def processed_parameters(self, library: "Libraries") -> Any:  # noqa: ANN401
         if self.libraries_data:
             library_data = self.libraries_data.get_library_data(library, self.variant)
             if library_data and self.parameters:
@@ -330,7 +330,7 @@ def _is_inlet_or_outlet(target: "BaseElement") -> bool:
 
 def change_alias(
     parameter: BaseParameter, mapping: Optional[Dict[str, str]] = None
-) -> Any:
+) -> Any:  # noqa: ANN401
     mapping = mapping or {}
     new_param = {}
     for name, field in parameter.model_fields.items():
@@ -354,10 +354,24 @@ def change_alias(
     )
 
 
-def modify_alias(parameter: BaseParameter, mapping: Dict[str, str]) -> Any:
+def modify_alias(
+    parameter: BaseParameter, mapping: Dict[str, str]
+) -> Any:  # noqa: ANN401
     return change_alias(parameter, mapping)(**parameter.model_dump()).model_dump(
-        by_alias=True, include=set(list(mapping))
+        by_alias=True, include=set(mapping)
     )
+
+
+def exclude_parameters(
+    parameters: BaseParameter, exclude_parameters: Optional[set[str]] = None
+) -> Dict[str, Any]:
+    return parameters.model_dump(by_alias=True, exclude=exclude_parameters)
+
+
+def default_parameters(parameters: BaseParameter) -> Dict[str, Any]:
+    if not parameters:
+        return {}
+    return parameters.model_dump(by_alias=True, exclude_none=True)
 
 
 class LibraryData(BaseModel):
@@ -370,11 +384,7 @@ class LibraryData(BaseModel):
     component_template: Optional[DynamicComponentTemplate] = None
     ports_factory: Callable[[], List[Port]]
     variant: str = BaseVariant.default
-    parameter_processing: Callable[[BaseParameter], Dict[str, Any]] = (
-        lambda parameter: parameter.model_dump(by_alias=True, exclude_none=True)
-        if parameter
-        else {}
-    )
+    parameter_processing: Callable[[BaseParameter], Dict[str, Any]] = default_parameters
 
 
 class BaseBoundary(BaseElement):

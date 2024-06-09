@@ -84,7 +84,8 @@ equation
 
 
 class BasePump(LibraryData):
-    template: str = """  {{ package_name }}.Common.Fluid.Ventilation.Pump{{ element.name | capitalize }}
+    template: str = """  {{ package_name }}.Common.
+    Fluid.Ventilation.Pump{{ element.name | capitalize }}
      {{ element.name }}(
      {{ macros.render_parameters(parameters) | safe}},
     redeclare package Medium = MediumW

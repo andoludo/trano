@@ -11,6 +11,7 @@ from neosim.models.elements.base import (
     BaseParameter,
     LibraryData,
     Port,
+    exclude_parameters,
     modify_alias,
 )
 from neosim.models.elements.bus import DataBus
@@ -124,9 +125,9 @@ class BuildingsSpace(LibraryData):
         {%- endfor %}
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)"""
-    parameter_processing: Callable[
-        [SpaceParameter], Dict[str, Any]
-    ] = lambda parameter: parameter.model_dump(by_alias=True, exclude={"volume"})
+    parameter_processing: Callable[[SpaceParameter], Dict[str, Any]] = partial(
+        exclude_parameters, exclude_parameters={"volume"}
+    )
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
             Port(
@@ -206,7 +207,7 @@ class Space(BaseElement):
         ideas=[IdeasSpace], buildings=[BuildingsSpace]
     )
 
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
         self._assign_space()
 
     def _assign_space(self) -> None:
@@ -274,8 +275,6 @@ class Space(BaseElement):
         y = self.position[1]
         for i, emission in enumerate(self.emissions):
             emission.position = [x + i * 30, y - 75]
-        # if self.control:
-        #     self.control.position = [x - 50, y - 50]
         if self.occupancy:
             self.occupancy.position = [x - 50, y]
 

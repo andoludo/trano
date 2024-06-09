@@ -23,7 +23,7 @@ class ValveParameters(BaseParameter):
         alias="delta0",
         title="Range of significant deviation from equal percentage law",
     )
-    dpFixed_nominal: Optional[float] = Field(6000, alias="dpFixed_nominal", title="Pa")
+    dp_fixed_nominal: Optional[float] = Field(6000, alias="dpFixed_nominal", title="Pa")
     valve_leakage: float = Field(
         0.0001, alias="l", title="Valve leakage, l=Kv(y=0)/Kv(y=1)"
     )

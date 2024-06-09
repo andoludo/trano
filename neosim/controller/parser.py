@@ -29,7 +29,9 @@ class BaseInput(BaseModel):
     @property
     def input_model(self) -> str:
         if self.evaluated_element_name:
-            return f"""{self.input_template} {self.name}{self.evaluated_element_name.capitalize()}(y={self.default});"""
+            return f"""{self.input_template}
+            {self.name}{self.evaluated_element_name.capitalize()}
+            (y={self.default});"""
         return ""
 
 
@@ -70,7 +72,8 @@ class RealOutput(BaseInput):
 
 
 class ControllerBus(BaseModel):
-    template: str = """Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(
+    template: str = """Controls.BaseClasses.DataBus dataBus
+    annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));"""
     real_inputs: list[RealInput] = Field(default=[])
     real_outputs: list[RealOutput] = Field(default=[])
@@ -111,7 +114,7 @@ class ControllerBus(BaseModel):
         }
 
     def list_ports(
-        self, element: "BaseElement", **kwargs: Any
+        self, element: "BaseElement", **kwargs: Any  # noqa: ANN401
     ) -> Dict[str, List[BaseInput]]:
         ports: Dict[str, List[BaseInput]] = {
             "RealOutput": [],
@@ -122,12 +125,13 @@ class ControllerBus(BaseModel):
             "BooleanInput": [],
         }
         for target, inputs in self._get_targets().items():
-            target_value = eval(target)
+            # TODO: Fix this
+            target_value = eval(target)  # noqa: S307
             if target_value is None:
                 raise Exception("Target value is None")
             for input in inputs:
                 if isinstance(target_value, list):
-                    for i, target_ in enumerate(target_value):
+                    for target_ in target_value:
                         ports[type(input).__name__].append(
                             type(input)(
                                 **(
@@ -153,10 +157,13 @@ class ControllerBus(BaseModel):
                     )
         return ports
 
-    def bus_ports(self, element: "BaseElement", **kwargs: Any) -> List[str]:
+    def bus_ports(
+        self, element: "BaseElement", **kwargs: Any  # noqa: ANN401
+    ) -> List[str]:
         ports: List[str] = []
         for target, inputs in self._get_targets().items():
-            target_value = eval(target)
+            # TODO: Fix this
+            target_value = eval(target)  # noqa: S307
             for input in inputs:
                 if isinstance(target_value, list):
                     for i, target_ in enumerate(target_value):
@@ -169,9 +176,9 @@ class ControllerBus(BaseModel):
                         else:
                             ports.append(
                                 f"connect(dataBus.{input.name}{target_.capitalize()}, "
-                                f"{input.component}[{i+1}].{input.port});"
+                                f"{input.component}[{i + 1}].{input.port});"
                             )
-                else:
+                else:  # noqa : PLR5501
                     if input.port:
                         ports.append(
                             f"connect(dataBus.{input.name}{target_value.capitalize()}, "

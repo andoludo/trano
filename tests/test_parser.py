@@ -1,5 +1,7 @@
+import json
 import re
 from pathlib import Path
+from typing import Optional
 
 from neosim.controller.parser import (
     BooleanInput,
@@ -10,16 +12,9 @@ from neosim.controller.parser import (
     RealInput,
     RealOutput,
 )
-from neosim.models.elements.ahu import AirHandlingUnit
-from neosim.models.elements.base import DynamicComponentTemplate
-from neosim.models.elements.bus import DataBus
-from neosim.models.elements.control import SpaceControl
-from neosim.models.elements.controls.ahu import AhuControl
-from neosim.models.elements.damper import VAV
-from neosim.models.elements.space import Space
 
 
-def get_first_set_before_break_or_parenthesis(text):
+def get_first_set_before_break_or_parenthesis(text: str) -> Optional[str]:
     match = re.search(r"[^\n\(\) ]+", text)
     if match:
         return match.group(0)
@@ -27,7 +22,7 @@ def get_first_set_before_break_or_parenthesis(text):
         return None
 
 
-def test_parse_controller():
+def test_parse_controller() -> None:
     controller = Path(
         "/home/aan/Documents/neosim/Buildings/Controls/OBC/ASHRAE/G36/TerminalUnits/Reheat/Controller.mo"
     )
@@ -111,15 +106,13 @@ def test_parse_controller():
             for x in boolean_output
         ],
     )
-    import json
 
     Path("/home/aan/Documents/neosim/neosim/controller/vav_controller.json").write_text(
         json.dumps(cb.model_dump(), indent=4)
     )
-    a = 12
 
 
-def test_parse_controller_aku():
+def test_parse_controller_ahu() -> None:
     controller = Path(
         "/home/aan/Documents/neosim/Buildings/Controls/OBC/ASHRAE/G36/AHUs/MultiZone/VAV/Controller.mo"
     )
@@ -202,50 +195,3 @@ def test_parse_controller_aku():
     Path("/home/aan/Documents/neosim/neosim/controller/ahu_controller.json").write_text(
         json.dumps(cb.model_dump(), indent=4)
     )
-    a = 12
-
-
-def test_complex_ahu():
-    ahu = AirHandlingUnit(name="ahu_2")
-
-    component = dynamic_template.render("test", ahu)
-    a = 12
-
-
-def test_ahu_controller():
-    ahu_control = AhuControl(name="ahu_control")
-    d
-
-    component = dynamic_template.render("test", ahu_control)
-    a = 12
-
-
-def test_vav_controller():
-    space_control = SpaceControl(
-        name="space_control",
-        controllable_element=VAV(name="vav"),
-        space=Space(
-            name="space_1",
-            volume=10,
-            height=1,
-            floor_area=1,
-            elevation=1,
-            external_boundaries=[],
-        ),
-    )
-
-    component = dynamic_template.render("test", space_control)
-    a = 12
-
-
-def test_ew_dynamic_component_template():
-    vav = VAV(name="vav")
-
-    component = dynamic_template.render("test", vav)
-    a = 12
-
-
-def test_data_bus():
-    data_bus = DataBus(name="bus", spaces=["room1", "room2", "room3"])
-
-    dynamic_template.render("test", data_bus)

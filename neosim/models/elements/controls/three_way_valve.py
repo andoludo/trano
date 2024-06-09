@@ -60,7 +60,8 @@ end ThreeWayValveControl{{ element.name | capitalize}};""",
 
 class BaseThreeWayValveControl(LibraryData):
     template: str = """
-    {{package_name}}.Common.Controls.ventilation.ThreeWayValveControl{{ element.name | capitalize}}
+    {{package_name}}.Common.Controls.ventilation.
+    ThreeWayValveControl{{ element.name | capitalize}}
     {{ element.name }}"""
     component_template: DynamicComponentTemplate = (
         dynamic_three_way_valve_control_template

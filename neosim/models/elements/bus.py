@@ -16,17 +16,22 @@ dynamic_data_server_template = DynamicComponentTemplate(
     template="""
 model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
-Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[{{ element.spaces | length}}] TRoo {% raw %}annotation (
-                Placement(transformation(origin={-544,-226},    extent = {{480, 216}, {500, 236}})));{% endraw %}
-Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ element.spaces | length}}] port {% raw %}annotation (
-                Placement(transformation(extent={{-112,-10},{-92,10}}),      iconTransformation(extent = {{-110, -10}, {-90, 10}})));{% endraw %}
-
+Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[{{ element.spaces | length}}]
+TRoo {% raw %}annotation (
+Placement(transformation(origin={-544,-226},
+extent = {{480, 216}, {500, 236}})));{% endraw %}
+Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ element.spaces | length}}]
+port {% raw %}annotation (
+Placement(transformation(extent={{-112,-10},{-92,10}}),
+iconTransformation(extent = {{-110, -10}, {-90, 10}})));{% endraw %}
 Buildings.Fluid.Sensors.PPM[{{ element.spaces | length}}] TRoo1(redeclare
 package Medium = Medium){% raw %}annotation (
-          Placement(transformation(origin={-542,-268},    extent = {{480, 216}, {500, 236}})));{% endraw %}
-Modelica.Fluid.Interfaces.FluidPort_a[{{ element.spaces | length}}] port_a(redeclare package Medium
+Placement(transformation(origin={-542,-268},
+extent = {{480, 216}, {500, 236}})));{% endraw %}
+Modelica.Fluid.Interfaces.FluidPort_a[{{ element.spaces | length}}]
+port_a(redeclare package Medium
 = Medium){% raw %}annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
-  iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  {% endraw %}
+iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  {% endraw %}
 {{bus_template}}
 {% for input in element.non_connected_ports %}
 {{ input.input_model | safe}}
@@ -37,9 +42,9 @@ connect(port[{{index + 1}}],TRoo[{{index + 1}}]. port);
 connect(port_a[{{index + 1}}], TRoo1[{{index + 1}}].port);
 {% endfor %}
 {{bus_ports | safe}}
-
 {% for input in element.non_connected_ports %}
-connect(dataBus.{{ input.name }}{{ input.target }}, {{ input.name }}{{input.evaluated_element_name | capitalize}}.y);
+connect(dataBus.{{ input.name }}{{ input.target }},
+{{ input.name }}{{input.evaluated_element_name | capitalize}}.y);
 {% endfor %}
 end DataServer;
       """,

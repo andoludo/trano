@@ -52,28 +52,28 @@ class Network:
 
     def add_node(self, node: BaseElement) -> None:
 
-        if node.libraries_data:
-            found_library = node.assign_library_property(self.library)
-            if not found_library:
-                return
-        else:
+        if not node.libraries_data:
             raise Exception(
                 f"No library data defined for NOde of type {type(node).__name__}"
             )
+        found_library = node.assign_library_property(self.library)
+        if not found_library:
+            return
+
         if node not in self.graph.nodes:
             self.graph.add_node(node)
-        if isinstance(node, System) and node.control:
-            if node.control not in self.graph.nodes:
-                node_control = node.control
-                if node_control.libraries_data:
-                    node_control.assign_library_property(self.library)
-                else:
-                    raise Exception(
-                        f"No library data defined for NOde of type {type(node).__name__}"
-                    )
-                self.graph.add_node(node_control)
-                self.graph.add_edge(node, node_control)
-                node_control.controllable_element = node
+        if (isinstance(node, System) and node.control) and (
+            node.control not in self.graph.nodes
+        ):
+            node_control = node.control
+            if not node_control.libraries_data:
+                raise Exception(
+                    f"No library data defined for NOde of type {type(node).__name__}"
+                )
+            node_control.assign_library_property(self.library)
+            self.graph.add_node(node_control)
+            self.graph.add_edge(node, node_control)
+            node_control.controllable_element = node
 
     def add_space(self, space: "Space") -> None:
         self.add_node(space)
@@ -88,10 +88,8 @@ class Network:
                 boundary,
             )
         self._build_space_emission(space)  # TODO: perhaps move to space
-        # self._build_control(space)  # TODO: perhaps move to space
         self._build_occupancy(space)
         self._build_space_ventilation(space)
-        # self._build_ventilation_control(space)
         space.assign_position()
 
     def _add_subsequent_systems(self, systems: List[System]) -> None:
@@ -126,24 +124,6 @@ class Network:
                 emission,
             )
             self._add_subsequent_systems(space.emissions)
-
-    def _build_control(self, space: "Space") -> None:
-        ...
-        # if space.control:
-        #     self.add_node(space.control)
-        #     self.graph.add_edge(
-        #         space.control,
-        #         space,
-        #     )
-        #     for space_emission in space.emissions:
-        #         self.library.assign_properties(space_emission)
-        #     controllable_emission = space.get_controllable_emission()
-        #     if controllable_emission is None:
-        #         raise Exception(
-        #             f"Space {space.name} is controllable but is "
-        #             f"not linked to controllable emission."
-        #         )
-        #     self.graph.add_edge(space.control, controllable_emission)
 
     def _build_data_bus(self) -> DataBus:
 
@@ -197,9 +177,9 @@ class Network:
             )
             for controllable_element in controllable_ventilation_elements:
                 if controllable_element.control:
-                    controllable_element.control.ahu = [
-                        n for n in neighbors if isinstance(n, AirHandlingUnit)
-                    ][0]
+                    controllable_element.control.ahu = next(
+                        (n for n in neighbors if isinstance(n, AirHandlingUnit)), None
+                    )
 
     def _build_occupancy(self, space: "Space") -> None:
         if space.occupancy:
@@ -418,9 +398,6 @@ class Network:
         )
         environment.filters["enumerate"] = enumerate
         models = []
-        # for node in self.graph.nodes:
-        #     if node.component_template and node.component_template.bus:
-        #         node.component_template.bus.get_inputs(node, **node.component_template.function(node))
         for node in self.graph.nodes:
             if not node.template:
                 continue

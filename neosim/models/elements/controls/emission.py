@@ -55,14 +55,15 @@ class ControlLoopsParameters(BaseParameter):
 
 dynamic_emission_control_template = DynamicComponentTemplate(
     template="""model EmissionControl{{ element.name | capitalize}}
-Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops emissionControl({{ macros.render_parameters(parameters) | safe}})
+Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
+emissionControl({{ macros.render_parameters(parameters) | safe}})
 {% raw %}annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); {% endraw %}
-  Modelica.Blocks.Interfaces.RealOutput y
-    {% raw %}annotation (Placement(transformation(extent={{100,-8},{120,12}})));{% endraw %}
+Modelica.Blocks.Interfaces.RealOutput y
+{% raw %}annotation (Placement(transformation(extent={{100,-8},{120,12}})));{% endraw %}
 {{bus_template}}
 equation
-  connect(emissionControl.yHea, y) {% raw %}annotation (Line(points={{34.4,-21.2},{96,-21.2},
-          {96,2},{110,2}}, color={0,0,127}));{% endraw %}
+connect(emissionControl.yHea, y) {% raw %}annotation (Line(points={{34.4,-21.2},{96,-21.2},
+{96,2},{110,2}}, color={0,0,127}));{% endraw %}
 {{bus_ports | safe}}
 end EmissionControl{{ element.name  | capitalize}};""",
     category="control",

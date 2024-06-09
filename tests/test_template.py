@@ -2,15 +2,6 @@ import re
 from pathlib import Path
 from typing import Set
 
-from neosim.library.library import Buildings, Ideas
-from neosim.models.elements.ahu import AirHandlingUnit
-from neosim.models.elements.boundary import Boundary
-from neosim.models.elements.controls.ahu import AhuControl
-
-# from neosim.library.buildings.buildings import BuildingsLibrary
-# from neosim.library.ideas.ideas import IdeasLibrary
-from neosim.models.elements.space import Space
-from neosim.models.elements.weather import Weather
 from neosim.topology import Network
 
 OVERWRITE_MODELS = False
@@ -85,7 +76,9 @@ def test_template_buildings_free_float_three_zones(
     )
 
 
-def test_buildings_two_rooms_with_storage(buildings_two_rooms_with_storage):
+def test_buildings_two_rooms_with_storage(
+    buildings_two_rooms_with_storage: Network,
+) -> None:
     model_ = buildings_two_rooms_with_storage.model()
     assert clean_model(model_, buildings_two_rooms_with_storage.name) == set(
         _read(buildings_two_rooms_with_storage.name)
