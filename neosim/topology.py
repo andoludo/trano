@@ -11,6 +11,7 @@ from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
 from neosim.controller.parser import BaseInput
+from neosim.documentation.json import generate_html_documentation
 from neosim.library.library import Buildings, Libraries
 from neosim.models.constants import Tilt
 from neosim.models.elements.ahu import AirHandlingUnit
@@ -377,6 +378,7 @@ class Network:
             library=self.library,
             databus=data_bus,
             dynamic_components=self.dynamic_components,
+            documentation=generate_html_documentation(self),
         )
 
     def build_dynamic_component_template(self, node: BaseElement) -> None:
