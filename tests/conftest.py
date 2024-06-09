@@ -69,7 +69,7 @@ def create_mos_file(network: Network, check_only: bool = False) -> str:
     getVersion();
     loadFile("/neosim/tests/{{model_file}}");
     checkModel({{model_name}}.building);
-    simulate({{model_name}}.building,startTime = 0, stopTime = 86400);
+    simulate({{model_name}}.building,startTime = 0, stopTime = 3600);
     """
             )
         mos_file = template.render(

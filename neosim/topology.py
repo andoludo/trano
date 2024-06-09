@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from jinja2 import Environment, FileSystemLoader
 from networkx import DiGraph, shortest_path
+from networkx.classes.reportviews import NodeView
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
@@ -371,51 +372,8 @@ class Network:
         data_bus = self._build_data_bus()
         self.configure_ahu_control()
         self.configure_collector_control()
-        ports = {
-            "RealOutput": [],
-            "RealInput": [],
-            "IntegerOutput": [],
-            "IntegerInput": [],
-            "BooleanOutput": [],
-            "BooleanInput": [],
-        }
-        for node in self.graph.nodes:
-            if node.component_template and node.component_template.bus:
-                node_ports = node.component_template.bus.list_ports(node)
-                ports["RealOutput"] += node_ports["RealOutput"]
-                ports["RealInput"] += node_ports["RealInput"]
-                ports["IntegerOutput"] += node_ports["IntegerOutput"]
-                ports["IntegerInput"] += node_ports["IntegerInput"]
-                ports["BooleanOutput"] += node_ports["BooleanOutput"]
-                ports["BooleanInput"] += node_ports["BooleanInput"]
-        ports["RealOutput"] = set(ports["RealOutput"])
-        ports["RealInput"] = set(ports["RealInput"])
-        ports["IntegerOutput"] = set(ports["IntegerOutput"])
-        ports["IntegerInput"] = set(ports["IntegerInput"])
-        ports["BooleanOutput"] = set(ports["BooleanOutput"])
-        ports["BooleanInput"] = set(ports["BooleanInput"])
-        ports["RealInput"] - ports["RealOutput"].intersection(ports["RealInput"])
-        ports["IntegerInput"] - ports["IntegerOutput"].intersection(
-            ports["IntegerInput"]
-        )
-        ports["BooleanInput"] - ports["BooleanOutput"].intersection(
-            ports["BooleanInput"]
-        )
 
-        data_bus.non_connected_ports = (
-            list(
-                ports["RealInput"]
-                - ports["RealOutput"].intersection(ports["RealInput"])
-            )
-            + list(
-                ports["IntegerInput"]
-                - ports["IntegerOutput"].intersection(ports["IntegerInput"])
-            )
-            + list(
-                ports["BooleanInput"]
-                - ports["BooleanOutput"].intersection(ports["BooleanInput"])
-            )
-        )
+        data_bus.non_connected_ports = get_non_connected_ports(self.graph.nodes)
 
         self.generate_graphs()
 
@@ -509,3 +467,38 @@ class Network:
             nx.draw(self.graph)
             plt.draw()
             plt.show()
+
+
+def get_non_connected_ports(nodes: List[NodeView]):
+    port_types = ["Real", "Integer", "Boolean"]
+    ports = {
+        f"{port_type}{direction}": []
+        for port_type in port_types
+        for direction in ["Output", "Input"]
+    }
+
+    for node in nodes:
+        if node.component_template and node.component_template.bus:
+            node_ports = node.component_template.bus.list_ports(node)
+            for port_type in port_types:
+                ports[f"{port_type}Output"] += node_ports[f"{port_type}Output"]
+                ports[f"{port_type}Input"] += node_ports[f"{port_type}Input"]
+
+    for port_type in port_types:
+        ports[f"{port_type}Output"] = set(ports[f"{port_type}Output"])
+        ports[f"{port_type}Input"] = set(ports[f"{port_type}Input"])
+
+    return list(
+        itertools.chain(
+            *[
+                _get_non_connected_ports_intersection(
+                    ports[f"{port_type}Input"], ports[f"{port_type}Output"]
+                )
+                for port_type in port_types
+            ]
+        )
+    )
+
+
+def _get_non_connected_ports_intersection(input_ports, output_ports):
+    return list(set(input_ports) - set(output_ports).intersection(set(input_ports)))
