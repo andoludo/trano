@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple
 
 from jinja2 import Environment, FileSystemLoader
-from pydantic import BaseModel, ConfigDict, Field, create_model, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, create_model
 
 from neosim.controller.parser import ControllerBus
 from neosim.models.constants import Flow
@@ -210,7 +210,6 @@ class BaseElement(BaseModel):
 
     def get_controllable_ports(self) -> List[Port]:
         return [port for port in self.ports if port.is_controllable()]
-
 
     @computed_field
     def type(self) -> str:

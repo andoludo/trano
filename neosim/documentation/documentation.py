@@ -1,0 +1,217 @@
+import abc
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
+
+from pydantic import BaseModel
+
+from neosim.models.elements.base import BaseElement
+from neosim.models.elements.envelope.base import BaseSimpleWall
+from neosim.models.elements.space import Space
+from neosim.models.elements.system import System
+
+if TYPE_CHECKING:
+    from neosim.topology import Network
+
+
+class ContentDocumentation(BaseModel):
+    title: Optional[str] = None
+    introduction: Optional[str] = None
+    conclusions: Optional[str] = None
+
+
+class BaseDocumentation(ContentDocumentation):
+    title: str
+    introduction: str
+    table: Dict[str, Any] | List[Dict[str, Any]]
+    conclusions: str
+
+    @classmethod
+    @abc.abstractmethod
+    def from_elements(
+        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+    ) -> "BaseDocumentation":
+        ...
+
+
+class SpacesDocumentation(BaseDocumentation):
+    @classmethod
+    def from_elements(
+        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+    ) -> "SpacesDocumentation":
+        spaces = _get_elements(elements, Space)
+        spaces_ = []
+        boundary_parameters = {
+            "name": True,
+            "surface": True,
+            "type": True,
+            "azimuth": True,
+            "tilt": True,
+            "construction": {"name"},
+        }
+        system_parameters = {"name": True, "parameters": True, "type": True}
+        document_mapping = {
+            "emissions": system_parameters,
+            "ventilation_inlets": system_parameters,
+            "ventilation_outlets": system_parameters,
+            "external_boundaries": boundary_parameters,
+            "internal_elements": boundary_parameters,
+        }
+        for space in spaces:
+            main_space = space.model_dump(
+                mode="json",
+                include={
+                    "name": True,
+                    "parameters": True,
+                    "occupancy": {"name": True, "parameters": True},
+                },
+                exclude_none=True,
+                by_alias=True,
+            )
+            for key, value in document_mapping.items():
+                values = _dump_list_attributes(space, key, value)
+                if values:
+                    main_space[key] = _dump_list_attributes(space, key, value)
+            spaces_.append(main_space)
+        data = {
+            "title": "Spaces",
+            "introduction": "Introduction",
+            "table": spaces_,
+            "conclusions": "Conclusions",
+        } | content_documentation.model_dump(exclude_none=True)
+        return cls(**data)
+
+
+class ConstructionDocumentation(BaseDocumentation):
+    @classmethod
+    def from_elements(
+        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+    ) -> "ConstructionDocumentation":
+        constructions = [
+            c.model_dump(by_alias=True, exclude_none=True)
+            for c in {
+                w.construction
+                for w in _get_elements(elements, BaseSimpleWall)
+                if isinstance(w, BaseSimpleWall)
+            }
+        ]
+        data = {
+            "title": "Spaces",
+            "introduction": "Introduction",
+            "table": constructions,
+            "conclusions": "Conclusions",
+        } | content_documentation.model_dump(exclude_none=True)
+        return cls(**data)
+
+
+class SystemsDocumentation(BaseDocumentation):
+    @classmethod
+    def from_elements(
+        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+    ) -> "SystemsDocumentation":
+        spaces = _get_elements(elements, Space)
+
+        systems_to_exclude = {
+            system
+            for space in spaces
+            if isinstance(space, Space)
+            for system in space.emissions
+            + space.ventilation_inlets
+            + space.ventilation_outlets
+        }
+        systems = [
+            system.model_dump(
+                by_alias=True,
+                exclude_none=True,
+                include={"name": True, "parameters": True, "type": True},
+            )
+            for system in _get_elements(elements, System)
+            if system not in systems_to_exclude
+        ]
+        data = {
+            "title": "Spaces",
+            "introduction": "Introduction",
+            "table": systems,
+            "conclusions": "Conclusions",
+        } | content_documentation.model_dump(exclude_none=True)
+        return cls(**data)
+
+
+class ContentModelDocumentation(ContentDocumentation):
+    spaces: ContentDocumentation
+    constructions: ContentDocumentation
+    systems: ContentDocumentation
+
+
+class ModelDocumentation(BaseDocumentation):
+    spaces: SpacesDocumentation
+    constructions: ConstructionDocumentation
+    systems: SystemsDocumentation
+
+    @classmethod
+    def from_elements(
+        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+    ) -> "BaseDocumentation":
+        ...
+
+    @classmethod
+    def from_model_elements(
+        cls,
+        elements: List[BaseElement],
+        content_documentation: ContentModelDocumentation,
+    ) -> "ModelDocumentation":
+        spaces_documentation = SpacesDocumentation.from_elements(
+            elements, content_documentation.spaces
+        )
+        constructions = ConstructionDocumentation.from_elements(
+            elements, content_documentation.constructions
+        )
+        systems = SystemsDocumentation.from_elements(
+            elements, content_documentation.systems
+        )
+        data = content_documentation.model_dump(exclude_none=True) | {
+            "title": "Spaces",
+            "introduction": "Introduction",
+            "spaces": spaces_documentation,
+            "constructions": constructions,
+            "systems": systems,
+            "conclusions": "Conclusions",
+            "table": {},
+        }
+
+        return cls(**data)
+
+    @classmethod
+    def from_network(
+        cls,
+        network: "Network",
+        content_model_documentation: Optional[ContentModelDocumentation] = None,
+    ) -> "ModelDocumentation":
+        content_model_documentation = (
+            content_model_documentation
+            or ContentModelDocumentation(
+                spaces=ContentDocumentation(),
+                constructions=ContentDocumentation(),
+                systems=ContentDocumentation(),
+            )
+        )
+        elements = network.graph.nodes
+        return cls.from_model_elements(elements, content_model_documentation)
+
+
+def _get_elements(
+    elements: List[BaseElement], element_type: Type[Space | System | BaseSimpleWall]
+) -> List[BaseElement]:
+    return [element for element in elements if isinstance(element, element_type)]
+
+
+def _dump_list_attributes(
+    element: BaseElement, attribute_name: str, include_mapping: object
+) -> List[Dict[int, Any]]:
+    return [
+        el.model_dump(
+            by_alias=True,
+            exclude_none=True,
+            mode="json",
+            include=include_mapping,
+        )
+        for el in getattr(element, attribute_name)
+    ]
