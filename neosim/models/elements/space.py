@@ -245,22 +245,24 @@ class Space(BaseElement):
         external_walls = [
             boundary
             for boundary in self.external_boundaries
-            if boundary.type == "ExternalWall"
+            if boundary.type == "ExternalWall"  # type: ignore
         ]
         windows = [
             boundary
             for boundary in self.external_boundaries
-            if boundary.type == "Window"
+            if boundary.type == "Window"  # type: ignore
         ]
         merged_external_walls = MergedExternalWall.from_base_elements(external_walls)
         merged_windows = MergedWindows.from_base_windows(windows)  # type: ignore
-        external_boundaries = (
+        external_boundaries: list[
+            BaseExternalWall | BaseWindow | BaseFloorOnGround | MergedBaseWall
+        ] = (
             merged_external_walls
             + merged_windows
             + [
-                boundary
+                boundary  # type: ignore
                 for boundary in self.external_boundaries
-                if boundary.type not in ["ExternalWall", "Window"]
+                if boundary.type not in ["ExternalWall", "Window"]  # type: ignore
             ]
         )
         return external_boundaries

@@ -42,7 +42,7 @@ class RealInput(BaseInput):
 
 
 class IntegerInput(BaseInput):
-    default: float = 0.0
+    default: int = 0
     target: str = "Space"
     input_template: str = "Modelica.Blocks.Sources.IntegerExpression"
 
@@ -60,7 +60,7 @@ class BooleanOutput(BaseInput):
 
 
 class IntegerOutput(BaseInput):
-    default: float = 0.0
+    default: int = 0
     target: str = "Controlled"
     input_template: str = "Modelica.Blocks.Sources.IntegerExpression"
 

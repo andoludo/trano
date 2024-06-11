@@ -23,6 +23,8 @@ equation
     {#line break#}
     {{ macros.connect(edge) }}
 {%- endfor %}
+  annotation (
+    Documentation(info="<html>{{ documentation | safe}}</html>"));
 end building;
 
 
