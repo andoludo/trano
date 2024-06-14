@@ -12,6 +12,7 @@ from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from neosim.construction import Constructions
 from neosim.controller.parser import BaseInput
+from neosim.documentation.documentation import ModelDocumentation
 from neosim.library.library import Buildings, Libraries
 from neosim.models.constants import Tilt
 from neosim.models.elements.ahu import AirHandlingUnit
@@ -375,6 +376,7 @@ class Network:
         template = environment.get_template("base.jinja2")
 
         data = extract_properties(self.library, self.name, self.graph.nodes)
+        documentation = ModelDocumentation.from_network(self)
         diagram_size = self._get_diagram_size()
         return template.render(
             network=self,
@@ -383,6 +385,7 @@ class Network:
             library=self.library,
             databus=data_bus,
             dynamic_components=self.dynamic_components,
+            documentation=documentation,
             diagram_size=diagram_size,
         )
 

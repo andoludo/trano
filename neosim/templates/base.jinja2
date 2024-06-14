@@ -25,6 +25,8 @@ equation
 {%- endfor %}
 annotation (Diagram(coordinateSystem(extent={{diagram_size}})), Icon(
         coordinateSystem(extent={{diagram_size}})));
+  annotation (
+    Documentation(info="<html>{{ documentation | safe}}</html>"));
 end building;
 
 

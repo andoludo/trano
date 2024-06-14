@@ -701,6 +701,17 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "json2html"
+version = "1.3.0"
+description = "JSON to HTML Table Representation"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "json2html-1.3.0.tar.gz", hash = "sha256:8951a53662ae9cfd812685facdba693fc950ffc1c1fd1a8a2d3cf4c34600689c"},
+]
+
+[[package]]
 name = "jsonpickle"
 version = "3.0.3"
 description = "Python library for serializing any arbitrary object graph into JSON"
@@ -2549,6 +2560,17 @@ files = [
 docs = ["Sphinx (>=6.0)", "sphinx-rtd-theme (>=1.1.0)"]
 optional = ["python-socks", "wsaccel"]
 test = ["websockets"]
+
+[[package]]
+name = "yattag"
+version = "1.15.2"
+description = "Generate HTML or XML in a pythonic way. Pure python alternative to web template engines.Can fill HTML forms with default values and error messages."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "yattag-1.15.2.tar.gz", hash = "sha256:aad9f540bd22dc503e5b5506cc47856facf081aa71fd35f727371b63e1e402bf"},
+]
 
 [metadata]
 lock-version = "2.0"
