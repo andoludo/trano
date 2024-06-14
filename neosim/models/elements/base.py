@@ -37,9 +37,15 @@ class AvailableLibraries(BaseModel):
         return selected_variant[0]()
 
 
+class ConnectionView(BaseModel):
+    color: str = "{255,204,51}"
+    thickness: float = 0.5
+
+
 class Connection(BaseModel):
     right: PartialConnection
     left: PartialConnection
+    connection_view: ConnectionView = Field(default=ConnectionView())
 
     @property
     def path(self) -> List[List[float] | Tuple[float, float]]:
@@ -170,13 +176,16 @@ class BaseParameter(BaseModel):
 
 
 class BaseElement(BaseModel):
+    annotation_template: str = """annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-10, -10}, {10, 10}}
+    {% endraw %})));"""
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
     parameters: Optional[BaseParameter] = None
     name: str
     position: Optional[List[float]] = None
     ports: list[Port] = Field(default=[], validate_default=True)
     template: Optional[str] = None
-    annotation_template: Optional[str] = None
     component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
     libraries_data: Optional[AvailableLibraries] = None
@@ -191,8 +200,6 @@ class BaseElement(BaseModel):
             self.ports = library_data.ports_factory()
         if not self.template:
             self.template = library_data.template
-        if not self.annotation_template:
-            self.annotation_template = library_data.annotation_template
         if not self.component_template:
             self.component_template = library_data.component_template
         return True
@@ -293,6 +300,14 @@ class BaseElement(BaseModel):
         return hash(f"{self.name}-{type(self).__name__}")
 
 
+def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
+    from neosim.models.elements.envelope.base import BaseSimpleWall
+
+    if any(isinstance(e, BaseSimpleWall) for e in edge):
+        return ConnectionView(color="{191,0,0}", thickness=0.2)
+    return ConnectionView()
+
+
 def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:
     connections = []
     edge_first = edge[0]
@@ -312,7 +327,11 @@ def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:
             current_port.link(edge_first, edge_second),  # type: ignore
             other_port.link(edge_second, edge_first),  # type: ignore
         ):
-            connections.append(Connection(left=left, right=right))
+            connections.append(
+                Connection(
+                    left=left, right=right, connection_view=connection_color(edge)
+                )
+            )
         edge_first_ports_to_skip.append(current_port)  # type: ignore
         edge_second_ports_to_skip.append(other_port)  # type: ignore
     return connections
@@ -377,10 +396,6 @@ def default_parameters(parameters: BaseParameter) -> Dict[str, Any]:
 class LibraryData(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     template: str = ""
-    annotation_template: str = """annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
     component_template: Optional[DynamicComponentTemplate] = None
     ports_factory: Callable[[], List[Port]]
     variant: str = BaseVariant.default

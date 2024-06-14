@@ -141,16 +141,10 @@ class ContentModelDocumentation(ContentDocumentation):
     systems: ContentDocumentation
 
 
-class ModelDocumentation(BaseDocumentation):
+class ModelDocumentation(ContentDocumentation):
     spaces: SpacesDocumentation
     constructions: ConstructionDocumentation
     systems: SystemsDocumentation
-
-    @classmethod
-    def from_elements(
-        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
-    ) -> "BaseDocumentation":
-        ...
 
     @classmethod
     def from_model_elements(
@@ -174,7 +168,6 @@ class ModelDocumentation(BaseDocumentation):
             "constructions": constructions,
             "systems": systems,
             "conclusions": "Conclusions",
-            "table": {},
         }
 
         return cls(**data)

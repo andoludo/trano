@@ -69,8 +69,12 @@ def extract_buildings_data(package_name: str, nodes: NodeView) -> MaterialProper
         node.construction
         for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]
     }
-    wall_constructions = [c for c in constructions if isinstance(c, Construction)]
-    glazing = [c for c in constructions if isinstance(c, Glass)]
+    wall_constructions = sorted(
+        [c for c in constructions if isinstance(c, Construction)], key=lambda x: x.name
+    )
+    glazing = sorted(
+        [c for c in constructions if isinstance(c, Glass)], key=lambda x: x.name
+    )
     buildings_data = BuildingsData(
         construction=BuildingsConstruction(constructions=wall_constructions),
         glazing=BuildingsGlazing(constructions=glazing),
