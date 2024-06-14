@@ -8,7 +8,7 @@ import pytest
 
 from neosim.construction import Constructions
 from neosim.glass import Glasses
-from neosim.library.library import Buildings, Ideas
+from neosim.library.library import Buildings, Ideas, Library
 from neosim.models.constants import Azimuth, Flow, Tilt
 from neosim.models.elements.ahu import AirHandlingUnit
 from neosim.models.elements.base import Port
@@ -22,13 +22,14 @@ from neosim.models.elements.controls.three_way_valve import ThreeWayValveControl
 from neosim.models.elements.controls.vav import VAVControl
 from neosim.models.elements.damper import VAV, DamperVariant
 from neosim.models.elements.duct import Duct
-from neosim.models.elements.envelope.external_wall import ExternalWall
+from neosim.models.elements.envelope.external_wall import ExternalDoor, ExternalWall
 from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
+from neosim.models.elements.envelope.internal_element import InternalElement
 from neosim.models.elements.envelope.window import Window
 from neosim.models.elements.occupancy import Occupancy
 from neosim.models.elements.pump import Pump, PumpParameters
 from neosim.models.elements.radiator import Radiator
-from neosim.models.elements.space import Space
+from neosim.models.elements.space import Space, SpaceParameter
 from neosim.models.elements.split_valve import SplitValve, SplitValveParameters
 from neosim.models.elements.system import System
 from neosim.models.elements.temperature_sensor import TemperatureSensor
@@ -1564,3 +1565,142 @@ package MediumW = Buildings.Media.Water "Medium model";"""
     weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
     network.connect_elements(boundary, weather)
     return network
+
+
+@pytest.fixture
+def space_with_same_properties() -> Space:
+    space = Space(
+        name="bed",
+        parameters=SpaceParameter(floor_area=11.3, average_room_height=3.75),
+        occupancy=Occupancy(name="occupancy_0"),
+        external_boundaries=[
+            ExternalWall(
+                name="bw",
+                surface=13,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="bw2",
+                surface=9.29,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            Window(
+                name="window",
+                surface=1.3,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                width=1,
+                height=1.3,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+    )
+
+    return space
+
+
+@pytest.fixture
+def space_with_door() -> Network:
+    space = Space(
+        name="door",
+        parameters=SpaceParameter(floor_area=11.3, average_room_height=3.75),
+        occupancy=Occupancy(name="occupancy_0"),
+        external_boundaries=[
+            ExternalDoor(
+                name="door",
+                surface=13,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.door,
+            ),
+            ExternalWall(
+                name="wall",
+                surface=9.29,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            Window(
+                name="window",
+                surface=1.3,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                width=1,
+                height=1.3,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+    )
+    network = Network(
+        name="space_with_door",
+    )
+    network.add_boiler_plate_spaces([space])
+    return network
+
+
+def building_with_multiple_internal_walls(
+    network_name: str, library: Library = None
+) -> Network:
+    space_1 = Space(
+        name="space_1",
+        parameters=SpaceParameter(floor_area=11.3, average_room_height=3.75),
+        occupancy=Occupancy(name="occupancy_0"),
+        external_boundaries=[
+            ExternalWall(
+                name="bw",
+                surface=13,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+        ],
+    )
+    space_2 = Space(
+        name="space_2",
+        parameters=SpaceParameter(floor_area=11.3, average_room_height=3.75),
+        occupancy=Occupancy(name="occupancy_1"),
+        external_boundaries=[
+            ExternalWall(
+                name="bw_1",
+                surface=13,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+        ],
+    )
+    network = Network(name=network_name, library=library)
+    network.add_boiler_plate_spaces([space_1, space_2], create_internal=False)
+    internal_1 = InternalElement(
+        name=f"internal_{space_1.name}_{space_2.name}_1",
+        surface=10,
+        azimuth=45,
+        construction=Constructions.internal_wall,
+        tilt=Tilt.wall,
+    )
+    door = InternalElement(
+        name=f"internal_{space_1.name}_{space_2.name}_2",
+        surface=10,
+        azimuth=10,
+        construction=Constructions.door,
+        tilt=Tilt.wall,
+    )
+    network.connect_spaces(space_1, space_2, internal_1)
+    network.connect_spaces(space_1, space_2, door)
+    return network
+
+
+@pytest.fixture
+def building_multiple_internal_walls() -> Network:
+    return building_with_multiple_internal_walls("multiple_internal_walls_buildings")
+
+
+@pytest.fixture
+def building_multiple_internal_walls_ideas() -> Network:
+    return building_with_multiple_internal_walls(
+        "multiple_internal_walls_ideas", library=Ideas()
+    )

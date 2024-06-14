@@ -2,6 +2,8 @@ import re
 from pathlib import Path
 from typing import Set
 
+from neosim.library.library import Ideas
+from neosim.models.elements.space import Space
 from neosim.topology import Network
 
 OVERWRITE_MODELS = False
@@ -171,4 +173,43 @@ def test_two_spaces_air_handling_unit(two_spaces_air_handling_unit: Network) -> 
     model_ = two_spaces_air_handling_unit.model()
     assert clean_model(model_, two_spaces_air_handling_unit.name) == set(
         _read(two_spaces_air_handling_unit.name)
+    )
+
+
+def test_space_with_same_properties(space_with_same_properties: Space) -> None:
+    network = Network(
+        name="space_with_same_properties",
+    )
+    network.add_boiler_plate_spaces([space_with_same_properties])
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_space_with_same_properties_ideas(space_with_same_properties: Space) -> None:
+    network = Network(name="space_with_same_properties_ideas", library=Ideas())
+    network.add_boiler_plate_spaces([space_with_same_properties])
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_space_with_door(space_with_door: Network) -> None:
+    model_ = space_with_door.model()
+    assert clean_model(model_, space_with_door.name) == set(_read(space_with_door.name))
+
+
+def test_building_multiple_internal_walls(
+    building_multiple_internal_walls: Network,
+) -> None:
+    model_ = building_multiple_internal_walls.model()
+    assert clean_model(model_, building_multiple_internal_walls.name) == set(
+        _read(building_multiple_internal_walls.name)
+    )
+
+
+def test_building_multiple_internal_walls_ideas(
+    building_multiple_internal_walls_ideas: Network,
+) -> None:
+    model_ = building_multiple_internal_walls_ideas.model()
+    assert clean_model(model_, building_multiple_internal_walls_ideas.name) == set(
+        _read(building_multiple_internal_walls_ideas.name)
     )

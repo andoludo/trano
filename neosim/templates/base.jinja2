@@ -23,6 +23,8 @@ equation
     {#line break#}
     {{ macros.connect(edge) }}
 {%- endfor %}
+annotation (Diagram(coordinateSystem(extent={{diagram_size}})), Icon(
+        coordinateSystem(extent={{diagram_size}})));
 end building;
 
 

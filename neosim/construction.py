@@ -44,6 +44,12 @@ class Materials:
         density=7850,
         specific_heat_capacity=450,
     )
+    wood: Material = Material(
+        name="wood",
+        thermal_conductivity=0.131,
+        specific_heat_capacity=1000,
+        density=600,
+    )
 
 
 class Layer(BaseModel):
@@ -80,5 +86,11 @@ class Constructions:
         name="internal_wall",
         layers=[
             Layer(material=Materials.brick, thickness=0.2),
+        ],
+    )
+    door: Construction = Construction(
+        name="Door",
+        layers=[
+            Layer(material=Materials.wood, thickness=0.04),
         ],
     )

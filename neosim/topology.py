@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import matplotlib.pyplot as plt
 import networkx as nx
+import numpy as np
 from jinja2 import Environment, FileSystemLoader
 from networkx import DiGraph, shortest_path
 from networkx.classes.reportviews import NodeView
@@ -38,12 +39,14 @@ class Network:
         self,
         name: str,
         library: Optional[Libraries] = None,
+        external_data: Optional[Path] = None,
     ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
         self.name: str = name
         self._system_controls: List[Control] = []
         self.library = library or Buildings()
+        self.external_data = external_data
         self.dynamic_components: Dict[DynamicTemplateCategories, List[str]] = {
             "ventilation": [],
             "control": [],
@@ -126,6 +129,7 @@ class Network:
             self._add_subsequent_systems(space.emissions)
 
     def _build_data_bus(self) -> DataBus:
+        # TODO: this feels like it does not belong here!!!!
 
         spaces = sorted(
             [node for node in self.graph.nodes if isinstance(node, Space)],
@@ -142,6 +146,7 @@ class Network:
         data_bus = DataBus(
             name="data_bus",
             spaces=[space.name for space in spaces],
+            external_data=self.external_data,
         )
         self.add_node(data_bus)
         for space in spaces:
@@ -370,6 +375,7 @@ class Network:
         template = environment.get_template("base.jinja2")
 
         data = extract_properties(self.library, self.name, self.graph.nodes)
+        diagram_size = self._get_diagram_size()
         return template.render(
             network=self,
             data=data,
@@ -377,7 +383,14 @@ class Network:
             library=self.library,
             databus=data_bus,
             dynamic_components=self.dynamic_components,
+            diagram_size=diagram_size,
         )
+
+    def _get_diagram_size(self) -> str:
+        array = np.array([n.position for n in list(self.graph.nodes)]).T
+        x = array[0]
+        y = array[1]
+        return f"{{{{{min(x) - 50},{min(y) - 50}}},{{{max(x) + 50},{max(y) + 50}}}}}"
 
     def build_dynamic_component_template(self, node: BaseElement) -> None:
         if node.component_template:
@@ -419,11 +432,14 @@ class Network:
             models.append(model)
         return models
 
-    def add_boiler_plate_spaces(self, spaces: list[Space]) -> None:
+    def add_boiler_plate_spaces(
+        self, spaces: list[Space], create_internal: bool = True
+    ) -> None:
         for space in spaces:
             self.add_space(space)
-        for combination in itertools.combinations(spaces, 2):
-            self.connect_spaces(*combination)
+        if create_internal:
+            for combination in itertools.combinations(spaces, 2):
+                self.connect_spaces(*combination)
         weather = Weather(name="weather")
         weather.position = [-100, 200]  # TODO: move somewhere else
         self.add_node(weather)

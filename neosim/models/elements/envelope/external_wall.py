@@ -32,7 +32,11 @@ class IdeasMergedExternalWall(LibraryData):
     )
 
 
-class ExternalWall(BaseExternalWall):
+class ExternalDoor(BaseExternalWall):
     libraries_data: AvailableLibraries = AvailableLibraries(
         ideas=[IdeasMergedExternalWall]
     )
+
+
+class ExternalWall(ExternalDoor):
+    ...

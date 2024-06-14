@@ -1,4 +1,5 @@
 from functools import partial
+from math import ceil
 from typing import Any, Callable, ClassVar, Dict, List, Literal, Optional, Union
 
 from networkx import Graph
@@ -33,6 +34,8 @@ from neosim.models.elements.system import (
     Ventilation,
 )
 from neosim.models.parameters import WallParameters, WindowedWallParameters
+
+MAX_X_SPACES = 3
 
 
 def _get_controllable_element(elements: List[System]) -> Optional["System"]:
@@ -80,7 +83,7 @@ class BuildingsSpace(LibraryData):
         nPorts = {{ element.number_ventilation_ports }},
         {%- endif %}
         {%- for boundary in element.boundaries -%}
-            {%- if boundary.type == 'ExternalWall' and boundary.number -%}
+            {%- if boundary.type == 'ExternalWall' -%}
                 {%- if boundary.number %}
                     nConExt={{ boundary.number }},
                     datConExt(
@@ -191,6 +194,10 @@ class IdeasSpace(LibraryData):
 
 
 class Space(BaseElement):
+    annotation_template: str = """annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position) }},
+    extent = {% raw %}{{-20, -20}, {20, 20}}
+    {% endraw %})));"""
     counter: ClassVar[int] = 0
     parameters: SpaceParameter = Field(default=SpaceParameter())
     name: str
@@ -245,7 +252,7 @@ class Space(BaseElement):
         external_walls = [
             boundary
             for boundary in self.external_boundaries
-            if boundary.type == "ExternalWall"
+            if boundary.type in ["ExternalWall", "ExternalDoor"]
         ]
         windows = [
             boundary
@@ -260,7 +267,7 @@ class Space(BaseElement):
             + [
                 boundary
                 for boundary in self.external_boundaries
-                if boundary.type not in ["ExternalWall", "Window"]
+                if boundary.type not in ["ExternalWall", "Window", "ExternalDoor"]
             ]
         )
         return external_boundaries
@@ -269,7 +276,10 @@ class Space(BaseElement):
         return _get_controllable_element(self.emissions)
 
     def assign_position(self) -> None:
-        self.position = [200 * Space.counter, 50]
+        self.position = [
+            250 * (Space.counter % MAX_X_SPACES),
+            150 * ceil(Space.counter / MAX_X_SPACES),
+        ]
         Space.counter += 1
         x = self.position[0]
         y = self.position[1]
