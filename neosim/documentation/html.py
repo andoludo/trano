@@ -40,7 +40,7 @@ def to_html(
                 for t in documentation.table:
                     table = json2html.convert(
                         json=t,
-                        table_attributes="border='1'  align='center' bgcolor='#f0f0f0' "
+                        table_attributes="border='1'  align='left' bgcolor='#f0f0f0' "
                         "style='border-collapse: collapse; margin-top: "
                         "20px; margin-bottom: 20px;'",
                     )
@@ -48,7 +48,7 @@ def to_html(
             else:
                 table = json2html.convert(
                     json=documentation.table,
-                    table_attributes="border='1'  align='center' bgcolor='#f0f0f0' "
+                    table_attributes="border='1'  align='left' bgcolor='#f0f0f0' "
                     "style='border-collapse: collapse; margin-top: "
                     "20px; margin-bottom: 20px;'",
                 )
@@ -63,7 +63,7 @@ def to_html(
 
 def to_html_documentation(documentation: ModelDocumentation) -> str:
     html_doc = HtmlDoc()
-    with html_doc.tag("html"), html_doc.tag("head"), html_doc.tag("title"):
+    with html_doc.tag("html"):
         with html_doc.tag("head"), html_doc.tag("title"):
             html_doc.text(documentation.title)
         html_doc.doc.asis(to_html(documentation.spaces))

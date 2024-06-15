@@ -1979,6 +1979,22 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-docx"
+version = "1.1.2"
+description = "Create, read, and update Microsoft Word .docx files."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "python_docx-1.1.2-py3-none-any.whl", hash = "sha256:08c20d6058916fb19853fcf080f7f42b6270d89eac9fa5f8c15f691c0017fabe"},
+    {file = "python_docx-1.1.2.tar.gz", hash = "sha256:0cf1f22e95b9002addca7948e16f2cd7acdfd498047f1941ca5d293db7762efd"},
+]
+
+[package.dependencies]
+lxml = ">=3.1.0"
+typing-extensions = ">=4.9.0"
+
+[[package]]
 name = "pytidylib"
 version = "0.3.2"
 description = "Python wrapper for HTML Tidy (tidylib) on Python 2 and 3"
@@ -2575,4 +2591,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "89a38f811de6336485b047df42556bf37f3091b9bcc2b816ab52ca4339c72edf"
+content-hash = "1a74c8711595a27e3b97f21d9a18c75e9380681e4a3a9c2e9811b02db9dd0f05"

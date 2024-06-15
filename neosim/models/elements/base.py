@@ -176,13 +176,13 @@ class BaseParameter(BaseModel):
 
 
 class BaseElement(BaseModel):
+    name: str
     annotation_template: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
     parameters: Optional[BaseParameter] = None
-    name: str
     position: Optional[List[float]] = None
     ports: list[Port] = Field(default=[], validate_default=True)
     template: Optional[str] = None

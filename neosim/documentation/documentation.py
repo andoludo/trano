@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
 from pydantic import BaseModel
 
-from neosim.models.elements.base import BaseElement
+from neosim.models.elements.base import BaseElement, BaseParameter
 from neosim.models.elements.envelope.base import BaseSimpleWall
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import System
@@ -16,6 +16,15 @@ class ContentDocumentation(BaseModel):
     title: Optional[str] = None
     introduction: Optional[str] = None
     conclusions: Optional[str] = None
+
+
+def get_description() -> Dict[str, Any]:
+    return {
+        field.alias: (field.description or field.title)
+        for cls in BaseParameter.__subclasses__()
+        for field in cls.model_fields.values()
+        if field.alias
+    }
 
 
 class BaseDocumentation(ContentDocumentation):
@@ -108,7 +117,7 @@ class SystemsDocumentation(BaseDocumentation):
         cls, elements: List[BaseElement], content_documentation: ContentDocumentation
     ) -> "SystemsDocumentation":
         spaces = _get_elements(elements, Space)
-
+        get_description()
         systems_to_exclude = {
             system
             for space in spaces
