@@ -42,8 +42,36 @@ from neosim.models.elements.weather import Weather
 from neosim.topology import Network
 
 
+@pytest.fixture(scope="session")
+def client() -> docker.DockerClient:
+    client = docker.DockerClient(base_url="unix://var/run/docker.sock")
+    return client
+
+
+@pytest.fixture(scope="session")
+def container(client: docker.DockerClient) -> None:
+    container = client.containers.run(
+        "openmodelica/openmodelica:v1.22.4-ompython",
+        command="tail -f /dev/null",
+        volumes=[
+            f"{str(Path(__file__).parents[1])}:/neosim",
+            f"{str(Path(__file__).parents[1])}/results:/results",
+        ],
+        detach=True,
+    )
+    container.exec_run(cmd="omc /neosim/neosim/library/install_package.mos")
+    yield container
+    container.exec_run(
+        cmd='find / -name "*_res.mat" -exec cp {} /results \;'  # noqa: W605
+    )  # noqa: W605
+    container.stop()
+    container.remove()
+
+
 @contextmanager
-def create_mos_file(network: Network, check_only: bool = False) -> str:
+def create_mos_file(
+    network: Network, check_only: bool = False, end_time: int = 3600
+) -> str:
     model = network.model()
     with tempfile.NamedTemporaryFile(
         mode="w", dir=Path(__file__).parent, suffix=".mo"
@@ -62,11 +90,11 @@ def create_mos_file(network: Network, check_only: bool = False) -> str:
             )
         else:
             template = environment.from_string(
-                """
+                f"""
     getVersion();
-    loadFile("/neosim/tests/{{model_file}}");
-    checkModel({{model_name}}.building);
-    simulate({{model_name}}.building,startTime = 0, stopTime = 3600);
+    loadFile("/neosim/tests/{{{{model_file}}}}");
+    checkModel({{{{model_name}}}}.building);
+    simulate({{{{model_name}}}}.building,startTime = 0, stopTime = {end_time});
     """
             )
         mos_file = template.render(

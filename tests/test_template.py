@@ -10,9 +10,13 @@ OVERWRITE_MODELS = False
 
 
 def remove_annotation(model: str) -> str:
+    for documentation in re.findall(r"Documentation(.*?)</html>", model, re.DOTALL):
+        model = model.replace(documentation, "").replace("Documentation", "")
+
     model = model.replace(" ", "").replace("\n", "")
     for annotation in re.findall(r"annotation(.*?);", model):
         model = model.replace(annotation, "").replace("annotation", "")
+
     return model
 
 

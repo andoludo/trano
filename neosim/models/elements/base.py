@@ -13,6 +13,30 @@ if TYPE_CHECKING:
 Boolean = Literal["true", "false"]
 
 
+class Line(BaseModel):
+    template: str
+    key: Optional[str] = None
+    color: str = "grey"
+    label: str
+
+
+class Axis(BaseModel):
+    lines: List[Line] = Field(default=[])
+    label: str
+
+
+class Figure(BaseModel):
+    right_axis: Axis = Field(default=Axis(lines=[], label=""))
+    left_axis: Axis = Field(default=Axis(lines=[], label=""))
+
+    def render_key(self, element: "BaseElement") -> "Figure":
+        environment = Environment(autoescape=True)
+        for axis in self.right_axis.lines + self.left_axis.lines:
+            template = environment.from_string(axis.template)
+            axis.key = template.render(element=element)
+        return self
+
+
 class PartialConnection(BaseModel):
     equation: str
     position: List[float]
@@ -189,6 +213,7 @@ class BaseElement(BaseModel):
     component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
     libraries_data: Optional[AvailableLibraries] = None
+    figures: List[Figure] = Field(default=[])
 
     def assign_library_property(self, library: "Libraries") -> bool:
         if self.libraries_data is None:
@@ -202,6 +227,8 @@ class BaseElement(BaseModel):
             self.template = library_data.template
         if not self.component_template:
             self.component_template = library_data.component_template
+        if not self.figures and library_data.figures:
+            self.figures = [fig.render_key(self) for fig in library_data.figures]
         return True
 
     def processed_parameters(self, library: "Libraries") -> Any:  # noqa: ANN401
@@ -400,6 +427,7 @@ class LibraryData(BaseModel):
     ports_factory: Callable[[], List[Port]]
     variant: str = BaseVariant.default
     parameter_processing: Callable[[BaseParameter], Dict[str, Any]] = default_parameters
+    figures: List[Figure] = Field(default=[])
 
 
 class BaseBoundary(BaseElement):

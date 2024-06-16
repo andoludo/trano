@@ -8,9 +8,12 @@ from pydantic import Field, computed_field
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
     AvailableLibraries,
+    Axis,
     BaseElement,
     BaseParameter,
+    Figure,
     LibraryData,
+    Line,
     Port,
     exclude_parameters,
     modify_alias,
@@ -148,6 +151,69 @@ class BuildingsSpace(LibraryData):
                 names=["ports"],
                 multi_connection=True,
                 flow=Flow.inlet_or_outlet,
+            ),
+        ]
+    )
+
+    figures: List[Figure] = Field(
+        default=[
+            Figure(
+                right_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.occupancy.name }}.y[1]",
+                            label="Radiant heat flow rate [W/m2]",
+                            color="red",
+                        ),
+                        Line(
+                            template="{{ element.occupancy.name }}.y[2]",
+                            label="Convective heat flow rate [W/m2]",
+                            color="red",
+                        ),
+                        Line(
+                            template="{{ element.occupancy.name }}.y[3]",
+                            label="Latent heat flow rate [W/m2]",
+                            color="red",
+                        ),
+                    ],
+                    label="Internal gains [W/m2]",
+                ),
+                left_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.name }}.air.vol.T",
+                            label="Air temperature [K]",
+                        ),
+                        Line(
+                            template="data_bus.dataBus.TZon{{ element.name | capitalize}}",
+                            label="Air temperature [K]",
+                        ),
+                    ],
+                    label="Zone air temperature [K]",
+                ),
+            ),
+            Figure(
+                left_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.name }}.heaPorRad.Q_flow",
+                            label="Radiative heat flow rate [W]",
+                        ),
+                        Line(
+                            template="{{ element.name }}.heaPorAir.Q_flow",
+                            label="Convective heat flow rate [W]",
+                        ),
+                        Line(
+                            template="{{ element.name }}.air.QLat_flow",
+                            label="Latent heat gain [W]",
+                        ),
+                        Line(
+                            template="{{ element.name }}.air.QCon_flow",
+                            label="Convective heat gain [W]",
+                        ),
+                    ],
+                    label="Heat flow rate [W]",
+                ),
             ),
         ]
     )

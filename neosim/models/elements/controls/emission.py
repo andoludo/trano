@@ -5,9 +5,12 @@ from pydantic import Field
 from neosim.controller.parser import ControllerBus, RealInput, RealOutput
 from neosim.models.elements.base import (
     AvailableLibraries,
+    Axis,
     BaseParameter,
     DynamicComponentTemplate,
+    Figure,
     LibraryData,
+    Line,
     Port,
 )
 from neosim.models.elements.bus import DataBus
@@ -127,6 +130,33 @@ class BaseEmissionControl(LibraryData):
                 multi_connection=True,
                 use_counter=False,
             ),
+        ]
+    )
+    figures: List[Figure] = Field(
+        default=[
+            Figure(
+                right_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.name }}.emissionControl.conHea.u_s",
+                            label="Zone controller setpoint [K]",
+                        ),
+                        Line(
+                            template="{{ element.name }}.emissionControl.conHea.u_m",
+                            label="Zone controller measured [K]",
+                        ),
+                    ],
+                    label="Zone controller input [K]",
+                ),
+                left_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.name }}.y", label="Control signal [-]"
+                        ),
+                    ],
+                    label="Control signal [-]",
+                ),
+            )
         ]
     )
 

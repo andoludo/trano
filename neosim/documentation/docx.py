@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, List, Union
 
+from buildingspy.io.outputfile import Reader  # type: ignore
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import parse_xml
@@ -8,7 +9,12 @@ from docx.oxml.ns import nsdecls
 from docx.shared import Pt
 from docx.table import _Cell
 
-from neosim.documentation.documentation import ModelDocumentation, get_description
+from neosim.documentation.documentation import (
+    ModelDocumentation,
+    Topic,
+    get_description,
+)
+from neosim.plot.plot import add_element_figures
 
 COLUMN_SIZE_WITH_DESCRIPTION = 3
 
@@ -66,42 +72,47 @@ def add_table_caption(doc: Document, caption_text: str) -> None:  # type: ignore
     caption.space_after = Pt(0)
 
 
-def create_tables(
+def create_tables_and_figures(
     doc: Document,  # type: ignore
     data: Union[List[Dict[str, Any]], Dict[str, Any]],
-    topic: str,
+    topic: Topic,
+    documentation: ModelDocumentation,
 ) -> None:
     if isinstance(data, list):
         for d in data:
             add_table_caption(doc, f"Characteristics of {topic} {d['name']}.")
             create_table(doc, d)
             doc.add_paragraph()  # type: ignore
+            insert_figure(doc, d["name"], documentation)
+            doc.add_paragraph()  # type: ignore
 
     else:
         add_table_caption(doc, f"Characteristics of {topic} {data['name']}.")
         create_table(doc, data)
         doc.add_paragraph()  # type: ignore
+        insert_figure(doc, data["name"], documentation)
+        doc.add_paragraph()  # type: ignore
+
+
+def insert_figure(doc: Document, element_name: str, documentation: ModelDocumentation) -> None:  # type: ignore
+    mat = Reader(documentation.result.path, documentation.result.type)  # type: ignore
+    elements = [node for node in documentation.elements if node.name == element_name]
+    if elements:
+        element = elements[0]
+        add_element_figures(doc, mat, element)
 
 
 def to_docx(documentation: ModelDocumentation, path: Path) -> None:
-
     document = Document()
     document.add_page_break()  # type: ignore
-    document.add_heading("Spaces", level=2)
-    document.add_paragraph(documentation.spaces.introduction)
-    create_tables(document, documentation.spaces.table, "Space")
-    document.add_paragraph(documentation.spaces.conclusions)
-
-    document.add_page_break()  # type: ignore
-    document.add_heading("Constructions", level=2)
-    document.add_paragraph(documentation.constructions.introduction)
-    create_tables(document, documentation.constructions.table, "Construction")
-    document.add_paragraph(documentation.constructions.conclusions)
-
-    document.add_page_break()  # type: ignore
-    document.add_heading("Systems", level=2)
-    document.add_paragraph(documentation.systems.introduction)
-    create_tables(document, documentation.systems.table, "System")
-    document.add_paragraph(documentation.systems.conclusions)
-
+    for doc in [
+        documentation.spaces,
+        documentation.constructions,
+        documentation.systems,
+    ]:
+        document.add_heading(doc.topic, level=2)  # type: ignore
+        document.add_paragraph(doc.introduction)
+        create_tables_and_figures(document, doc.table, doc.topic, documentation)  # type: ignore
+        document.add_paragraph(doc.conclusions)
+        document.add_page_break()  # type: ignore
     document.save(str(path))

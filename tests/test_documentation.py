@@ -5,6 +5,7 @@ from neosim.documentation.documentation import (
     ContentDocumentation,
     ContentModelDocumentation,
     ModelDocumentation,
+    ResultFile,
 )
 from neosim.documentation.docx import to_docx
 from neosim.documentation.html import to_html_documentation
@@ -52,3 +53,17 @@ def test_documentation_generate_docx(
     with tempfile.NamedTemporaryFile(suffix=".docx") as tmpfile:
         to_docx(documentation, Path(tmpfile.name))
         assert tmpfile
+
+
+def test_documentation_generate_docx_with_figures(
+    buildings_two_rooms_with_storage: Network,
+) -> None:
+    documentation = ModelDocumentation.from_network(
+        buildings_two_rooms_with_storage,
+        result=ResultFile(
+            path=Path(
+                "/home/aan/Documents/neosim/results/buildings_two_rooms_with_storage.building_res.mat"
+            )
+        ),
+    )
+    to_docx(documentation, Path("/home/aan/Documents/neosim/tests/report.docx"))

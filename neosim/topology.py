@@ -301,7 +301,33 @@ class Network:
             node.get_position(layout)
             if isinstance(node, Space):
                 node.get_neighhors(self.graph)
-        for edge in self.graph.edges:
+        # Sorting is necessary here since we need to keep the same
+        # index for the same space indatabus
+        # TODO: not sure where to put this!!!!
+        data_bus = next(
+            bus for bus in list(self.graph.nodes) if isinstance(bus, DataBus)
+        )
+        new_edges = [edge for edge in self.graph.edges if data_bus not in edge]
+        edge_with_databus = [edge for edge in self.graph.edges if data_bus in edge]
+        edges_with_bus_without_space = [
+            edge
+            for edge in edge_with_databus
+            if not any(isinstance(e, Space) for e in edge)
+        ]
+        edges_with_bus_with_space = sorted(
+            [
+                edge
+                for edge in edge_with_databus
+                if any(isinstance(e, Space) for e in edge)
+            ],
+            key=lambda e_: next(e for e in e_ if isinstance(e, Space)).name,
+        )
+        # Sorting is necessary here since we need to keep the
+        # same index for the same space indatabus
+        # TODO: not sure where to put this!!!!
+        for edge in (
+            new_edges + edges_with_bus_without_space + edges_with_bus_with_space
+        ):
             self.edge_attributes += self.connect_edges(edge)
 
     def _connect_space_controls(self) -> None:

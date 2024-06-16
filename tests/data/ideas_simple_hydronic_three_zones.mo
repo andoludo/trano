@@ -579,11 +579,17 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Cont
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
+            THeaSetEmission_valve_control_3
+            (y=294.15);
+Modelica.Blocks.Sources.RealExpression
+            TColSetThree_way_valve_control
+            (y=363.15);
+Modelica.Blocks.Sources.RealExpression
             TAirOutBoilercontrol
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_valve_control
-            (y=298.15);
+            THeaSetEmission_valve_control_2
+            (y=294.15);
 Modelica.Blocks.Sources.RealExpression
             THeaSetEmission_valve_control
             (y=294.15);
@@ -591,20 +597,14 @@ Modelica.Blocks.Sources.RealExpression
             TCooSetEmission_valve_control_3
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            THeaSetEmission_valve_control_3
-            (y=294.15);
-Modelica.Blocks.Sources.RealExpression
-            TColSetThree_way_valve_control
-            (y=363.15);
-Modelica.Blocks.Sources.RealExpression
-            TColSetThree_way_valve_control_2
-            (y=363.15);
-Modelica.Blocks.Sources.RealExpression
             TCooSetEmission_valve_control_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            THeaSetEmission_valve_control_2
-            (y=294.15);
+            TCooSetEmission_valve_control
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TColSetThree_way_valve_control_2
+            (y=363.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerThree_way_valve_control
             (y=true);
@@ -624,24 +624,24 @@ connect(dataBus.TZonSpace_3, TRoo[3].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_2, TRoo1[2].ppm);
 connect(dataBus.ppmCO2Space_3, TRoo1[3].ppm);
-connect(dataBus.TAirOutBoiler,
-TAirOutBoilercontrol.y);
-connect(dataBus.TCooSetSpace_1,
-TCooSetEmission_valve_control.y);
-connect(dataBus.THeaSetSpace_1,
-THeaSetEmission_valve_control.y);
-connect(dataBus.TCooSetSpace_3,
-TCooSetEmission_valve_control_3.y);
 connect(dataBus.THeaSetSpace_3,
 THeaSetEmission_valve_control_3.y);
 connect(dataBus.TColSetThree_way_valve_control,
 TColSetThree_way_valve_control.y);
-connect(dataBus.TColSetThree_way_valve_control_2,
-TColSetThree_way_valve_control_2.y);
-connect(dataBus.TCooSetSpace_2,
-TCooSetEmission_valve_control_2.y);
+connect(dataBus.TAirOutBoiler,
+TAirOutBoilercontrol.y);
 connect(dataBus.THeaSetSpace_2,
 THeaSetEmission_valve_control_2.y);
+connect(dataBus.THeaSetSpace_1,
+THeaSetEmission_valve_control.y);
+connect(dataBus.TCooSetSpace_3,
+TCooSetEmission_valve_control_3.y);
+connect(dataBus.TCooSetSpace_2,
+TCooSetEmission_valve_control_2.y);
+connect(dataBus.TCooSetSpace_1,
+TCooSetEmission_valve_control.y);
+connect(dataBus.TColSetThree_way_valve_control_2,
+TColSetThree_way_valve_control_2.y);
 connect(dataBus.triggerThree_way_valve_control,
 triggerThree_way_valve_control.y);
 connect(dataBus.triggerThree_way_valve_control_2,
@@ -2384,35 +2384,35 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.025,
       c=1005.0,
       rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
       epsLw=0.88,
       epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.12,
       c=1210.0,
       rho=540.0,
       epsLw=0.88,
+      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.03,
+      c=1200.0,
+      rho=40.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
+      epsLw=0.88,
       epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
       c=840.0,
       rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2240.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record external_wall
@@ -2498,7 +2498,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 135, 0, 45, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 190.90756124753128, -64.32195727946845 },
+    Placement(transformation(origin = { 175.7380921212105, -59.17237410334044 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2509,7 +2509,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -182.5545306843252, -69.11817296954935 },
+    Placement(transformation(origin = { 139.8164199640093, 141.71774269026366 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_2(
@@ -2517,7 +2517,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { -43.99587391320498, -173.17461827211554 },
+    Placement(transformation(origin = { 170.7006242718755, 50.95865459897432 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Fluid.HeatExchangers.Radiators.
@@ -2562,7 +2562,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
 )));
         ideas_simple_hydronic_three_zones.Common.Controls.ventilation.EmissionControlEmission_valve_control
     emission_valve_control annotation (
-    Placement(transformation(origin = { -76.34385603211184, -178.7783942786596 },
+    Placement(transformation(origin = { 26.266274761477522, -194.82803257587528 },
     extent = {{-10, -10}, {10, 10}}
 )));
         ideas_simple_hydronic_three_zones.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
@@ -2589,7 +2589,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 135, 0, 45, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 10.126289715176126, -190.61294510403727 },
+    Placement(transformation(origin = { -14.54902524432353, -191.50357497431955 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2600,7 +2600,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 64.14316858788958, 169.1086407905537 },
+    Placement(transformation(origin = { 8.262995331941134, 178.97554619817706 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_3(
@@ -2608,7 +2608,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { 184.6355065786725, 75.02218231535382 },
+    Placement(transformation(origin = { 66.56775292517742, -193.17132717759438 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Fluid.HeatExchangers.Radiators.
@@ -2653,7 +2653,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
 )));
         ideas_simple_hydronic_three_zones.Common.Controls.ventilation.EmissionControlEmission_valve_control_2
     emission_valve_control_2 annotation (
-    Placement(transformation(origin = { -175.85233135938944, 11.565530198829494 },
+    Placement(transformation(origin = { 173.62352497257774, 81.55101380429983 },
     extent = {{-10, -10}, {10, 10}}
 )));
         ideas_simple_hydronic_three_zones.Common.Occupancy.SimpleOccupancy occupancy_1 annotation (
@@ -2680,7 +2680,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 135, 0, 45, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 137.77179190444926, -157.1820161771064 },
+    Placement(transformation(origin = { -99.29337933475718, 153.1236435593467 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2691,7 +2691,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -158.84227839098256, 98.07059541190014 },
+    Placement(transformation(origin = { -78.69864093325938, 185.83429224032292 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_4(
@@ -2699,7 +2699,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { 112.28687070067826, -123.41489976079585 },
+    Placement(transformation(origin = { -45.746755043078, -173.26412492420232 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Fluid.HeatExchangers.Radiators.
@@ -2744,7 +2744,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
 )));
         ideas_simple_hydronic_three_zones.Common.Controls.ventilation.EmissionControlEmission_valve_control_3
     emission_valve_control_3 annotation (
-    Placement(transformation(origin = { 176.983337245521, -114.14965039462902 },
+    Placement(transformation(origin = { 155.10464776668482, -115.02512446425317 },
     extent = {{-10, -10}, {10, 10}}
 )));
         ideas_simple_hydronic_three_zones.Common.Occupancy.SimpleOccupancy occupancy_2 annotation (
@@ -2920,24 +2920,24 @@ redeclare package MediumW = MediumW) "Boiler"  annotation (
         ideas_simple_hydronic_three_zones.Common.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 194.1699120921942, 31.526807444578964 },
+    Placement(transformation(origin = { 167.86073538114263, -30.522240185400943 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
 equation    connect(space_1.propsBus[1:4],merged_w1_1_w2_1_w3_1_w4_1[1:4].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 95.45378062376564, 0.0 }    ,{ 95.45378062376564, -64.32195727946845 }    ,{ 190.90756124753128, -64.32195727946845 }    },
+points={{ 0.0, 0.0 }    ,{ 87.86904606060526, 0.0 }    ,{ 87.86904606060526, -59.17237410334044 }    ,{ 175.7380921212105, -59.17237410334044 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[5],merged_win1_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -91.2772653421626, 0.0 }    ,{ -91.2772653421626, -69.11817296954935 }    ,{ -182.5545306843252, -69.11817296954935 }    },
+points={{ 0.0, 0.0 }    ,{ 69.90820998200465, 0.0 }    ,{ 69.90820998200465, 141.71774269026366 }    ,{ 139.8164199640093, 141.71774269026366 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[6],floor_2.propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -21.99793695660249, 0.0 }    ,{ -21.99793695660249, -173.17461827211554 }    ,{ -43.99587391320498, -173.17461827211554 }    },
+points={{ 0.0, 0.0 }    ,{ 85.35031213593776, 0.0 }    ,{ 85.35031213593776, 50.95865459897432 }    ,{ 170.7006242718755, 50.95865459897432 }    },
 color={191,0,0},
 thickness=0.2,
 smooth=Smooth.None));    connect(space_1.gainCon,emission.heatPortCon)
@@ -2965,16 +2965,6 @@ annotation (Line(
 points={{ 0.0, 0.0 }    ,{ 125.0, 0.0 }    ,{ 125.0, 0.0 }    ,{ 250.0, 0.0 }    },
 color={191,0,0},
 thickness=0.2,
-smooth=Smooth.None));    connect(space_1.gainCon,data_bus.port[1])
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 97.0849560460971, 0.0 }    ,{ 97.0849560460971, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 97.0849560460971, 0.0 }    ,{ 97.0849560460971, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(emission.port_b,split_valve.port_1)
 annotation (Line(
 points={{ 30.0, -75.0 }    ,{ 80.0, -75.0 }    ,{ 80.0, -175.0 }    ,{ 130.0, -175.0 }    },
@@ -2982,7 +2972,7 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(valve.y,emission_valve_control.y)
 annotation (Line(
-points={{ 0.0, -75.0 }    ,{ -38.17192801605592, -75.0 }    ,{ -38.17192801605592, -178.7783942786596 }    ,{ -76.34385603211184, -178.7783942786596 }    },
+points={{ 0.0, -75.0 }    ,{ 13.133137380738761, -75.0 }    ,{ 13.133137380738761, -194.82803257587528 }    ,{ 26.266274761477522, -194.82803257587528 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(valve.port_b,emission.port_a)
@@ -2990,24 +2980,19 @@ annotation (Line(
 points={{ 0.0, -75.0 }    ,{ 15.0, -75.0 }    ,{ 15.0, -75.0 }    ,{ 30.0, -75.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(emission_valve_control.dataBus,data_bus.dataBus)
-annotation (Line(
-points={{ -76.34385603211184, -178.7783942786596 }    ,{ 58.91302803004119, -178.7783942786596 }    ,{ 58.913028030041175, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[1:4],merged_w1_2_w2_2_w3_2_w4_2[1:4].propsBus_a)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 130.06314485758804, 150.0 }    ,{ 130.06314485758807, -190.61294510403727 }    ,{ 10.126289715176126, -190.61294510403727 }    },
+points={{ 250.0, 150.0 }    ,{ 117.72548737783825, 150.0 }    ,{ 117.72548737783822, -191.50357497431955 }    ,{ -14.54902524432353, -191.50357497431955 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[5],merged_win1_2[1].propsBus_a)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 157.0715842939448, 150.0 }    ,{ 157.0715842939448, 169.1086407905537 }    ,{ 64.14316858788958, 169.1086407905537 }    },
+points={{ 250.0, 150.0 }    ,{ 129.13149766597058, 150.0 }    ,{ 129.13149766597056, 178.97554619817706 }    ,{ 8.262995331941134, 178.97554619817706 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[6],floor_3.propsBus_a)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 217.31775328933625, 150.0 }    ,{ 217.31775328933625, 75.02218231535382 }    ,{ 184.6355065786725, 75.02218231535382 }    },
+points={{ 250.0, 150.0 }    ,{ 158.2838764625887, 150.0 }    ,{ 158.2838764625887, -193.17132717759438 }    ,{ 66.56775292517742, -193.17132717759438 }    },
 color={191,0,0},
 thickness=0.2,
 smooth=Smooth.None));    connect(space_2.gainCon,emission_2.heatPortCon)
@@ -3035,16 +3020,6 @@ annotation (Line(
 points={{ 250.0, 150.0 }    ,{ 312.5, 150.0 }    ,{ 312.5, 150.0 }    ,{ 375.0, 150.0 }    },
 color={191,0,0},
 thickness=0.2,
-smooth=Smooth.None));    connect(space_2.gainCon,data_bus.port[2])
-annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 222.0849560460971, 150.0 }    ,{ 222.0849560460971, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(space_2.ports[1],data_bus.port_a[2])
-annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 222.0849560460971, 150.0 }    ,{ 222.0849560460971, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(emission_2.port_b,split_valve.port_1)
 annotation (Line(
 points={{ 280.0, 75.0 }    ,{ 205.0, 75.0 }    ,{ 205.0, -175.0 }    ,{ 130.0, -175.0 }    },
@@ -3052,7 +3027,7 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(valve_2.y,emission_valve_control_2.y)
 annotation (Line(
-points={{ 250.0, 75.0 }    ,{ 37.07383432030528, 75.0 }    ,{ 37.07383432030528, 11.565530198829494 }    ,{ -175.85233135938944, 11.565530198829494 }    },
+points={{ 250.0, 75.0 }    ,{ 211.81176248628887, 75.0 }    ,{ 211.81176248628887, 81.55101380429983 }    ,{ 173.62352497257774, 81.55101380429983 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(valve_2.port_b,emission_2.port_a)
@@ -3060,24 +3035,19 @@ annotation (Line(
 points={{ 250.0, 75.0 }    ,{ 265.0, 75.0 }    ,{ 265.0, 75.0 }    ,{ 280.0, 75.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(emission_valve_control_2.dataBus,data_bus.dataBus)
-annotation (Line(
-points={{ -175.85233135938944, 11.565530198829494 }    ,{ 9.1587903664024, 11.565530198829494 }    ,{ 9.158790366402371, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(space_3.propsBus[1:4],merged_w1_3_w2_3_w3_3_w4_3[1:4].propsBus_a)
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 318.88589595222464, 150.0 }    ,{ 318.8858959522246, -157.1820161771064 }    ,{ 137.77179190444926, -157.1820161771064 }    },
+points={{ 500.0, 150.0 }    ,{ 200.3533103326214, 150.0 }    ,{ 200.35331033262145, 153.1236435593467 }    ,{ -99.29337933475718, 153.1236435593467 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.propsBus[5],merged_win1_3[1].propsBus_a)
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 170.57886080450874, 150.0 }    ,{ 170.5788608045087, 98.07059541190014 }    ,{ -158.84227839098256, 98.07059541190014 }    },
+points={{ 500.0, 150.0 }    ,{ 210.6506795333703, 150.0 }    ,{ 210.65067953337032, 185.83429224032292 }    ,{ -78.69864093325938, 185.83429224032292 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.propsBus[6],floor_4.propsBus_a)
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 306.14343535033913, 150.0 }    ,{ 306.14343535033913, -123.41489976079585 }    ,{ 112.28687070067826, -123.41489976079585 }    },
+points={{ 500.0, 150.0 }    ,{ 227.126622478461, 150.0 }    ,{ 227.126622478461, -173.26412492420232 }    ,{ -45.746755043078, -173.26412492420232 }    },
 color={191,0,0},
 thickness=0.2,
 smooth=Smooth.None));    connect(space_3.gainCon,emission_3.heatPortCon)
@@ -3105,16 +3075,6 @@ annotation (Line(
 points={{ 500.0, 150.0 }    ,{ 437.5, 150.0 }    ,{ 437.5, 150.0 }    ,{ 375.0, 150.0 }    },
 color={191,0,0},
 thickness=0.2,
-smooth=Smooth.None));    connect(space_3.gainCon,data_bus.port[3])
-annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 347.0849560460971, 150.0 }    ,{ 347.0849560460971, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(space_3.ports[1],data_bus.port_a[3])
-annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 347.0849560460971, 150.0 }    ,{ 347.0849560460971, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(emission_3.port_b,split_valve_2.port_1)
 annotation (Line(
 points={{ 530.0, 75.0 }    ,{ 580.0, 75.0 }    ,{ 580.0, -25.0 }    ,{ 630.0, -25.0 }    },
@@ -3122,17 +3082,12 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(valve_3.y,emission_valve_control_3.y)
 annotation (Line(
-points={{ 500.0, 75.0 }    ,{ 338.49166862276047, 75.0 }    ,{ 338.49166862276047, -114.14965039462902 }    ,{ 176.983337245521, -114.14965039462902 }    },
+points={{ 500.0, 75.0 }    ,{ 327.5523238833424, 75.0 }    ,{ 327.5523238833424, -115.02512446425317 }    ,{ 155.10464776668482, -115.02512446425317 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(valve_3.port_b,emission_3.port_a)
 annotation (Line(
 points={{ 500.0, 75.0 }    ,{ 515.0, 75.0 }    ,{ 515.0, 75.0 }    ,{ 530.0, 75.0 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(emission_valve_control_3.dataBus,data_bus.dataBus)
-annotation (Line(
-points={{ 176.983337245521, -114.14965039462902 }    ,{ 185.57662466885762, -114.14965039462902 }    ,{ 185.57662466885762, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(temperature_sensor.port_b,valve.port_a)
@@ -3165,11 +3120,6 @@ annotation (Line(
 points={{ -200.0, -275.0 }    ,{ -35.0, -275.0 }    ,{ -35.0, -175.0 }    ,{ 130.0, -175.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(three_way_valve_control.dataBus,data_bus.dataBus)
-annotation (Line(
-points={{ -250.0, -275.0 }    ,{ -27.91504395390291, -275.0 }    ,{ -27.91504395390288, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(temperature_sensor_2.port_b,valve_3.port_a)
 annotation (Line(
 points={{ 400.0, -25.0 }    ,{ 450.0, -25.0 }    ,{ 450.0, 75.0 }    ,{ 500.0, 75.0 }    },
@@ -3195,11 +3145,6 @@ annotation (Line(
 points={{ 300.0, -125.0 }    ,{ 465.0, -125.0 }    ,{ 465.0, -25.0 }    ,{ 630.0, -25.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(three_way_valve_control_2.dataBus,data_bus.dataBus)
-annotation (Line(
-points={{ 250.0, -125.0 }    ,{ 222.0849560460971, -125.0 }    ,{ 222.0849560460971, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(split_valve.port_2,boiler.port_a)
 annotation (Line(
 points={{ 130.0, -175.0 }    ,{ 180.0, -175.0 }    ,{ 180.0, -275.0 }    ,{ 230.0, -275.0 }    },
@@ -3220,11 +3165,6 @@ annotation (Line(
 points={{ 230.0, -275.0 }    ,{ -35.0, -275.0 }    ,{ -35.0, -375.0 }    ,{ -300.0, -375.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(BoilerControl.dataBus,data_bus.dataBus)
-annotation (Line(
-points={{ 180.0, -275.0 }    ,{ 187.0849560460971, -275.0 }    ,{ 187.0849560460971, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(pump.dataBus,pump_control.dataBus)
 annotation (Line(
 points={{ -300.0, -375.0 }    ,{ -325.0, -375.0 }    ,{ -325.0, -375.0 }    ,{ -350.0, -375.0 }    },
@@ -3240,15 +3180,75 @@ annotation (Line(
 points={{ -300.0, -375.0 }    ,{ 0.0, -375.0 }    ,{ 0.0, -125.0 }    ,{ 300.0, -125.0 }    },
 color={255,204,51},
 thickness=0.5,
+smooth=Smooth.None));    connect(emission_valve_control.dataBus,data_bus.dataBus)
+annotation (Line(
+points={{ 26.266274761477522, -194.82803257587528 }    ,{ 97.06350507131008, -194.82803257587528 }    ,{ 97.06350507131008, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(emission_valve_control_2.dataBus,data_bus.dataBus)
+annotation (Line(
+points={{ 173.62352497257774, 81.55101380429983 }    ,{ 170.7421301768602, 81.55101380429983 }    ,{ 170.7421301768602, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(emission_valve_control_3.dataBus,data_bus.dataBus)
+annotation (Line(
+points={{ 155.10464776668482, -115.02512446425317 }    ,{ 161.4826915739137, -115.02512446425317 }    ,{ 161.4826915739137, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(three_way_valve_control.dataBus,data_bus.dataBus)
+annotation (Line(
+points={{ -250.0, -275.0 }    ,{ -41.0696323094287, -275.0 }    ,{ -41.06963230942867, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(three_way_valve_control_2.dataBus,data_bus.dataBus)
+annotation (Line(
+points={{ 250.0, -125.0 }    ,{ 208.9303676905713, -125.0 }    ,{ 208.9303676905713, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(BoilerControl.dataBus,data_bus.dataBus)
+annotation (Line(
+points={{ 180.0, -275.0 }    ,{ 173.9303676905713, -275.0 }    ,{ 173.9303676905713, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
 smooth=Smooth.None));    connect(pump_control.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -350.0, -375.0 }    ,{ -77.91504395390291, -375.0 }    ,{ -77.91504395390288, 31.526807444578964 }    ,{ 194.1699120921942, 31.526807444578964 }    },
+points={{ -350.0, -375.0 }    ,{ -91.0696323094287, -375.0 }    ,{ -91.06963230942867, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(space_1.gainCon,data_bus.port[1])
+annotation (Line(
+points={{ 0.0, 0.0 }    ,{ 83.93036769057132, 0.0 }    ,{ 83.93036769057132, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
+annotation (Line(
+points={{ 0.0, 0.0 }    ,{ 83.93036769057132, 0.0 }    ,{ 83.93036769057132, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(space_2.gainCon,data_bus.port[2])
+annotation (Line(
+points={{ 250.0, 150.0 }    ,{ 208.9303676905713, 150.0 }    ,{ 208.9303676905713, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(space_2.ports[1],data_bus.port_a[2])
+annotation (Line(
+points={{ 250.0, 150.0 }    ,{ 208.9303676905713, 150.0 }    ,{ 208.9303676905713, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(space_3.gainCon,data_bus.port[3])
+annotation (Line(
+points={{ 500.0, 150.0 }    ,{ 333.9303676905713, 150.0 }    ,{ 333.9303676905713, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
+color={255,204,51},
+thickness=0.5,
+smooth=Smooth.None));    connect(space_3.ports[1],data_bus.port_a[3])
+annotation (Line(
+points={{ 500.0, 150.0 }    ,{ 333.9303676905713, 150.0 }    ,{ 333.9303676905713, -30.522240185400943 }    ,{ 167.86073538114263, -30.522240185400943 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-400.0,-425.0},{680.0,250.0}})), Icon(
         coordinateSystem(extent={{-400.0,-425.0},{680.0,250.0}})));
   annotation (
-    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_1</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>occupancy</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr></table></td></tr><tr><th>emissions</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>parameters</th><th>type</th></tr></thead><tbody><tr><td>valve</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50.0</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>6000.0</td></tr><tr><th>l</th><td>0.0001</td></tr><tr><th>from_dp</th><td>true</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>dpValve_nominal</th><td>6000.0</td></tr></table></td><td>Valve</td></tr><tr><td>emission</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>nEle</th><td>1</td></tr><tr><th>fraRad</th><td>0.3</td></tr><tr><th>Q_flow_nominal</th><td>2000.0</td></tr><tr><th>T_a_nominal</th><td>363.15</td></tr><tr><th>T_b_nominal</th><td>353.15</td></tr><tr><th>TAir_nominal</th><td>293.15</td></tr><tr><th>TRad_nominal</th><td>293.15</td></tr><tr><th>n</th><td>1.24</td></tr><tr><th>deltaM</th><td>0.01</td></tr><tr><th>from_dp</th><td>false</td></tr><tr><th>dp_nominal</th><td>0.0</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>VWat</th><td>0.116</td></tr><tr><th>mDry</th><td>52.6</td></tr></table></td><td>Radiator</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_1</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_1</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_1</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_1</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>floor_2</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr><tr><td>win1_1</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_1_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_2</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>occupancy</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_1</td></tr></table></td></tr><tr><th>emissions</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>parameters</th><th>type</th></tr></thead><tbody><tr><td>valve_2</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50.0</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>6000.0</td></tr><tr><th>l</th><td>0.0001</td></tr><tr><th>from_dp</th><td>true</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>dpValve_nominal</th><td>6000.0</td></tr></table></td><td>Valve</td></tr><tr><td>emission_2</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>nEle</th><td>1</td></tr><tr><th>fraRad</th><td>0.3</td></tr><tr><th>Q_flow_nominal</th><td>2000.0</td></tr><tr><th>T_a_nominal</th><td>363.15</td></tr><tr><th>T_b_nominal</th><td>353.15</td></tr><tr><th>TAir_nominal</th><td>293.15</td></tr><tr><th>TRad_nominal</th><td>293.15</td></tr><tr><th>n</th><td>1.24</td></tr><tr><th>deltaM</th><td>0.01</td></tr><tr><th>from_dp</th><td>false</td></tr><tr><th>dp_nominal</th><td>0.0</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>VWat</th><td>0.116</td></tr><tr><th>mDry</th><td>52.6</td></tr></table></td><td>Radiator</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_2</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_2</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_2</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_2</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>floor_3</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr><tr><td>win1_2</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_2_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_3</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>occupancy</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_2</td></tr></table></td></tr><tr><th>emissions</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>parameters</th><th>type</th></tr></thead><tbody><tr><td>valve_3</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50.0</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>6000.0</td></tr><tr><th>l</th><td>0.0001</td></tr><tr><th>from_dp</th><td>true</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>dpValve_nominal</th><td>6000.0</td></tr></table></td><td>Valve</td></tr><tr><td>emission_3</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>nEle</th><td>1</td></tr><tr><th>fraRad</th><td>0.3</td></tr><tr><th>Q_flow_nominal</th><td>2000.0</td></tr><tr><th>T_a_nominal</th><td>363.15</td></tr><tr><th>T_b_nominal</th><td>353.15</td></tr><tr><th>TAir_nominal</th><td>293.15</td></tr><tr><th>TRad_nominal</th><td>293.15</td></tr><tr><th>n</th><td>1.24</td></tr><tr><th>deltaM</th><td>0.01</td></tr><tr><th>from_dp</th><td>false</td></tr><tr><th>dp_nominal</th><td>0.0</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>VWat</th><td>0.116</td></tr><tr><th>mDry</th><td>52.6</td></tr></table></td><td>Radiator</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_3</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_3</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_3</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_3</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>floor_4</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr><tr><td>win1_3</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_2_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr><tr><th>layers</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>concrete</td></tr><tr><th>k</th><td>1.4</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2240.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr><tr><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>insulation_board</td></tr><tr><th>k</th><td>0.03</td></tr><tr><th>c</th><td>1200.0</td></tr><tr><th>rho</th><td>40.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.02</td></tr><tr><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>plywood</td></tr><tr><th>k</th><td>0.12</td></tr><tr><th>c</th><td>1210.0</td></tr><tr><th>rho</th><td>540.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.1</td></tr></tbody></table></td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr><tr><th>layers</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>brick</td></tr><tr><th>k</th><td>0.89</td></tr><tr><th>c</th><td>790.0</td></tr><tr><th>rho</th><td>1920.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr><tr><th>type</th><td>Occupancy</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_1</td></tr><tr><th>type</th><td>Occupancy</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_2</td></tr><tr><th>type</th><td>Occupancy</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>weather</td></tr><tr><th>type</th><td>Weather</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>temperature_sensor</td></tr><tr><th>type</th><td>TemperatureSensor</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>three_way_valve</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>{100,0}</td></tr><tr><th>fraK</th><td>0.7</td></tr><tr><th>l</th><td>{0.01,0.01}</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>linearized</th><td>{false, false}</td></tr><tr><th>m_flow_nominal</th><td>0.0078</td></tr><tr><th>dpValve_nominal</th><td>6000</td></tr></table></td></tr><tr><th>type</th><td>ThreeWayValve</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>temperature_sensor_2</td></tr><tr><th>type</th><td>TemperatureSensor</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>three_way_valve_2</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>{100,0}</td></tr><tr><th>fraK</th><td>0.7</td></tr><tr><th>l</th><td>{0.01,0.01}</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>linearized</th><td>{false, false}</td></tr><tr><th>m_flow_nominal</th><td>0.0078</td></tr><tr><th>dpValve_nominal</th><td>6000</td></tr></table></td></tr><tr><th>type</th><td>ThreeWayValve</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>split_valve</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>m_flow_nominal</th><td>0.008*{1, -1, -1}</td></tr><tr><th>dp_nominal</th><td>{10000,-1,-1}</td></tr><tr><th>deltaM</th><td>0.3</td></tr><tr><th>linearized</th><td>false</td></tr></table></td></tr><tr><th>type</th><td>SplitValve</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>split_valve_2</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>m_flow_nominal</th><td>0.008*{1, -1, -1}</td></tr><tr><th>dp_nominal</th><td>{10000,-1,-1}</td></tr><tr><th>deltaM</th><td>0.3</td></tr><tr><th>linearized</th><td>false</td></tr></table></td></tr><tr><th>type</th><td>SplitValve</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>boiler</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>scaFacRad</th><td>1.5</td></tr><tr><th>dTBoi_nominal</th><td>20</td></tr><tr><th>dTRad_nominal</th><td>10</td></tr><tr><th>a</th><td>{0.9}</td></tr><tr><th>effCur</th><td>Buildings.Fluid.Types.EfficiencyCurves.Constant</td></tr><tr><th>T_nominal</th><td>353.15</td></tr><tr><th>fue</th><td>Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue()</td></tr><tr><th>Q_flow_nominal</th><td>2000</td></tr><tr><th>dp_nominal</th><td>5000</td></tr><tr><th>linearizeFlowResistance</th><td>false</td></tr><tr><th>deltaM</th><td>0.1</td></tr><tr><th>show_T</th><td>false</td></tr><tr><th>VTan</th><td>0.2</td></tr><tr><th>hTan</th><td>2</td></tr><tr><th>nSeg</th><td>4</td></tr><tr><th>dIns</th><td>0.002</td></tr><tr><th>dp</th><td>(3000 + 2000)*{2,1}</td></tr><tr><th>nominal_mass_flow_rate_boiler</th><td>0.03571428571428571</td></tr><tr><th>nominal_mass_flow_radiator_loop</th><td>0.07142857142857142</td></tr><tr><th>V_flow</th><td>0.03571428571428571/1000*{0.5,1}</td></tr></table></td></tr><tr><th>type</th><td>Boiler</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>pump</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>m_flow_nominal</th><td>0.008</td></tr><tr><th>dp_nominal</th><td>10000</td></tr></table></td></tr><tr><th>type</th><td>Pump</td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
+    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_1</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>occupancy</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr></table></td></tr><tr><th>emissions</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>parameters</th><th>type</th></tr></thead><tbody><tr><td>valve</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50.0</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>6000.0</td></tr><tr><th>l</th><td>0.0001</td></tr><tr><th>from_dp</th><td>true</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>dpValve_nominal</th><td>6000.0</td></tr></table></td><td>Valve</td></tr><tr><td>emission</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>nEle</th><td>1</td></tr><tr><th>fraRad</th><td>0.3</td></tr><tr><th>Q_flow_nominal</th><td>2000.0</td></tr><tr><th>T_a_nominal</th><td>363.15</td></tr><tr><th>T_b_nominal</th><td>353.15</td></tr><tr><th>TAir_nominal</th><td>293.15</td></tr><tr><th>TRad_nominal</th><td>293.15</td></tr><tr><th>n</th><td>1.24</td></tr><tr><th>deltaM</th><td>0.01</td></tr><tr><th>from_dp</th><td>false</td></tr><tr><th>dp_nominal</th><td>0.0</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>VWat</th><td>0.116</td></tr><tr><th>mDry</th><td>52.6</td></tr></table></td><td>Radiator</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_1</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_1</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_1</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_1</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>floor_2</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr><tr><td>win1_1</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_1_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_2</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>occupancy</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_1</td></tr></table></td></tr><tr><th>emissions</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>parameters</th><th>type</th></tr></thead><tbody><tr><td>valve_2</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50.0</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>6000.0</td></tr><tr><th>l</th><td>0.0001</td></tr><tr><th>from_dp</th><td>true</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>dpValve_nominal</th><td>6000.0</td></tr></table></td><td>Valve</td></tr><tr><td>emission_2</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>nEle</th><td>1</td></tr><tr><th>fraRad</th><td>0.3</td></tr><tr><th>Q_flow_nominal</th><td>2000.0</td></tr><tr><th>T_a_nominal</th><td>363.15</td></tr><tr><th>T_b_nominal</th><td>353.15</td></tr><tr><th>TAir_nominal</th><td>293.15</td></tr><tr><th>TRad_nominal</th><td>293.15</td></tr><tr><th>n</th><td>1.24</td></tr><tr><th>deltaM</th><td>0.01</td></tr><tr><th>from_dp</th><td>false</td></tr><tr><th>dp_nominal</th><td>0.0</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>VWat</th><td>0.116</td></tr><tr><th>mDry</th><td>52.6</td></tr></table></td><td>Radiator</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_2</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_2</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_2</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_2</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>floor_3</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr><tr><td>win1_2</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_2_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_3</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>occupancy</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_2</td></tr></table></td></tr><tr><th>emissions</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>parameters</th><th>type</th></tr></thead><tbody><tr><td>valve_3</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50.0</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>6000.0</td></tr><tr><th>l</th><td>0.0001</td></tr><tr><th>from_dp</th><td>true</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>dpValve_nominal</th><td>6000.0</td></tr></table></td><td>Valve</td></tr><tr><td>emission_3</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>nEle</th><td>1</td></tr><tr><th>fraRad</th><td>0.3</td></tr><tr><th>Q_flow_nominal</th><td>2000.0</td></tr><tr><th>T_a_nominal</th><td>363.15</td></tr><tr><th>T_b_nominal</th><td>353.15</td></tr><tr><th>TAir_nominal</th><td>293.15</td></tr><tr><th>TRad_nominal</th><td>293.15</td></tr><tr><th>n</th><td>1.24</td></tr><tr><th>deltaM</th><td>0.01</td></tr><tr><th>from_dp</th><td>false</td></tr><tr><th>dp_nominal</th><td>0.0</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>VWat</th><td>0.116</td></tr><tr><th>mDry</th><td>52.6</td></tr></table></td><td>Radiator</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_3</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_3</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_3</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_3</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>floor_4</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr><tr><td>win1_3</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_2_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>concrete</td></tr><tr><th>k</th><td>1.4</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2240.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>insulation_board</td></tr><tr><th>k</th><td>0.03</td></tr><tr><th>c</th><td>1200.0</td></tr><tr><th>rho</th><td>40.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.02</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>plywood</td></tr><tr><th>k</th><td>0.12</td></tr><tr><th>c</th><td>1210.0</td></tr><tr><th>rho</th><td>540.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.1</td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>brick</td></tr><tr><th>k</th><td>0.89</td></tr><tr><th>c</th><td>790.0</td></tr><tr><th>rho</th><td>1920.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr><tr><th>type</th><td>Occupancy</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_1</td></tr><tr><th>type</th><td>Occupancy</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_2</td></tr><tr><th>type</th><td>Occupancy</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>weather</td></tr><tr><th>type</th><td>Weather</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>temperature_sensor</td></tr><tr><th>type</th><td>TemperatureSensor</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>three_way_valve</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>{100,0}</td></tr><tr><th>fraK</th><td>0.7</td></tr><tr><th>l</th><td>{0.01,0.01}</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>linearized</th><td>{false, false}</td></tr><tr><th>m_flow_nominal</th><td>0.0078</td></tr><tr><th>dpValve_nominal</th><td>6000</td></tr></table></td></tr><tr><th>type</th><td>ThreeWayValve</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>temperature_sensor_2</td></tr><tr><th>type</th><td>TemperatureSensor</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>three_way_valve_2</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>R</th><td>50</td></tr><tr><th>delta0</th><td>0.01</td></tr><tr><th>dpFixed_nominal</th><td>{100,0}</td></tr><tr><th>fraK</th><td>0.7</td></tr><tr><th>l</th><td>{0.01,0.01}</td></tr><tr><th>deltaM</th><td>0.02</td></tr><tr><th>linearized</th><td>{false, false}</td></tr><tr><th>m_flow_nominal</th><td>0.0078</td></tr><tr><th>dpValve_nominal</th><td>6000</td></tr></table></td></tr><tr><th>type</th><td>ThreeWayValve</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>split_valve</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>m_flow_nominal</th><td>0.008*{1, -1, -1}</td></tr><tr><th>dp_nominal</th><td>{10000,-1,-1}</td></tr><tr><th>deltaM</th><td>0.3</td></tr><tr><th>linearized</th><td>false</td></tr></table></td></tr><tr><th>type</th><td>SplitValve</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>split_valve_2</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>m_flow_nominal</th><td>0.008*{1, -1, -1}</td></tr><tr><th>dp_nominal</th><td>{10000,-1,-1}</td></tr><tr><th>deltaM</th><td>0.3</td></tr><tr><th>linearized</th><td>false</td></tr></table></td></tr><tr><th>type</th><td>SplitValve</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>boiler</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>scaFacRad</th><td>1.5</td></tr><tr><th>dTBoi_nominal</th><td>20</td></tr><tr><th>dTRad_nominal</th><td>10</td></tr><tr><th>a</th><td>{0.9}</td></tr><tr><th>effCur</th><td>Buildings.Fluid.Types.EfficiencyCurves.Constant</td></tr><tr><th>T_nominal</th><td>353.15</td></tr><tr><th>fue</th><td>Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue()</td></tr><tr><th>Q_flow_nominal</th><td>2000</td></tr><tr><th>dp_nominal</th><td>5000</td></tr><tr><th>linearizeFlowResistance</th><td>false</td></tr><tr><th>deltaM</th><td>0.1</td></tr><tr><th>show_T</th><td>false</td></tr><tr><th>VTan</th><td>0.2</td></tr><tr><th>hTan</th><td>2</td></tr><tr><th>nSeg</th><td>4</td></tr><tr><th>dIns</th><td>0.002</td></tr><tr><th>dp</th><td>(3000 + 2000)*{2,1}</td></tr><tr><th>nominal_mass_flow_rate_boiler</th><td>0.03571428571428571</td></tr><tr><th>nominal_mass_flow_radiator_loop</th><td>0.07142857142857142</td></tr><tr><th>V_flow</th><td>0.03571428571428571/1000*{0.5,1}</td></tr></table></td></tr><tr><th>type</th><td>Boiler</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>pump</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>m_flow_nominal</th><td>0.008</td></tr><tr><th>dp_nominal</th><td>10000</td></tr></table></td></tr><tr><th>type</th><td>Pump</td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
 end building;
 
 
