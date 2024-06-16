@@ -1,8 +1,25 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+)
 
 from jinja2 import Environment, FileSystemLoader
-from pydantic import BaseModel, ConfigDict, Field, computed_field, create_model
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    create_model,
+    model_validator,
+)
 
 from neosim.controller.parser import ControllerBus
 from neosim.models.constants import Flow
@@ -200,7 +217,8 @@ class BaseParameter(BaseModel):
 
 
 class BaseElement(BaseModel):
-    name: str
+    name_counter: ClassVar[int] = 0
+    name: str = Field(default=None)
     annotation_template: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -214,6 +232,13 @@ class BaseElement(BaseModel):
     variant: str = BaseVariant.default
     libraries_data: Optional[AvailableLibraries] = None
     figures: List[Figure] = Field(default=[])
+
+    @model_validator(mode="after")
+    def assign_default_name(self) -> "BaseElement":
+        if self.name is None:
+            self.name = f"{type(self).__name__.lower()}_{type(self).name_counter}"
+            type(self).name_counter += 1
+        return self
 
     def assign_library_property(self, library: "Libraries") -> bool:
         if self.libraries_data is None:

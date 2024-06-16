@@ -113,7 +113,8 @@ class BuildingsSpace(LibraryData):
                     {{ macros.element_parameters(boundary) }},
                     glaSys={{ macros.join_list(boundary.window_layers) }},
                     wWin={{ macros.join_list(boundary.window_width) }},
-                    hWin={{ macros.join_list(boundary.window_height) }}),
+                    hWin={{ macros.join_list(boundary.window_height) }},
+                    azi={{ macros.join_list(boundary.azimuths) }}),
                 {% else %}
                     nConExtWin=0,
                 {%- endif %}
@@ -403,9 +404,10 @@ class Space(BaseElement):
 
         neighbors = list(graph.neighbors(self))  # type: ignore
         self.boundaries = []
+        windowed_wall_parameters = WindowedWallParameters.from_neighbors(neighbors)
         for wall in [ExternalWall, BaseWindow, InternalElement, FloorOnGround]:
-            self.boundaries.append(WallParameters.from_neighbors(neighbors, wall))  # type: ignore
-        self.boundaries += [WindowedWallParameters.from_neighbors(neighbors)]
+            self.boundaries.append(WallParameters.from_neighbors(neighbors, wall, filter=windowed_wall_parameters.included_external_walls))  # type: ignore
+        self.boundaries += [windowed_wall_parameters]
 
     def __add__(self, other: "Space") -> "Space":
         self.name = (

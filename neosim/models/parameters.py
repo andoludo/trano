@@ -17,10 +17,16 @@ class WallParameters(BaseModel):
 
     @classmethod
     def from_neighbors(
-        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+        cls,
+        neighbors: list["BaseElement"],
+        wall: Type["BaseSimpleWall"],
+        filter: list[str] = None,
     ) -> "WallParameters":
         constructions = [
-            neighbor for neighbor in neighbors if isinstance(neighbor, wall)
+            neighbor
+            for neighbor in neighbors
+            if isinstance(neighbor, wall)
+            if neighbor.name not in (filter or [])
         ]
         number = len(constructions)
         surfaces = [
@@ -49,6 +55,7 @@ class WindowedWallParameters(WallParameters):
     window_layers: list[str]
     window_width: list[float]
     window_height: list[float]
+    included_external_walls: list[str]
 
     @classmethod
     def from_neighbors(cls, neighbors: list["BaseElement"]) -> "WindowedWallParameters":  # type: ignore
@@ -63,6 +70,7 @@ class WindowedWallParameters(WallParameters):
         window_layers = []
         window_width = []
         window_height = []
+        included_external_walls = []
         for window in windows:
             wall = get_common_wall_properties(neighbors, window)
             surfaces.append(wall.surface)
@@ -72,6 +80,7 @@ class WindowedWallParameters(WallParameters):
             window_layers.append(window.construction.name)
             window_width.append(window.width)
             window_height.append(window.height)
+            included_external_walls.append(wall.name)
         return cls(
             number=len(windows),
             surfaces=surfaces,
@@ -82,6 +91,7 @@ class WindowedWallParameters(WallParameters):
             window_layers=window_layers,
             window_width=window_width,
             window_height=window_height,
+            included_external_walls=included_external_walls,
         )
 
 
@@ -107,7 +117,7 @@ def get_common_wall_properties(
         raise NotImplementedError
     return BaseSimpleWall(
         surface=sum([w.surface for w in walls]),
-        name="temp",
+        name=walls[0].name,
         tilt=walls[0].tilt,
         azimuth=walls[0].azimuth,
         construction=walls[0].construction,

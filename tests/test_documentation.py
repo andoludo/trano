@@ -61,9 +61,7 @@ def test_documentation_generate_docx_with_figures(
     documentation = ModelDocumentation.from_network(
         buildings_two_rooms_with_storage,
         result=ResultFile(
-            path=Path(
-                "/home/aan/Documents/neosim/results/buildings_two_rooms_with_storage.building_res.mat"
-            )
+            path=Path(__file__).parent.joinpath("resources", "data.mat"),
         ),
     )
     to_docx(documentation, Path("/home/aan/Documents/neosim/tests/report.docx"))

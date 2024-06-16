@@ -5,7 +5,6 @@ from neosim.models.elements.controls.base import Control
 
 
 class System(BaseElement):
-    name: str
     position: Optional[List[float]] = None
     control: Optional["Control"] = None
 
