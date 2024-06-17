@@ -36,9 +36,5 @@ package MediumW = IDEAS.Media.Water "Medium model";
   parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +
       dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
     "Pressure difference of loop";
-  inner IDEAS.BoundaryConditions.SimInfoManager sim(interZonalAirFlowType=
-  IDEAS.BoundaryConditions.Types.
-  InterZonalAirFlow.OnePort)
-                                              "Data reader"
-    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));
+
 """

@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Optional, Type
 
 from pydantic import BaseModel
 
@@ -20,7 +20,7 @@ class WallParameters(BaseModel):
         cls,
         neighbors: list["BaseElement"],
         wall: Type["BaseSimpleWall"],
-        filter: list[str] = None,
+        filter: Optional[list[str]] = None,
     ) -> "WallParameters":
         constructions = [
             neighbor

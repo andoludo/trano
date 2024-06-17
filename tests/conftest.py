@@ -229,10 +229,7 @@ def ideas_free_float_single_zone(simple_space_1: Space) -> Network:
 replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
 "Medium in the component"
-annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
-sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
-                                              "Data reader"
-    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
+annotation (choicesAllMatching = true);"""
         ),
     )
     network.add_boiler_plate_spaces([simple_space_1])
@@ -648,10 +645,7 @@ def ideas_free_float_three_zones(
 replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
 "Medium in the component"
-annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
-sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
-                                              "Data reader"
-    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
+annotation (choicesAllMatching = true);"""
         ),
     )
     network.add_boiler_plate_spaces(ideas_free_float_three_zones_spaces)
@@ -1312,10 +1306,7 @@ def ideas_many_spaces_simple_ventilation(
     replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
     constrainedby Modelica.Media.Interfaces.PartialMedium
     "Medium in the component"
-    annotation (choicesAllMatching = true);  inner IDEAS.BoundaryConditions.SimInfoManager
-    sim(interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort)
-                                                  "Data reader"
-        annotation (Placement(transformation(extent={{-96,76},{-76,96}})));"""
+    annotation (choicesAllMatching = true);"""
         ),
     )
     network.add_boiler_plate_spaces(

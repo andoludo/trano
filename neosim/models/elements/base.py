@@ -218,7 +218,7 @@ class BaseParameter(BaseModel):
 
 class BaseElement(BaseModel):
     name_counter: ClassVar[int] = 0
-    name: str = Field(default=None)
+    name: Optional[str] = Field(default=None)
     annotation_template: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}

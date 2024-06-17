@@ -470,7 +470,7 @@ class Network:
         if create_internal:
             for combination in itertools.combinations(spaces, 2):
                 self.connect_spaces(*combination)
-        weather = Weather(name="weather")
+        weather = Weather()
         weather.position = [-100, 200]  # TODO: move somewhere else
         self.add_node(weather)
         for space in spaces:

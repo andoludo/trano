@@ -406,7 +406,13 @@ class Space(BaseElement):
         self.boundaries = []
         windowed_wall_parameters = WindowedWallParameters.from_neighbors(neighbors)
         for wall in [ExternalWall, BaseWindow, InternalElement, FloorOnGround]:
-            self.boundaries.append(WallParameters.from_neighbors(neighbors, wall, filter=windowed_wall_parameters.included_external_walls))  # type: ignore
+            self.boundaries.append(
+                WallParameters.from_neighbors(
+                    neighbors,
+                    wall,  # type: ignore
+                    filter=windowed_wall_parameters.included_external_walls,
+                )
+            )
         self.boundaries += [windowed_wall_parameters]
 
     def __add__(self, other: "Space") -> "Space":

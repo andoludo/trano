@@ -19,7 +19,7 @@ smooth=Smooth.None));
 
 {%- macro render_parameters(parameters)  %}
 {% for key, value in parameters.items() %}
-    {{ key }}={{ value }}{{ "," if not loop.last }}
+    {{ key | safe}}={{ value | safe}}{{ "," if not loop.last }}
 {% endfor %}
 {%- endmacro %}
 
