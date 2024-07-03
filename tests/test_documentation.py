@@ -1,15 +1,15 @@
 import tempfile
 from pathlib import Path
 
-from neosim.documentation.documentation import (
+from trano.documentation.documentation import (
     ContentDocumentation,
     ContentModelDocumentation,
     ModelDocumentation,
     ResultFile,
 )
-from neosim.documentation.docx import to_docx
-from neosim.documentation.html import to_html_documentation
-from neosim.topology import Network
+from trano.documentation.docx import to_docx
+from trano.documentation.html import to_html_documentation
+from trano.topology import Network
 
 
 def test_documentation_buildings_two_rooms_with_storage(
@@ -51,17 +51,21 @@ def test_documentation_generate_docx(
 ) -> None:
     documentation = ModelDocumentation.from_network(buildings_two_rooms_with_storage)
     with tempfile.NamedTemporaryFile(suffix=".docx") as tmpfile:
-        to_docx(documentation, Path(tmpfile.name))
-        assert tmpfile
+        document = to_docx(documentation, Path(tmpfile.name))
+        assert len(document.tables) == 6
+        assert len(document.inline_shapes) == 0
 
 
 def test_documentation_generate_docx_with_figures(
-    buildings_two_rooms_with_storage: Network,
+    buildings_two_rooms_with_storage: Network, result_data_path: Path
 ) -> None:
     documentation = ModelDocumentation.from_network(
         buildings_two_rooms_with_storage,
         result=ResultFile(
-            path=Path(__file__).parent.joinpath("resources", "data.mat"),
+            path=result_data_path,
         ),
     )
-    to_docx(documentation, Path("/home/aan/Documents/neosim/tests/report.docx"))
+    with tempfile.NamedTemporaryFile(suffix=".docx") as tmpfile:
+        document = to_docx(documentation, Path(tmpfile.name))
+        assert len(document.tables) == 6
+        assert len(document.inline_shapes) == 13

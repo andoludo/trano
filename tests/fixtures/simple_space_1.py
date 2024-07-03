@@ -1,10 +1,10 @@
-from neosim.construction import Constructions
-from neosim.glass import Glasses
-from neosim.models.constants import Azimuth, Tilt
-from neosim.models.elements.envelope.external_wall import ExternalWall
-from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
-from neosim.models.elements.envelope.window import Window
-from neosim.models.elements.space import Space
+from trano.construction import Constructions
+from trano.glass import Glasses
+from trano.models.constants import Azimuth, Tilt
+from trano.models.elements.envelope.external_wall import ExternalWall
+from trano.models.elements.envelope.floor_on_ground import FloorOnGround
+from trano.models.elements.envelope.window import Window
+from trano.models.elements.space import Space
 
 
 def simple_space_1_fixture() -> Space:

@@ -1,9 +1,9 @@
 import tempfile
 from pathlib import Path
 
-from neosim.simulate.simulate import SimulationOptions, simulate
-from neosim.topology import Network
 from tests.conftest import is_success
+from trano.simulate.simulate import SimulationOptions, simulate
+from trano.topology import Network
 
 
 def test_simulate_buildings_free_float_single_zone(
