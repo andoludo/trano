@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Type
 from pydantic import BaseModel, computed_field
 
 from neosim.models.elements.base import BaseElement, BaseParameter
+from neosim.models.elements.boiler import Boiler
 from neosim.models.elements.envelope.base import BaseSimpleWall
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import System
@@ -213,8 +214,12 @@ class ModelDocumentation(ContentDocumentation):
                 systems=ContentDocumentation(),
             )
         )
-        elements = list(network.graph.nodes)
-        return cls.from_model_elements(elements, content_model_documentation, result)
+        elements = [
+            x
+            for x in list(network.graph.nodes)
+            if isinstance(x, (Boiler, Space, BaseSimpleWall))
+        ]
+        return cls.from_model_elements(elements, content_model_documentation, result)  # type: ignore
 
 
 def _get_elements(

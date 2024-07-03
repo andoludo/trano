@@ -35,4 +35,4 @@ class BaseWeather(System):
 
 
 class BaseOccupancy(System):
-    ...
+    space_name: Optional[str] = None

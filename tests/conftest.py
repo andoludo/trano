@@ -40,6 +40,7 @@ from neosim.models.elements.three_way_valve import (
 from neosim.models.elements.valve import Valve
 from neosim.models.elements.weather import Weather
 from neosim.topology import Network
+from tests.fixtures.house import house_model_fixture
 
 
 @pytest.fixture(scope="session")
@@ -59,7 +60,7 @@ def container(client: docker.DockerClient) -> None:
         ],
         detach=True,
     )
-    container.exec_run(cmd="omc /neosim/neosim/library/install_package.mos")
+    container.exec_run(cmd="omc /neosim/neosim/simulate/configure.mos")
     yield container
     container.exec_run(
         cmd='find / -name "*_res.mat" -exec cp {} /results \;'  # noqa: W605
@@ -1723,3 +1724,8 @@ def building_multiple_internal_walls_ideas() -> Network:
     return building_with_multiple_internal_walls(
         "multiple_internal_walls_ideas", library=Ideas()
     )
+
+
+@pytest.fixture
+def house_model() -> Network:
+    return house_model_fixture()

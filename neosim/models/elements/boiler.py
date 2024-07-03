@@ -7,10 +7,13 @@ from neosim.controller.parser import ControllerBus, RealInput, RealOutput
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
     AvailableLibraries,
+    Axis,
     BaseParameter,
     Boolean,
     DynamicComponentTemplate,
+    Figure,
     LibraryData,
+    Line,
     Port,
     exclude_parameters,
 )
@@ -112,7 +115,9 @@ dynamic_boiler_template = DynamicComponentTemplate(
     category="boiler",
     bus=ControllerBus(
         real_inputs=[
-            RealInput(name="yBoiCon", target="element.name", component="boi", port="y"),
+            RealInput(
+                name="yBoiCon", target="element.name", component="Boiy", port="y"
+            ),
             RealInput(
                 name="yPumBoi", target="element.name", component="pumBoi", port="y"
             ),
@@ -164,6 +169,38 @@ redeclare package MediumW = MediumW) "Boiler" """
                 multi_connection=True,
                 use_counter=False,
             ),
+        ]
+    )
+    figures: List[Figure] = Field(
+        default=[
+            Figure(
+                right_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.name }}.Boiy.y",
+                            label="Boiler control input [-]",
+                            color="grey",
+                            line_style="dashed",
+                        )
+                    ],
+                    label="Boiler control input [-]",
+                ),
+                left_axis=Axis(
+                    lines=[
+                        Line(
+                            template="data_bus.dataBus.e_gas",
+                            label="Measured gas consumption [m3]",
+                            color="red",
+                        ),
+                        Line(
+                            template="{{ element.name }}.gain2.y",
+                            label="Computed gas consumption [m3]",
+                            color="blue",
+                        ),
+                    ],
+                    label="Gas consumption [m3]",
+                ),
+            )
         ]
     )
 

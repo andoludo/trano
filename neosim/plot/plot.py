@@ -1,13 +1,16 @@
 import tempfile
-from typing import List
+from typing import Callable, List
 
 import pandas as pd
+import plotly.graph_objects as go  # type: ignore
 from buildingspy.io.outputfile import Reader  # type: ignore
 from docx.document import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure as pyFigure
+from plotly.graph_objects import Figure as plotlyFigure
+from plotly.subplots import make_subplots  # type: ignore
 
 from neosim.models.elements.base import BaseElement, Figure
 
@@ -23,10 +26,10 @@ def plot(data: Reader, figure: Figure, show: bool = True) -> pyFigure:
     for axis, figure_axis in [(ax, figure.left_axis), (twin1, figure.right_axis)]:
         for line in figure_axis.lines:
             line_data = pd.DataFrame(data.values(line.key))
-            (p,) = ax.plot(
+            (p,) = axis.plot(
                 line_data.loc[1],
-                linestyle="-.",
-                linewidth=0.75,
+                linestyle=line.line_style,
+                linewidth=line.line_width,
                 color=line.color,
                 label=line.label,
             )
@@ -45,11 +48,54 @@ def plot(data: Reader, figure: Figure, show: bool = True) -> pyFigure:
     return fig
 
 
-def plot_element(data: Reader, element: BaseElement) -> List[pyFigure]:
+def plot_plot_ly(data: Reader, figure: Figure, show: bool = True) -> plotlyFigure:
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    for axis, figure_axis in enumerate([figure.left_axis, figure.right_axis]):
+        for line in figure_axis.lines:
+            line_data = pd.DataFrame(data.values(line.key))
+
+            if line_data.empty:
+                continue
+
+            fig.add_trace(
+                go.Scatter(
+                    x=line_data.loc[0],
+                    y=line_data.loc[1],
+                    mode="lines",
+                    name=line.label,
+                ),
+                secondary_y=bool(axis),
+            )
+
+    fig.update_layout(
+        xaxis_title="Simulation time [-]",
+        yaxis_title=figure.left_axis.label,
+        yaxis2_title=figure.right_axis.label,
+        legend_title="Legend",
+        autosize=False,
+        width=1000,
+        height=600,
+        margin={"l": 50, "r": 50, "b": 100, "t": 100, "pad": 4},
+    )
+
+    # Show the figure
+    if show:
+        ...
+
+    return fig
+
+
+def plot_element(
+    data: Reader,
+    element: BaseElement,
+    plot_function: Callable[[Reader, Figure], plotlyFigure | pyFigure] = plot,
+) -> List[pyFigure]:
     figures = []
     subsystems = ["control", "emissions", "ventilation_inlets", "ventilation_outlets"]
     for figure in element.figures:
-        fig = plot(data, figure)
+        fig = plot_function(data, figure)
         figures.append(fig)
         for subsystem in subsystems:
             if hasattr(element, subsystem) and getattr(element, subsystem) is not None:
@@ -57,11 +103,11 @@ def plot_element(data: Reader, element: BaseElement) -> List[pyFigure]:
                 if isinstance(sub_element, list):
                     for sub in sub_element:
                         for figure_ in sub.figures:
-                            fig = plot(data, figure_)
+                            fig = plot_function(data, figure_)
                             figures.append(fig)
                 else:
                     for control_figure in sub_element.figures:
-                        fig = plot(data, control_figure)
+                        fig = plot_function(data, control_figure)
                         figures.append(fig)
     return figures
 

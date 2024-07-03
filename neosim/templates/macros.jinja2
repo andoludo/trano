@@ -12,7 +12,9 @@
 connect({{ edge.left.equation }},{{ edge.right.equation }})
 annotation (Line(
 points={{ connect_path(edge.path) }},
+    {% if edge.connection_view.color %}
 color={{ edge.connection_view.color }},
+    {% endif %}
 thickness={{ edge.connection_view.thickness }},
 smooth=Smooth.None));
 {%- endmacro %}

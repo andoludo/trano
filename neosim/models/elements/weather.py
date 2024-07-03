@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 from pydantic import Field
 
@@ -21,7 +21,7 @@ class WeatherPath:
     )
     vliet_2021: str = (
         "Modelica.Utilities.Files.loadResource"
-        '("modelica://IDEAS/Resources/'
+        '("modelica://IDEAS 3.0.0/Resources/'
         'weatherdata/Vliet_2021.mos")'
     )
     chicago: str = (
@@ -42,14 +42,19 @@ class WeatherPath:
 
 
 class WeatherParameters(BaseParameter):
-    path: str = Field(
-        WeatherPath.uccle, alias="filNam", title="Path to the weather file"
-    )
+    path: Optional[str] = Field(None, alias="filNam", title="Path to the weather file")
 
 
 class BuildingsWeatherComponent(LibraryData):
-    template: str = """    Buildings.BoundaryConditions.WeatherData.ReaderTMY3
+    template: str = """
+    {% if macros.render_parameters(parameters) | safe %}
+    Buildings.BoundaryConditions.WeatherData.ReaderTMY3
                 {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
+    {% else %}
+    Buildings.BoundaryConditions.WeatherData.ReaderTMY3
+                {{ element.name }}(filNam=Modelica.Utilities.Files.loadResource
+        ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
+    {% endif %}
     """
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
@@ -64,11 +69,20 @@ class BuildingsWeatherComponent(LibraryData):
 
 
 class IdeasWeatherComponent(LibraryData):
-    template: str = """    inner IDEAS.BoundaryConditions.SimInfoManager
+    template: str = """
+    {% if macros.render_parameters(parameters) | safe %}
+    inner IDEAS.BoundaryConditions.SimInfoManager
     sim(interZonalAirFlowType=
   IDEAS.BoundaryConditions.Types.
   InterZonalAirFlow.OnePort, {{ macros.render_parameters(parameters) | safe}}) "Data reader"
     {% raw %}annotation (Placement(transformation(extent={{-96,76},{-76,96}})));{% endraw %}
+    {% else %}
+        inner IDEAS.BoundaryConditions.SimInfoManager
+    sim(interZonalAirFlowType=
+  IDEAS.BoundaryConditions.Types.
+  InterZonalAirFlow.OnePort) "Data reader"
+    {% raw %}annotation (Placement(transformation(extent={{-96,76},{-76,96}})));{% endraw %}
+    {% endif %}
     """
     ports_factory: Callable[[], List[Port]] = Field(default=list)
 

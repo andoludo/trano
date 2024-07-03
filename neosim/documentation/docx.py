@@ -107,8 +107,8 @@ def to_docx(documentation: ModelDocumentation, path: Path) -> None:
     document.add_page_break()  # type: ignore
     for doc in [
         documentation.spaces,
-        documentation.constructions,
         documentation.systems,
+        documentation.constructions,
     ]:
         document.add_heading(doc.topic, level=2)  # type: ignore
         document.add_paragraph(doc.introduction)

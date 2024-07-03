@@ -99,6 +99,23 @@ class BaseBoilerControl(LibraryData):
     )
 
 
+class SimpleBoilerControl(LibraryData):
+    template: str = """
+    {{package_name}}.Common.Controls.ventilation.BoilerControl{{ element.name | capitalize}}
+    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})"""
+    component_template: DynamicComponentTemplate = dynamic_boiler_control_template
+    ports_factory: Callable[[], List[Port]] = Field(
+        default=lambda: [
+            Port(
+                targets=[DataBus, System],
+                names=["dataBus"],
+                multi_connection=True,
+                use_counter=False,
+            ),
+        ]
+    )
+
+
 class BoilerControl(Control):
     parameters: BoilerParameters = Field(default=BoilerParameters())
     libraries_data: AvailableLibraries = AvailableLibraries(

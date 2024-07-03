@@ -11,6 +11,7 @@ from typing import (
     Tuple,
 )
 
+import jinja2.exceptions
 from jinja2 import Environment, FileSystemLoader
 from pydantic import (
     BaseModel,
@@ -35,6 +36,8 @@ class Line(BaseModel):
     key: Optional[str] = None
     color: str = "grey"
     label: str
+    line_style: str = "solid"
+    line_width: float = 1.5
 
 
 class Axis(BaseModel):
@@ -50,7 +53,11 @@ class Figure(BaseModel):
         environment = Environment(autoescape=True)
         for axis in self.right_axis.lines + self.left_axis.lines:
             template = environment.from_string(axis.template)
-            axis.key = template.render(element=element)
+            try:
+                axis.key = template.render(element=element)
+            except jinja2.exceptions.UndefinedError:
+                continue
+
         return self
 
 
@@ -79,7 +86,7 @@ class AvailableLibraries(BaseModel):
 
 
 class ConnectionView(BaseModel):
-    color: str = "{255,204,51}"
+    color: Optional[str] = "{255,204,51}"
     thickness: float = 0.5
 
 
@@ -254,6 +261,7 @@ class BaseElement(BaseModel):
             self.component_template = library_data.component_template
         if not self.figures and library_data.figures:
             self.figures = [fig.render_key(self) for fig in library_data.figures]
+
         return True
 
     def processed_parameters(self, library: "Libraries") -> Any:  # noqa: ANN401
@@ -353,10 +361,16 @@ class BaseElement(BaseModel):
 
 
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
+    from neosim.models.elements.bus import DataBus
     from neosim.models.elements.envelope.base import BaseSimpleWall
+    from neosim.models.elements.weather import Weather
 
     if any(isinstance(e, BaseSimpleWall) for e in edge):
-        return ConnectionView(color="{191,0,0}", thickness=0.2)
+        return ConnectionView(color="{191,0,0}", thickness=0.1)
+    if any(isinstance(e, DataBus) for e in edge):
+        return ConnectionView(color=None, thickness=0.05)
+    if any(isinstance(e, Weather) for e in edge):
+        return ConnectionView(color=None, thickness=0.05)
     return ConnectionView()
 
 

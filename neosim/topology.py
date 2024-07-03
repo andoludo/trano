@@ -1,4 +1,5 @@
 import itertools
+import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
@@ -23,6 +24,7 @@ from neosim.models.elements.base import (
     DynamicTemplateCategories,
     connect,
 )
+from neosim.models.elements.boiler import Boiler
 from neosim.models.elements.bus import DataBus
 from neosim.models.elements.controls.base import Control
 from neosim.models.elements.controls.collector import CollectorControl
@@ -36,7 +38,7 @@ from neosim.models.elements.valve import Valve
 from neosim.models.elements.weather import Weather
 
 
-class Network:
+class Network:  # noqa : PLR0904, #TODO: fix this
     def __init__(
         self,
         name: str,
@@ -153,6 +155,8 @@ class Network:
         self.add_node(data_bus)
         for space in spaces:
             self.graph.add_edge(space, data_bus)
+            if space.occupancy:
+                self.graph.add_edge(space.occupancy, data_bus)
         for control in controls:
             self.graph.add_edge(control, data_bus)
         for ahu in ahus:
@@ -362,20 +366,31 @@ class Network:
         valves_: List[Valve] = []
         valves = [node for node in self.graph.nodes if isinstance(node, Valve)]
         for valve in valves:
-            paths = nx.shortest_path(self.graph, pump_collector, valve)
-            p = paths[1:-1]
-            if p and all(isinstance(p_, System) for p_ in p):
-                valves_.append(valve)
+            paths = list(nx.all_simple_paths(self.graph, pump_collector, valve))
+            for path in paths:
+                p = path[1:-1]
+                if p and all(isinstance(p_, System) for p_ in p):
+                    valves_.append(valve)
+                    break
         return valves_
 
     def configure_collector_control(self) -> None:
         pump_collectors = [
             node
             for node in self.graph.nodes
-            if isinstance(node, Pump) and isinstance(node.control, CollectorControl)
+            if isinstance(node, (Pump, Boiler))
+            and isinstance(node.control, CollectorControl)
         ]
         for pump_collector in pump_collectors:
             pump_collector.control.valves = self.get_linked_valves(pump_collector)
+
+    def set_weather_path_to_container_path(self, project_path: Path) -> None:
+        for node in self.graph.nodes:
+            if isinstance(node, Weather) and node.parameters.path is not None:
+                old_path = Path(node.parameters.path)
+                new_path = project_path.joinpath(old_path.name)
+                shutil.copy(old_path, new_path)
+                node.parameters.path = f'"/simulation/{old_path.name}"'
 
     def model(self) -> str:
         Space.counter = 0
@@ -463,14 +478,17 @@ class Network:
         return models
 
     def add_boiler_plate_spaces(
-        self, spaces: list[Space], create_internal: bool = True
+        self,
+        spaces: list[Space],
+        create_internal: bool = True,
+        weather: Optional[Weather] = None,
     ) -> None:
         for space in spaces:
             self.add_space(space)
         if create_internal:
             for combination in itertools.combinations(spaces, 2):
                 self.connect_spaces(*combination)
-        weather = Weather()
+        weather = weather or Weather()
         weather.position = [-100, 200]  # TODO: move somewhere else
         self.add_node(weather)
         for space in spaces:
