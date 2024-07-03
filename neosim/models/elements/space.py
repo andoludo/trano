@@ -8,9 +8,12 @@ from pydantic import Field, computed_field
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
     AvailableLibraries,
+    Axis,
     BaseElement,
     BaseParameter,
+    Figure,
     LibraryData,
+    Line,
     Port,
     exclude_parameters,
     modify_alias,
@@ -69,6 +72,9 @@ class SpaceParameter(BaseParameter):
     nominal_mass_flow_rate: float = Field(
         0.01, description="Nominal mass flow rate [kg/s]", alias="m_flow_nominal"
     )
+    temperature_initial: float = Field(
+        273.15 + 21, description="Initial temperature [K]", alias="T_start"
+    )
 
     @computed_field
     def volume(self) -> float:
@@ -110,7 +116,8 @@ class BuildingsSpace(LibraryData):
                     {{ macros.element_parameters(boundary) }},
                     glaSys={{ macros.join_list(boundary.window_layers) }},
                     wWin={{ macros.join_list(boundary.window_width) }},
-                    hWin={{ macros.join_list(boundary.window_height) }}),
+                    hWin={{ macros.join_list(boundary.window_height) }},
+                    azi={{ macros.join_list(boundary.azimuths) }}),
                 {% else %}
                     nConExtWin=0,
                 {%- endif %}
@@ -148,6 +155,97 @@ class BuildingsSpace(LibraryData):
                 names=["ports"],
                 multi_connection=True,
                 flow=Flow.inlet_or_outlet,
+            ),
+        ]
+    )
+
+    figures: List[Figure] = Field(
+        default=[
+            Figure(
+                right_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.occupancy.name }}.occSch2.occupied",
+                            label="Occupied zone [-]",
+                            color="grey",
+                            line_style="dashed",
+                        )
+                    ],
+                    label="Occupancy schedule [-]",
+                ),
+                left_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.name }}.air.vol.T",
+                            label="Air temperature [K]",
+                            color="blue",
+                            line_width=1.5,
+                        ),
+                        Line(
+                            template="data_bus.dataBus.T{{ element.name | capitalize}}",
+                            label="Measured Air temperature [K]",
+                            color="black",
+                            line_width=2,
+                        ),
+                    ],
+                    label="Zone air temperature [K]",
+                ),
+            ),
+            Figure(
+                left_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.name }}.heaPorRad.Q_flow",
+                            label="Radiative heat flow rate [W]",
+                            color="red",
+                        ),
+                        Line(
+                            template="{{ element.name }}.heaPorAir.Q_flow",
+                            label="Convective heat flow rate [W]",
+                            color="blue",
+                        ),
+                        Line(
+                            template="{{ element.name }}.air.QLat_flow",
+                            label="Latent heat gain [W]",
+                            color="yellow",
+                        ),
+                        Line(
+                            template="{{ element.name }}.air.QCon_flow",
+                            label="Convective heat gain [W]",
+                        ),
+                    ],
+                    label="Heat flow rate [W]",
+                ),
+            ),
+            Figure(
+                right_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.emissions[0].control.name }}."
+                            "emissionControl.conHea.u_s",
+                            label="Zone controller setpoint [K]",
+                            color="blue",
+                        ),
+                        Line(
+                            template="{{ element.emissions[0].control.name }}."
+                            "emissionControl.conHea.u_m",
+                            label="Zone controller measured [K]",
+                            color="red",
+                        ),
+                    ],
+                    label="Zone controller input [K]",
+                ),
+                left_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.emissions[0].control.name  }}.y",
+                            label="Control signal [-]",
+                            color="grey",
+                            line_style="dashed",
+                        ),
+                    ],
+                    label="Control signal [-]",
+                ),
             ),
         ]
     )
@@ -223,6 +321,8 @@ class Space(BaseElement):
         ):
             if emission.control:
                 emission.control.space_name = self.name
+        if self.occupancy:
+            self.occupancy.space_name = self.name
 
     @computed_field  # type: ignore
     @property
@@ -337,9 +437,16 @@ class Space(BaseElement):
 
         neighbors = list(graph.neighbors(self))  # type: ignore
         self.boundaries = []
+        windowed_wall_parameters = WindowedWallParameters.from_neighbors(neighbors)
         for wall in [ExternalWall, BaseWindow, InternalElement, FloorOnGround]:
-            self.boundaries.append(WallParameters.from_neighbors(neighbors, wall))  # type: ignore
-        self.boundaries += [WindowedWallParameters.from_neighbors(neighbors)]
+            self.boundaries.append(
+                WallParameters.from_neighbors(
+                    neighbors,
+                    wall,  # type: ignore
+                    filter=windowed_wall_parameters.included_external_walls,
+                )
+            )
+        self.boundaries += [windowed_wall_parameters]
 
     def __add__(self, other: "Space") -> "Space":
         self.name = (

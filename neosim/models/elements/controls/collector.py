@@ -54,10 +54,22 @@ end CollectorControl{{ element.name | capitalize}};""",
                 component="conPum",
                 port="y",
             ),
+            RealOutput(
+                name="yBoiCon",
+                target="element.controllable_element.name",
+                component="mulMax",
+                port="y",
+            ),
+            RealOutput(
+                name="yPumBoi",
+                target="element.controllable_element.name",
+                component="mulMax",
+                port="y",
+            ),
         ],
         real_inputs=[
             RealInput(
-                default=25,
+                default=0,
                 name="y_gain",
                 target="element.controllable_element.name",
                 component="conPum",

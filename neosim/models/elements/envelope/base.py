@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, Dict, List, Union
+from math import sqrt
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from pydantic import computed_field
+from pydantic import computed_field, model_validator
 
 from neosim.construction import Construction
 from neosim.glass import Glass
@@ -42,8 +43,21 @@ class BaseExternalWall(BaseSimpleWall):
 
 
 class BaseWindow(BaseSimpleWall):
-    width: float | int
-    height: float | int
+    width: Optional[float] = None
+    height: Optional[float] = None
+
+    @model_validator(mode="after")
+    def width_validator(self) -> "BaseWindow":
+        if self.width is None and self.height is None:
+            self.width = sqrt(self.surface)
+            self.height = sqrt(self.surface)
+        elif self.width is not None and self.height is None:
+            self.height = self.surface / self.width
+        elif self.width is None and self.height is not None:
+            self.width = self.surface / self.height
+        else:
+            ...
+        return self
 
 
 def _get_element(

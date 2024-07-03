@@ -40,7 +40,7 @@ def to_html(
                 for t in documentation.table:
                     table = json2html.convert(
                         json=t,
-                        table_attributes="border='1'  align='left' bgcolor='#f0f0f0' "
+                        table_attributes="border='1'  align='center' bgcolor='#f0f0f0' "
                         "style='border-collapse: collapse; margin-top: "
                         "20px; margin-bottom: 20px;'",
                     )
@@ -48,7 +48,7 @@ def to_html(
             else:
                 table = json2html.convert(
                     json=documentation.table,
-                    table_attributes="border='1'  align='left' bgcolor='#f0f0f0' "
+                    table_attributes="border='1'  align='center' bgcolor='#f0f0f0' "
                     "style='border-collapse: collapse; margin-top: "
                     "20px; margin-bottom: 20px;'",
                 )

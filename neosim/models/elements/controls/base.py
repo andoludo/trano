@@ -6,7 +6,6 @@ from neosim.models.elements.base import BaseElement, BaseParameter
 
 
 class Control(BaseElement):
-    name: str
     position: Optional[List[float]] = None
     controllable_element: Optional[BaseElement] = None
     space_name: Optional[str] = None

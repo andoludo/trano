@@ -5,48 +5,57 @@ package Common
 
     model SimpleOccupancy
 
+  parameter Real occupancy[:]=3600*{7, 19}
+    "Occupancy table, each entry switching occupancy on or off";
 
-      Buildings.Controls.SetPoints.OccupancySchedule
-                                           occSch2(firstEntryOccupied=false,
-          occupancy=3600*{7,10,12,22})
-        "Occupancy schedule"
-        annotation (Placement(transformation(extent={{-66,-22},{-46,-2}})));
-      Buildings.Controls.OBC.CDL.Reals.Switch switch2
-        annotation (Placement(transformation(extent={{-20,-12},{0,8}})));
-      Modelica.Blocks.Math.MatrixGain gai2(K=[35; 70; 30])
-        "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] "
-        annotation (Placement(transformation(extent={{18,-12},{38,8}})));
-       extends Modelica.Blocks.Interfaces.MO(final nout=3);
-      Buildings.Controls.OBC.CDL.Reals.Sources.Constant occ2(k=1/6/4)
-        "Heat gain if occupied in room 2"
-        annotation (Placement(transformation(extent={{-66,28},{-46,48}})));
-      Buildings.Controls.OBC.CDL.Reals.Sources.Constant zero(k=0)
-        "Heat gain if occupied in room 2"
-        annotation (Placement(transformation(extent={{-62,-68},{-42,-48}})));
-    equation
-      connect(occSch2.occupied,switch2. u2) annotation (Line(
-          points={{-45,-18},{-28,-18},{-28,-2},{-22,-2}},
-          color={255,0,255},
-          smooth=Smooth.None));
-      connect(switch2.y,gai2. u[1]) annotation (Line(
-          points={{2,-2},{16,-2}},
-          color={0,0,127},
-          smooth=Smooth.None));
-      connect(occ2.y,switch2. u1) annotation (Line(points={{-44,38},{-40,38},{-40,6},
-              {-22,6}},        color={0,0,127}));
-      connect(zero.y, switch2.u3)
-        annotation (Line(points={{-40,-58},{-22,-58},{-22,-10}}, color={0,0,127}));
-      connect(gai2.y, y) annotation (Line(points={{39,-2},{96,-2},{96,0},{110,0}},
-            color={0,0,127}));
-      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
-            Ellipse(extent={{10,70},{-26,34}}, lineColor={28,108,200}),
-            Line(points={{-8,34},{-8,-26}}, color={28,108,200}),
-            Line(points={{-8,-26},{-48,-68}}, color={28,108,200}),
-            Line(points={{-8,-26},{34,-70},{32,-70}}, color={28,108,200}),
-            Line(points={{-8,20},{-48,-8}}, color={28,108,200}),
-            Line(points={{-8,20},{44,-8}}, color={28,108,200})}),    Diagram(
-            coordinateSystem(preserveAspectRatio=false)));
-    end SimpleOccupancy;
+      parameter Real gain[:, :]=[35; 70; 30]
+    "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] ";
+
+          parameter Real k=1/6/4
+    "Heat gain if occupied";
+
+  Buildings.Controls.SetPoints.OccupancySchedule
+                                       occSch2(firstEntryOccupied=true,
+      occupancy=occupancy)
+    "Occupancy schedule"
+    annotation (Placement(transformation(extent={{-66,-22},{-46,-2}})));
+  Buildings.Controls.OBC.CDL.Reals.Switch switch2
+    annotation (Placement(transformation(extent={{-20,-12},{0,8}})));
+  Modelica.Blocks.Math.MatrixGain gai2(K=gain)
+    "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] "
+    annotation (Placement(transformation(extent={{18,-12},{38,8}})));
+   extends Modelica.Blocks.Interfaces.MO(final nout=3);
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant occ2(k=k)
+    "Heat gain if occupied in room 2"
+    annotation (Placement(transformation(extent={{-66,28},{-46,48}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant zero(k=0)
+    "Heat gain if occupied in room 2"
+    annotation (Placement(transformation(extent={{-62,-68},{-42,-48}})));
+equation
+  connect(occSch2.occupied,switch2. u2) annotation (Line(
+      points={{-45,-18},{-28,-18},{-28,-2},{-22,-2}},
+      color={255,0,255},
+      smooth=Smooth.None));
+  connect(switch2.y,gai2. u[1]) annotation (Line(
+      points={{2,-2},{16,-2}},
+      color={0,0,127},
+      smooth=Smooth.None));
+  connect(occ2.y,switch2. u1) annotation (Line(points={{-44,38},{-40,38},{-40,6},
+          {-22,6}},        color={0,0,127}));
+  connect(zero.y, switch2.u3)
+    annotation (Line(points={{-40,-58},{-22,-58},{-22,-10}}, color={0,0,127}));
+  connect(gai2.y, y) annotation (Line(points={{39,-2},{96,-2},{96,0},{110,0}},
+        color={0,0,127}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+        Ellipse(extent={{10,70},{-26,34}}, lineColor={28,108,200}),
+        Line(points={{-8,34},{-8,-26}}, color={28,108,200}),
+        Line(points={{-8,-26},{-48,-68}}, color={28,108,200}),
+        Line(points={{-8,-26},{34,-70},{32,-70}}, color={28,108,200}),
+        Line(points={{-8,20},{-48,-8}}, color={28,108,200}),
+        Line(points={{-8,20},{44,-8}}, color={28,108,200})}),    Diagram(
+        coordinateSystem(preserveAspectRatio=false)));
+end SimpleOccupancy;
+
   end Occupancy;
 
   package Controls
@@ -396,6 +405,10 @@ constructed by the signals connected to this bus.
               preserveAspectRatio=false)));
   end AHU_G36;
         model EmissionControlEmission_control
+  parameter Real schedule[:]=3600*{7,19};
+
+  parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
+    parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
 emissionControl(    kCooCon=0.1,
     TiCooCon=900,
@@ -406,17 +419,55 @@ emissionControl(    kCooCon=0.1,
     looHys=0.01
 )
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
-annotation (Placement(transformation(extent={{100,-8},{120,12}})));Controls.BaseClasses.DataBus dataBus
+annotation (Placement(transformation(extent={{100,-8},{120,12}})));
+
+  Buildings.Controls.SetPoints.OccupancySchedule
+                                   occSch2(firstEntryOccupied=true, occupancy=
+        schedule)
+
+annotation (Placement(transformation(extent={{-116,-36},{-96,-16}})));
+  Buildings.Controls.OBC.CDL.Reals.Switch switch2
+annotation (Placement(transformation(extent={{-70,-26},{-50,-6}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant setpoint(k=THeaSet)
+    "Heat gain if occupied in room 2"
+    annotation (Placement(transformation(extent={{-116,14},{-96,34}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant setback(k=THeaSetBack)
+    "Heat gain if occupied in room 2"
+    annotation (Placement(transformation(extent={{-112,-82},{-92,-62}})));
+Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 equation
 connect(emissionControl.yHea, y) annotation (Line(points={{34.4,-21.2},{96,-21.2},
-{96,2},{110,2}}, color={0,0,127}));connect(dataBus.TCooSetSpace_1, emissionControl.TCooSet);
-connect(dataBus.THeaSetSpace_1, emissionControl.THeaSet);
+{96,2},{110,2}}, color={0,0,127}));
+  connect(
+emissionControl.yHea, y) annotation (Line(points={{60.4,-21.2},{96,-21.2},{96,2},
+          {110,2}}, color={0,0,127}));
+  connect(occSch2.
+              occupied, switch2.u2) annotation (Line(
+  points={{-95,-32},{-78,-32},{-78,-16},{-72,-16}},
+  color={255,0,255},
+  smooth=Smooth.None));
+  connect(setpoint.y, switch2.u1) annotation (Line(points={{-94,24},{-90,24},{-90,
+          -8},{-72,-8}}, color={0,0,127}));
+  connect(setback.y, switch2.u3)
+    annotation (Line(points={{-90,-72},{-72,-72},{-72,-24}}, color={0,0,127}));
+      connect(switch2.y, emissionControl.THeaSet) annotation (Line(points={{-52,-22},
+          {-52,-21.2},{-42.4,-21.2}}, color={0,0,127}));
+connect(dataBus.TCooSetSpace_1, emissionControl.TCooSet);
 connect(dataBus.TZonSpace_1, emissionControl.TZon);
 connect(dataBus.yCooEmission, emissionControl.yCoo);
 connect(dataBus.yHeaEmission, emissionControl.yHea);
 end EmissionControlEmission_control;
+        model OccupancyOccupancy_0
+extends space_1_different_construction_types.Common.Occupancy.SimpleOccupancy ;
+Controls.BaseClasses.DataBus dataBus
+    annotation (Placement(transformation(
+  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
+equation
+connect(dataBus.OccupiedSpace_1, occSch2.occupied);
+ end OccupancyOccupancy_0;
+
         model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
 Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[1]
@@ -437,9 +488,6 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Cont
 Modelica.Blocks.Sources.RealExpression
             TCooSetEmission_control
             (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            THeaSetEmission_control
-            (y=294.15);
 equation
 connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
@@ -447,8 +495,6 @@ connect(dataBus.TZonSpace_1, TRoo[1].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.TCooSetSpace_1,
 TCooSetEmission_control.y);
-connect(dataBus.THeaSetSpace_1,
-THeaSetEmission_control.y);
 end DataServer;
 
 
@@ -757,6 +803,16 @@ origin={32,10})));
     annotation (Placement(transformation(extent={{-10,-10},{10,10}},
         rotation=0,
         origin={94,-86})));
+  Modelica.Blocks.Math.Gain gain(k=Q_flow_nominal)
+    annotation (Placement(transformation(extent={{-70,-22},{-58,-10}})));
+  Modelica.Blocks.Continuous.Integrator integrator
+    annotation (Placement(transformation(extent={{-46,-26},{-30,-10}})));
+  Modelica.Blocks.Math.Gain gain1(k=2.77778e-7)
+    annotation (Placement(transformation(extent={{-46,-52},{-26,-32}})));
+  Modelica.Blocks.Math.Gain gain2(k=0.9*(1/11))
+    annotation (Placement(transformation(extent={{-26,-80},{-6,-60}})));
+  Modelica.Blocks.Routing.RealPassThrough Boiy
+    annotation (Placement(transformation(extent={{-122,36},{-104,54}})));
 equation
   connect(
   TAmb.port, boi.heatPort)
@@ -833,6 +889,17 @@ equation
   connect(port_a, senMasFlo4.port_b) annotation (Line(points={{-100,0},{-84,0},{
           -84,-32},{-96,-32},{-96,-114},{110,-114},{110,-86},{104,-86}}, color={
           0,127,255}));
+  connect(gain.y, integrator.u) annotation (Line(points={{-57.4,-16},{-54,-16},{
+          -54,-18},{-47.6,-18}}, color={0,0,127}));
+  connect(integrator.y, gain1.u) annotation (Line(points={{-29.2,-18},{-30,-18},
+          {-30,-4},{-74,-4},{-74,-12},{-76,-12},{-76,-32},{-48,-32},{-48,-42}},
+        color={0,0,127}));
+  connect(gain1.y, gain2.u) annotation (Line(points={{-25,-42},{-34,-42},{-34,-60},
+          {-60,-60},{-60,-70},{-28,-70}}, color={0,0,127}));
+  connect(Boiy.y, boi.y) annotation (Line(points={{-103.1,45},{-84,45},{-84,18},
+          {-76,18}}, color={0,0,127}));
+  connect(Boiy.y, gain.u) annotation (Line(points={{-103.1,45},{-84,45},{-84,2},
+          {-82,2},{-82,-16},{-71.2,-16}}, color={0,0,127}));
   annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
 Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
 Rectangle(
@@ -848,6 +915,7 @@ Rectangle(
           smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
             {100,100}})));
 end PartialBoilerWithStorage;
+
 
 
   end Boilers;
@@ -2128,7 +2196,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 
 package Glazing "Library of building glazing systems"
 extends Modelica.Icons.MaterialPropertiesPackage;
-    record  double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+    record  simple_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
           final nLay=3,
       final checkLowPerformanceGlazing=false,
           mats={space_1_different_construction_types.Data.Materials.id_100
@@ -2161,7 +2229,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
       final g_value=0.78
 
     ) "space_1_different_construction_types";
-    record  simple_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+    record  double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
           final nLay=3,
       final checkLowPerformanceGlazing=false,
           mats={space_1_different_construction_types.Data.Materials.id_100
@@ -2202,6 +2270,21 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Bui
       c=840.0,
       rho=2240.0,
       epsLw=0.88,
+      epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.12,
+      c=1210.0,
+      rho=540.0,
+      epsLw=0.88,
+      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.03,
+      c=1200.0,
+      rho=40.0,
+      epsLw=0.88,
       epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.025,
       c=1005.0,
@@ -2212,42 +2295,27 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Bui
       c=790.0,
       rho=1920.0,
       epsLw=0.88,
-      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
-      epsLw=0.88,
-      epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.12,
-      c=1210.0,
-      rho=540.0,
-      epsLw=0.88,
-      epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={space_1_different_construction_types.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;      record external_wall
-    "external_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={space_1_different_construction_types.Data.Materials.concrete
-        (d=0.2),space_1_different_construction_types.Data.Materials.insulation_board
-        (d=0.02),space_1_different_construction_types.Data.Materials.plywood
-        (d=0.1)    });
-    end external_wall;      record test_wall
+package Constructions "Library of building envelope constructions"      record test_wall
     "test_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={space_1_different_construction_types.Data.Materials.concrete
         (d=0.4),space_1_different_construction_types.Data.Materials.insulation_board
         (d=0.2),space_1_different_construction_types.Data.Materials.plywood
         (d=0.4)    });
-    end test_wall;
+    end test_wall;      record external_wall
+    "external_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={space_1_different_construction_types.Data.Materials.concrete
+        (d=0.2),space_1_different_construction_types.Data.Materials.insulation_board
+        (d=0.02),space_1_different_construction_types.Data.Materials.plywood
+        (d=0.1)    });
+    end external_wall;      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={space_1_different_construction_types.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;
 end Constructions;
 end Data;
 model building
@@ -2291,11 +2359,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
   parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +
       dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
     "Pressure difference of loop";
-  inner IDEAS.BoundaryConditions.SimInfoManager sim(interZonalAirFlowType=
-  IDEAS.BoundaryConditions.Types.
-  InterZonalAirFlow.OnePort)
-                                              "Data reader"
-    annotation (Placement(transformation(extent={{-96,76},{-76,96}})));
+
 
 
     IDEAS.Buildings.Components.Zone space_1(
@@ -2318,7 +2382,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 135, 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -182.36842020938408, 101.05534019958921 },
+    Placement(transformation(origin = { 183.41226582247634, 85.0383536566742 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -2330,7 +2394,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 0 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 164.14018147834355, -148.66322093082437 },
+    Placement(transformation(origin = { -185.4120653284658, -108.92952197104505 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -2342,7 +2406,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -104.86943019552928, 179.00960905065412 },
+    Placement(transformation(origin = { -179.81561029330103, 113.77335143149872 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2353,7 +2417,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 176.63527396094776, 0.8551507770716562 },
+    Placement(transformation(origin = { 150.03383727960144, -98.48414723435036 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2364,7 +2428,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 102.73125813512351, -133.3779334947693 },
+    Placement(transformation(origin = { 200.0, -21.443616792272593 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_2(
@@ -2372,7 +2436,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { 1.9317735238659284, -184.0522498170024 },
+    Placement(transformation(origin = { 13.28262090672015, 197.92334719943563 },
     extent = {{-10, -10}, {10, 10}}
 )));
         space_1_different_construction_types.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
@@ -2382,51 +2446,63 @@ package MediumW = IDEAS.Media.Water "Medium model";
 )));
         space_1_different_construction_types.Common.Controls.ventilation.EmissionControlEmission_control
     emission_control annotation (
-    Placement(transformation(origin = { -173.79279904704325, -100.30914257980625 },
+    Placement(transformation(origin = { -4.496492077716395, -179.20706860930235 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        space_1_different_construction_types.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
+        space_1_different_construction_types.Common.Controls.ventilation.OccupancyOccupancy_0 occupancy_0(    occupancy=3600*{7, 19},
+    gain=[35; 70; 30],
+    k=1/6/4
+) annotation (
     Placement(transformation(origin = { -50, 0 },
+    extent = {{-10, -10}, {10, 10}}
+)));
+
+        inner IDEAS.BoundaryConditions.SimInfoManager
+    sim(interZonalAirFlowType=
+  IDEAS.BoundaryConditions.Types.
+  InterZonalAirFlow.OnePort) "Data reader"
+annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotation (
+    Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
         space_1_different_construction_types.Common.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { -99.37307824482251, -189.53852866132786 },
+    Placement(transformation(origin = { -102.22578551216823, -166.79722558751044 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
 equation    connect(space_1.propsBus[1:2],merged_w1_1_w3_1[1:2].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -91.18421010469204, 0.0 }    ,{ -91.18421010469204, 101.05534019958921 }    ,{ -182.36842020938408, 101.05534019958921 }    },
+points={{ 0.0, 0.0 }    ,{ 91.70613291123817, 0.0 }    ,{ 91.70613291123817, 85.0383536566742 }    ,{ 183.41226582247634, 85.0383536566742 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[3],merged_w2_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 82.07009073917177, 0.0 }    ,{ 82.07009073917177, -148.66322093082437 }    ,{ 164.14018147834355, -148.66322093082437 }    },
+points={{ 0.0, 0.0 }    ,{ -92.7060326642329, 0.0 }    ,{ -92.7060326642329, -108.92952197104505 }    ,{ -185.4120653284658, -108.92952197104505 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[4],merged_w4_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -52.43471509776464, 0.0 }    ,{ -52.43471509776464, 179.00960905065412 }    ,{ -104.86943019552928, 179.00960905065412 }    },
+points={{ 0.0, 0.0 }    ,{ -89.90780514665052, 0.0 }    ,{ -89.90780514665052, 113.77335143149872 }    ,{ -179.81561029330103, 113.77335143149872 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[5],merged_win1_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 88.31763698047388, 0.0 }    ,{ 88.31763698047388, 0.8551507770716562 }    ,{ 176.63527396094776, 0.8551507770716562 }    },
+points={{ 0.0, 0.0 }    ,{ 75.01691863980072, 0.0 }    ,{ 75.01691863980072, -98.48414723435036 }    ,{ 150.03383727960144, -98.48414723435036 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[6],merged_win1_2[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 51.365629067561756, 0.0 }    ,{ 51.365629067561756, -133.3779334947693 }    ,{ 102.73125813512351, -133.3779334947693 }    },
+points={{ 0.0, 0.0 }    ,{ 100.0, 0.0 }    ,{ 100.0, -21.443616792272593 }    ,{ 200.0, -21.443616792272593 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[7],floor_2.propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 0.9658867619329642, 0.0 }    ,{ 0.9658867619329642, -184.0522498170024 }    ,{ 1.9317735238659284, -184.0522498170024 }    },
+points={{ 0.0, 0.0 }    ,{ 6.641310453360075, 0.0 }    ,{ 6.641310453360075, 197.92334719943563 }    ,{ 13.28262090672015, 197.92334719943563 }    },
 color={191,0,0},
-thickness=0.2,
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.gainCon,emission.heatPortCon)
 annotation (Line(
 points={{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, -75.0 }    ,{ 0.0, -75.0 }    },
@@ -2442,30 +2518,31 @@ annotation (Line(
 points={{ 0.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -50.0, 0.0 }    },
 color={255,204,51},
 thickness=0.5,
-smooth=Smooth.None));    connect(space_1.gainCon,data_bus.port[1])
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -49.686539122411254, 0.0 }    ,{ -49.686539122411254, -189.53852866132786 }    ,{ -99.37307824482251, -189.53852866132786 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -49.686539122411254, 0.0 }    ,{ -49.686539122411254, -189.53852866132786 }    ,{ -99.37307824482251, -189.53852866132786 }    },
-color={255,204,51},
-thickness=0.5,
 smooth=Smooth.None));    connect(emission.y,emission_control.y)
 annotation (Line(
-points={{ 0.0, -75.0 }    ,{ -86.89639952352162, -75.0 }    ,{ -86.89639952352162, -100.30914257980625 }    ,{ -173.79279904704325, -100.30914257980625 }    },
+points={{ 0.0, -75.0 }    ,{ -2.2482460388581975, -75.0 }    ,{ -2.2482460388581975, -179.20706860930235 }    ,{ -4.496492077716395, -179.20706860930235 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(emission_control.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -173.79279904704325, -100.30914257980625 }    ,{ -136.58293864593287, -100.30914257980625 }    ,{ -136.58293864593287, -189.53852866132786 }    ,{ -99.37307824482251, -189.53852866132786 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-232.36842020938408,-239.53852866132786},{226.63527396094776,250.0}})), Icon(
-        coordinateSystem(extent={{-232.36842020938408,-239.53852866132786},{226.63527396094776,250.0}})));
+points={{ -4.496492077716395, -179.20706860930235 }    ,{ -53.36113879494231, -179.20706860930235 }    ,{ -53.36113879494231, -166.79722558751044 }    ,{ -102.22578551216823, -166.79722558751044 }    },
+thickness=0.05,
+smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
+annotation (Line(
+points={{ -50.0, 0.0 }    ,{ -76.11289275608411, 0.0 }    ,{ -76.11289275608411, -166.79722558751044 }    ,{ -102.22578551216823, -166.79722558751044 }    },
+thickness=0.05,
+smooth=Smooth.None));    connect(space_1.gainCon,data_bus.port[1])
+annotation (Line(
+points={{ 0.0, 0.0 }    ,{ -51.112892756084115, 0.0 }    ,{ -51.112892756084115, -166.79722558751044 }    ,{ -102.22578551216823, -166.79722558751044 }    },
+thickness=0.05,
+smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
+annotation (Line(
+points={{ 0.0, 0.0 }    ,{ -51.112892756084115, 0.0 }    ,{ -51.112892756084115, -166.79722558751044 }    ,{ -102.22578551216823, -166.79722558751044 }    },
+thickness=0.05,
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-235.4120653284658,-229.20706860930235},{250.0,250.0}})), Icon(
+        coordinateSystem(extent={{-235.4120653284658,-229.20706860930235},{250.0,250.0}})));
   annotation (
-    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_1</td></tr><tr><th>parameters</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>occupancy</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr></table></td></tr><tr><th>emissions</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>parameters</th><th>type</th></tr></thead><tbody><tr><td>emission</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>nEle</th><td>1</td></tr><tr><th>fraRad</th><td>0.3</td></tr><tr><th>Q_flow_nominal</th><td>2000.0</td></tr><tr><th>T_a_nominal</th><td>363.15</td></tr><tr><th>T_b_nominal</th><td>353.15</td></tr><tr><th>TAir_nominal</th><td>293.15</td></tr><tr><th>TRad_nominal</th><td>293.15</td></tr><tr><th>n</th><td>1.24</td></tr><tr><th>deltaM</th><td>0.01</td></tr><tr><th>from_dp</th><td>false</td></tr><tr><th>dp_nominal</th><td>0.0</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>VWat</th><td>0.116</td></tr><tr><th>mDry</th><td>52.6</td></tr></table></td><td>Radiator</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_1</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_1</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_1</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_1</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>test_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>floor_2</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr><tr><td>win1_1</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr><tr><td>win1_2</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>simple_glazing</td></tr></table></td><td>Window</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr><tr><th>layers</th><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>concrete</td></tr><tr><th>k</th><td>1.4</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2240.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr><tr><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>insulation_board</td></tr><tr><th>k</th><td>0.03</td></tr><tr><th>c</th><td>1200.0</td></tr><tr><th>rho</th><td>40.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.02</td></tr><tr><td><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>plywood</td></tr><tr><th>k</th><td>0.12</td></tr><tr><th>c</th><td>1210.0</td></tr><tr><th>rho</th><td>540.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.1</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr><tr><th>type</th><td>Occupancy</td></tr></table><table border='1'  align='left' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>weather</td></tr><tr><th>type</th><td>Weather</td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
+    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_1</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>T_start</th><td>294.15</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>occupancy</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr><tr><th>parameters</th><td></td></tr></table></td></tr><tr><th>emissions</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>parameters</th><th>type</th></tr></thead><tbody><tr><td>emission</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>nEle</th><td>1</td></tr><tr><th>fraRad</th><td>0.3</td></tr><tr><th>Q_flow_nominal</th><td>2000.0</td></tr><tr><th>T_a_nominal</th><td>363.15</td></tr><tr><th>T_b_nominal</th><td>353.15</td></tr><tr><th>TAir_nominal</th><td>293.15</td></tr><tr><th>TRad_nominal</th><td>293.15</td></tr><tr><th>n</th><td>1.24</td></tr><tr><th>deltaM</th><td>0.01</td></tr><tr><th>from_dp</th><td>false</td></tr><tr><th>dp_nominal</th><td>0.0</td></tr><tr><th>linearized</th><td>false</td></tr><tr><th>VWat</th><td>0.116</td></tr><tr><th>mDry</th><td>52.6</td></tr></table></td><td>Radiator</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_1</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_1</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_1</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_1</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>test_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>floor_2</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr><tr><td>win1_1</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr><tr><td>win1_2</td><td>1.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>simple_glazing</td></tr></table></td><td>Window</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>concrete</td></tr><tr><th>k</th><td>1.4</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2240.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>insulation_board</td></tr><tr><th>k</th><td>0.03</td></tr><tr><th>c</th><td>1200.0</td></tr><tr><th>rho</th><td>40.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.02</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>plywood</td></tr><tr><th>k</th><td>0.12</td></tr><tr><th>c</th><td>1210.0</td></tr><tr><th>rho</th><td>540.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.1</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
 end building;
 
 

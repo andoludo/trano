@@ -10,9 +10,13 @@ OVERWRITE_MODELS = False
 
 
 def remove_annotation(model: str) -> str:
+    for documentation in re.findall(r"Documentation(.*?)</html>", model, re.DOTALL):
+        model = model.replace(documentation, "").replace("Documentation", "")
+
     model = model.replace(" ", "").replace("\n", "")
     for annotation in re.findall(r"annotation(.*?);", model):
         model = model.replace(annotation, "").replace("annotation", "")
+
     return model
 
 
@@ -213,3 +217,8 @@ def test_building_multiple_internal_walls_ideas(
     assert clean_model(model_, building_multiple_internal_walls_ideas.name) == set(
         _read(building_multiple_internal_walls_ideas.name)
     )
+
+
+def test_house_model(house_model: Network) -> None:
+    model_ = house_model.model()
+    assert clean_model(model_, house_model.name) == set(_read(house_model.name))

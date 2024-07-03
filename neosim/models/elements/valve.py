@@ -5,9 +5,12 @@ from pydantic import Field
 from neosim.models.constants import Flow
 from neosim.models.elements.base import (
     AvailableLibraries,
+    Axis,
     BaseParameter,
     Boolean,
+    Figure,
     LibraryData,
+    Line,
     Port,
 )
 from neosim.models.elements.controls.base import Control
@@ -69,6 +72,21 @@ class BaseValve(LibraryData):
             Port(names=["port_a"], flow=Flow.inlet),
             Port(names=["port_b"], flow=Flow.outlet),
             Port(targets=[Control], names=["y"]),
+        ]
+    )
+    figures: List[Figure] = Field(
+        default=[
+            Figure(
+                left_axis=Axis(
+                    lines=[
+                        Line(
+                            template="{{ element.name }}.y",
+                            label="Valve control signal [-]",
+                        ),
+                    ],
+                    label="Valve control signal [-]",
+                ),
+            )
         ]
     )
 

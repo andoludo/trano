@@ -1,15 +1,19 @@
 import abc
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Type
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 from neosim.models.elements.base import BaseElement, BaseParameter
+from neosim.models.elements.boiler import Boiler
 from neosim.models.elements.envelope.base import BaseSimpleWall
 from neosim.models.elements.space import Space
 from neosim.models.elements.system import System
 
 if TYPE_CHECKING:
     from neosim.topology import Network
+
+Topic = Literal["Spaces", "Construction", "Systems", "Base"]
 
 
 class ContentDocumentation(BaseModel):
@@ -39,6 +43,10 @@ class BaseDocumentation(ContentDocumentation):
         cls, elements: List[BaseElement], content_documentation: ContentDocumentation
     ) -> "BaseDocumentation":
         ...
+
+    @computed_field
+    def topic(self) -> Topic:
+        return type(self).__name__.replace("Documentation", "")  # type: ignore
 
 
 class SpacesDocumentation(BaseDocumentation):
@@ -150,16 +158,24 @@ class ContentModelDocumentation(ContentDocumentation):
     systems: ContentDocumentation
 
 
+class ResultFile(BaseModel):
+    path: Path
+    type: Literal["openmodelica", "dymola"] = "openmodelica"
+
+
 class ModelDocumentation(ContentDocumentation):
     spaces: SpacesDocumentation
     constructions: ConstructionDocumentation
     systems: SystemsDocumentation
+    elements: List[BaseElement]
+    result: Optional[ResultFile] = None
 
     @classmethod
     def from_model_elements(
         cls,
         elements: List[BaseElement],
         content_documentation: ContentModelDocumentation,
+        result: Optional[ResultFile] = None,
     ) -> "ModelDocumentation":
         spaces_documentation = SpacesDocumentation.from_elements(
             elements, content_documentation.spaces
@@ -177,6 +193,8 @@ class ModelDocumentation(ContentDocumentation):
             "constructions": constructions,
             "systems": systems,
             "conclusions": "Conclusions",
+            "elements": elements,
+            "result": result,
         }
 
         return cls(**data)
@@ -186,6 +204,7 @@ class ModelDocumentation(ContentDocumentation):
         cls,
         network: "Network",
         content_model_documentation: Optional[ContentModelDocumentation] = None,
+        result: Optional[ResultFile] = None,
     ) -> "ModelDocumentation":
         content_model_documentation = (
             content_model_documentation
@@ -195,8 +214,12 @@ class ModelDocumentation(ContentDocumentation):
                 systems=ContentDocumentation(),
             )
         )
-        elements = network.graph.nodes
-        return cls.from_model_elements(elements, content_model_documentation)
+        elements = [
+            x
+            for x in list(network.graph.nodes)
+            if isinstance(x, (Boiler, Space, BaseSimpleWall))
+        ]
+        return cls.from_model_elements(elements, content_model_documentation, result)  # type: ignore
 
 
 def _get_elements(

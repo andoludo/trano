@@ -12,14 +12,16 @@
 connect({{ edge.left.equation }},{{ edge.right.equation }})
 annotation (Line(
 points={{ connect_path(edge.path) }},
+    {% if edge.connection_view.color %}
 color={{ edge.connection_view.color }},
+    {% endif %}
 thickness={{ edge.connection_view.thickness }},
 smooth=Smooth.None));
 {%- endmacro %}
 
 {%- macro render_parameters(parameters)  %}
 {% for key, value in parameters.items() %}
-    {{ key }}={{ value }}{{ "," if not loop.last }}
+    {{ key | safe}}={{ value | safe}}{{ "," if not loop.last }}
 {% endfor %}
 {%- endmacro %}
 

@@ -1,8 +1,26 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+)
 
+import jinja2.exceptions
 from jinja2 import Environment, FileSystemLoader
-from pydantic import BaseModel, ConfigDict, Field, computed_field, create_model
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    create_model,
+    model_validator,
+)
 
 from neosim.controller.parser import ControllerBus
 from neosim.models.constants import Flow
@@ -11,6 +29,36 @@ if TYPE_CHECKING:
     from neosim.library.library import Libraries
 
 Boolean = Literal["true", "false"]
+
+
+class Line(BaseModel):
+    template: str
+    key: Optional[str] = None
+    color: str = "grey"
+    label: str
+    line_style: str = "solid"
+    line_width: float = 1.5
+
+
+class Axis(BaseModel):
+    lines: List[Line] = Field(default=[])
+    label: str
+
+
+class Figure(BaseModel):
+    right_axis: Axis = Field(default=Axis(lines=[], label=""))
+    left_axis: Axis = Field(default=Axis(lines=[], label=""))
+
+    def render_key(self, element: "BaseElement") -> "Figure":
+        environment = Environment(autoescape=True)
+        for axis in self.right_axis.lines + self.left_axis.lines:
+            template = environment.from_string(axis.template)
+            try:
+                axis.key = template.render(element=element)
+            except jinja2.exceptions.UndefinedError:
+                continue
+
+        return self
 
 
 class PartialConnection(BaseModel):
@@ -38,7 +86,7 @@ class AvailableLibraries(BaseModel):
 
 
 class ConnectionView(BaseModel):
-    color: str = "{255,204,51}"
+    color: Optional[str] = "{255,204,51}"
     thickness: float = 0.5
 
 
@@ -176,7 +224,8 @@ class BaseParameter(BaseModel):
 
 
 class BaseElement(BaseModel):
-    name: str
+    name_counter: ClassVar[int] = 0
+    name: Optional[str] = Field(default=None)
     annotation_template: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -189,6 +238,14 @@ class BaseElement(BaseModel):
     component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
     libraries_data: Optional[AvailableLibraries] = None
+    figures: List[Figure] = Field(default=[])
+
+    @model_validator(mode="after")
+    def assign_default_name(self) -> "BaseElement":
+        if self.name is None:
+            self.name = f"{type(self).__name__.lower()}_{type(self).name_counter}"
+            type(self).name_counter += 1
+        return self
 
     def assign_library_property(self, library: "Libraries") -> bool:
         if self.libraries_data is None:
@@ -202,6 +259,9 @@ class BaseElement(BaseModel):
             self.template = library_data.template
         if not self.component_template:
             self.component_template = library_data.component_template
+        if not self.figures and library_data.figures:
+            self.figures = [fig.render_key(self) for fig in library_data.figures]
+
         return True
 
     def processed_parameters(self, library: "Libraries") -> Any:  # noqa: ANN401
@@ -301,10 +361,16 @@ class BaseElement(BaseModel):
 
 
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
+    from neosim.models.elements.bus import DataBus
     from neosim.models.elements.envelope.base import BaseSimpleWall
+    from neosim.models.elements.weather import Weather
 
     if any(isinstance(e, BaseSimpleWall) for e in edge):
-        return ConnectionView(color="{191,0,0}", thickness=0.2)
+        return ConnectionView(color="{191,0,0}", thickness=0.1)
+    if any(isinstance(e, DataBus) for e in edge):
+        return ConnectionView(color=None, thickness=0.05)
+    if any(isinstance(e, Weather) for e in edge):
+        return ConnectionView(color=None, thickness=0.05)
     return ConnectionView()
 
 
@@ -400,6 +466,7 @@ class LibraryData(BaseModel):
     ports_factory: Callable[[], List[Port]]
     variant: str = BaseVariant.default
     parameter_processing: Callable[[BaseParameter], Dict[str, Any]] = default_parameters
+    figures: List[Figure] = Field(default=[])
 
 
 class BaseBoundary(BaseElement):
