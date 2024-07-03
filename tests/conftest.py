@@ -1,9 +1,4 @@
-import tempfile
-from contextlib import contextmanager
-from pathlib import Path
-
 import docker
-import jinja2
 import pytest
 
 from neosim.construction import Constructions
@@ -19,10 +14,7 @@ from neosim.models.elements.controls.boiler import BoilerControl
 from neosim.models.elements.controls.collector import CollectorControl
 from neosim.models.elements.controls.emission import EmissionControl
 from neosim.models.elements.controls.three_way_valve import ThreeWayValveControl
-from neosim.models.elements.controls.vav import VAVControl
-from neosim.models.elements.damper import VAV, DamperVariant
-from neosim.models.elements.duct import Duct
-from neosim.models.elements.envelope.external_wall import ExternalDoor, ExternalWall
+from neosim.models.elements.envelope.external_wall import ExternalWall
 from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
 from neosim.models.elements.envelope.internal_element import InternalElement
 from neosim.models.elements.envelope.window import Window
@@ -37,72 +29,31 @@ from neosim.models.elements.three_way_valve import (
     ThreeWayValve,
     ThreeWayValveParameters,
 )
-from neosim.models.elements.valve import Valve
 from neosim.models.elements.weather import Weather
 from neosim.topology import Network
 from tests.fixtures.house import house_model_fixture
-
-
-@pytest.fixture(scope="session")
-def client() -> docker.DockerClient:
-    client = docker.DockerClient(base_url="unix://var/run/docker.sock")
-    return client
-
-
-@pytest.fixture(scope="session")
-def container(client: docker.DockerClient) -> None:
-    container = client.containers.run(
-        "openmodelica/openmodelica:v1.22.4-ompython",
-        command="tail -f /dev/null",
-        volumes=[
-            f"{str(Path(__file__).parents[1])}:/neosim",
-            f"{str(Path(__file__).parents[1])}/results:/results",
-        ],
-        detach=True,
-    )
-    container.exec_run(cmd="omc /neosim/neosim/simulate/configure.mos")
-    yield container
-    container.exec_run(
-        cmd='find / -name "*_res.mat" -exec cp {} /results \;'  # noqa: W605
-    )  # noqa: W605
-    container.stop()
-    container.remove()
-
-
-@contextmanager
-def create_mos_file(
-    network: Network, check_only: bool = False, end_time: int = 3600
-) -> str:
-    model = network.model()
-    with tempfile.NamedTemporaryFile(
-        mode="w", dir=Path(__file__).parent, suffix=".mo"
-    ) as temp_model_file, tempfile.NamedTemporaryFile(
-        mode="w", dir=Path(__file__).parent, suffix=".mos"
-    ) as temp_mos_file:
-        Path(temp_model_file.name).write_text(model)
-        environment = jinja2.Environment()
-        if check_only:
-            template = environment.from_string(
-                """
-    getVersion();
-    loadFile("/neosim/tests/{{model_file}}");
-    checkModel({{model_name}}.building);
-    """
-            )
-        else:
-            template = environment.from_string(
-                f"""
-    getVersion();
-    loadFile("/neosim/tests/{{{{model_file}}}}");
-    checkModel({{{{model_name}}}}.building);
-    simulate({{{{model_name}}}}.building,startTime = 0, stopTime = {end_time});
-    """
-            )
-        mos_file = template.render(
-            model_file=Path(temp_model_file.name).name, model_name=network.name
-        )
-        Path(temp_mos_file.name).write_text(mos_file)
-        yield Path(temp_mos_file.name).name
+from tests.fixtures.simple_space_1 import simple_space_1_fixture
+from tests.fixtures.simple_space_1_with_occupancy import (
+    simple_space_1_with_occupancy_fixture,
+)
+from tests.fixtures.spaces_with_different_construction_types import (
+    space_with_door_fixture,
+    space_with_same_properties_fixture,
+)
+from tests.fixtures.spaces_with_emissions import (
+    space_1_fixture,
+    space_1_ideal_heating_fixture,
+    space_1_no_occupancy_fixture,
+    space_2_fixture,
+    space_3_fixture,
+)
+from tests.fixtures.spaces_with_ventilation import (
+    space_1_simple_ventilation_fixture,
+    space_1_simple_ventilation_vav_control_fixture,
+    space_2_simple_ventilation_fixture,
+)
+from tests.fixtures.three_spaces import three_spaces
+from tests.fixtures.two_spaces import two_spaces
 
 
 def is_success(results: docker.models.containers.ExecResult) -> bool:
@@ -111,101 +62,12 @@ def is_success(results: docker.models.containers.ExecResult) -> bool:
 
 @pytest.fixture
 def simple_space_1() -> Space:
-    return Space(
-        name="space_1",
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-    )
+    return simple_space_1_fixture()
 
 
 @pytest.fixture
 def simple_space_1_with_occupancy() -> Space:
-    return Space(
-        name="space_1",
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-    )
+    return simple_space_1_with_occupancy_fixture()
 
 
 @pytest.fixture
@@ -239,82 +101,6 @@ annotation (choicesAllMatching = true);"""
 
 @pytest.fixture
 def buildings_free_float_two_zones() -> Network:
-    space_1 = Space(
-        name="space_1",
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-    )
-    space_2 = Space(
-        name="space_2",
-        occupancy=Occupancy(name="occupancy_1"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_2",
-                surface=10,
-                azimuth=Azimuth.west,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w2_2",
-                surface=10,
-                azimuth=Azimuth.north,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w3_2",
-                surface=10,
-                azimuth=Azimuth.south,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            FloorOnGround(
-                name="floor_1", surface=10, construction=Constructions.external_wall
-            ),
-        ],
-    )
 
     network = Network(
         name="buildings_free_float_two_zones",
@@ -323,301 +109,19 @@ def buildings_free_float_two_zones() -> Network:
 package MediumW = Buildings.Media.Water "Medium model";"""
         ),
     )
-    network.add_boiler_plate_spaces([space_1, space_2])
+    network.add_boiler_plate_spaces(two_spaces())
     return network
 
 
 @pytest.fixture
 def buildings_free_float_three_zones_spaces() -> list:
-    space_1 = Space(
-        name="space_1",
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            Window(
-                name="win1_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-            Window(
-                name="win2_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-            FloorOnGround(
-                name="floor_1", surface=10, construction=Constructions.external_wall
-            ),
-        ],
-    )
-    space_2 = Space(
-        name="space_2",
-        occupancy=Occupancy(name="occupancy_1"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_2",
-                surface=10,
-                azimuth=Azimuth.west,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w2_2",
-                surface=10,
-                azimuth=Azimuth.north,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w3_2",
-                surface=10,
-                azimuth=Azimuth.south,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            Window(
-                name="win1_2",
-                surface=10,
-                azimuth=Azimuth.north,
-                construction=Glasses.double_glazing,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-            ),
-            Window(
-                name="win2_2",
-                surface=10,
-                azimuth=Azimuth.south,
-                construction=Glasses.double_glazing,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-        ],
-    )
-    space_3 = Space(
-        name="space_3",
-        occupancy=Occupancy(name="occupancy_2"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_3",
-                surface=10,
-                azimuth=Azimuth.west,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w2_3",
-                surface=10,
-                azimuth=Azimuth.north,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w3_3",
-                surface=10,
-                azimuth=Azimuth.east,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            Window(
-                name="w4_3",
-                surface=10,
-                azimuth=Azimuth.east,
-                construction=Glasses.double_glazing,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-            ),
-            FloorOnGround(
-                name="floor_3", surface=10, construction=Constructions.external_wall
-            ),
-        ],
-    )
-
-    return [space_1, space_2, space_3]
+    return three_spaces()
 
 
 @pytest.fixture
 def ideas_free_float_three_zones_spaces() -> list:
-    space_1 = Space(
-        name="space_1",
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            Window(
-                name="win1_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-            Window(
-                name="win2_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-            FloorOnGround(
-                name="floor_1", surface=10, construction=Constructions.external_wall
-            ),
-        ],
-    )
-    space_2 = Space(
-        name="space_2",
-        external_boundaries=[
-            ExternalWall(
-                name="w1_2",
-                surface=10,
-                azimuth=Azimuth.west,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w2_2",
-                surface=10,
-                azimuth=Azimuth.north,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w3_2",
-                surface=10,
-                azimuth=Azimuth.south,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            Window(
-                name="win1_2",
-                surface=10,
-                azimuth=Azimuth.north,
-                construction=Glasses.double_glazing,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-            ),
-            Window(
-                name="win2_2",
-                surface=10,
-                azimuth=Azimuth.south,
-                construction=Glasses.double_glazing,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-        ],
-    )
-    space_3 = Space(
-        name="space_3",
-        external_boundaries=[
-            ExternalWall(
-                name="w1_3",
-                surface=10,
-                azimuth=Azimuth.west,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w2_3",
-                surface=10,
-                azimuth=Azimuth.north,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            ExternalWall(
-                name="w3_3",
-                surface=10,
-                azimuth=Azimuth.east,
-                construction=Constructions.external_wall,
-                tilt=Tilt.wall,
-            ),
-            Window(
-                name="w4_3",
-                surface=10,
-                azimuth=Azimuth.east,
-                construction=Glasses.double_glazing,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-            ),
-            FloorOnGround(
-                name="floor_3", surface=10, construction=Constructions.external_wall
-            ),
-        ],
-    )
 
-    return [space_1, space_2, space_3]
+    return three_spaces(occupancy=False)
 
 
 @pytest.fixture
@@ -655,171 +159,17 @@ annotation (choicesAllMatching = true);"""
 
 @pytest.fixture
 def space_1() -> Space:
-    space_1 = Space(
-        name="space_1",
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-        emissions=[
-            Valve(name="valve", control=EmissionControl(name="emission_valve_control")),
-            Radiator(name="emission"),
-        ],
-    )
-    return space_1
+    return space_1_fixture()
 
 
 @pytest.fixture
 def space_2() -> Space:
-    space_2 = Space(
-        name="space_2",
-        occupancy=Occupancy(name="occupancy_1"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_2",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_2",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_2",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_2",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_3", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_2",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-        emissions=[
-            Valve(
-                name="valve_2", control=EmissionControl(name="emission_valve_control_2")
-            ),
-            Radiator(name="emission_2"),
-        ],
-    )
-    return space_2
+    return space_2_fixture()
 
 
 @pytest.fixture
 def space_3() -> Space:
-    space_3 = Space(
-        name="space_3",
-        occupancy=Occupancy(name="occupancy_2"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_3",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_3",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_3",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_3",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_4", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_3",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-        emissions=[
-            Valve(
-                name="valve_3", control=EmissionControl(name="emission_valve_control_3")
-            ),
-            Radiator(name="emission_3"),
-        ],
-    )
-    return space_3
+    return space_3_fixture()
 
 
 @pytest.fixture
@@ -1007,56 +357,8 @@ def ideas_simple_hydronic_three_zones(
 
 @pytest.fixture
 def space_1_no_occupancy() -> Space:
-    space_1 = Space(
-        name="space_1",
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-        emissions=[
-            Valve(name="valve", control=EmissionControl(name="emission_control")),
-            Radiator(name="emission"),
-        ],
-    )
-    return space_1
+
+    return space_1_no_occupancy_fixture()
 
 
 @pytest.fixture
@@ -1086,60 +388,7 @@ def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
 
 @pytest.fixture
 def space_1_ideal_heating() -> Space:
-    space_1 = Space(
-        name="space_1",
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-        emissions=[
-            Radiator(
-                name="emission",
-                variant="ideal",
-                control=EmissionControl(name="emission_control"),
-            )
-        ],
-    )
-    return space_1
+    return space_1_ideal_heating_fixture()
 
 
 @pytest.fixture
@@ -1211,89 +460,13 @@ def space_1_different_construction_types() -> Space:
 
 @pytest.fixture
 def space_1_simple_ventilation() -> Space:
-    space_1 = Space(
-        name="space_1",
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-        ventilation_inlets=[
-            Duct(name="pressure_drop_duct_in"),
-            VAV(
-                name="vav_in",
-                control=VAVControl(name="vav_in_control"),
-                variant="complex",
-            ),
-        ],
-        ventilation_outlets=[Duct(name="pressure_drop_duct_out")],
-    )
-
-    return space_1
+    return space_1_simple_ventilation_fixture()
 
 
 @pytest.fixture
 def space_2_simple_ventilation() -> Space:
-    space_2 = Space(
-        name="space_2",
-        occupancy=Occupancy(name="occupancy_1"),
-        external_boundaries=[
-            ExternalWall(
-                name="w2_2",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_3", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_2",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-        ventilation_inlets=[
-            Duct(name="pressure_drop_duct_in_2"),
-            VAV(
-                name="vav_in_2",
-                control=VAVControl(name="vav_in_control_2"),
-                variant="complex",
-            ),
-        ],
-        ventilation_outlets=[Duct(name="pressure_drop_duct_out_2")],
-    )
 
-    return space_2
+    return space_2_simple_ventilation_fixture()
 
 
 @pytest.fixture
@@ -1455,54 +628,7 @@ def space_1_ideal_heating_network(space_1_ideal_heating: Space) -> Network:
 
 @pytest.fixture
 def space_1_simple_ventilation_vav_control() -> Space:
-    space_1 = Space(
-        name="space_1",
-        volume=100,
-        floor_area=50,
-        height=2,
-        elevation=2,
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                layer_name="layer",
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-        ventilation_inlets=[
-            Duct(name="pressure_drop_duct_in"),
-            VAV(
-                name="vav_in",
-                control=VAVControl(name="vav_in_control"),
-                variant=DamperVariant.complex,
-            ),
-        ],
-        ventilation_outlets=[],
-    )
-
-    return space_1
+    return space_1_simple_ventilation_vav_control_fixture()
 
 
 @pytest.fixture
@@ -1589,72 +715,12 @@ package MediumW = Buildings.Media.Water "Medium model";"""
 
 @pytest.fixture
 def space_with_same_properties() -> Space:
-    space = Space(
-        name="bed",
-        parameters=SpaceParameter(floor_area=11.3, average_room_height=3.75),
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalWall(
-                name="bw",
-                surface=13,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="bw2",
-                surface=9.29,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            Window(
-                name="window",
-                surface=1.3,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                width=1,
-                height=1.3,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-    )
-
-    return space
+    return space_with_same_properties_fixture()
 
 
 @pytest.fixture
 def space_with_door() -> Network:
-    space = Space(
-        name="door",
-        parameters=SpaceParameter(floor_area=11.3, average_room_height=3.75),
-        occupancy=Occupancy(name="occupancy_0"),
-        external_boundaries=[
-            ExternalDoor(
-                name="door",
-                surface=13,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.door,
-            ),
-            ExternalWall(
-                name="wall",
-                surface=9.29,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            Window(
-                name="window",
-                surface=1.3,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                width=1,
-                height=1.3,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-    )
+    space = space_with_door_fixture()
     network = Network(
         name="space_with_door",
     )
