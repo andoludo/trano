@@ -12,7 +12,7 @@ from trano.topology import Network
 
 
 def client() -> docker.DockerClient:
-    client = docker.DockerClient(base_url="unix://var/run/docker.sock")
+    client = docker.DockerClient(base_url="unix:///var/run/docker.sock")
     return client
 
 

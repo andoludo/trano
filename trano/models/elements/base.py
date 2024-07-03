@@ -433,7 +433,7 @@ def change_alias(
                 Field(None, alias=mapping[name], description=field.description),
             )
     return create_model(  # type: ignore
-        __model_name="new_model",
+        "new_model",
         **new_param,
         __config__=ConfigDict(populate_by_name=True),
     )
