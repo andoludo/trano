@@ -12,6 +12,8 @@ from trano.models.elements.base import (
 )
 from trano.models.elements.bus import DataBus
 from trano.models.elements.controls.base import Control
+from trano.models.elements.damper import VAV
+from trano.models.elements.space import Space
 from trano.models.elements.system import System
 
 dynamic_ahu_controller_template = DynamicComponentTemplate(
@@ -86,8 +88,8 @@ class BaseAhuControl(LibraryData):
 
 
 class AhuControl(Control):
-    spaces: Optional[List[str]] = None
-    vavs: Optional[List[str]] = None
+    spaces: Optional[List[Space]] = None
+    vavs: Optional[List[VAV]] = None
     libraries_data: AvailableLibraries = AvailableLibraries(
         ideas=[BaseAhuControl],
         buildings=[BaseAhuControl],
