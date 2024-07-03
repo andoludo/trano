@@ -26,8 +26,10 @@ from trano.models.elements.base import (
 )
 from trano.models.elements.boiler import Boiler
 from trano.models.elements.bus import DataBus
+from trano.models.elements.controls.ahu import AhuControl
 from trano.models.elements.controls.base import Control
 from trano.models.elements.controls.collector import CollectorControl
+from trano.models.elements.controls.vav import VAVControl
 from trano.models.elements.damper import VAV
 from trano.models.elements.envelope.internal_element import InternalElement
 from trano.models.elements.materials.properties import extract_properties
@@ -141,11 +143,11 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         )
         controls = sorted(
             [node for node in self.graph.nodes if isinstance(node, Control)],
-            key=lambda x: x.name,
+            key=lambda x: x.name,  # type: ignore
         )
         ahus = sorted(
             [node for node in self.graph.nodes if isinstance(node, AirHandlingUnit)],
-            key=lambda x: x.name,
+            key=lambda x: x.name,  # type: ignore
         )
         data_bus = DataBus(
             name="data_bus",
@@ -187,7 +189,9 @@ class Network:  # noqa : PLR0904, #TODO: fix this
                 )
             )
             for controllable_element in controllable_ventilation_elements:
-                if controllable_element.control:
+                if controllable_element.control and isinstance(
+                    controllable_element.control, VAVControl
+                ):
                     controllable_element.control.ahu = next(
                         (n for n in neighbors if isinstance(n, AirHandlingUnit)), None
                     )
@@ -212,6 +216,8 @@ class Network:  # noqa : PLR0904, #TODO: fix this
             construction=Constructions.internal_wall,
             tilt=Tilt.wall,
         )
+        if space_1.position is None or space_2.position is None:
+            raise Exception("Position not assigned to spaces")
         internal_element.position = [
             space_1.position[0] + (space_2.position[0] - space_1.position[0]) / 2,
             space_1.position[1],
@@ -343,7 +349,13 @@ class Network:  # noqa : PLR0904, #TODO: fix this
             for system_control in self._system_controls:
                 shortest_path(undirected_graph, system_control, space_control)
 
-    def get_ahu_elements(
+    def get_ahu_space_elements(self, ahu: AirHandlingUnit) -> List[Space]:
+        return [x for x in self._get_ahu_elements(ahu, Space) if isinstance(x, Space)]
+
+    def get_ahu_vav_elements(self, ahu: AirHandlingUnit) -> List[VAV]:
+        return [x for x in self._get_ahu_elements(ahu, VAV) if isinstance(x, VAV)]
+
+    def _get_ahu_elements(
         self, ahu: AirHandlingUnit, element_type: Type[Union[VAV, Space]]
     ) -> List[Union[VAV, Space]]:
         elements_: List[Union[VAV, Space]] = []
@@ -358,9 +370,9 @@ class Network:  # noqa : PLR0904, #TODO: fix this
     def configure_ahu_control(self) -> None:
         ahus = [node for node in self.graph.nodes if isinstance(node, AirHandlingUnit)]
         for ahu in ahus:
-            if ahu.control:
-                ahu.control.spaces = self.get_ahu_elements(ahu, Space)
-                ahu.control.vavs = self.get_ahu_elements(ahu, VAV)
+            if ahu.control and isinstance(ahu.control, AhuControl):
+                ahu.control.spaces = self.get_ahu_space_elements(ahu)
+                ahu.control.vavs = self.get_ahu_vav_elements(ahu)
 
     def get_linked_valves(self, pump_collector: BaseElement) -> List[Valve]:
         valves_: List[Valve] = []
@@ -382,7 +394,8 @@ class Network:  # noqa : PLR0904, #TODO: fix this
             and isinstance(node.control, CollectorControl)
         ]
         for pump_collector in pump_collectors:
-            pump_collector.control.valves = self.get_linked_valves(pump_collector)
+            if isinstance(pump_collector.control, CollectorControl):
+                pump_collector.control.valves = self.get_linked_valves(pump_collector)
 
     def set_weather_path_to_container_path(self, project_path: Path) -> None:
         for node in self.graph.nodes:

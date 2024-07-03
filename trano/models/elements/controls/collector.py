@@ -12,6 +12,7 @@ from trano.models.elements.base import (
 from trano.models.elements.bus import DataBus
 from trano.models.elements.controls.base import Control, PIDParameters
 from trano.models.elements.system import System
+from trano.models.elements.valve import Valve
 
 dynamic_collector_control_template = DynamicComponentTemplate(
     template="""model CollectorControl{{ element.name | capitalize}}
@@ -106,7 +107,7 @@ class BaseCollectorControl(LibraryData):
 
 
 class CollectorControl(Control):
-    valves: Optional[List[str]] = None
+    valves: Optional[List[Valve]] = None
     parameters: PIDParameters = Field(default=PIDParameters())
     libraries_data: AvailableLibraries = AvailableLibraries(
         ideas=[BaseCollectorControl],

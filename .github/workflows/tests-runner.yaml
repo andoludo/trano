@@ -1,0 +1,33 @@
+name: Tests runner
+
+on:
+  push:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3
+        cd /usr/local/bin
+        ln -s /opt/poetry/bin/poetry
+        poetry config virtualenvs.create false
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Linting & mypy
+      run: poetry run nox
+    - name: Run tests
+      run: poetry run pytest -k "not test_simulate"

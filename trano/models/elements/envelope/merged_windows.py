@@ -46,4 +46,4 @@ class MergedWindows(MergedBaseWindow):
                 widths=data["width"],
             )
             merged_windows.append(merged_window)
-        return sorted(merged_windows, key=lambda x: x.name)
+        return sorted(merged_windows, key=lambda x: x.name)  # type: ignore

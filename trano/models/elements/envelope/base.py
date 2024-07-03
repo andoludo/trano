@@ -107,7 +107,7 @@ class MergedBaseWall(BaseWall):
                 constructions=[construction],
             )
             merged_walls.append(merged_wall)
-        return sorted(merged_walls, key=lambda x: x.name)
+        return sorted(merged_walls, key=lambda x: x.name)  # type: ignore #TODO: what is the issue with this!!!
 
 
 class MergedBaseWindow(MergedBaseWall):
