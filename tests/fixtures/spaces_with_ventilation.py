@@ -1,14 +1,14 @@
-from neosim.construction import Constructions
-from neosim.glass import Glasses
-from neosim.models.constants import Azimuth, Tilt
-from neosim.models.elements.controls.vav import VAVControl
-from neosim.models.elements.damper import VAV, DamperVariant
-from neosim.models.elements.duct import Duct
-from neosim.models.elements.envelope.external_wall import ExternalWall
-from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
-from neosim.models.elements.envelope.window import Window
-from neosim.models.elements.occupancy import Occupancy
-from neosim.models.elements.space import Space
+from trano.construction import Constructions
+from trano.glass import Glasses
+from trano.models.constants import Azimuth, Tilt
+from trano.models.elements.controls.vav import VAVControl
+from trano.models.elements.damper import VAV, DamperVariant
+from trano.models.elements.duct import Duct
+from trano.models.elements.envelope.external_wall import ExternalWall
+from trano.models.elements.envelope.floor_on_ground import FloorOnGround
+from trano.models.elements.envelope.window import Window
+from trano.models.elements.occupancy import Occupancy
+from trano.models.elements.space import Space
 
 
 def space_1_simple_ventilation_fixture() -> Space:

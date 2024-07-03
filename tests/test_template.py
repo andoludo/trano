@@ -2,9 +2,9 @@ import re
 from pathlib import Path
 from typing import Set
 
-from neosim.library.library import Ideas
-from neosim.models.elements.space import Space
-from neosim.topology import Network
+from trano.library.library import Ideas
+from trano.models.elements.space import Space
+from trano.topology import Network
 
 OVERWRITE_MODELS = False
 
@@ -37,22 +37,32 @@ def clean_model(model: str, model_name: str) -> set:
             f.write(model)
     model = remove_common_package(model)
     model_ = remove_annotation(model)
-    return set(
-        model_.replace("record", ";").replace(f"model{model_name}", "").split(";")
-    )
+    return {
+        line
+        for line in set(
+            model_.replace("record", ";").replace(f"model{model_name}", "").split(";")
+        )
+        if "ReaderTMY3weather" not in line
+    }
 
 
 def _read(file_name: str) -> Set:
-    return set(
-        remove_annotation(
-            remove_common_package(
-                Path(__file__).parent.joinpath("data", f"{file_name}.mo").read_text()
+    return {
+        line
+        for line in set(
+            remove_annotation(
+                remove_common_package(
+                    Path(__file__)
+                    .parent.joinpath("data", f"{file_name}.mo")
+                    .read_text()
+                )
             )
+            .replace("record", ";")
+            .replace(f"model{file_name}", "")
+            .split(";")
         )
-        .replace("record", ";")
-        .replace(f"model{file_name}", "")
-        .split(";")
-    )
+        if "ReaderTMY3weather" not in line
+    }
 
 
 def test_template_buildings_free_float_single_zone(

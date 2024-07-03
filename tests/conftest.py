@@ -1,36 +1,8 @@
+from pathlib import Path
+
 import docker
 import pytest
 
-from neosim.construction import Constructions
-from neosim.glass import Glasses
-from neosim.library.library import Buildings, Ideas, Library
-from neosim.models.constants import Azimuth, Flow, Tilt
-from neosim.models.elements.ahu import AirHandlingUnit
-from neosim.models.elements.base import Port
-from neosim.models.elements.boiler import Boiler
-from neosim.models.elements.boundary import Boundary
-from neosim.models.elements.controls.ahu import AhuControl
-from neosim.models.elements.controls.boiler import BoilerControl
-from neosim.models.elements.controls.collector import CollectorControl
-from neosim.models.elements.controls.emission import EmissionControl
-from neosim.models.elements.controls.three_way_valve import ThreeWayValveControl
-from neosim.models.elements.envelope.external_wall import ExternalWall
-from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
-from neosim.models.elements.envelope.internal_element import InternalElement
-from neosim.models.elements.envelope.window import Window
-from neosim.models.elements.occupancy import Occupancy
-from neosim.models.elements.pump import Pump, PumpParameters
-from neosim.models.elements.radiator import Radiator
-from neosim.models.elements.space import Space, SpaceParameter
-from neosim.models.elements.split_valve import SplitValve, SplitValveParameters
-from neosim.models.elements.system import System
-from neosim.models.elements.temperature_sensor import TemperatureSensor
-from neosim.models.elements.three_way_valve import (
-    ThreeWayValve,
-    ThreeWayValveParameters,
-)
-from neosim.models.elements.weather import Weather
-from neosim.topology import Network
 from tests.fixtures.house import house_model_fixture
 from tests.fixtures.simple_space_1 import simple_space_1_fixture
 from tests.fixtures.simple_space_1_with_occupancy import (
@@ -54,10 +26,42 @@ from tests.fixtures.spaces_with_ventilation import (
 )
 from tests.fixtures.three_spaces import three_spaces
 from tests.fixtures.two_spaces import two_spaces
+from trano.construction import Constructions
+from trano.glass import Glasses
+from trano.library.library import Buildings, Ideas, Library
+from trano.models.constants import Azimuth, Flow, Tilt
+from trano.models.elements.ahu import AirHandlingUnit
+from trano.models.elements.base import Port
+from trano.models.elements.boiler import Boiler
+from trano.models.elements.boundary import Boundary
+from trano.models.elements.controls.ahu import AhuControl
+from trano.models.elements.controls.boiler import BoilerControl
+from trano.models.elements.controls.collector import CollectorControl
+from trano.models.elements.controls.emission import EmissionControl
+from trano.models.elements.controls.three_way_valve import ThreeWayValveControl
+from trano.models.elements.envelope.external_wall import ExternalWall
+from trano.models.elements.envelope.floor_on_ground import FloorOnGround
+from trano.models.elements.envelope.internal_element import InternalElement
+from trano.models.elements.envelope.window import Window
+from trano.models.elements.occupancy import Occupancy
+from trano.models.elements.pump import Pump, PumpParameters
+from trano.models.elements.radiator import Radiator
+from trano.models.elements.space import Space, SpaceParameter
+from trano.models.elements.split_valve import SplitValve, SplitValveParameters
+from trano.models.elements.system import System
+from trano.models.elements.temperature_sensor import TemperatureSensor
+from trano.models.elements.three_way_valve import ThreeWayValve, ThreeWayValveParameters
+from trano.models.elements.weather import Weather
+from trano.topology import Network
 
 
 def is_success(results: docker.models.containers.ExecResult) -> bool:
     return "The simulation finished successfully" in results.output.decode()
+
+
+@pytest.fixture
+def result_data_path() -> Path:
+    return Path(__file__).parent.joinpath("resources", "data.mat")
 
 
 @pytest.fixture

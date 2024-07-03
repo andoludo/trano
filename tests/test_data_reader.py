@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from neosim.library.library import Buildings
-from neosim.models.elements.bus import transform_csv_to_table
-from neosim.models.elements.space import Space
-from neosim.topology import Network
 from tests.test_template import _read, clean_model
+from trano.library.library import Buildings
+from trano.models.elements.bus import transform_csv_to_table
+from trano.models.elements.space import Space
+from trano.topology import Network
 
 
 def test_transform_csv_to_table() -> None:

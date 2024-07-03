@@ -1,10 +1,10 @@
-from neosim.construction import Constructions
-from neosim.glass import Glasses
-from neosim.models.constants import Azimuth, Tilt
-from neosim.models.elements.envelope.external_wall import ExternalDoor, ExternalWall
-from neosim.models.elements.envelope.window import Window
-from neosim.models.elements.occupancy import Occupancy
-from neosim.models.elements.space import Space, SpaceParameter
+from trano.construction import Constructions
+from trano.glass import Glasses
+from trano.models.constants import Azimuth, Tilt
+from trano.models.elements.envelope.external_wall import ExternalDoor, ExternalWall
+from trano.models.elements.envelope.window import Window
+from trano.models.elements.occupancy import Occupancy
+from trano.models.elements.space import Space, SpaceParameter
 
 
 def space_with_same_properties_fixture() -> Space:

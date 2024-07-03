@@ -1,29 +1,40 @@
-import docker
+from pathlib import Path
+
+import pytest
 from buildingspy.io.outputfile import Reader
 
-from neosim.models.elements.space import Space
-from neosim.plot.plot import plot
-from neosim.topology import Network
-from tests.conftest import create_mos_file
+from trano.models.elements.space import Space
+from trano.plot.plot import plot, plot_element, plot_plot_ly
+from trano.topology import Network
 
 
-def test_read(buildings_two_rooms_with_storage: Network) -> None:
-    mat = Reader(
-        "/home/aan/Documents/neosim/results/buildings_two_rooms_with_storage.building_res.mat",
+@pytest.fixture
+def data_reader(result_data_path: Path) -> Reader:
+    return Reader(
+        result_data_path,
         "openmodelica",
     )
+
+
+def test_plot_one_figure(
+    buildings_two_rooms_with_storage: Network, data_reader: Reader
+) -> None:
     space = [
         s for s in buildings_two_rooms_with_storage.graph.nodes if isinstance(s, Space)
     ]
-    plot(mat, space[0].figures[0])
+    figure = plot(data_reader, space[0].figures[0])
+    figure_plotly = plot_plot_ly(data_reader, space[0].figures[0])
+    assert figure
+    assert figure_plotly
 
 
-def test_plot_buildings_simple_hydronic_two_zones_new(
-    buildings_two_rooms_with_storage: Network,
-    container: docker.models.containers.Container,
+def test_plot_element(
+    buildings_two_rooms_with_storage: Network, data_reader: Reader
 ) -> None:
-    with create_mos_file(
-        buildings_two_rooms_with_storage, end_time=3600 * 24 * 7
-    ) as mos_file_name:
-        results = container.exec_run(cmd=f"omc /neosim/tests/{mos_file_name}")
-    assert results
+    space = [
+        s for s in buildings_two_rooms_with_storage.graph.nodes if isinstance(s, Space)
+    ]
+    figures = plot_element(data_reader, space[0])
+    figures_plotly = plot_element(data_reader, space[0], plot_function=plot_plot_ly)
+    assert len(figures) == 6
+    assert len(figures_plotly) == 6

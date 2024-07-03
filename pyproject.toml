@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "neosim"
+name = "trano"
 version = "0.1.0"
 description = ""
 authors = ["aan <andoludovic.andriamamonjy@gmail.com>"]
@@ -7,7 +7,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-ifcopenshell = "^0.7.0.231018"
 anytree = "^2.12.1"
 lxml = "^4.9.3"
 pydantic = "^2.5.1"
@@ -47,7 +46,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
 plugins = "pydantic.mypy"
-packages= "neosim"
+packages= "trano"
 
 follow_imports = "silent"
 warn_redundant_casts = true

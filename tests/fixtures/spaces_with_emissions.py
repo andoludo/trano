@@ -1,14 +1,14 @@
-from neosim.construction import Constructions
-from neosim.glass import Glasses
-from neosim.models.constants import Azimuth, Tilt
-from neosim.models.elements.controls.emission import EmissionControl
-from neosim.models.elements.envelope.external_wall import ExternalWall
-from neosim.models.elements.envelope.floor_on_ground import FloorOnGround
-from neosim.models.elements.envelope.window import Window
-from neosim.models.elements.occupancy import Occupancy
-from neosim.models.elements.radiator import Radiator
-from neosim.models.elements.space import Space
-from neosim.models.elements.valve import Valve
+from trano.construction import Constructions
+from trano.glass import Glasses
+from trano.models.constants import Azimuth, Tilt
+from trano.models.elements.controls.emission import EmissionControl
+from trano.models.elements.envelope.external_wall import ExternalWall
+from trano.models.elements.envelope.floor_on_ground import FloorOnGround
+from trano.models.elements.envelope.window import Window
+from trano.models.elements.occupancy import Occupancy
+from trano.models.elements.radiator import Radiator
+from trano.models.elements.space import Space
+from trano.models.elements.valve import Valve
 
 
 def space_1_fixture() -> Space:
