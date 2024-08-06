@@ -47,10 +47,11 @@ def schema() -> Path:
 
 
 def test_validate_schema() -> None:
+    house = Path(__file__).parents[1].joinpath("tests", "house.yaml")
     data_model_path = (
         Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
     )
-    report = validate_file("house.yaml", data_model_path, "Building")
+    report = validate_file(house, data_model_path, "Building")
     assert report.results == []
 
 
