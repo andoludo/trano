@@ -74,7 +74,7 @@ def test_create_model() -> None:
 
 
 def test_create_model_yaml() -> None:
-    model_name = "house"
+    model_name = "house_yaml"
     model_path = Path(__file__).parents[1].joinpath("tests", "house.yaml")
     model_ = convert_model(model_name, model_path)
     assert clean_model(model_, model_name) == set(_read(model_name))

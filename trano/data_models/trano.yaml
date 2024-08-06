@@ -433,7 +433,7 @@ classes:
         range: float
         required: false
         description: Pa
-        ifabsent: float(6000)
+        ifabsent: float(6000.0)
         aliases:
           - dpFixed_nominal
       valve_leakage:
@@ -513,7 +513,7 @@ classes:
       nominal_heating_power_positive_for_heating:
         range: float
         description: Nominal heating power (positive for heating)
-        ifabsent: float(2000)
+        ifabsent: float(2000.0)
         aliases:
           - Q_flow_nominal
       water_inlet_temperature_at_nominal_condition:
@@ -598,7 +598,7 @@ classes:
         sensible_thermal_mass_scaling_factor:
           range: float
           description: Factor for scaling the sensible thermal mass of the zone air volume
-          ifabsent: float(1.0)
+          ifabsent: float(1)
           aliases:
             - mSenFac
         floor_area:

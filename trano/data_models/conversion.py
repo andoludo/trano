@@ -3,6 +3,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Dict
 
+import yaml  # type: ignore
+
 from trano.construction import Construction, Layer
 from trano.material import Material
 from trano.models.elements.boiler import Boiler
@@ -26,8 +28,13 @@ from trano.topology import Network
 def convert_model(name: str, model_path: Path) -> str:  # noqa: PLR0912, PLR0915, C901
     network = Network(name=name)
     occupancy = None
-    house_json = model_path
-    data = json.loads(house_json.read_text())
+    data = None
+    if model_path.suffix == ".yaml":
+        data = yaml.safe_load(model_path.read_text())
+    if model_path.suffix == ".json":
+        data = json.loads(model_path.read_text())
+    if not data:
+        raise Exception("Invalid file format")
     materials = {
         material["id"]: Material(**(material | {"name": material["id"]}))
         for material in data["materials"]
