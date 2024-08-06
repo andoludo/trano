@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from trano.material import Material
 
@@ -63,6 +63,13 @@ class Construction(BaseModel):
 
     def __hash__(self) -> int:
         return hash(self.name)
+
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, value: str) -> str:
+        if ":" in value:
+            return value.lower().replace(":", "_")
+        return value
 
 
 class Constructions:

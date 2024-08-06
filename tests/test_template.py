@@ -1,70 +1,11 @@
-import re
 from pathlib import Path
-from typing import Set
 
 import pytest
 
+from tests.conftest import _read, clean_model
 from trano.library.library import Buildings, Ideas
 from trano.models.elements.space import Space
 from trano.topology import Network
-
-OVERWRITE_MODELS = False
-
-
-def remove_annotation(model: str) -> str:
-    for documentation in re.findall(r"Documentation(.*?)</html>", model, re.DOTALL):
-        model = model.replace(documentation, "").replace("Documentation", "")
-
-    model = model.replace(" ", "").replace("\n", "")
-    for annotation in re.findall(r"annotation(.*?);", model):
-        model = model.replace(annotation, "").replace("annotation", "")
-
-    return model
-
-
-def remove_common_package(model: str) -> str:
-    for annotation in re.findall(r"package Common(.*?)end Common;", model, re.DOTALL):
-        model = (
-            model.replace(annotation, "")
-            .replace("package Common", "")
-            .replace("end Common;", "")
-        )
-    return model
-
-
-def clean_model(model: str, model_name: str) -> set:
-    if OVERWRITE_MODELS:
-        path_file = Path(__file__).parent.joinpath("data", f"{model_name}.mo")
-        with path_file.open("w") as f:
-            f.write(model)
-    model = remove_common_package(model)
-    model_ = remove_annotation(model)
-    return {
-        line
-        for line in set(
-            model_.replace("record", ";").replace(f"model{model_name}", "").split(";")
-        )
-        if "ReaderTMY3weather" not in line
-    }
-
-
-def _read(file_name: str) -> Set:
-    return {
-        line
-        for line in set(
-            remove_annotation(
-                remove_common_package(
-                    Path(__file__)
-                    .parent.joinpath("data", f"{file_name}.mo")
-                    .read_text()
-                )
-            )
-            .replace("record", ";")
-            .replace(f"model{file_name}", "")
-            .split(";")
-        )
-        if "ReaderTMY3weather" not in line
-    }
 
 
 @pytest.mark.run(order=1)  # TODO: code smell!

@@ -324,7 +324,7 @@ class Space(BaseElement):
         if self.occupancy:
             self.occupancy.space_name = self.name
 
-    @computed_field  # type: ignore
+    # @computed_field  # type: ignore
     @property
     def number_merged_external_boundaries(self) -> int:
         return sum(
@@ -334,12 +334,12 @@ class Space(BaseElement):
             ]
         )
 
-    @computed_field  # type: ignore
+    # @computed_field  # type: ignore
     @property
     def number_ventilation_ports(self) -> int:
         return 2 + 1  # databus
 
-    @computed_field  # type: ignore
+    # @computed_field  # type: ignore
     @property
     def merged_external_boundaries(
         self,
@@ -352,12 +352,12 @@ class Space(BaseElement):
         external_walls = [
             boundary
             for boundary in self.external_boundaries
-            if boundary.type in ["ExternalWall", "ExternalDoor"]  # type: ignore
+            if boundary.type in ["ExternalWall", "ExternalDoor"]
         ]
         windows = [
             boundary
             for boundary in self.external_boundaries
-            if boundary.type == "Window"  # type: ignore
+            if boundary.type == "Window"
         ]
         merged_external_walls = MergedExternalWall.from_base_elements(external_walls)
         merged_windows = MergedWindows.from_base_windows(windows)  # type: ignore
@@ -367,9 +367,9 @@ class Space(BaseElement):
             merged_external_walls
             + merged_windows
             + [
-                boundary  # type: ignore
+                boundary
                 for boundary in self.external_boundaries
-                if boundary.type not in ["ExternalWall", "Window", "ExternalDoor"]  # type: ignore
+                if boundary.type not in ["ExternalWall", "Window", "ExternalDoor"]
             ]
         )
         return external_boundaries

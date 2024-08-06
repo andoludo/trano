@@ -1,7 +1,7 @@
 from math import sqrt
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from pydantic import computed_field, model_validator
+from pydantic import model_validator
 
 from trano.construction import Construction
 from trano.glass import Glass
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class BaseWall(BaseElement):
     ...
 
-    @computed_field  # type: ignore
+    # @computed_field  # type: ignore
     @property
     def length(self) -> int:
         if hasattr(self, "surfaces"):
