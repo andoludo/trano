@@ -1,5 +1,7 @@
 import json
+from collections import Counter
 from pathlib import Path
+from typing import Any, Dict
 
 from trano.construction import Construction, Layer
 from trano.material import Material
@@ -16,6 +18,7 @@ from trano.models.elements.space import Space, SpaceParameter
 from trano.models.elements.split_valve import SplitValve
 from trano.models.elements.three_way_valve import ThreeWayValve
 from trano.models.elements.valve import Valve
+from trano.models.elements.weather import Weather
 from trano.topology import Network
 
 
@@ -82,19 +85,24 @@ def convert_model(name: str, model_path: Path) -> str:  # noqa: PLR0912, PLR0915
         )
         space_dict[space_.name] = space_
         spaces.append(space_)
-    network.add_boiler_plate_spaces(spaces)
+    network.add_boiler_plate_spaces(spaces, weather=Weather(name="weather"))
     edges = []
-
+    system_counter: Dict[str, Any] = Counter()
     for system in data["systems"]:
         for system_type, value in system.items():
             if system_type == "boiler":
+
                 boiler = Boiler(
                     name=value["id"], control=BoilerControl(name="boiler_control")
                 )
                 systems[value["id"]] = boiler
             if system_type == "three_way_valve":
+                system_counter.update([system_type])
                 three_way_valve = ThreeWayValve(
-                    name=value["id"], control=ThreeWayValveControl()
+                    name=value["id"],
+                    control=ThreeWayValveControl(
+                        name=f"{system_type}_{system_counter[system_type]}"
+                    ),
                 )
                 systems[value["id"]] = three_way_valve
             if system_type == "pump":
