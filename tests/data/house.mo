@@ -467,7 +467,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSchema_space_001, occSch2.occupied);
  end OccupancyOccupancy_11;
- 
+
         model EmissionControlEmissioncontrol_9
   parameter Real schedule[:]=3600*{7,19};
 
@@ -531,7 +531,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSchema_space_002, occSch2.occupied);
  end OccupancyOccupancy_12;
- 
+
         model EmissionControlEmissioncontrol_10
   parameter Real schedule[:]=3600*{7,19};
 
@@ -595,7 +595,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSchema_space_003, occSch2.occupied);
  end OccupancyOccupancy_13;
- 
+
         model CollectorControlPump_control
 Buildings.Controls.OBC.CDL.Reals.PIDWithReset
 conPum(    controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.PI,
@@ -697,7 +697,7 @@ connect(dataBus.TAirOutSystem_001, lesThrTOut.u);
 connect(dataBus.yBoiConSystem_001, booToReaBoi.y);
 connect(dataBus.yPumBoiSystem_001, booToReaPum.y);
      end BoilerControlBoiler_control;
-     
+
         model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
 Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[3]
@@ -769,7 +769,7 @@ triggerThree_way_valve_1.y);
 connect(dataBus.triggerThree_way_valve_2,
 triggerThree_way_valve_2.y);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl
@@ -1201,7 +1201,7 @@ connect(dataBus.yPumBoiSystem_001, pumBoi.y);
 connect(dataBus.TStoTopSystem_001, tanTemTop.T);
 connect(dataBus.TStoBotSystem_001, tanTemBot.T);
      end BoilerWithStorageSystem_001;
-     
+
 
   end Boilers;
 
@@ -2397,7 +2397,7 @@ connect(dataBus.ySystem_002, pumRad.y);
 connect(dataBus.y_gainSystem_002, gain.y);
 connect(dataBus.TPump_control, temSup.T);
  end PumpSystem_002;
- 
+
 
     end Ventilation;
   end Fluid;
