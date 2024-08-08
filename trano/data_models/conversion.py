@@ -18,6 +18,7 @@ from trano.models.elements.pump import Pump
 from trano.models.elements.radiator import Radiator
 from trano.models.elements.space import Space, SpaceParameter
 from trano.models.elements.split_valve import SplitValve
+from trano.models.elements.temperature_sensor import TemperatureSensor
 from trano.models.elements.three_way_valve import ThreeWayValve
 from trano.models.elements.valve import Valve
 from trano.models.elements.weather import Weather
@@ -25,7 +26,9 @@ from trano.topology import Network
 
 
 # TODO: reduce complexity
-def convert_model(name: str, model_path: Path) -> str:  # noqa: PLR0912, PLR0915, C901
+def convert_network(  # noqa: C901, PLR0912, PLR0915
+    name: str, model_path: Path
+) -> Network:
     network = Network(name=name)
     occupancy = None
     data = None
@@ -105,11 +108,12 @@ def convert_model(name: str, model_path: Path) -> str:  # noqa: PLR0912, PLR0915
                 systems[value["id"]] = boiler
             if system_type == "three_way_valve":
                 system_counter.update([system_type])
+                three_way_valve_control = ThreeWayValveControl(
+                    name=f"{system_type}_control_{system_counter[system_type]}"
+                )
                 three_way_valve = ThreeWayValve(
                     name=value["id"],
-                    control=ThreeWayValveControl(
-                        name=f"{system_type}_{system_counter[system_type]}"
-                    ),
+                    control=three_way_valve_control,
                 )
                 systems[value["id"]] = three_way_valve
             if system_type == "pump":
@@ -120,6 +124,9 @@ def convert_model(name: str, model_path: Path) -> str:  # noqa: PLR0912, PLR0915
             if system_type == "split_valve":
                 split_valve = SplitValve(name=value["id"])
                 systems[value["id"]] = split_valve
+            if system_type == "temperature_sensor":
+                temperature_sensor = TemperatureSensor(name=value["id"])
+                systems[value["id"]] = temperature_sensor
     for system in data["systems"]:
         for value in system.values():
             edges += [
@@ -133,5 +140,9 @@ def convert_model(name: str, model_path: Path) -> str:  # noqa: PLR0912, PLR0915
 
     for edge in edges:
         network.connect_systems(*edge)
-    model = network.model()
-    return model
+    return network
+
+
+def convert_model(name: str, model_path: Path) -> str:
+    network = convert_network(name, model_path)
+    return network.model()

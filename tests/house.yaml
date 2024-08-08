@@ -56,7 +56,7 @@ spaces:
           control:
             emission_control:
               parameters:
-                k_coo_con: 0.0
+                k_coo_con: 1.0
   - id: schema:Space:002
     occupancy:
       parameters:
@@ -91,7 +91,7 @@ spaces:
           control:
             emission_control:
               parameters:
-                k_coo_con: 0.0
+                k_coo_con: 1.0
 
   - id: schema:Space:003
     occupancy:
@@ -126,7 +126,7 @@ spaces:
           control:
             emission_control:
               parameters:
-                k_coo_con: 0.0
+                k_coo_con: 1.0
 
 
 systems:
@@ -137,6 +137,8 @@ systems:
       outlets:
         - SYSTEM:004
         - SYSTEM:006
+      inlets:
+        - SYSTEM:001
   - split_valve:
       id: SYSTEM:003
       inlets:
@@ -147,9 +149,13 @@ systems:
   - three_way_valve:
       id: SYSTEM:004
       outlets:
-        - SYSTEM:007
-        - SYSTEM:009
+        - SYSTEM:013
         - SYSTEM:003
+  - temperature_sensor:
+      id: SYSTEM:013
+      outlets:
+        - SYSTEM:009
+        - SYSTEM:007
   - split_valve:
       id: SYSTEM:005
       inlets:
@@ -159,5 +165,11 @@ systems:
   - three_way_valve:
       id: SYSTEM:006
       outlets:
-        - SYSTEM:011
+        - SYSTEM:014
         - SYSTEM:005
+  - temperature_sensor:
+      id: SYSTEM:014
+      inlets:
+        - SYSTEM:006
+      outlets:
+        - SYSTEM:011

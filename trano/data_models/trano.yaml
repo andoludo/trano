@@ -127,6 +127,7 @@ classes:
       - three_way_valve
       - boiler
       - pump
+      - temperature_sensor
     class_uri: schema:Systems
 
   Emission:
@@ -174,6 +175,9 @@ classes:
     attributes:
       parameters:
         range: PumpParameters
+
+  TemperatureSensor:
+    is_a: System
 
 
   EmissionControl:
@@ -698,6 +702,10 @@ slots:
     inlined: true
   three_way_valve:
     range: ThreeWayValve
+    multivalued: false
+    inlined: true
+  temperature_sensor:
+    range: TemperatureSensor
     multivalued: false
     inlined: true
 

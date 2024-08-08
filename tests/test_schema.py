@@ -7,8 +7,9 @@ from typing import Optional
 import pytest
 from linkml.validator import validate_file
 
-from tests.conftest import _read, clean_model
-from trano.data_models.conversion import convert_model
+from tests.conftest import _read, clean_model, is_success
+from trano.data_models.conversion import convert_model, convert_network
+from trano.simulate.simulate import SimulationOptions, simulate
 
 
 def convert(
@@ -66,11 +67,12 @@ def test_convert_to_json_(schema: Path) -> None:
         assert convert(schema, "house.yaml", target)
 
 
-def test_create_model() -> None:
+def test_create_model(schema: Path) -> None:
     model_name = "house"
-    model_path = Path(__file__).parents[1].joinpath("tests", "house.json")
-    model_ = convert_model(model_name, model_path)
-    assert clean_model(model_, model_name) == set(_read(model_name))
+    with tempfile.NamedTemporaryFile(suffix=".json") as temp:
+        assert convert(schema, "house.yaml", "json", Path(temp.name))
+        model_ = convert_model(model_name, Path(temp.name))
+        assert clean_model(model_, model_name) == set(_read(model_name))
 
 
 def test_create_model_yaml() -> None:
@@ -78,3 +80,16 @@ def test_create_model_yaml() -> None:
     model_path = Path(__file__).parents[1].joinpath("tests", "house.yaml")
     model_ = convert_model(model_name, model_path)
     assert clean_model(model_, model_name) == set(_read(model_name))
+
+
+def test_simulate_model_yaml() -> None:
+    model_name = "house_yaml"
+    model_path = Path(__file__).parents[1].joinpath("tests", "house.yaml")
+    network = convert_network(model_name, model_path)
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
+        results = simulate(
+            Path(project_path),
+            network,
+            options=SimulationOptions(end_time=3600),
+        )
+        assert is_success(results)
