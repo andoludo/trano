@@ -20,6 +20,7 @@ prefixes:
   SYSTEM: http://example.org/SYSTEM/
   MATERIAL: http://example.org/MATERIAL/
   CONSTRUCTION: http://example.org/CONSTRUCTION/
+  CONTROL: http://example.org/CONTROL/
 default_prefix: trano
 default_range: string
 
@@ -164,17 +165,23 @@ classes:
     attributes:
       parameters:
         range: ThreeWayValveParameters
+      control:
+        range: Control
   Boiler:
     is_a: System
     attributes:
       parameters:
         range: BoilerParameters
+      control:
+        range: Control
 
   Pump:
     is_a: System
     attributes:
       parameters:
         range: PumpParameters
+      control:
+        range: Control
 
   TemperatureSensor:
     is_a: System
@@ -186,10 +193,25 @@ classes:
         range: ControlLoopsParameters
         multivalued: false
     class_uri: schema:EmissionControl
+  BoilerControl:
+    slots:
+      - id
+    class_uri: schema:BoilerControl
+  CollectorControl:
+    slots:
+      - id
+    class_uri: schema:CollectorControl
+  ThreeWayValveControl:
+    slots:
+      - id
+    class_uri: schema:CollectorControl
 
   Control:
     slots:
       - emission_control
+      - boiler_control
+      - collector_control
+      - three_way_valve_control
     class_uri: schema:Control
 
   OccupancyParameter:
@@ -733,6 +755,21 @@ slots:
     slot_uri: schema:emission_control
     range: EmissionControl
     multivalued: false
+  three_way_valve_control:
+    slot_uri: schema:three_way_valve_control
+    range: ThreeWayValveControl
+    multivalued: false
+    inlined: true
+  collector_control:
+    slot_uri: schema:collector_control
+    range: CollectorControl
+    multivalued: false
+    inlined: true
+  boiler_control:
+    slot_uri: schema:boiler_control
+    range: BoilerControl
+    multivalued: false
+    inlined: true
   external_boundaries:
     slot_uri: schema:external_boundaries
     range: ExternalBoundaries

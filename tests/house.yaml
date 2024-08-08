@@ -132,8 +132,14 @@ spaces:
 systems:
   - boiler:
       id: SYSTEM:001
+      control:
+        boiler_control:
+          id: CONTROL:001
   - pump:
       id: SYSTEM:002
+      control:
+        collector_control:
+          id: CONTROL:002
       outlets:
         - SYSTEM:004
         - SYSTEM:006
@@ -148,6 +154,9 @@ systems:
         - SYSTEM:001
   - three_way_valve:
       id: SYSTEM:004
+      control:
+        three_way_valve_control:
+          id: CONTROL:003
       outlets:
         - SYSTEM:013
         - SYSTEM:003
@@ -164,6 +173,9 @@ systems:
         - SYSTEM:001
   - three_way_valve:
       id: SYSTEM:006
+      control:
+        three_way_valve_control:
+          id: CONTROL:004
       outlets:
         - SYSTEM:014
         - SYSTEM:005
