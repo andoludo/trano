@@ -1,5 +1,6 @@
 import copy
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any, Dict
 
@@ -69,6 +70,7 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: C901
     network = Network(name=name)
     occupancy = None
     data = None
+    system_counter: Any = Counter()
     if model_path.suffix == ".yaml":
         data = yaml.safe_load(model_path.read_text())
     if model_path.suffix == ".json":
@@ -103,7 +105,13 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: C901
             )
             external_walls.append(external_wall_)
         if space.get("occupancy"):
-            occupancy = Occupancy(**space["occupancy"])
+            system_counter.update(["occupancy"])
+            occupancy = Occupancy(
+                **(
+                    space["occupancy"]
+                    | {"name": f"occupancy_{system_counter['occupancy']}"}
+                )
+            )
         emissions = []
         for emission in space["emissions"]:
             emission_ = _instantiate_component(emission)

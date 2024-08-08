@@ -55,6 +55,7 @@ spaces:
             rangeability: 7
           control:
             emission_control:
+              id: CONTROL:007
               parameters:
                 k_coo_con: 1.0
   - id: schema:Space:002
@@ -90,6 +91,7 @@ spaces:
             rangeability: 7
           control:
             emission_control:
+              id: CONTROL:006
               parameters:
                 k_coo_con: 1.0
 
@@ -125,6 +127,7 @@ spaces:
             rangeability: 7
           control:
             emission_control:
+              id: CONTROL:005
               parameters:
                 k_coo_con: 1.0
 

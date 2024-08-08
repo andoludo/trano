@@ -188,6 +188,8 @@ classes:
 
 
   EmissionControl:
+    slots:
+      - id
     attributes:
       parameters:
         range: ControlLoopsParameters
@@ -755,6 +757,7 @@ slots:
     slot_uri: schema:emission_control
     range: EmissionControl
     multivalued: false
+    inlined: true
   three_way_valve_control:
     slot_uri: schema:three_way_valve_control
     range: ThreeWayValveControl
