@@ -1,5 +1,6 @@
 import copy
 import json
+import tempfile
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict
@@ -43,7 +44,6 @@ class Component(BaseModel):
 
 
 def validate_model(model_path: Path) -> None:
-    # TODO: why? this is not right,
 
     report = validate_file(model_path, DATA_MODEL_PATH, "Building")
     if report.results:
@@ -77,19 +77,40 @@ def _instantiate_component(component_: Dict[str, Any]) -> Component:
     return Component(name=name, component_instance=component)
 
 
+class EnrichedModel(BaseModel):
+    data: Dict[str, Any]
+    path: Path
+
+
+def load_and_enrich_model(model_path: Path) -> EnrichedModel:
+    if model_path.suffix == ".yaml":
+        load_function = yaml.safe_load
+        dump_function = yaml.safe_dump
+    elif model_path.suffix == ".json":
+        load_function = json.loads
+        dump_function = json.dump
+    else:
+        raise Exception("Invalid file format")
+    data = load_function(model_path.read_text())
+    data = assign_space_id(data)
+    _parse(data)
+    with tempfile.NamedTemporaryFile(
+        mode="w+", suffix=model_path.suffix, delete=False
+    ) as f:
+        dump_function(data, f)
+    return EnrichedModel(path=Path(f.name), data=data)
+
+
 # TODO: reduce complexity
-def convert_network(name: str, model_path: Path) -> Network:  # noqa: C901
+def convert_network(name: str, model_path: Path) -> Network:
     network = Network(name=name)
     occupancy = None
-    data = None
     system_counter: Any = Counter()
-    validate_model(model_path)
-    if model_path.suffix == ".yaml":
-        data = yaml.safe_load(model_path.read_text())
-    if model_path.suffix == ".json":
-        data = json.loads(model_path.read_text())
-    if not data:
-        raise Exception("Invalid file format")
+
+    enriched_model = load_and_enrich_model(model_path)
+    validate_model(enriched_model.path)
+    data = enriched_model.data
+
     materials = {
         material["id"]: Material(**(material | {"name": material["id"]}))
         for material in data["materials"]
