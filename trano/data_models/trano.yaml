@@ -21,6 +21,8 @@ prefixes:
   MATERIAL: http://example.org/MATERIAL/
   CONSTRUCTION: http://example.org/CONSTRUCTION/
   CONTROL: http://example.org/CONTROL/
+  OCCUPANCY: http://example.org/OCCUPANCY/
+  SPACE: http://example.org/SPACE/
 default_prefix: trano
 default_range: string
 

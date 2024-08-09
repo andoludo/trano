@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 import yaml  # type: ignore
+from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
 from trano.construction import Construction, Layer
@@ -28,6 +29,9 @@ from trano.models.elements.valve import Valve  # noqa: F401
 from trano.models.elements.weather import Weather
 from trano.topology import Network
 
+DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano.yaml")
+COUNTER: Dict[Any, Any] = Counter()
+
 
 def to_camel_case(snake_str: str) -> str:
     return "".join(x.capitalize() for x in snake_str.lower().split("_"))
@@ -36,6 +40,14 @@ def to_camel_case(snake_str: str) -> str:
 class Component(BaseModel):
     name: str
     component_instance: Any
+
+
+def validate_model(model_path: Path) -> None:
+    # TODO: why? this is not right,
+
+    report = validate_file(model_path, DATA_MODEL_PATH, "Building")
+    if report.results:
+        raise Exception("Invalid model.")
 
 
 def _instantiate_component(component_: Dict[str, Any]) -> Component:
@@ -71,6 +83,7 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: C901
     occupancy = None
     data = None
     system_counter: Any = Counter()
+    validate_model(model_path)
     if model_path.suffix == ".yaml":
         data = yaml.safe_load(model_path.read_text())
     if model_path.suffix == ".json":
@@ -104,7 +117,7 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: C901
                 )
             )
             external_walls.append(external_wall_)
-        if space.get("occupancy"):
+        if space.get("occupancy") is not None:
             system_counter.update(["occupancy"])
             occupancy = Occupancy(
                 **(
@@ -149,3 +162,26 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: C901
 def convert_model(name: str, model_path: Path) -> str:
     network = convert_network(name, model_path)
     return network.model()
+
+
+def _parse(data: Dict[str, Any]) -> None:
+    for k, v in data.items():
+        if isinstance(v, dict):
+            _parse(v)
+        elif isinstance(v, list):
+            for i in v:
+                if isinstance(i, dict):
+                    _parse(i)
+        elif v is None and "control" in k:
+            COUNTER.update(["control"])  # type: ignore
+            data[k] = {"id": f"CONTROL:{COUNTER['control']}"}
+
+
+def assign_space_id(data: Dict[str, Any]) -> Dict[str, Any]:
+    space_counter: Dict[Any, Any] = Counter()
+    spaces = []
+    for space in data.get("spaces", []):
+        space_counter.update(["space"])  # type: ignore
+        spaces.append({"id": f"SPACE:{space_counter['space']}"} | space)
+    data["spaces"] = spaces
+    return data

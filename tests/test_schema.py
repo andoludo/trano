@@ -5,10 +5,16 @@ from pathlib import Path
 from typing import Optional
 
 import pytest
+import yaml
 from linkml.validator import validate_file
 
 from tests.conftest import _read, clean_model, is_success
-from trano.data_models.conversion import convert_model, convert_network
+from trano.data_models.conversion import (
+    _parse,
+    assign_space_id,
+    convert_model,
+    convert_network,
+)
 from trano.simulate.simulate import SimulationOptions, simulate
 
 
@@ -93,3 +99,21 @@ def test_simulate_model_yaml() -> None:
             options=SimulationOptions(end_time=3600),
         )
         assert is_success(results)
+
+
+def test_simplified_yaml() -> None:
+    model_path = Path(__file__).parents[1].joinpath("tests", "simplified_house.yaml")
+    data = yaml.safe_load(model_path.read_text())
+    data = assign_space_id(data)
+    _parse(data)
+    with tempfile.NamedTemporaryFile(mode="w+", suffix=".yaml") as f:
+        yaml.safe_dump(data, f)
+        network = convert_network("simplified_yaml", Path(f.name))
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
+            results = simulate(
+                Path(project_path),
+                network,
+                options=SimulationOptions(end_time=3600),
+            )
+            assert is_success(results)
