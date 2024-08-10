@@ -1,0 +1,152 @@
+material:
+  - id: MATERIAL:001
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+  - id: MATERIAL:002
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+  - id: MATERIAL:003
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+
+constructions:
+  - id: CONSTRUCTION:001
+    layers:
+      - material: MATERIAL:001
+        thickness: 0.1
+      - material: MATERIAL:002
+        thickness: 0.1
+      - material: MATERIAL:003
+        thickness: 0.1
+spaces:
+  - occupancy:
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    external_boundaries:
+      external_walls:
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 200.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+    emissions:
+      - radiator:
+          id: SYSTEM:007
+      - valve:
+          id: SYSTEM:008
+          control:
+            emission_control:
+  - occupancy:
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    external_boundaries:
+      external_walls:
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 200.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+    emissions:
+      - radiator:
+          id: SYSTEM:009
+      - valve:
+          id: SYSTEM:010
+          control:
+            emission_control:
+  - occupancy:
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    external_boundaries:
+      external_walls:
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 200.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+    emissions:
+      - radiator:
+          id: SYSTEM:011
+      - valve:
+          id: SYSTEM:012
+          control:
+            emission_control:
+
+systems:
+  - boiler:
+      id: SYSTEM:001
+      control:
+        boiler_control:
+  - pump:
+      id: SYSTEM:002
+      control:
+        collector_control:
+      outlets:
+        - SYSTEM:004
+        - SYSTEM:006
+      inlets:
+        - SYSTEM:001
+  - split_valve:
+      id: SYSTEM:003
+      inlets:
+        - SYSTEM:008
+        - SYSTEM:010
+      outlets:
+        - SYSTEM:001
+  - three_way_valve:
+      id: SYSTEM:004
+      control:
+        three_way_valve_control:
+      outlets:
+        - SYSTEM:013
+        - SYSTEM:003
+  - temperature_sensor:
+      id: SYSTEM:013
+      outlets:
+        - SYSTEM:009
+        - SYSTEM:007
+  - split_valve:
+      id: SYSTEM:005
+      inlets:
+        - SYSTEM:012
+      outlets:
+        - SYSTEM:001
+  - three_way_valve:
+      id: SYSTEM:006
+      control:
+        three_way_valve_control:
+      outlets:
+        - SYSTEM:014
+        - SYSTEM:005
+  - temperature_sensor:
+      id: SYSTEM:014
+      inlets:
+        - SYSTEM:006
+      outlets:
+        - SYSTEM:011

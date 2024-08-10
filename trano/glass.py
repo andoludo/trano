@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from trano.material import Gas, GlassMaterial
 
@@ -113,6 +113,13 @@ class Glass(BaseModel):
 
     def __hash__(self) -> int:
         return hash(self.name)
+
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, value: str) -> str:
+        if ":" in value:
+            return value.lower().replace(":", "_")
+        return value
 
 
 class Glasses:

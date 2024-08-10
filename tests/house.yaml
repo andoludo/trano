@@ -1,0 +1,218 @@
+material:
+  - id: MATERIAL:001
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+  - id: MATERIAL:002
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+  - id: MATERIAL:003
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+gas:
+  - id: MATERIAL:004
+    thermal_conductivity: 0.025
+    density: 1.2
+    specific_heat_capacity: 1000.0
+glass_material:
+  - id: MATERIAL:005
+    thermal_conductivity: 1
+    density: 2500.0
+    specific_heat_capacity: 840
+glazings:
+    - id: CONSTRUCTION:011
+      layers:
+        - glass: MATERIAL:005
+          thickness: 0.003
+        - gas: MATERIAL:004
+          thickness: 0.0127
+        - glass: MATERIAL:005
+          thickness: 0.003
+constructions:
+  - id: CONSTRUCTION:001
+    layers:
+      - material: MATERIAL:001
+        thickness: 0.1
+      - material: MATERIAL:002
+        thickness: 0.1
+      - material: MATERIAL:003
+        thickness: 0.1
+spaces:
+  - id: schema:Space:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    external_boundaries:
+      external_walls:
+        - surface: 10.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 10.0
+          azimuth: 90.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 20.0
+          azimuth: 0.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+      floor_on_grounds:
+        - surface: 1.0
+          construction: CONSTRUCTION:001
+      windows:
+        - surface: 1.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:011
+          width: 1.0
+          height: 1.0
+    emissions:
+      - radiator:
+          id: SYSTEM:007
+          parameters:
+            exponent_for_heat_transfer: 1.9
+
+      - valve:
+          id: SYSTEM:008
+          parameters:
+            rangeability: 7
+          control:
+            emission_control:
+              id: CONTROL:007
+              parameters:
+                k_coo_con: 1.0
+  - id: schema:Space:002
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    external_boundaries:
+      external_walls:
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 200.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+    emissions:
+      - radiator:
+          id: SYSTEM:009
+          parameters:
+            exponent_for_heat_transfer: 1.9
+
+      - valve:
+          id: SYSTEM:010
+          parameters:
+            rangeability: 7
+          control:
+            emission_control:
+              id: CONTROL:006
+              parameters:
+                k_coo_con: 1.0
+
+  - id: schema:Space:003
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    external_boundaries:
+      external_walls:
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 200.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+    emissions:
+      - radiator:
+          id: SYSTEM:011
+          parameters:
+            exponent_for_heat_transfer: 1.9
+      - valve:
+          id: SYSTEM:012
+          parameters:
+            rangeability: 7
+          control:
+            emission_control:
+              id: CONTROL:005
+              parameters:
+                k_coo_con: 1.0
+
+
+systems:
+  - boiler:
+      id: SYSTEM:001
+      control:
+        boiler_control:
+          id: CONTROL:001
+  - pump:
+      id: SYSTEM:002
+      control:
+        collector_control:
+          id: CONTROL:002
+      outlets:
+        - SYSTEM:004
+        - SYSTEM:006
+      inlets:
+        - SYSTEM:001
+  - split_valve:
+      id: SYSTEM:003
+      inlets:
+        - SYSTEM:008
+        - SYSTEM:010
+      outlets:
+        - SYSTEM:001
+  - three_way_valve:
+      id: SYSTEM:004
+      control:
+        three_way_valve_control:
+          id: CONTROL:003
+      outlets:
+        - SYSTEM:013
+        - SYSTEM:003
+  - temperature_sensor:
+      id: SYSTEM:013
+      outlets:
+        - SYSTEM:009
+        - SYSTEM:007
+  - split_valve:
+      id: SYSTEM:005
+      inlets:
+        - SYSTEM:012
+      outlets:
+        - SYSTEM:001
+  - three_way_valve:
+      id: SYSTEM:006
+      control:
+        three_way_valve_control:
+          id: CONTROL:004
+      outlets:
+        - SYSTEM:014
+        - SYSTEM:005
+  - temperature_sensor:
+      id: SYSTEM:014
+      inlets:
+        - SYSTEM:006
+      outlets:
+        - SYSTEM:011

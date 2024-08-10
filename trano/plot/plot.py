@@ -32,7 +32,7 @@ def plot(data: Reader, figure: Figure, show: bool = True) -> pyFigure:
             except KeyError:
                 logger.warning(f"Key {line.key} not found in data")
                 continue
-            (p,) = axis.plot(
+            (p,) = axis.plot(  # type: ignore
                 line_data.loc[1],
                 linestyle=line.line_style,
                 linewidth=line.line_width,

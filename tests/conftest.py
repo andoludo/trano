@@ -1,4 +1,6 @@
+import re
 from pathlib import Path
+from typing import Set
 
 import docker
 import pytest
@@ -53,6 +55,8 @@ from trano.models.elements.temperature_sensor import TemperatureSensor
 from trano.models.elements.three_way_valve import ThreeWayValve, ThreeWayValveParameters
 from trano.models.elements.weather import Weather
 from trano.topology import Network
+
+OVERWRITE_MODELS = False
 
 
 def is_success(results: docker.models.containers.ExecResult) -> bool:
@@ -799,3 +803,59 @@ def building_multiple_internal_walls_ideas() -> Network:
 @pytest.fixture
 def house_model() -> Network:
     return house_model_fixture()
+
+
+def remove_annotation(model: str) -> str:
+    for documentation in re.findall(r"Documentation(.*?)</html>", model, re.DOTALL):
+        model = model.replace(documentation, "").replace("Documentation", "")
+
+    model = model.replace(" ", "").replace("\n", "")
+    for annotation in re.findall(r"annotation(.*?);", model):
+        model = model.replace(annotation, "").replace("annotation", "")
+
+    return model
+
+
+def remove_common_package(model: str) -> str:
+    for annotation in re.findall(r"package Common(.*?)end Common;", model, re.DOTALL):
+        model = (
+            model.replace(annotation, "")
+            .replace("package Common", "")
+            .replace("end Common;", "")
+        )
+    return model
+
+
+def clean_model(model: str, model_name: str) -> set:
+    if OVERWRITE_MODELS:
+        path_file = Path(__file__).parent.joinpath("data", f"{model_name}.mo")
+        with path_file.open("w") as f:
+            f.write(model)
+    model = remove_common_package(model)
+    model_ = remove_annotation(model)
+    return {
+        line
+        for line in set(
+            model_.replace("record", ";").replace(f"model{model_name}", "").split(";")
+        )
+        if "ReaderTMY3weather" not in line
+    }
+
+
+def _read(file_name: str) -> Set:
+    return {
+        line
+        for line in set(
+            remove_annotation(
+                remove_common_package(
+                    Path(__file__)
+                    .parent.joinpath("data", f"{file_name}.mo")
+                    .read_text()
+                )
+            )
+            .replace("record", ";")
+            .replace(f"model{file_name}", "")
+            .split(";")
+        )
+        if "ReaderTMY3weather" not in line
+    }

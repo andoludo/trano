@@ -1,0 +1,459 @@
+{
+  "materials": [
+    {
+      "id": "MATERIAL:001",
+      "thermal_conductivity": 0.035,
+      "specific_heat_capacity": 1000.0,
+      "density": 2000.0,
+      "longwave_emissivity": 0.85,
+      "shortwave_emissivity": 0.85
+    },
+    {
+      "id": "MATERIAL:002",
+      "thermal_conductivity": 0.035,
+      "specific_heat_capacity": 1000.0,
+      "density": 2000.0,
+      "longwave_emissivity": 0.85,
+      "shortwave_emissivity": 0.85
+    },
+    {
+      "id": "MATERIAL:003",
+      "thermal_conductivity": 0.035,
+      "specific_heat_capacity": 1000.0,
+      "density": 2000.0,
+      "longwave_emissivity": 0.85,
+      "shortwave_emissivity": 0.85
+    }
+  ],
+  "gas": [
+    {
+      "id": "MATERIAL:004",
+      "thermal_conductivity": 0.035,
+      "specific_heat_capacity": 1000.0,
+      "density": 2000.0,
+      "longwave_emissivity": 0.85,
+      "shortwave_emissivity": 0.85
+    }
+  ],
+  "glass": [
+    {
+      "id": "MATERIAL:005",
+      "thermal_conductivity": 0.035,
+      "specific_heat_capacity": 1000.0,
+      "density": 2000.0,
+      "longwave_emissivity": 0.85,
+      "shortwave_emissivity": 0.85,
+      "solar_transmittance": [
+        0.84
+      ],
+      "solar_reflectance_outside_facing": [
+        0.84
+      ],
+      "solar_reflectance_room_facing": [
+        0.84
+      ],
+      "infrared_transmissivity": 0.0,
+      "infrared_absorptivity_outside_facing": 0.84,
+      "infrared_absorptivity_room_facing": 0.84
+    }
+  ],
+  "glazings": [
+    {
+      "id": "CONSTRUCTION:011",
+      "layers": [
+        {
+          "glass": "MATERIAL:004",
+          "thickness": 0.1
+        },
+        {
+          "gas": "MATERIAL:005",
+          "thickness": 0.1
+        },
+        {
+          "glass": "MATERIAL:004",
+          "thickness": 0.1
+        }
+      ]
+    }
+  ],
+  "constructions": [
+    {
+      "id": "CONSTRUCTION:001",
+      "layers": [
+        {
+          "material": "MATERIAL:001",
+          "thickness": 0.1
+        },
+        {
+          "material": "MATERIAL:002",
+          "thickness": 0.1
+        },
+        {
+          "material": "MATERIAL:003",
+          "thickness": 0.1
+        }
+      ]
+    }
+  ],
+  "spaces": [
+    {
+      "id": "schema:Space:001",
+      "external_boundaries": {
+        "external_walls": [
+          {
+            "surface": 100.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          },
+          {
+            "surface": 100.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          },
+          {
+            "surface": 200.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          }
+        ]
+      },
+      "parameters": {
+        "sensible_thermal_mass_scaling_factor": 1.0,
+        "floor_area": 100.0,
+        "average_room_height": 2.5,
+        "nominal_mass_flow_rate": 0.01,
+        "temperature_initial": 294.15
+      },
+      "occupancy": {
+        "parameters": {
+          "occupancy": "3600*{7, 19}",
+          "gain": "[35; 70; 30]",
+          "heat_gain_if_occupied": "1/6/4"
+        }
+      },
+      "emissions": [
+        {
+          "radiator": {
+            "id": "SYSTEM:007",
+            "parameters": {
+              "number_of_elements_used_in_the_discretization": 1.0,
+              "fraction_radiant_heat_transfer": 0.3,
+              "nominal_heating_power_positive_for_heating": 2000.0,
+              "water_inlet_temperature_at_nominal_condition": 363.15,
+              "water_outlet_temperature_at_nominal_condition": 353.15,
+              "air_temperature_at_nominal_condition": 293.15,
+              "radiative_temperature_at_nominal_condition": 293.15,
+              "exponent_for_heat_transfer": 1.9,
+              "fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs": 0.01,
+              "dp_nominal": 1000.0
+            }
+          }
+        },
+        {
+          "valve": {
+            "id": "SYSTEM:008",
+            "parameters": {
+              "rangeability": 7.0,
+              "range_of_significant_deviation_from_equal_percentage_law": 0.01,
+              "dp_fixed_nominal": 6000.0,
+              "valve_leakage": 0.0001,
+              "fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1": 0.02,
+              "m_flow_nominal": 0.01,
+              "dp_valve_nominal": 6000.0
+            },
+            "control": {
+              "emission_control": {
+                "id": "CONTROL:007",
+                "parameters": {
+                  "k_coo_con": 1.0,
+                  "ti_coo_con": 900.0,
+                  "k_hea_con": 0.1,
+                  "ti_hea_con": 900.0,
+                  "tim_che": 30.0,
+                  "dt_hys": 0.25,
+                  "loo_hys": 0.01
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "schema:Space:002",
+      "external_boundaries": {
+        "external_walls": [
+          {
+            "surface": 100.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          },
+          {
+            "surface": 100.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          },
+          {
+            "surface": 200.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          }
+        ]
+      },
+      "parameters": {
+        "sensible_thermal_mass_scaling_factor": 1.0,
+        "floor_area": 100.0,
+        "average_room_height": 2.5,
+        "nominal_mass_flow_rate": 0.01,
+        "temperature_initial": 294.15
+      },
+      "occupancy": {
+        "parameters": {
+          "occupancy": "3600*{7, 19}",
+          "gain": "[35; 70; 30]",
+          "heat_gain_if_occupied": "1/6/4"
+        }
+      },
+      "emissions": [
+        {
+          "radiator": {
+            "id": "SYSTEM:009",
+            "parameters": {
+              "number_of_elements_used_in_the_discretization": 1.0,
+              "fraction_radiant_heat_transfer": 0.3,
+              "nominal_heating_power_positive_for_heating": 2000.0,
+              "water_inlet_temperature_at_nominal_condition": 363.15,
+              "water_outlet_temperature_at_nominal_condition": 353.15,
+              "air_temperature_at_nominal_condition": 293.15,
+              "radiative_temperature_at_nominal_condition": 293.15,
+              "exponent_for_heat_transfer": 1.9,
+              "fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs": 0.01,
+              "dp_nominal": 1000.0
+            }
+          }
+        },
+        {
+          "valve": {
+            "id": "SYSTEM:010",
+            "parameters": {
+              "rangeability": 7.0,
+              "range_of_significant_deviation_from_equal_percentage_law": 0.01,
+              "dp_fixed_nominal": 6000.0,
+              "valve_leakage": 0.0001,
+              "fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1": 0.02,
+              "m_flow_nominal": 0.01,
+              "dp_valve_nominal": 6000.0
+            },
+            "control": {
+              "emission_control": {
+                "id": "CONTROL:006",
+                "parameters": {
+                  "k_coo_con": 1.0,
+                  "ti_coo_con": 900.0,
+                  "k_hea_con": 0.1,
+                  "ti_hea_con": 900.0,
+                  "tim_che": 30.0,
+                  "dt_hys": 0.25,
+                  "loo_hys": 0.01
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "schema:Space:003",
+      "external_boundaries": {
+        "external_walls": [
+          {
+            "surface": 100.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          },
+          {
+            "surface": 100.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          },
+          {
+            "surface": 200.0,
+            "azimuth": 180.0,
+            "tilt": "wall",
+            "construction": "CONSTRUCTION:001"
+          }
+        ]
+      },
+      "parameters": {
+        "sensible_thermal_mass_scaling_factor": 1.0,
+        "floor_area": 100.0,
+        "average_room_height": 2.5,
+        "nominal_mass_flow_rate": 0.01,
+        "temperature_initial": 294.15
+      },
+      "occupancy": {
+        "parameters": {
+          "occupancy": "3600*{7, 19}",
+          "gain": "[35; 70; 30]",
+          "heat_gain_if_occupied": "1/6/4"
+        }
+      },
+      "emissions": [
+        {
+          "radiator": {
+            "id": "SYSTEM:011",
+            "parameters": {
+              "number_of_elements_used_in_the_discretization": 1.0,
+              "fraction_radiant_heat_transfer": 0.3,
+              "nominal_heating_power_positive_for_heating": 2000.0,
+              "water_inlet_temperature_at_nominal_condition": 363.15,
+              "water_outlet_temperature_at_nominal_condition": 353.15,
+              "air_temperature_at_nominal_condition": 293.15,
+              "radiative_temperature_at_nominal_condition": 293.15,
+              "exponent_for_heat_transfer": 1.9,
+              "fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs": 0.01,
+              "dp_nominal": 1000.0
+            }
+          }
+        },
+        {
+          "valve": {
+            "id": "SYSTEM:012",
+            "parameters": {
+              "rangeability": 7.0,
+              "range_of_significant_deviation_from_equal_percentage_law": 0.01,
+              "dp_fixed_nominal": 6000.0,
+              "valve_leakage": 0.0001,
+              "fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1": 0.02,
+              "m_flow_nominal": 0.01,
+              "dp_valve_nominal": 6000.0
+            },
+            "control": {
+              "emission_control": {
+                "id": "CONTROL:005",
+                "parameters": {
+                  "k_coo_con": 1.0,
+                  "ti_coo_con": 900.0,
+                  "k_hea_con": 0.1,
+                  "ti_hea_con": 900.0,
+                  "tim_che": 30.0,
+                  "dt_hys": 0.25,
+                  "loo_hys": 0.01
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "systems": [
+    {
+      "boiler": {
+        "id": "SYSTEM:001",
+        "control": {
+          "boiler_control": {
+            "id": "CONTROL:001"
+          }
+        }
+      }
+    },
+    {
+      "pump": {
+        "id": "SYSTEM:002",
+        "inlets": [
+          "SYSTEM:001"
+        ],
+        "outlets": [
+          "SYSTEM:004",
+          "SYSTEM:006"
+        ],
+        "control": {
+          "collector_control": {
+            "id": "CONTROL:002"
+          }
+        }
+      }
+    },
+    {
+      "split_valve": {
+        "id": "SYSTEM:003",
+        "inlets": [
+          "SYSTEM:008",
+          "SYSTEM:010"
+        ],
+        "outlets": [
+          "SYSTEM:001"
+        ]
+      }
+    },
+    {
+      "three_way_valve": {
+        "id": "SYSTEM:004",
+        "outlets": [
+          "SYSTEM:013",
+          "SYSTEM:003"
+        ],
+        "control": {
+          "three_way_valve_control": {
+            "id": "CONTROL:003"
+          }
+        }
+      }
+    },
+    {
+      "temperature_sensor": {
+        "id": "SYSTEM:013",
+        "outlets": [
+          "SYSTEM:009",
+          "SYSTEM:007"
+        ]
+      }
+    },
+    {
+      "split_valve": {
+        "id": "SYSTEM:005",
+        "inlets": [
+          "SYSTEM:012"
+        ],
+        "outlets": [
+          "SYSTEM:001"
+        ]
+      }
+    },
+    {
+      "three_way_valve": {
+        "id": "SYSTEM:006",
+        "outlets": [
+          "SYSTEM:014",
+          "SYSTEM:005"
+        ],
+        "control": {
+          "three_way_valve_control": {
+            "id": "CONTROL:004"
+          }
+        }
+      }
+    },
+    {
+      "temperature_sensor": {
+        "id": "SYSTEM:014",
+        "inlets": [
+          "SYSTEM:006"
+        ],
+        "outlets": [
+          "SYSTEM:011"
+        ]
+      }
+    }
+  ],
+  "@type": "Building"
+}

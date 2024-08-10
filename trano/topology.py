@@ -36,6 +36,8 @@ from trano.models.elements.materials.properties import extract_properties
 from trano.models.elements.pump import Pump
 from trano.models.elements.space import Space, _get_controllable_element
 from trano.models.elements.system import System, Ventilation
+from trano.models.elements.temperature_sensor import TemperatureSensor
+from trano.models.elements.three_way_valve import ThreeWayValve
 from trano.models.elements.valve import Valve
 from trano.models.elements.weather import Weather
 
@@ -284,6 +286,17 @@ class Network:  # noqa : PLR0904, #TODO: fix this
                     self.add_node(system_2.control)
                     self._system_controls.append(system_2.control)
                 self.graph.add_edge(system_2, system_2.control)
+        if (
+            isinstance(system_2, ThreeWayValve)
+            and isinstance(system_1, TemperatureSensor)
+        ) or (
+            isinstance(system_1, ThreeWayValve)
+            and isinstance(system_2, TemperatureSensor)
+        ):
+            if system_2.control:
+                self.graph.add_edge(system_2.control, system_1)
+            if system_1.control:
+                self.graph.add_edge(system_1.control, system_2)
         self.graph.add_edge(system_1, system_2)
         self._assign_position(system_1, system_2)
 

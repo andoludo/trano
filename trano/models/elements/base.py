@@ -17,8 +17,8 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    computed_field,
     create_model,
+    field_validator,
     model_validator,
 )
 
@@ -249,6 +249,13 @@ class BaseElement(BaseModel):
             type(self).name_counter += 1
         return self
 
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, value: str) -> str:
+        if ":" in value:
+            return value.lower().replace(":", "_")
+        return value
+
     def assign_library_property(self, library: "Libraries") -> bool:
         if self.libraries_data is None:
             return False
@@ -280,7 +287,7 @@ class BaseElement(BaseModel):
     def get_controllable_ports(self) -> List[Port]:
         return [port for port in self.ports if port.is_controllable()]
 
-    @computed_field
+    @property
     def type(self) -> str:
         return type(self).__name__
 
