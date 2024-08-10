@@ -1,4 +1,4 @@
-materials:
+material:
   - id: MATERIAL:001
     thermal_conductivity: 0.035
     density: 2000.0
@@ -11,7 +11,25 @@ materials:
     thermal_conductivity: 0.035
     density: 2000.0
     specific_heat_capacity: 1000.0
-
+gas:
+  - id: MATERIAL:004
+    thermal_conductivity: 0.025
+    density: 1.2
+    specific_heat_capacity: 1000.0
+glass_material:
+  - id: MATERIAL:005
+    thermal_conductivity: 1
+    density: 2500.0
+    specific_heat_capacity: 840
+glazings:
+    - id: CONSTRUCTION:011
+      layers:
+        - glass: MATERIAL:005
+          thickness: 0.003
+        - gas: MATERIAL:004
+          thickness: 0.0127
+        - glass: MATERIAL:005
+          thickness: 0.003
 constructions:
   - id: CONSTRUCTION:001
     layers:
@@ -31,18 +49,28 @@ spaces:
       average_room_height: 2.5
     external_boundaries:
       external_walls:
-        - surface: 100.0
+        - surface: 10.0
           azimuth: 180.0
           tilt: wall
           construction: CONSTRUCTION:001
-        - surface: 100.0
-          azimuth: 180.0
+        - surface: 10.0
+          azimuth: 90.0
           tilt: wall
           construction: CONSTRUCTION:001
-        - surface: 200.0
-          azimuth: 180.0
+        - surface: 20.0
+          azimuth: 0.0
           tilt: wall
           construction: CONSTRUCTION:001
+      floor_on_grounds:
+        - surface: 1.0
+          construction: CONSTRUCTION:001
+      windows:
+        - surface: 1.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:011
+          width: 1.0
+          height: 1.0
     emissions:
       - radiator:
           id: SYSTEM:007

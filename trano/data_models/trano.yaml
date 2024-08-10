@@ -53,6 +53,26 @@ classes:
       - surface
       - azimuth
       - tilt
+  FloorOnGround:
+    attributes:
+      construction:
+        description: Construction
+        range: Construction
+    slots:
+      - surface
+  Window:
+    attributes:
+      construction:
+        description: Glazing
+        range: Glazing
+      width:
+        range: float
+      height:
+        range: float
+    slots:
+      - surface
+      - azimuth
+      - tilt
   ExternalBoundaries:
     attributes:
       external_walls:
@@ -60,7 +80,11 @@ classes:
         multivalued: true
         inlined: true
       floor_on_grounds:
-        range: ExternalWall
+        range: FloorOnGround
+        multivalued: true
+        inlined: true
+      windows:
+        range: Window
         multivalued: true
         inlined: true
 
@@ -85,6 +109,43 @@ classes:
         description: Shortwave emissivity [1]
         range: float
         ifabsent: float(0.85)
+  Gas:
+    is_a: Material
+  GlassMaterial:
+    is_a: Material
+    attributes:
+      solar_transmittance:
+        range: float
+        multivalued: true
+        ifabsent: float(0.486)
+      solar_reflectance_outside_facing:
+        range: float
+        multivalued: true
+        ifabsent: float(0.053)
+      solar_reflectance_room_facing:
+        range: float
+        multivalued: true
+        ifabsent: float(0.053)
+      infrared_transmissivity:
+        range: float
+        ifabsent: float(0.0)
+      infrared_absorptivity_outside_facing:
+        range: float
+        ifabsent: float(0.84)
+      infrared_absorptivity_room_facing:
+        range: float
+        ifabsent: float(0.84)
+  GlazingLayer:
+    attributes:
+      gas:
+        description: Gas
+        range: Gas
+      glass:
+        description: Glass
+        range: GlassMaterial
+      thickness:
+        description: Thickness [m]
+        range: float
   Layer:
     attributes:
       material:
@@ -100,6 +161,18 @@ classes:
       layers:
         description: Layers
         range: Layer
+        multivalued: true
+  Glazing:
+    slots:
+      - id
+    attributes:
+      u_value_frame:
+        description: U-value of the frame [W/(m2.K)]
+        range: float
+        ifabsent: float(1.4)
+      layers:
+        description: Layers
+        range: GlazingLayer
         multivalued: true
   Parameter:
     description: >-
@@ -672,8 +745,23 @@ classes:
     description: >-
       A holder for Space objects
     attributes:
-      materials:
+      material:
         range: Material
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      gas:
+        range: Gas
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      glass_material:
+        range: GlassMaterial
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      glazings:
+        range: Glazing
         inlined: true
         inlined_as_list: true
         multivalued: true

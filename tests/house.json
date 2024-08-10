@@ -25,6 +25,57 @@
       "shortwave_emissivity": 0.85
     }
   ],
+  "gas": [
+    {
+      "id": "MATERIAL:004",
+      "thermal_conductivity": 0.035,
+      "specific_heat_capacity": 1000.0,
+      "density": 2000.0,
+      "longwave_emissivity": 0.85,
+      "shortwave_emissivity": 0.85
+    }
+  ],
+  "glass": [
+    {
+      "id": "MATERIAL:005",
+      "thermal_conductivity": 0.035,
+      "specific_heat_capacity": 1000.0,
+      "density": 2000.0,
+      "longwave_emissivity": 0.85,
+      "shortwave_emissivity": 0.85,
+      "solar_transmittance": [
+        0.84
+      ],
+      "solar_reflectance_outside_facing": [
+        0.84
+      ],
+      "solar_reflectance_room_facing": [
+        0.84
+      ],
+      "infrared_transmissivity": 0.0,
+      "infrared_absorptivity_outside_facing": 0.84,
+      "infrared_absorptivity_room_facing": 0.84
+    }
+  ],
+  "glazings": [
+    {
+      "id": "CONSTRUCTION:011",
+      "layers": [
+        {
+          "glass": "MATERIAL:004",
+          "thickness": 0.1
+        },
+        {
+          "gas": "MATERIAL:005",
+          "thickness": 0.1
+        },
+        {
+          "glass": "MATERIAL:004",
+          "thickness": 0.1
+        }
+      ]
+    }
+  ],
   "constructions": [
     {
       "id": "CONSTRUCTION:001",

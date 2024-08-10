@@ -1,16 +1,19 @@
 import copy
 import json
+import os
+import subprocess
 import tempfile
 from collections import Counter
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import yaml  # type: ignore
 from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
 from trano.construction import Construction, Layer
-from trano.material import Material
+from trano.glass import GasLayer, Glass, GlassLayer
+from trano.material import Gas, GlassMaterial, Material
 from trano.models.elements.boiler import Boiler  # noqa: F401
 from trano.models.elements.controls.boiler import BoilerControl  # noqa: F401
 from trano.models.elements.controls.collector import CollectorControl  # noqa: F401
@@ -19,6 +22,8 @@ from trano.models.elements.controls.three_way_valve import (  # noqa: F401
     ThreeWayValveControl,
 )
 from trano.models.elements.envelope.external_wall import ExternalWall
+from trano.models.elements.envelope.floor_on_ground import FloorOnGround
+from trano.models.elements.envelope.window import Window
 from trano.models.elements.occupancy import Occupancy
 from trano.models.elements.pump import Pump  # noqa: F401
 from trano.models.elements.radiator import Radiator  # noqa: F401
@@ -82,6 +87,30 @@ class EnrichedModel(BaseModel):
     path: Path
 
 
+def convert(schema: Path, input_file: Path, target: str, output: Path) -> bool:
+    root_path = Path(__file__).parents[1]
+    os.chdir(root_path)
+    command = [
+        "poetry",
+        "run",
+        "linkml-convert",
+        "-o",
+        f"{output}",
+        "-t",
+        target,
+        "-C",
+        "Building",
+        "-s",
+        str(schema),
+        f"{input_file}",
+    ]
+
+    process = subprocess.run(
+        command, check=True, capture_output=True, text=True  # noqa: S603
+    )
+    return process.returncode == 0
+
+
 def load_and_enrich_model(model_path: Path) -> EnrichedModel:
     if model_path.suffix == ".yaml":
         load_function = yaml.safe_load
@@ -98,11 +127,29 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
         mode="w+", suffix=model_path.suffix, delete=False
     ) as f:
         dump_function(data, f)
-    return EnrichedModel(path=Path(f.name), data=data)
+    with tempfile.NamedTemporaryFile(
+        mode="w+", suffix=model_path.suffix, delete=False
+    ) as f2:
+        enriched_path = Path(f2.name)
+    convert(DATA_MODEL_PATH, Path(f.name), model_path.suffix[1:], enriched_path)
+    return EnrichedModel(
+        path=enriched_path, data=load_function(enriched_path.read_text())
+    )
+
+
+def _build_materials(data: Dict[str, Any]) -> Dict[str, Any]:
+    materials = {}
+    material_types = {"material": Material, "gas": Gas, "glass_material": GlassMaterial}
+    for material_type, material_class in material_types.items():
+        for material in data.get(material_type, []):
+            materials[material["id"]] = material_class(
+                **(material | {"name": material["id"]})
+            )
+    return materials
 
 
 # TODO: reduce complexity
-def convert_network(name: str, model_path: Path) -> Network:
+def convert_network(name: str, model_path: Path) -> Network:  # noqa: PLR0912, C901
     network = Network(name=name)
     occupancy = None
     system_counter: Any = Counter()
@@ -111,11 +158,8 @@ def convert_network(name: str, model_path: Path) -> Network:
     validate_model(enriched_model.path)
     data = enriched_model.data
 
-    materials = {
-        material["id"]: Material(**(material | {"name": material["id"]}))
-        for material in data["materials"]
-    }
-    constructions = {}
+    materials = _build_materials(data)
+    constructions: Dict[str, Construction | Glass] = {}
     for construction in data["constructions"]:
         layers = [
             Layer(**(layer | {"material": materials[layer["material"]]}))
@@ -124,13 +168,34 @@ def convert_network(name: str, model_path: Path) -> Network:
         constructions[construction["id"]] = Construction(
             name=construction["id"], layers=layers
         )
+    for glazing in data.get("glazings", []):
+        glazing_layers: List[GasLayer | GlassLayer] = []
+        for layer in glazing["layers"]:
+            if "gas" in layer:
+                glazing_layers.append(
+                    GasLayer(
+                        thickness=layer["thickness"], material=materials[layer["gas"]]
+                    )
+                )
+            if "glass" in layer:
+                glazing_layers.append(
+                    GlassLayer(
+                        thickness=layer["thickness"], material=materials[layer["glass"]]
+                    )
+                )
+        constructions[glazing["id"]] = Glass(
+            name=glazing["id"],
+            layers=glazing_layers,
+            u_value_frame=glazing["u_value_frame"],
+        )
+
     spaces = []
     space_dict = {}
     systems = {}
     for space in data["spaces"]:
         external_boundaries = space["external_boundaries"]
-        external_walls = []
-        for external_wall in external_boundaries["external_walls"]:
+        external_walls: List[ExternalWall | Window | FloorOnGround] = []
+        for external_wall in external_boundaries.get("external_walls", []):
             external_wall_ = ExternalWall(
                 **(
                     external_wall
@@ -138,6 +203,19 @@ def convert_network(name: str, model_path: Path) -> Network:
                 )
             )
             external_walls.append(external_wall_)
+        for window in external_boundaries.get("windows", []):
+            window_ = Window(
+                **(window | {"construction": constructions[window["construction"]]})
+            )
+            external_walls.append(window_)
+        for floor_on_ground in external_boundaries.get("floor_on_grounds", []):
+            floor_on_ground_ = FloorOnGround(
+                **(
+                    floor_on_ground
+                    | {"construction": constructions[floor_on_ground["construction"]]}
+                )
+            )
+            external_walls.append(floor_on_ground_)
         if space.get("occupancy") is not None:
             system_counter.update(["occupancy"])
             occupancy = Occupancy(
@@ -193,9 +271,13 @@ def _parse(data: Dict[str, Any]) -> None:
             for i in v:
                 if isinstance(i, dict):
                     _parse(i)
-        elif v is None and "control" in k:
-            COUNTER.update(["control"])  # type: ignore
-            data[k] = {"id": f"CONTROL:{COUNTER['control']}"}
+        elif v is None:
+            if "control" in k:
+                COUNTER.update(["control"])  # type: ignore
+                data[k] = {"id": f"CONTROL:{COUNTER['control']}"}
+            if "occupancy" in k:
+                COUNTER.update(["occupancy"])  # type: ignore
+                data[k] = {"parameters": {"occupancy": "3600 * {7, 19}"}}
 
 
 def assign_space_id(data: Dict[str, Any]) -> Dict[str, Any]:

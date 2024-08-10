@@ -1,4 +1,4 @@
-materials:
+material:
   - id: MATERIAL:001
     thermal_conductivity: 0.035
     density: 2000.0
@@ -22,7 +22,7 @@ constructions:
       - material: MATERIAL:003
         thickness: 0.1
 spaces:
-  - occupancy: {}
+  - occupancy:
     parameters:
       floor_area: 100.0
       average_room_height: 2.5
@@ -47,7 +47,7 @@ spaces:
           id: SYSTEM:008
           control:
             emission_control:
-  - occupancy: {}
+  - occupancy:
     parameters:
       floor_area: 100.0
       average_room_height: 2.5
@@ -72,7 +72,7 @@ spaces:
           id: SYSTEM:010
           control:
             emission_control:
-  - occupancy: {}
+  - occupancy:
     parameters:
       floor_area: 100.0
       average_room_height: 2.5
