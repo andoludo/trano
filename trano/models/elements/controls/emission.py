@@ -192,7 +192,7 @@ class BaseEmissionControl(LibraryData):
 
 class EmissionControl(Control):
     parameters: ControlLoopsParameters = Field(default=ControlLoopsParameters())
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseEmissionControl],
-        buildings=[BaseEmissionControl],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseEmissionControl],
+    #     buildings=[BaseEmissionControl],
+    # )

@@ -1,0 +1,22 @@
+DummyParameters:
+  attributes:
+    m_flow_nominal:
+      description: Nominal mass flow rate for configuration of pressure curve
+      range: float
+      ifabsent: float(0.008)
+    dp_nominal:
+      description: Nominal pressure head for configuration of pressure curve
+      range: float
+      ifabsent: float(10000)
+    per:
+      description: Record with performance data
+      range: string
+    control_input_type:
+      description: Control input type
+      range: string
+    constant_input_set_point:
+      description: Constant input set point
+      range: float
+    vector_of_input_set_points_corresponding_to_stages:
+      description: Vector of input set points corresponding to stages
+      range: string

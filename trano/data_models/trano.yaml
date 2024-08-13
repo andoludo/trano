@@ -29,6 +29,7 @@ default_range: string
 imports:
   - linkml:types
 
+
 classes:
   Space:
     description: >-

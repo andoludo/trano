@@ -82,7 +82,7 @@ class BaseThreeWayValve(LibraryData):
 
 class ThreeWayValve(System):
     parameters: ThreeWayValveParameters = Field(default=ThreeWayValveParameters())
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseThreeWayValve],
-        buildings=[BaseThreeWayValve],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseThreeWayValve],
+    #     buildings=[BaseThreeWayValve],
+    # )

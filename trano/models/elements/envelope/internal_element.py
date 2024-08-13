@@ -52,7 +52,8 @@ class IdeasInternalElement(LibraryData):
 
 
 class InternalElement(BaseInternalElement):
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[IdeasInternalElement],
-        buildings=[BuildingsInternalElement],
-    )
+    ...
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[IdeasInternalElement],
+    #     buildings=[BuildingsInternalElement],
+    # )

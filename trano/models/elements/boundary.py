@@ -29,7 +29,8 @@ class BaseBoundaryComponent(LibraryData):
 
 
 class Boundary(BaseBoundary):
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseBoundaryComponent],
-        buildings=[BaseBoundaryComponent],
-    )
+    ...
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseBoundaryComponent],
+    #     buildings=[BaseBoundaryComponent],
+    # )

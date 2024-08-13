@@ -29,6 +29,7 @@ linkml = "^1.8.1"
 cruft = "^2.15.0"
 rdflib = "^7.0.0"
 owlready2 = "^0.46"
+pyyaml-include = "^2.1"
 
 
 [tool.poetry.group.dev.dependencies]

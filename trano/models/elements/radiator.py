@@ -122,7 +122,7 @@ class BaseIdealRadiator(LibraryData):
 
 class Radiator(Emission):
     parameters: RadiatorParameter = Field(default=RadiatorParameter())
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseRadiator, BaseIdealRadiator],
-        buildings=[BaseRadiator, BaseIdealRadiator],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseRadiator, BaseIdealRadiator],
+    #     buildings=[BaseRadiator, BaseIdealRadiator],
+    # )

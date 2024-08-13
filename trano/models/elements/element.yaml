@@ -1,0 +1,187 @@
+---
+id: https://w3id.org/my-org/trano
+name: trano
+title: trano
+description: |-
+  This is the project description.
+license: MIT
+see_also:
+  - https://my-org.github.io/trano
+default_curi_maps:
+  - semweb_context
+prefixes:
+  trano: https://w3id.org/my-org/trano/
+  linkml: https://w3id.org/linkml/
+  biolink: https://w3id.org/biolink/
+  schema: http://schema.org/
+
+  PATO: http://purl.obolibrary.org/obo/PATO_
+  example: https://example.org/
+  SYSTEM: http://example.org/SYSTEM/
+  MATERIAL: http://example.org/MATERIAL/
+  CONSTRUCTION: http://example.org/CONSTRUCTION/
+  CONTROL: http://example.org/CONTROL/
+  OCCUPANCY: http://example.org/OCCUPANCY/
+  SPACE: http://example.org/SPACE/
+default_prefix: trano
+default_range: string
+
+imports:
+  - linkml:types
+
+
+
+classes:
+  BaseInput:
+    slots:
+      - name
+      - component
+      - port
+      - target
+
+  RealInput:
+    is_a: BaseInput
+
+  IntegerInput:
+    is_a: BaseInput
+
+  BooleanInput:
+    is_a: BaseInput
+
+
+  BooleanOutput:
+    is_a: BaseInput
+
+
+  IntegerOutput:
+    is_a: BaseInput
+
+
+  RealOutput:
+    is_a: BaseInput
+  Parameter:
+    attributes:
+      name:
+        range: string
+      value:
+        range: string
+  Any:
+    class_uri: linkml:Any
+  Component:
+    attributes:
+      template:
+          range: string
+      variant:
+          range: string
+      component_template:
+        range: DynamicComponentTemplate
+      ports:
+        range: Port
+        multivalued: true
+      library:
+        range: string
+      parameter_processing:
+        range: ParameterProcessing
+  ParameterProcessing:
+    attributes:
+      function:
+        range: string
+      parameter:
+        range: object
+  Port:
+    attributes:
+      names:
+        range: string
+        multivalued: true
+      targets:
+        range: string
+        multivalued: true
+      flow:
+        range: string
+      multi_connection:
+        range: boolean
+      use_counter:
+        range: boolean
+      bus_connection:
+        range: boolean
+      multi_object:
+        range: boolean
+  DynamicComponentTemplate:
+    attributes:
+      template:
+        range: string
+      category:
+        range: string
+      bus:
+        range: ControllerBus
+  ControllerBus:
+    slots:
+      - template
+      - real_inputs
+      - real_outputs
+      - integer_inputs
+      - integer_outputs
+      - boolean_inputs
+      - boolean_outputs
+  Building:
+    tree_root: true
+    attributes:
+      components:
+        range: Component
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+
+
+
+slots:
+  real_inputs:
+    description: The real inputs of the controller
+    range: RealInput
+    multivalued: true
+  real_outputs:
+    description: The real outputs of the controller
+    range: RealOutput
+    multivalued: true
+  integer_inputs:
+    description: The integer inputs of the controller
+    range: IntegerInput
+    multivalued: true
+  integer_outputs:
+    description: The integer outputs of the controller
+    range: IntegerOutput
+    multivalued: true
+  boolean_inputs:
+    description: The boolean inputs of the controller
+    range: BooleanInput
+    multivalued: true
+  boolean_outputs:
+    description: The boolean outputs of the controller
+    range: BooleanOutput
+    multivalued: true
+  name:
+    description: The name of the input or output
+    range: string
+  template:
+    range: string
+  component:
+    description: The component associated with the input or output
+    range: string
+  port:
+    description: The port associated with the input or output
+    range: string
+  multi:
+    description: A flag indicating whether the input or output can have multiple values
+    range: boolean
+  target:
+    description: The target of the input or output
+    range: string
+  input_template:
+    description: The template used to generate the input or output
+    range: string
+  default:
+    description: The default value of the input or output
+    range: float
+  evaluated_element_name:
+    description: The evaluated name of the element associated with the input or output
+    range: string

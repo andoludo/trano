@@ -118,7 +118,7 @@ class SimpleBoilerControl(LibraryData):
 
 class BoilerControl(Control):
     parameters: BoilerParameters = Field(default=BoilerParameters())
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseBoilerControl],
-        buildings=[BaseBoilerControl],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseBoilerControl],
+    #     buildings=[BaseBoilerControl],
+    # )

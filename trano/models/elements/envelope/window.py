@@ -32,4 +32,5 @@ class IdeasMergedWindows(LibraryData):
 
 
 class Window(BaseWindow):
-    libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasMergedWindows])
+    ...
+    # libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasMergedWindows])

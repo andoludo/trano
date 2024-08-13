@@ -1,0 +1,30 @@
+components:
+- component_template:
+    bus:
+      integer_outputs:
+      - component: occSch2
+        name: Occupied
+        port: occupied
+        target: element.space_name
+    category: control
+    template: "\nmodel Occupancy{{ element.name | capitalize}}\nextends {{ package_name\
+      \ }}.Common.Occupancy.SimpleOccupancy ;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ | safe}}\n end Occupancy{{ element.name | capitalize}};\n "
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - names:
+    - y
+    targets:
+    - Space
+  - multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: "\n    {{package_name}}.Common.Controls.ventilation.Occupancy{{ element.name\
+    \ | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters)\
+    \ | safe}})"
+  variant: default

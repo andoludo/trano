@@ -4,6 +4,7 @@ from trano.models.elements.envelope.external_wall import IdeasMergedExternalWall
 
 
 class MergedExternalWall(MergedBaseExternalWall):
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[IdeasMergedExternalWall]
-    )
+    ...
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[IdeasMergedExternalWall]
+    # )

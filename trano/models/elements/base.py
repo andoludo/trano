@@ -1,3 +1,8 @@
+import os
+import re
+import subprocess
+import tempfile
+from functools import partial
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -12,6 +17,7 @@ from typing import (
 )
 
 import jinja2.exceptions
+import yaml
 from jinja2 import Environment, FileSystemLoader
 from pydantic import (
     BaseModel,
@@ -24,6 +30,7 @@ from pydantic import (
 
 from trano.controller.parser import ControllerBus
 from trano.models.constants import Flow
+
 
 if TYPE_CHECKING:
     from trano.library.library import Libraries
@@ -65,7 +72,32 @@ class PartialConnection(BaseModel):
     equation: str
     position: List[float]
 
+def convert_copy(schema: Path, input_file: Path, target: str, output: Path) -> bool:
+    root_path = Path(__file__).parents[3]
+    os.chdir(root_path)
+    command = [
+        "poetry",
+        "run",
+        "linkml-convert",
+        "-o",
+        f"{output}",
+        "-t",
+        target,
+        "-C",
+        "Building",
+        "-s",
+        str(schema),
+        f"{input_file}",
+    ]
 
+    process = subprocess.run(
+        command, check=True, capture_output=True, text=True  # noqa: S603
+    )
+    return process.returncode == 0
+
+def to_snake_case(name):
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 class AvailableLibraries(BaseModel):
     ideas: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
@@ -74,7 +106,11 @@ class AvailableLibraries(BaseModel):
         self, library: "Libraries", variant: str
     ) -> Any:  # noqa: ANN401
         if variant == BaseVariant.default:
-            return getattr(self, library.name.lower())[0]()
+            defaults = getattr(self, library.name.lower())
+            if defaults:
+                return defaults[0]()
+            else:
+                return False
         selected_variant = [
             variant_
             for variant_ in getattr(self, library.name.lower())
@@ -83,6 +119,57 @@ class AvailableLibraries(BaseModel):
         if not selected_variant:
             raise ValueError(f"Variant {variant} not found in library {library.name}")
         return selected_variant[0]()
+
+    @classmethod
+    def from_config(cls, name: str) -> "AvailableLibraries":
+        if name == "VAVControl":
+            name = "vav_control"
+        else:
+            name = to_snake_case(name)
+        libraries_path = Path(__file__).parent.joinpath("models", f"{name}.yaml")
+        if not libraries_path.exists():
+            return None
+        with tempfile.NamedTemporaryFile(mode="w+", suffix=".yaml") as f:
+            # convert_copy(
+            #     Path("/home/aan/Documents/trano/trano/models/elements/element.yaml"),
+            #     libraries_path,
+            #     "yaml",
+            #     Path(f.name),
+            # )
+            data = yaml.safe_load(libraries_path.read_text())
+            components = {"ideas":[], "buildings":[]}
+
+            for component in data["components"]:
+                dynamic_component = None
+                if component.get("component_template"):
+                    dynamic_component = DynamicComponentTemplate(**component["component_template"])
+                ports = []
+                for port in component["ports"]:
+                    ports.append(Port(**port))
+                component_ = create_model(
+                    f"Base{component['library'].capitalize() }{name.capitalize()}",
+                    __base__=LibraryData,
+                    template=(str, f"{component['template']}"),
+                    ports_factory=(Callable[[], List[Port]], lambda: ports),
+                    component_template=(DynamicComponentTemplate, dynamic_component),
+                    # parameter_processing=(
+                    #     Callable[[BaseParameter], Dict[str, Any]],
+                    #     partial(
+                    #         exclude_parameters,
+                    #         exclude_parameters={
+                    #             "sca_fac_rad",
+                    #             "dt_boi_nominal",
+                    #             "dt_rad_nominal",
+                    #         },
+                    #     ),
+                    # ),
+                )
+                if component["library"] == "default":
+                    components["ideas"].append(component_)
+                    components["buildings"].append(component_)
+                else:
+                    components[component["library"]].append(component_)
+            return cls(**components)
 
 
 class ConnectionView(BaseModel):
@@ -127,6 +214,68 @@ class Port(BaseModel):
     use_counter: bool = True
     counter: int = Field(default=1)
 
+    @field_validator("targets")
+    @classmethod
+    def validate_targets(cls, values: List[Any]):
+        targets = []
+        for value in values:
+            if isinstance(value, str):
+                if value == "DataBus":
+                    from trano.models.elements.bus import DataBus
+                    targets.append(DataBus)
+                elif value == "Control":
+                    from trano.models.elements.controls.base import Control
+                    targets.append(Control)
+                elif value == "Space":
+                    from trano.models.elements.space import Space
+                    targets.append(Space)
+                elif value == "BaseBoundary":
+                    from trano.models.elements.boundary import BaseBoundary
+                    targets.append(BaseBoundary)
+                elif value == "System":
+                    from trano.models.elements.system import System
+                    targets.append(System)
+                elif value == "AhuControl":
+                    from trano.models.elements.controls.ahu import AhuControl
+                    targets.append(AhuControl)
+                elif value == "BaseWeather":
+                    from trano.models.elements.weather import BaseWeather
+                    targets.append(BaseWeather)
+                elif value == "AirHandlingUnit":
+                    from trano.models.elements.ahu import AirHandlingUnit
+                    targets.append(AirHandlingUnit)
+                elif value == "Ventilation":
+                    from trano.models.elements.system import Ventilation
+                    targets.append(Ventilation)
+                elif value == "BaseInternalElement":
+                    from trano.models.elements.envelope.internal_element import BaseInternalElement
+                    targets.append(BaseInternalElement)
+                elif value == "BaseOccupancy":
+                    from trano.models.elements.occupancy import BaseOccupancy
+                    targets.append(BaseOccupancy)
+                elif value == "Emission":
+                    from trano.models.elements.system import Emission
+                    targets.append(Emission)
+                elif value == "VAVControl":
+                    from trano.models.elements.controls.vav import VAVControl
+                    targets.append(VAVControl)
+                elif value == "BaseWall":
+                    from trano.models.elements.envelope.base import BaseWall
+                    targets.append(BaseWall)
+                elif value == "ThreeWayValve":
+                    from trano.models.elements.three_way_valve import ThreeWayValve
+                    targets.append(ThreeWayValve)
+                elif value == "TemperatureSensor":
+                    from trano.models.elements.temperature_sensor import TemperatureSensor
+                    targets.append(TemperatureSensor)
+                elif value == "Boundary":
+                    from trano.models.elements.boundary import Boundary
+                    targets.append(Boundary)
+                else:
+                    raise ValueError(f"Target {value} not found")
+            else:
+                targets.append(value)
+        return targets
     def is_available(self) -> bool:
         return self.multi_connection or self.available
 
@@ -242,6 +391,15 @@ class BaseElement(BaseModel):
     libraries_data: Optional[AvailableLibraries] = None
     figures: List[Figure] = Field(default=[])
 
+
+    @model_validator( mode="before")
+    @classmethod
+    def validate_libraries_data(cls, value) -> AvailableLibraries:
+        libraries_data = AvailableLibraries.from_config(cls.__name__)
+        if libraries_data:
+            value["libraries_data"] = libraries_data
+        return value
+
     @model_validator(mode="after")
     def assign_default_name(self) -> "BaseElement":
         if self.name is None:
@@ -257,7 +415,7 @@ class BaseElement(BaseModel):
         return value
 
     def assign_library_property(self, library: "Libraries") -> bool:
-        if self.libraries_data is None:
+        if not self.libraries_data:
             return False
         library_data = self.libraries_data.get_library_data(library, self.variant)
         if not library_data:

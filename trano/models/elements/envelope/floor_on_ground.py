@@ -25,4 +25,4 @@ class IdeasFloorOnGround(LibraryData):
 class FloorOnGround(BaseFloorOnGround):
     azimuth: float | int = Azimuth.south
     tilt: Tilt = Tilt.floor
-    libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasFloorOnGround])
+    # libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasFloorOnGround])

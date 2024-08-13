@@ -23,7 +23,8 @@ class BaseDuct(LibraryData):
 
 
 class Duct(Ventilation):
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseDuct],
-        buildings=[BaseDuct],
-    )
+    ...
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseDuct],
+    #     buildings=[BaseDuct],
+    # )

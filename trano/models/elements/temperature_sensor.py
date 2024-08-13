@@ -32,7 +32,8 @@ class BaseTemperatureSensor(LibraryData):
 
 
 class TemperatureSensor(Sensor):
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseTemperatureSensor],
-        buildings=[BaseTemperatureSensor],
-    )
+    ...
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseTemperatureSensor],
+    #     buildings=[BaseTemperatureSensor],
+    # )

@@ -107,7 +107,7 @@ class Damper(Ventilation):
 
 class VAV(Damper):
     variant: str = DamperVariant.default
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseDamper, BaseDamperDetailed],
-        buildings=[BaseDamper, BaseDamperDetailed],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseDamper, BaseDamperDetailed],
+    #     buildings=[BaseDamper, BaseDamperDetailed],
+    # )

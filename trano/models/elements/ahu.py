@@ -123,7 +123,8 @@ class BaseAirHandlingUnit(LibraryData):
 
 
 class AirHandlingUnit(Ventilation):
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseAirHandlingUnit],
-        buildings=[BaseAirHandlingUnit],
-    )
+    ...
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseAirHandlingUnit],
+    #     buildings=[BaseAirHandlingUnit],
+    # )

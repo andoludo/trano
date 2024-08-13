@@ -64,8 +64,8 @@ class BaseVavControl(LibraryData):
 
 
 class VAVControl(Control):
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseVavControl],
-        buildings=[BaseVavControl],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseVavControl],
+    #     buildings=[BaseVavControl],
+    # )
     ahu: Optional[BaseElement] = None

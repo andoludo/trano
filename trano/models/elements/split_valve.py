@@ -72,7 +72,7 @@ class BaseSplitValve(LibraryData):
 
 class SplitValve(System):
     parameters: SplitValveParameters = Field(default=SplitValveParameters())
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseSplitValve],
-        buildings=[BaseSplitValve],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseSplitValve],
+    #     buildings=[BaseSplitValve],
+    # )

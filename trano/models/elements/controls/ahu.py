@@ -90,10 +90,10 @@ class BaseAhuControl(LibraryData):
 class AhuControl(Control):
     spaces: Optional[List[Space]] = None
     vavs: Optional[List[VAV]] = None
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseAhuControl],
-        buildings=[BaseAhuControl],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseAhuControl],
+    #     buildings=[BaseAhuControl],
+    # )
 
     @computed_field
     def zon_gro_mat(self) -> str:

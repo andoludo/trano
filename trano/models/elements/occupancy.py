@@ -74,7 +74,7 @@ class OccupancyComponent(LibraryData):
 
 class Occupancy(BaseOccupancy):
     parameters: OccupancyParameters = Field(default=OccupancyParameters())
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[OccupancyComponent],
-        buildings=[OccupancyComponent],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[OccupancyComponent],
+    #     buildings=[OccupancyComponent],
+    # )

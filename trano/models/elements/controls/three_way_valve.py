@@ -88,7 +88,7 @@ class BaseThreeWayValveControl(LibraryData):
 
 class ThreeWayValveControl(Control):
     parameters: PIDParameters = Field(default=PIDParameters())
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseThreeWayValveControl],
-        buildings=[BaseThreeWayValveControl],
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[BaseThreeWayValveControl],
+    #     buildings=[BaseThreeWayValveControl],
+    # )

@@ -64,9 +64,11 @@ class Network:  # noqa : PLR0904, #TODO: fix this
     def add_node(self, node: BaseElement) -> None:
 
         if not node.libraries_data:
-            raise Exception(
-                f"No library data defined for NOde of type {type(node).__name__}"
-            )
+            return
+            #TODO: check better option here!!
+            # raise Exception(
+            #     f"No library data defined for NOde of type {type(node).__name__}"
+            # )
         found_library = node.assign_library_property(self.library)
         if not found_library:
             return
@@ -464,6 +466,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         return f"{{{{{min(x) - 50},{min(y) - 50}}},{{{max(x) + 50},{max(y) + 50}}}}}"
 
     def build_dynamic_component_template(self, node: BaseElement) -> None:
+
         if node.component_template:
             component = node.component_template.render(
                 self.name, node, node.processed_parameters(self.library)
@@ -483,6 +486,8 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         environment.filters["enumerate"] = enumerate
         models = []
         for node in self.graph.nodes:
+            if node.type == "Boiler":
+                a = 12
             if not node.template:
                 continue
             environment.globals.update(self.library.functions)
@@ -492,6 +497,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
                 + " "
                 + node.annotation_template
             )
+
             if node.component_template:
                 self.build_dynamic_component_template(node)
             model = rtemplate.render(

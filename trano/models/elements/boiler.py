@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, List, Optional
 from pydantic import Field, computed_field
 
 from trano.controller.parser import ControllerBus, RealInput, RealOutput
+
 from trano.models.constants import Flow
 from trano.models.elements.base import (
     AvailableLibraries,
@@ -19,6 +20,7 @@ from trano.models.elements.base import (
 )
 from trano.models.elements.bus import DataBus
 from trano.models.elements.controls.base import Control
+from trano.models.elements.convert import convert_boiler, boiler_parameters
 from trano.models.elements.system import System
 
 
@@ -204,10 +206,13 @@ redeclare package MediumW = MediumW) "Boiler" """
         ]
     )
 
+from pydantic import model_validator
+
+
+
 
 class Boiler(System):
-    parameters: BoilerParameters = Field(default=BoilerParameters())
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[BaseBoiler],
-        buildings=[BaseBoiler],
-    )
+    parameters: BaseParameter = Field(default=BoilerParameters())
+
+
+

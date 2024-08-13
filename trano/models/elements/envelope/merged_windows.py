@@ -14,7 +14,7 @@ from trano.models.elements.envelope.window import IdeasMergedWindows
 class MergedWindows(MergedBaseWindow):
     widths: List[float | int]
     heights: List[float | int]
-    libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasMergedWindows])
+    # libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasMergedWindows])
 
     @classmethod
     def from_base_windows(cls, base_walls: List["BaseWindow"]) -> List["MergedWindows"]:

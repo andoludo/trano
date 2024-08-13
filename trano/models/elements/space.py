@@ -308,9 +308,9 @@ class Space(BaseElement):
     ventilation_inlets: List[System] = Field(default=[])
     ventilation_outlets: List[System] = Field(default=[])
     occupancy: Optional[BaseOccupancy] = None
-    libraries_data: AvailableLibraries = AvailableLibraries(
-        ideas=[IdeasSpace], buildings=[BuildingsSpace]
-    )
+    # libraries_data: AvailableLibraries = AvailableLibraries(
+    #     ideas=[IdeasSpace], buildings=[BuildingsSpace]
+    # )
 
     def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
         self._assign_space()
