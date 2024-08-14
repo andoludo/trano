@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import tempfile
+from copy import deepcopy
 from functools import partial
 from pathlib import Path
 from typing import (
@@ -72,6 +73,7 @@ class PartialConnection(BaseModel):
     equation: str
     position: List[float]
 
+
 def convert_copy(schema: Path, input_file: Path, target: str, output: Path) -> bool:
     root_path = Path(__file__).parents[3]
     os.chdir(root_path)
@@ -95,9 +97,14 @@ def convert_copy(schema: Path, input_file: Path, target: str, output: Path) -> b
     )
     return process.returncode == 0
 
+
 def to_snake_case(name):
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+
+
+def compose_func(ports_):
+    return lambda: ports_
 class AvailableLibraries(BaseModel):
     ideas: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
@@ -105,19 +112,21 @@ class AvailableLibraries(BaseModel):
     def get_library_data(
         self, library: "Libraries", variant: str
     ) -> Any:  # noqa: ANN401
-        if variant == BaseVariant.default:
-            defaults = getattr(self, library.name.lower())
-            if defaults:
-                return defaults[0]()
-            else:
-                return False
+        # if variant == BaseVariant.default:
+        #     defaults = getattr(self, library.name.lower())
+        #     if defaults:
+        #         return defaults[0]()
+        #     else:
+        #         return False
         selected_variant = [
             variant_
             for variant_ in getattr(self, library.name.lower())
             if variant_().variant == variant
         ]
         if not selected_variant:
-            raise ValueError(f"Variant {variant} not found in library {library.name}")
+            return
+            # raise ValueError(f"Variant {variant} not found in library {library.name}")
+        # TODO: to be more strict
         return selected_variant[0]()
 
     @classmethod
@@ -138,20 +147,30 @@ class AvailableLibraries(BaseModel):
             # )
             data = yaml.safe_load(libraries_path.read_text())
             components = {"ideas":[], "buildings":[]}
-
+            funs = []
             for component in data["components"]:
                 dynamic_component = None
                 if component.get("component_template"):
                     dynamic_component = DynamicComponentTemplate(**component["component_template"])
-                ports = []
-                for port in component["ports"]:
-                    ports.append(Port(**port))
+                if component["parameter_processing"].get("parameter", None):
+                    function_name = component["parameter_processing"]["function"]
+                    parameter_processing = partial(
+                            globals()[function_name],
+                        **{function_name:component["parameter_processing"].get("parameter", {})}
+                        )
+                else:
+                    parameter_processing = globals()[component["parameter_processing"]["function"]]
                 component_ = create_model(
                     f"Base{component['library'].capitalize() }{name.capitalize()}",
                     __base__=LibraryData,
                     template=(str, f"{component['template']}"),
-                    ports_factory=(Callable[[], List[Port]], lambda: ports),
+                    ports_factory=(Callable[[], List[Port]], compose_func([Port(**port) for port in component["ports"]])),
                     component_template=(DynamicComponentTemplate, dynamic_component),
+                    variant=(str,component['variant']),
+                    parameter_processing = (
+                        Callable[[BaseParameter], Dict[str, Any]],
+                        parameter_processing,
+                    )
                     # parameter_processing=(
                     #     Callable[[BaseParameter], Dict[str, Any]],
                     #     partial(
@@ -164,6 +183,7 @@ class AvailableLibraries(BaseModel):
                     #     ),
                     # ),
                 )
+
                 if component["library"] == "default":
                     components["ideas"].append(component_)
                     components["buildings"].append(component_)
@@ -222,60 +242,82 @@ class Port(BaseModel):
             if isinstance(value, str):
                 if value == "DataBus":
                     from trano.models.elements.bus import DataBus
+
                     targets.append(DataBus)
                 elif value == "Control":
                     from trano.models.elements.controls.base import Control
+
                     targets.append(Control)
                 elif value == "Space":
                     from trano.models.elements.space import Space
+
                     targets.append(Space)
                 elif value == "BaseBoundary":
                     from trano.models.elements.boundary import BaseBoundary
+
                     targets.append(BaseBoundary)
                 elif value == "System":
                     from trano.models.elements.system import System
+
                     targets.append(System)
                 elif value == "AhuControl":
                     from trano.models.elements.controls.ahu import AhuControl
+
                     targets.append(AhuControl)
                 elif value == "BaseWeather":
                     from trano.models.elements.weather import BaseWeather
+
                     targets.append(BaseWeather)
                 elif value == "AirHandlingUnit":
                     from trano.models.elements.ahu import AirHandlingUnit
+
                     targets.append(AirHandlingUnit)
                 elif value == "Ventilation":
                     from trano.models.elements.system import Ventilation
+
                     targets.append(Ventilation)
                 elif value == "BaseInternalElement":
-                    from trano.models.elements.envelope.internal_element import BaseInternalElement
+                    from trano.models.elements.envelope.internal_element import (
+                        BaseInternalElement,
+                    )
+
                     targets.append(BaseInternalElement)
                 elif value == "BaseOccupancy":
                     from trano.models.elements.occupancy import BaseOccupancy
+
                     targets.append(BaseOccupancy)
                 elif value == "Emission":
                     from trano.models.elements.system import Emission
+
                     targets.append(Emission)
                 elif value == "VAVControl":
                     from trano.models.elements.controls.vav import VAVControl
+
                     targets.append(VAVControl)
                 elif value == "BaseWall":
                     from trano.models.elements.envelope.base import BaseWall
+
                     targets.append(BaseWall)
                 elif value == "ThreeWayValve":
                     from trano.models.elements.three_way_valve import ThreeWayValve
+
                     targets.append(ThreeWayValve)
                 elif value == "TemperatureSensor":
-                    from trano.models.elements.temperature_sensor import TemperatureSensor
+                    from trano.models.elements.temperature_sensor import (
+                        TemperatureSensor,
+                    )
+
                     targets.append(TemperatureSensor)
                 elif value == "Boundary":
                     from trano.models.elements.boundary import Boundary
+
                     targets.append(Boundary)
                 else:
                     raise ValueError(f"Target {value} not found")
             else:
                 targets.append(value)
         return targets
+
     def is_available(self) -> bool:
         return self.multi_connection or self.available
 
@@ -391,8 +433,7 @@ class BaseElement(BaseModel):
     libraries_data: Optional[AvailableLibraries] = None
     figures: List[Figure] = Field(default=[])
 
-
-    @model_validator( mode="before")
+    @model_validator(mode="before")
     @classmethod
     def validate_libraries_data(cls, value) -> AvailableLibraries:
         libraries_data = AvailableLibraries.from_config(cls.__name__)
@@ -607,10 +648,10 @@ def change_alias(
 
 
 def modify_alias(
-    parameter: BaseParameter, mapping: Dict[str, str]
+    parameter: BaseParameter, modify_alias: Dict[str, str]
 ) -> Any:  # noqa: ANN401
-    return change_alias(parameter, mapping)(**parameter.model_dump()).model_dump(
-        by_alias=True, include=set(mapping)
+    return change_alias(parameter, modify_alias)(**parameter.model_dump()).model_dump(
+        by_alias=True, include=set(modify_alias)
     )
 
 
