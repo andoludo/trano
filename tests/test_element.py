@@ -116,12 +116,12 @@ def test_create_yamls():
         "radiator": {
             "default": [BaseRadiator(), BaseIdealRadiator()],
         },
-        "ahu": {"default": [BaseAirHandlingUnit()]},
+        "air_handling_unit": {"default": [BaseAirHandlingUnit()]},
         "boundary": {
             "default": [BaseBoundaryComponent()],
         },
-        "bus": {"default": [data_bus_factory()]},
-        "damper": {
+        "data_bus": {"default": [data_bus_factory()]},
+        "vav": {
             "default": [BaseDamper(), BaseDamperDetailed()],
         },
         "duct": {"default": [BaseDuct()]},
@@ -142,7 +142,7 @@ def test_create_yamls():
             "ideas": [IdeasInternalElement()],
             "buildings": [BuildingsInternalElement()],
         },
-        "merged_wall": {"ideas": [IdeasMergedExternalWall()]},
+        "merged_external_wall": {"ideas": [IdeasMergedExternalWall()]},
         "merged_windows": {"ideas": [IdeasMergedWindows()]},
         "window": {"ideas": [IdeasMergedWindows()]},
         "ahu_control": {"default": [BaseAhuControl()]},
