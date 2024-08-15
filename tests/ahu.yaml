@@ -1,0 +1,95 @@
+components:
+- component_template:
+    bus:
+      integer_outputs:
+      - component: fanSup
+        name: u1SupFan
+        port: y_actual
+        target: element.name
+      real_inputs:
+      - component: fanSup1
+        input_model: ''
+        name: ySupFan
+        port: y
+        target: element.name
+      - component: fanSup
+        input_model: ''
+        name: ySupFan
+        port: y
+        target: element.name
+      - component: damRet
+        input_model: ''
+        name: yRetDam
+        port: y
+        target: element.name
+      - component: damOut
+        input_model: ''
+        name: yOutDam
+        port: y
+        target: element.name
+      - component: damExh
+        input_model: ''
+        name: yOutDam
+        port: y
+        target: element.name
+      real_outputs:
+      - component: TOut
+        input_model: ''
+        name: TOut
+        port: T
+        target: element.control.name
+      - component: VOut1
+        input_model: ''
+        name: VAirOut_flow
+        port: V_flow
+        target: element.control.name
+      - component: TSup
+        input_model: ''
+        name: TAirSup
+        port: T
+        target: element.control.name
+      - component: TMix
+        input_model: ''
+        name: TAirMix
+        port: T
+        target: element.control.name
+      - component: dpDisSupFan
+        input_model: ''
+        name: dpDuc
+        port: p_rel
+        target: element.control.name
+    category: ventilation
+    template: "\n    model Ahu{{ element.name | capitalize}}\n    extends {{ package_name\
+      \ }}.Common.Fluid.Ventilation.PartialAhu;\n    {{bus_template}}\n    equation\n\
+      \    {{bus_ports | safe}}\n     end Ahu{{ element.name | capitalize}};\n   \
+      \  "
+  ports:
+  - flow: inlet
+    multi_connection: true
+    names:
+    - port_a
+    targets:
+    - System
+    - Space
+    use_counter: false
+  - flow: outlet
+    multi_connection: true
+    names:
+    - port_b
+    targets:
+    - System
+    - Space
+    use_counter: false
+  - names:
+    - ports
+    targets:
+    - BaseBoundary
+  - names:
+    - dataBus
+    targets:
+    - AhuControl
+  template: "{{package_name}}.Common.Fluid.\n    Ventilation.Ahu{{ element.name |\
+    \ capitalize}}\n    {{ element.name }}\n    (redeclare package MediumA = Medium,\n\
+    \    {% raw %}\n    VRoo={100,100},\n    AFlo={20,20},\n    mCooVAV_flow_nominal={0.01,0.01}{%\
+    \ endraw %})"
+  variant: default

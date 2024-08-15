@@ -1,0 +1,31 @@
+components:
+- ports:
+  - names:
+    - heatPortCon
+    - heatPortRad
+    targets:
+    - Space
+  - flow: inlet
+    names:
+    - port_a
+  - flow: outlet
+    names:
+    - port_b
+  template: "    {{library_name}}.Fluid.HeatExchangers.Radiators.\n            RadiatorEN442_2\
+    \ {{ element.name }}(\n            {{ macros.render_parameters(parameters) | safe}},\n\
+    \    redeclare package Medium = MediumW,\n    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)\
+    \ \"Radiator\" "
+  variant: default
+- ports:
+  - names:
+    - heatPortCon
+    - heatPortRad
+    targets:
+    - Space
+  - names:
+    - y
+    targets:
+    - Control
+  template: "\n    {{package_name}}.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission\n\
+    \    {{ element.name }}"
+  variant: ideal

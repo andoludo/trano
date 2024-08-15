@@ -1,0 +1,46 @@
+components:
+- component_template:
+    bus:
+      real_inputs:
+      - component: pumRad
+        name: y
+        port: y
+        target: element.name
+      real_outputs:
+      - component: gain
+        name: y_gain
+        port: y
+        target: element.name
+      - component: temSup
+        name: T
+        port: T
+        target: element.control.name
+    category: ventilation
+    template: "\nmodel Pump{{ element.name | capitalize}}\nextends {{ package_name\
+      \ }}.Common.Fluid.Ventilation.PartialPump;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ | safe}}\n end Pump{{ element.name | capitalize}};\n "
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+  - multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - Control
+    - DataBus
+    use_counter: false
+  template: "  {{ package_name }}.Common.\n    Fluid.Ventilation.Pump{{ element.name\
+    \ | capitalize }}\n     {{ element.name }}(\n     {{ macros.render_parameters(parameters)\
+    \ | safe}},\n    redeclare package Medium = MediumW\n\n    )"
+  variant: default

@@ -1,0 +1,214 @@
+components:
+- component_template:
+    bus:
+      boolean_inputs:
+      - component: mulAHUCon
+        name: u1SupFan
+        port: u1SupFan
+        target: element.name
+      boolean_outputs:
+      - component: mulAHUCon
+        name: y1MinOutDam
+        port: y1MinOutDam
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: y1EneCHWPum
+        port: y1EneCHWPum
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: y1SupFan
+        port: y1SupFan
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: y1RetFan
+        port: y1RetFan
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: y1RelFan
+        port: y1RelFan
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: y1RelDam
+        port: y1RelDam
+        target: element.controllable_element.name
+      integer_inputs:
+      - component: mulAHUCon
+        name: uAhuOpeMod
+        port: uAhuOpeMod
+        target: element.name
+      - component: sumZon
+        name: uAhuOpeMod
+        port: uOpeMod[1]
+        target: element.name
+      - component: preRetReq
+        multi: true
+        name: yZonPreResReq
+        port: u
+        target: '[vav.control.name for vav in element.vavs]'
+      - component: temResReq
+        multi: true
+        name: yZonTemResReq
+        port: u
+        target: '[vav.control.name for vav in element.vavs]'
+      integer_outputs:
+      - component: mulAHUCon
+        name: yAla
+        port: yAla
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yChiWatResReq
+        port: yChiWatResReq
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yChiPlaReq
+        port: yChiPlaReq
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yHotWatResReq
+        port: yHotWatResReq
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yHotWatPlaReq
+        port: yHotWatPlaReq
+        target: element.controllable_element.name
+      real_inputs:
+      - component: mulAHUCon
+        name: dpDuc
+        port: dpDuc
+        target: element.name
+      - component: mulAHUCon
+        name: TOut
+        port: TOut
+        target: element.name
+      - component: mulAHUCon
+        name: TAirSup
+        port: TAirSup
+        target: element.name
+      - component: sumZon
+        multi: true
+        name: VAdjPopBreZon_flow
+        port: VAdjPopBreZon_flow
+        target: '[vav.control.name for vav in element.vavs]'
+      - component: sumZon
+        multi: true
+        name: VAdjAreBreZon_flow
+        port: VAdjAreBreZon_flow
+        target: '[vav.control.name for vav in element.vavs]'
+      - component: sumZon
+        multi: true
+        name: VDis_flow
+        port: VZonPri_flow
+        target: '[vav.control.name for vav in element.vavs]'
+      - component: sumZon
+        multi: true
+        name: VMinOA_flow
+        port: VMinOA_flow
+        target: '[vav.control.name for vav in element.vavs]'
+      - component: mulAHUCon
+        name: VAirOut_flow
+        port: VAirOut_flow
+        target: element.name
+      - component: mulAHUCon
+        name: TAirMix
+        port: TAirMix
+        target: element.name
+      real_outputs:
+      - component: mulAHUCon
+        name: TAirSupSet
+        port: TAirSupSet
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: VEffAirOut_flow_min
+        port: VEffAirOut_flow_min
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yMinOutDam
+        port: yMinOutDam
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yRetDam
+        port: yRetDam
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yRelDam
+        port: yRelDam
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yOutDam
+        port: yOutDam
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: ySupFan
+        port: ySupFan
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yRetFan
+        port: yRetFan
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yRelFan
+        port: yRelFan
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yCooCoi
+        port: yCooCoi
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yHeaCoi
+        port: yHeaCoi
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: yDpBui
+        port: yDpBui
+        target: element.controllable_element.name
+      - component: mulAHUCon
+        name: dpDisSet
+        port: dpDisSet
+        target: element.controllable_element.name
+      template: "Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(\n\
+        \  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));"
+    category: control
+    template: "model AhuControl{{ element.name | capitalize}}\nparameter Real VUncDesOutAir_flow=0.03;\n\
+      parameter Real VDesTotOutAir_flow=0.03;\nBuildings.Controls.OBC.ASHRAE.G36.AHUs.MultiZone.VAV.Controller\n\
+      mulAHUCon(\neneStd=Buildings.Controls.OBC.ASHRAE.G36.Types.EnergyStandard.ASHRAE90_1,\n\
+      venStd=Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard.ASHRAE62_1,\n\
+      ashCliZon=Buildings.Controls.OBC.ASHRAE.G36.Types.ASHRAEClimateZone.Zone_1A,\n\
+      have_frePro=false,\nminOADes=Buildings.Controls.OBC.ASHRAE.G36.Types.OutdoorAirSection.DedicatedDampersAirflow,\n\
+      buiPreCon=Buildings.Controls.OBC.ASHRAE.G36.Types.PressureControl.BarometricRelief,\n\
+      ecoHigLimCon=Buildings.Controls.OBC.ASHRAE.G36.Types.ControlEconomizer.FixedDryBulb,\n\
+      cooCoi=Buildings.Controls.OBC.ASHRAE.G36.Types.CoolingCoil.None,\nheaCoi=Buildings.Controls.OBC.ASHRAE.G36.Types.HeatingCoil.None,\n\
+      have_perZonRehBox=false, VUncDesOutAir_flow = VUncDesOutAir_flow,\nVDesTotOutAir_flow\
+      \ = VDesTotOutAir_flow)\n{% raw %}annotation (Placement(transformation(extent={{-12,-14},{28,74}})));{%\
+      \ endraw %}\n{{bus_template}}\n\nBuildings.Controls.OBC.ASHRAE.G36.AHUs.MultiZone.VAV.SetPoints.OutdoorAirFlow.ASHRAE62_1.SumZone\n\
+      sumZon(nZon={{element.vavs | length }}, nGro=1,final zonGroMat={{ element.zon_gro_mat\
+      \ }},\nfinal zonGroMatTra={{ element.zon_gro_mat_tra }})\n{% raw %}annotation\
+      \ (Placement(transformation(extent={{-72,32},{-52,52}})));{% endraw %}\nBuildings.Controls.OBC.CDL.Integers.MultiSum\
+      \ preRetReq(final\nnin={{element.vavs | length }})\n{% raw %}annotation (Placement(transformation(extent={{-72,80},{-60,92}})));{%\
+      \ endraw %}\nBuildings.Controls.OBC.CDL.Integers.MultiSum temResReq(final nin={{element.vavs\
+      \ | length }})\n{% raw %}annotation (Placement(transformation(extent={{-72,56},{-60,68}})));{%\
+      \ endraw %}\nequation\n{{bus_ports | safe}}\n{% raw %}\nconnect(sumZon.VSumAdjPopBreZon_flow,\
+      \ mulAHUCon.VSumAdjPopBreZon_flow)\nannotation (Line(points={{-50,50},{-22,50},{-22,55},{-14,55}},\
+      \ color={0,0,127}));\nconnect(sumZon.VSumAdjAreBreZon_flow, mulAHUCon.VSumAdjAreBreZon_flow)\n\
+      annotation (Line(points={{-50,46},{-20,46},{-20,53},{-14,53}}, color={0,0,127}));\n\
+      connect(sumZon.VSumZonPri_flow, mulAHUCon.VSumZonPri_flow) annotation (Line(\n\
+      points={{-50,38},{-38,38},{-38,44},{-14,44},{-14,50}}, color={0,0,127}));\n\
+      connect(sumZon.uOutAirFra_max, mulAHUCon.uOutAirFra_max) annotation (Line(\n\
+      points={{-50,34},{-34,34},{-34,40},{-20,40},{-20,42},{-14,42},{-14,47}},\ncolor={0,0,127}));\n\
+      connect(temResReq.y, mulAHUCon.uZonTemResReq) annotation (Line(points={{-58.8,\n\
+      \  62},{-58.8,63},{-14,63}}, color={255,127,0}));\nconnect(preRetReq.y, mulAHUCon.uZonPreResReq)\
+      \ annotation (Line(points={{-58.8,\n  86},{-22,86},{-22,71},{-14,71}}, color={255,127,0}));\n\
+      {% endraw %}\nend AhuControl{{ element.name  | capitalize}};"
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - System
+    - DataBus
+    use_counter: false
+  template: "\n    {{package_name}}.Common.Controls.ventilation.AhuControl{{ element.name\
+    \ | capitalize}}\n    {{ element.name }}"
+  variant: default
