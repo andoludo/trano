@@ -1,5 +1,7 @@
 components:
-- library: default
+- classes:
+  - VAV
+  library: default
   parameter_processing:
     function: default_parameters
   ports:
@@ -18,7 +20,9 @@ components:
     \    dpDamper_nominal=50,\n    allowFlowReversal=false,\n    dpFixed_nominal=50)\
     \ \"VAV box for room\" "
   variant: default
-- component_template:
+- classes:
+  - VAV
+  component_template:
     bus:
       real_inputs:
       - component: vav

@@ -131,65 +131,57 @@ class AvailableLibraries(BaseModel):
 
     @classmethod
     def from_config(cls, name: str) -> "AvailableLibraries":
-        if name == "VAVControl":
-            name = "vav_control"
-        else:
-            name = to_snake_case(name)
-        libraries_path = Path(__file__).parent.joinpath("models", f"{name}.yaml")
-        if not libraries_path.exists():
-            return None
-        with tempfile.NamedTemporaryFile(mode="w+", suffix=".yaml") as f:
-            # convert_copy(
-            #     Path("/home/aan/Documents/trano/trano/models/elements/element.yaml"),
-            #     libraries_path,
-            #     "yaml",
-            #     Path(f.name),
-            # )
-            data = yaml.safe_load(libraries_path.read_text())
-            components = {"ideas":[], "buildings":[]}
-            funs = []
-            for component in data["components"]:
-                dynamic_component = None
-                if component.get("component_template"):
-                    dynamic_component = DynamicComponentTemplate(**component["component_template"])
-                if component["parameter_processing"].get("parameter", None):
-                    function_name = component["parameter_processing"]["function"]
-                    parameter_processing = partial(
-                            globals()[function_name],
-                        **{function_name:component["parameter_processing"].get("parameter", {})}
-                        )
-                else:
-                    parameter_processing = globals()[component["parameter_processing"]["function"]]
-                component_ = create_model(
-                    f"Base{component['library'].capitalize() }{name.capitalize()}",
-                    __base__=LibraryData,
-                    template=(str, f"{component['template']}"),
-                    ports_factory=(Callable[[], List[Port]], compose_func([Port(**port) for port in component["ports"]])),
-                    component_template=(DynamicComponentTemplate, dynamic_component),
-                    variant=(str,component['variant']),
-                    parameter_processing = (
-                        Callable[[BaseParameter], Dict[str, Any]],
-                        parameter_processing,
-                    )
-                    # parameter_processing=(
-                    #     Callable[[BaseParameter], Dict[str, Any]],
-                    #     partial(
-                    #         exclude_parameters,
-                    #         exclude_parameters={
-                    #             "sca_fac_rad",
-                    #             "dt_boi_nominal",
-                    #             "dt_rad_nominal",
-                    #         },
-                    #     ),
-                    # ),
-                )
+        libraries_path = Path(__file__).parent.joinpath("models")
+        data = {"components":[]}
+        for file in libraries_path.glob("*.yaml"):
+            data["components"] += yaml.safe_load(file.read_text()).get("components", [])
 
-                if component["library"] == "default":
-                    components["ideas"].append(component_)
-                    components["buildings"].append(component_)
-                else:
-                    components[component["library"]].append(component_)
-            return cls(**components)
+        components_data__ = [component for component in data["components"] for classes_ in component["classes"] if name == classes_]
+        if not components_data__:
+            return None
+        components = {"ideas":[], "buildings":[]}
+        for component in components_data__:
+            dynamic_component = None
+            if component.get("component_template"):
+                dynamic_component = DynamicComponentTemplate(**component["component_template"])
+            if component["parameter_processing"].get("parameter", None):
+                function_name = component["parameter_processing"]["function"]
+                parameter_processing = partial(
+                        globals()[function_name],
+                    **{function_name:component["parameter_processing"].get("parameter", {})}
+                    )
+            else:
+                parameter_processing = globals()[component["parameter_processing"]["function"]]
+            component_ = create_model(
+                f"Base{component['library'].capitalize() }{name.capitalize()}",
+                __base__=LibraryData,
+                template=(str, f"{component['template']}"),
+                ports_factory=(Callable[[], List[Port]], compose_func([Port(**port) for port in component["ports"]])),
+                component_template=(DynamicComponentTemplate, dynamic_component),
+                variant=(str,component['variant']),
+                parameter_processing = (
+                    Callable[[BaseParameter], Dict[str, Any]],
+                    parameter_processing,
+                )
+                # parameter_processing=(
+                #     Callable[[BaseParameter], Dict[str, Any]],
+                #     partial(
+                #         exclude_parameters,
+                #         exclude_parameters={
+                #             "sca_fac_rad",
+                #             "dt_boi_nominal",
+                #             "dt_rad_nominal",
+                #         },
+                #     ),
+                # ),
+            )
+
+            if component["library"] == "default":
+                components["ideas"].append(component_)
+                components["buildings"].append(component_)
+            else:
+                components[component["library"]].append(component_)
+        return cls(**components)
 
 
 class ConnectionView(BaseModel):

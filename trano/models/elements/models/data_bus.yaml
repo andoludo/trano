@@ -1,5 +1,7 @@
 components:
-- component_template:
+- classes:
+  - DataBus
+  component_template:
     bus:
       real_outputs:
       - component: TRoo

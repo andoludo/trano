@@ -109,7 +109,8 @@ def test_create_yaml():
     with ff.open("w+") as f:
         yaml.safe_dump({"components": [component]}, f)
 
-
+def to_camel_case(snake_str: str) -> str:
+    return "".join(x.capitalize() for x in snake_str.lower().split("_"))
 def test_create_yamls():
     configs = {
         "boiler": {"default": [BaseBoiler()]},
@@ -142,7 +143,7 @@ def test_create_yamls():
             "ideas": [IdeasInternalElement()],
             "buildings": [BuildingsInternalElement()],
         },
-        "merged_external_wall": {"ideas": [IdeasMergedExternalWall()]},
+        # "merged_external_wall": {"ideas": [IdeasMergedExternalWall()]},
         "merged_windows": {"ideas": [IdeasMergedWindows()]},
         "window": {"ideas": [IdeasMergedWindows()]},
         "ahu_control": {"default": [BaseAhuControl()]},
@@ -176,6 +177,12 @@ def test_create_yamls():
                     else:
                         function_name = component.parameter_processing.__name__
                         component_["parameter_processing"] = {"function": function_name}
+                if name == "external_wall":
+                    component_["classes"] = [to_camel_case(name), "MergedExternalWall"]
+                elif "vav" in name:
+                    component_["classes"] = [to_camel_case(name).replace("Vav", "VAV")]
+                else:
+                    component_["classes"] = [to_camel_case(name)]
                 component_["library"] = library_name
                 component.ports_factory()
                 ports = []

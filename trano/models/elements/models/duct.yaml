@@ -1,5 +1,7 @@
 components:
-- library: default
+- classes:
+  - Duct
+  library: default
   parameter_processing:
     function: default_parameters
   ports:

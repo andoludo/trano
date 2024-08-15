@@ -1,5 +1,7 @@
 components:
-- library: ideas
+- classes:
+  - Window
+  library: ideas
   parameter_processing:
     function: default_parameters
   ports:

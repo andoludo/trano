@@ -1,5 +1,7 @@
 components:
-- library: ideas
+- classes:
+  - Space
+  library: ideas
   parameter_processing:
     function: modify_alias
     parameter:
@@ -42,7 +44,9 @@ components:
     \    n50=0.822*0.5*{{ element.name }}.n50toAch,\n    redeclare package Medium\
     \ = Medium,\n    nSurf={{ element.number_merged_external_boundaries }},\n    T_start=293.15)"
   variant: default
-- library: buildings
+- classes:
+  - Space
+  library: buildings
   parameter_processing:
     function: exclude_parameters
     parameter:

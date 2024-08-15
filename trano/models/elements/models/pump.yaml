@@ -1,5 +1,7 @@
 components:
-- component_template:
+- classes:
+  - Pump
+  component_template:
     bus:
       real_inputs:
       - component: pumRad

@@ -1,5 +1,7 @@
 components:
-- library: ideas
+- classes:
+  - Weather
+  library: ideas
   parameter_processing:
     function: default_parameters
   ports: []
@@ -12,7 +14,9 @@ components:
     \ \"Data reader\"\n    {% raw %}annotation (Placement(transformation(extent={{-96,76},{-76,96}})));{%\
     \ endraw %}\n    {% endif %}\n    "
   variant: default
-- library: buildings
+- classes:
+  - Weather
+  library: buildings
   parameter_processing:
     function: default_parameters
   ports:

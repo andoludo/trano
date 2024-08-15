@@ -1,5 +1,7 @@
 components:
-- component_template:
+- classes:
+  - BoilerControl
+  component_template:
     bus:
       real_inputs:
       - component: sub1
@@ -43,7 +45,9 @@ components:
     \ | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters)\
     \ | safe}})"
   variant: default
-- component_template:
+- classes:
+  - BoilerControl
+  component_template:
     bus:
       real_inputs:
       - component: sub1

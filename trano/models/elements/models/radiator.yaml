@@ -1,5 +1,7 @@
 components:
-- library: default
+- classes:
+  - Radiator
+  library: default
   parameter_processing:
     function: exclude_parameters
   ports:
@@ -19,7 +21,9 @@ components:
     \    redeclare package Medium = MediumW,\n    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)\
     \ \"Radiator\" "
   variant: default
-- library: default
+- classes:
+  - Radiator
+  library: default
   parameter_processing:
     function: modify_alias
     parameter:

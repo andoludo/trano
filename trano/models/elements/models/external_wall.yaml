@@ -1,5 +1,8 @@
 components:
-- library: ideas
+- classes:
+  - ExternalWall
+  - MergedExternalWall
+  library: ideas
   parameter_processing:
     function: default_parameters
   ports:

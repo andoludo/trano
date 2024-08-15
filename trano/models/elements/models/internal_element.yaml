@@ -1,5 +1,7 @@
 components:
-- library: ideas
+- classes:
+  - InternalElement
+  library: ideas
   parameter_processing:
     function: default_parameters
   ports:
@@ -19,7 +21,9 @@ components:
     \ }}, inc = IDEAS.Types.Tilt.\n    {{ element.tilt.value | capitalize }}, azi\
     \ =\n    {{ element.azimuth }}) \"Partition wall between the two\n    rooms\" "
   variant: default
-- library: buildings
+- classes:
+  - InternalElement
+  library: buildings
   parameter_processing:
     function: default_parameters
   ports:

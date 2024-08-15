@@ -1,5 +1,7 @@
 components:
-- component_template:
+- classes:
+  - AhuControl
+  component_template:
     bus:
       boolean_inputs:
       - component: mulAHUCon

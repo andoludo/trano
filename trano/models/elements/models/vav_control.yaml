@@ -1,5 +1,7 @@
 components:
-- component_template:
+- classes:
+  - VAVControl
+  component_template:
     bus:
       boolean_inputs:
       - component: rehBoxCon

@@ -69,6 +69,9 @@ classes:
     class_uri: linkml:Any
   Component:
     attributes:
+      classes:
+        range: string
+        multivalued: true
       template:
           range: string
       variant:

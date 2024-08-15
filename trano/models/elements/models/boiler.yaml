@@ -1,5 +1,7 @@
 components:
-- component_template:
+- classes:
+  - Boiler
+  component_template:
     bus:
       real_inputs:
       - component: Boiy
@@ -28,9 +30,9 @@ components:
   parameter_processing:
     function: exclude_parameters
     parameter:
-    - dt_boi_nominal
     - dt_rad_nominal
     - sca_fac_rad
+    - dt_boi_nominal
   ports:
   - flow: inlet
     multi_connection: true

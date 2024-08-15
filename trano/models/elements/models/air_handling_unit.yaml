@@ -1,5 +1,7 @@
 components:
-- component_template:
+- classes:
+  - AirHandlingUnit
+  component_template:
     bus:
       integer_outputs:
       - component: fanSup

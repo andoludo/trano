@@ -1,5 +1,7 @@
 components:
-- library: ideas
+- classes:
+  - FloorOnGround
+  library: ideas
   parameter_processing:
     function: default_parameters
   ports:
