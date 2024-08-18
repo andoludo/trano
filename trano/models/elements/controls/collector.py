@@ -108,7 +108,7 @@ class BaseCollectorControl(LibraryData):
 
 class CollectorControl(Control):
     valves: Optional[List[Valve]] = None
-    parameters: PIDParameters = Field(default=PIDParameters())
+    # parameters: PIDParameters = Field(default=PIDParameters())
     # libraries_data: AvailableLibraries = AvailableLibraries(
     #     ideas=[BaseCollectorControl],
     #     buildings=[BaseCollectorControl],

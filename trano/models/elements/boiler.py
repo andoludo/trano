@@ -20,7 +20,6 @@ from trano.models.elements.base import (
 )
 from trano.models.elements.bus import DataBus
 from trano.models.elements.controls.base import Control
-from trano.models.elements.convert import convert_boiler, boiler_parameters
 from trano.models.elements.system import System
 
 
@@ -212,7 +211,7 @@ from pydantic import model_validator
 
 
 class Boiler(System):
-    parameters: BaseParameter = Field(default=BoilerParameters())
-
+    # parameters: BaseParameter = Field(default=BoilerParameters())
+    ...
 
 

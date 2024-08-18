@@ -297,7 +297,7 @@ class Space(BaseElement):
     extent = {% raw %}{{-20, -20}, {20, 20}}
     {% endraw %})));"""
     counter: ClassVar[int] = 0
-    parameters: SpaceParameter = Field(default=SpaceParameter())
+    # parameters: SpaceParameter = Field(default=SpaceParameter())
     name: str
     external_boundaries: list[
         Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]

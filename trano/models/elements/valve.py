@@ -92,7 +92,8 @@ class BaseValve(LibraryData):
 
 
 class Valve(SpaceSystem):
-    parameters: ValveParameters = Field(default=ValveParameters())
+    ...
+    # parameters: ValveParameters = Field(default=ValveParameters())
     # libraries_data: AvailableLibraries = AvailableLibraries(
     #     ideas=[BaseValve],
     #     buildings=[BaseValve],

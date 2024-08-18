@@ -88,7 +88,8 @@ class IdeasWeatherComponent(LibraryData):
 
 
 class Weather(BaseWeather):
-    parameters: WeatherParameters = Field(default=WeatherParameters())
+    ...
+    # parameters: WeatherParameters = Field(default=WeatherParameters())
     # libraries_data: AvailableLibraries = AvailableLibraries(
     #     buildings=[BuildingsWeatherComponent], ideas=[IdeasWeatherComponent]
     # )

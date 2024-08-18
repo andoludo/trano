@@ -117,7 +117,8 @@ class BasePump(LibraryData):
 
 
 class Pump(System):
-    parameters: PumpParameters = Field(default=PumpParameters())
+    ...
+    # parameters: PumpParameters = Field(default=PumpParameters())
     # libraries_data: AvailableLibraries = AvailableLibraries(
     #     ideas=[BasePump],
     #     buildings=[BasePump],

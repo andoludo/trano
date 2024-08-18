@@ -105,6 +105,15 @@ def to_snake_case(name):
 
 def compose_func(ports_):
     return lambda: ports_
+
+def _load_components():
+    libraries_path = Path(__file__).parent.joinpath("models")
+    data = {"components": []}
+    for file in libraries_path.glob("*.yaml"):
+        data["components"] += yaml.safe_load(file.read_text()).get("components", [])
+    return data
+
+COMPONENTS = _load_components()
 class AvailableLibraries(BaseModel):
     ideas: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
@@ -131,11 +140,7 @@ class AvailableLibraries(BaseModel):
 
     @classmethod
     def from_config(cls, name: str) -> "AvailableLibraries":
-        libraries_path = Path(__file__).parent.joinpath("models")
-        data = {"components":[]}
-        for file in libraries_path.glob("*.yaml"):
-            data["components"] += yaml.safe_load(file.read_text()).get("components", [])
-
+        data = COMPONENTS
         components_data__ = [component for component in data["components"] for classes_ in component["classes"] if name == classes_]
         if not components_data__:
             return None
@@ -400,10 +405,63 @@ class DynamicComponentTemplate(BaseModel):
         )
 
         return component
+from pydantic.fields import FieldInfo, computed_field
 
+
+def _get_type(_type):
+    if _type == "string":
+        return str
+    elif _type == "float":
+        return float
+    elif _type == "integer":
+        return int
+    elif _type == "boolean":
+        return bool
+    else:
+        raise Exception("Unknown type")
 
 class BaseParameter(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+def _get_default(v):
+    value = v["ifabsent"].replace(v["range"], "")[1:-1]
+    if value == "None":
+        return None
+    try:
+        return _get_type(v["range"])(value)
+    except Exception as e:
+
+        raise e
+def load_parameters():
+    parameter_path = Path("/home/aan/Documents/trano/trano/data_models/parameters.yaml")
+    data = yaml.safe_load(parameter_path.read_text())
+    classes = {}
+
+    for name, parameter in data.items():
+        attrib_ = {}
+        for k, v in parameter["attributes"].items():
+            alias = v.get("alias", None)
+            alias = alias if alias !="None" else None
+            if v.get("range"):
+                attrib_[k] = (
+                        _get_type(v["range"]),
+                        Field(default=_get_default(v), alias=alias, description=v.get("description", None)),
+                    )
+            else:
+                attrib_[k] = computed_field(eval(v["func"]), return_type=eval(v["type"]), alias=alias)
+        model = create_model(
+            f"{name}_",__base__=BaseParameter,  **attrib_
+        )
+        for class_ in parameter["classes"]:
+            classes[class_] = model
+    return classes
+
+PARAMETERS = load_parameters()
+
+
+
+
+def param_from_config(name: str):
+    return PARAMETERS.get(name)
 
 
 class BaseElement(BaseModel):
@@ -415,7 +473,7 @@ class BaseElement(BaseModel):
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
     {% endraw %})));"""
-    model_config = ConfigDict(arbitrary_types_allowed=True, extra="forbid")
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
     parameters: Optional[BaseParameter] = None
     position: Optional[List[float]] = None
     ports: list[Port] = Field(default=[], validate_default=True)
@@ -431,6 +489,9 @@ class BaseElement(BaseModel):
         libraries_data = AvailableLibraries.from_config(cls.__name__)
         if libraries_data:
             value["libraries_data"] = libraries_data
+        parameter_class = param_from_config(cls.__name__)
+        if parameter_class:
+            value["parameters"] = parameter_class()
         return value
 
     @model_validator(mode="after")

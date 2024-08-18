@@ -9,13 +9,21 @@ from trano.models.elements.base import Port, DynamicComponentTemplate, LibraryDa
 
 from pydantic import create_model
 
-from trano.models.elements.boiler import BaseBoiler
+from trano.models.elements.boiler import BaseBoiler, BoilerParameters
 from trano.models.elements.boundary import BaseBoundaryComponent
 from trano.models.elements.bus import data_bus_factory
 from trano.models.elements.controls.ahu import BaseAhuControl
-from trano.models.elements.controls.boiler import BaseBoilerControl, SimpleBoilerControl
+from trano.models.elements.controls.base import PIDParameters
+from trano.models.elements.controls.boiler import (
+    BaseBoilerControl,
+    SimpleBoilerControl,
+    BoilerParameters as BoilerControlParameters,
+)
 from trano.models.elements.controls.collector import BaseCollectorControl
-from trano.models.elements.controls.emission import BaseEmissionControl
+from trano.models.elements.controls.emission import (
+    BaseEmissionControl,
+    ControlLoopsParameters,
+)
 from trano.models.elements.controls.three_way_valve import BaseThreeWayValveControl
 from trano.models.elements.controls.vav import BaseVavControl
 from trano.models.elements.damper import BaseDamperDetailed, BaseDamper
@@ -27,23 +35,33 @@ from trano.models.elements.envelope.internal_element import (
     IdeasInternalElement,
 )
 from trano.models.elements.envelope.window import IdeasMergedWindows
-from trano.models.elements.occupancy import OccupancyComponent
-from trano.models.elements.pump import BasePump
-from trano.models.elements.radiator import BaseRadiator, BaseIdealRadiator
-from trano.models.elements.space import IdeasSpace, BuildingsSpace
-from trano.models.elements.split_valve import BaseSplitValve
+from trano.models.elements.occupancy import OccupancyComponent, OccupancyParameters
+from trano.models.elements.pump import BasePump, PumpParameters
+from trano.models.elements.radiator import (
+    BaseRadiator,
+    BaseIdealRadiator,
+    RadiatorParameter,
+)
+from trano.models.elements.space import IdeasSpace, BuildingsSpace, SpaceParameter
+from trano.models.elements.split_valve import BaseSplitValve, SplitValveParameters
 from trano.models.elements.temperature_sensor import BaseTemperatureSensor
-from trano.models.elements.three_way_valve import BaseThreeWayValve
-from trano.models.elements.valve import BaseValve
+from trano.models.elements.three_way_valve import (
+    BaseThreeWayValve,
+    ThreeWayValveParameters,
+)
+from trano.models.elements.valve import BaseValve, ValveParameters
 from trano.models.elements.weather import (
     BuildingsWeatherComponent,
     IdeasWeatherComponent,
+    WeatherParameters,
 )
 
 
 def test_validate_schema() -> None:
     for name in ["boiler", "valve", "window"]:
-        boiler = Path(f"/home/aan/Documents/trano/trano/models/elements/models/{name}.yaml")
+        boiler = Path(
+            f"/home/aan/Documents/trano/trano/models/elements/models/{name}.yaml"
+        )
         data_model_path = (
             Path(__file__)
             .parents[1]
@@ -109,8 +127,11 @@ def test_create_yaml():
     with ff.open("w+") as f:
         yaml.safe_dump({"components": [component]}, f)
 
+
 def to_camel_case(snake_str: str) -> str:
     return "".join(x.capitalize() for x in snake_str.lower().split("_"))
+
+
 def test_create_yamls():
     configs = {
         "boiler": {"default": [BaseBoiler()]},
@@ -173,7 +194,10 @@ def test_create_yamls():
                         if isinstance(parameters, set):
                             parameters = list(parameters)
                         function_name = component.parameter_processing.func.__name__
-                        component_["parameter_processing"] = {"function": function_name, "parameter":parameters}
+                        component_["parameter_processing"] = {
+                            "function": function_name,
+                            "parameter": parameters,
+                        }
                     else:
                         function_name = component.parameter_processing.__name__
                         component_["parameter_processing"] = {"function": function_name}
@@ -275,3 +299,151 @@ def test_create_radiator_yaml():
     ff = Path("/home/aan/Documents/trano/tests/radiator.yaml")
     with ff.open("w+") as f:
         yaml.safe_dump({"components": components}, f)
+
+
+def test_parameters():
+    parameters = [
+        BoilerParameters(),
+        OccupancyParameters(),
+        PumpParameters(),
+        RadiatorParameter(),
+        SpaceParameter(),
+        SplitValveParameters(),
+        ThreeWayValveParameters(),
+        ValveParameters(),
+        WeatherParameters(),
+        PIDParameters(),
+        BoilerControlParameters(),
+        ControlLoopsParameters(),
+    ]
+    for p in parameters:
+        p.model_json_schema()
+
+
+def _get_range(annotation):
+    if "Literal" in str(annotation) or "str" in str(annotation):
+        return "string"
+    elif "float" in str(annotation):
+        return "float"
+    elif "int" in str(annotation):
+        return "integer"
+    elif "Boolean" in str(annotation) or "bool" in str(annotation):
+        return "boolean"
+    else:
+        raise Exception(str(annotation))
+
+
+def _get_type(_type):
+    if _type == "string":
+        return str
+    elif _type == "float":
+        return float
+    elif _type == "integer":
+        return int
+    elif _type == "boolean":
+        return bool
+    else:
+        raise Exception("Unknown type")
+
+
+def _get_default(v):
+    value = v["ifabsent"].replace(v["range"], "")[1:-1]
+    try:
+        return _get_type(v["range"])(value)
+    except Exception as e:
+        if value == "None":
+            return None
+        raise e
+
+
+from pydantic.fields import computed_field, Field
+
+computed_fields = {
+    "nominal_mass_flow_rate_boiler": "lambda self: self.sca_fac_rad * self.nominal_heating_power / self.dt_rad_nominal / 4200",
+    "nominal_mass_flow_radiator_loop": "lambda self: self.sca_fac_rad * self.nominal_heating_power / self.dt_rad_nominal / 4200",
+    "v_flow": "lambda self: f'{self.nominal_mass_flow_rate_boiler}' '/1000*{0.5,1}'",
+    "dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity": "lambda self: 0.0263 * abs(self.nominal_heating_power_positive_for_heating)",
+    "water_volume_of_radiator": "lambda self:5.8e-5 * abs(self.nominal_heating_power_positive_for_heating)",
+    "volume": "lambda self:self.floor_area * self.average_room_height"
+}
+
+
+def test_dump_schema():
+    from linkml_runtime.dumpers import json_dumper
+    from linkml.generators.pydanticgen import PydanticGenerator
+
+    parameters_ = [
+        (BoilerParameters, ["Boiler"]),
+        (OccupancyParameters, ["Occupancy"]),
+        (PumpParameters, ["Pump"]),
+        (RadiatorParameter, ["Radiator"]),
+        (SpaceParameter, ["Space"]),
+        (SplitValveParameters, ["SplitValve"]),
+        (ThreeWayValveParameters, ["ThreeWayValve"]),
+        (ValveParameters, ["Valve"]),
+        (WeatherParameters, ["Weather"]),
+        (PIDParameters, ["ThreeWayValveControl", "CollectorControl"]),
+        (ControlLoopsParameters, ["EmissionControl"]),
+        (BoilerControlParameters, ["BoilerControl"]),
+    ]
+    parameter_path = Path("/home/aan/Documents/trano/trano/data_models/parameters.yaml")
+    parameter = {}
+    for par, classes_ in parameters_:
+        if "<class 'trano.models.elements.controls.boiler.BoilerParameters'>" in str(par):
+            par_name = "BoilerControlParameters"
+        else:
+            par_name = par.__name__
+        parameter[par_name] = {"attributes": {}, "classes": classes_}
+
+        for field_name, field in par.model_fields.items():
+            if par_name == SplitValveParameters.__name__ and field_name == "m_flow_nominal":
+                range = 'string'
+                default = "string(0.008*{1,-1,-1})"
+            else:
+                range = _get_range(field.annotation)
+                default = f"{_get_range(field.annotation)}({field.default})"
+            parameter[par_name]["attributes"][field_name] = {
+                "range": range,
+                "description": str(field.description),
+                "alias": str(field.alias),
+                "ifabsent": default,
+            }
+        for field_name, field in par.model_computed_fields.items():
+            parameter[par_name]["attributes"][field_name] = {
+                "func": computed_fields.get(field_name),
+                "type": field.return_type.__name__,
+                "alias": field.alias
+            }
+    with parameter_path.open("w+") as f:
+        yaml.safe_dump(parameter, f)
+
+
+def test_computed_field():
+    m = create_model(
+        "Test",
+        a=(int, Field(default=12, alias="b", description="c")),
+        b=computed_field(lambda self: 10 * self.a, return_type=float),
+    )
+    m().b
+
+
+from pydantic.fields import FieldInfo
+
+
+# def test_parameters_loading():
+#     parameter_path = Path("/home/aan/Documents/trano/trano/data_models/parameters.yaml")
+#     data = yaml.safe_load(parameter_path.read_text())
+#     # a = 12
+#     classes = []
+#     for name, parameter in data.items():
+#         attrib_ = {
+#             k: (
+#                 _get_type(v["range"]),
+#                 FieldInfo(default=_get_default(v), alias=v.get("alias", None), description=v.get("description", None)),
+#             )
+#             for k, v in parameter["attributes"].items()
+#         }
+#         classes.append(create_model(
+#             name, **attrib_
+#         ))
+#     a = 12

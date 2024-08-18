@@ -435,7 +435,7 @@ connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_2, TRoo1[2].ppm);
 connect(dataBus.ppmCO2Space_3, TRoo1[3].ppm);
 end DataServer;
-
+      
 
 
       partial model PartialBoilerControl
@@ -2176,45 +2176,45 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record id_100 = IDEAS.Build
       c=840.0,
       rho=2500.0,
       epsLw=0.88,
-      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
-      epsLw=0.88,
       epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.12,
       c=1210.0,
       rho=540.0,
       epsLw=0.88,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
+      epsLw=0.88,
       epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.025,
       c=1005.0,
       rho=1.2,
       epsLw=0.88,
+      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.03,
+      c=1200.0,
+      rho=40.0,
+      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={ideas_free_float_three_zones.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;      record external_wall
+package Constructions "Library of building envelope constructions"      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={ideas_free_float_three_zones.Data.Materials.concrete
         (d=0.2),ideas_free_float_three_zones.Data.Materials.insulation_board
         (d=0.02),ideas_free_float_three_zones.Data.Materials.plywood
         (d=0.1)    });
-    end external_wall;
+    end external_wall;      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={ideas_free_float_three_zones.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;
 end Constructions;
 end Data;
 model building
@@ -2246,7 +2246,7 @@ annotation (choicesAllMatching = true);
     final azi={ 135, 0, 45, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 93.47740937791978, -156.1410784003279 },
+    Placement(transformation(origin = { -167.27975285872938, -118.81654587972075 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[2]
@@ -2257,7 +2257,7 @@ annotation (choicesAllMatching = true);
     final azi={ 45, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 30.3926345682833, -196.91186686603677 },
+    Placement(transformation(origin = { 69.07973013931712, 169.57209060205432 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_1(
@@ -2265,7 +2265,7 @@ annotation (choicesAllMatching = true);
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { -2.5709217767949935, 195.11798912547258 },
+    Placement(transformation(origin = { 197.7946270554931, 11.956592407483017 },
     extent = {{-10, -10}, {10, 10}}
 )));
     IDEAS.Buildings.Components.Zone space_2(
@@ -2288,7 +2288,7 @@ annotation (choicesAllMatching = true);
     final azi={ 135, 0, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -148.87317906183785, 75.53860508708064 },
+    Placement(transformation(origin = { 94.01304444162842, -173.01481557991818 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[2]
@@ -2299,7 +2299,7 @@ annotation (choicesAllMatching = true);
     final azi={ 0, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -180.4403240624778, -51.92328524501739 },
+    Placement(transformation(origin = { 134.29967718035553, 142.7498382244773 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_2(
@@ -2307,7 +2307,7 @@ annotation (choicesAllMatching = true);
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { -40.43634181142905, -182.10271698566092 },
+    Placement(transformation(origin = { 147.03095627334062, -119.19046847456738 },
     extent = {{-10, -10}, {10, 10}}
 )));
     IDEAS.Buildings.Components.Zone space_3(
@@ -2330,7 +2330,7 @@ annotation (choicesAllMatching = true);
     final azi={ 135, 0, 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 59.265565867846384, 166.54639161165068 },
+    Placement(transformation(origin = { -35.92846770835003, -182.3798370137605 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2341,7 +2341,7 @@ annotation (choicesAllMatching = true);
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -181.62339936620188, 19.592955768526235 },
+    Placement(transformation(origin = { -75.6710243947146, 199.99999999999997 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_3(
@@ -2349,7 +2349,7 @@ annotation (choicesAllMatching = true);
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { 172.0999347435368, 90.49175798853952 },
+    Placement(transformation(origin = { -114.04654751964804, 129.8563034560358 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.InternalWall internal_space_1_space_2
@@ -2396,24 +2396,24 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
         ideas_free_float_three_zones.Common.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { -81.37617343048075, 186.05447220655606 },
+    Placement(transformation(origin = { 6.329592036983727, 199.0710029658833 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
 equation    connect(space_1.propsBus[1:4],merged_w1_1_w2_1_w3_1_w4_1[1:4].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 46.73870468895989, 0.0 }    ,{ 46.73870468895989, -156.1410784003279 }    ,{ 93.47740937791978, -156.1410784003279 }    },
+points={{ 0.0, 0.0 }    ,{ -83.63987642936469, 0.0 }    ,{ -83.63987642936469, -118.81654587972075 }    ,{ -167.27975285872938, -118.81654587972075 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[5:6],merged_win1_1_win2_1[1:2].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 15.19631728414165, 0.0 }    ,{ 15.19631728414165, -196.91186686603677 }    ,{ 30.3926345682833, -196.91186686603677 }    },
+points={{ 0.0, 0.0 }    ,{ 34.53986506965856, 0.0 }    ,{ 34.53986506965856, 169.57209060205432 }    ,{ 69.07973013931712, 169.57209060205432 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.propsBus[7],floor_1.propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -1.2854608883974967, 0.0 }    ,{ -1.2854608883974967, 195.11798912547258 }    ,{ -2.5709217767949935, 195.11798912547258 }    },
+points={{ 0.0, 0.0 }    ,{ 98.89731352774655, 0.0 }    ,{ 98.89731352774655, 11.956592407483017 }    ,{ 197.7946270554931, 11.956592407483017 }    },
 color={191,0,0},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_1.propsBus[8],internal_space_1_space_2.propsBus_a)
@@ -2428,17 +2428,17 @@ color={191,0,0},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_2.propsBus[1:3],merged_w1_2_w2_2_w3_2[1:3].propsBus_a)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 50.56341046908108, 150.0 }    ,{ 50.56341046908108, 75.53860508708064 }    ,{ -148.87317906183785, 75.53860508708064 }    },
+points={{ 250.0, 150.0 }    ,{ 172.00652222081422, 150.0 }    ,{ 172.0065222208142, -173.01481557991818 }    ,{ 94.01304444162842, -173.01481557991818 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[4:5],merged_win1_2_win2_2[1:2].propsBus_a)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 34.779837968761115, 150.0 }    ,{ 34.779837968761086, -51.92328524501739 }    ,{ -180.4403240624778, -51.92328524501739 }    },
+points={{ 250.0, 150.0 }    ,{ 192.14983859017775, 150.0 }    ,{ 192.14983859017775, 142.7498382244773 }    ,{ 134.29967718035553, 142.7498382244773 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.propsBus[6],floor_2.propsBus_a)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 104.78182909428548, 150.0 }    ,{ 104.78182909428546, -182.10271698566092 }    ,{ -40.43634181142905, -182.10271698566092 }    },
+points={{ 250.0, 150.0 }    ,{ 198.5154781366703, 150.0 }    ,{ 198.5154781366703, -119.19046847456738 }    ,{ 147.03095627334062, -119.19046847456738 }    },
 color={191,0,0},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_2.propsBus[7],internal_space_1_space_2.propsBus_b)
@@ -2453,17 +2453,17 @@ color={191,0,0},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_3.propsBus[1:3],merged_w1_3_w2_3_w3_3[1:3].propsBus_a)
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 279.6327829339232, 150.0 }    ,{ 279.6327829339232, 166.54639161165068 }    ,{ 59.265565867846384, 166.54639161165068 }    },
+points={{ 500.0, 150.0 }    ,{ 232.035766145825, 150.0 }    ,{ 232.035766145825, -182.3798370137605 }    ,{ -35.92846770835003, -182.3798370137605 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.propsBus[4],merged_w4_3[1].propsBus_a)
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 159.18830031689907, 150.0 }    ,{ 159.18830031689905, 19.592955768526235 }    ,{ -181.62339936620188, 19.592955768526235 }    },
+points={{ 500.0, 150.0 }    ,{ 212.16448780264273, 150.0 }    ,{ 212.16448780264267, 199.99999999999997 }    ,{ -75.6710243947146, 199.99999999999997 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_3.propsBus[5],floor_3.propsBus_a)
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 336.0499673717684, 150.0 }    ,{ 336.0499673717684, 90.49175798853952 }    ,{ 172.0999347435368, 90.49175798853952 }    },
+points={{ 500.0, 150.0 }    ,{ 192.976726240176, 150.0 }    ,{ 192.97672624017596, 129.8563034560358 }    ,{ -114.04654751964804, 129.8563034560358 }    },
 color={191,0,0},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_3.propsBus[6],internal_space_1_space_3.propsBus_b)
@@ -2478,32 +2478,32 @@ color={191,0,0},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_1.gainCon,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -40.688086715240374, 0.0 }    ,{ -40.688086715240374, 186.05447220655606 }    ,{ -81.37617343048075, 186.05447220655606 }    },
+points={{ 0.0, 0.0 }    ,{ 3.1647960184918635, 0.0 }    ,{ 3.1647960184918635, 199.0710029658833 }    ,{ 6.329592036983727, 199.0710029658833 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -40.688086715240374, 0.0 }    ,{ -40.688086715240374, 186.05447220655606 }    ,{ -81.37617343048075, 186.05447220655606 }    },
+points={{ 0.0, 0.0 }    ,{ 3.1647960184918635, 0.0 }    ,{ 3.1647960184918635, 199.0710029658833 }    ,{ 6.329592036983727, 199.0710029658833 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_2.gainCon,data_bus.port[2])
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 84.31191328475961, 150.0 }    ,{ 84.31191328475964, 186.05447220655606 }    ,{ -81.37617343048075, 186.05447220655606 }    },
+points={{ 250.0, 150.0 }    ,{ 128.16479601849187, 150.0 }    ,{ 128.16479601849187, 199.0710029658833 }    ,{ 6.329592036983727, 199.0710029658833 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_2.ports[1],data_bus.port_a[2])
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 84.31191328475961, 150.0 }    ,{ 84.31191328475964, 186.05447220655606 }    ,{ -81.37617343048075, 186.05447220655606 }    },
+points={{ 250.0, 150.0 }    ,{ 128.16479601849187, 150.0 }    ,{ 128.16479601849187, 199.0710029658833 }    ,{ 6.329592036983727, 199.0710029658833 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_3.gainCon,data_bus.port[3])
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 209.3119132847596, 150.0 }    ,{ 209.31191328475964, 186.05447220655606 }    ,{ -81.37617343048075, 186.05447220655606 }    },
+points={{ 500.0, 150.0 }    ,{ 253.16479601849187, 150.0 }    ,{ 253.16479601849187, 199.0710029658833 }    ,{ 6.329592036983727, 199.0710029658833 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_3.ports[1],data_bus.port_a[3])
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 209.3119132847596, 150.0 }    ,{ 209.31191328475964, 186.05447220655606 }    ,{ -81.37617343048075, 186.05447220655606 }    },
+points={{ 500.0, 150.0 }    ,{ 253.16479601849187, 150.0 }    ,{ 253.16479601849187, 199.0710029658833 }    ,{ 6.329592036983727, 199.0710029658833 }    },
 thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-231.62339936620188,-246.91186686603677},{550.0,250.0}})), Icon(
-        coordinateSystem(extent={{-231.62339936620188,-246.91186686603677},{550.0,250.0}})));
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-217.27975285872938,-232.3798370137605},{550.0,250.0}})), Icon(
+        coordinateSystem(extent={{-217.27975285872938,-232.3798370137605},{550.0,250.0}})));
   annotation (
-    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_1</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>T_start</th><td>294.15</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_1</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_1</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_1</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_1</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>win1_1</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr><tr><td>win2_1</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr><tr><td>floor_1</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_1_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_2</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>T_start</th><td>294.15</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_2</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_2</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_2</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>win1_2</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr><tr><td>win2_2</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr><tr><td>floor_2</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_2_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_3</td></tr><tr><th>parameters</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>mSenFac</th><td>1.0</td></tr><tr><th>AFlo</th><td>20.0</td></tr><tr><th>hRoo</th><td>2.0</td></tr><tr><th>linearizeRadiation</th><td>true</td></tr><tr><th>m_flow_nominal</th><td>0.01</td></tr><tr><th>T_start</th><td>294.15</td></tr><tr><th>volume</th><td>40.0</td></tr></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>w1_3</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w2_3</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w3_3</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>ExternalWall</td></tr><tr><td>w4_3</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td><td>Window</td></tr><tr><td>floor_3</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td><td>FloorOnGround</td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th><th>type</th></tr></thead><tbody><tr><td>internal_space_1_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr><tr><td>internal_space_2_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td><td>InternalElement</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>brick</td></tr><tr><th>k</th><td>0.89</td></tr><tr><th>c</th><td>790.0</td></tr><tr><th>rho</th><td>1920.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>concrete</td></tr><tr><th>k</th><td>1.4</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2240.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>insulation_board</td></tr><tr><th>k</th><td>0.03</td></tr><tr><th>c</th><td>1200.0</td></tr><tr><th>rho</th><td>40.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.02</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>plywood</td></tr><tr><th>k</th><td>0.12</td></tr><tr><th>c</th><td>1210.0</td></tr><tr><th>rho</th><td>540.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.1</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
+    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_1</td></tr><tr><th>parameters</th><td></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>w1_1</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w2_1</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w3_1</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w4_1</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>win1_1</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr><tr><td>win2_1</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr><tr><td>floor_1</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td></tr><tr><td>internal_space_1_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_2</td></tr><tr><th>parameters</th><td></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>w1_2</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w2_2</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w3_2</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>win1_2</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr><tr><td>win2_2</td><td>10.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr><tr><td>floor_2</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td></tr><tr><td>internal_space_2_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_3</td></tr><tr><th>parameters</th><td></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>w1_3</td><td>10.0</td><td>135.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w2_3</td><td>10.0</td><td>0.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w3_3</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w4_3</td><td>10.0</td><td>45.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr><tr><td>floor_3</td><td>10.0</td><td>90.0</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>internal_space_1_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td></tr><tr><td>internal_space_2_space_3</td><td>10.0</td><td>10.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>concrete</td></tr><tr><th>k</th><td>1.4</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2240.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>insulation_board</td></tr><tr><th>k</th><td>0.03</td></tr><tr><th>c</th><td>1200.0</td></tr><tr><th>rho</th><td>40.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.02</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>plywood</td></tr><tr><th>k</th><td>0.12</td></tr><tr><th>c</th><td>1210.0</td></tr><tr><th>rho</th><td>540.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.1</td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>brick</td></tr><tr><th>k</th><td>0.89</td></tr><tr><th>c</th><td>790.0</td></tr><tr><th>rho</th><td>1920.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
 end building;
 
 
