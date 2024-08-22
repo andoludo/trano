@@ -2,6 +2,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+import yaml
 from linkml.validator import validate_file
 
 from tests.conftest import _read, clean_model, is_success
@@ -11,7 +12,7 @@ from trano.simulate.simulate import SimulationOptions, simulate
 
 @pytest.fixture
 def schema() -> Path:
-    return Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
+    return Path(__file__).parents[1].joinpath("trano", "data_models", "trano_final.yaml")
 
 
 @pytest.fixture
@@ -27,6 +28,22 @@ def test_validate_schema() -> None:
     report = validate_file(house, data_model_path, "Building")
     assert report.results == []
 
+def test_create_new_schema():
+    trano_path = Path("/home/aan/Documents/trano/trano/data_models/trano.yaml")
+    trano_final_path = Path("/home/aan/Documents/trano/trano/data_models/trano_final.yaml")
+    parameters_path = Path("/home/aan/Documents/trano/trano/data_models/parameters.yaml")
+    trano = yaml.safe_load(trano_path.read_text())
+    parameters = yaml.safe_load(parameters_path.read_text())
+    for name, parameter in parameters.items():
+        parameter.pop("classes")
+        parameter__= {}
+        for k, v in parameter["attributes"].items():
+            if "func" not in v:
+                v.pop("alias", None)
+                parameter__[k] = v
+        parameter["attributes"] = parameter__
+        trano["classes"][name] = parameter
+    yaml.dump(trano, trano_final_path.open("w"))
 
 def test_convert_to_json(schema: Path, house: Path) -> None:
     for target in ["ttl", "json", "rdf", "json-ld"]:

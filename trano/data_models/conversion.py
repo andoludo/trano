@@ -35,7 +35,7 @@ from trano.models.elements.valve import Valve  # noqa: F401
 from trano.models.elements.weather import Weather
 from trano.topology import Network
 
-DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano.yaml")
+DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")
 COUNTER: Dict[Any, Any] = Counter()
 
 
@@ -86,7 +86,7 @@ class EnrichedModel(BaseModel):
     data: Dict[str, Any]
     path: Path
 
-
+from linkml.generators.pythongen import PythonGenerator
 def convert(schema: Path, input_file: Path, target: str, output: Path) -> bool:
     root_path = Path(__file__).parents[1]
     os.chdir(root_path)
@@ -104,7 +104,9 @@ def convert(schema: Path, input_file: Path, target: str, output: Path) -> bool:
         str(schema),
         f"{input_file}",
     ]
-
+    #TODO: use this instead of console.
+    command_ = " ".join(command)
+    # python_module = PythonGenerator(schema).compile_module()
     process = subprocess.run(
         command, check=True, capture_output=True, text=True  # noqa: S603
     )

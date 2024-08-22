@@ -87,7 +87,7 @@ BoilerParameters:
     number_of_volume_segments:
       alias: nSeg
       description: None
-      ifabsent: integer(4)
+      ifabsent: int(4)
       range: integer
     sca_fac_rad:
       alias: scaFacRad
@@ -230,15 +230,9 @@ PIDParameters:
   - CollectorControl
 PumpParameters:
   attributes:
-    compute_power_using_similarity_laws:
-      alias: computePowerUsingSimilarityLaws
-      description: None
-      ifabsent: boolean(None)
-      range: boolean
     constant_input_set_point:
       alias: constInput
       description: None
-      ifabsent: float(None)
       range: float
     control_input_type:
       alias: inputType
@@ -260,11 +254,7 @@ PumpParameters:
       description: None
       ifabsent: string(None)
       range: string
-    vector_of_input_set_points_corresponding_to_stages:
-      alias: stageInputs[:]
-      description: None
-      ifabsent: string(None)
-      range: string
+
   classes:
   - Pump
 RadiatorParameter:
@@ -306,7 +296,7 @@ RadiatorParameter:
     number_of_elements_used_in_the_discretization:
       alias: nEle
       description: None
-      ifabsent: integer(1)
+      ifabsent: int(1)
       range: integer
     radiative_temperature_at_nominal_condition:
       alias: TRad_nominal
@@ -397,12 +387,10 @@ SplitValveParameters:
     nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
       alias: mDyn_flow_nominal
       description: None
-      ifabsent: float(None)
       range: float
     time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance:
       alias: tau
       description: None
-      ifabsent: float(None)
       range: float
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
@@ -421,12 +409,10 @@ ThreeWayValveParameters:
     Cv:
       alias: Cv
       description: None
-      ifabsent: float(None)
       range: float
     Kv:
       alias: Kv
       description: None
-      ifabsent: float(None)
       range: float
     dp_fixed_nominal:
       alias: dpFixed_nominal
@@ -466,7 +452,6 @@ ThreeWayValveParameters:
     rho_std:
       alias: rhoStd
       description: None
-      ifabsent: float(None)
       range: float
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
@@ -490,7 +475,6 @@ ValveParameters:
     cv:
       alias: Cv
       description: None
-      ifabsent: float(None)
       range: float
     dp_fixed_nominal:
       alias: dpFixed_nominal
@@ -515,7 +499,6 @@ ValveParameters:
     kv:
       alias: Kv
       description: None
-      ifabsent: float(None)
       range: float
     m_flow_nominal:
       alias: m_flow_nominal

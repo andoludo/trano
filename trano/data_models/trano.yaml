@@ -188,7 +188,7 @@ classes:
       - parameters
     slot_usage:
       parameters:
-        range: OccupancyParameter
+        range: OccupancyParameters
     class_uri: schema:Occupancy
 
   System:

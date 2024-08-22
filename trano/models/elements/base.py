@@ -423,9 +423,15 @@ def _get_type(_type):
 class BaseParameter(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 def _get_default(v):
-    value = v["ifabsent"].replace(v["range"], "")[1:-1]
+    if "ifabsent" not in v:
+        return None
+    tag = v["range"]
+    if tag == "integer":
+        tag = "int"
+    value = v["ifabsent"].replace(tag, "")[1:-1]
     if value == "None":
         return None
+
     try:
         return _get_type(v["range"])(value)
     except Exception as e:

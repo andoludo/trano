@@ -1,0 +1,808 @@
+classes:
+  Boiler:
+    attributes:
+      control:
+        range: Control
+      parameters:
+        range: BoilerParameters
+    is_a: System
+  BoilerControl:
+    class_uri: schema:BoilerControl
+    slots:
+    - id
+  BoilerControlParameters:
+    attributes:
+      threshold_outdoor_air_cutoff:
+        description: None
+        ifabsent: float(288.15)
+        range: float
+      threshold_to_switch_off_boiler:
+        description: None
+        ifabsent: float(288.15)
+        range: float
+      tsup_nominal:
+        description: None
+        ifabsent: float(353.15)
+        range: float
+  BoilerParameters:
+    attributes:
+      coefficients_for_efficiency_curve:
+        description: None
+        ifabsent: string({0.9})
+        range: string
+      dp:
+        description: None
+        ifabsent: string((3000 + 2000)*{2,1})
+        range: string
+      dp_nominal:
+        description: None
+        ifabsent: float(5000)
+        range: float
+      dt_boi_nominal:
+        description: None
+        ifabsent: float(20)
+        range: float
+      dt_rad_nominal:
+        description: None
+        ifabsent: float(10)
+        range: float
+      effcur:
+        description: None
+        ifabsent: string(Buildings.Fluid.Types.EfficiencyCurves.Constant)
+        range: string
+      fraction_of_nominal_flow_rate_where_flow_transitions_to_laminar:
+        description: None
+        ifabsent: float(0.1)
+        range: float
+      fuel_type:
+        description: None
+        ifabsent: string(Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())
+        range: string
+      height_of_tank_without_insulation:
+        description: None
+        ifabsent: float(2)
+        range: float
+      if_actual_temperature_at_port_is_computed:
+        description: None
+        ifabsent: string(false)
+        range: string
+      nominal_heating_power:
+        description: None
+        ifabsent: float(2000)
+        range: float
+      number_of_volume_segments:
+        description: None
+        ifabsent: int(4)
+        range: integer
+      sca_fac_rad:
+        description: None
+        ifabsent: float(1.5)
+        range: float
+      tank_volume:
+        description: None
+        ifabsent: float(0.2)
+        range: float
+      temperature_used_to_compute_nominal_efficiency:
+        description: None
+        ifabsent: float(353.15)
+        range: float
+      thickness_of_insulation:
+        description: None
+        ifabsent: float(0.002)
+        range: float
+      use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+        description: None
+        ifabsent: string(false)
+        range: string
+  Building:
+    attributes:
+      constructions:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Construction
+      gas:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Gas
+      glass_material:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: GlassMaterial
+      glazings:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Glazing
+      material:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Material
+      spaces:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Space
+      systems:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Systems
+    description: A holder for Space objects
+    tree_root: true
+  CollectorControl:
+    class_uri: schema:CollectorControl
+    slots:
+    - id
+  Construction:
+    attributes:
+      layers:
+        description: Layers
+        multivalued: true
+        range: Layer
+    slots:
+    - id
+  Control:
+    class_uri: schema:Control
+    slots:
+    - emission_control
+    - boiler_control
+    - collector_control
+    - three_way_valve_control
+  ControlLoopsParameters:
+    attributes:
+      dt_hys:
+        description: None
+        ifabsent: float(0.25)
+        range: float
+      k_coo_con:
+        description: None
+        ifabsent: float(0.1)
+        range: float
+      k_hea_con:
+        description: None
+        ifabsent: float(0.1)
+        range: float
+      loo_hys:
+        description: None
+        ifabsent: float(0.01)
+        range: float
+      ti_coo_con:
+        description: None
+        ifabsent: float(900)
+        range: float
+      ti_hea_con:
+        description: None
+        ifabsent: float(900)
+        range: float
+      tim_che:
+        description: None
+        ifabsent: float(30)
+        range: float
+  Emission:
+    class_uri: schema:Emission
+    slots:
+    - radiator
+    - valve
+  EmissionControl:
+    attributes:
+      parameters:
+        multivalued: false
+        range: ControlLoopsParameters
+    class_uri: schema:EmissionControl
+    slots:
+    - id
+  ExternalBoundaries:
+    attributes:
+      external_walls:
+        inlined: true
+        multivalued: true
+        range: ExternalWall
+      floor_on_grounds:
+        inlined: true
+        multivalued: true
+        range: FloorOnGround
+      windows:
+        inlined: true
+        multivalued: true
+        range: Window
+  ExternalWall:
+    attributes:
+      construction:
+        description: Construction
+        range: Construction
+    slots:
+    - surface
+    - azimuth
+    - tilt
+  FloorOnGround:
+    attributes:
+      construction:
+        description: Construction
+        range: Construction
+    slots:
+    - surface
+  Gas:
+    is_a: Material
+  GlassMaterial:
+    attributes:
+      infrared_absorptivity_outside_facing:
+        ifabsent: float(0.84)
+        range: float
+      infrared_absorptivity_room_facing:
+        ifabsent: float(0.84)
+        range: float
+      infrared_transmissivity:
+        ifabsent: float(0.0)
+        range: float
+      solar_reflectance_outside_facing:
+        ifabsent: float(0.053)
+        multivalued: true
+        range: float
+      solar_reflectance_room_facing:
+        ifabsent: float(0.053)
+        multivalued: true
+        range: float
+      solar_transmittance:
+        ifabsent: float(0.486)
+        multivalued: true
+        range: float
+    is_a: Material
+  Glazing:
+    attributes:
+      layers:
+        description: Layers
+        multivalued: true
+        range: GlazingLayer
+      u_value_frame:
+        description: U-value of the frame [W/(m2.K)]
+        ifabsent: float(1.4)
+        range: float
+    slots:
+    - id
+  GlazingLayer:
+    attributes:
+      gas:
+        description: Gas
+        range: Gas
+      glass:
+        description: Glass
+        range: GlassMaterial
+      thickness:
+        description: Thickness [m]
+        range: float
+  Layer:
+    attributes:
+      material:
+        description: Material
+        range: Material
+      thickness:
+        description: Thickness [m]
+        range: float
+  Material:
+    attributes:
+      density:
+        description: Density [kg/m3]
+        range: float
+      longwave_emissivity:
+        description: Longwave emissivity [1]
+        ifabsent: float(0.85)
+        range: float
+      shortwave_emissivity:
+        description: Shortwave emissivity [1]
+        ifabsent: float(0.85)
+        range: float
+      specific_heat_capacity:
+        description: Specific thermal capacity [J/(kg.K)]
+        range: float
+      thermal_conductivity:
+        description: Thermal conductivity [W/(m.K)]
+        range: float
+    slots:
+    - id
+  Occupancy:
+    class_uri: schema:Occupancy
+    description: Represents Occupancy
+    slot_usage:
+      parameters:
+        range: OccupancyParameters
+    slots:
+    - parameters
+  OccupancyParameters:
+    attributes:
+      gain:
+        description: None
+        ifabsent: string([35; 70; 30])
+        range: string
+      heat_gain_if_occupied:
+        description: None
+        ifabsent: string(1/6/4)
+        range: string
+      occupancy:
+        description: None
+        ifabsent: string(3600*{7, 19})
+        range: string
+  PIDParameters:
+    attributes:
+      controller_type:
+        description: None
+        ifabsent: string(Buildings.Controls.OBC.CDL.Types.SimpleController.PI)
+        range: string
+      k:
+        description: None
+        ifabsent: float(1)
+        range: float
+      nd:
+        description: None
+        ifabsent: float(10)
+        range: float
+      ni:
+        description: None
+        ifabsent: float(0.9)
+        range: float
+      r:
+        description: None
+        ifabsent: float(1)
+        range: float
+      td:
+        description: None
+        ifabsent: float(0.1)
+        range: float
+      ti:
+        description: None
+        ifabsent: float(0.5)
+        range: float
+      y_max:
+        description: None
+        ifabsent: float(1)
+        range: float
+      y_min:
+        description: None
+        ifabsent: float(0)
+        range: float
+  Parameter:
+    class_uri: schema:Parameter
+    description: Represents Parameters
+    slots:
+    - name
+  Pump:
+    attributes:
+      control:
+        range: Control
+      parameters:
+        range: PumpParameters
+    is_a: System
+  PumpParameters:
+    attributes:
+      constant_input_set_point:
+        description: None
+        range: float
+      control_input_type:
+        description: None
+        ifabsent: string(None)
+        range: string
+      dp_nominal:
+        description: None
+        ifabsent: float(10000)
+        range: float
+      m_flow_nominal:
+        description: None
+        ifabsent: float(0.008)
+        range: float
+      per:
+        description: None
+        ifabsent: string(None)
+        range: string
+  Radiator:
+    is_a: System
+    slot_usage:
+      parameters:
+        range: RadiatorParameter
+    slots:
+    - parameters
+  RadiatorParameter:
+    attributes:
+      air_temperature_at_nominal_condition:
+        description: None
+        ifabsent: float(293.15)
+        range: float
+      dp_nominal:
+        description: None
+        ifabsent: float(0)
+        range: float
+      exponent_for_heat_transfer:
+        description: None
+        ifabsent: float(1.24)
+        range: float
+      fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
+        description: None
+        ifabsent: float(0.01)
+        range: float
+      fraction_radiant_heat_transfer:
+        description: None
+        ifabsent: float(0.3)
+        range: float
+      nominal_heating_power_positive_for_heating:
+        description: None
+        ifabsent: float(2000)
+        range: float
+      number_of_elements_used_in_the_discretization:
+        description: None
+        ifabsent: int(1)
+        range: integer
+      radiative_temperature_at_nominal_condition:
+        description: None
+        ifabsent: float(293.15)
+        range: float
+      use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+        description: None
+        ifabsent: string(false)
+        range: string
+      use_m_flow_f_dp_else_dp_f_m_flow:
+        description: None
+        ifabsent: string(false)
+        range: string
+      water_inlet_temperature_at_nominal_condition:
+        description: None
+        ifabsent: float(363.15)
+        range: float
+      water_outlet_temperature_at_nominal_condition:
+        description: None
+        ifabsent: float(353.15)
+        range: float
+  Space:
+    class_uri: schema:Space
+    description: Represents a Space
+    slot_usage:
+      parameters:
+        range: SpaceParameter
+    slots:
+    - id
+    - name
+    - external_boundaries
+    - parameters
+    - occupancy
+    - emissions
+  SpaceParameter:
+    attributes:
+      average_room_height:
+        description: Average room height [m]
+        ifabsent: float(2)
+        range: float
+      floor_area:
+        description: Floor area [m2]
+        ifabsent: float(20)
+        range: float
+      linearize_emissive_power:
+        description: Set to true to linearize emissive power
+        ifabsent: string(true)
+        range: string
+      nominal_mass_flow_rate:
+        description: Nominal mass flow rate [kg/s]
+        ifabsent: float(0.01)
+        range: float
+      sensible_thermal_mass_scaling_factor:
+        description: Factor for scaling the sensible thermal mass of the zone air
+          volume
+        ifabsent: float(1)
+        range: float
+      temperature_initial:
+        description: Initial temperature [K]
+        ifabsent: float(294.15)
+        range: float
+  SplitValve:
+    attributes:
+      parameters:
+        range: SplitValveParameters
+    is_a: System
+  SplitValveParameters:
+    attributes:
+      dp_nominal:
+        description: None
+        ifabsent: string({10000,-1,-1})
+        range: string
+      fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
+        description: None
+        ifabsent: float(0.3)
+        range: float
+      m_flow_nominal:
+        description: None
+        ifabsent: string(0.008*{1,-1,-1})
+        range: string
+      nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
+        description: None
+        range: float
+      time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance:
+        description: None
+        range: float
+      use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+        description: None
+        ifabsent: string(false)
+        range: string
+  System:
+    class_uri: schema:System
+    slots:
+    - id
+    - inlets
+    - outlets
+  Systems:
+    class_uri: schema:Systems
+    slots:
+    - split_valve
+    - three_way_valve
+    - boiler
+    - pump
+    - temperature_sensor
+  TemperatureSensor:
+    is_a: System
+  ThreeWayValve:
+    attributes:
+      control:
+        range: Control
+      parameters:
+        range: ThreeWayValveParameters
+    is_a: System
+  ThreeWayValveControl:
+    class_uri: schema:CollectorControl
+    slots:
+    - id
+  ThreeWayValveParameters:
+    attributes:
+      Av:
+        description: None
+        ifabsent: string(None)
+        range: string
+      Cv:
+        description: None
+        range: float
+      Kv:
+        description: None
+        range: float
+      dp_fixed_nominal:
+        description: None
+        ifabsent: string({100,0})
+        range: string
+      dp_valve_nominal:
+        description: None
+        ifabsent: float(6000)
+        range: float
+      fra_k:
+        description: None
+        ifabsent: float(0.7)
+        range: float
+      fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
+        description: None
+        ifabsent: float(0.02)
+        range: float
+      m_flow_nominal:
+        description: None
+        ifabsent: float(0.0078)
+        range: float
+      range_of_significant_deviation_from_equal_percentage_law:
+        description: None
+        ifabsent: float(0.01)
+        range: float
+      rangeability:
+        description: None
+        ifabsent: float(50)
+        range: float
+      rho_std:
+        description: None
+        range: float
+      use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+        description: None
+        ifabsent: string({false, false})
+        range: string
+      valve_leakage:
+        description: None
+        ifabsent: string({0.01,0.01})
+        range: string
+  Valve:
+    attributes:
+      control:
+        range: Control
+    is_a: System
+    slot_usage:
+      parameters:
+        range: ValveParameters
+    slots:
+    - parameters
+  ValveParameters:
+    attributes:
+      av:
+        description: None
+        ifabsent: string(None)
+        range: string
+      cv:
+        description: None
+        range: float
+      dp_fixed_nominal:
+        description: None
+        ifabsent: float(6000)
+        range: float
+      dp_valve_nominal:
+        description: None
+        ifabsent: float(6000)
+        range: float
+      fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
+        description: None
+        ifabsent: float(0.02)
+        range: float
+      k_fixed:
+        description: None
+        ifabsent: string(None)
+        range: string
+      kv:
+        description: None
+        range: float
+      m_flow_nominal:
+        description: None
+        ifabsent: float(0.01)
+        range: float
+      range_of_significant_deviation_from_equal_percentage_law:
+        description: None
+        ifabsent: float(0.01)
+        range: float
+      rangeability:
+        description: None
+        ifabsent: float(50)
+        range: float
+      use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+        description: None
+        ifabsent: string(false)
+        range: string
+      use_m_flow_f_dp_else_dp_f_m_flow:
+        description: None
+        ifabsent: string(true)
+        range: string
+      valve_leakage:
+        description: None
+        ifabsent: float(0.0001)
+        range: float
+  WeatherParameters:
+    attributes:
+      path:
+        description: None
+        ifabsent: string(None)
+        range: string
+  Window:
+    attributes:
+      construction:
+        description: Glazing
+        range: Glazing
+      height:
+        range: float
+      width:
+        range: float
+    slots:
+    - surface
+    - azimuth
+    - tilt
+default_curi_maps:
+- semweb_context
+default_prefix: trano
+default_range: string
+description: This is the project description.
+enums:
+  ControlType:
+    permissible_values:
+      Ahu: null
+      Boiler: null
+      Collector: null
+      Emission: null
+      ThreeWayValve: null
+      VAV: null
+id: https://w3id.org/my-org/trano
+imports:
+- linkml:types
+license: MIT
+name: trano
+prefixes:
+  CONSTRUCTION: http://example.org/CONSTRUCTION/
+  CONTROL: http://example.org/CONTROL/
+  MATERIAL: http://example.org/MATERIAL/
+  OCCUPANCY: http://example.org/OCCUPANCY/
+  PATO: http://purl.obolibrary.org/obo/PATO_
+  SPACE: http://example.org/SPACE/
+  SYSTEM: http://example.org/SYSTEM/
+  biolink: https://w3id.org/biolink/
+  example: https://example.org/
+  linkml: https://w3id.org/linkml/
+  schema: http://schema.org/
+  trano: https://w3id.org/my-org/trano/
+see_also:
+- https://my-org.github.io/trano
+slots:
+  azimuth:
+    range: float
+    slot_uri: schema:azimuth
+  boiler:
+    inlined: true
+    multivalued: false
+    range: Boiler
+  boiler_control:
+    inlined: true
+    multivalued: false
+    range: BoilerControl
+    slot_uri: schema:boiler_control
+  collector_control:
+    inlined: true
+    multivalued: false
+    range: CollectorControl
+    slot_uri: schema:collector_control
+  emission_control:
+    inlined: true
+    multivalued: false
+    range: EmissionControl
+    slot_uri: schema:emission_control
+  emissions:
+    inlined: true
+    multivalued: true
+    range: Emission
+    slot_uri: schema:emissions
+  external_boundaries:
+    multivalued: false
+    range: ExternalBoundaries
+    slot_uri: schema:external_boundaries
+  id:
+    description: A unique identifier for a thing
+    identifier: true
+    slot_uri: schema:identifier
+  inlets:
+    multivalued: true
+    range: System
+    slot_uri: schema:inlets
+  name:
+    description: A human-readable name for a thing
+    slot_uri: schema:name
+  occupancy:
+    multivalued: false
+    range: Occupancy
+    slot_uri: schema:occupancy
+  outlets:
+    multivalued: true
+    range: System
+    slot_uri: schema:inlets
+  parameters:
+    multivalued: false
+    range: Parameter
+    slot_uri: schema:parameters
+  pump:
+    inlined: true
+    multivalued: false
+    range: Pump
+  radiator:
+    inlined: true
+    multivalued: false
+    range: Radiator
+  split_valve:
+    inlined: true
+    multivalued: false
+    range: SplitValve
+  surface:
+    range: float
+    slot_uri: schema:surface
+  temperature_sensor:
+    inlined: true
+    multivalued: false
+    range: TemperatureSensor
+  three_way_valve:
+    inlined: true
+    multivalued: false
+    range: ThreeWayValve
+  three_way_valve_control:
+    inlined: true
+    multivalued: false
+    range: ThreeWayValveControl
+    slot_uri: schema:three_way_valve_control
+  tilt:
+    range: string
+    slot_uri: schema:tilt
+  valve:
+    inlined: true
+    multivalued: false
+    range: Valve
+title: trano
