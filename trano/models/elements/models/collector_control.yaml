@@ -95,6 +95,7 @@ components:
       {{bus_ports | safe}}
 
       end CollectorControl{{ element.name | capitalize}};'
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

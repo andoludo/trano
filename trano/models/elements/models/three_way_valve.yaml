@@ -1,6 +1,7 @@
 components:
 - classes:
   - ThreeWayValve
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

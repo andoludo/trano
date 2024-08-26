@@ -195,6 +195,7 @@ components:
       {{bus_ports | safe}}
 
       end VAVControl{{ element.name  | capitalize}};'
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

@@ -1,6 +1,7 @@
 components:
 - classes:
   - VAV
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters
@@ -46,6 +47,7 @@ components:
     template: "\nmodel VAVBox{{ element.name | capitalize}}\nextends {{ package_name\
       \ }}.Common.Fluid.Ventilation.PartialVAVBox;\n{{bus_template}}\nequation\n{{bus_ports\
       \ | safe}}\n end VAVBox{{ element.name | capitalize}};\n "
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

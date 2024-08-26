@@ -1,6 +1,7 @@
 components:
 - classes:
   - FloorOnGround
+  figures: []
   library: ideas
   parameter_processing:
     function: default_parameters

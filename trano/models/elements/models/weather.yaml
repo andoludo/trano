@@ -1,6 +1,7 @@
 components:
 - classes:
   - Weather
+  figures: []
   library: ideas
   parameter_processing:
     function: default_parameters
@@ -16,6 +17,7 @@ components:
   variant: default
 - classes:
   - Weather
+  figures: []
   library: buildings
   parameter_processing:
     function: default_parameters

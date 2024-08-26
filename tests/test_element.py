@@ -132,6 +132,37 @@ def to_camel_case(snake_str: str) -> str:
     return "".join(x.capitalize() for x in snake_str.lower().split("_"))
 
 
+def test_figures():
+    components = [
+        BaseBoiler(),
+        BaseRadiator(),
+        BaseIdealRadiator(),
+        BaseAirHandlingUnit(),
+        BaseBoundaryComponent(),
+        data_bus_factory(),
+        BaseDamper(),
+        BaseDamperDetailed(),
+        BaseDuct(),
+        OccupancyComponent(),
+        BasePump(),
+        IdeasSpace(),
+        BuildingsSpace(),
+        BaseSplitValve(),
+        BaseTemperatureSensor(),
+        BaseThreeWayValve(),
+        BaseValve(),
+        BaseBoilerControl(),
+        SimpleBoilerControl(),
+        BaseCollectorControl(),
+        BaseEmissionControl(),
+        BaseThreeWayValveControl(),
+        BaseVavControl(),
+    ]
+    for co in components:
+        if co.figures:
+            a = 12
+
+
 def test_create_yamls():
     configs = {
         "boiler": {"default": [BaseBoiler()]},
@@ -233,6 +264,10 @@ def test_create_yamls():
                         },
                     )
                     component_["component_template"] = component_template
+                component_["figures"] = []
+                for figure in component.figures:
+                    figure_ = figure.model_dump(exclude_defaults=True, exclude_unset=True)
+                    component_["figures"].append(figure_)
                 components.append(component_)
         ff = Path(f"/home/aan/Documents/trano/trano/models/elements/models/{name}.yaml")
         with ff.open("w+") as f:
@@ -364,7 +399,7 @@ computed_fields = {
     "v_flow": "lambda self: f'{self.nominal_mass_flow_rate_boiler}' '/1000*{0.5,1}'",
     "dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity": "lambda self: 0.0263 * abs(self.nominal_heating_power_positive_for_heating)",
     "water_volume_of_radiator": "lambda self:5.8e-5 * abs(self.nominal_heating_power_positive_for_heating)",
-    "volume": "lambda self:self.floor_area * self.average_room_height"
+    "volume": "lambda self:self.floor_area * self.average_room_height",
 }
 
 
@@ -389,15 +424,20 @@ def test_dump_schema():
     parameter_path = Path("/home/aan/Documents/trano/trano/data_models/parameters.yaml")
     parameter = {}
     for par, classes_ in parameters_:
-        if "<class 'trano.models.elements.controls.boiler.BoilerParameters'>" in str(par):
+        if "<class 'trano.models.elements.controls.boiler.BoilerParameters'>" in str(
+            par
+        ):
             par_name = "BoilerControlParameters"
         else:
             par_name = par.__name__
         parameter[par_name] = {"attributes": {}, "classes": classes_}
 
         for field_name, field in par.model_fields.items():
-            if par_name == SplitValveParameters.__name__ and field_name == "m_flow_nominal":
-                range = 'string'
+            if (
+                par_name == SplitValveParameters.__name__
+                and field_name == "m_flow_nominal"
+            ):
+                range = "string"
                 default = "string(0.008*{1,-1,-1})"
             else:
                 range = _get_range(field.annotation)
@@ -412,7 +452,7 @@ def test_dump_schema():
             parameter[par_name]["attributes"][field_name] = {
                 "func": computed_fields.get(field_name),
                 "type": field.return_type.__name__,
-                "alias": field.alias
+                "alias": field.alias,
             }
     with parameter_path.open("w+") as f:
         yaml.safe_dump(parameter, f)

@@ -30,6 +30,7 @@ components:
       \ {{ package_name }}.Common.Controls.ventilation.PartialBoilerControl;\n   \
       \ {{bus_template}}\n    equation\n    {{bus_ports | safe}}\n     end BoilerControl{{\
       \ element.name | capitalize}};\n     "
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters
@@ -76,6 +77,7 @@ components:
       \ {{ package_name }}.Common.Controls.ventilation.PartialBoilerControl;\n   \
       \ {{bus_template}}\n    equation\n    {{bus_ports | safe}}\n     end BoilerControl{{\
       \ element.name | capitalize}};\n     "
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

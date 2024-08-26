@@ -29,6 +29,7 @@ components:
       \  {% raw %}annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(\n\
       \        coordinateSystem(preserveAspectRatio=false)));{% endraw %}\nend ThreeWayValveControl{{\
       \ element.name | capitalize}};"
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

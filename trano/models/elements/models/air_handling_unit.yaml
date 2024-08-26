@@ -55,6 +55,7 @@ components:
       \ }}.Common.Fluid.Ventilation.PartialAhu;\n    {{bus_template}}\n    equation\n\
       \    {{bus_ports | safe}}\n     end Ahu{{ element.name | capitalize}};\n   \
       \  "
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 import tempfile
-from copy import deepcopy
+from copy import deepcopy, copy
 from functools import partial
 from pathlib import Path
 from typing import (
@@ -140,7 +140,7 @@ class AvailableLibraries(BaseModel):
 
     @classmethod
     def from_config(cls, name: str) -> "AvailableLibraries":
-        data = COMPONENTS
+        data = deepcopy(COMPONENTS)
         components_data__ = [component for component in data["components"] for classes_ in component["classes"] if name == classes_]
         if not components_data__:
             return None
@@ -157,6 +157,7 @@ class AvailableLibraries(BaseModel):
                     )
             else:
                 parameter_processing = globals()[component["parameter_processing"]["function"]]
+            figures = [Figure(**fig) for fig in component.get("figures", [])]
             component_ = create_model(
                 f"Base{component['library'].capitalize() }{name.capitalize()}",
                 __base__=LibraryData,
@@ -164,6 +165,7 @@ class AvailableLibraries(BaseModel):
                 ports_factory=(Callable[[], List[Port]], compose_func([Port(**port) for port in component["ports"]])),
                 component_template=(DynamicComponentTemplate, dynamic_component),
                 variant=(str,component['variant']),
+                figures=(List[Figure], Field(default_factory= lambda : figures)),
                 parameter_processing = (
                     Callable[[BaseParameter], Dict[str, Any]],
                     parameter_processing,

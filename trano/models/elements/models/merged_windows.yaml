@@ -1,6 +1,7 @@
 components:
 - classes:
   - MergedWindows
+  figures: []
   library: ideas
   parameter_processing:
     function: default_parameters

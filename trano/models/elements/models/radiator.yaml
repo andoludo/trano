@@ -1,6 +1,7 @@
 components:
 - classes:
   - Radiator
+  figures: []
   library: default
   parameter_processing:
     function: exclude_parameters
@@ -23,6 +24,7 @@ components:
   variant: default
 - classes:
   - Radiator
+  figures: []
   library: default
   parameter_processing:
     function: modify_alias

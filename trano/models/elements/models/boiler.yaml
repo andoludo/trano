@@ -26,13 +26,29 @@ components:
       \ {{ package_name }}.Common.Fluid.Boilers.PartialBoilerWithStorage;\n    {{bus_template}}\n\
       \    equation\n    {{bus_ports | safe}}\n     end BoilerWithStorage{{ element.name\
       \ | capitalize}};\n     "
+  figures:
+  - left_axis:
+      label: Gas consumption [m3]
+      lines:
+      - color: red
+        label: Measured gas consumption [m3]
+        template: data_bus.dataBus.e_gas
+      - color: blue
+        label: Computed gas consumption [m3]
+        template: '{{ element.name }}.gain2.y'
+    right_axis:
+      label: Boiler control input [-]
+      lines:
+      - label: Boiler control input [-]
+        line_style: dashed
+        template: '{{ element.name }}.Boiy.y'
   library: default
   parameter_processing:
     function: exclude_parameters
     parameter:
+    - dt_boi_nominal
     - dt_rad_nominal
     - sca_fac_rad
-    - dt_boi_nominal
   ports:
   - flow: inlet
     multi_connection: true

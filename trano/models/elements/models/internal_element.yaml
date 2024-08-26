@@ -1,6 +1,7 @@
 components:
 - classes:
   - InternalElement
+  figures: []
   library: ideas
   parameter_processing:
     function: default_parameters
@@ -23,6 +24,7 @@ components:
   variant: default
 - classes:
   - InternalElement
+  figures: []
   library: buildings
   parameter_processing:
     function: default_parameters

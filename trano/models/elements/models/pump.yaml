@@ -21,6 +21,7 @@ components:
     template: "\nmodel Pump{{ element.name | capitalize}}\nextends {{ package_name\
       \ }}.Common.Fluid.Ventilation.PartialPump;\n{{bus_template}}\nequation\n{{bus_ports\
       \ | safe}}\n end Pump{{ element.name | capitalize}};\n "
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

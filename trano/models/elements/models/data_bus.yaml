@@ -37,6 +37,7 @@ components:
       {% endfor %}\n{{bus_ports | safe}}\n{% for input in element.non_connected_ports\
       \ %}\nconnect(dataBus.{{ input.name }}{{ input.target }},\n{{ input.name }}{{input.evaluated_element_name\
       \ | capitalize}}.y);\n{% endfor %}\nend DataServer;\n      "
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

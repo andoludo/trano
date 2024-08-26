@@ -200,6 +200,7 @@ components:
       \  62},{-58.8,63},{-14,63}}, color={255,127,0}));\nconnect(preRetReq.y, mulAHUCon.uZonPreResReq)\
       \ annotation (Line(points={{-58.8,\n  86},{-22,86},{-22,71},{-14,71}}, color={255,127,0}));\n\
       {% endraw %}\nend AhuControl{{ element.name  | capitalize}};"
+  figures: []
   library: default
   parameter_processing:
     function: default_parameters

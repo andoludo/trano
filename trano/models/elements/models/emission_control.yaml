@@ -51,6 +51,19 @@ components:
       \ (Line(points={{-52,-22},\n          {-52,-21.2},{-42.4,-21.2}}, color={0,0,127}));\n\
       \    {% endraw %}\n{{bus_ports | safe}}\nend EmissionControl{{ element.name\
       \  | capitalize}};"
+  figures:
+  - left_axis:
+      label: Control signal [-]
+      lines:
+      - label: Control signal [-]
+        template: '{{ element.name }}.y'
+    right_axis:
+      label: Zone controller input [K]
+      lines:
+      - label: Zone controller setpoint [K]
+        template: '{{ element.name }}.emissionControl.conHea.u_s'
+      - label: Zone controller measured [K]
+        template: '{{ element.name }}.emissionControl.conHea.u_m'
   library: default
   parameter_processing:
     function: default_parameters
