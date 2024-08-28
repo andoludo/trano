@@ -3,14 +3,9 @@ from typing import Callable, List, Optional
 from pydantic import Field
 
 from trano.controller.parser import ControllerBus, RealInput, RealOutput
-from trano.models.elements.base import (
-    AvailableLibraries,
-    DynamicComponentTemplate,
-    LibraryData,
-    Port,
-)
+from trano.models.elements.base import DynamicComponentTemplate, LibraryData, Port
 from trano.models.elements.bus import DataBus
-from trano.models.elements.controls.base import Control, PIDParameters
+from trano.models.elements.controls.base import Control
 from trano.models.elements.system import System
 from trano.models.elements.valve import Valve
 
@@ -108,8 +103,3 @@ class BaseCollectorControl(LibraryData):
 
 class CollectorControl(Control):
     valves: Optional[List[Valve]] = None
-    # parameters: PIDParameters = Field(default=PIDParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseCollectorControl],
-    #     buildings=[BaseCollectorControl],
-    # )

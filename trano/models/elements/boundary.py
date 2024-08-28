@@ -3,12 +3,7 @@ from typing import Callable, List
 from pydantic import Field
 
 from trano.models.elements.ahu import AirHandlingUnit
-from trano.models.elements.base import (
-    AvailableLibraries,
-    BaseBoundary,
-    LibraryData,
-    Port,
-)
+from trano.models.elements.base import BaseBoundary, LibraryData, Port
 from trano.models.elements.system import BaseWeather
 
 
@@ -30,7 +25,3 @@ class BaseBoundaryComponent(LibraryData):
 
 class Boundary(BaseBoundary):
     ...
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseBoundaryComponent],
-    #     buildings=[BaseBoundaryComponent],
-    # )

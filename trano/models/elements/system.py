@@ -1,14 +1,12 @@
-
 from typing import List, Optional
-from pydantic import Field,field_validator
-from trano.models.elements.base import BaseElement, BaseVariant, AvailableLibraries
+
+from trano.models.elements.base import BaseElement, BaseVariant
 from trano.models.elements.controls.base import Control
 
 
 class System(BaseElement):
     position: Optional[List[float]] = None
     control: Optional["Control"] = None
-
 
 
 class Sensor(System):

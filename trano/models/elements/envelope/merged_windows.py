@@ -1,6 +1,5 @@
 from typing import Dict, List, Union
 
-from trano.models.elements.base import AvailableLibraries
 from trano.models.elements.envelope.base import (
     BaseWindow,
     MergedBaseWindow,
@@ -8,13 +7,11 @@ from trano.models.elements.envelope.base import (
 )
 from trano.models.elements.envelope.external_wall import ExternalWall
 from trano.models.elements.envelope.floor_on_ground import FloorOnGround
-from trano.models.elements.envelope.window import IdeasMergedWindows
 
 
 class MergedWindows(MergedBaseWindow):
     widths: List[float | int]
     heights: List[float | int]
-    # libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasMergedWindows])
 
     @classmethod
     def from_base_windows(cls, base_walls: List["BaseWindow"]) -> List["MergedWindows"]:

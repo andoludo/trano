@@ -4,12 +4,7 @@ from typing import Callable, List, Optional
 from pydantic import Field, computed_field
 
 from trano.controller.parser import ControllerBus
-from trano.models.elements.base import (
-    AvailableLibraries,
-    DynamicComponentTemplate,
-    LibraryData,
-    Port,
-)
+from trano.models.elements.base import DynamicComponentTemplate, LibraryData, Port
 from trano.models.elements.bus import DataBus
 from trano.models.elements.controls.base import Control
 from trano.models.elements.damper import VAV
@@ -90,10 +85,6 @@ class BaseAhuControl(LibraryData):
 class AhuControl(Control):
     spaces: Optional[List[Space]] = None
     vavs: Optional[List[VAV]] = None
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseAhuControl],
-    #     buildings=[BaseAhuControl],
-    # )
 
     @computed_field
     def zon_gro_mat(self) -> str:

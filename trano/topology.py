@@ -65,10 +65,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
 
         if not node.libraries_data:
             return
-            #TODO: check better option here!!
-            # raise Exception(
-            #     f"No library data defined for NOde of type {type(node).__name__}"
-            # )
+            # TODO: check better option here!!
         found_library = node.assign_library_property(self.library)
         if not found_library:
             return
@@ -414,11 +411,17 @@ class Network:  # noqa : PLR0904, #TODO: fix this
 
     def set_weather_path_to_container_path(self, project_path: Path) -> None:
         for node in self.graph.nodes:
-            if isinstance(node, Weather) and node.parameters.path is not None:
-                old_path = Path(node.parameters.path)
+            if (
+                isinstance(node, Weather)
+                and hasattr(node.parameters, "path")
+                and node.parameters.path is not None  # type: ignore
+            ):
+                # TODO: type ognore needs to be fixed
+                old_path = Path(node.parameters.path)  # type: ignore
                 new_path = project_path.joinpath(old_path.name)
                 shutil.copy(old_path, new_path)
-                node.parameters.path = f'"/simulation/{old_path.name}"'
+                # TODO: this is not correct
+                node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
     def model(self) -> str:
         Space.counter = 0
@@ -486,8 +489,6 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         environment.filters["enumerate"] = enumerate
         models = []
         for node in self.graph.nodes:
-            if node.type == "Boiler":
-                a = 12
             if not node.template:
                 continue
             environment.globals.update(self.library.functions)

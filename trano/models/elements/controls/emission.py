@@ -4,7 +4,6 @@ from pydantic import Field
 
 from trano.controller.parser import ControllerBus, RealInput, RealOutput
 from trano.models.elements.base import (
-    AvailableLibraries,
     Axis,
     BaseParameter,
     DynamicComponentTemplate,
@@ -192,8 +191,3 @@ class BaseEmissionControl(LibraryData):
 
 class EmissionControl(Control):
     ...
-    # parameters: ControlLoopsParameters = Field(default=ControlLoopsParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseEmissionControl],
-    #     buildings=[BaseEmissionControl],
-    # )

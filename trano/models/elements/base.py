@@ -1,8 +1,7 @@
 import os
 import re
 import subprocess
-import tempfile
-from copy import deepcopy, copy
+from copy import deepcopy
 from functools import partial
 from pathlib import Path
 from typing import (
@@ -15,6 +14,7 @@ from typing import (
     Literal,
     Optional,
     Tuple,
+    Type,
 )
 
 import jinja2.exceptions
@@ -28,10 +28,10 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from pydantic.fields import computed_field
 
 from trano.controller.parser import ControllerBus
 from trano.models.constants import Flow
-
 
 if TYPE_CHECKING:
     from trano.library.library import Libraries
@@ -98,22 +98,26 @@ def convert_copy(schema: Path, input_file: Path, target: str, output: Path) -> b
     return process.returncode == 0
 
 
-def to_snake_case(name):
+def to_snake_case(name: str) -> str:
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
-def compose_func(ports_):
+def compose_func(ports_: List["Port"]) -> Callable[[], List["Port"]]:
     return lambda: ports_
 
-def _load_components():
+
+def _load_components() -> Dict[str, Any]:
     libraries_path = Path(__file__).parent.joinpath("models")
-    data = {"components": []}
+    data: Dict[str, Any] = {"components": []}
     for file in libraries_path.glob("*.yaml"):
         data["components"] += yaml.safe_load(file.read_text()).get("components", [])
     return data
 
+
 COMPONENTS = _load_components()
+
+
 class AvailableLibraries(BaseModel):
     ideas: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
@@ -121,12 +125,6 @@ class AvailableLibraries(BaseModel):
     def get_library_data(
         self, library: "Libraries", variant: str
     ) -> Any:  # noqa: ANN401
-        # if variant == BaseVariant.default:
-        #     defaults = getattr(self, library.name.lower())
-        #     if defaults:
-        #         return defaults[0]()
-        #     else:
-        #         return False
         selected_variant = [
             variant_
             for variant_ in getattr(self, library.name.lower())
@@ -134,53 +132,64 @@ class AvailableLibraries(BaseModel):
         ]
         if not selected_variant:
             return
-            # raise ValueError(f"Variant {variant} not found in library {library.name}")
         # TODO: to be more strict
         return selected_variant[0]()
 
     @classmethod
-    def from_config(cls, name: str) -> "AvailableLibraries":
+    def from_config(cls, name: str) -> Optional["AvailableLibraries"]:
         data = deepcopy(COMPONENTS)
-        components_data__ = [component for component in data["components"] for classes_ in component["classes"] if name == classes_]
+        components_data__ = [
+            component
+            for component in data["components"]
+            for classes_ in component["classes"]
+            if name == classes_
+        ]
         if not components_data__:
             return None
-        components = {"ideas":[], "buildings":[]}
+        components: Dict[str, Any] = {"ideas": [], "buildings": []}
         for component in components_data__:
             dynamic_component = None
             if component.get("component_template"):
-                dynamic_component = DynamicComponentTemplate(**component["component_template"])
+                dynamic_component = DynamicComponentTemplate(
+                    **component["component_template"]
+                )
             if component["parameter_processing"].get("parameter", None):
                 function_name = component["parameter_processing"]["function"]
                 parameter_processing = partial(
-                        globals()[function_name],
-                    **{function_name:component["parameter_processing"].get("parameter", {})}
-                    )
+                    globals()[function_name],
+                    **{
+                        function_name: component["parameter_processing"].get(
+                            "parameter", {}
+                        )
+                    },
+                )
             else:
-                parameter_processing = globals()[component["parameter_processing"]["function"]]
-            figures = [Figure(**fig) for fig in component.get("figures", [])]
+                parameter_processing = globals()[
+                    component["parameter_processing"]["function"]
+                ]
             component_ = create_model(
                 f"Base{component['library'].capitalize() }{name.capitalize()}",
                 __base__=LibraryData,
                 template=(str, f"{component['template']}"),
-                ports_factory=(Callable[[], List[Port]], compose_func([Port(**port) for port in component["ports"]])),
+                ports_factory=(
+                    Callable[[], List[Port]],
+                    compose_func([Port(**port) for port in component["ports"]]),
+                ),
                 component_template=(DynamicComponentTemplate, dynamic_component),
-                variant=(str,component['variant']),
-                figures=(List[Figure], Field(default_factory= lambda : figures)),
-                parameter_processing = (
+                variant=(str, component["variant"]),
+                figures=(
+                    List[Figure],
+                    Field(
+                        default_factory=lambda: [
+                            Figure(**fig)
+                            for fig in component.get("figures", [])  # noqa: B023
+                        ]
+                    ),
+                ),
+                parameter_processing=(
                     Callable[[BaseParameter], Dict[str, Any]],
                     parameter_processing,
-                )
-                # parameter_processing=(
-                #     Callable[[BaseParameter], Dict[str, Any]],
-                #     partial(
-                #         exclude_parameters,
-                #         exclude_parameters={
-                #             "sca_fac_rad",
-                #             "dt_boi_nominal",
-                #             "dt_rad_nominal",
-                #         },
-                #     ),
-                # ),
+                ),
             )
 
             if component["library"] == "default":
@@ -235,8 +244,11 @@ class Port(BaseModel):
 
     @field_validator("targets")
     @classmethod
-    def validate_targets(cls, values: List[Any]):
-        targets = []
+    def validate_targets(  # noqa: PLR0915, PLR0912, C901
+        cls, values: List[str]
+    ) -> List[Type["BaseElement"]]:  # TODO: reduce complexity
+        # TODO: this function to be refactored!!!
+        targets: List[Type[BaseElement]] = []
         for value in values:
             if isinstance(value, str):
                 if value == "DataBus":
@@ -252,8 +264,6 @@ class Port(BaseModel):
 
                     targets.append(Space)
                 elif value == "BaseBoundary":
-                    from trano.models.elements.boundary import BaseBoundary
-
                     targets.append(BaseBoundary)
                 elif value == "System":
                     from trano.models.elements.system import System
@@ -264,7 +274,7 @@ class Port(BaseModel):
 
                     targets.append(AhuControl)
                 elif value == "BaseWeather":
-                    from trano.models.elements.weather import BaseWeather
+                    from trano.models.elements.system import BaseWeather
 
                     targets.append(BaseWeather)
                 elif value == "AirHandlingUnit":
@@ -276,13 +286,11 @@ class Port(BaseModel):
 
                     targets.append(Ventilation)
                 elif value == "BaseInternalElement":
-                    from trano.models.elements.envelope.internal_element import (
-                        BaseInternalElement,
-                    )
+                    from trano.models.elements.envelope.base import BaseInternalElement
 
                     targets.append(BaseInternalElement)
                 elif value == "BaseOccupancy":
-                    from trano.models.elements.occupancy import BaseOccupancy
+                    from trano.models.elements.system import BaseOccupancy
 
                     targets.append(BaseOccupancy)
                 elif value == "Emission":
@@ -407,10 +415,9 @@ class DynamicComponentTemplate(BaseModel):
         )
 
         return component
-from pydantic.fields import FieldInfo, computed_field
 
 
-def _get_type(_type):
+def _get_type(_type: Any) -> Any:  # noqa: ANN401
     if _type == "string":
         return str
     elif _type == "float":
@@ -422,9 +429,12 @@ def _get_type(_type):
     else:
         raise Exception("Unknown type")
 
+
 class BaseParameter(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
-def _get_default(v):
+
+
+def _get_default(v: Any) -> Any:  # noqa: ANN401
     if "ifabsent" not in v:
         return None
     tag = v["range"]
@@ -439,8 +449,13 @@ def _get_default(v):
     except Exception as e:
 
         raise e
-def load_parameters():
-    parameter_path = Path("/home/aan/Documents/trano/trano/data_models/parameters.yaml")
+
+
+def load_parameters() -> Dict[str, Type["BaseParameter"]]:
+    # TODO: remove absoluth path reference
+    parameter_path = (
+        Path(__file__).parents[2].joinpath("data_models", "parameters.yaml")
+    )
     data = yaml.safe_load(parameter_path.read_text())
     classes = {}
 
@@ -448,27 +463,32 @@ def load_parameters():
         attrib_ = {}
         for k, v in parameter["attributes"].items():
             alias = v.get("alias", None)
-            alias = alias if alias !="None" else None
+            alias = alias if alias != "None" else None
             if v.get("range"):
                 attrib_[k] = (
-                        _get_type(v["range"]),
-                        Field(default=_get_default(v), alias=alias, description=v.get("description", None)),
-                    )
+                    _get_type(v["range"]),
+                    Field(
+                        default=_get_default(v),
+                        alias=alias,
+                        description=v.get("description", None),
+                    ),
+                )
             else:
-                attrib_[k] = computed_field(eval(v["func"]), return_type=eval(v["type"]), alias=alias)
-        model = create_model(
-            f"{name}_",__base__=BaseParameter,  **attrib_
-        )
+                attrib_[k] = computed_field(  # type: ignore # TODO: why?
+                    eval(v["func"]),  # noqa: S307
+                    return_type=eval(v["type"]),  # noqa: S307
+                    alias=alias,  # TODO: avoid using eval
+                )
+        model = create_model(f"{name}_", __base__=BaseParameter, **attrib_)  # type: ignore # TODO: why?
         for class_ in parameter["classes"]:
             classes[class_] = model
     return classes
 
+
 PARAMETERS = load_parameters()
 
 
-
-
-def param_from_config(name: str):
+def param_from_config(name: str) -> Optional[Type[BaseParameter]]:
     return PARAMETERS.get(name)
 
 
@@ -493,7 +513,7 @@ class BaseElement(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def validate_libraries_data(cls, value) -> AvailableLibraries:
+    def validate_libraries_data(cls, value: Dict[str, Any]) -> Dict[str, Any]:
         libraries_data = AvailableLibraries.from_config(cls.__name__)
         if libraries_data:
             value["libraries_data"] = libraries_data

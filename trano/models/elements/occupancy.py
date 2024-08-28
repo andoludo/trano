@@ -4,7 +4,6 @@ from pydantic import Field
 
 from trano.controller.parser import ControllerBus, IntegerOutput
 from trano.models.elements.base import (
-    AvailableLibraries,
     BaseParameter,
     DynamicComponentTemplate,
     LibraryData,
@@ -74,8 +73,3 @@ class OccupancyComponent(LibraryData):
 
 class Occupancy(BaseOccupancy):
     ...
-    # parameters: OccupancyParameters = Field(default=OccupancyParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[OccupancyComponent],
-    #     buildings=[OccupancyComponent],
-    # )

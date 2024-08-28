@@ -5,7 +5,6 @@ from pydantic import Field
 
 from trano.controller.parser import ControllerBus
 from trano.models.elements.base import (
-    AvailableLibraries,
     BaseElement,
     DynamicComponentTemplate,
     LibraryData,
@@ -64,8 +63,4 @@ class BaseVavControl(LibraryData):
 
 
 class VAVControl(Control):
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseVavControl],
-    #     buildings=[BaseVavControl],
-    # )
     ahu: Optional[BaseElement] = None

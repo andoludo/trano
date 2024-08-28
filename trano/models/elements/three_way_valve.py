@@ -3,12 +3,7 @@ from typing import Callable, List, Optional
 from pydantic import Field
 
 from trano.models.constants import Flow
-from trano.models.elements.base import (
-    AvailableLibraries,
-    BaseParameter,
-    LibraryData,
-    Port,
-)
+from trano.models.elements.base import BaseParameter, LibraryData, Port
 from trano.models.elements.controls.base import Control
 from trano.models.elements.system import System
 
@@ -82,8 +77,3 @@ class BaseThreeWayValve(LibraryData):
 
 class ThreeWayValve(System):
     ...
-    # parameters: ThreeWayValveParameters = Field(default=ThreeWayValveParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseThreeWayValve],
-    #     buildings=[BaseThreeWayValve],
-    # )

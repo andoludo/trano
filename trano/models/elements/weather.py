@@ -2,12 +2,7 @@ from typing import Callable, List, Optional
 
 from pydantic import Field
 
-from trano.models.elements.base import (
-    AvailableLibraries,
-    BaseParameter,
-    LibraryData,
-    Port,
-)
+from trano.models.elements.base import BaseParameter, LibraryData, Port
 from trano.models.elements.boundary import Boundary
 from trano.models.elements.space import Space
 from trano.models.elements.system import BaseWeather
@@ -89,7 +84,3 @@ class IdeasWeatherComponent(LibraryData):
 
 class Weather(BaseWeather):
     ...
-    # parameters: WeatherParameters = Field(default=WeatherParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     buildings=[BuildingsWeatherComponent], ideas=[IdeasWeatherComponent]
-    # )

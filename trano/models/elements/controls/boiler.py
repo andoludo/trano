@@ -4,7 +4,6 @@ from pydantic import Field
 
 from trano.controller.parser import ControllerBus, RealInput, RealOutput
 from trano.models.elements.base import (
-    AvailableLibraries,
     BaseParameter,
     DynamicComponentTemplate,
     LibraryData,
@@ -118,8 +117,3 @@ class SimpleBoilerControl(LibraryData):
 
 class BoilerControl(Control):
     ...
-    # parameters: BoilerParameters = Field(default=BoilerParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseBoilerControl],
-    #     buildings=[BaseBoilerControl],
-    # )

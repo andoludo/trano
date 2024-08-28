@@ -3,7 +3,7 @@ from typing import Callable, List
 from pydantic import Field
 
 from trano.models.constants import Flow
-from trano.models.elements.base import AvailableLibraries, LibraryData, Port
+from trano.models.elements.base import LibraryData, Port
 from trano.models.elements.controls.base import Control
 from trano.models.elements.system import Sensor
 
@@ -33,7 +33,3 @@ class BaseTemperatureSensor(LibraryData):
 
 class TemperatureSensor(Sensor):
     ...
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseTemperatureSensor],
-    #     buildings=[BaseTemperatureSensor],
-    # )

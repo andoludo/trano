@@ -134,18 +134,17 @@ class SystemsDocumentation(BaseDocumentation):
             + space.ventilation_inlets
             + space.ventilation_outlets
         }
-        try:
-            systems = [
-                system.model_dump(
-                    by_alias=True,
-                    exclude_none=True,
-                    include={"name": True, "parameters": True, "type": True},
-                )
-                for system in _get_elements(elements, System)
-                if system not in systems_to_exclude
-            ]
-        except:
-            raise
+
+        systems = [
+            system.model_dump(
+                by_alias=True,
+                exclude_none=True,
+                include={"name": True, "parameters": True, "type": True},
+            )
+            for system in _get_elements(elements, System)
+            if system not in systems_to_exclude
+        ]
+
         data = {
             "title": "Spaces",
             "introduction": "Introduction",

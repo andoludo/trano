@@ -126,10 +126,7 @@ class ControllerBus(BaseModel):
         }
         for target, inputs in self._get_targets().items():
             # TODO: Fix this
-            try:
-                target_value = eval(target)  # noqa: S307
-            except:
-                raise
+            target_value = eval(target)  # noqa: S307
             if target_value is None:
                 raise Exception("Target value is None")
             for input in inputs:

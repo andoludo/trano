@@ -3,14 +3,9 @@ from typing import Callable, List
 from pydantic import Field
 
 from trano.controller.parser import BooleanInput, ControllerBus, RealInput
-from trano.models.elements.base import (
-    AvailableLibraries,
-    DynamicComponentTemplate,
-    LibraryData,
-    Port,
-)
+from trano.models.elements.base import DynamicComponentTemplate, LibraryData, Port
 from trano.models.elements.bus import DataBus
-from trano.models.elements.controls.base import Control, PIDParameters
+from trano.models.elements.controls.base import Control
 from trano.models.elements.temperature_sensor import TemperatureSensor
 from trano.models.elements.three_way_valve import ThreeWayValve
 
@@ -88,8 +83,3 @@ class BaseThreeWayValveControl(LibraryData):
 
 class ThreeWayValveControl(Control):
     ...
-    # parameters: PIDParameters = Field(default=PIDParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseThreeWayValveControl],
-    #     buildings=[BaseThreeWayValveControl],
-    # )

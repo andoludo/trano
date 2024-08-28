@@ -3,7 +3,7 @@ from typing import Callable, List
 from pydantic import Field
 
 from trano.models.constants import Flow
-from trano.models.elements.base import AvailableLibraries, LibraryData, Port
+from trano.models.elements.base import LibraryData, Port
 from trano.models.elements.system import Ventilation
 
 
@@ -24,7 +24,3 @@ class BaseDuct(LibraryData):
 
 class Duct(Ventilation):
     ...
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseDuct],
-    #     buildings=[BaseDuct],
-    # )

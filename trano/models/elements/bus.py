@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field, computed_field
 from trano.controller.parser import BaseInput, ControllerBus, RealOutput
 from trano.models.constants import Flow
 from trano.models.elements.base import (
-    AvailableLibraries,
     BaseElement,
     DynamicComponentTemplate,
     LibraryData,
@@ -129,10 +128,6 @@ class DataBus(BaseElement):
     spaces: List[str]
     non_connected_ports: List[BaseInput] = Field(default=[])
     external_data: Optional[Path] = None
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[data_bus_factory],
-    #     buildings=[data_bus_factory],
-    # )
 
     @computed_field
     def validation_data(self) -> ValidationData:

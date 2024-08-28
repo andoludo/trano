@@ -3,7 +3,7 @@ from typing import Callable, List
 from pydantic import Field
 
 from trano.models.constants import Azimuth, Tilt
-from trano.models.elements.base import AvailableLibraries, LibraryData, Port
+from trano.models.elements.base import LibraryData, Port
 from trano.models.elements.envelope.base import BaseFloorOnGround
 from trano.models.elements.space import Space
 
@@ -25,4 +25,3 @@ class IdeasFloorOnGround(LibraryData):
 class FloorOnGround(BaseFloorOnGround):
     azimuth: float | int = Azimuth.south
     tilt: Tilt = Tilt.floor
-    # libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasFloorOnGround])

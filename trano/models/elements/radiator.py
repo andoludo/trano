@@ -5,7 +5,6 @@ from pydantic import Field, computed_field
 
 from trano.models.constants import Flow
 from trano.models.elements.base import (
-    AvailableLibraries,
     BaseParameter,
     BaseVariant,
     LibraryData,
@@ -113,7 +112,7 @@ class BaseIdealRadiator(LibraryData):
     )
     parameter_processing: Callable[[RadiatorParameter], Dict[str, Any]] = partial(
         modify_alias,
-        mapping={
+        modify_alias={
             "nominal_heating_power_positive_for_heating": "power",
             "fraction_radiant_heat_transfer": "frad",
         },
@@ -122,8 +121,3 @@ class BaseIdealRadiator(LibraryData):
 
 class Radiator(Emission):
     ...
-    # parameters: RadiatorParameter = Field(default=RadiatorParameter())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseRadiator, BaseIdealRadiator],
-    #     buildings=[BaseRadiator, BaseIdealRadiator],
-    # )

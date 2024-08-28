@@ -5,7 +5,6 @@ from pydantic import Field
 from trano.controller.parser import ControllerBus, RealInput, RealOutput
 from trano.models.constants import Flow
 from trano.models.elements.base import (
-    AvailableLibraries,
     BaseParameter,
     DynamicComponentTemplate,
     LibraryData,
@@ -118,8 +117,3 @@ class BasePump(LibraryData):
 
 class Pump(System):
     ...
-    # parameters: PumpParameters = Field(default=PumpParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BasePump],
-    #     buildings=[BasePump],
-    # )

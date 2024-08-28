@@ -7,7 +7,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List
 
-import yaml  # type: ignore
+import yaml
 from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
@@ -86,7 +86,7 @@ class EnrichedModel(BaseModel):
     data: Dict[str, Any]
     path: Path
 
-from linkml.generators.pythongen import PythonGenerator
+
 def convert(schema: Path, input_file: Path, target: str, output: Path) -> bool:
     root_path = Path(__file__).parents[1]
     os.chdir(root_path)
@@ -104,9 +104,7 @@ def convert(schema: Path, input_file: Path, target: str, output: Path) -> bool:
         str(schema),
         f"{input_file}",
     ]
-    #TODO: use this instead of console.
-    command_ = " ".join(command)
-    # python_module = PythonGenerator(schema).compile_module()
+    # TODO: use (python_module = PythonGenerator(schema).compile_module()) instead of console.
     process = subprocess.run(
         command, check=True, capture_output=True, text=True  # noqa: S603
     )
@@ -118,8 +116,8 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
         load_function = yaml.safe_load
         dump_function = yaml.safe_dump
     elif model_path.suffix == ".json":
-        load_function = json.loads
-        dump_function = json.dump
+        load_function = json.loads  # type: ignore
+        dump_function = json.dump  # type: ignore # TODO: why?
     else:
         raise Exception("Invalid file format")
     data = load_function(model_path.read_text())

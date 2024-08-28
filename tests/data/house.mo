@@ -467,7 +467,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSchema_space_001, occSch2.occupied);
  end OccupancyOccupancy_1;
- 
+
         model EmissionControlControl_006
   parameter Real schedule[:]=3600*{7,19};
 
@@ -531,7 +531,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSchema_space_002, occSch2.occupied);
  end OccupancyOccupancy_2;
- 
+
         model EmissionControlControl_005
   parameter Real schedule[:]=3600*{7,19};
 
@@ -595,7 +595,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSchema_space_003, occSch2.occupied);
  end OccupancyOccupancy_3;
- 
+
         model CollectorControlControl_002
 Buildings.Controls.OBC.CDL.Reals.PIDWithReset
 conPum(    controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.PI,
@@ -697,7 +697,7 @@ connect(dataBus.TAirOutSystem_001, lesThrTOut.u);
 connect(dataBus.yBoiConSystem_001, booToReaBoi.y);
 connect(dataBus.yPumBoiSystem_001, booToReaPum.y);
      end BoilerControlControl_001;
-     
+
         model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
 Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[3]
@@ -769,7 +769,7 @@ triggerControl_003.y);
 connect(dataBus.triggerControl_004,
 triggerControl_004.y);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl
@@ -1201,7 +1201,7 @@ connect(dataBus.yPumBoiSystem_001, pumBoi.y);
 connect(dataBus.TStoTopSystem_001, tanTemTop.T);
 connect(dataBus.TStoBotSystem_001, tanTemBot.T);
      end BoilerWithStorageSystem_001;
-     
+
 
   end Boilers;
 
@@ -2397,7 +2397,7 @@ connect(dataBus.ySystem_002, pumRad.y);
 connect(dataBus.y_gainSystem_002, gain.y);
 connect(dataBus.TControl_002, temSup.T);
  end PumpSystem_002;
- 
+
 
     end Ventilation;
   end Fluid;
@@ -2509,11 +2509,11 @@ model building
         tauIR=0.0,
         absIR_a=0.84,
         absIR_b=0.84)
-        
+
     },
     final gas={
             Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
-            
+
     },
     UFra=1.4)
     annotation (

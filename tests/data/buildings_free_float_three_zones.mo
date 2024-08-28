@@ -412,7 +412,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_1, occSch2.occupied);
  end OccupancyOccupancy_0;
- 
+
         model OccupancyOccupancy_1
 extends buildings_free_float_three_zones.Common.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
@@ -421,7 +421,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_2, occSch2.occupied);
  end OccupancyOccupancy_1;
- 
+
         model OccupancyOccupancy_2
 extends buildings_free_float_three_zones.Common.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
@@ -430,7 +430,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_3, occSch2.occupied);
  end OccupancyOccupancy_2;
- 
+
         model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
 Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[3]
@@ -462,7 +462,7 @@ connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_2, TRoo1[2].ppm);
 connect(dataBus.ppmCO2Space_3, TRoo1[3].ppm);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl
@@ -2179,11 +2179,11 @@ model building
         tauIR=0.0,
         absIR_a=0.84,
         absIR_b=0.84)
-        
+
     },
     final gas={
             Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
-            
+
     },
     UFra=1.4)
     annotation (

@@ -5,7 +5,6 @@ from pydantic import Field
 from trano.controller.parser import ControllerBus, RealInput, RealOutput
 from trano.models.constants import Flow
 from trano.models.elements.base import (
-    AvailableLibraries,
     BaseVariant,
     DynamicComponentTemplate,
     LibraryData,
@@ -107,7 +106,3 @@ class Damper(Ventilation):
 
 class VAV(Damper):
     variant: str = DamperVariant.default
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseDamper, BaseDamperDetailed],
-    #     buildings=[BaseDamper, BaseDamperDetailed],
-    # )

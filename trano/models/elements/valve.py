@@ -4,7 +4,6 @@ from pydantic import Field
 
 from trano.models.constants import Flow
 from trano.models.elements.base import (
-    AvailableLibraries,
     Axis,
     BaseParameter,
     Boolean,
@@ -93,8 +92,3 @@ class BaseValve(LibraryData):
 
 class Valve(SpaceSystem):
     ...
-    # parameters: ValveParameters = Field(default=ValveParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseValve],
-    #     buildings=[BaseValve],
-    # )

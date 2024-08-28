@@ -7,7 +7,6 @@ from pydantic import Field, computed_field
 
 from trano.models.constants import Flow
 from trano.models.elements.base import (
-    AvailableLibraries,
     Axis,
     BaseElement,
     BaseParameter,
@@ -263,7 +262,7 @@ class IdeasSpace(LibraryData):
     nSurf={{ element.number_merged_external_boundaries }},
     T_start=293.15)"""
     parameter_processing: Callable[[SpaceParameter], Dict[str, Any]] = partial(
-        modify_alias, mapping={"average_room_height": "hZone", "volume": "V"}
+        modify_alias, modify_alias={"average_room_height": "hZone", "volume": "V"}
     )
     ports_factory: Callable[[], List[Port]] = Field(
         default=lambda: [
@@ -297,7 +296,6 @@ class Space(BaseElement):
     extent = {% raw %}{{-20, -20}, {20, 20}}
     {% endraw %})));"""
     counter: ClassVar[int] = 0
-    # parameters: SpaceParameter = Field(default=SpaceParameter())
     name: str
     external_boundaries: list[
         Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]
@@ -308,9 +306,6 @@ class Space(BaseElement):
     ventilation_inlets: List[System] = Field(default=[])
     ventilation_outlets: List[System] = Field(default=[])
     occupancy: Optional[BaseOccupancy] = None
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[IdeasSpace], buildings=[BuildingsSpace]
-    # )
 
     def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
         self._assign_space()
@@ -324,7 +319,6 @@ class Space(BaseElement):
         if self.occupancy:
             self.occupancy.space_name = self.name
 
-    # @computed_field  # type: ignore
     @property
     def number_merged_external_boundaries(self) -> int:
         return sum(
@@ -334,12 +328,10 @@ class Space(BaseElement):
             ]
         )
 
-    # @computed_field  # type: ignore
     @property
     def number_ventilation_ports(self) -> int:
         return 2 + 1  # databus
 
-    # @computed_field  # type: ignore
     @property
     def merged_external_boundaries(
         self,

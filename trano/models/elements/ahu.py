@@ -5,7 +5,6 @@ from pydantic import Field
 from trano.controller.parser import ControllerBus, IntegerOutput, RealInput, RealOutput
 from trano.models.constants import Flow
 from trano.models.elements.base import (
-    AvailableLibraries,
     BaseBoundary,
     DynamicComponentTemplate,
     LibraryData,
@@ -124,7 +123,3 @@ class BaseAirHandlingUnit(LibraryData):
 
 class AirHandlingUnit(Ventilation):
     ...
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseAirHandlingUnit],
-    #     buildings=[BaseAirHandlingUnit],
-    # )

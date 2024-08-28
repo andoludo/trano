@@ -2,7 +2,7 @@ from typing import Callable, List
 
 from pydantic import Field
 
-from trano.models.elements.base import AvailableLibraries, LibraryData, Port
+from trano.models.elements.base import LibraryData, Port
 from trano.models.elements.envelope.base import BaseWindow
 from trano.models.elements.space import Space
 
@@ -33,4 +33,3 @@ class IdeasMergedWindows(LibraryData):
 
 class Window(BaseWindow):
     ...
-    # libraries_data: AvailableLibraries = AvailableLibraries(ideas=[IdeasMergedWindows])

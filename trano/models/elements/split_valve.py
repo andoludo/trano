@@ -3,13 +3,7 @@ from typing import Callable, List, Optional
 from pydantic import Field, field_serializer
 
 from trano.models.constants import Flow
-from trano.models.elements.base import (
-    AvailableLibraries,
-    BaseParameter,
-    Boolean,
-    LibraryData,
-    Port,
-)
+from trano.models.elements.base import BaseParameter, Boolean, LibraryData, Port
 from trano.models.elements.system import System
 
 
@@ -72,8 +66,3 @@ class BaseSplitValve(LibraryData):
 
 class SplitValve(System):
     ...
-    # parameters: SplitValveParameters = Field(default=SplitValveParameters())
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[BaseSplitValve],
-    #     buildings=[BaseSplitValve],
-    # )

@@ -467,7 +467,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_3, occSch2.occupied);
  end OccupancyOccupancy_2;
- 
+
         model EmissionControlEmissioncontrol_1
   parameter Real schedule[:]=3600*{7,19};
 
@@ -531,7 +531,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_2, occSch2.occupied);
  end OccupancyOccupancy_1;
- 
+
         model EmissionControlEmissioncontrol_0
   parameter Real schedule[:]=3600*{7,19};
 
@@ -595,7 +595,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_1, occSch2.occupied);
  end OccupancyOccupancy_0;
- 
+
         model EmissionControlEmissioncontrol_5
   parameter Real schedule[:]=3600*{7,19};
 
@@ -659,7 +659,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_6, occSch2.occupied);
  end OccupancyOccupancy_5;
- 
+
         model EmissionControlEmissioncontrol_6
   parameter Real schedule[:]=3600*{7,19};
 
@@ -723,7 +723,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_9, occSch2.occupied);
  end OccupancyOccupancy_8;
- 
+
         model OccupancyOccupancy_6
 extends house_model.Common.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
@@ -732,7 +732,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_7, occSch2.occupied);
  end OccupancyOccupancy_6;
- 
+
         model OccupancyOccupancy_7
 extends house_model.Common.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
@@ -741,7 +741,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_8, occSch2.occupied);
  end OccupancyOccupancy_7;
- 
+
         model EmissionControlEmissioncontrol_7
   parameter Real schedule[:]=3600*{7,19};
 
@@ -805,7 +805,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_10, occSch2.occupied);
  end OccupancyOccupancy_9;
- 
+
         model OccupancyOccupancy_10
 extends house_model.Common.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
@@ -814,7 +814,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_11, occSch2.occupied);
  end OccupancyOccupancy_10;
- 
+
         model EmissionControlEmissioncontrol_4
   parameter Real schedule[:]=3600*{7,19};
 
@@ -878,7 +878,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_5, occSch2.occupied);
  end OccupancyOccupancy_4;
- 
+
         model EmissionControlEmissioncontrol_3
   parameter Real schedule[:]=3600*{7,19};
 
@@ -942,7 +942,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_4, occSch2.occupied);
  end OccupancyOccupancy_3;
- 
+
         model CollectorControlCollectorcontrol_0
 Buildings.Controls.OBC.CDL.Reals.PIDWithReset
 conPum(    controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.PI,
@@ -1174,7 +1174,7 @@ y_gainCollectorcontrol_1.y);
 connect(dataBus.triggerThreewayvalvecontrol_0,
 triggerThreewayvalvecontrol_0.y);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl
@@ -1606,7 +1606,7 @@ connect(dataBus.yPumBoiBoiler_0, pumBoi.y);
 connect(dataBus.TStoTopBoiler_0, tanTemTop.T);
 connect(dataBus.TStoBotBoiler_0, tanTemBot.T);
      end BoilerWithStorageBoiler_0;
-     
+
 
   end Boilers;
 
@@ -2802,7 +2802,7 @@ connect(dataBus.yPump_0, pumRad.y);
 connect(dataBus.y_gainPump_0, gain.y);
 connect(dataBus.TCollectorcontrol_0, temSup.T);
  end PumpPump_0;
- 
+
 
     end Ventilation;
   end Fluid;
@@ -2914,11 +2914,11 @@ model building
         tauIR=0.0,
         absIR_a=0.84,
         absIR_b=0.84)
-        
+
     },
     final gas={
             Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
-            
+
     },
     UFra=1.4)
     annotation (

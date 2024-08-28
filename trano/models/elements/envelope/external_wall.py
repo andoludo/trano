@@ -2,7 +2,7 @@ from typing import Callable, List
 
 from pydantic import Field
 
-from trano.models.elements.base import AvailableLibraries, LibraryData, Port
+from trano.models.elements.base import LibraryData, Port
 from trano.models.elements.envelope.base import BaseExternalWall
 from trano.models.elements.space import Space
 
@@ -34,9 +34,6 @@ class IdeasMergedExternalWall(LibraryData):
 
 class ExternalDoor(BaseExternalWall):
     ...
-    # libraries_data: AvailableLibraries = AvailableLibraries(
-    #     ideas=[IdeasMergedExternalWall]
-    # )
 
 
 class ExternalWall(ExternalDoor):
