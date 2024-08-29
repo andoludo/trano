@@ -4,7 +4,7 @@ from networkx.classes.reportviews import NodeView
 
 from trano.construction import Construction
 from trano.glass import Glass
-from trano.models.elements.envelope.envelope import BaseSimpleWall, MergedBaseWall
+from trano.models.elements.envelope import BaseSimpleWall, MergedBaseWall
 from trano.models.elements.materials.base import (
     BaseConstructionData,
     MaterialProperties,

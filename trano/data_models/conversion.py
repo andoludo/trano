@@ -21,10 +21,9 @@ from trano.models.elements.controls.emission import EmissionControl  # noqa: F40
 from trano.models.elements.controls.three_way_valve import (  # noqa: F401
     ThreeWayValveControl,
 )
-from trano.models.elements.envelope.envelope import ExternalWall, FloorOnGround, Window
+from trano.models.elements.envelope import ExternalWall, FloorOnGround, Window
 from trano.models.elements.space import Space
-from trano.models.elements.system import Weather, Valve, ThreeWayValve, TemperatureSensor, SplitValve, Radiator, Pump, \
-    Occupancy, Boiler
+from trano.models.elements.system import Weather, Occupancy
 from trano.topology import Network
 SpaceParameter = param_from_config("Space")
 DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")

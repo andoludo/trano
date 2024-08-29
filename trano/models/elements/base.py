@@ -286,7 +286,7 @@ class Port(BaseModel):
 
                     targets.append(Ventilation)
                 elif value == "BaseInternalElement":
-                    from trano.models.elements.envelope.envelope import BaseInternalElement
+                    from trano.models.elements.envelope import BaseInternalElement
 
                     targets.append(BaseInternalElement)
                 elif value == "BaseOccupancy":
@@ -302,7 +302,7 @@ class Port(BaseModel):
 
                     targets.append(VAVControl)
                 elif value == "BaseWall":
-                    from trano.models.elements.envelope.envelope import BaseWall
+                    from trano.models.elements.envelope import BaseWall
 
                     targets.append(BaseWall)
                 elif value == "ThreeWayValve":
@@ -337,7 +337,7 @@ class Port(BaseModel):
         self, node: "BaseElement", connected_node: "BaseElement"
     ) -> list[PartialConnection]:
 
-        from trano.models.elements.envelope.envelope import MergedBaseWall
+        from trano.models.elements.envelope import MergedBaseWall
 
         self.available = False
         partial_connections = []
@@ -649,7 +649,7 @@ class BaseElement(BaseModel):
 
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
     from trano.models.elements.bus import DataBus
-    from trano.models.elements.envelope.envelope import BaseSimpleWall
+    from trano.models.elements.envelope import BaseSimpleWall
     from trano.models.elements.system import Weather
 
     if any(isinstance(e, BaseSimpleWall) for e in edge):

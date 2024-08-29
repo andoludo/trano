@@ -1,5 +1,4 @@
 from math import ceil
-from math import ceil
 from typing import ClassVar, List, Optional, Union
 
 from networkx import Graph
@@ -8,7 +7,7 @@ from pydantic import Field
 from trano.models.elements.base import (
     BaseElement,
 )
-from trano.models.elements.envelope.envelope import (
+from trano.models.elements.envelope import (
     BaseExternalWall,
     BaseFloorOnGround,
     BaseInternalElement,

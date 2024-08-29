@@ -1,7 +1,7 @@
 from trano.construction import Constructions
 from trano.glass import Glasses
 from trano.models.constants import Azimuth, Tilt
-from trano.models.elements.envelope.envelope import ExternalWall, FloorOnGround, Window
+from trano.models.elements.envelope import ExternalWall, FloorOnGround, Window
 from trano.models.elements.system import Occupancy
 from trano.models.elements.space import Space
 
