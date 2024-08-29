@@ -20,16 +20,27 @@ from trano.models.constants import Tilt
 from trano.models.elements.base import (
     BaseElement,
     Connection,
+    Control,
     DynamicTemplateCategories,
-    connect, Control,
+    connect,
 )
 from trano.models.elements.bus import DataBus
-from trano.models.elements.control import VAVControl, CollectorControl, AhuControl
+from trano.models.elements.control import AhuControl, CollectorControl, VAVControl
 from trano.models.elements.envelope import InternalElement
 from trano.models.elements.materials.properties import extract_properties
 from trano.models.elements.space import Space, _get_controllable_element
-from trano.models.elements.system import System, Ventilation, Weather, Valve, ThreeWayValve, TemperatureSensor, Pump, \
-    VAV, Boiler, AirHandlingUnit
+from trano.models.elements.system import (
+    VAV,
+    AirHandlingUnit,
+    Boiler,
+    Pump,
+    System,
+    TemperatureSensor,
+    ThreeWayValve,
+    Valve,
+    Ventilation,
+    Weather,
+)
 
 
 class Network:  # noqa : PLR0904, #TODO: fix this

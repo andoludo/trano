@@ -7,7 +7,7 @@ from pydantic import BaseModel, computed_field
 from trano.models.elements.base import BaseElement, BaseParameter
 from trano.models.elements.envelope import BaseSimpleWall
 from trano.models.elements.space import Space
-from trano.models.elements.system import System, Boiler
+from trano.models.elements.system import Boiler, System
 
 if TYPE_CHECKING:
     from trano.topology import Network

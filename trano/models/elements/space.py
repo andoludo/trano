@@ -4,21 +4,20 @@ from typing import ClassVar, List, Optional, Union
 from networkx import Graph
 from pydantic import Field
 
-from trano.models.elements.base import (
-    BaseElement,
-)
+from trano.models.elements.base import BaseElement
 from trano.models.elements.envelope import (
     BaseExternalWall,
     BaseFloorOnGround,
     BaseInternalElement,
     BaseWindow,
-    MergedBaseWall, ExternalWall, FloorOnGround, InternalElement, MergedExternalWall, MergedWindows,
+    ExternalWall,
+    FloorOnGround,
+    InternalElement,
+    MergedBaseWall,
+    MergedExternalWall,
+    MergedWindows,
 )
-from trano.models.elements.system import (
-    BaseOccupancy,
-    Emission,
-    System,
-)
+from trano.models.elements.system import BaseOccupancy, Emission, System
 from trano.models.parameters import WallParameters, WindowedWallParameters
 
 MAX_X_SPACES = 3
@@ -35,7 +34,6 @@ def _get_controllable_element(elements: List[System]) -> Optional["System"]:
     if not controllable_elements:
         return None
     return controllable_elements[0]
-
 
 
 class Space(BaseElement):

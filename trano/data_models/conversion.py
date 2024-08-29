@@ -17,8 +17,9 @@ from trano.material import Gas, GlassMaterial, Material
 from trano.models.elements.base import param_from_config
 from trano.models.elements.envelope import ExternalWall, FloorOnGround, Window
 from trano.models.elements.space import Space
-from trano.models.elements.system import Weather, Occupancy
+from trano.models.elements.system import Occupancy, Weather
 from trano.topology import Network
+
 SpaceParameter = param_from_config("Space")
 DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")
 COUNTER: Dict[Any, Any] = Counter()
@@ -214,6 +215,8 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: PLR0912, C
             emission_ = _instantiate_component(emission)
             systems[emission_.name] = emission_.component_instance
             emissions.append(emission_.component_instance)
+        if SpaceParameter is None:
+            raise Exception("SpaceParameter is not defined")
         space_ = Space(
             name=space["id"],
             external_boundaries=external_walls,

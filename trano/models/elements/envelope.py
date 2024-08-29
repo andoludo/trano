@@ -5,7 +5,7 @@ from pydantic import model_validator
 
 from trano.construction import Construction
 from trano.glass import Glass
-from trano.models.constants import Tilt, Azimuth
+from trano.models.constants import Azimuth, Tilt
 from trano.models.elements.base import BaseElement
 
 if TYPE_CHECKING:

@@ -1,4 +1,4 @@
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional
 
 from trano.models.elements.base import BaseElement, BaseVariant, Control
 

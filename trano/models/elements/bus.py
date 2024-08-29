@@ -5,9 +5,7 @@ import pandas as pd
 from pydantic import BaseModel, Field, computed_field
 
 from trano.controller.parser import BaseInput
-from trano.models.elements.base import (
-    BaseElement,
-)
+from trano.models.elements.base import BaseElement
 
 
 class ValidationData(BaseModel):

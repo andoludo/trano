@@ -4,7 +4,7 @@ from pydantic import computed_field
 
 from trano.models.elements.base import BaseElement, BaseParameter, Control
 from trano.models.elements.space import Space
-from trano.models.elements.system import Valve, VAV
+from trano.models.elements.system import VAV, Valve
 
 
 class ControlParameters(BaseParameter):
