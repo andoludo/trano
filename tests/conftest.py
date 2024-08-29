@@ -33,7 +33,7 @@ from trano.glass import Glasses
 from trano.library.library import Buildings, Ideas, Library
 from trano.models.constants import Azimuth, Flow, Tilt
 from trano.models.elements.ahu import AirHandlingUnit
-from trano.models.elements.base import Port
+from trano.models.elements.base import Port, param_from_config
 from trano.models.elements.boiler import Boiler
 from trano.models.elements.boundary import Boundary
 from trano.models.elements.controls.ahu import AhuControl
@@ -46,19 +46,25 @@ from trano.models.elements.envelope.floor_on_ground import FloorOnGround
 from trano.models.elements.envelope.internal_element import InternalElement
 from trano.models.elements.envelope.window import Window
 from trano.models.elements.occupancy import Occupancy
-from trano.models.elements.pump import Pump, PumpParameters
+from trano.models.elements.pump import Pump
 from trano.models.elements.radiator import Radiator
-from trano.models.elements.space import Space, SpaceParameter
-from trano.models.elements.split_valve import SplitValve, SplitValveParameters
+from trano.models.elements.space import Space
+from trano.models.elements.split_valve import SplitValve
 from trano.models.elements.system import System
 from trano.models.elements.temperature_sensor import TemperatureSensor
-from trano.models.elements.three_way_valve import ThreeWayValve, ThreeWayValveParameters
+from trano.models.elements.three_way_valve import ThreeWayValve
 from trano.models.elements.weather import Weather
 from trano.topology import Network
 
 OVERWRITE_MODELS = False
 
-
+BoilerParameters = param_from_config("Boiler")
+OccupancyParameters = param_from_config("Occupancy")
+PumpParameters = param_from_config("Pump")
+RadiatorParameter = param_from_config("Radiator")
+SpaceParameter = param_from_config("Space")
+SplitValveParameters = param_from_config("SplitValve")
+ThreeWayValveParameters = param_from_config("ThreeWayValve")
 def is_success(results: docker.models.containers.ExecResult) -> bool:
     return "The simulation finished successfully" in results.output.decode()
 
@@ -209,7 +215,7 @@ def buildings_two_rooms_with_storage(space_1: Space, space_2: Space) -> Network:
     boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
     split_valve = SplitValve(
         name="split_valve",
-        parameters=SplitValveParameters(m_flow_nominal=mRad_flow_nominal),
+        parameters=SplitValveParameters(m_flow_nominal=str(mRad_flow_nominal)),
     )
     three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
     three_way_valve = ThreeWayValve(

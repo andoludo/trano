@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from trano.construction import Construction, Layer
 from trano.glass import GasLayer, Glass, GlassLayer
 from trano.material import Gas, GlassMaterial, Material
+from trano.models.elements.base import param_from_config
 from trano.models.elements.boiler import Boiler  # noqa: F401
 from trano.models.elements.controls.boiler import BoilerControl  # noqa: F401
 from trano.models.elements.controls.collector import CollectorControl  # noqa: F401
@@ -27,14 +28,14 @@ from trano.models.elements.envelope.window import Window
 from trano.models.elements.occupancy import Occupancy
 from trano.models.elements.pump import Pump  # noqa: F401
 from trano.models.elements.radiator import Radiator  # noqa: F401
-from trano.models.elements.space import Space, SpaceParameter
+from trano.models.elements.space import Space
 from trano.models.elements.split_valve import SplitValve  # noqa: F401
 from trano.models.elements.temperature_sensor import TemperatureSensor  # noqa: F401
 from trano.models.elements.three_way_valve import ThreeWayValve  # noqa: F401
 from trano.models.elements.valve import Valve  # noqa: F401
 from trano.models.elements.weather import Weather
 from trano.topology import Network
-
+SpaceParameter = param_from_config("Space")
 DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")
 COUNTER: Dict[Any, Any] = Counter()
 
