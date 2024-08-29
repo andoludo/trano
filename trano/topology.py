@@ -21,13 +21,10 @@ from trano.models.elements.base import (
     BaseElement,
     Connection,
     DynamicTemplateCategories,
-    connect,
+    connect, Control,
 )
 from trano.models.elements.bus import DataBus
-from trano.models.elements.controls.ahu import AhuControl
-from trano.models.elements.controls.base import Control
-from trano.models.elements.controls.collector import CollectorControl
-from trano.models.elements.controls.vav import VAVControl
+from trano.models.elements.control import VAVControl, CollectorControl, AhuControl
 from trano.models.elements.envelope import InternalElement
 from trano.models.elements.materials.properties import extract_properties
 from trano.models.elements.space import Space, _get_controllable_element

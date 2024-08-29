@@ -256,7 +256,6 @@ class Port(BaseModel):
 
                     targets.append(DataBus)
                 elif value == "Control":
-                    from trano.models.elements.controls.base import Control
 
                     targets.append(Control)
                 elif value == "Space":
@@ -270,7 +269,7 @@ class Port(BaseModel):
 
                     targets.append(System)
                 elif value == "AhuControl":
-                    from trano.models.elements.controls.ahu import AhuControl
+                    from trano.models.elements.control import AhuControl
 
                     targets.append(AhuControl)
                 elif value == "BaseWeather":
@@ -298,7 +297,7 @@ class Port(BaseModel):
 
                     targets.append(Emission)
                 elif value == "VAVControl":
-                    from trano.models.elements.controls.vav import VAVControl
+                    from trano.models.elements.control import VAVControl
 
                     targets.append(VAVControl)
                 elif value == "BaseWall":
@@ -327,7 +326,6 @@ class Port(BaseModel):
         return self.multi_connection or self.available
 
     def is_controllable(self) -> bool:
-        from trano.models.elements.controls.base import Control
 
         return self.targets is not None and any(
             target == Control for target in self.targets
@@ -758,3 +756,9 @@ class LibraryData(BaseModel):
 
 class BaseBoundary(BaseElement):
     ...
+
+
+class Control(BaseElement):
+    position: Optional[List[float]] = None
+    controllable_element: Optional[BaseElement] = None
+    space_name: Optional[str] = None

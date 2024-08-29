@@ -1,12 +1,11 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
-from trano.models.elements.base import BaseElement, BaseVariant
-from trano.models.elements.controls.base import Control
+from trano.models.elements.base import BaseElement, BaseVariant, Control
 
 
 class System(BaseElement):
     position: Optional[List[float]] = None
-    control: Optional["Control"] = None
+    control: Optional[Control] = None
 
 
 class Sensor(System):

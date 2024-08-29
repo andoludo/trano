@@ -34,11 +34,8 @@ from trano.library.library import Buildings, Ideas, Library
 from trano.models.constants import Azimuth, Flow, Tilt
 from trano.models.elements.base import Port, param_from_config
 from trano.models.elements.boundary import Boundary
-from trano.models.elements.controls.ahu import AhuControl
-from trano.models.elements.controls.boiler import BoilerControl
-from trano.models.elements.controls.collector import CollectorControl
-from trano.models.elements.controls.emission import EmissionControl
-from trano.models.elements.controls.three_way_valve import ThreeWayValveControl
+from trano.models.elements.control import ThreeWayValveControl, EmissionControl, CollectorControl, \
+    BoilerControl, AhuControl
 from trano.models.elements.envelope import ExternalWall, FloorOnGround, InternalElement, Window
 from trano.models.elements.space import Space
 from trano.models.elements.system import System, Weather, ThreeWayValve, TemperatureSensor, SplitValve, Radiator, Pump, \

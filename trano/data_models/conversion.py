@@ -15,12 +15,6 @@ from trano.construction import Construction, Layer
 from trano.glass import GasLayer, Glass, GlassLayer
 from trano.material import Gas, GlassMaterial, Material
 from trano.models.elements.base import param_from_config
-from trano.models.elements.controls.boiler import BoilerControl  # noqa: F401
-from trano.models.elements.controls.collector import CollectorControl  # noqa: F401
-from trano.models.elements.controls.emission import EmissionControl  # noqa: F401
-from trano.models.elements.controls.three_way_valve import (  # noqa: F401
-    ThreeWayValveControl,
-)
 from trano.models.elements.envelope import ExternalWall, FloorOnGround, Window
 from trano.models.elements.space import Space
 from trano.models.elements.system import Weather, Occupancy

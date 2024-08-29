@@ -2,9 +2,33 @@ from typing import List, Optional
 
 from pydantic import computed_field
 
-from trano.models.elements.controls.base import Control
-from trano.models.elements.system import VAV
+from trano.models.elements.base import BaseElement, BaseParameter, Control
 from trano.models.elements.space import Space
+from trano.models.elements.system import Valve, VAV
+
+
+class ControlParameters(BaseParameter):
+    ...
+
+
+class VAVControl(Control):
+    ahu: Optional[BaseElement] = None
+
+
+class ThreeWayValveControl(Control):
+    ...
+
+
+class EmissionControl(Control):
+    ...
+
+
+class CollectorControl(Control):
+    valves: Optional[List[Valve]] = None
+
+
+class BoilerControl(Control):
+    ...
 
 
 class AhuControl(Control):
