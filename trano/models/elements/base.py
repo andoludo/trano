@@ -278,7 +278,7 @@ class Port(BaseModel):
 
                     targets.append(BaseWeather)
                 elif value == "AirHandlingUnit":
-                    from trano.models.elements.ahu import AirHandlingUnit
+                    from trano.models.elements.system import AirHandlingUnit
 
                     targets.append(AirHandlingUnit)
                 elif value == "Ventilation":
@@ -306,13 +306,11 @@ class Port(BaseModel):
 
                     targets.append(BaseWall)
                 elif value == "ThreeWayValve":
-                    from trano.models.elements.three_way_valve import ThreeWayValve
+                    from trano.models.elements.system import ThreeWayValve
 
                     targets.append(ThreeWayValve)
                 elif value == "TemperatureSensor":
-                    from trano.models.elements.temperature_sensor import (
-                        TemperatureSensor,
-                    )
+                    from trano.models.elements.system import TemperatureSensor
 
                     targets.append(TemperatureSensor)
                 elif value == "Boundary":
@@ -652,7 +650,7 @@ class BaseElement(BaseModel):
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
     from trano.models.elements.bus import DataBus
     from trano.models.elements.envelope.base import BaseSimpleWall
-    from trano.models.elements.weather import Weather
+    from trano.models.elements.system import Weather
 
     if any(isinstance(e, BaseSimpleWall) for e in edge):
         return ConnectionView(color="{191,0,0}", thickness=0.1)

@@ -36,3 +36,59 @@ class BaseWeather(System):
 
 class BaseOccupancy(System):
     space_name: Optional[str] = None
+
+
+class Weather(BaseWeather):
+    ...
+
+
+class Valve(SpaceSystem):
+    ...
+
+
+class ThreeWayValve(System):
+    ...
+
+
+class TemperatureSensor(Sensor):
+    ...
+
+
+class SplitValve(System):
+    ...
+
+
+class Radiator(Emission):
+    ...
+
+
+class Pump(System):
+    ...
+
+
+class Occupancy(BaseOccupancy):
+    ...
+
+
+class Duct(Ventilation):
+    ...
+
+
+class DamperVariant(BaseVariant):
+    complex: str = "complex"
+
+
+class Damper(Ventilation):
+    ...
+
+
+class VAV(Damper):
+    variant: str = DamperVariant.default
+
+
+class Boiler(System):
+    ...
+
+
+class AirHandlingUnit(Ventilation):
+    ...

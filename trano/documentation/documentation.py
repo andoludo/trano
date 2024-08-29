@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Type
 from pydantic import BaseModel, computed_field
 
 from trano.models.elements.base import BaseElement, BaseParameter
-from trano.models.elements.boiler import Boiler
 from trano.models.elements.envelope.base import BaseSimpleWall
 from trano.models.elements.space import Space
-from trano.models.elements.system import System
+from trano.models.elements.system import System, Boiler
 
 if TYPE_CHECKING:
     from trano.topology import Network

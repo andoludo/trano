@@ -4,7 +4,7 @@ from trano.models.constants import Azimuth, Tilt
 from trano.models.elements.base import param_from_config
 from trano.models.elements.envelope.external_wall import ExternalDoor, ExternalWall
 from trano.models.elements.envelope.window import Window
-from trano.models.elements.occupancy import Occupancy
+from trano.models.elements.system import Occupancy
 from trano.models.elements.space import Space
 SpaceParameter = param_from_config("Space")
 

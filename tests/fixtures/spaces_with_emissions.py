@@ -5,10 +5,8 @@ from trano.models.elements.controls.emission import EmissionControl
 from trano.models.elements.envelope.external_wall import ExternalWall
 from trano.models.elements.envelope.floor_on_ground import FloorOnGround
 from trano.models.elements.envelope.window import Window
-from trano.models.elements.occupancy import Occupancy
-from trano.models.elements.radiator import Radiator
 from trano.models.elements.space import Space
-from trano.models.elements.valve import Valve
+from trano.models.elements.system import Valve, Radiator, Occupancy
 
 
 def space_1_fixture() -> Space:

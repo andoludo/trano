@@ -32,9 +32,7 @@ from trano.construction import Constructions
 from trano.glass import Glasses
 from trano.library.library import Buildings, Ideas, Library
 from trano.models.constants import Azimuth, Flow, Tilt
-from trano.models.elements.ahu import AirHandlingUnit
 from trano.models.elements.base import Port, param_from_config
-from trano.models.elements.boiler import Boiler
 from trano.models.elements.boundary import Boundary
 from trano.models.elements.controls.ahu import AhuControl
 from trano.models.elements.controls.boiler import BoilerControl
@@ -45,15 +43,9 @@ from trano.models.elements.envelope.external_wall import ExternalWall
 from trano.models.elements.envelope.floor_on_ground import FloorOnGround
 from trano.models.elements.envelope.internal_element import InternalElement
 from trano.models.elements.envelope.window import Window
-from trano.models.elements.occupancy import Occupancy
-from trano.models.elements.pump import Pump
-from trano.models.elements.radiator import Radiator
 from trano.models.elements.space import Space
-from trano.models.elements.split_valve import SplitValve
-from trano.models.elements.system import System
-from trano.models.elements.temperature_sensor import TemperatureSensor
-from trano.models.elements.three_way_valve import ThreeWayValve
-from trano.models.elements.weather import Weather
+from trano.models.elements.system import System, Weather, ThreeWayValve, TemperatureSensor, SplitValve, Radiator, Pump, \
+    Occupancy, Boiler, AirHandlingUnit
 from trano.topology import Network
 
 OVERWRITE_MODELS = False

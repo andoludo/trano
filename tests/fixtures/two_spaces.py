@@ -6,7 +6,7 @@ from trano.models.constants import Azimuth, Tilt
 from trano.models.elements.envelope.external_wall import ExternalWall
 from trano.models.elements.envelope.floor_on_ground import FloorOnGround
 from trano.models.elements.envelope.window import Window
-from trano.models.elements.occupancy import Occupancy
+from trano.models.elements.system import Occupancy
 from trano.models.elements.space import Space
 
 

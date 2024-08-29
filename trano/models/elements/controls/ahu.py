@@ -3,7 +3,7 @@ from typing import List, Optional
 from pydantic import computed_field
 
 from trano.models.elements.controls.base import Control
-from trano.models.elements.damper import VAV
+from trano.models.elements.system import VAV
 from trano.models.elements.space import Space
 
 

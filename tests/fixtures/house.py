@@ -5,7 +5,6 @@ from trano.glass import GasMaterials, Glasses
 from trano.material import Material
 from trano.models.constants import Azimuth, Tilt
 from trano.models.elements.base import param_from_config
-from trano.models.elements.boiler import Boiler
 from trano.models.elements.controls.collector import CollectorControl
 from trano.models.elements.controls.emission import EmissionControl
 from trano.models.elements.controls.three_way_valve import ThreeWayValveControl
@@ -13,15 +12,9 @@ from trano.models.elements.envelope.external_wall import ExternalDoor, ExternalW
 from trano.models.elements.envelope.floor_on_ground import FloorOnGround
 from trano.models.elements.envelope.internal_element import InternalElement
 from trano.models.elements.envelope.window import Window
-from trano.models.elements.occupancy import Occupancy
-from trano.models.elements.pump import Pump
-from trano.models.elements.radiator import Radiator
 from trano.models.elements.space import Space
-from trano.models.elements.split_valve import SplitValve
-from trano.models.elements.temperature_sensor import TemperatureSensor
-from trano.models.elements.three_way_valve import ThreeWayValve
-from trano.models.elements.valve import Valve
-from trano.models.elements.weather import Weather
+from trano.models.elements.system import Weather, Valve, ThreeWayValve, TemperatureSensor, SplitValve, Radiator, Pump, \
+    Occupancy, Boiler
 from trano.topology import Network
 
 BoilerParameters = param_from_config("Boiler")
