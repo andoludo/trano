@@ -1,5 +1,4 @@
-from trano.construction import Constructions
-from trano.glass import Glasses
+from tests.constructions.constructions import Constructions, Glasses
 from trano.models.constants import Azimuth, Tilt
 from trano.models.elements.base import param_from_config
 from trano.models.elements.envelope import ExternalDoor, ExternalWall, Window

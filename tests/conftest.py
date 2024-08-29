@@ -28,8 +28,7 @@ from tests.fixtures.spaces_with_ventilation import (
 )
 from tests.fixtures.three_spaces import three_spaces
 from tests.fixtures.two_spaces import two_spaces
-from trano.construction import Constructions
-from trano.glass import Glasses
+from tests.constructions.constructions import Constructions, Glasses
 from trano.library.library import Buildings, Ideas, Library
 from trano.models.constants import Azimuth, Flow, Tilt
 from trano.models.elements.base import Port, param_from_config

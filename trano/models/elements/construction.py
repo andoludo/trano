@@ -1,4 +1,5 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, field_validator, ConfigDict, Field
+
 
 
 class Material(BaseModel):
@@ -40,3 +41,51 @@ class GlassMaterial(Material):
 
 class Gas(Material):
     ...
+
+
+class Layer(BaseModel):
+    material: Material
+    thickness: float
+
+class Construction(BaseModel):
+    name: str
+    layers: list[Layer]
+
+    def __hash__(self) -> int:
+        return hash(self.name)
+
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, value: str) -> str:
+        if ":" in value:
+            return value.lower().replace(":", "_")
+        return value
+
+
+class GlassLayer(BaseModel):
+    thickness: float
+    material: GlassMaterial
+    layer_type: str = "glass"
+
+
+class GasLayer(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+    thickness: float
+    material: Gas
+    layer_type: str = "gas"
+
+
+class Glass(BaseModel):
+    name: str
+    layers: list[GlassLayer | GasLayer]
+    u_value_frame: float
+
+    def __hash__(self) -> int:
+        return hash(self.name)
+
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, value: str) -> str:
+        if ":" in value:
+            return value.lower().replace(":", "_")
+        return value

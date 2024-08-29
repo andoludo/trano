@@ -2,8 +2,7 @@ from typing import TYPE_CHECKING
 
 from networkx.classes.reportviews import NodeView
 
-from trano.construction import Construction
-from trano.glass import Glass
+from trano.models.elements.construction import Construction, Glass
 from trano.models.elements.envelope import BaseSimpleWall, MergedBaseWall
 from trano.models.elements.materials.base import (
     BaseConstructionData,

@@ -3,8 +3,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from pydantic import model_validator
 
-from trano.construction import Construction
-from trano.glass import Glass
+from trano.models.elements.construction import Construction, Glass
 from trano.models.constants import Azimuth, Tilt
 from trano.models.elements.base import BaseElement
 

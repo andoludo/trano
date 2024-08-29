@@ -2,9 +2,7 @@ from typing import List, Optional, Union
 
 from pydantic import Field
 
-from trano.construction import Construction
-from trano.glass import Glass
-from trano.material import Material
+from trano.models.elements.construction import Construction, Glass, Material
 from trano.models.elements.materials.base import BaseData
 
 

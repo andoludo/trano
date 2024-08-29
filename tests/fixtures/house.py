@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from trano.construction import Construction, Layer
-from trano.glass import GasMaterials, Glasses
-from trano.material import Material
+from trano.models.elements.construction import Construction, Layer, Material
+from tests.constructions.constructions import GasMaterials, Glasses
 from trano.models.constants import Azimuth, Tilt
 from trano.models.elements.base import param_from_config
 from trano.models.elements.control import (

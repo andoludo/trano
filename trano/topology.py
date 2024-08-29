@@ -11,7 +11,7 @@ from networkx import DiGraph, shortest_path
 from networkx.classes.reportviews import NodeView
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
-from trano.construction import Constructions
+from tests.constructions.constructions import Constructions
 from trano.controller.parser import BaseInput
 from trano.documentation.documentation import ModelDocumentation
 from trano.documentation.html import to_html_documentation

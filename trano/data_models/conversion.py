@@ -11,14 +11,41 @@ import yaml
 from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
-from trano.construction import Construction, Layer
-from trano.glass import GasLayer, Glass, GlassLayer
-from trano.material import Gas, GlassMaterial, Material
+from trano.models.elements.construction import (
+    Construction,
+    Layer,
+    GlassLayer,
+    GasLayer,
+    Glass,
+    Material,
+    GlassMaterial,
+    Gas,
+)
 from trano.models.elements.base import param_from_config
+from trano.models.elements.control import ( # noqa: F401
+    ThreeWayValveControl,
+    EmissionControl,
+    CollectorControl,
+    BoilerControl,
+)
 from trano.models.elements.envelope import ExternalWall, FloorOnGround, Window
 from trano.models.elements.space import Space
-from trano.models.elements.system import Occupancy, Weather
+#TODO: fix these imports
+from trano.models.elements.system import ( # noqa: F401
+    Occupancy,
+    Weather,
+    Weather,
+    Valve,
+    ThreeWayValve,
+    TemperatureSensor,
+    SplitValve,
+    Radiator,
+    Pump,
+    Occupancy,
+    Boiler,
+)
 from trano.topology import Network
+
 
 SpaceParameter = param_from_config("Space")
 DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")
@@ -50,6 +77,7 @@ def _instantiate_component(component_: Dict[str, Any]) -> Component:
     component_parameters.pop("inlets", None)
     component_parameters.pop("outlets", None)
     component_type = to_camel_case(component_type)
+    # TODO: just find a way to import the required components directly here!
     component_class = globals()[component_type]
     name = component_parameters.pop("id")
     component_parameters.update({"name": name})

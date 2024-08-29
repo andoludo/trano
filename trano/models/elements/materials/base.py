@@ -4,9 +4,7 @@ from typing import Dict, List, Optional, Union
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
-from trano.construction import Construction
-from trano.glass import Glass
-from trano.material import Material
+from trano.models.elements.construction import Construction, Glass, Material
 
 
 class BaseData(BaseModel):
