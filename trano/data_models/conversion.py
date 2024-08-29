@@ -21,9 +21,7 @@ from trano.models.elements.controls.emission import EmissionControl  # noqa: F40
 from trano.models.elements.controls.three_way_valve import (  # noqa: F401
     ThreeWayValveControl,
 )
-from trano.models.elements.envelope.external_wall import ExternalWall
-from trano.models.elements.envelope.floor_on_ground import FloorOnGround
-from trano.models.elements.envelope.window import Window
+from trano.models.elements.envelope.envelope import ExternalWall, FloorOnGround, Window
 from trano.models.elements.space import Space
 from trano.models.elements.system import Weather, Valve, ThreeWayValve, TemperatureSensor, SplitValve, Radiator, Pump, \
     Occupancy, Boiler

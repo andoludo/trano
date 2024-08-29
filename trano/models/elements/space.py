@@ -8,12 +8,12 @@ from pydantic import Field
 from trano.models.elements.base import (
     BaseElement,
 )
-from trano.models.elements.envelope.base import (
+from trano.models.elements.envelope.envelope import (
     BaseExternalWall,
     BaseFloorOnGround,
     BaseInternalElement,
     BaseWindow,
-    MergedBaseWall,
+    MergedBaseWall, ExternalWall, FloorOnGround, InternalElement, MergedExternalWall, MergedWindows,
 )
 from trano.models.elements.system import (
     BaseOccupancy,
@@ -87,8 +87,6 @@ class Space(BaseElement):
     ) -> List[
         Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]
     ]:
-        from trano.models.elements.envelope.merged_wall import MergedExternalWall
-        from trano.models.elements.envelope.merged_windows import MergedWindows
 
         external_walls = [
             boundary
@@ -172,9 +170,6 @@ class Space(BaseElement):
         return None
 
     def get_neighhors(self, graph: Graph) -> None:
-        from trano.models.elements.envelope.external_wall import ExternalWall
-        from trano.models.elements.envelope.floor_on_ground import FloorOnGround
-        from trano.models.elements.envelope.internal_element import InternalElement
 
         neighbors = list(graph.neighbors(self))  # type: ignore
         self.boundaries = []

@@ -39,10 +39,7 @@ from trano.models.elements.controls.boiler import BoilerControl
 from trano.models.elements.controls.collector import CollectorControl
 from trano.models.elements.controls.emission import EmissionControl
 from trano.models.elements.controls.three_way_valve import ThreeWayValveControl
-from trano.models.elements.envelope.external_wall import ExternalWall
-from trano.models.elements.envelope.floor_on_ground import FloorOnGround
-from trano.models.elements.envelope.internal_element import InternalElement
-from trano.models.elements.envelope.window import Window
+from trano.models.elements.envelope.envelope import ExternalWall, FloorOnGround, InternalElement, Window
 from trano.models.elements.space import Space
 from trano.models.elements.system import System, Weather, ThreeWayValve, TemperatureSensor, SplitValve, Radiator, Pump, \
     Occupancy, Boiler, AirHandlingUnit

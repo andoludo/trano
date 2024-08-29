@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from trano.models.constants import Tilt
 from trano.models.elements.base import BaseElement
-from trano.models.elements.envelope.base import BaseSimpleWall, BaseWindow
+from trano.models.elements.envelope.envelope import BaseSimpleWall, BaseWindow, ExternalWall
 
 
 class WallParameters(BaseModel):
@@ -98,8 +98,6 @@ class WindowedWallParameters(WallParameters):
 def get_common_wall_properties(
     neighbors: list["BaseElement"], window: BaseWindow
 ) -> BaseSimpleWall:
-    from trano.models.elements.envelope.external_wall import ExternalWall
-
     walls = [
         neighbor
         for neighbor in neighbors
