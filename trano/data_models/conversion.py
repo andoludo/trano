@@ -11,41 +11,38 @@ import yaml
 from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
+from trano.elements import ExternalWall, FloorOnGround, Window, param_from_config
 from trano.elements.construction import (
     Construction,
-    Layer,
-    GlassLayer,
+    Gas,
     GasLayer,
     Glass,
-    Material,
+    GlassLayer,
     GlassMaterial,
-    Gas,
+    Layer,
+    Material,
 )
-from trano.elements import param_from_config
-from trano.elements.control import ( # noqa: F401
-    ThreeWayValveControl,
-    EmissionControl,
-    CollectorControl,
+from trano.elements.control import (  # noqa: F401
     BoilerControl,
+    CollectorControl,
+    EmissionControl,
+    ThreeWayValveControl,
 )
-from trano.elements import ExternalWall, FloorOnGround, Window
 from trano.elements.space import Space
-#TODO: fix these imports
-from trano.elements.system import ( # noqa: F401
-    Occupancy,
-    Weather,
-    Weather,
-    Valve,
-    ThreeWayValve,
-    TemperatureSensor,
-    SplitValve,
-    Radiator,
-    Pump,
-    Occupancy,
+
+# TODO: fix these imports
+from trano.elements.system import (  # noqa: F401
     Boiler,
+    Occupancy,
+    Pump,
+    Radiator,
+    SplitValve,
+    TemperatureSensor,
+    ThreeWayValve,
+    Valve,
+    Weather,
 )
 from trano.topology import Network
-
 
 SpaceParameter = param_from_config("Space")
 DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")

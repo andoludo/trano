@@ -4,8 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Type
 
 from pydantic import BaseModel, computed_field
 
-from trano.elements import BaseElement, BaseParameter
-from trano.elements import BaseSimpleWall
+from trano.elements import BaseElement, BaseParameter, BaseSimpleWall
 from trano.elements.space import Space
 from trano.elements.system import Boiler, System
 

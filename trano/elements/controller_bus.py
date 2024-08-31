@@ -1,15 +1,22 @@
 import json
 from pathlib import Path
-from typing import List, Dict, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List
 
 from pydantic import BaseModel, Field
 
-
-from trano.elements.inputs import RealInput, RealOutput, IntegerInput, IntegerOutput, BooleanInput, BooleanOutput, \
-    BaseInput
+from trano.elements.inputs import (
+    BaseInput,
+    BooleanInput,
+    BooleanOutput,
+    IntegerInput,
+    IntegerOutput,
+    RealInput,
+    RealOutput,
+)
 
 if TYPE_CHECKING:
     from trano.elements import BaseElement
+
 
 class ControllerBus(BaseModel):
     template: str = """Controls.BaseClasses.DataBus dataBus
@@ -35,7 +42,7 @@ class ControllerBus(BaseModel):
         | RealOutput
         | RealInput
         | BooleanOutput
-        ]:
+    ]:
         return (
             self.real_inputs
             + self.real_outputs

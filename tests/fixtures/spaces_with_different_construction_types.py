@@ -1,9 +1,8 @@
 from tests.constructions.constructions import Constructions, Glasses
-from trano.elements.types import Tilt, Azimuth
-from trano.elements import param_from_config
-from trano.elements import ExternalDoor, ExternalWall, Window
+from trano.elements import ExternalDoor, ExternalWall, Window, param_from_config
 from trano.elements.space import Space
 from trano.elements.system import Occupancy
+from trano.elements.types import Azimuth, Tilt
 
 SpaceParameter = param_from_config("Space")
 

@@ -12,22 +12,18 @@ from networkx.classes.reportviews import NodeView
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from tests.constructions.constructions import Constructions
-from trano.elements.inputs import BaseInput
-from trano.reporting.reproting import ModelDocumentation
-from trano.reporting.html import to_html_reporting
-from trano.library.library import Library
-from trano.elements.types import Tilt
 from trano.elements import (
     BaseElement,
     Connection,
     Control,
     DynamicTemplateCategories,
+    InternalElement,
     connect,
 )
 from trano.elements.bus import DataBus
-from trano.elements.control import AhuControl, CollectorControl, VAVControl
-from trano.elements import InternalElement
 from trano.elements.construction import extract_properties
+from trano.elements.control import AhuControl, CollectorControl, VAVControl
+from trano.elements.inputs import BaseInput
 from trano.elements.space import Space, _get_controllable_element
 from trano.elements.system import (
     VAV,
@@ -41,6 +37,10 @@ from trano.elements.system import (
     Ventilation,
     Weather,
 )
+from trano.elements.types import Tilt
+from trano.library.library import Library
+from trano.reporting.html import to_html_reporting
+from trano.reporting.reproting import ModelDocumentation
 
 
 class Network:  # noqa : PLR0904, #TODO: fix this

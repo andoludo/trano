@@ -30,11 +30,11 @@ from pydantic import (
 )
 from pydantic.fields import computed_field
 
-
-from trano.elements.types import Flow
 from trano.elements.controller_bus import ControllerBus
+from trano.elements.types import Flow
+
 if TYPE_CHECKING:
-    from trano.library.library import Libraries
+    from trano.library.library import Library
 
 
 Boolean = Literal["true", "false"]
@@ -123,9 +123,7 @@ class AvailableLibraries(BaseModel):
     ideas: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
     buildings: List[Callable[[], "LibraryData"]] = Field(default=[lambda: None])
 
-    def get_library_data(
-        self, library: "Libraries", variant: str
-    ) -> Any:  # noqa: ANN401
+    def get_library_data(self, library: "Library", variant: str) -> Any:  # noqa: ANN401
         selected_variant = [
             variant_
             for variant_ in getattr(self, library.name.lower())
@@ -533,7 +531,7 @@ class BaseElement(BaseModel):
             return value.lower().replace(":", "_")
         return value
 
-    def assign_library_property(self, library: "Libraries") -> bool:
+    def assign_library_property(self, library: "Library") -> bool:
         if not self.libraries_data:
             return False
         library_data = self.libraries_data.get_library_data(library, self.variant)
@@ -550,7 +548,7 @@ class BaseElement(BaseModel):
 
         return True
 
-    def processed_parameters(self, library: "Libraries") -> Any:  # noqa: ANN401
+    def processed_parameters(self, library: "Library") -> Any:  # noqa: ANN401
         if self.libraries_data:
             library_data = self.libraries_data.get_library_data(library, self.variant)
             if library_data and self.parameters:

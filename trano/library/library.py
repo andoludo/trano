@@ -9,6 +9,8 @@ from trano.elements import WallParameters
 
 def tilts_processing_ideas(element: WallParameters) -> List[str]:
     return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
+
+
 class Templates(BaseModel):
     is_package: bool = False
     construction: str
@@ -16,9 +18,13 @@ class Templates(BaseModel):
     material: Optional[str] = None
     main: str
 
+
 def read_libraries() -> Dict[str, Dict[str, Any]]:
     library_path = Path(__file__).parent.joinpath("library.yaml")
-    return yaml.safe_load(library_path.read_text())
+    data: Dict[str, Dict[str, Any]] = yaml.safe_load(library_path.read_text())
+    return data
+
+
 class Library(BaseModel):
     name: str
     merged_external_boundaries: bool = False
@@ -27,10 +33,10 @@ class Library(BaseModel):
     }
     constants: str = ""
     templates: Templates
-    default:bool = False
+    default: bool = False
 
     @classmethod
-    def from_configuration(cls, name:str) -> "Library":
+    def from_configuration(cls, name: str) -> "Library":
         libraries = read_libraries()
 
         if name not in libraries:
@@ -41,14 +47,11 @@ class Library(BaseModel):
     @classmethod
     def load_default(cls) -> "Library":
         libraries = read_libraries()
-        default_library = [library_data for _, library_data in libraries.items() if library_data.get("default")]
+        default_library = [
+            library_data
+            for _, library_data in libraries.items()
+            if library_data.get("default")
+        ]
         if not default_library:
             raise ValueError("No default library found")
         return cls(**default_library[0])
-
-
-
-
-
-
-

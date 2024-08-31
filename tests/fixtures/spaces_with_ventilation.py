@@ -1,9 +1,9 @@
 from tests.constructions.constructions import Constructions, Glasses
-from trano.elements.types import Tilt, Azimuth
-from trano.elements.control import VAVControl
 from trano.elements import ExternalWall, FloorOnGround, Window
+from trano.elements.control import VAVControl
 from trano.elements.space import Space
 from trano.elements.system import VAV, DamperVariant, Duct, Occupancy
+from trano.elements.types import Azimuth, Tilt
 
 
 def space_1_simple_ventilation_fixture() -> Space:

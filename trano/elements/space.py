@@ -15,7 +15,9 @@ from trano.elements.envelope import (
     InternalElement,
     MergedBaseWall,
     MergedExternalWall,
-    MergedWindows, WallParameters, WindowedWallParameters,
+    MergedWindows,
+    WallParameters,
+    WindowedWallParameters,
 )
 from trano.elements.system import BaseOccupancy, Emission, System
 

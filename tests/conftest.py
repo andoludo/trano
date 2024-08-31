@@ -29,9 +29,14 @@ from tests.fixtures.spaces_with_ventilation import (
 )
 from tests.fixtures.three_spaces import three_spaces
 from tests.fixtures.two_spaces import two_spaces
-from trano.library.library import Library
-from trano.elements.types import Tilt, Azimuth, Flow
-from trano.elements import Port, param_from_config
+from trano.elements import (
+    ExternalWall,
+    FloorOnGround,
+    InternalElement,
+    Port,
+    Window,
+    param_from_config,
+)
 from trano.elements.boundary import Boundary
 from trano.elements.control import (
     AhuControl,
@@ -39,12 +44,6 @@ from trano.elements.control import (
     CollectorControl,
     EmissionControl,
     ThreeWayValveControl,
-)
-from trano.elements import (
-    ExternalWall,
-    FloorOnGround,
-    InternalElement,
-    Window,
 )
 from trano.elements.space import Space
 from trano.elements.system import (
@@ -59,6 +58,8 @@ from trano.elements.system import (
     ThreeWayValve,
     Weather,
 )
+from trano.elements.types import Azimuth, Flow, Tilt
+from trano.library.library import Library
 from trano.topology import Network
 
 OVERWRITE_MODELS = False
@@ -90,6 +91,7 @@ def simple_space_1() -> Space:
 def simple_space_1_with_occupancy() -> Space:
     return simple_space_1_with_occupancy_fixture()
 
+
 @pytest.fixture
 def buildings_library() -> Library:
     buildings = Library.from_configuration("Buildings")
@@ -97,8 +99,11 @@ def buildings_library() -> Library:
 package MediumW = Buildings.Media.Water "Medium model";"""
     return buildings
 
+
 @pytest.fixture
-def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space, buildings_library) -> Network:
+def buildings_free_float_single_zone(
+    simple_space_1_with_occupancy: Space, buildings_library: Library
+) -> Network:
     network = Network(
         name="buildings_free_float_single_zone",
         library=buildings_library,
@@ -110,20 +115,18 @@ def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space, build
 @pytest.fixture
 def ideas_free_float_single_zone(simple_space_1: Space) -> Network:
     ideas = Library.from_configuration("IDEAS")
-    ideas.constants ="""
+    ideas.constants = """
 replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
 "Medium in the component"
 annotation (choicesAllMatching = true);"""
-    network = Network(
-        name="ideas_free_float_single_zone",
-        library=ideas)
+    network = Network(name="ideas_free_float_single_zone", library=ideas)
     network.add_boiler_plate_spaces([simple_space_1])
     return network
 
 
 @pytest.fixture
-def buildings_free_float_two_zones(buildings_library) -> Network:
+def buildings_free_float_two_zones(buildings_library: Library) -> Network:
 
     network = Network(
         name="buildings_free_float_two_zones",
@@ -146,7 +149,7 @@ def ideas_free_float_three_zones_spaces() -> list:
 
 @pytest.fixture
 def buildings_free_float_three_zones(
-    buildings_free_float_three_zones_spaces: list,buildings_library
+    buildings_free_float_three_zones_spaces: list, buildings_library: Library
 ) -> Network:
     network = Network(
         name="buildings_free_float_three_zones",
@@ -323,7 +326,10 @@ def buildings_simple_hydronic_three_zones(
 def ideas_simple_hydronic_three_zones(
     space_1: Space, space_2: Space, space_3: Space
 ) -> Network:
-    network = Network(name="ideas_simple_hydronic_three_zones", library=Library.from_configuration("IDEAS"))
+    network = Network(
+        name="ideas_simple_hydronic_three_zones",
+        library=Library.from_configuration("IDEAS"),
+    )
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
     pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
@@ -380,7 +386,10 @@ def space_1_no_occupancy() -> Space:
 
 @pytest.fixture
 def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
-    network = Network(name="ideas_simple_hydronic_no_occupancy", library=Library.from_configuration("IDEAS"))
+    network = Network(
+        name="ideas_simple_hydronic_no_occupancy",
+        library=Library.from_configuration("IDEAS"),
+    )
     network.add_boiler_plate_spaces([space_1_no_occupancy])
 
     pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
@@ -522,7 +531,9 @@ def ideas_many_spaces_simple_ventilation(
 
 @pytest.fixture
 def many_spaces_simple_ventilation(
-    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space, buildings_library
+    space_1_simple_ventilation: Space,
+    space_2_simple_ventilation: Space,
+    buildings_library: Library,
 ) -> Network:
     network = Network(
         name="many_spaces_simple_ventilation",
@@ -552,14 +563,17 @@ def many_spaces_simple_ventilation(
 def space_1_different_construction_types_network(
     space_1_different_construction_types: Space,
 ) -> Network:
-    network = Network(name="space_1_different_construction_types", library=Library.from_configuration("IDEAS"))
+    network = Network(
+        name="space_1_different_construction_types",
+        library=Library.from_configuration("IDEAS"),
+    )
     network.add_boiler_plate_spaces([space_1_different_construction_types])
     return network
 
 
 @pytest.fixture
 def buildings_free_float_single_zone_ahu_complex(
-    space_1_simple_ventilation: Space,buildings_library
+    space_1_simple_ventilation: Space, buildings_library: Library
 ) -> Network:
     network = Network(
         name="buildings_free_float_single_zone_ahu_complex",
@@ -643,7 +657,9 @@ def space_1_simple_ventilation_vav_control() -> Space:
 
 
 @pytest.fixture
-def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space, buildings_library) -> Network:
+def vav_ventilation_control(
+    space_1_simple_ventilation_vav_control: Space, buildings_library: Library
+) -> Network:
     network = Network(
         name="vav_ventilation_control",
         library=buildings_library,
@@ -662,7 +678,9 @@ def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space, build
 
 
 @pytest.fixture
-def one_spaces_air_handling_unit(space_1_simple_ventilation: Space, buildings_library) -> Network:
+def one_spaces_air_handling_unit(
+    space_1_simple_ventilation: Space, buildings_library: Library
+) -> Network:
 
     network = Network(
         name="one_spaces_air_handling_unit",
@@ -685,7 +703,9 @@ def one_spaces_air_handling_unit(space_1_simple_ventilation: Space, buildings_li
 
 @pytest.fixture
 def two_spaces_air_handling_unit(
-    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space, buildings_library
+    space_1_simple_ventilation: Space,
+    space_2_simple_ventilation: Space,
+    buildings_library: Library,
 ) -> Network:
 
     network = Network(

@@ -42,5 +42,3 @@ def transform_csv_to_table(
     if data_str.endswith(";"):
         data_str = data_str[:-1]
     return ValidationData(data=data_str, columns=data.columns.tolist())
-
-

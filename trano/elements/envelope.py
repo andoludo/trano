@@ -1,11 +1,11 @@
 from math import sqrt
-from typing import TYPE_CHECKING, Dict, List, Optional, Union, Type
+from typing import TYPE_CHECKING, Dict, List, Optional, Type, Union
 
-from pydantic import model_validator, BaseModel
+from pydantic import BaseModel, model_validator
 
-from trano.elements.construction import Construction, Glass
-from trano.elements.types import Tilt, Azimuth
 from trano.elements.base import BaseElement
+from trano.elements.construction import Construction, Glass
+from trano.elements.types import Azimuth, Tilt
 
 if TYPE_CHECKING:
     pass

@@ -1,14 +1,14 @@
 import tempfile
 from pathlib import Path
 
+from trano.reporting.docx import to_docx
+from trano.reporting.html import to_html_reporting
 from trano.reporting.reproting import (
     ContentDocumentation,
     ContentModelDocumentation,
     ModelDocumentation,
     ResultFile,
 )
-from trano.reporting.docx import to_docx
-from trano.reporting.html import to_html_reporting
 from trano.topology import Network
 
 

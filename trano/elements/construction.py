@@ -1,14 +1,13 @@
 from pathlib import Path
-from typing import Optional, List, Union, Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from jinja2 import Environment, FileSystemLoader
 from networkx.classes.reportviews import NodeView
-from pydantic import BaseModel, field_validator, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 if TYPE_CHECKING:
 
     from trano.library.library import Library
-
 
 
 class Material(BaseModel):
@@ -55,6 +54,7 @@ class Gas(Material):
 class Layer(BaseModel):
     material: Material
     thickness: float
+
 
 class Construction(BaseModel):
     name: str
@@ -161,6 +161,7 @@ class BaseTemplateData(BaseModel):
 
 def default_construction(nodes: NodeView) -> ConstructionData:
     from trano.elements.envelope import BaseSimpleWall
+
     constructions = {
         node.construction
         for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]
@@ -177,8 +178,9 @@ def default_construction(nodes: NodeView) -> ConstructionData:
 
 
 def merged_construction(nodes: NodeView) -> ConstructionData:
-    #TODO: Fix the import
+    # TODO: Fix the import
     from trano.elements.envelope import BaseSimpleWall, MergedBaseWall
+
     merged_constructions = {
         construction
         for node in [node_ for node_ in nodes if isinstance(node_, MergedBaseWall)]
@@ -216,12 +218,16 @@ def extract_data(
         construction=BaseData(
             constructions=data.constructions, template=library.templates.construction
         ),
-        glazing=BaseData(constructions=data.glazing, template=library.templates.glazing),
+        glazing=BaseData(
+            constructions=data.glazing, template=library.templates.glazing
+        ),
         material=BaseData(
             constructions=data.materials, template=library.templates.material
         ),
     )
-    return MaterialProperties(data=data_.generate_data(package_name), is_package=library.templates.is_package)
+    return MaterialProperties(
+        data=data_.generate_data(package_name), is_package=library.templates.is_package
+    )
 
 
 def extract_properties(

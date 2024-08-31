@@ -10,8 +10,8 @@ from docx.oxml.ns import nsdecls
 from docx.shared import Pt
 from docx.table import _Cell
 
-from trano.reporting.reproting import ModelDocumentation, Topic, get_description
 from trano.plot.plot import add_element_figures
+from trano.reporting.reproting import ModelDocumentation, Topic, get_description
 
 COLUMN_SIZE_WITH_DESCRIPTION = 3
 
