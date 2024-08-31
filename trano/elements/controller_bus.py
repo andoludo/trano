@@ -146,26 +146,42 @@ class ControllerBus(BaseModel):
             for input in inputs:
                 if isinstance(target_value, list):
                     for i, target_ in enumerate(target_value):
-                        if input.multi:
-                            ports.append(
-                                f"connect(dataBus.{input.name}{target_.capitalize()}, "
-                                f"{input.component}.{input.port}[{i + 1}]);"
-                            )
-
-                        else:
-                            ports.append(
-                                f"connect(dataBus.{input.name}{target_.capitalize()}, "
-                                f"{input.component}[{i + 1}].{input.port});"
-                            )
+                        ports = _append_ports(
+                            ports,
+                            input,
+                            target_,
+                            "multi",
+                            f".{input.port}[{i + 1}]",
+                            f"[{i + 1}].{input.port}",
+                        )
                 else:  # noqa : PLR5501
-                    if input.port:
-                        ports.append(
-                            f"connect(dataBus.{input.name}{target_value.capitalize()}, "
-                            f"{input.component}.{input.port});"
-                        )
-                    else:
-                        ports.append(
-                            f"connect(dataBus.{input.name}{target_value.capitalize()}, "
-                            f"{input.component});"
-                        )
+                    ports = _append_ports(
+                        ports,
+                        input,
+                        target_value,
+                        "port",
+                        f".{input.port}",
+                        "",
+                    )
         return ports
+
+
+def _append_ports(
+    ports: List[str],
+    input: BaseInput,
+    evaluated_target: str,
+    case_1_condition: str,
+    case_1: str,
+    case_2: str,
+) -> List[str]:
+    if getattr(input, case_1_condition):
+        ports.append(
+            f"connect(dataBus.{input.name}{evaluated_target.capitalize()}, "
+            f"{input.component}{case_1});"
+        )
+    else:
+        ports.append(
+            f"connect(dataBus.{input.name}{evaluated_target.capitalize()}, "
+            f"{input.component}{case_2});"
+        )
+    return ports
