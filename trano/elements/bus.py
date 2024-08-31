@@ -4,8 +4,8 @@ from typing import List, Optional
 import pandas as pd
 from pydantic import BaseModel, Field, computed_field
 
-from trano.controller.parser import BaseInput
 from trano.elements.base import BaseElement
+from trano.elements.inputs import BaseInput
 
 
 class ValidationData(BaseModel):
@@ -42,3 +42,5 @@ def transform_csv_to_table(
     if data_str.endswith(";"):
         data_str = data_str[:-1]
     return ValidationData(data=data_str, columns=data.columns.tolist())
+
+

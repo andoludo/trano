@@ -30,11 +30,12 @@ from pydantic import (
 )
 from pydantic.fields import computed_field
 
-from trano.controller.parser import ControllerBus
-from trano.elements.types import Flow
 
+from trano.elements.types import Flow
+from trano.elements.controller_bus import ControllerBus
 if TYPE_CHECKING:
     from trano.library.library import Libraries
+
 
 Boolean = Literal["true", "false"]
 

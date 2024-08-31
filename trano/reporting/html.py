@@ -4,7 +4,7 @@ from json2html import json2html  # type: ignore
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from yattag import Doc, SimpleDoc
 
-from trano.documentation.documentation import BaseDocumentation, ModelDocumentation
+from trano.reporting.reproting import BaseDocumentation, ModelDocumentation
 
 
 class HtmlDoc(BaseModel):
@@ -61,7 +61,7 @@ def to_html(
     return html_doc.doc.getvalue()
 
 
-def to_html_documentation(documentation: ModelDocumentation) -> str:
+def to_html_reporting(documentation: ModelDocumentation) -> str:
     html_doc = HtmlDoc()
     with html_doc.tag("html"):
         with html_doc.tag("head"), html_doc.tag("title"):

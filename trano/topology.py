@@ -12,9 +12,9 @@ from networkx.classes.reportviews import NodeView
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from tests.constructions.constructions import Constructions
-from trano.controller.parser import BaseInput
-from trano.documentation.documentation import ModelDocumentation
-from trano.documentation.html import to_html_documentation
+from trano.elements.inputs import BaseInput
+from trano.reporting.reproting import ModelDocumentation
+from trano.reporting.html import to_html_reporting
 from trano.library.library import Library
 from trano.elements.types import Tilt
 from trano.elements import (
@@ -459,7 +459,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
             library=self.library,
             databus=data_bus,
             dynamic_components=self.dynamic_components,
-            documentation=to_html_documentation(documentation),
+            documentation=to_html_reporting(documentation),
             diagram_size=diagram_size,
         )
 

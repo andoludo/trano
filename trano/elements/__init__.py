@@ -1,5 +1,5 @@
 from trano.elements.base import param_from_config, BaseElement, BaseParameter, Connection, Control, \
-    DynamicTemplateCategories, connect, Port
+    DynamicTemplateCategories, connect, Port, Figure
 from trano.elements.envelope import (
     ExternalDoor,
     ExternalWall,
@@ -24,5 +24,6 @@ WallParameters,
 Connection,
     Control,
     DynamicTemplateCategories,
-    connect, Port
+    connect, Port,
+Figure
 ]
