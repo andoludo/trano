@@ -1,10 +1,7 @@
 from trano.elements.base import (
-    BaseElement,
-    Connection,
-    Control,
-    Port,
-    connect
+    BaseElement, Control
 )
+from trano.elements.connection import Connection, Port, connect
 from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.figure import Figure
 from trano.elements.types import DynamicTemplateCategories
@@ -28,10 +25,6 @@ __all__ = [
     "BaseElement",
     "BaseSimpleWall",
     "WallParameters",
-    "Connection",
-    "Control",
-    "connect",
-    "Port",
     "DynamicTemplateCategories",
     "Figure"
 ]

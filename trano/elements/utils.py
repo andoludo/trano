@@ -6,7 +6,7 @@ from mypy.semanal_main import TYPE_CHECKING
 
 if TYPE_CHECKING:
 
-    from trano.elements.base import Port
+    from trano.elements import Port
 
 
 def to_snake_case(name: str) -> str:

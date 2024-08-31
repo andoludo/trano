@@ -1,4 +1,8 @@
-from trano.elements.base import BaseBoundary
+from trano.elements.base import BaseElement
+
+
+class BaseBoundary(BaseElement):
+    ...
 
 
 class Boundary(BaseBoundary):
