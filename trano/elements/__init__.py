@@ -3,12 +3,12 @@ from trano.elements.base import (
     BaseParameter,
     Connection,
     Control,
-    DynamicTemplateCategories,
-    Figure,
     Port,
     connect,
-    param_from_config,
+    param_from_config
 )
+from trano.elements.figure import Figure
+from trano.elements.types import DynamicTemplateCategories
 from trano.elements.envelope import (
     BaseSimpleWall,
     ExternalDoor,
@@ -32,8 +32,8 @@ __all__ = [
     "WallParameters",
     "Connection",
     "Control",
-    "DynamicTemplateCategories",
     "connect",
     "Port",
-    "Figure",
+    "DynamicTemplateCategories",
+    "Figure"
 ]

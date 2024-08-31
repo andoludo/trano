@@ -1,5 +1,4 @@
 import os
-import re
 import subprocess
 from copy import deepcopy
 from functools import partial
@@ -11,13 +10,11 @@ from typing import (
     ClassVar,
     Dict,
     List,
-    Literal,
     Optional,
     Tuple,
     Type,
 )
 
-import jinja2.exceptions
 import yaml
 from jinja2 import Environment, FileSystemLoader
 from pydantic import (
@@ -30,49 +27,13 @@ from pydantic import (
 )
 from pydantic.fields import computed_field
 
+from trano.elements.figure import Figure
 from trano.elements.controller_bus import ControllerBus
-from trano.elements.types import Flow
+from trano.elements.types import Flow, PartialConnection, ConnectionView, BaseVariant, DynamicTemplateCategories
+from trano.elements.utils import compose_func, _get_type, _get_default
 
 if TYPE_CHECKING:
     from trano.library.library import Library
-
-
-Boolean = Literal["true", "false"]
-
-
-class Line(BaseModel):
-    template: str
-    key: Optional[str] = None
-    color: str = "grey"
-    label: str
-    line_style: str = "solid"
-    line_width: float = 1.5
-
-
-class Axis(BaseModel):
-    lines: List[Line] = Field(default=[])
-    label: str
-
-
-class Figure(BaseModel):
-    right_axis: Axis = Field(default=Axis(lines=[], label=""))
-    left_axis: Axis = Field(default=Axis(lines=[], label=""))
-
-    def render_key(self, element: "BaseElement") -> "Figure":
-        environment = Environment(autoescape=True)
-        for axis in self.right_axis.lines + self.left_axis.lines:
-            template = environment.from_string(axis.template)
-            try:
-                axis.key = template.render(element=element)
-            except jinja2.exceptions.UndefinedError:
-                continue
-
-        return self
-
-
-class PartialConnection(BaseModel):
-    equation: str
-    position: List[float]
 
 
 def convert_copy(schema: Path, input_file: Path, target: str, output: Path) -> bool:
@@ -97,15 +58,6 @@ def convert_copy(schema: Path, input_file: Path, target: str, output: Path) -> b
         command, check=True, capture_output=True, text=True  # noqa: S603
     )
     return process.returncode == 0
-
-
-def to_snake_case(name: str) -> str:
-    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
-    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
-
-
-def compose_func(ports_: List["Port"]) -> Callable[[], List["Port"]]:
-    return lambda: ports_
 
 
 def _load_components() -> Dict[str, Any]:
@@ -197,11 +149,6 @@ class AvailableLibraries(BaseModel):
             else:
                 components[component["library"]].append(component_)
         return cls(**components)
-
-
-class ConnectionView(BaseModel):
-    color: Optional[str] = "{255,204,51}"
-    thickness: float = 0.5
 
 
 class Connection(BaseModel):
@@ -370,13 +317,6 @@ class Port(BaseModel):
         return partial_connections
 
 
-class BaseVariant:
-    default: str = "default"
-
-
-DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
-
-
 class DynamicComponentTemplate(BaseModel):
 
     template: str
@@ -412,38 +352,8 @@ class DynamicComponentTemplate(BaseModel):
         return component
 
 
-def _get_type(_type: Any) -> Any:  # noqa: ANN401
-    if _type == "string":
-        return str
-    elif _type == "float":
-        return float
-    elif _type == "integer":
-        return int
-    elif _type == "boolean":
-        return bool
-    else:
-        raise Exception("Unknown type")
-
-
 class BaseParameter(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
-
-
-def _get_default(v: Any) -> Any:  # noqa: ANN401
-    if "ifabsent" not in v:
-        return None
-    tag = v["range"]
-    if tag == "integer":
-        tag = "int"
-    value = v["ifabsent"].replace(tag, "")[1:-1]
-    if value == "None":
-        return None
-
-    try:
-        return _get_type(v["range"])(value)
-    except Exception as e:
-
-        raise e
 
 
 def load_parameters() -> Dict[str, Type["BaseParameter"]]:
