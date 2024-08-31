@@ -30,7 +30,7 @@ from tests.fixtures.spaces_with_ventilation import (
 from tests.fixtures.three_spaces import three_spaces
 from tests.fixtures.two_spaces import two_spaces
 from trano.library.library import Library
-from trano.models.constants import Azimuth, Flow, Tilt
+from trano.models.elements.types import Tilt, Azimuth, Flow
 from trano.models.elements.base import Port, param_from_config
 from trano.models.elements.boundary import Boundary
 from trano.models.elements.control import (

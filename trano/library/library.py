@@ -4,9 +4,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional
 import yaml
 from pydantic import BaseModel
 
-from trano.models.elements.constants.buildings import BUILDINGS_CONSTANTS
-from trano.models.elements.constants.ideas import CONSTANTS
-from trano.models.parameters import WallParameters
+from trano.models.elements.envelope import WallParameters
 
 
 def tilts_processing_ideas(element: WallParameters) -> List[str]:

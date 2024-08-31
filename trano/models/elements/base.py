@@ -31,7 +31,7 @@ from pydantic import (
 from pydantic.fields import computed_field
 
 from trano.controller.parser import ControllerBus
-from trano.models.constants import Flow
+from trano.models.elements.types import Flow
 
 if TYPE_CHECKING:
     from trano.library.library import Libraries

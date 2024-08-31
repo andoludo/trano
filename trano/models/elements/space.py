@@ -15,10 +15,9 @@ from trano.models.elements.envelope import (
     InternalElement,
     MergedBaseWall,
     MergedExternalWall,
-    MergedWindows,
+    MergedWindows, WallParameters, WindowedWallParameters,
 )
 from trano.models.elements.system import BaseOccupancy, Emission, System
-from trano.models.parameters import WallParameters, WindowedWallParameters
 
 MAX_X_SPACES = 3
 

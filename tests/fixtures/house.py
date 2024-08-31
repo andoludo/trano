@@ -2,7 +2,7 @@ from pathlib import Path
 
 from trano.models.elements.construction import Construction, Layer, Material
 from tests.constructions.constructions import GasMaterials, Glasses
-from trano.models.constants import Azimuth, Tilt
+from trano.models.elements.types import Tilt, Azimuth
 from trano.models.elements.base import param_from_config
 from trano.models.elements.control import (
     CollectorControl,
