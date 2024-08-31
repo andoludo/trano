@@ -1,13 +1,12 @@
 from pathlib import Path
-from typing import Dict, Any, Optional, Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, Field
 
-from trano.elements.types import DynamicTemplateCategories
-
 from trano.elements.controller_bus import ControllerBus
+from trano.elements.types import DynamicTemplateCategories
 
 if TYPE_CHECKING:
     from trano.elements.base import BaseElement

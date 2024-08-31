@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, computed_field, field_validator
 
@@ -8,24 +8,22 @@ class Target(BaseModel):
     sub: Optional[str] = None
     evaluated_element: str = ""
     value: str = ""
+
     @field_validator("value")
+    @classmethod
     def validate_value(cls, value: str) -> str:
         return value.capitalize()
 
     def __hash__(self) -> int:
         return hash((self.main, self.sub))
-    def commands(self)->list[str]:
+
+    def commands(self) -> list[str]:
         return self.main.split(".")[1:]
 
-    def sub_commands(self):
+    def sub_commands(self) -> List[str]:
         if self.sub is None:
             raise Exception("Target sub is None")
         return self.sub.split(".")
-
-    def capitalize(self):
-        self.main = self.main.capitalize()
-        return self
-
 
 
 class BaseInput(BaseModel):
@@ -51,7 +49,6 @@ class BaseInput(BaseModel):
             {self.name}{self.target.evaluated_element.capitalize()}
             (y={self.default});"""
         return ""
-
 
 
 class RealInput(BaseInput):

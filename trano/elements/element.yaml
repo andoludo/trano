@@ -195,4 +195,3 @@ slots:
   default:
     description: The default value of the input or output
     range: float
-

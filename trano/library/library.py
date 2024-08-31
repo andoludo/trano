@@ -1,10 +1,10 @@
 from copy import deepcopy
 from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 import yaml
-from pydantic import BaseModel, Field, create_model, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, create_model
 
 from trano.elements.components import COMPONENTS, DynamicComponentTemplate
 from trano.elements.parameters import default_parameters
@@ -12,7 +12,7 @@ from trano.elements.types import BaseVariant
 from trano.elements.utils import compose_func
 
 if TYPE_CHECKING:
-    from trano.elements import WallParameters, parameters, Port, Figure, BaseParameter
+    from trano.elements import BaseParameter, Figure, Port, WallParameters
 
 
 def tilts_processing_ideas(element: "WallParameters") -> List[str]:
@@ -82,7 +82,8 @@ class AvailableLibraries(BaseModel):
 
     @classmethod
     def from_config(cls, name: str) -> Optional["AvailableLibraries"]:
-        from trano.elements import parameters, Port, Figure, BaseParameter
+        from trano.elements import BaseParameter, Figure, Port, parameters
+
         data = deepcopy(COMPONENTS)
         components_data__ = [
             component
@@ -102,8 +103,7 @@ class AvailableLibraries(BaseModel):
             if component["parameter_processing"].get("parameter", None):
                 function_name = component["parameter_processing"]["function"]
                 parameter_processing = partial(
-                    getattr(
-                        parameters, function_name),
+                    getattr(parameters, function_name),
                     **{
                         function_name: component["parameter_processing"].get(
                             "parameter", {}
@@ -154,5 +154,7 @@ class LibraryData(BaseModel):
     component_template: Optional[DynamicComponentTemplate] = None
     ports_factory: Callable[[], List["Port"]]
     variant: str = BaseVariant.default
-    parameter_processing: Callable[["BaseParameter"], Dict[str, Any]] = default_parameters
+    parameter_processing: Callable[
+        ["BaseParameter"], Dict[str, Any]
+    ] = default_parameters
     figures: List["Figure"] = Field(default=[])

@@ -4,7 +4,6 @@ import jinja2.exceptions
 from jinja2 import Environment
 from pydantic import BaseModel, Field
 
-
 from trano.elements.types import Axis
 
 if TYPE_CHECKING:

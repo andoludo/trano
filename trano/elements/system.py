@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from trano.elements.base import BaseElement
 from trano.elements import Control
+from trano.elements.base import BaseElement
 from trano.elements.types import BaseVariant
 
 

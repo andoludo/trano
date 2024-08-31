@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Dict, Type, Optional, Any
+from typing import Any, Dict, Optional, Type
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, computed_field, create_model
 
-from trano.elements.utils import _get_type, _get_default
+from trano.elements.utils import _get_default, _get_type
 
 
 class BaseParameter(BaseModel):

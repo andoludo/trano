@@ -1,8 +1,6 @@
-import ast
-import copy
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -21,7 +19,9 @@ if TYPE_CHECKING:
     from trano.elements import BaseElement
 
 
-def _evaluate(element: "BaseElement", commands: List[str]) -> Any:
+def _evaluate(
+    element: "BaseElement", commands: List[str]
+) -> Optional[Union[str, "BaseElement", List["BaseElement"], List[str]]]:
     for command in commands:
         if hasattr(element, command):
             element = getattr(element, command)
@@ -30,15 +30,19 @@ def _evaluate(element: "BaseElement", commands: List[str]) -> Any:
     return element
 
 
-def _evaluate_target(target: Target, element: "BaseElement"):
+def _evaluate_target(target: Target, element: "BaseElement") -> str | List[str]:
     from trano.elements import BaseElement
 
     target_ = _evaluate(element, target.commands())
     if target_ is None:
         raise Exception("Target value is None")
-    if isinstance(target_, list) and isinstance(target_[0], BaseElement):
-        return [_evaluate(sub, target.sub_commands()) for sub in target_]
-    return target_
+    if isinstance(target_, list) and all(isinstance(t, BaseElement) for t in target_):
+        return [
+            _evaluate(sub, target.sub_commands())  # type: ignore
+            for sub in target_
+            if isinstance(sub, BaseElement)
+        ]
+    return target_  # type: ignore
 
 
 def _append_to_port(
@@ -154,7 +158,7 @@ class ControllerBus(BaseModel):
                             f".{input.port}[{i + 1}]",
                             f"[{i + 1}].{input.port}",
                         )
-                else:  # noqa : PLR5501
+                else:  # : PLR5501
                     ports = _append_ports(
                         ports,
                         input,
@@ -166,7 +170,7 @@ class ControllerBus(BaseModel):
         return ports
 
 
-def _append_ports(
+def _append_ports(  # noqa: PLR0913
     ports: List[str],
     input: BaseInput,
     evaluated_target: str,
@@ -175,6 +179,7 @@ def _append_ports(
     case_2: str,
 ) -> List[str]:
     if getattr(input, case_1_condition):
+
         ports.append(
             f"connect(dataBus.{input.name}{evaluated_target.capitalize()}, "
             f"{input.component}{case_1});"

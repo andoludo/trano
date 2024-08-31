@@ -1,10 +1,12 @@
-from typing import List, Tuple, Optional, Any, Type
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type
 
 from pydantic import BaseModel, Field, field_validator
 
-
-from trano.elements.types import PartialConnection, ConnectionView, Flow
 from trano import elements
+from trano.elements.types import ConnectionView, Flow, PartialConnection
+
+if TYPE_CHECKING:
+    from trano.elements import BaseElement
 
 
 class Connection(BaseModel):
@@ -46,9 +48,7 @@ class Port(BaseModel):
 
     @field_validator("targets")
     @classmethod
-    def validate_targets(  # noqa: PLR0915, PLR0912, C901
-        cls, values: List[str]
-    ) -> List[Type["BaseElement"]]:
+    def validate_targets(cls, values: List[str]) -> List[Type["BaseElement"]]:
         from trano.elements import BaseElement
 
         targets: List[Type[BaseElement]] = []
