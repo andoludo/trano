@@ -2,68 +2,15 @@ from typing import TYPE_CHECKING
 
 from networkx.classes.reportviews import NodeView
 
-from trano.models.elements.construction import Construction, Glass
-from trano.models.elements.envelope import BaseSimpleWall, MergedBaseWall
-from trano.models.elements.materials.base import (
-    BaseConstructionData,
-    MaterialProperties,
-)
-from trano.models.elements.materials.construction import (
-    BuildingsConstruction,
-    IdeasConstruction,
-)
-from trano.models.elements.materials.glazing import BuildingsGlazing, IdeasGlazing
-from trano.models.elements.materials.material import BuildingsMaterial, IdeasMaterial
+from trano.models.elements.construction import Construction, Glass, BaseData, ConstructionData, BaseConstructionData, \
+    MaterialProperties
+from trano.models.elements.envelope import MergedBaseWall, BaseSimpleWall
 
 if TYPE_CHECKING:
-    from trano.library.library import Libraries
+    from trano.library.library import Library
 
 
-class BuildingsData(BaseConstructionData):
-    template: str = """
-{% for g in glazing %}
-    {{ g|safe }}
-{% endfor %}
-{%- for c in construction -%}
-    {{ c|safe}}
-{%- endfor %}
-"""
-    construction: BuildingsConstruction
-    material: BuildingsMaterial
-    glazing: BuildingsGlazing
-
-
-class IdeasData(BaseConstructionData):
-    template: str = """package Data "Data for transient thermal building simulation"
-extends Modelica.Icons.MaterialPropertiesPackage;
-
-package Glazing "Library of building glazing systems"
-extends Modelica.Icons.MaterialPropertiesPackage;
-{% for g in glazing %}
-    {{ g|safe }}
-{% endfor %}
-end Glazing;
-
-package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;
-{%- for m in material -%}
-    {{ m|safe }}
-{%- endfor %}
-end Materials;
-package Constructions "Library of building envelope constructions"
-{%- for c in construction -%}
-    {{ c|safe}}
-{%- endfor %}
-
-end Constructions;
-end Data;"""
-    construction: IdeasConstruction
-    material: IdeasMaterial
-    glazing: IdeasGlazing
-
-
-def extract_buildings_data(package_name: str, nodes: NodeView) -> MaterialProperties:
-
+def default_construction(nodes: NodeView) -> ConstructionData:
     constructions = {
         node.construction
         for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]
@@ -74,24 +21,17 @@ def extract_buildings_data(package_name: str, nodes: NodeView) -> MaterialProper
     glazing = sorted(
         [c for c in constructions if isinstance(c, Glass)], key=lambda x: x.name
     )
-    buildings_data = BuildingsData(
-        construction=BuildingsConstruction(constructions=wall_constructions),
-        glazing=BuildingsGlazing(constructions=glazing),
-        material=BuildingsMaterial(),
-    )
-    return MaterialProperties(
-        data=buildings_data.generate_data(package_name), is_package=False
+    return ConstructionData(
+        constructions=wall_constructions, materials=[], glazing=glazing
     )
 
 
-def extract_ideas_data(package_name: str, nodes: NodeView) -> MaterialProperties:
-
+def merged_construction(nodes: NodeView) -> ConstructionData:
     merged_constructions = {
         construction
         for node in [node_ for node_ in nodes if isinstance(node_, MergedBaseWall)]
         for construction in node.constructions
     }
-
     constructions = {
         node.construction
         for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]
@@ -106,17 +46,33 @@ def extract_ideas_data(package_name: str, nodes: NodeView) -> MaterialProperties
         for construction in merged_constructions
         for layer in construction.layers
     }
-    ideas_data = IdeasData(
-        material=IdeasMaterial(constructions=list(materials)),
-        construction=IdeasConstruction(constructions=wall_constructions),
-        glazing=IdeasGlazing(constructions=glazing),
+    return ConstructionData(
+        constructions=wall_constructions, materials=list(materials), glazing=glazing
     )
-    return MaterialProperties(
-        data=ideas_data.generate_data(package_name), is_package=True
+
+
+def extract_data(
+    package_name: str, nodes: NodeView, library: "Library"
+) -> MaterialProperties:
+
+    if library.merged_external_boundaries:
+        data = merged_construction(nodes)
+    else:
+        data = default_construction(nodes)
+    data_ = BaseConstructionData(
+        template=library.templates.main,
+        construction=BaseData(
+            constructions=data.constructions, template=library.templates.construction
+        ),
+        glazing=BaseData(constructions=data.glazing, template=library.templates.glazing),
+        material=BaseData(
+            constructions=data.materials, template=library.templates.material
+        ),
     )
+    return MaterialProperties(data=data_.generate_data(package_name), is_package=library.templates.is_package)
 
 
 def extract_properties(
-    library: "Libraries", package_name: str, nodes: NodeView
+    library: "Library", package_name: str, nodes: NodeView
 ) -> MaterialProperties:
-    return library.extract_properties(package_name, nodes)
+    return extract_data(package_name, nodes, library)

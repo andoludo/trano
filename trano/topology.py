@@ -15,7 +15,7 @@ from tests.constructions.constructions import Constructions
 from trano.controller.parser import BaseInput
 from trano.documentation.documentation import ModelDocumentation
 from trano.documentation.html import to_html_documentation
-from trano.library.library import Buildings, Libraries
+from trano.library.library import Library
 from trano.models.constants import Tilt
 from trano.models.elements.base import (
     BaseElement,
@@ -47,14 +47,14 @@ class Network:  # noqa : PLR0904, #TODO: fix this
     def __init__(
         self,
         name: str,
-        library: Optional[Libraries] = None,
+        library: Optional[Library] = None,
         external_data: Optional[Path] = None,
     ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
         self.name: str = name
         self._system_controls: List[Control] = []
-        self.library = library or Buildings()
+        self.library = library or Library.load_default()
         self.external_data = external_data
         self.dynamic_components: Dict[DynamicTemplateCategories, List[str]] = {
             "ventilation": [],

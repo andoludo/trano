@@ -5,6 +5,7 @@ from typing import Set
 import docker
 import pytest
 
+from tests.constructions.constructions import Constructions, Glasses
 from tests.fixtures.house import house_model_fixture
 from tests.fixtures.simple_space_1 import simple_space_1_fixture
 from tests.fixtures.simple_space_1_with_occupancy import (
@@ -28,8 +29,7 @@ from tests.fixtures.spaces_with_ventilation import (
 )
 from tests.fixtures.three_spaces import three_spaces
 from tests.fixtures.two_spaces import two_spaces
-from tests.constructions.constructions import Constructions, Glasses
-from trano.library.library import Buildings, Ideas, Library
+from trano.library.library import Library
 from trano.models.constants import Azimuth, Flow, Tilt
 from trano.models.elements.base import Port, param_from_config
 from trano.models.elements.boundary import Boundary
@@ -90,15 +90,18 @@ def simple_space_1() -> Space:
 def simple_space_1_with_occupancy() -> Space:
     return simple_space_1_with_occupancy_fixture()
 
+@pytest.fixture
+def buildings_library() -> Library:
+    buildings = Library.from_configuration("Buildings")
+    buildings.constants = """package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
+package MediumW = Buildings.Media.Water "Medium model";"""
+    return buildings
 
 @pytest.fixture
-def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space) -> Network:
+def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space, buildings_library) -> Network:
     network = Network(
         name="buildings_free_float_single_zone",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
     )
     network.add_boiler_plate_spaces([simple_space_1_with_occupancy])
     return network
@@ -106,29 +109,25 @@ package MediumW = Buildings.Media.Water "Medium model";"""
 
 @pytest.fixture
 def ideas_free_float_single_zone(simple_space_1: Space) -> Network:
-    network = Network(
-        name="ideas_free_float_single_zone",
-        library=Ideas(
-            constants="""
+    ideas = Library.from_configuration("IDEAS")
+    ideas.constants ="""
 replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
 constrainedby Modelica.Media.Interfaces.PartialMedium
 "Medium in the component"
 annotation (choicesAllMatching = true);"""
-        ),
-    )
+    network = Network(
+        name="ideas_free_float_single_zone",
+        library=ideas)
     network.add_boiler_plate_spaces([simple_space_1])
     return network
 
 
 @pytest.fixture
-def buildings_free_float_two_zones() -> Network:
+def buildings_free_float_two_zones(buildings_library) -> Network:
 
     network = Network(
         name="buildings_free_float_two_zones",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
     )
     network.add_boiler_plate_spaces(two_spaces())
     return network
@@ -147,14 +146,11 @@ def ideas_free_float_three_zones_spaces() -> list:
 
 @pytest.fixture
 def buildings_free_float_three_zones(
-    buildings_free_float_three_zones_spaces: list,
+    buildings_free_float_three_zones_spaces: list,buildings_library
 ) -> Network:
     network = Network(
         name="buildings_free_float_three_zones",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
     )
     network.add_boiler_plate_spaces(buildings_free_float_three_zones_spaces)
     return network
@@ -164,15 +160,15 @@ package MediumW = Buildings.Media.Water "Medium model";"""
 def ideas_free_float_three_zones(
     ideas_free_float_three_zones_spaces: list,
 ) -> Network:
+    ideas = Library.from_configuration("IDEAS")
+    ideas.constants = """
+    replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
+    constrainedby Modelica.Media.Interfaces.PartialMedium
+    "Medium in the component"
+    annotation (choicesAllMatching = true);"""
     network = Network(
         name="ideas_free_float_three_zones",
-        library=Ideas(
-            constants="""
-replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
-constrainedby Modelica.Media.Interfaces.PartialMedium
-"Medium in the component"
-annotation (choicesAllMatching = true);"""
-        ),
+        library=ideas,
     )
     network.add_boiler_plate_spaces(ideas_free_float_three_zones_spaces)
     return network
@@ -327,7 +323,7 @@ def buildings_simple_hydronic_three_zones(
 def ideas_simple_hydronic_three_zones(
     space_1: Space, space_2: Space, space_3: Space
 ) -> Network:
-    network = Network(name="ideas_simple_hydronic_three_zones", library=Ideas())
+    network = Network(name="ideas_simple_hydronic_three_zones", library=Library.from_configuration("IDEAS"))
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
     pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
@@ -384,7 +380,7 @@ def space_1_no_occupancy() -> Space:
 
 @pytest.fixture
 def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
-    network = Network(name="ideas_simple_hydronic_no_occupancy", library=Ideas())
+    network = Network(name="ideas_simple_hydronic_no_occupancy", library=Library.from_configuration("IDEAS"))
     network.add_boiler_plate_spaces([space_1_no_occupancy])
 
     pump = Pump(name="pump", control=CollectorControl(name="pump_control"))
@@ -494,15 +490,15 @@ def space_2_simple_ventilation() -> Space:
 def ideas_many_spaces_simple_ventilation(
     space_1_simple_ventilation: Space, space_2_simple_ventilation: Space
 ) -> Network:
-    network = Network(
-        name="ideas_many_spaces_simple_ventilation",
-        library=Ideas(
-            constants="""
+    ideas = Library.from_configuration("IDEAS")
+    ideas.constants = """
     replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
     constrainedby Modelica.Media.Interfaces.PartialMedium
     "Medium in the component"
     annotation (choicesAllMatching = true);"""
-        ),
+    network = Network(
+        name="ideas_many_spaces_simple_ventilation",
+        library=ideas,
     )
     network.add_boiler_plate_spaces(
         [space_1_simple_ventilation, space_2_simple_ventilation]
@@ -526,14 +522,11 @@ def ideas_many_spaces_simple_ventilation(
 
 @pytest.fixture
 def many_spaces_simple_ventilation(
-    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space
+    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space, buildings_library
 ) -> Network:
     network = Network(
         name="many_spaces_simple_ventilation",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-    package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
     )
     network.add_boiler_plate_spaces(
         [space_1_simple_ventilation, space_2_simple_ventilation]
@@ -559,21 +552,18 @@ def many_spaces_simple_ventilation(
 def space_1_different_construction_types_network(
     space_1_different_construction_types: Space,
 ) -> Network:
-    network = Network(name="space_1_different_construction_types", library=Ideas())
+    network = Network(name="space_1_different_construction_types", library=Library.from_configuration("IDEAS"))
     network.add_boiler_plate_spaces([space_1_different_construction_types])
     return network
 
 
 @pytest.fixture
 def buildings_free_float_single_zone_ahu_complex(
-    space_1_simple_ventilation: Space,
+    space_1_simple_ventilation: Space,buildings_library
 ) -> Network:
     network = Network(
         name="buildings_free_float_single_zone_ahu_complex",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-        package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
     )
     network.add_boiler_plate_spaces([space_1_simple_ventilation])
     boundary = Boundary(name="boundary")
@@ -653,13 +643,10 @@ def space_1_simple_ventilation_vav_control() -> Space:
 
 
 @pytest.fixture
-def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space) -> Network:
+def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space, buildings_library) -> Network:
     network = Network(
         name="vav_ventilation_control",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-    package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
     )
     boundary = Boundary(name="boundary")
     network.add_boiler_plate_spaces([space_1_simple_ventilation_vav_control])
@@ -675,14 +662,11 @@ def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space) -> Ne
 
 
 @pytest.fixture
-def one_spaces_air_handling_unit(space_1_simple_ventilation: Space) -> Network:
+def one_spaces_air_handling_unit(space_1_simple_ventilation: Space, buildings_library) -> Network:
 
     network = Network(
         name="one_spaces_air_handling_unit",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
     )
     network.add_boiler_plate_spaces([space_1_simple_ventilation])
     ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
@@ -701,15 +685,12 @@ package MediumW = Buildings.Media.Water "Medium model";"""
 
 @pytest.fixture
 def two_spaces_air_handling_unit(
-    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space
+    space_1_simple_ventilation: Space, space_2_simple_ventilation: Space, buildings_library
 ) -> Network:
 
     network = Network(
         name="two_spaces_air_handling_unit",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
     )
     network.add_boiler_plate_spaces(
         [space_1_simple_ventilation, space_2_simple_ventilation]
@@ -809,7 +790,7 @@ def building_multiple_internal_walls() -> Network:
 @pytest.fixture
 def building_multiple_internal_walls_ideas() -> Network:
     return building_with_multiple_internal_walls(
-        "multiple_internal_walls_ideas", library=Ideas()
+        "multiple_internal_walls_ideas", library=Library.from_configuration("IDEAS")
     )
 
 

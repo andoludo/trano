@@ -1,22 +1,26 @@
-from typing import Any, Callable, Dict, List, Literal, Union
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Literal, Optional
 
-from networkx.classes.reportviews import NodeView
+import yaml
 from pydantic import BaseModel
 
 from trano.models.elements.constants.buildings import BUILDINGS_CONSTANTS
 from trano.models.elements.constants.ideas import CONSTANTS
-from trano.models.elements.materials.base import MaterialProperties
-from trano.models.elements.materials.properties import (
-    extract_buildings_data,
-    extract_ideas_data,
-)
 from trano.models.parameters import WallParameters
 
 
 def tilts_processing_ideas(element: WallParameters) -> List[str]:
     return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
+class Templates(BaseModel):
+    is_package: bool = False
+    construction: str
+    glazing: str
+    material: Optional[str] = None
+    main: str
 
-
+def read_libraries() -> Dict[str, Dict[str, Any]]:
+    library_path = Path(__file__).parent.joinpath("library.yaml")
+    return yaml.safe_load(library_path.read_text())
 class Library(BaseModel):
     name: str
     merged_external_boundaries: bool = False
@@ -24,28 +28,29 @@ class Library(BaseModel):
         "tilts_processing_ideas": tilts_processing_ideas
     }
     constants: str = ""
-    extract_properties: Callable[[str, Any], Any]
+    templates: Templates
+    default:bool = False
+
+    @classmethod
+    def from_configuration(cls, name:str) -> "Library":
+        libraries = read_libraries()
+
+        if name not in libraries:
+            raise ValueError(f"Library {name} not found")
+        library_data = libraries[name]
+        return cls(**library_data)
+
+    @classmethod
+    def load_default(cls) -> "Library":
+        libraries = read_libraries()
+        default_library = [library_data for _, library_data in libraries.items() if library_data.get("default")]
+        if not default_library:
+            raise ValueError("No default library found")
+        return cls(**default_library[0])
 
 
-LibraryNames = Literal["IDEAS", "Buildings"]
 
 
-class Ideas(Library):
-    name: str = "IDEAS"
-    merged_external_boundaries: bool = True
-    constants: str = CONSTANTS
-    extract_properties: Callable[
-        [str, NodeView], MaterialProperties
-    ] = extract_ideas_data
 
 
-class Buildings(Library):
-    name: str = "Buildings"
-    merged_external_boundaries: bool = False
-    constants: str = BUILDINGS_CONSTANTS
-    extract_properties: Callable[
-        [str, NodeView], MaterialProperties
-    ] = extract_buildings_data
 
-
-Libraries = Union[Ideas, Buildings]

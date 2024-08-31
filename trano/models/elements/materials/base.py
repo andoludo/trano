@@ -11,7 +11,10 @@ class BaseData(BaseModel):
     template: Optional[str] = None
     constructions: List[Union[Construction, Material, Glass]]
 
-
+class ConstructionData(BaseModel):
+    constructions: List[Construction]
+    materials: List[Material]
+    glazing: List[Glass]
 class BaseConstructionData(BaseModel):
     template: str
     construction: BaseData

@@ -4,7 +4,8 @@ from pydantic import BaseModel
 
 from trano.models.constants import Tilt
 from trano.models.elements.base import BaseElement
-from trano.models.elements.envelope import BaseSimpleWall, BaseWindow, ExternalWall
+from trano.models.elements.envelope import ExternalWall
+from trano.models.elements.envelope import BaseSimpleWall, BaseWindow
 
 
 class WallParameters(BaseModel):

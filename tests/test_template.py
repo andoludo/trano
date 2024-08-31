@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from tests.conftest import _read, clean_model
-from trano.library.library import Buildings, Ideas
+from trano.library.library import Library
 from trano.models.elements.space import Space
 from trano.topology import Network
 
@@ -159,7 +159,7 @@ def test_space_with_same_properties(space_with_same_properties: Space) -> None:
 
 @pytest.mark.run(order=16)
 def test_space_with_same_properties_ideas(space_with_same_properties: Space) -> None:
-    network = Network(name="space_with_same_properties_ideas", library=Ideas())
+    network = Network(name="space_with_same_properties_ideas", library=Library.from_configuration("IDEAS"))
     network.add_boiler_plate_spaces([space_with_same_properties])
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
@@ -199,14 +199,11 @@ def test_house_model(house_model: Network) -> None:
 
 @pytest.mark.run(order=21)
 def test_template_buildings_free_float_single_zone_with_data(
-    simple_space_1_with_occupancy: Space,
+    simple_space_1_with_occupancy: Space,buildings_library
 ) -> None:
     network = Network(
         name="buildings_free_float_single_zone_with_data",
-        library=Buildings(
-            constants="""package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model";
-    package MediumW = Buildings.Media.Water "Medium model";"""
-        ),
+        library=buildings_library,
         external_data=Path(__file__).parent.joinpath("resources", "validation.csv"),
     )
     network.add_boiler_plate_spaces([simple_space_1_with_occupancy])
