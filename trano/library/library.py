@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Literal, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import yaml
 from pydantic import BaseModel
 
-from trano.models.elements.envelope import WallParameters
+from trano.elements import WallParameters
 
 
 def tilts_processing_ideas(element: WallParameters) -> List[str]:

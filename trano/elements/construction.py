@@ -122,7 +122,7 @@ class BaseConstructionData(BaseModel):
             trim_blocks=True,
             lstrip_blocks=True,
             loader=FileSystemLoader(
-                str(Path(__file__).parents[2].joinpath("templates"))
+                str(Path(__file__).parents[1].joinpath("templates"))
             ),
             autoescape=True,
         )
@@ -160,7 +160,7 @@ class BaseTemplateData(BaseModel):
 
 
 def default_construction(nodes: NodeView) -> ConstructionData:
-    from trano.models.elements.envelope import BaseSimpleWall
+    from trano.elements.envelope import BaseSimpleWall
     constructions = {
         node.construction
         for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]
@@ -178,7 +178,7 @@ def default_construction(nodes: NodeView) -> ConstructionData:
 
 def merged_construction(nodes: NodeView) -> ConstructionData:
     #TODO: Fix the import
-    from trano.models.elements.envelope import BaseSimpleWall, MergedBaseWall
+    from trano.elements.envelope import BaseSimpleWall, MergedBaseWall
     merged_constructions = {
         construction
         for node in [node_ for node_ in nodes if isinstance(node_, MergedBaseWall)]

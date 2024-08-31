@@ -4,7 +4,7 @@ import pytest
 
 from tests.conftest import _read, clean_model
 from trano.library.library import Library
-from trano.models.elements.space import Space
+from trano.elements.space import Space
 from trano.topology import Network
 
 

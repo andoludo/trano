@@ -1,10 +1,10 @@
 from typing import List
 
 from tests.constructions.constructions import Constructions, Glasses
-from trano.models.elements.types import Tilt, Azimuth
-from trano.models.elements.envelope import ExternalWall, FloorOnGround, Window
-from trano.models.elements.space import Space
-from trano.models.elements.system import Occupancy
+from trano.elements.types import Tilt, Azimuth
+from trano.elements import ExternalWall, FloorOnGround, Window
+from trano.elements.space import Space
+from trano.elements.system import Occupancy
 
 
 def three_spaces(occupancy: bool = True) -> List[Space]:

@@ -2,9 +2,9 @@ from typing import List, Optional
 
 from pydantic import computed_field
 
-from trano.models.elements.base import BaseElement, BaseParameter, Control
-from trano.models.elements.space import Space
-from trano.models.elements.system import VAV, Valve
+from trano.elements.base import BaseElement, BaseParameter, Control
+from trano.elements.space import Space
+from trano.elements.system import VAV, Valve
 
 
 class ControlParameters(BaseParameter):

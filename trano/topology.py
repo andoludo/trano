@@ -16,20 +16,20 @@ from trano.controller.parser import BaseInput
 from trano.documentation.documentation import ModelDocumentation
 from trano.documentation.html import to_html_documentation
 from trano.library.library import Library
-from trano.models.elements.types import Tilt
-from trano.models.elements.base import (
+from trano.elements.types import Tilt
+from trano.elements import (
     BaseElement,
     Connection,
     Control,
     DynamicTemplateCategories,
     connect,
 )
-from trano.models.elements.bus import DataBus
-from trano.models.elements.control import AhuControl, CollectorControl, VAVControl
-from trano.models.elements.envelope import InternalElement
-from trano.models.elements.construction import extract_properties
-from trano.models.elements.space import Space, _get_controllable_element
-from trano.models.elements.system import (
+from trano.elements.bus import DataBus
+from trano.elements.control import AhuControl, CollectorControl, VAVControl
+from trano.elements import InternalElement
+from trano.elements.construction import extract_properties
+from trano.elements.space import Space, _get_controllable_element
+from trano.elements.system import (
     VAV,
     AirHandlingUnit,
     Boiler,

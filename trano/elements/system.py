@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from trano.models.elements.base import BaseElement, BaseVariant, Control
+from trano.elements.base import BaseElement, BaseVariant, Control
 
 
 class System(BaseElement):

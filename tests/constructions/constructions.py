@@ -1,4 +1,4 @@
-from trano.models.elements.construction import Construction, Layer, GlassLayer, GasLayer, Glass, Material, GlassMaterial, Gas
+from trano.elements.construction import Construction, Layer, GlassLayer, GasLayer, Glass, Material, GlassMaterial, Gas
 
 
 class Materials:

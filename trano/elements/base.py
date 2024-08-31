@@ -31,7 +31,7 @@ from pydantic import (
 from pydantic.fields import computed_field
 
 from trano.controller.parser import ControllerBus
-from trano.models.elements.types import Flow
+from trano.elements.types import Flow
 
 if TYPE_CHECKING:
     from trano.library.library import Libraries
@@ -252,68 +252,68 @@ class Port(BaseModel):
         for value in values:
             if isinstance(value, str):
                 if value == "DataBus":
-                    from trano.models.elements.bus import DataBus
+                    from trano.elements.bus import DataBus
 
                     targets.append(DataBus)
                 elif value == "Control":
 
                     targets.append(Control)
                 elif value == "Space":
-                    from trano.models.elements.space import Space
+                    from trano.elements.space import Space
 
                     targets.append(Space)
                 elif value == "BaseBoundary":
                     targets.append(BaseBoundary)
                 elif value == "System":
-                    from trano.models.elements.system import System
+                    from trano.elements.system import System
 
                     targets.append(System)
                 elif value == "AhuControl":
-                    from trano.models.elements.control import AhuControl
+                    from trano.elements.control import AhuControl
 
                     targets.append(AhuControl)
                 elif value == "BaseWeather":
-                    from trano.models.elements.system import BaseWeather
+                    from trano.elements.system import BaseWeather
 
                     targets.append(BaseWeather)
                 elif value == "AirHandlingUnit":
-                    from trano.models.elements.system import AirHandlingUnit
+                    from trano.elements.system import AirHandlingUnit
 
                     targets.append(AirHandlingUnit)
                 elif value == "Ventilation":
-                    from trano.models.elements.system import Ventilation
+                    from trano.elements.system import Ventilation
 
                     targets.append(Ventilation)
                 elif value == "BaseInternalElement":
-                    from trano.models.elements.envelope import BaseInternalElement
+                    from trano.elements.envelope import BaseInternalElement
 
                     targets.append(BaseInternalElement)
                 elif value == "BaseOccupancy":
-                    from trano.models.elements.system import BaseOccupancy
+                    from trano.elements.system import BaseOccupancy
 
                     targets.append(BaseOccupancy)
                 elif value == "Emission":
-                    from trano.models.elements.system import Emission
+                    from trano.elements.system import Emission
 
                     targets.append(Emission)
                 elif value == "VAVControl":
-                    from trano.models.elements.control import VAVControl
+                    from trano.elements.control import VAVControl
 
                     targets.append(VAVControl)
                 elif value == "BaseWall":
-                    from trano.models.elements.envelope import BaseWall
+                    from trano.elements.envelope import BaseWall
 
                     targets.append(BaseWall)
                 elif value == "ThreeWayValve":
-                    from trano.models.elements.system import ThreeWayValve
+                    from trano.elements.system import ThreeWayValve
 
                     targets.append(ThreeWayValve)
                 elif value == "TemperatureSensor":
-                    from trano.models.elements.system import TemperatureSensor
+                    from trano.elements.system import TemperatureSensor
 
                     targets.append(TemperatureSensor)
                 elif value == "Boundary":
-                    from trano.models.elements.boundary import Boundary
+                    from trano.elements.boundary import Boundary
 
                     targets.append(Boundary)
                 else:
@@ -335,7 +335,7 @@ class Port(BaseModel):
         self, node: "BaseElement", connected_node: "BaseElement"
     ) -> list[PartialConnection]:
 
-        from trano.models.elements.envelope import MergedBaseWall
+        from trano.elements.envelope import MergedBaseWall
 
         self.available = False
         partial_connections = []
@@ -393,7 +393,7 @@ class DynamicComponentTemplate(BaseModel):
             trim_blocks=True,
             lstrip_blocks=True,
             loader=FileSystemLoader(
-                str(Path(__file__).parents[2].joinpath("templates"))
+                str(Path(__file__).parents[1].joinpath("templates"))
             ),
             autoescape=True,
         )
@@ -450,7 +450,7 @@ def _get_default(v: Any) -> Any:  # noqa: ANN401
 def load_parameters() -> Dict[str, Type["BaseParameter"]]:
     # TODO: remove absoluth path reference
     parameter_path = (
-        Path(__file__).parents[2].joinpath("data_models", "parameters.yaml")
+        Path(__file__).parents[1].joinpath("data_models", "parameters.yaml")
     )
     data = yaml.safe_load(parameter_path.read_text())
     classes = {}
@@ -646,9 +646,9 @@ class BaseElement(BaseModel):
 
 
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
-    from trano.models.elements.bus import DataBus
-    from trano.models.elements.envelope import BaseSimpleWall
-    from trano.models.elements.system import Weather
+    from trano.elements.bus import DataBus
+    from trano.elements.envelope import BaseSimpleWall
+    from trano.elements.system import Weather
 
     if any(isinstance(e, BaseSimpleWall) for e in edge):
         return ConnectionView(color="{191,0,0}", thickness=0.1)

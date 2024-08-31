@@ -1,23 +1,23 @@
 from pathlib import Path
 
-from trano.models.elements.construction import Construction, Layer, Material
+from trano.elements.construction import Construction, Layer, Material
 from tests.constructions.constructions import GasMaterials, Glasses
-from trano.models.elements.types import Tilt, Azimuth
-from trano.models.elements.base import param_from_config
-from trano.models.elements.control import (
+from trano.elements.types import Tilt, Azimuth
+from trano.elements import param_from_config
+from trano.elements.control import (
     CollectorControl,
     EmissionControl,
     ThreeWayValveControl,
 )
-from trano.models.elements.envelope import (
+from trano.elements import (
     ExternalDoor,
     ExternalWall,
     FloorOnGround,
     InternalElement,
     Window,
 )
-from trano.models.elements.space import Space
-from trano.models.elements.system import (
+from trano.elements.space import Space
+from trano.elements.system import (
     Boiler,
     Occupancy,
     Pump,

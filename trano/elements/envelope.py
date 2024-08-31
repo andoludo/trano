@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union, Type
 
 from pydantic import model_validator, BaseModel
 
-from trano.models.elements.construction import Construction, Glass
-from trano.models.elements.types import Tilt, Azimuth
-from trano.models.elements.base import BaseElement
+from trano.elements.construction import Construction, Glass
+from trano.elements.types import Tilt, Azimuth
+from trano.elements.base import BaseElement
 
 if TYPE_CHECKING:
     pass

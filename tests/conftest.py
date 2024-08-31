@@ -30,24 +30,24 @@ from tests.fixtures.spaces_with_ventilation import (
 from tests.fixtures.three_spaces import three_spaces
 from tests.fixtures.two_spaces import two_spaces
 from trano.library.library import Library
-from trano.models.elements.types import Tilt, Azimuth, Flow
-from trano.models.elements.base import Port, param_from_config
-from trano.models.elements.boundary import Boundary
-from trano.models.elements.control import (
+from trano.elements.types import Tilt, Azimuth, Flow
+from trano.elements import Port, param_from_config
+from trano.elements.boundary import Boundary
+from trano.elements.control import (
     AhuControl,
     BoilerControl,
     CollectorControl,
     EmissionControl,
     ThreeWayValveControl,
 )
-from trano.models.elements.envelope import (
+from trano.elements import (
     ExternalWall,
     FloorOnGround,
     InternalElement,
     Window,
 )
-from trano.models.elements.space import Space
-from trano.models.elements.system import (
+from trano.elements.space import Space
+from trano.elements.system import (
     AirHandlingUnit,
     Boiler,
     Occupancy,

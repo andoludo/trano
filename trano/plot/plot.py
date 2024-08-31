@@ -13,7 +13,7 @@ from matplotlib.figure import Figure as pyFigure
 from plotly.graph_objects import Figure as plotlyFigure
 from plotly.subplots import make_subplots  # type: ignore
 
-from trano.models.elements.base import BaseElement, Figure
+from trano.elements import BaseElement, Figure
 
 logger = logging.getLogger(__name__)
 FIGURE_COUNT = 1

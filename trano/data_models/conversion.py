@@ -11,7 +11,7 @@ import yaml
 from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
-from trano.models.elements.construction import (
+from trano.elements.construction import (
     Construction,
     Layer,
     GlassLayer,
@@ -21,17 +21,17 @@ from trano.models.elements.construction import (
     GlassMaterial,
     Gas,
 )
-from trano.models.elements.base import param_from_config
-from trano.models.elements.control import ( # noqa: F401
+from trano.elements import param_from_config
+from trano.elements.control import ( # noqa: F401
     ThreeWayValveControl,
     EmissionControl,
     CollectorControl,
     BoilerControl,
 )
-from trano.models.elements.envelope import ExternalWall, FloorOnGround, Window
-from trano.models.elements.space import Space
+from trano.elements import ExternalWall, FloorOnGround, Window
+from trano.elements.space import Space
 #TODO: fix these imports
-from trano.models.elements.system import ( # noqa: F401
+from trano.elements.system import ( # noqa: F401
     Occupancy,
     Weather,
     Weather,

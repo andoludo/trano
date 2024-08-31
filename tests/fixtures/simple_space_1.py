@@ -1,7 +1,7 @@
 from tests.constructions.constructions import Constructions, Glasses
-from trano.models.elements.types import Tilt, Azimuth
-from trano.models.elements.envelope import ExternalWall, FloorOnGround, Window
-from trano.models.elements.space import Space
+from trano.elements.types import Tilt, Azimuth
+from trano.elements import ExternalWall, FloorOnGround, Window
+from trano.elements.space import Space
 
 
 def simple_space_1_fixture() -> Space:

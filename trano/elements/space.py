@@ -4,8 +4,8 @@ from typing import ClassVar, List, Optional, Union
 from networkx import Graph
 from pydantic import Field
 
-from trano.models.elements.base import BaseElement
-from trano.models.elements.envelope import (
+from trano.elements.base import BaseElement
+from trano.elements.envelope import (
     BaseExternalWall,
     BaseFloorOnGround,
     BaseInternalElement,
@@ -17,7 +17,7 @@ from trano.models.elements.envelope import (
     MergedExternalWall,
     MergedWindows, WallParameters, WindowedWallParameters,
 )
-from trano.models.elements.system import BaseOccupancy, Emission, System
+from trano.elements.system import BaseOccupancy, Emission, System
 
 MAX_X_SPACES = 3
 

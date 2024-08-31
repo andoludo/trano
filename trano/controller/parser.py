@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, computed_field
 
 if TYPE_CHECKING:
 
-    from trano.models.elements.base import BaseElement
+    from trano.elements import BaseElement
 
 
 class BaseInput(BaseModel):

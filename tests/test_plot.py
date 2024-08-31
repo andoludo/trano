@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from buildingspy.io.outputfile import Reader
 
-from trano.models.elements.space import Space
+from trano.elements.space import Space
 from trano.plot.plot import plot, plot_element, plot_plot_ly
 from trano.topology import Network
 

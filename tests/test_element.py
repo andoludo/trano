@@ -31,7 +31,7 @@ def test_material():
     ideas_data = IdeasData()
 
     materials_path = Path(
-        "/home/aan/Documents/trano/trano/models/elements/materials/materials.yaml"
+        "/trano/elements/materials/materials.yaml"
     )
 
     with materials_path.open("w") as f:
@@ -44,7 +44,7 @@ def test_material():
 def test_library():
     def get_library(name, library):
         materials_path = Path(
-            "/home/aan/Documents/trano/trano/models/elements/materials/materials.yaml"
+            "/trano/elements/materials/materials.yaml"
         )
         templates = yaml.safe_load(materials_path.read_text())
         library_template = templates[name]

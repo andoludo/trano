@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from trano.models.elements.bus import transform_csv_to_table
+from trano.elements.bus import transform_csv_to_table
 
 
 def test_transform_csv_to_table() -> None:
