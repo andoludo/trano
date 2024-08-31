@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 from trano.elements.types import PartialConnection, ConnectionView, Flow
+from trano import elements
 
 
 class Connection(BaseModel):
@@ -47,79 +48,14 @@ class Port(BaseModel):
     @classmethod
     def validate_targets(  # noqa: PLR0915, PLR0912, C901
         cls, values: List[str]
-    ) -> List[Type["BaseElement"]]:  # TODO: reduce complexity
-        # TODO: this function to be refactored!!!
+    ) -> List[Type["BaseElement"]]:
         from trano.elements import BaseElement
-        from trano.elements import Control
+
         targets: List[Type[BaseElement]] = []
         for value in values:
             if isinstance(value, str):
-                if value == "DataBus":
-                    from trano.elements.bus import DataBus
-
-                    targets.append(DataBus)
-                elif value == "Control":
-
-                    targets.append(Control)
-                elif value == "Space":
-                    from trano.elements.space import Space
-
-                    targets.append(Space)
-                elif value == "BaseBoundary":
-                    from trano.elements.boundary import BaseBoundary
-                    targets.append(BaseBoundary)
-                elif value == "System":
-                    from trano.elements.system import System
-
-                    targets.append(System)
-                elif value == "AhuControl":
-                    from trano.elements.control import AhuControl
-
-                    targets.append(AhuControl)
-                elif value == "BaseWeather":
-                    from trano.elements.system import BaseWeather
-
-                    targets.append(BaseWeather)
-                elif value == "AirHandlingUnit":
-                    from trano.elements.system import AirHandlingUnit
-
-                    targets.append(AirHandlingUnit)
-                elif value == "Ventilation":
-                    from trano.elements.system import Ventilation
-
-                    targets.append(Ventilation)
-                elif value == "BaseInternalElement":
-                    from trano.elements.envelope import BaseInternalElement
-
-                    targets.append(BaseInternalElement)
-                elif value == "BaseOccupancy":
-                    from trano.elements.system import BaseOccupancy
-
-                    targets.append(BaseOccupancy)
-                elif value == "Emission":
-                    from trano.elements.system import Emission
-
-                    targets.append(Emission)
-                elif value == "VAVControl":
-                    from trano.elements.control import VAVControl
-
-                    targets.append(VAVControl)
-                elif value == "BaseWall":
-                    from trano.elements.envelope import BaseWall
-
-                    targets.append(BaseWall)
-                elif value == "ThreeWayValve":
-                    from trano.elements.system import ThreeWayValve
-
-                    targets.append(ThreeWayValve)
-                elif value == "TemperatureSensor":
-                    from trano.elements.system import TemperatureSensor
-
-                    targets.append(TemperatureSensor)
-                elif value == "Boundary":
-                    from trano.elements.boundary import Boundary
-
-                    targets.append(Boundary)
+                if hasattr(elements, value):
+                    targets.append(getattr(elements, value))
                 else:
                     raise ValueError(f"Target {value} not found")
             else:
@@ -131,6 +67,7 @@ class Port(BaseModel):
 
     def is_controllable(self) -> bool:
         from trano.elements.base import Control
+
         return self.targets is not None and any(
             target == Control for target in self.targets
         )
@@ -173,7 +110,6 @@ class Port(BaseModel):
             )
 
         return partial_connections
-
 
 
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
