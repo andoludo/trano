@@ -1,12 +1,11 @@
 from trano.elements.base import (
     BaseElement,
-    BaseParameter,
     Connection,
     Control,
     Port,
-    connect,
-    param_from_config
+    connect
 )
+from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.figure import Figure
 from trano.elements.types import DynamicTemplateCategories
 from trano.elements.envelope import (
@@ -20,14 +19,13 @@ from trano.elements.envelope import (
 )
 
 __all__ = [
+    "param_from_config",
     "ExternalDoor",
     "ExternalWall",
     "FloorOnGround",
     "InternalElement",
     "Window",
-    "param_from_config",
     "BaseElement",
-    "BaseParameter",
     "BaseSimpleWall",
     "WallParameters",
     "Connection",

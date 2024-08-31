@@ -1,3 +1,4 @@
+import importlib
 import re
 from typing import List, Callable, Any
 
@@ -45,3 +46,11 @@ def _get_default(v: Any) -> Any:  # noqa: ANN401
     except Exception as e:
 
         raise e
+
+def dynamic_import_function(module_name: str, function_name: str)-> Callable[[Any], Any]:
+    module = importlib.import_module(module_name)
+
+
+    function = getattr(module, function_name)
+
+    return function

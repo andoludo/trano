@@ -1,8 +1,5 @@
-import os
-import subprocess
 from copy import deepcopy
 from functools import partial
-from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -15,8 +12,6 @@ from typing import (
     Type,
 )
 
-import yaml
-from jinja2 import Environment, FileSystemLoader
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -25,50 +20,22 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from pydantic.fields import computed_field
 
+from trano.elements import parameters
+from trano.elements.components import COMPONENTS, DynamicComponentTemplate
+from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.figure import Figure
-from trano.elements.controller_bus import ControllerBus
-from trano.elements.types import Flow, PartialConnection, ConnectionView, BaseVariant, DynamicTemplateCategories
-from trano.elements.utils import compose_func, _get_type, _get_default
+from trano.elements.parameters import default_parameters
+from trano.elements.types import (
+    Flow,
+    PartialConnection,
+    ConnectionView,
+    BaseVariant,
+)
+from trano.elements.utils import compose_func
 
 if TYPE_CHECKING:
     from trano.library.library import Library
-
-
-def convert_copy(schema: Path, input_file: Path, target: str, output: Path) -> bool:
-    root_path = Path(__file__).parents[3]
-    os.chdir(root_path)
-    command = [
-        "poetry",
-        "run",
-        "linkml-convert",
-        "-o",
-        f"{output}",
-        "-t",
-        target,
-        "-C",
-        "Building",
-        "-s",
-        str(schema),
-        f"{input_file}",
-    ]
-
-    process = subprocess.run(
-        command, check=True, capture_output=True, text=True  # noqa: S603
-    )
-    return process.returncode == 0
-
-
-def _load_components() -> Dict[str, Any]:
-    libraries_path = Path(__file__).parent.joinpath("models")
-    data: Dict[str, Any] = {"components": []}
-    for file in libraries_path.glob("*.yaml"):
-        data["components"] += yaml.safe_load(file.read_text()).get("components", [])
-    return data
-
-
-COMPONENTS = _load_components()
 
 
 class AvailableLibraries(BaseModel):
@@ -107,7 +74,8 @@ class AvailableLibraries(BaseModel):
             if component["parameter_processing"].get("parameter", None):
                 function_name = component["parameter_processing"]["function"]
                 parameter_processing = partial(
-                    globals()[function_name],
+                    getattr(
+                        parameters, function_name),
                     **{
                         function_name: component["parameter_processing"].get(
                             "parameter", {}
@@ -115,9 +83,10 @@ class AvailableLibraries(BaseModel):
                     },
                 )
             else:
-                parameter_processing = globals()[
-                    component["parameter_processing"]["function"]
-                ]
+                parameter_processing = getattr(
+                    parameters, component["parameter_processing"]["function"]
+                )
+
             component_ = create_model(
                 f"Base{component['library'].capitalize() }{name.capitalize()}",
                 __base__=LibraryData,
@@ -315,86 +284,6 @@ class Port(BaseModel):
             )
 
         return partial_connections
-
-
-class DynamicComponentTemplate(BaseModel):
-
-    template: str
-    category: Optional[DynamicTemplateCategories] = None
-    function: Callable[[Any], Any] = Field(default=lambda _: {})
-    bus: ControllerBus
-
-    def render(
-        self, package_name: str, element: "BaseElement", parameters: Dict[str, Any]
-    ) -> str:
-        ports = list(self.bus.bus_ports(element))
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(
-                str(Path(__file__).parents[1].joinpath("templates"))
-            ),
-            autoescape=True,
-        )
-        environment.filters["enumerate"] = enumerate
-        rtemplate = environment.from_string(
-            "{% import 'macros.jinja2' as macros %}" + self.template
-        )
-        component = rtemplate.render(
-            element=element,
-            package_name=package_name,
-            bus_template=self.bus.template,
-            bus_ports="\n".join(ports),
-            parameters=parameters,
-            **self.function(element),
-        )
-
-        return component
-
-
-class BaseParameter(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
-
-
-def load_parameters() -> Dict[str, Type["BaseParameter"]]:
-    # TODO: remove absoluth path reference
-    parameter_path = (
-        Path(__file__).parents[1].joinpath("data_models", "parameters.yaml")
-    )
-    data = yaml.safe_load(parameter_path.read_text())
-    classes = {}
-
-    for name, parameter in data.items():
-        attrib_ = {}
-        for k, v in parameter["attributes"].items():
-            alias = v.get("alias", None)
-            alias = alias if alias != "None" else None
-            if v.get("range"):
-                attrib_[k] = (
-                    _get_type(v["range"]),
-                    Field(
-                        default=_get_default(v),
-                        alias=alias,
-                        description=v.get("description", None),
-                    ),
-                )
-            else:
-                attrib_[k] = computed_field(  # type: ignore # TODO: why?
-                    eval(v["func"]),  # noqa: S307
-                    return_type=eval(v["type"]),  # noqa: S307
-                    alias=alias,  # TODO: avoid using eval
-                )
-        model = create_model(f"{name}_", __base__=BaseParameter, **attrib_)  # type: ignore # TODO: why?
-        for class_ in parameter["classes"]:
-            classes[class_] = model
-    return classes
-
-
-PARAMETERS = load_parameters()
-
-
-def param_from_config(name: str) -> Optional[Type[BaseParameter]]:
-    return PARAMETERS.get(name)
 
 
 class BaseElement(BaseModel):
@@ -605,52 +494,6 @@ def _is_inlet_or_outlet(target: "BaseElement") -> bool:
     return bool(
         [port for port in target.ports if port.flow in [Flow.inlet, Flow.outlet]]
     )
-
-
-def change_alias(
-    parameter: BaseParameter, mapping: Optional[Dict[str, str]] = None
-) -> Any:  # noqa: ANN401
-    mapping = mapping or {}
-    new_param = {}
-    for name, field in parameter.model_fields.items():
-        if mapping.get(name):
-            field.alias = mapping[name]
-        new_param[name] = (
-            field.annotation,
-            Field(field.default, alias=field.alias, description=field.description),
-        )
-
-    for name, field in parameter.model_computed_fields.items():  # type: ignore
-        if mapping.get(name):
-            new_param[name] = (
-                Optional[field.return_type],  # type: ignore
-                Field(None, alias=mapping[name], description=field.description),
-            )
-    return create_model(  # type: ignore
-        "new_model",
-        **new_param,
-        __config__=ConfigDict(populate_by_name=True),
-    )
-
-
-def modify_alias(
-    parameter: BaseParameter, modify_alias: Dict[str, str]
-) -> Any:  # noqa: ANN401
-    return change_alias(parameter, modify_alias)(**parameter.model_dump()).model_dump(
-        by_alias=True, include=set(modify_alias)
-    )
-
-
-def exclude_parameters(
-    parameters: BaseParameter, exclude_parameters: Optional[set[str]] = None
-) -> Dict[str, Any]:
-    return parameters.model_dump(by_alias=True, exclude=exclude_parameters)
-
-
-def default_parameters(parameters: BaseParameter) -> Dict[str, Any]:
-    if not parameters:
-        return {}
-    return parameters.model_dump(by_alias=True, exclude_none=True)
 
 
 class LibraryData(BaseModel):
