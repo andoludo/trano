@@ -13,7 +13,7 @@ from matplotlib.figure import Figure as pyFigure
 from plotly.graph_objects import Figure as plotlyFigure
 from plotly.subplots import make_subplots  # type: ignore
 
-from trano.models.elements.base import BaseElement, Figure
+from trano.elements import BaseElement, Figure
 
 logger = logging.getLogger(__name__)
 FIGURE_COUNT = 1
@@ -32,7 +32,7 @@ def plot(data: Reader, figure: Figure, show: bool = True) -> pyFigure:
             except KeyError:
                 logger.warning(f"Key {line.key} not found in data")
                 continue
-            (p,) = axis.plot(  # type: ignore
+            (p,) = axis.plot(
                 line_data.loc[1],
                 linestyle=line.line_style,
                 linewidth=line.line_width,

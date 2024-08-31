@@ -1,0 +1,52 @@
+ideas:
+  - template: |
+      {{package_name}}.Common.Fluid.Boilers.
+      BoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(
+      {{ macros.render_parameters(parameters) | safe}},
+      redeclare package MediumW = MediumW) "Boiler"
+    ports:
+      - targets:
+          - Control
+          - DataBus
+        names:
+          - dataBus
+        multi_connection: True
+        use_counter: False
+      - names:
+          - port_a
+        flow: inlet
+        multi_connection: True
+        use_counter: False
+      - names:
+          - port_b
+        flow: outlet
+        multi_connection: True
+        use_counter: False
+    component_template:
+      template: |
+        model BoilerWithStorage{{ element.name | capitalize}}
+        extends {{ package_name }}.Common.Fluid.Boilers.PartialBoilerWithStorage;
+        {{bus_template}}
+        equation
+        {{bus_ports | safe}}
+         end BoilerWithStorage{{ element.name | capitalize}};
+      category: boiler
+      bus:
+        real_inputs:
+        - name: yBoiCon
+          target: element.name
+          component: Boiy
+          port: y
+        - name: yPumBoi
+          target: element.name
+          component: pumBoi
+          port: y
+        real_outputs:
+        - name: TStoBot
+          target: element.name
+          component: tanTemBot
+          port: T
+        - name: TStoTop
+          target: element.name
+          component: tanTemTop
+          port: T

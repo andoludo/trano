@@ -1,10 +1,10 @@
-from trano.construction import Constructions
-from trano.glass import Glasses
-from trano.models.constants import Azimuth, Tilt
-from trano.models.elements.envelope.external_wall import ExternalDoor, ExternalWall
-from trano.models.elements.envelope.window import Window
-from trano.models.elements.occupancy import Occupancy
-from trano.models.elements.space import Space, SpaceParameter
+from tests.constructions.constructions import Constructions, Glasses
+from trano.elements import ExternalDoor, ExternalWall, Window, param_from_config
+from trano.elements.space import Space
+from trano.elements.system import Occupancy
+from trano.elements.types import Azimuth, Tilt
+
+SpaceParameter = param_from_config("Space")
 
 
 def space_with_same_properties_fixture() -> Space:

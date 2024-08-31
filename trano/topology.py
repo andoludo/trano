@@ -11,49 +11,50 @@ from networkx import DiGraph, shortest_path
 from networkx.classes.reportviews import NodeView
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
-from trano.construction import Constructions
-from trano.controller.parser import BaseInput
-from trano.documentation.documentation import ModelDocumentation
-from trano.documentation.html import to_html_documentation
-from trano.library.library import Buildings, Libraries
-from trano.models.constants import Tilt
-from trano.models.elements.ahu import AirHandlingUnit
-from trano.models.elements.base import (
+from tests.constructions.constructions import Constructions
+from trano.elements import (
     BaseElement,
     Connection,
+    Control,
     DynamicTemplateCategories,
+    InternalElement,
     connect,
 )
-from trano.models.elements.boiler import Boiler
-from trano.models.elements.bus import DataBus
-from trano.models.elements.controls.ahu import AhuControl
-from trano.models.elements.controls.base import Control
-from trano.models.elements.controls.collector import CollectorControl
-from trano.models.elements.controls.vav import VAVControl
-from trano.models.elements.damper import VAV
-from trano.models.elements.envelope.internal_element import InternalElement
-from trano.models.elements.materials.properties import extract_properties
-from trano.models.elements.pump import Pump
-from trano.models.elements.space import Space, _get_controllable_element
-from trano.models.elements.system import System, Ventilation
-from trano.models.elements.temperature_sensor import TemperatureSensor
-from trano.models.elements.three_way_valve import ThreeWayValve
-from trano.models.elements.valve import Valve
-from trano.models.elements.weather import Weather
+from trano.elements.bus import DataBus
+from trano.elements.construction import extract_properties
+from trano.elements.control import AhuControl, CollectorControl, VAVControl
+from trano.elements.inputs import BaseInput
+from trano.elements.space import Space, _get_controllable_element
+from trano.elements.system import (
+    VAV,
+    AirHandlingUnit,
+    Boiler,
+    Pump,
+    System,
+    TemperatureSensor,
+    ThreeWayValve,
+    Valve,
+    Ventilation,
+    Weather,
+)
+from trano.elements.types import Tilt
+from trano.library.library import Library
+from trano.reporting.html import to_html_reporting
+from trano.reporting.reproting import ModelDocumentation
 
 
 class Network:  # noqa : PLR0904, #TODO: fix this
     def __init__(
         self,
         name: str,
-        library: Optional[Libraries] = None,
+        library: Optional[Library] = None,
         external_data: Optional[Path] = None,
     ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
         self.name: str = name
         self._system_controls: List[Control] = []
-        self.library = library or Buildings()
+        self.library = library or Library.load_default()
         self.external_data = external_data
         self.dynamic_components: Dict[DynamicTemplateCategories, List[str]] = {
             "ventilation": [],
@@ -64,9 +65,8 @@ class Network:  # noqa : PLR0904, #TODO: fix this
     def add_node(self, node: BaseElement) -> None:
 
         if not node.libraries_data:
-            raise Exception(
-                f"No library data defined for NOde of type {type(node).__name__}"
-            )
+            return
+            # TODO: check better option here!!
         found_library = node.assign_library_property(self.library)
         if not found_library:
             return
@@ -412,11 +412,17 @@ class Network:  # noqa : PLR0904, #TODO: fix this
 
     def set_weather_path_to_container_path(self, project_path: Path) -> None:
         for node in self.graph.nodes:
-            if isinstance(node, Weather) and node.parameters.path is not None:
-                old_path = Path(node.parameters.path)
+            if (
+                isinstance(node, Weather)
+                and hasattr(node.parameters, "path")
+                and node.parameters.path is not None  # type: ignore
+            ):
+                # TODO: type ognore needs to be fixed
+                old_path = Path(node.parameters.path)  # type: ignore
                 new_path = project_path.joinpath(old_path.name)
                 shutil.copy(old_path, new_path)
-                node.parameters.path = f'"/simulation/{old_path.name}"'
+                # TODO: this is not correct
+                node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
     def model(self) -> str:
         Space.counter = 0
@@ -453,7 +459,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
             library=self.library,
             databus=data_bus,
             dynamic_components=self.dynamic_components,
-            documentation=to_html_documentation(documentation),
+            documentation=to_html_reporting(documentation),
             diagram_size=diagram_size,
         )
 
@@ -464,6 +470,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         return f"{{{{{min(x) - 50},{min(y) - 50}}},{{{max(x) + 50},{max(y) + 50}}}}}"
 
     def build_dynamic_component_template(self, node: BaseElement) -> None:
+
         if node.component_template:
             component = node.component_template.render(
                 self.name, node, node.processed_parameters(self.library)
@@ -492,6 +499,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
                 + " "
                 + node.annotation_template
             )
+
             if node.component_template:
                 self.build_dynamic_component_template(node)
             model = rtemplate.render(

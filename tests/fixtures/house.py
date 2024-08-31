@@ -1,28 +1,41 @@
 from pathlib import Path
 
-from trano.construction import Construction, Layer
-from trano.glass import GasMaterials, Glasses
-from trano.material import Material
-from trano.models.constants import Azimuth, Tilt
-from trano.models.elements.boiler import Boiler, BoilerParameters
-from trano.models.elements.controls.collector import CollectorControl
-from trano.models.elements.controls.emission import EmissionControl
-from trano.models.elements.controls.three_way_valve import ThreeWayValveControl
-from trano.models.elements.envelope.external_wall import ExternalDoor, ExternalWall
-from trano.models.elements.envelope.floor_on_ground import FloorOnGround
-from trano.models.elements.envelope.internal_element import InternalElement
-from trano.models.elements.envelope.window import Window
-from trano.models.elements.occupancy import Occupancy, OccupancyParameters
-from trano.models.elements.pump import Pump, PumpParameters
-from trano.models.elements.radiator import Radiator, RadiatorParameter
-from trano.models.elements.space import Space, SpaceParameter
-from trano.models.elements.split_valve import SplitValve, SplitValveParameters
-from trano.models.elements.temperature_sensor import TemperatureSensor
-from trano.models.elements.three_way_valve import ThreeWayValve
-from trano.models.elements.valve import Valve
-from trano.models.elements.weather import Weather, WeatherParameters
+from tests.constructions.constructions import GasMaterials, Glasses
+from trano.elements import (
+    ExternalDoor,
+    ExternalWall,
+    FloorOnGround,
+    InternalElement,
+    Window,
+    param_from_config,
+)
+from trano.elements.construction import Construction, Layer, Material
+from trano.elements.control import (
+    CollectorControl,
+    EmissionControl,
+    ThreeWayValveControl,
+)
+from trano.elements.space import Space
+from trano.elements.system import (
+    Boiler,
+    Occupancy,
+    Pump,
+    Radiator,
+    SplitValve,
+    TemperatureSensor,
+    ThreeWayValve,
+    Valve,
+    Weather,
+)
+from trano.elements.types import Azimuth, Tilt
 from trano.topology import Network
 
+BoilerParameters = param_from_config("Boiler")
+OccupancyParameters = param_from_config("Occupancy")
+PumpParameters = param_from_config("Pump")
+RadiatorParameter = param_from_config("Radiator")
+SpaceParameter = param_from_config("Space")
+SplitValveParameters = param_from_config("SplitValve")
 material_1 = Material(
     name="material_1",
     thermal_conductivity=0.046,
@@ -526,7 +539,7 @@ def house_model_fixture() -> Network:
         ],
         create_internal=False,
         weather=Weather(
-            parameters=WeatherParameters(
+            parameters=param_from_config("Weather")(
                 path=str(
                     Path(__file__).parents[1]
                     / "resources"

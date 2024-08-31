@@ -7,35 +7,45 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, List
 
-import yaml  # type: ignore
+import yaml
 from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
-from trano.construction import Construction, Layer
-from trano.glass import GasLayer, Glass, GlassLayer
-from trano.material import Gas, GlassMaterial, Material
-from trano.models.elements.boiler import Boiler  # noqa: F401
-from trano.models.elements.controls.boiler import BoilerControl  # noqa: F401
-from trano.models.elements.controls.collector import CollectorControl  # noqa: F401
-from trano.models.elements.controls.emission import EmissionControl  # noqa: F401
-from trano.models.elements.controls.three_way_valve import (  # noqa: F401
+from trano.elements import ExternalWall, FloorOnGround, Window, param_from_config
+from trano.elements.construction import (
+    Construction,
+    Gas,
+    GasLayer,
+    Glass,
+    GlassLayer,
+    GlassMaterial,
+    Layer,
+    Material,
+)
+from trano.elements.control import (  # noqa: F401
+    BoilerControl,
+    CollectorControl,
+    EmissionControl,
     ThreeWayValveControl,
 )
-from trano.models.elements.envelope.external_wall import ExternalWall
-from trano.models.elements.envelope.floor_on_ground import FloorOnGround
-from trano.models.elements.envelope.window import Window
-from trano.models.elements.occupancy import Occupancy
-from trano.models.elements.pump import Pump  # noqa: F401
-from trano.models.elements.radiator import Radiator  # noqa: F401
-from trano.models.elements.space import Space, SpaceParameter
-from trano.models.elements.split_valve import SplitValve  # noqa: F401
-from trano.models.elements.temperature_sensor import TemperatureSensor  # noqa: F401
-from trano.models.elements.three_way_valve import ThreeWayValve  # noqa: F401
-from trano.models.elements.valve import Valve  # noqa: F401
-from trano.models.elements.weather import Weather
+from trano.elements.space import Space
+
+# TODO: fix these imports
+from trano.elements.system import (  # noqa: F401
+    Boiler,
+    Occupancy,
+    Pump,
+    Radiator,
+    SplitValve,
+    TemperatureSensor,
+    ThreeWayValve,
+    Valve,
+    Weather,
+)
 from trano.topology import Network
 
-DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano.yaml")
+SpaceParameter = param_from_config("Space")
+DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")
 COUNTER: Dict[Any, Any] = Counter()
 
 
@@ -64,6 +74,7 @@ def _instantiate_component(component_: Dict[str, Any]) -> Component:
     component_parameters.pop("inlets", None)
     component_parameters.pop("outlets", None)
     component_type = to_camel_case(component_type)
+    # TODO: just find a way to import the required components directly here!
     component_class = globals()[component_type]
     name = component_parameters.pop("id")
     component_parameters.update({"name": name})
@@ -104,7 +115,7 @@ def convert(schema: Path, input_file: Path, target: str, output: Path) -> bool:
         str(schema),
         f"{input_file}",
     ]
-
+    # TODO: use (python_module = PythonGenerator(schema).compile_module()) instead of console.
     process = subprocess.run(
         command, check=True, capture_output=True, text=True  # noqa: S603
     )
@@ -116,8 +127,8 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
         load_function = yaml.safe_load
         dump_function = yaml.safe_dump
     elif model_path.suffix == ".json":
-        load_function = json.loads
-        dump_function = json.dump
+        load_function = json.loads  # type: ignore
+        dump_function = json.dump  # type: ignore # TODO: why?
     else:
         raise Exception("Invalid file format")
     data = load_function(model_path.read_text())
@@ -229,6 +240,8 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: PLR0912, C
             emission_ = _instantiate_component(emission)
             systems[emission_.name] = emission_.component_instance
             emissions.append(emission_.component_instance)
+        if SpaceParameter is None:
+            raise Exception("SpaceParameter is not defined")
         space_ = Space(
             name=space["id"],
             external_boundaries=external_walls,

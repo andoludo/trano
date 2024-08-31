@@ -1,0 +1,166 @@
+components:
+- classes:
+  - Space
+  figures: []
+  library: ideas
+  parameter_processing:
+    function: modify_alias
+    parameter:
+      average_room_height: hZone
+      volume: V
+  ports:
+  - bus_connection: true
+    multi_connection: true
+    names:
+    - propsBus
+    targets:
+    - BaseWall
+  - names:
+    - yOcc
+    targets:
+    - BaseOccupancy
+  - names:
+    - gainCon
+    - gainRad
+    targets:
+    - Emission
+  - multi_connection: true
+    names:
+    - gainCon
+    targets:
+    - VAVControl
+    - DataBus
+    use_counter: false
+  - flow: inlet_or_outlet
+    multi_connection: true
+    names:
+    - ports
+    targets:
+    - Ventilation
+    - Control
+    - DataBus
+  template: "IDEAS.Buildings.Components.Zone {{ element.name }}(\n    mSenFac=0.822,\n\
+    \        {%- if element.number_ventilation_ports != 0 -%}\n    nPorts = {{ element.number_ventilation_ports\
+    \ }},\n    {%- endif %}\n    {{ macros.render_parameters(parameters) | safe}},\n\
+    \    n50=0.822*0.5*{{ element.name }}.n50toAch,\n    redeclare package Medium\
+    \ = Medium,\n    nSurf={{ element.number_merged_external_boundaries }},\n    T_start=293.15)"
+  variant: default
+- classes:
+  - Space
+  figures:
+  - left_axis:
+      label: Zone air temperature [K]
+      lines:
+      - color: blue
+        label: Air temperature [K]
+        template: '{{ element.name }}.air.vol.T'
+      - color: black
+        label: Measured Air temperature [K]
+        line_width: 2.0
+        template: data_bus.dataBus.T{{ element.name | capitalize}}
+    right_axis:
+      label: Occupancy schedule [-]
+      lines:
+      - label: Occupied zone [-]
+        line_style: dashed
+        template: '{{ element.occupancy.name }}.occSch2.occupied'
+  - left_axis:
+      label: Heat flow rate [W]
+      lines:
+      - color: red
+        label: Radiative heat flow rate [W]
+        template: '{{ element.name }}.heaPorRad.Q_flow'
+      - color: blue
+        label: Convective heat flow rate [W]
+        template: '{{ element.name }}.heaPorAir.Q_flow'
+      - color: yellow
+        label: Latent heat gain [W]
+        template: '{{ element.name }}.air.QLat_flow'
+      - label: Convective heat gain [W]
+        template: '{{ element.name }}.air.QCon_flow'
+  - left_axis:
+      label: Control signal [-]
+      lines:
+      - label: Control signal [-]
+        line_style: dashed
+        template: '{{ element.emissions[0].control.name  }}.y'
+    right_axis:
+      label: Zone controller input [K]
+      lines:
+      - color: blue
+        label: Zone controller setpoint [K]
+        template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_s'
+      - color: red
+        label: Zone controller measured [K]
+        template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_m'
+  library: buildings
+  parameter_processing:
+    function: exclude_parameters
+    parameter:
+    - volume
+  ports:
+  - multi_connection: true
+    names:
+    - surf_surBou
+    targets:
+    - BaseInternalElement
+  - names:
+    - qGai_flow
+    targets:
+    - BaseOccupancy
+  - names:
+    - weaBus
+    targets:
+    - BaseWeather
+  - names:
+    - heaPorAir
+    - heaPorRad
+    targets:
+    - Emission
+  - names:
+    - heaPorAir
+    targets:
+    - DataBus
+  - names:
+    - heaPorAir
+    targets:
+    - VAVControl
+  - flow: inlet_or_outlet
+    multi_connection: true
+    names:
+    - ports
+    targets:
+    - Ventilation
+    - Control
+    - DataBus
+  template: "Buildings.ThermalZones.Detailed.MixedAir {{ element.name }}(\n      \
+    \  redeclare package Medium = Medium,\n        {{ macros.render_parameters(parameters)\
+    \ | safe}},\n        {%- if element.number_ventilation_ports != 0 -%}\n      \
+    \  nPorts = {{ element.number_ventilation_ports }},\n        {%- endif %}\n  \
+    \      {%- for boundary in element.boundaries -%}\n            {%- if boundary.type\
+    \ == 'ExternalWall' -%}\n                {%- if boundary.number %}\n         \
+    \           nConExt={{ boundary.number }},\n                    datConExt(\n \
+    \                   {{ macros.element_parameters(boundary) }},\n             \
+    \       azi={{ macros.join_list(boundary.azimuths) }}),\n                {% else\
+    \ %}\n                    nConExt=0,\n                {%- endif %}\n         \
+    \   {%- endif %}\n            {%- if boundary.type == \"InternalElement\"-%}\n\
+    \                {%- if boundary.number %}\n                    nSurBou={{ boundary.number\
+    \ }},\n                    surBou(\n                    A={{ macros.join_list(boundary.surfaces)\
+    \ }},\n                    til={{ macros.convert_tilts(boundary.tilts) }}),\n\
+    \                {% else %}\n                    nSurBou=0,\n                {%-\
+    \ endif %}\n            {%- endif %}\n            {%- if boundary.type == \"WindowedWall\"\
+    \ -%}\n                {%- if boundary.number %}\n                    nConExtWin={{\
+    \ boundary.number }},\n                    datConExtWin(\n                   \
+    \ {{ macros.element_parameters(boundary) }},\n                    glaSys={{ macros.join_list(boundary.window_layers)\
+    \ }},\n                    wWin={{ macros.join_list(boundary.window_width) }},\n\
+    \                    hWin={{ macros.join_list(boundary.window_height) }},\n  \
+    \                  azi={{ macros.join_list(boundary.azimuths) }}),\n         \
+    \       {% else %}\n                    nConExtWin=0,\n                {%- endif\
+    \ %}\n            {%- endif %}\n            {%- if boundary.type == \"FloorOnGround\"\
+    \ -%}\n                {%- if boundary.number %}\n                    nConBou={{\
+    \ boundary.number }},\n                    datConBou(\n                    {{\
+    \ macros.element_parameters(boundary) }},\n                    azi={{ macros.join_list(boundary.azimuths)\
+    \ }}),\n                {% else %}\n                    nConBou=0,\n         \
+    \       {%- endif %}\n            {%- endif %}\n        {%- endfor %}\n      \
+    \  nConPar=0,\n        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)"
+  variant: default
