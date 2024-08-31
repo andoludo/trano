@@ -56,7 +56,10 @@ def _append_to_port(
                     "target": Target(
                         **(
                             target.model_dump()
-                            | {"evaluated_element": evaluated_element}
+                            | {
+                                "evaluated_element": element.name,
+                                "value": evaluated_element,
+                            }
                         )
                     ),
                 }

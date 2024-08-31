@@ -1,12 +1,16 @@
 from typing import Optional
 
-from pydantic import BaseModel, computed_field, ConfigDict
+from pydantic import BaseModel, computed_field, field_validator
 
 
 class Target(BaseModel):
     main: str
     sub: Optional[str] = None
     evaluated_element: str = ""
+    value: str = ""
+    @field_validator("value")
+    def validate_value(cls, value: str) -> str:
+        return value.capitalize()
 
     def __hash__(self) -> int:
         return hash((self.main, self.sub))
@@ -34,7 +38,7 @@ class BaseInput(BaseModel):
     default: float | str | int
 
     def __hash__(self) -> int:
-        return hash((self.name, self.target))
+        return hash((self.name, self.target.value))
 
     def __eq__(self, other: object) -> bool:
         return hash(self) == hash(other)

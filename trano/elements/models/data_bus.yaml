@@ -37,7 +37,7 @@ components:
       {% for index, space in element.spaces|enumerate %}\nconnect(port[{{index + 1}}],TRoo[{{index\
       \ + 1}}]. port);\nconnect(port_a[{{index + 1}}], TRoo1[{{index + 1}}].port);\n\
       {% endfor %}\n{{bus_ports | safe}}\n{% for input in element.non_connected_ports\
-      \ %}\nconnect(dataBus.{{ input.name }}{{ input.target }},\n{{ input.name }}{{input.target_evaluated_element\
+      \ %}\nconnect(dataBus.{{ input.name }}{{ input.target.value }},\n{{ input.name }}{{input.target.evaluated_element\
       \ | capitalize}}.y);\n{% endfor %}\nend DataServer;\n      "
   figures: []
   library: default
