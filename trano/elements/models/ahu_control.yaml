@@ -7,166 +7,210 @@ components:
       - component: mulAHUCon
         name: u1SupFan
         port: u1SupFan
-        target: element.name
+        target:
+          main: element.name
       boolean_outputs:
       - component: mulAHUCon
         name: y1MinOutDam
         port: y1MinOutDam
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: y1EneCHWPum
         port: y1EneCHWPum
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: y1SupFan
         port: y1SupFan
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: y1RetFan
         port: y1RetFan
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: y1RelFan
         port: y1RelFan
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: y1RelDam
         port: y1RelDam
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       integer_inputs:
       - component: mulAHUCon
         name: uAhuOpeMod
         port: uAhuOpeMod
-        target: element.name
+        target:
+          main: element.name
       - component: sumZon
         name: uAhuOpeMod
         port: uOpeMod[1]
-        target: element.name
+        target:
+          main: element.name
       - component: preRetReq
         multi: true
         name: yZonPreResReq
         port: u
-        target: '[vav.control.name for vav in element.vavs]'
+        target:
+          main: element.vavs
+          sub: control.name
       - component: temResReq
         multi: true
         name: yZonTemResReq
         port: u
-        target: '[vav.control.name for vav in element.vavs]'
+        target:
+          main: element.vavs
+          sub: control.name
       integer_outputs:
       - component: mulAHUCon
         name: yAla
         port: yAla
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yChiWatResReq
         port: yChiWatResReq
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yChiPlaReq
         port: yChiPlaReq
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yHotWatResReq
         port: yHotWatResReq
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yHotWatPlaReq
         port: yHotWatPlaReq
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       real_inputs:
       - component: mulAHUCon
         name: dpDuc
         port: dpDuc
-        target: element.name
+        target:
+          main: element.name
       - component: mulAHUCon
         name: TOut
         port: TOut
-        target: element.name
+        target:
+          main: element.name
       - component: mulAHUCon
         name: TAirSup
         port: TAirSup
-        target: element.name
+        target:
+          main: element.name
       - component: sumZon
         multi: true
         name: VAdjPopBreZon_flow
         port: VAdjPopBreZon_flow
-        target: '[vav.control.name for vav in element.vavs]'
+        target:
+          main: element.vavs
+          sub: control.name
       - component: sumZon
         multi: true
         name: VAdjAreBreZon_flow
         port: VAdjAreBreZon_flow
-        target: '[vav.control.name for vav in element.vavs]'
+        target:
+          main: element.vavs
+          sub: control.name
       - component: sumZon
         multi: true
         name: VDis_flow
         port: VZonPri_flow
-        target: '[vav.control.name for vav in element.vavs]'
+        target:
+          main: element.vavs
+          sub: control.name
       - component: sumZon
         multi: true
         name: VMinOA_flow
         port: VMinOA_flow
-        target: '[vav.control.name for vav in element.vavs]'
+        target:
+          main: element.vavs
+          sub: control.name
       - component: mulAHUCon
         name: VAirOut_flow
         port: VAirOut_flow
-        target: element.name
+        target:
+          main: element.name
       - component: mulAHUCon
         name: TAirMix
         port: TAirMix
-        target: element.name
+        target:
+          main: element.name
       real_outputs:
       - component: mulAHUCon
         name: TAirSupSet
         port: TAirSupSet
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: VEffAirOut_flow_min
         port: VEffAirOut_flow_min
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yMinOutDam
         port: yMinOutDam
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yRetDam
         port: yRetDam
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yRelDam
         port: yRelDam
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yOutDam
         port: yOutDam
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: ySupFan
         port: ySupFan
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yRetFan
         port: yRetFan
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yRelFan
         port: yRelFan
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yCooCoi
         port: yCooCoi
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yHeaCoi
         port: yHeaCoi
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: yDpBui
         port: yDpBui
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulAHUCon
         name: dpDisSet
         port: dpDisSet
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       template: "Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(\n\
         \  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));"
     category: control

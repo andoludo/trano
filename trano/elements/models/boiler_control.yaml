@@ -7,24 +7,29 @@ components:
       - component: sub1
         name: TStoTop
         port: u1
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: greThr
         name: TStoBot
         port: u
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: lesThrTOut
         name: TAirOut
         port: u
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       real_outputs:
       - component: booToReaBoi
         name: yBoiCon
         port: y
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: booToReaPum
         name: yPumBoi
         port: y
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
     category: control
     template: "\n    model BoilerControl{{ element.name | capitalize}}\n    extends\
       \ {{ package_name }}.Common.Controls.ventilation.PartialBoilerControl;\n   \
@@ -54,24 +59,29 @@ components:
       - component: sub1
         name: TStoTop
         port: u1
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: greThr
         name: TStoBot
         port: u
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: lesThrTOut
         name: TAirOut
         port: u
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       real_outputs:
       - component: booToReaBoi
         name: yBoiCon
         port: y
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: booToReaPum
         name: yPumBoi
         port: y
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
     category: control
     template: "\n    model BoilerControl{{ element.name | capitalize}}\n    extends\
       \ {{ package_name }}.Common.Controls.ventilation.PartialBoilerControl;\n   \

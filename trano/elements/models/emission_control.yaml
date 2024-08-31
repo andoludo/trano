@@ -8,20 +8,24 @@ components:
         default: 298.15
         name: TCooSet
         port: TCooSet
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: emissionControl
         name: TZon
         port: TZon
-        target: element.space_name
+        target:
+          main: element.space_name
       real_outputs:
       - component: emissionControl
         name: yCoo
         port: yCoo
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: emissionControl
         name: yHea
         port: yHea
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
     category: control
     template: "model EmissionControl{{ element.name | capitalize}}\n  parameter Real\
       \ schedule[:]=3600*{7,19};\n\n  parameter   Modelica.Units.SI.Temperature THeaSet=\

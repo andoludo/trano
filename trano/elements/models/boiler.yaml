@@ -7,20 +7,24 @@ components:
       - component: Boiy
         name: yBoiCon
         port: y
-        target: element.name
+        target:
+          main: element.name
       - component: pumBoi
         name: yPumBoi
         port: y
-        target: element.name
+        target:
+          main: element.name
       real_outputs:
       - component: tanTemTop
         name: TStoTop
         port: T
-        target: element.name
+        target:
+          main: element.name
       - component: tanTemBot
         name: TStoBot
         port: T
-        target: element.name
+        target:
+          main: element.name
     category: boiler
     template: "\n    model BoilerWithStorage{{ element.name | capitalize}}\n    extends\
       \ {{ package_name }}.Common.Fluid.Boilers.PartialBoilerWithStorage;\n    {{bus_template}}\n\

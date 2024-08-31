@@ -7,151 +7,186 @@ components:
       - component: rehBoxCon
         name: u1Win
         port: u1Win
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: u1Occ
         port: u1Occ
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: uHeaOff
         port: uHeaOff
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: u1Fan
         port: u1Fan
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: u1HotPla
         port: u1HotPla
-        target: element.space_name
+        target:
+          main: element.space_name
       integer_inputs:
       - component: rehBoxCon
         default: 1
         name: uOpeMod
         port: uOpeMod
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: oveFloSet
         port: oveFloSet
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: oveDamPos
         port: oveDamPos
-        target: element.space_name
+        target:
+          main: element.space_name
       integer_outputs:
       - component: rehBoxCon
         name: yZonTemResReq
         port: yZonTemResReq
-        target: element.name
+        target:
+          main: element.name
       - component: rehBoxCon
         name: yZonPreResReq
         port: yZonPreResReq
-        target: element.name
+        target:
+          main: element.name
       - component: rehBoxCon
         name: yHeaValResReq
         port: yHeaValResReq
-        target: element.name
+        target:
+          main: element.name
       - component: rehBoxCon
         name: yHotWatPlaReq
         port: yHotWatPlaReq
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: yLowFloAla
         port: yLowFloAla
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: yFloSenAla
         port: yFloSenAla
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: yLeaDamAla
         port: yLeaDamAla
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: yLeaValAla
         port: yLeaValAla
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: yLowTemAla
         port: yLowTemAla
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       real_inputs:
       - component: rehBoxCon
         name: TZon
         port: TZon
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         default: 298.15
         name: TCooSet
         port: TCooSet
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         default: 293.15
         name: THeaSet
         port: THeaSet
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: ppmCO2Set
         port: ppmCO2Set
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: ppmCO2
         port: ppmCO2
-        target: element.space_name
+        target:
+          main: element.space_name
       - component: rehBoxCon
         name: TDis
         port: TDis
-        target: element.name
+        target:
+          main: element.name
       - component: rehBoxCon
         name: VDis_flow
         port: VDis_flow
-        target: element.name
+        target:
+          main: element.name
       - component: rehBoxCon
         name: TAirSup
         port: TSup
-        target: element.ahu.control.name
+        target:
+          main: element.ahu.control.name
       - component: rehBoxCon
         default: 293.15
         name: TSupSet
         port: TSupSet
-        target: element.space_name
+        target:
+          main: element.space_name
       real_outputs:
       - component: rehBoxCon
         name: VSet_flow
         port: VSet_flow
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: yDam
         port: yDam
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: yVal
         port: yVal
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: VAdjPopBreZon_flow
         port: VAdjPopBreZon_flow
-        target: element.name
+        target:
+          main: element.name
       - component: rehBoxCon
         name: VAdjAreBreZon_flow
         port: VAdjAreBreZon_flow
-        target: element.name
+        target:
+          main: element.name
       - component: rehBoxCon
         name: VMinOA_flow
         port: VMinOA_flow
-        target: element.name
+        target:
+          main: element.name
       - component: rehBoxCon
         name: VZonAbsMin_flow
         port: VZonAbsMin_flow
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: VZonDesMin_flow
         port: VZonDesMin_flow
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: rehBoxCon
         name: yCO2
         port: yCO2
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       template: "Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(\n\
         \  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));"
     category: control

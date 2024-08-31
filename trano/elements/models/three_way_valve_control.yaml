@@ -8,13 +8,15 @@ components:
         default: 'true'
         name: trigger
         port: trigger
-        target: element.name
+        target:
+          main: element.name
       real_inputs:
       - component: conVal
         default: 363.15
         name: TColSet
         port: u_s
-        target: element.name
+        target:
+          main: element.name
     category: control
     template: "model ThreeWayValveControl{{ element.name | capitalize}}\n  Buildings.Controls.OBC.CDL.Reals.PIDWithReset\n\
       \                                      conVal(\n    {{ macros.render_parameters(parameters)\

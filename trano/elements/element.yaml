@@ -32,6 +32,12 @@ imports:
 
 
 classes:
+  Target:
+    attributes:
+      main:
+        range: string
+      sub:
+        range: string
   BaseInput:
     slots:
       - name
@@ -182,13 +188,11 @@ slots:
     range: boolean
   target:
     description: The target of the input or output
-    range: string
+    range: Target
   input_template:
     description: The template used to generate the input or output
     range: string
   default:
     description: The default value of the input or output
     range: float
-  evaluated_element_name:
-    description: The evaluated name of the element associated with the input or output
-    range: string
+

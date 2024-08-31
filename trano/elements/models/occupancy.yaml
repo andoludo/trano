@@ -7,7 +7,8 @@ components:
       - component: occSch2
         name: Occupied
         port: occupied
-        target: element.space_name
+        target:
+          main: element.space_name
     category: control
     template: "\nmodel Occupancy{{ element.name | capitalize}}\nextends {{ package_name\
       \ }}.Common.Occupancy.SimpleOccupancy ;\n{{bus_template}}\nequation\n{{bus_ports\

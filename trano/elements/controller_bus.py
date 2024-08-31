@@ -1,3 +1,5 @@
+import ast
+import copy
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List
@@ -12,10 +14,56 @@ from trano.elements.inputs import (
     IntegerOutput,
     RealInput,
     RealOutput,
+    Target,
 )
 
 if TYPE_CHECKING:
     from trano.elements import BaseElement
+
+
+def _evaluate(element: "BaseElement", commands: List[str]) -> Any:
+    for command in commands:
+        if hasattr(element, command):
+            element = getattr(element, command)
+        else:
+            raise Exception(f" Element {element.name} has no command {command}")
+    return element
+
+
+def _evaluate_target(target: Target, element: "BaseElement"):
+    from trano.elements import BaseElement
+
+    target_ = _evaluate(element, target.commands())
+    if target_ is None:
+        raise Exception("Target value is None")
+    if isinstance(target_, list) and isinstance(target_[0], BaseElement):
+        return [_evaluate(sub, target.sub_commands()) for sub in target_]
+    return target_
+
+
+def _append_to_port(
+    input_: BaseInput,
+    ports: Dict[str, List[BaseInput]],
+    target: Target,
+    evaluated_element: str,
+    element: "BaseElement",
+) -> Dict[str, List[BaseInput]]:
+    ports[type(input_).__name__].append(
+        type(input_)(
+            **(
+                input_.model_dump()
+                | {
+                    "target": Target(
+                        **(
+                            target.model_dump()
+                            | {"evaluated_element": evaluated_element}
+                        )
+                    ),
+                }
+            )
+        )
+    )
+    return ports
 
 
 class ControllerBus(BaseModel):
@@ -52,7 +100,7 @@ class ControllerBus(BaseModel):
             + self.boolean_outputs
         )
 
-    def _get_targets(self) -> Dict[str, List[BaseInput]]:
+    def _get_targets(self) -> Dict[Target, List[BaseInput]]:
         return {
             input.target: [
                 input_ for input_ in self.inputs() if input_.target == input.target
@@ -73,34 +121,16 @@ class ControllerBus(BaseModel):
         }
         for target, inputs in self._get_targets().items():
             # TODO: Fix this
-            target_value = eval(target)  # noqa: S307
-            if target_value is None:
-                raise Exception("Target value is None")
+            evaluated_element = _evaluate_target(target, element)
             for input in inputs:
-                if isinstance(target_value, list):
-                    for target_ in target_value:
-                        ports[type(input).__name__].append(
-                            type(input)(
-                                **(
-                                    input.model_dump()
-                                    | {
-                                        "target": target_.capitalize(),
-                                        "evaluated_element_name": element.name,
-                                    }
-                                )
-                            )
+                if isinstance(evaluated_element, list):
+                    for evaluated_element_ in evaluated_element:
+                        ports = _append_to_port(
+                            input, ports, target, evaluated_element_, element
                         )
                 else:
-                    ports[type(input).__name__].append(
-                        type(input)(
-                            **(
-                                input.model_dump()
-                                | {
-                                    "target": target_value.capitalize(),
-                                    "evaluated_element_name": element.name,
-                                }
-                            )
-                        )
+                    ports = _append_to_port(
+                        input, ports, target, evaluated_element, element
                     )
         return ports
 
@@ -109,8 +139,7 @@ class ControllerBus(BaseModel):
     ) -> List[str]:
         ports: List[str] = []
         for target, inputs in self._get_targets().items():
-            # TODO: Fix this
-            target_value = eval(target)  # noqa: S307
+            target_value = _evaluate_target(target, element)
             for input in inputs:
                 if isinstance(target_value, list):
                     for i, target_ in enumerate(target_value):

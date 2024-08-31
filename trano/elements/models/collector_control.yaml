@@ -7,26 +7,32 @@ components:
       - component: conPum
         name: y_gain
         port: u_m
-        target: element.controllable_element.name
+        target:
+          main:  element.controllable_element.name
       - component: mulMax
         default: 25.0
         multi: true
         name: yHea
         port: u
-        target: '[vav.name for vav in element.valves]'
+        target:
+          main: element.valves
+          sub: name
       real_outputs:
       - component: conPum
         name: y
         port: y
-        target: element.controllable_element.name
+        target:
+          main:  element.controllable_element.name
       - component: mulMax
         name: yBoiCon
         port: y
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
       - component: mulMax
         name: yPumBoi
         port: y
-        target: element.controllable_element.name
+        target:
+          main: element.controllable_element.name
     category: control
     template: 'model CollectorControl{{ element.name | capitalize}}
 

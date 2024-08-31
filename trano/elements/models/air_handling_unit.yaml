@@ -7,49 +7,60 @@ components:
       - component: fanSup
         name: u1SupFan
         port: y_actual
-        target: element.name
+        target:
+          main: element.name
       real_inputs:
       - component: fanSup1
         name: ySupFan
         port: y
-        target: element.name
+        target:
+          main: element.name
       - component: fanSup
         name: ySupFan
         port: y
-        target: element.name
+        target:
+          main: element.name
       - component: damRet
         name: yRetDam
         port: y
-        target: element.name
+        target:
+          main: element.name
       - component: damOut
         name: yOutDam
         port: y
-        target: element.name
+        target:
+          main: element.name
       - component: damExh
         name: yOutDam
         port: y
-        target: element.name
+        target:
+          main: element.name
       real_outputs:
       - component: TOut
         name: TOut
         port: T
-        target: element.control.name
+        target:
+          main: element.control.name
       - component: VOut1
         name: VAirOut_flow
         port: V_flow
-        target: element.control.name
+        target:
+          main: element.control.name
       - component: TSup
         name: TAirSup
         port: T
-        target: element.control.name
+        target:
+          main: element.control.name
       - component: TMix
         name: TAirMix
         port: T
-        target: element.control.name
+        target:
+          main: element.control.name
       - component: dpDisSupFan
         name: dpDuc
         port: p_rel
-        target: element.control.name
+        target:
+          main: element.control.name
     category: ventilation
     template: "\n    model Ahu{{ element.name | capitalize}}\n    extends {{ package_name\
       \ }}.Common.Fluid.Ventilation.PartialAhu;\n    {{bus_template}}\n    equation\n\
