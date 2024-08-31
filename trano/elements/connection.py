@@ -175,6 +175,7 @@ class Port(BaseModel):
         return partial_connections
 
 
+
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
     from trano.elements.bus import DataBus
     from trano.elements.envelope import BaseSimpleWall

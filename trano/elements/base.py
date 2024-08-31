@@ -1,10 +1,10 @@
 from typing import (
-    TYPE_CHECKING,
     Any,
     ClassVar,
     Dict,
     List,
     Optional,
+    Callable,
 )
 
 from pydantic import (
@@ -15,19 +15,21 @@ from pydantic import (
     model_validator,
 )
 
-from trano.elements.connection import Port
 from trano.elements.components import DynamicComponentTemplate
+from trano.elements.connection import Port
 from trano.elements.connection import _has_inlet_or_outlet, _is_inlet_or_outlet
-from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.figure import Figure
+from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.types import (
     Flow,
     BaseVariant,
 )
-
-
 from trano.library.library import Library, AvailableLibraries
 
+class PortFound(Exception):
+    def __init__(self, message: str, port: Port):
+        super().__init__(message)
+        self.port = port
 
 class BaseElement(BaseModel):
     name_counter: ClassVar[
@@ -108,84 +110,109 @@ class BaseElement(BaseModel):
     def type(self) -> str:
         return type(self).__name__
 
+    def _ports(self, ports_to_skip: List[Port]) -> List[Port]:
+        return [port for port in self.ports if port not in ports_to_skip]
+
+    def _available_ports_with_targets(
+        self, self_ports: List[Port], target: "BaseElement"
+    ) -> List[Port]:
+        return [
+            port
+            for port in self_ports
+            if port.targets
+            and any(isinstance(target, target_) for target_ in port.targets)
+            and port.is_available()
+        ]
+
+    def _available_ports_without_targets(self, self_ports: List[Port]) -> List[Port]:
+        return [port for port in self_ports if not port.targets and port.is_available()]
+
+    def _ports_with_specified_flow(
+        self, _available_ports: List[Port], flow: Flow
+    ) -> List[Port]:
+        return [port for port in _available_ports if port.flow == flow]
+
+    def _apply_function_to_inlet_outlet_ports(
+        self,
+        _available_ports: List[Port],
+        target: "BaseElement",
+        function: Callable[["BaseElement"], bool],
+    ) -> List[Port]:
+        return [
+            port
+            for port in self._ports_with_specified_flow(
+                _available_ports, Flow.inlet_or_outlet
+            )
+            if function(target)
+        ]
+
+    def _unique_port(self, ports: List[Port]) -> None:
+        if ports and len(ports) != 1:
+            raise NotImplementedError
+
+        if ports:
+            raise PortFound("Port found",port=ports[0])
+
+    def _one_port_max(self, ports: List[Port]) -> None:
+        if ports:
+            if len(ports) > 1:
+                raise NotImplementedError
+            raise PortFound("Port found",port=ports[0])
+    def _ports_exist(self, ports: List[Port]) -> None:
+        if ports:
+            raise PortFound("Port found",port=ports[0])
+
+
     def _get_target_compatible_port(  # noqa: C901, PLR0911
         self, target: "BaseElement", flow: Flow, ports_to_skip: List[Port]
     ) -> Optional["Port"]:
-        # TODO: function too complex. To be refactored
-        self_ports = [port for port in self.ports if port not in ports_to_skip]
-        ports = [
-            port
-            for port in self_ports
-            if port.targets
-            and any(isinstance(target, target_) for target_ in port.targets)
-            and port.is_available()
-            and port.flow == Flow.interchangeable_port
-        ]
-        if ports:
-            return ports[0]
-        ports = [
-            port
-            for port in self_ports
-            if port.targets
-            and any(isinstance(target, target_) for target_ in port.targets)
-            and port.is_available()
-            and port.flow == Flow.undirected
-        ]
-        if ports and len(ports) != 1:
-            raise NotImplementedError
-        if ports:
-            return ports[0]
-        ports = [
-            port
-            for port in self_ports
-            if port.targets
-               and any(isinstance(target, target_) for target_ in port.targets)
-               and port.is_available()
-               and port.flow == Flow.inlet_or_outlet
-               and _is_inlet_or_outlet(target)
-        ]
-        if ports:
-            return ports[0]
-        ports = [
-            port
-            for port in self_ports
-            if port.targets
-            and any(isinstance(target, target_) for target_ in port.targets)
-            and port.is_available()
-            and port.flow == flow
-        ]
-        if ports and len(ports) != 1:
-            raise NotImplementedError
-        if ports:
-            return ports[0]
-        ports = [
-            port
-            for port in self_ports
-            if not port.targets
-               and port.is_available()
-               and port.flow == Flow.inlet_or_outlet
-               and _has_inlet_or_outlet(target)
-        ]
-        if ports:
-            if len(ports) > 1:
-                raise NotImplementedError
-            return ports[0]
-        ports = [
-            port
-            for port in self_ports
-            if not port.targets and port.is_available() and port.flow == flow
-        ]
-        if ports:
-            if len(ports) > 1:
-                raise NotImplementedError
-            return ports[0]
-
+        self_ports = self._ports(ports_to_skip)
+        available_ports = self._available_ports_with_targets(self_ports, target)
+        available_ports_without_target = self._available_ports_without_targets(
+            self_ports
+        )
+        available_ports_with_interchangeable_flow = self._ports_with_specified_flow(
+            available_ports, Flow.interchangeable_port
+        )
+        available_ports_with_undirected_flow = self._ports_with_specified_flow(
+            available_ports, Flow.undirected
+        )
+        available_ports_with_directed_flow = self._ports_with_specified_flow(
+            available_ports, flow
+        )
+        available_ports_with_inlet_or_outlet = (
+            self._apply_function_to_inlet_outlet_ports(
+                available_ports, target, _is_inlet_or_outlet
+            )
+        )
+        available_ports_without_target_with_inlet_outlet = (
+            self._apply_function_to_inlet_outlet_ports(
+                available_ports_without_target, target, _has_inlet_or_outlet
+            )
+        )
+        available_ports_without_target_with_directed_flow = (
+            self._ports_with_specified_flow(available_ports_without_target, flow)
+        )
+        try:
+            self._ports_exist(available_ports_with_interchangeable_flow)
+            self._unique_port(available_ports_with_undirected_flow)
+            self._ports_exist(available_ports_with_inlet_or_outlet)
+            self._unique_port(available_ports_with_directed_flow)
+            self._one_port_max(available_ports_without_target_with_inlet_outlet)
+            self._one_port_max(available_ports_without_target_with_directed_flow)
+        except PortFound as port:
+            return port.port
+        except NotImplementedError:
+            raise NotImplementedError("Port configuration not supported!!")
+        except Exception:
+            raise
         return None
 
     def __hash__(self) -> int:
         return hash(f"{self.name}-{type(self).__name__}")
 
 
+# This has to be here for now!!!
 class Control(BaseElement):
     position: Optional[List[float]] = None
     controllable_element: Optional[BaseElement] = None
