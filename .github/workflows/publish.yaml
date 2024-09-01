@@ -6,15 +6,15 @@ on:
 
 jobs:
   build-n-publish:
-    name: Build and publish Python 🐍 distributions 📦 to PyPI
+    name: Build and publish to PyPI
     runs-on: ubuntu-latest
     permissions:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
-          ref: pypi
+          token: ${{ secrets.ACCESS_TOKEN }}
 
       - uses: actions/setup-python@v5
         with:
@@ -30,7 +30,4 @@ jobs:
           poetry build
 
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.5.0
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_password }}
+        uses: pypa/gh-action-pypi-publish@v1.9.0
