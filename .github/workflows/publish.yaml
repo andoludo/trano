@@ -6,8 +6,13 @@ on:
       - pypi
 
 jobs:
-  check-version:
+  publish:
+    if: ${{ VERSION_CHANGED == true }}
+    name: Build and publish to PyPI
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,23 +30,6 @@ jobs:
           else
             echo "VERSION_CHANGED=false" >> $GITHUB_ENV
 
-  publish:
-    if: ${{ VERSION_CHANGED == 'true' }}
-    name: Build and publish to PyPI
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.ACCESS_TOKEN }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -52,6 +40,7 @@ jobs:
           poetry build
 
       - name: Publish distribution 📦 to PyPI
+        if: ${{ env.VERSION_CHANGED == 'true' }}
         uses: pypa/gh-action-pypi-publish@v1.9.0
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
