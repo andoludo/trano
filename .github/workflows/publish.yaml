@@ -24,7 +24,7 @@ jobs:
       - name: Check if version has changed
         id: version_check
         run: |
-          if git diff HEAD^ HEAD | grep -q '^+.*version'; then
+          if git diff HEAD^ HEAD | grep version; then
             echo "VERSION_CHANGED=true" >> "$GITHUB_ENV"
           else
             echo "VERSION_CHANGED=false" >> "$GITHUB_ENV"
