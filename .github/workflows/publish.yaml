@@ -1,0 +1,50 @@
+name: publish
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    name: Build and publish to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          fetch-depth: 0
+          ref: master
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Check if version has changed
+        id: version_check
+#       TODO: This just checks the diff what if other files contain +version??
+        run: |
+          if git diff HEAD~1 HEAD | grep '+version'; then
+            echo "VERSION_CHANGED=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "VERSION_CHANGED=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.4.1
+
+      - name: Build source and wheel archives
+        run: |
+          poetry build
+
+      - name: Publish distribution 📦 to PyPI
+        if: ${{ steps.version_check.outputs.VERSION_CHANGED == 'true' }}
+        uses: pypa/gh-action-pypi-publish@v1.9.0
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
