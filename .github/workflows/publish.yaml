@@ -3,7 +3,7 @@ name: publish
 on:
   push:
     branches:
-      - pypi
+      - master
 
 jobs:
   publish:
@@ -17,7 +17,7 @@ jobs:
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           fetch-depth: 0
-          ref: pypi
+          ref: master
 
       - uses: actions/setup-python@v5
         with:
@@ -25,7 +25,7 @@ jobs:
 
       - name: Check if version has changed
         id: version_check
-#        This just check the diff what if other files contain version??
+#       TODO: This just checks the diff what if other files contain +version??
         run: |
           if git diff HEAD~1 HEAD | grep '+version'; then
             echo "VERSION_CHANGED=true" >> "$GITHUB_OUTPUT"
