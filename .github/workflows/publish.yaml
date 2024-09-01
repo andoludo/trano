@@ -25,6 +25,7 @@ jobs:
 
       - name: Check if version has changed
         id: version_check
+#        This just check the diff what if other files contain version??
         run: |
           if git diff HEAD~1 HEAD | grep '+version'; then
             echo "VERSION_CHANGED=true" >> "$GITHUB_OUTPUT"
