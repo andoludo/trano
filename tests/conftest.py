@@ -219,10 +219,7 @@ def buildings_two_rooms_with_storage(space_1: Space, space_2: Space) -> Network:
         ),
     )
     boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
-    split_valve = SplitValve(
-        name="split_valve",
-        parameters=SplitValveParameters(m_flow_nominal=str(mRad_flow_nominal)),
-    )
+    split_valve = SplitValve(name="split_valve")
     three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
     three_way_valve = ThreeWayValve(
         name="three_way_valve",
@@ -873,3 +870,20 @@ def _read(file_name: str) -> Set:
         )
         if "ReaderTMY3weather" not in line
     }
+
+
+@pytest.fixture
+def schema() -> Path:
+    return (
+        Path(__file__).parents[1].joinpath("trano", "data_models", "trano_final.yaml")
+    )
+
+
+@pytest.fixture
+def schema_original() -> Path:
+    return Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
+
+
+@pytest.fixture
+def parameters_path() -> Path:
+    return Path(__file__).parents[1].joinpath("trano", "data_models", "parameters.yaml")

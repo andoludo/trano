@@ -412,7 +412,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedBed, occSch2.occupied);
  end OccupancyOccupancy_0;
-
+ 
         model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
 Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[1]
@@ -436,7 +436,7 @@ connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonBed, TRoo[1].T);
 connect(dataBus.ppmCO2Bed, TRoo1[1].ppm);
 end DataServer;
-
+      
 
 
       partial model PartialBoilerControl
@@ -2172,12 +2172,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2240.0,
@@ -2187,15 +2182,20 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record id_100 = IDEAS.Build
       c=1210.0,
       rho=540.0,
       epsLw=0.88,
-      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
-      epsLw=0.88,
       epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.03,
       c=1200.0,
       rho=40.0,
+      epsLw=0.88,
+      epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.025,
+      c=1005.0,
+      rho=1.2,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record external_wall
@@ -2253,8 +2253,8 @@ package MediumW = IDEAS.Media.Water "Medium model";
 
 
     IDEAS.Buildings.Components.Zone bed(
-    mSenFac=0.822,nPorts = 3,        hZone=2.0,
-    V=40.0
+    mSenFac=0.822,nPorts = 3,        hZone=3.75,
+    V=42.375
 ,
     n50=0.822*0.5*bed.n50toAch,
     redeclare package Medium = Medium,
@@ -2272,7 +2272,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 90, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 200.0, 22.153983255461064 },
+    Placement(transformation(origin = { 167.30100255996734, -70.4498199274578 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2283,7 +2283,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 102.00691214292475, -151.97172322056036 },
+    Placement(transformation(origin = { 149.44386215780526, 130.07202744759726 },
     extent = {{-10, -10}, {10, 10}}
 )));
         space_with_same_properties_ideas.Common.Controls.ventilation.OccupancyOccupancy_0
@@ -2305,19 +2305,19 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
         space_with_same_properties_ideas.Common.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 71.3906722608783, 188.65304045532457 },
+    Placement(transformation(origin = { -23.106438261657964, 170.99217089321024 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
 equation    connect(bed.propsBus[1:2],merged_bw_bw2[1:2].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 100.0, 0.0 }    ,{ 100.0, 22.153983255461064 }    ,{ 200.0, 22.153983255461064 }    },
+points={{ 0.0, 0.0 }    ,{ 83.65050127998367, 0.0 }    ,{ 83.65050127998367, -70.4498199274578 }    ,{ 167.30100255996734, -70.4498199274578 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(bed.propsBus[3],merged_window[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 51.003456071462374, 0.0 }    ,{ 51.003456071462374, -151.97172322056036 }    ,{ 102.00691214292475, -151.97172322056036 }    },
+points={{ 0.0, 0.0 }    ,{ 74.72193107890263, 0.0 }    ,{ 74.72193107890263, 130.07202744759726 }    ,{ 149.44386215780526, 130.07202744759726 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(bed.yOcc,occupancy_0.y)
@@ -2327,20 +2327,20 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ 10.695336130439152, 0.0 }    ,{ 10.695336130439152, 188.65304045532457 }    ,{ 71.3906722608783, 188.65304045532457 }    },
+points={{ -50.0, 0.0 }    ,{ -36.55321913082898, 0.0 }    ,{ -36.55321913082898, 170.99217089321024 }    ,{ -23.106438261657964, 170.99217089321024 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(bed.gainCon,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 35.69533613043915, 0.0 }    ,{ 35.69533613043915, 188.65304045532457 }    ,{ 71.3906722608783, 188.65304045532457 }    },
+points={{ 0.0, 0.0 }    ,{ -11.553219130828982, 0.0 }    ,{ -11.553219130828982, 170.99217089321024 }    ,{ -23.106438261657964, 170.99217089321024 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(bed.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 35.69533613043915, 0.0 }    ,{ 35.69533613043915, 188.65304045532457 }    ,{ 71.3906722608783, 188.65304045532457 }    },
+points={{ 0.0, 0.0 }    ,{ -11.553219130828982, 0.0 }    ,{ -11.553219130828982, 170.99217089321024 }    ,{ -23.106438261657964, 170.99217089321024 }    },
 thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-150.0,-201.97172322056036},{250.0,250.0}})), Icon(
-        coordinateSystem(extent={{-150.0,-201.97172322056036},{250.0,250.0}})));
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-150.0,-120.4498199274578},{217.30100255996734,250.0}})), Icon(
+        coordinateSystem(extent={{-150.0,-120.4498199274578},{217.30100255996734,250.0}})));
   annotation (
-    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>bed</td></tr><tr><th>parameters</th><td></td></tr><tr><th>occupancy</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr><tr><th>parameters</th><td></td></tr></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>bw</td><td>13.0</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>bw2</td><td>9.29</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>window</td><td>1.3</td><td>90.0</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
+    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>bed</td></tr><tr><th>parameters</th><td></td></tr><tr><th>occupancy</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr><tr><th>parameters</th><td></td></tr></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>bw</td><td>13</td><td>90</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>bw2</td><td>9.29</td><td>90</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>window</td><td>1.3</td><td>90</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
 end building;
 
 

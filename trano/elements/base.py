@@ -93,9 +93,11 @@ class BaseElement(BaseModel):
         libraries_data = AvailableLibraries.from_config(cls.__name__)
         if libraries_data:
             value["libraries_data"] = libraries_data
+
         parameter_class = param_from_config(cls.__name__)
-        if parameter_class:
+        if parameter_class and isinstance(value, dict) and not value.get("parameters"):
             value["parameters"] = parameter_class()
+
         return value
 
     @model_validator(mode="after")

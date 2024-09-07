@@ -1,0 +1,66 @@
+default: !include_default
+spaces:
+  - occupancy:
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    id: SPACE:001
+    external_boundaries:
+      external_walls:
+        - surface: 20
+          azimuth: 0
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 30
+          azimuth: 90
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 50
+          azimuth: 180.0
+          tilt: wall
+          construction: CAVITYWALL:001
+      windows:
+        - surface: 5.0
+          construction: INS3AR2020:001
+          azimuth: 0
+          tilt: wall
+        - surface: 2.0
+          construction: INS3AR2020:001
+          azimuth: 180.0
+          tilt: wall
+      floor_on_grounds:
+        - surface: 50.0
+          construction: CONCRETESLAB:001
+    emissions:
+      - radiator:
+          id: RADIATOR:003
+      - valve:
+          id: VALVE:003
+          control:
+            emission_control:
+systems:
+  - boiler:
+      id: BOILER:001
+      control:
+        boiler_control:
+      inlets:
+        - VALVE:003
+  - pump:
+      id: PUMP:001
+      control:
+        collector_control:
+      inlets:
+        - BOILER:001
+  - three_way_valve:
+      id: THREE_WAY_VALVE:001
+      control:
+        three_way_valve_control:
+      inlets:
+        - VALVE:003
+        - PUMP:001
+      outlets:
+        - TEMPERATURE_SENSOR:001
+  - temperature_sensor:
+      id: TEMPERATURE_SENSOR:001
+      outlets:
+        - RADIATOR:003

@@ -61,6 +61,16 @@ classes:
         range: Construction
     slots:
       - surface
+  InternalWall:
+    attributes:
+      construction:
+        range: Construction
+      space_1:
+        range: Space
+      space_2:
+        range: Space
+    slots:
+      - surface
   Window:
     attributes:
       construction:
@@ -118,15 +128,15 @@ classes:
       solar_transmittance:
         range: float
         multivalued: true
-        ifabsent: float(0.486)
+        ifabsent: float(0.6)
       solar_reflectance_outside_facing:
         range: float
         multivalued: true
-        ifabsent: float(0.053)
+        ifabsent: float(0.075)
       solar_reflectance_room_facing:
         range: float
         multivalued: true
-        ifabsent: float(0.053)
+        ifabsent: float(0.075)
       infrared_transmissivity:
         range: float
         ifabsent: float(0.0)
@@ -268,12 +278,16 @@ classes:
       - id
     attributes:
       parameters:
-        range: ControlLoopsParameters
+        range: EmissionControlParameters
         multivalued: false
     class_uri: schema:EmissionControl
   BoilerControl:
     slots:
       - id
+    attributes:
+      parameters:
+        range: BoilerControlParameters
+        multivalued: false
     class_uri: schema:BoilerControl
   CollectorControl:
     slots:
@@ -291,10 +305,7 @@ classes:
       - collector_control
       - three_way_valve_control
     class_uri: schema:Control
-  Building:
-    tree_root: true
-    description: >-
-      A holder for Space objects
+  Default:
     attributes:
       material:
         range: Material
@@ -318,6 +329,43 @@ classes:
         multivalued: true
       constructions:
         range: Construction
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+  Building:
+    tree_root: true
+    description: >-
+      A holder for Space objects
+    attributes:
+      default:
+        range: Default
+      material:
+        range: Material
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      gas:
+        range: Gas
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      glass_material:
+        range: GlassMaterial
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      glazings:
+        range: Glazing
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      constructions:
+        range: Construction
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      internal_walls:
+        range: InternalWall
         inlined: true
         inlined_as_list: true
         multivalued: true

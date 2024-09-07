@@ -11,23 +11,6 @@ from trano.simulate.simulate import SimulationOptions, simulate
 
 
 @pytest.fixture
-def schema() -> Path:
-    return (
-        Path(__file__).parents[1].joinpath("trano", "data_models", "trano_final.yaml")
-    )
-
-
-@pytest.fixture
-def schema_original() -> Path:
-    return Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
-
-
-@pytest.fixture
-def parameters_path() -> Path:
-    return Path(__file__).parents[1].joinpath("trano", "data_models", "parameters.yaml")
-
-
-@pytest.fixture
 def house() -> Path:
     return Path(__file__).parents[1].joinpath("tests", "house.yaml")
 

@@ -1,16 +1,26 @@
-components:
-- classes:
-  - FloorOnGround
-  figures: []
-  library: ideas
-  parameter_processing:
-    function: default_parameters
-  ports:
-  - names:
-    - propsBus_a
-    targets:
-    - Space
-  template: "\n    IDEAS.Buildings.Components.SlabOnGround {{ element.name }}(\n \
-    \   redeclare parameter {{ package_name }}.Data.Constructions.\n    {{ element.construction.name\
-    \ }} constructionType,\n    redeclare package Medium = Medium,\n    A={{  element.surface}})"
-  variant: default
+"components":
+- "classes":
+  - |-
+    FloorOnGround
+  "figures": []
+  "library": |-
+    ideas
+  "parameter_processing":
+    "function": |-
+      default_parameters
+  "ports":
+  - "names":
+    - |-
+      propsBus_a
+    "targets":
+    - |-
+      Space
+  "template": |2-
+
+        IDEAS.Buildings.Components.SlabOnGround {{ element.name }}(
+        redeclare parameter {{ package_name }}.Data.Constructions.
+        {{ element.construction.name }} constructionType,
+        redeclare package Medium = Medium,
+        A={{  element.surface}})
+  "variant": |-
+    default

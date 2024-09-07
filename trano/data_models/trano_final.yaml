@@ -7,6 +7,10 @@ classes:
         range: BoilerParameters
     is_a: System
   BoilerControl:
+    attributes:
+      parameters:
+        multivalued: false
+        range: BoilerControlParameters
     class_uri: schema:BoilerControl
     slots:
     - id
@@ -30,9 +34,9 @@ classes:
         description: None
         ifabsent: string({0.9})
         range: string
-      dp:
+      diff_pressure:
         description: None
-        ifabsent: string((3000 + 2000)*{2,1})
+        ifabsent: string(5000*{2,1})
         range: string
       dp_nominal:
         description: None
@@ -54,10 +58,6 @@ classes:
         description: None
         ifabsent: float(0.1)
         range: float
-      fuel_type:
-        description: None
-        ifabsent: string(Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())
-        range: string
       height_of_tank_without_insulation:
         description: None
         ifabsent: float(2)
@@ -101,6 +101,8 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Construction
+      default:
+        range: Default
       gas:
         inlined: true
         inlined_as_list: true
@@ -116,6 +118,11 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Glazing
+      internal_walls:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: InternalWall
       material:
         inlined: true
         inlined_as_list: true
@@ -182,6 +189,33 @@ classes:
         description: None
         ifabsent: float(30)
         range: float
+  Default:
+    attributes:
+      constructions:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Construction
+      gas:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Gas
+      glass_material:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: GlassMaterial
+      glazings:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Glazing
+      material:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Material
   Emission:
     class_uri: schema:Emission
     slots:
@@ -191,10 +225,23 @@ classes:
     attributes:
       parameters:
         multivalued: false
-        range: ControlLoopsParameters
+        range: EmissionControlParameters
     class_uri: schema:EmissionControl
     slots:
     - id
+  EmissionControlParameters:
+    attributes:
+      schedule:
+        ifabsent: string(3600*{7, 19})
+        range: string
+      temperature_heating_setback:
+        description: None
+        ifabsent: float(16)
+        range: float
+      temperature_heating_setpoint:
+        description: None
+        ifabsent: float(24)
+        range: float
   ExternalBoundaries:
     attributes:
       external_walls:
@@ -239,15 +286,15 @@ classes:
         ifabsent: float(0.0)
         range: float
       solar_reflectance_outside_facing:
-        ifabsent: float(0.053)
+        ifabsent: float(0.075)
         multivalued: true
         range: float
       solar_reflectance_room_facing:
-        ifabsent: float(0.053)
+        ifabsent: float(0.075)
         multivalued: true
         range: float
       solar_transmittance:
-        ifabsent: float(0.486)
+        ifabsent: float(0.6)
         multivalued: true
         range: float
     is_a: Material
@@ -274,6 +321,16 @@ classes:
       thickness:
         description: Thickness [m]
         range: float
+  InternalWall:
+    attributes:
+      construction:
+        range: Construction
+      space_1:
+        range: Space
+      space_2:
+        range: Space
+    slots:
+    - surface
   Layer:
     attributes:
       material:

@@ -4,6 +4,7 @@ import os
 import subprocess
 import tempfile
 from collections import Counter
+from functools import partial
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -11,7 +12,14 @@ import yaml
 from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
-from trano.elements import ExternalWall, FloorOnGround, Window, param_from_config
+from trano.data.include import Loader
+from trano.elements import (
+    ExternalWall,
+    FloorOnGround,
+    InternalElement,
+    Window,
+    param_from_config,
+)
 from trano.elements.construction import (
     Construction,
     Gas,
@@ -42,6 +50,7 @@ from trano.elements.system import (  # noqa: F401
     Valve,
     Weather,
 )
+from trano.elements.types import Tilt
 from trano.topology import Network
 
 SpaceParameter = param_from_config("Space")
@@ -78,6 +87,10 @@ def _instantiate_component(component_: Dict[str, Any]) -> Component:
     component_class = globals()[component_type]
     name = component_parameters.pop("id")
     component_parameters.update({"name": name})
+    component_parameters_class = param_from_config(component_type)
+    if "parameters" in component_parameters and component_parameters_class is not None:
+        parameters = component_parameters_class(**component_parameters["parameters"])
+        component_parameters = component_parameters | {"parameters": parameters}
     if component_parameters.get("control"):
         controls = component_parameters["control"].items()
         if len(controls) != 1:
@@ -87,6 +100,10 @@ def _instantiate_component(component_: Dict[str, Any]) -> Component:
         control_name = control_parameter.pop("id", None)
         if control_name:
             control_parameter.update({"name": control_name})
+        component_parameter_class = param_from_config(f"{to_camel_case(control_type)}")
+        if "parameters" in control_parameter and component_parameter_class is not None:
+            parameters = component_parameter_class(**control_parameter["parameters"])
+            control_parameter = control_parameter | {"parameters": parameters}
         control = control_class(**control_parameter)
         component_parameters.update({"control": control})
     component = component_class(**component_parameters)
@@ -124,7 +141,7 @@ def convert(schema: Path, input_file: Path, target: str, output: Path) -> bool:
 
 def load_and_enrich_model(model_path: Path) -> EnrichedModel:
     if model_path.suffix == ".yaml":
-        load_function = yaml.safe_load
+        load_function = partial(yaml.load, Loader=Loader)
         dump_function = yaml.safe_dump
     elif model_path.suffix == ".json":
         load_function = json.loads  # type: ignore
@@ -159,8 +176,28 @@ def _build_materials(data: Dict[str, Any]) -> Dict[str, Any]:
     return materials
 
 
+def _merge_default(data: Dict[str, Any]) -> Dict[str, Any]:
+    data["constructions"] = data.get("constructions", []) + data.get("default", {}).get(
+        "constructions", []
+    )
+    data["material"] = data.get("material", []) + data.get("default", {}).get(
+        "material", []
+    )
+    data["glazings"] = data.get("glazings", []) + data.get("default", {}).get(
+        "glazings", []
+    )
+    data["gas"] = data.get("gas", []) + data.get("default", {}).get("gas", [])
+    data["glass_material"] = data.get("glass_material", []) + data.get(
+        "default", {}
+    ).get("glass_material", [])
+    data.pop("default", None)
+    return data
+
+
 # TODO: reduce complexity
-def convert_network(name: str, model_path: Path) -> Network:  # noqa: PLR0912, C901
+def convert_network(  # noqa: PLR0915, C901, PLR0912
+    name: str, model_path: Path
+) -> Network:
     network = Network(name=name)
     occupancy = None
     system_counter: Any = Counter()
@@ -168,7 +205,7 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: PLR0912, C
     enriched_model = load_and_enrich_model(model_path)
     validate_model(enriched_model.path)
     data = enriched_model.data
-
+    data = _merge_default(data)
     materials = _build_materials(data)
     constructions: Dict[str, Construction | Glass] = {}
     for construction in data["constructions"]:
@@ -227,12 +264,20 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: PLR0912, C
                 )
             )
             external_walls.append(floor_on_ground_)
-        if space.get("occupancy") is not None:
+        occupancy_parameter_class = param_from_config("Occupancy")
+        if space.get("occupancy") is not None and occupancy_parameter_class is not None:
             system_counter.update(["occupancy"])
+
+            occupancy_ = space["occupancy"]
             occupancy = Occupancy(
                 **(
-                    space["occupancy"]
+                    occupancy_
                     | {"name": f"occupancy_{system_counter['occupancy']}"}
+                    | {
+                        "parameters": occupancy_parameter_class(
+                            **occupancy_.get("parameters", {})
+                        )
+                    }
                 )
             )
         emissions = []
@@ -249,9 +294,25 @@ def convert_network(name: str, model_path: Path) -> Network:  # noqa: PLR0912, C
             parameters=SpaceParameter(**space["parameters"]),
             emissions=emissions,
         )
-        space_dict[space_.name] = space_
+        space_dict[space["id"]] = space_
         spaces.append(space_)
-    network.add_boiler_plate_spaces(spaces, weather=Weather(name="weather"))
+    create_internal = not data.get("internal_walls", [])
+
+    network.add_boiler_plate_spaces(
+        spaces, weather=Weather(name="weather"), create_internal=create_internal
+    )
+    for internal_wall in data.get("internal_walls", []):
+        space_1 = space_dict[internal_wall["space_1"]]
+        space_2 = space_dict[internal_wall["space_2"]]
+        internal_element = InternalElement(
+            name=f"internal_{space_1.name}_{space_2.name}_{internal_wall['construction'].lower().split(':')[0]}",
+            surface=internal_wall["surface"],
+            azimuth=10,
+            construction=constructions[internal_wall["construction"]],
+            tilt=Tilt.wall,
+        )
+        network.connect_spaces(space_1, space_2, internal_element=internal_element)
+
     edges = []
     for system in data["systems"]:
         system_ = _instantiate_component(system)

@@ -40,6 +40,8 @@ def load_parameters() -> Dict[str, Type["BaseParameter"]]:
                     alias=alias,  # TODO: avoid using eval
                 )
         model = create_model(f"{name}_", __base__=BaseParameter, **attrib_)  # type: ignore # TODO: why?
+        if parameter["classes"] is None:
+            continue
         for class_ in parameter["classes"]:
             classes[class_] = model
     return classes

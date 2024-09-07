@@ -24,10 +24,10 @@ BoilerParameters:
       description: None
       ifabsent: string({0.9})
       range: string
-    dp:
+    diff_pressure:
       alias: dp
       description: None
-      ifabsent: string((3000 + 2000)*{2,1})
+      ifabsent: string(5000*{2,1})
       range: string
     dp_nominal:
       alias: dp_nominal
@@ -54,11 +54,6 @@ BoilerParameters:
       description: None
       ifabsent: float(0.1)
       range: float
-    fuel_type:
-      alias: fue
-      description: None
-      ifabsent: string(Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())
-      range: string
     height_of_tank_without_insulation:
       alias: hTan
       description: None
@@ -156,6 +151,24 @@ ControlLoopsParameters:
       alias: timChe
       description: None
       ifabsent: float(30)
+      range: float
+  classes:
+
+EmissionControlParameters:
+  attributes:
+    schedule:
+      alias: schedule
+      ifabsent: string(3600*{7, 19})
+      range: string
+    temperature_heating_setpoint:
+      alias: THeaSet
+      description: None
+      ifabsent: float(24)
+      range: float
+    temperature_heating_setback:
+      alias: THeaSetBack
+      description: None
+      ifabsent: float(16)
       range: float
   classes:
   - EmissionControl
