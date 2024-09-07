@@ -52,7 +52,7 @@ spaces:
           azimuth: 180.0
           tilt: wall
       floor_on_grounds:
-        - surface: 50.0
+        - surface: 120
           construction: CONCRETESLAB:001
     emissions:
       - radiator:
@@ -63,21 +63,21 @@ spaces:
             emission_control:
   - occupancy:
     parameters:
-      floor_area: 100.0
+      floor_area: 70
       average_room_height: 2.5
     id: SPACE:002
     external_boundaries:
       external_walls:
-        - surface: 5
+        - surface: 25
           azimuth: 0
           tilt: wall
           construction: CAVITYWALLPARTIALFILL:001
-        - surface: 6
+        - surface: 25
           azimuth: 90
           tilt: wall
           construction: CAVITYWALLPARTIALFILL:001
-        - surface: 14
-          azimuth: 272
+        - surface: 34
+          azimuth: 180
           tilt: wall
           construction: CAVITYWALLPARTIALFILL:001
       windows:
@@ -87,10 +87,10 @@ spaces:
           tilt: wall
         - surface: 2.0
           construction: INS2AR2020:001
-          azimuth: 272
+          azimuth: 180
           tilt: wall
       floor_on_grounds:
-        - surface: 20.0
+        - surface: 60
           construction: CONCRETESLAB:001
     emissions:
       - radiator:
@@ -101,7 +101,7 @@ spaces:
             emission_control:
   - occupancy:
     parameters:
-      floor_area: 100.0
+      floor_area: 50.0
       average_room_height: 2.5
     id: SPACE:003
     external_boundaries:
@@ -119,7 +119,7 @@ spaces:
           tilt: wall
           construction: CONSTRUCTION:001
       floor_on_grounds:
-        - surface: 20.0
+        - surface: 60.0
           construction: CONCRETESLAB:001
     emissions:
       - radiator:

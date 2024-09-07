@@ -427,7 +427,7 @@ connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_1, TRoo[1].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl

@@ -412,7 +412,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedDoor, occSch2.occupied);
  end OccupancyOccupancy_0;
- 
+
         model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
 Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[1]
@@ -436,7 +436,7 @@ connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonDoor, TRoo[1].T);
 connect(dataBus.ppmCO2Door, TRoo1[1].ppm);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl
@@ -2153,11 +2153,11 @@ model building
         tauIR=0.0,
         absIR_a=0.84,
         absIR_b=0.84)
-        
+
     },
     final gas={
             Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
-            
+
     },
     UFra=1.4)
     annotation (

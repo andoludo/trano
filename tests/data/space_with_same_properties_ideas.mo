@@ -412,7 +412,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedBed, occSch2.occupied);
  end OccupancyOccupancy_0;
- 
+
         model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
 Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[1]
@@ -436,7 +436,7 @@ connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonBed, TRoo[1].T);
 connect(dataBus.ppmCO2Bed, TRoo1[1].ppm);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl

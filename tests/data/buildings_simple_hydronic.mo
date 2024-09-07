@@ -460,7 +460,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_1, occSch2.occupied);
  end OccupancyOccupancy_0;
- 
+
         model ThreeWayValveControlThree_way_valve_control
   Buildings.Controls.OBC.CDL.Reals.PIDWithReset
                                       conVal(
@@ -498,7 +498,7 @@ connect(dataBus.TAirOutBoiler, lesThrTOut.u);
 connect(dataBus.yBoiConBoiler, booToReaBoi.y);
 connect(dataBus.yPumBoiBoiler, booToReaPum.y);
      end BoilerControlBoiler_control;
-     
+
         model CollectorControlPump_control
 Buildings.Controls.OBC.CDL.Reals.PIDWithReset
 conPum(    controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.PI,
@@ -579,7 +579,7 @@ TAirOutBoiler_control.y);
 connect(dataBus.triggerThree_way_valve_control,
 triggerThree_way_valve_control.y);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl
@@ -1011,7 +1011,7 @@ connect(dataBus.yPumBoiBoiler, pumBoi.y);
 connect(dataBus.TStoTopBoiler, tanTemTop.T);
 connect(dataBus.TStoBotBoiler, tanTemBot.T);
      end BoilerWithStorageBoiler;
-     
+
 
   end Boilers;
 
@@ -2207,7 +2207,7 @@ connect(dataBus.yPump, pumRad.y);
 connect(dataBus.y_gainPump, gain.y);
 connect(dataBus.TPump_control, temSup.T);
  end PumpPump;
- 
+
 
     end Ventilation;
   end Fluid;
@@ -2319,11 +2319,11 @@ model building
         tauIR=0.0,
         absIR_a=0.84,
         absIR_b=0.84)
-        
+
     },
     final gas={
             Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
-            
+
     },
     UFra=1.4)
     annotation (

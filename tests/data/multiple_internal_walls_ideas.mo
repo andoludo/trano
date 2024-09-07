@@ -412,7 +412,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_1, occSch2.occupied);
  end OccupancyOccupancy_0;
- 
+
         model OccupancyOccupancy_1
 extends multiple_internal_walls_ideas.Common.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
@@ -421,7 +421,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_2, occSch2.occupied);
  end OccupancyOccupancy_1;
- 
+
         model DataServer
 replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
 Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[2]
@@ -449,7 +449,7 @@ connect(dataBus.TZonSpace_2, TRoo[2].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_2, TRoo1[2].ppm);
 end DataServer;
-      
+
 
 
       partial model PartialBoilerControl

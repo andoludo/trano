@@ -9,8 +9,6 @@ from trano.simulate.simulate import SimulationOptions, simulate
 def test_three_zones(schema: Path) -> None:
     house = Path(__file__).parent.joinpath("three_zones.yaml")
     network = convert_network("three_zones", house)
-    p = Path("/home/aan/Documents/trano/tests/three_zones.mo")
-    p.write_text(network.model())
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         results = simulate(
             Path(project_path),
