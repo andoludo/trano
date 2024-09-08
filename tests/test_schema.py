@@ -2,11 +2,11 @@ import tempfile
 from pathlib import Path
 
 import pytest
-import yaml
 from linkml.validator import validate_file
 
 from tests.conftest import _read, clean_model, is_success
 from trano.data_models.conversion import convert, convert_model, convert_network
+from trano.scripts.schema import create_final_schema
 from trano.simulate.simulate import SimulationOptions, simulate
 
 
@@ -29,18 +29,8 @@ def test_create_new_schema(
 ) -> None:
     trano_path = schema_original
     trano_final_path = schema
-    trano = yaml.safe_load(trano_path.read_text())
-    parameters = yaml.safe_load(parameters_path.read_text())
-    for name, parameter in parameters.items():
-        parameter.pop("classes")
-        parameter__ = {}
-        for k, v in parameter["attributes"].items():
-            if "func" not in v:
-                v.pop("alias", None)
-                parameter__[k] = v
-        parameter["attributes"] = parameter__
-        trano["classes"][name] = parameter
-    yaml.dump(trano, trano_final_path.open("w"))
+    create_final_schema(parameters_path, trano_final_path, trano_path)
+    assert trano_final_path.exists()
 
 
 def test_convert_to_json(schema: Path, house: Path) -> None:
