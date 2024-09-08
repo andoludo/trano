@@ -1,4 +1,15 @@
 classes:
+  AhuControl:
+    class_uri: schema:AhuControl
+    slots:
+    - id
+  AirHandlingUnit:
+    attributes:
+      control:
+        range: Control
+      parameters:
+        range: Parameter
+    is_a: System
   Boiler:
     attributes:
       control:
@@ -161,6 +172,8 @@ classes:
     - boiler_control
     - collector_control
     - three_way_valve_control
+    - vav_control
+    - ahu_control
   ControlLoopsParameters:
     attributes:
       dt_hys:
@@ -218,6 +231,11 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Material
+  Duct:
+    attributes:
+      parameters:
+        range: Parameter
+    is_a: System
   Emission:
     class_uri: schema:Emission
     slots:
@@ -525,6 +543,8 @@ classes:
     - parameters
     - occupancy
     - emissions
+    - ventilation_inlets
+    - ventilation_outlets
   SpaceParameter:
     attributes:
       average_room_height:
@@ -582,6 +602,10 @@ classes:
         ifabsent: string(false)
         range: string
   System:
+    attributes:
+      variant:
+        ifabsent: string('default')
+        range: string
     class_uri: schema:System
     slots:
     - id
@@ -595,6 +619,7 @@ classes:
     - boiler
     - pump
     - temperature_sensor
+    - air_handling_unit
   TemperatureSensor:
     is_a: System
   ThreeWayValve:
@@ -659,6 +684,11 @@ classes:
         description: None
         ifabsent: string({0.01,0.01})
         range: string
+  VAV:
+    attributes:
+      control:
+        range: Control
+    is_a: System
   Valve:
     attributes:
       control:
@@ -721,6 +751,20 @@ classes:
         description: None
         ifabsent: float(0.0001)
         range: float
+  VavControl:
+    class_uri: schema:VavControl
+    slots:
+    - id
+  VentilationInlet:
+    class_uri: schema:VentilationInlet
+    slots:
+    - duct
+    - vav
+  VentilationOutlet:
+    class_uri: schema:VentilationOutlet
+    slots:
+    - duct
+    - vav
   Weather:
     slot_usage:
       parameters:
@@ -781,6 +825,14 @@ prefixes:
 see_also:
 - https://my-org.github.io/trano
 slots:
+  ahu_control:
+    inlined: true
+    multivalued: false
+    range: AhuControl
+  air_handling_unit:
+    inlined: true
+    multivalued: false
+    range: AirHandlingUnit
   azimuth:
     range: float
     slot_uri: schema:azimuth
@@ -798,6 +850,10 @@ slots:
     multivalued: false
     range: CollectorControl
     slot_uri: schema:collector_control
+  duct:
+    inlined: true
+    multivalued: false
+    range: Duct
   emission_control:
     inlined: true
     multivalued: false
@@ -870,4 +926,22 @@ slots:
     inlined: true
     multivalued: false
     range: Valve
+  vav:
+    inlined: true
+    multivalued: false
+    range: VAV
+  vav_control:
+    inlined: true
+    multivalued: false
+    range: VavControl
+  ventilation_inlets:
+    inlined: true
+    multivalued: true
+    range: VentilationInlet
+    slot_uri: schema:ventilation_inlets
+  ventilation_outlets:
+    inlined: true
+    multivalued: true
+    range: VentilationOutlet
+    slot_uri: schema:ventilation_outlets
 title: trano

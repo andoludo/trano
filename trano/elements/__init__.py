@@ -18,9 +18,11 @@ from trano.elements.figure import Figure
 from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.space import Space
 from trano.elements.system import (
+    VAV,
     AirHandlingUnit,
     BaseOccupancy,
     BaseWeather,
+    Duct,
     Emission,
     System,
     TemperatureSensor,
@@ -62,4 +64,6 @@ __all__ = [
     "Connection",
     "BaseParameter",
     "Port",
+    "VAV",
+    "Duct",
 ]

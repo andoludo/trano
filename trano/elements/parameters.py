@@ -51,7 +51,13 @@ PARAMETERS = load_parameters()
 
 
 def param_from_config(name: str) -> Optional[Type[BaseParameter]]:
-    return PARAMETERS.get(name)
+    if name in PARAMETERS:
+        return PARAMETERS[name]
+    elif name.upper() in PARAMETERS:
+        return PARAMETERS[name.upper()]
+    else:
+        return None
+    # TODO: to be replaced with a raise later
 
 
 def change_alias(

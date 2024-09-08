@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from trano.data.include import Loader
 from trano.elements import (
+    Boundary,
     ExternalWall,
     FloorOnGround,
     InternalElement,
@@ -40,6 +41,7 @@ from trano.elements.space import Space
 
 # TODO: fix these imports
 from trano.elements.system import (  # noqa: F401
+    AirHandlingUnit,
     Boiler,
     Occupancy,
     Pump,
@@ -51,6 +53,7 @@ from trano.elements.system import (  # noqa: F401
     Weather,
 )
 from trano.elements.types import Tilt
+from trano.elements.utils import import_element_function
 from trano.topology import Network
 
 SpaceParameter = param_from_config("Space")
@@ -84,7 +87,8 @@ def _instantiate_component(component_: Dict[str, Any]) -> Component:
     component_parameters.pop("outlets", None)
     component_type = to_camel_case(component_type)
     # TODO: just find a way to import the required components directly here!
-    component_class = globals()[component_type]
+
+    component_class = import_element_function(component_type)
     name = component_parameters.pop("id")
     component_parameters.update({"name": name})
     component_parameters_class = param_from_config(component_type)
@@ -96,7 +100,7 @@ def _instantiate_component(component_: Dict[str, Any]) -> Component:
         if len(controls) != 1:
             raise NotImplementedError("Only one component type is allowed")
         control_type, control_parameter = next(iter(controls))
-        control_class = globals()[to_camel_case(control_type)]
+        control_class = import_element_function(to_camel_case(control_type))
         control_name = control_parameter.pop("id", None)
         if control_name:
             control_parameter.update({"name": control_name})
@@ -281,10 +285,20 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
                 )
             )
         emissions = []
-        for emission in space["emissions"]:
+        for emission in space.get("emissions", []):
             emission_ = _instantiate_component(emission)
             systems[emission_.name] = emission_.component_instance
             emissions.append(emission_.component_instance)
+        ventilation_inlets = []
+        for inlet in space.get("ventilation_inlets", []):
+            inlet_ = _instantiate_component(inlet)
+            systems[inlet_.name] = inlet_.component_instance
+            ventilation_inlets.append(inlet_.component_instance)
+        ventilation_outlets = []
+        for outlet in space.get("ventilation_outlets", []):
+            outlet_ = _instantiate_component(outlet)
+            systems[outlet_.name] = outlet_.component_instance
+            ventilation_outlets.append(outlet_.component_instance)
         if SpaceParameter is None:
             raise Exception("SpaceParameter is not defined")
         space_ = Space(
@@ -293,6 +307,8 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
             occupancy=occupancy,
             parameters=SpaceParameter(**space["parameters"]),
             emissions=emissions,
+            ventilation_inlets=ventilation_inlets,
+            ventilation_outlets=ventilation_outlets,
         )
         space_dict[space["id"]] = space_
         spaces.append(space_)
@@ -340,6 +356,13 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
             ]
     for edge in edges:
         network.connect_systems(*edge)
+
+    ahus = [n for n in network.graph.nodes if isinstance(n, AirHandlingUnit)]
+    if ahus:
+        boundary = Boundary(name="boundary")
+        network.connect_elements(boundary, ahus[0])
+        weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
+        network.connect_elements(boundary, weather)
     return network
 
 

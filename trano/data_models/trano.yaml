@@ -51,6 +51,8 @@ classes:
       - parameters
       - occupancy
       - emissions
+      - ventilation_inlets
+      - ventilation_outlets
     class_uri: schema:Space
   ExternalWall:
     attributes:
@@ -209,6 +211,10 @@ classes:
     class_uri: schema:Occupancy
 
   System:
+    attributes:
+      variant:
+        range: string
+        ifabsent: string('default')
     slots:
       - id
       - inlets
@@ -222,6 +228,7 @@ classes:
       - boiler
       - pump
       - temperature_sensor
+      - air_handling_unit
     class_uri: schema:Systems
 
   Emission:
@@ -230,6 +237,16 @@ classes:
       - valve
     class_uri: schema:Emission
 
+  VentilationInlet:
+    slots:
+      - duct
+      - vav
+    class_uri: schema:VentilationInlet
+  VentilationOutlet:
+    slots:
+      - duct
+      - vav
+    class_uri: schema:VentilationOutlet
   SplitValve:
     is_a: System
     attributes:
@@ -267,6 +284,13 @@ classes:
         range: BoilerParameters
       control:
         range: Control
+  AirHandlingUnit:
+    is_a: System
+    attributes:
+      parameters:
+        range: Parameter
+      control:
+        range: Control
 
   Pump:
     is_a: System
@@ -275,6 +299,16 @@ classes:
         range: PumpParameters
       control:
         range: Control
+  VAV:
+    is_a: System
+    attributes:
+      control:
+        range: Control
+  Duct:
+    is_a: System
+    attributes:
+        parameters:
+            range: Parameter
 
   TemperatureSensor:
     is_a: System
@@ -304,6 +338,14 @@ classes:
     slots:
       - id
     class_uri: schema:CollectorControl
+  VavControl:
+    slots:
+      - id
+    class_uri: schema:VavControl
+  AhuControl:
+    slots:
+      - id
+    class_uri: schema:AhuControl
 
   Control:
     slots:
@@ -311,6 +353,8 @@ classes:
       - boiler_control
       - collector_control
       - three_way_valve_control
+      - vav_control
+      - ahu_control
     class_uri: schema:Control
   Default:
     attributes:
@@ -442,14 +486,47 @@ slots:
     multivalued: false
     inlined: true
 
+  air_handling_unit:
+    range: AirHandlingUnit
+    multivalued: false
+    inlined: true
+
   pump:
     range: Pump
+    multivalued: false
+    inlined: true
+
+  duct:
+    range: Duct
+    multivalued: false
+    inlined: true
+  vav:
+    range: VAV
+    multivalued: false
+    inlined: true
+
+  vav_control:
+    range: VavControl
+    multivalued: false
+    inlined: true
+  ahu_control:
+    range: AhuControl
     multivalued: false
     inlined: true
 
   emissions:
     slot_uri: schema:emissions
     range: Emission
+    multivalued: true
+    inlined: true
+  ventilation_inlets:
+    slot_uri: schema:ventilation_inlets
+    range: VentilationInlet
+    multivalued: true
+    inlined: true
+  ventilation_outlets:
+    slot_uri: schema:ventilation_outlets
+    range: VentilationOutlet
     multivalued: true
     inlined: true
   emission_control:

@@ -1,6 +1,7 @@
-import importlib
 import re
 from typing import TYPE_CHECKING, Any, Callable, List
+
+from trano import elements
 
 if TYPE_CHECKING:
 
@@ -46,11 +47,15 @@ def _get_default(v: Any) -> Any:  # noqa: ANN401
         raise e
 
 
-def dynamic_import_function(
-    module_name: str, function_name: str
-) -> Any:  # noqa: ANN401
-    module = importlib.import_module(module_name)
-
-    function = getattr(module, function_name)
-
-    return function
+# TODO: class names should be standardized!!
+def import_element_function(function_name: str) -> Any:  # noqa: ANN401
+    attribute = [
+        attribute
+        for attribute in elements.__all__
+        if attribute.lower() == function_name.lower()
+    ]
+    if len(attribute) > 1:
+        raise Exception(f"Element {function_name} has more than one match")
+    if len(attribute) == 0:
+        raise Exception(f"Element {function_name} not found")
+    return getattr(elements, attribute[0])
