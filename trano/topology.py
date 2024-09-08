@@ -38,6 +38,7 @@ from trano.elements.system import (
     Weather,
 )
 from trano.elements.types import Tilt
+from trano.exceptions import WrongSystemFlowError
 from trano.library.library import Library
 from trano.reporting.html import to_html_reporting
 from trano.reporting.reproting import ModelDocumentation
@@ -374,7 +375,12 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         elements_: List[Union[VAV, Space]] = []
         elements = [node for node in self.graph.nodes if isinstance(node, element_type)]
         for element in elements:
-            paths = nx.shortest_path(self.graph, ahu, element)
+            try:
+                paths = nx.shortest_path(self.graph, ahu, element)
+            except Exception as e:
+                raise WrongSystemFlowError(
+                    "Wrong AHU system configuration flow."
+                ) from e
             p = paths[1:-1]
             if p and all(isinstance(p_, Ventilation) for p_ in p):
                 elements_.append(element)

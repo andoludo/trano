@@ -1,8 +1,11 @@
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from tests.conftest import is_success
 from trano.data_models.conversion import convert_network
+from trano.exceptions import WrongSystemFlowError
 from trano.simulate.simulate import SimulationOptions, simulate
 
 
@@ -67,3 +70,12 @@ def test_single_zone_air_handling_unit_complex_vav(schema: Path) -> None:
             options=SimulationOptions(end_time=3600),
         )
         assert is_success(results)
+
+
+def test_single_zone_air_handling_unit_wrong_flow(schema: Path) -> None:
+    house = Path(__file__).parent.joinpath(
+        "single_zone_air_handling_unit_wrong_flow.yaml"
+    )
+    network = convert_network("single_zone_air_handling_unit_wrong_flow", house)
+    with pytest.raises(WrongSystemFlowError):
+        network.model()
