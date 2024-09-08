@@ -298,8 +298,19 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
         spaces.append(space_)
     create_internal = not data.get("internal_walls", [])
 
+    if (
+        data.get("weather", {}).get("parameters")
+        and param_from_config("Weather") is not None
+    ):
+        weather = Weather(
+            name="weather",
+            parameters=param_from_config("Weather")(**data["weather"]["parameters"]),  # type: ignore
+        )
+    else:
+        weather = Weather(name="weather")
+
     network.add_boiler_plate_spaces(
-        spaces, weather=Weather(name="weather"), create_internal=create_internal
+        spaces, weather=weather, create_internal=create_internal
     )
     for internal_wall in data.get("internal_walls", []):
         space_1 = space_dict[internal_wall["space_1"]]

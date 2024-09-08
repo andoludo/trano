@@ -31,6 +31,13 @@ imports:
 
 
 classes:
+  Weather:
+    slots:
+      - parameters
+    slot_usage:
+      parameters:
+        range: WeatherParameters
+
   Space:
     description: >-
       Represents a Space
@@ -379,6 +386,9 @@ classes:
         inlined: true
         inlined_as_list: true
         multivalued: true
+      weather:
+        range: Weather
+
 
 
 slots:

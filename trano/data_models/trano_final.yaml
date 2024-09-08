@@ -138,6 +138,8 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Systems
+      weather:
+        range: Weather
     description: A holder for Space objects
     tree_root: true
   CollectorControl:
@@ -719,6 +721,12 @@ classes:
         description: None
         ifabsent: float(0.0001)
         range: float
+  Weather:
+    slot_usage:
+      parameters:
+        range: WeatherParameters
+    slots:
+    - parameters
   WeatherParameters:
     attributes:
       path:
