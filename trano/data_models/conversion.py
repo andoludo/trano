@@ -1,18 +1,17 @@
 import copy
 import json
-import os
-import subprocess
 import tempfile
 from collections import Counter
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
 from trano.data.include import Loader
+from trano.data_models.converter import converter
 from trano.elements import (
     Boundary,
     ExternalWall,
@@ -54,6 +53,7 @@ from trano.elements.system import (  # noqa: F401
 )
 from trano.elements.types import Tilt
 from trano.elements.utils import import_element_function
+from trano.library.library import Library
 from trano.topology import Network
 
 SpaceParameter = param_from_config("Space")
@@ -70,11 +70,13 @@ class Component(BaseModel):
     component_instance: Any
 
 
-def validate_model(model_path: Path) -> None:
-
-    report = validate_file(model_path, DATA_MODEL_PATH, "Building")
-    if report.results:
-        raise Exception("Invalid model.")
+def validate_model(data: Any, suffix: str) -> None:  # noqa: ANN401
+    with tempfile.NamedTemporaryFile(mode="w+", suffix=suffix, delete=False) as f2:
+        enriched_path = Path(f2.name)
+        enriched_path.write_text(json.dumps(data))
+        report = validate_file(enriched_path, DATA_MODEL_PATH, "Building")
+        if report.results:
+            raise Exception("Invalid model.")
 
 
 def _instantiate_component(component_: Dict[str, Any]) -> Component:
@@ -115,32 +117,7 @@ def _instantiate_component(component_: Dict[str, Any]) -> Component:
 
 
 class EnrichedModel(BaseModel):
-    data: Dict[str, Any]
-    path: Path
-
-
-def convert(schema: Path, input_file: Path, target: str, output: Path) -> bool:
-    root_path = Path(__file__).parents[1]
-    os.chdir(root_path)
-    command = [
-        "poetry",
-        "run",
-        "linkml-convert",
-        "-o",
-        f"{output}",
-        "-t",
-        target,
-        "-C",
-        "Building",
-        "-s",
-        str(schema),
-        f"{input_file}",
-    ]
-    # TODO: use (python_module = PythonGenerator(schema).compile_module()) instead of console.
-    process = subprocess.run(
-        command, check=True, capture_output=True, text=True  # noqa: S603
-    )
-    return process.returncode == 0
+    data: Any
 
 
 def load_and_enrich_model(model_path: Path) -> EnrichedModel:
@@ -156,17 +133,17 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
     data = assign_space_id(data)
     _parse(data)
     with tempfile.NamedTemporaryFile(
-        mode="w+", suffix=model_path.suffix, delete=False
+        mode="w+", suffix=model_path.suffix, delete=False  # TODO: delete later?
     ) as f:
         dump_function(data, f)
-    with tempfile.NamedTemporaryFile(
-        mode="w+", suffix=model_path.suffix, delete=False
-    ) as f2:
-        enriched_path = Path(f2.name)
-    convert(DATA_MODEL_PATH, Path(f.name), model_path.suffix[1:], enriched_path)
-    return EnrichedModel(
-        path=enriched_path, data=load_function(enriched_path.read_text())
+
+    converted_data = converter(
+        input=str(Path(f.name)),
+        target_class="Building",
+        schema=str(DATA_MODEL_PATH),
+        output_format=model_path.suffix[1:],
     )
+    return EnrichedModel(data=converted_data)
 
 
 def _build_materials(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -200,14 +177,14 @@ def _merge_default(data: Dict[str, Any]) -> Dict[str, Any]:
 
 # TODO: reduce complexity
 def convert_network(  # noqa: PLR0915, C901, PLR0912
-    name: str, model_path: Path
+    name: str, model_path: Path, library: Optional[Library] = None
 ) -> Network:
-    network = Network(name=name)
+    network = Network(name=name, library=library)
     occupancy = None
     system_counter: Any = Counter()
 
     enriched_model = load_and_enrich_model(model_path)
-    validate_model(enriched_model.path)
+    validate_model(enriched_model.data, model_path.suffix)
     data = enriched_model.data
     data = _merge_default(data)
     materials = _build_materials(data)
@@ -223,13 +200,13 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
     for glazing in data.get("glazings", []):
         glazing_layers: List[GasLayer | GlassLayer] = []
         for layer in glazing["layers"]:
-            if "gas" in layer:
+            if layer.get("gas", None):
                 glazing_layers.append(
                     GasLayer(
                         thickness=layer["thickness"], material=materials[layer["gas"]]
                     )
                 )
-            if "glass" in layer:
+            if layer.get("glass", None):
                 glazing_layers.append(
                     GlassLayer(
                         thickness=layer["thickness"], material=materials[layer["glass"]]

@@ -2,7 +2,14 @@ from trano.elements.base import BaseElement, Control
 from trano.elements.boundary import BaseBoundary, Boundary
 from trano.elements.bus import DataBus
 from trano.elements.connection import Connection, Port, connect
-from trano.elements.control import AhuControl, VAVControl
+from trano.elements.control import (
+    AhuControl,
+    BoilerControl,
+    CollectorControl,
+    EmissionControl,
+    ThreeWayValveControl,
+    VAVControl,
+)
 from trano.elements.envelope import (
     BaseInternalElement,
     BaseSimpleWall,
@@ -22,17 +29,26 @@ from trano.elements.system import (
     AirHandlingUnit,
     BaseOccupancy,
     BaseWeather,
+    Boiler,
     Duct,
     Emission,
+    Pump,
+    Radiator,
+    SplitValve,
     System,
     TemperatureSensor,
     ThreeWayValve,
+    Valve,
     Ventilation,
 )
 from trano.elements.types import DynamicTemplateCategories
 
 __all__ = [
+    "ThreeWayValveControl",
+    "SplitValve",
+    "CollectorControl",
     "BaseInternalElement",
+    "BoilerControl",
     "BaseOccupancy",
     "Emission",
     "VAVControl",
@@ -66,4 +82,9 @@ __all__ = [
     "Port",
     "VAV",
     "Duct",
+    "Radiator",
+    "Valve",
+    "EmissionControl",
+    "Boiler",
+    "Pump",
 ]

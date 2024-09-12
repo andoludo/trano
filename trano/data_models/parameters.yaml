@@ -483,7 +483,6 @@ ValveParameters:
     av:
       alias: Av
       description: None
-      ifabsent: string(None)
       range: string
     cv:
       alias: Cv
@@ -506,8 +505,6 @@ ValveParameters:
       range: float
     k_fixed:
       alias: kFixed
-      description: None
-      ifabsent: string(None)
       range: string
     kv:
       alias: Kv

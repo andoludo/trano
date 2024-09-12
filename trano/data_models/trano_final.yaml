@@ -703,7 +703,6 @@ classes:
     attributes:
       av:
         description: None
-        ifabsent: string(None)
         range: string
       cv:
         description: None
@@ -721,8 +720,6 @@ classes:
         ifabsent: float(0.02)
         range: float
       k_fixed:
-        description: None
-        ifabsent: string(None)
         range: string
       kv:
         description: None
