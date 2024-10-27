@@ -16,6 +16,7 @@ from trano.elements.inputs import (
     Target,
 )
 from trano.exceptions import ControllerBusPortError
+
 logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from trano.elements import BaseElement
@@ -37,7 +38,11 @@ def _evaluate_target(target: Target, element: "BaseElement") -> str | List[str]:
 
     target_ = _evaluate(element, target.commands())
     if not target_:
-        message = f"Element {element.name} of type {type(element).__name__} has no valid target {target.commands()}. This indicates that the selected element is incompatible."
+        message = (
+            f"Element {element.name} of type {type(element).__name__} "
+            f"has no valid target {target.commands()}. "
+            f"This indicates that the selected element is incompatible."
+        )
         logger.error(message)
         raise ControllerBusPortError(message)
     if isinstance(target_, list) and all(isinstance(t, BaseElement) for t in target_):

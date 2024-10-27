@@ -50,8 +50,10 @@ class BaseInputOutput(BaseModel):
             (y={self.default});"""
         return ""
 
+
 class BaseInput(BaseInputOutput):
     ...
+
 
 class RealInput(BaseInput):
     default: float = 0.0

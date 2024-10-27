@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Set, Optional
+from typing import Optional, Set
 
 import docker
 import pytest
@@ -74,7 +74,10 @@ SplitValveParameters = param_from_config("SplitValve")
 ThreeWayValveParameters = param_from_config("ThreeWayValve")
 
 
-def is_success(results: docker.models.containers.ExecResult, options:Optional[SimulationOptions]=None) -> bool:
+def is_success(
+    results: docker.models.containers.ExecResult,
+    options: Optional[SimulationOptions] = None,
+) -> bool:
     if options and options.check_only:
         return "true" in results.output.decode()
     return "The simulation finished successfully" in results.output.decode()

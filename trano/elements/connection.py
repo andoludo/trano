@@ -9,7 +9,8 @@ from trano.exceptions import IncompatiblePortsError
 if TYPE_CHECKING:
     from trano.elements import BaseElement
 
-INCOMPATIBLE_PORTS = [sorted(["dataBus","y"])]
+INCOMPATIBLE_PORTS = [sorted(["dataBus", "y"])]
+
 
 class Connection(BaseModel):
     right: PartialConnection
@@ -18,8 +19,18 @@ class Connection(BaseModel):
 
     @model_validator(mode="after")
     def _connection_validator(self) -> "Connection":
-        if sorted([part.split(".")[-1] for part in [self.right.equation, self.left.equation]]) in INCOMPATIBLE_PORTS:
-            raise IncompatiblePortsError(f"Incompatible ports {self.right.equation} and {self.left.equation}.")
+        if (
+            sorted(
+                [
+                    part.split(".")[-1]
+                    for part in [self.right.equation, self.left.equation]
+                ]
+            )
+            in INCOMPATIBLE_PORTS
+        ):
+            raise IncompatiblePortsError(
+                f"Incompatible ports {self.right.equation} and {self.left.equation}."
+            )
         return self
 
     @property

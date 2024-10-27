@@ -5,7 +5,7 @@ import pytest
 
 from tests.conftest import is_success
 from trano.data_models.conversion import convert_network
-from trano.exceptions import WrongSystemFlowError, IncompatiblePortsError
+from trano.exceptions import IncompatiblePortsError, WrongSystemFlowError
 from trano.library.library import Library
 from trano.simulate.simulate import SimulationOptions, simulate
 
@@ -51,11 +51,15 @@ def test_single_zone_hydronic_weather(schema: Path) -> None:
 
 
 def test_single_zone_air_handling_unit_simple_vav_control(schema: Path) -> None:
-    house = Path(__file__).parent.joinpath("single_zone_air_handling_unit_simple_vav_control.yaml")
+    house = Path(__file__).parent.joinpath(
+        "single_zone_air_handling_unit_simple_vav_control.yaml"
+    )
     network = convert_network("single_zone_air_handling_unit_simple_vav_control", house)
     Path(__file__).parent.joinpath("model_to_delete.mo").write_text(network.model())
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        options = SimulationOptions(end_time=3600, check_only=True) # TODO: why simulation fails
+        options = SimulationOptions(
+            end_time=3600, check_only=True
+        )  # TODO: why simulation fails
         results = simulate(
             Path(project_path),
             network,
@@ -91,19 +95,19 @@ def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> No
     house = Path(__file__).parent.joinpath(
         "single_zone_air_handling_unit_without_vav_with_duct.yaml"
     )
-    #TODO: remove ducts here
-    network = convert_network("single_zone_air_handling_unit_without_vav_with_duct", house)
+    # TODO: remove ducts here
+    network = convert_network(
+        "single_zone_air_handling_unit_without_vav_with_duct", house
+    )
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         options = SimulationOptions(end_time=3600, check_only=True)
         results = simulate(
             Path(project_path),
             network,
-            options=options, # TODO: investigate why simulation fails
+            options=options,  # TODO: investigate why simulation fails
         )
-        assert is_success(results, options = options)
-
-
+        assert is_success(results, options=options)
 
 
 @pytest.mark.parametrize(
@@ -113,7 +117,7 @@ def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> No
         "single_zone_hydronic_unknown_id",
         "single_zone_hydronic_unknown_system",
         "single_zone_air_handling_unit_without_vav",
-        "single_zone_air_handling_unit"
+        "single_zone_air_handling_unit",
     ],
 )
 def test_unexpected_configuration(schema: Path, file_name: str) -> None:
@@ -130,8 +134,10 @@ def test_unexpected_configuration(schema: Path, file_name: str) -> None:
         "single_zone_hydronic_random_id",
     ],
 )
-def test_unexpected_configuration_should_fail_but_pass_(schema: Path, file_name: str) -> None:
-    #TODO: this is to be checked
+def test_unexpected_configuration_should_fail_but_pass_(
+    schema: Path, file_name: str
+) -> None:
+    # TODO: this is to be checked
     house = Path(__file__).parent.joinpath(f"{file_name}.yaml")
     network = convert_network(file_name, house)
     network.model()
