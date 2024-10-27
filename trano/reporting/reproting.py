@@ -73,7 +73,7 @@ class SpacesDocumentation(BaseDocumentation):
         for space in spaces:
             main_space = space.model_dump(
                 mode="json",
-                include={
+                include={  # type: ignore
                     "name": True,
                     "parameters": True,
                     "occupancy": {"name": True, "parameters": True},
@@ -137,7 +137,7 @@ class SystemsDocumentation(BaseDocumentation):
             system.model_dump(
                 by_alias=True,
                 exclude_none=True,
-                include={"name": True, "parameters": True, "type": True},
+                include={"name": True, "parameters": True, "type": True},  # type: ignore
             )
             for system in _get_elements(elements, System)
             if system not in systems_to_exclude

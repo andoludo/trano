@@ -23,7 +23,7 @@ from trano.elements import (
 from trano.elements.bus import DataBus
 from trano.elements.construction import extract_properties
 from trano.elements.control import AhuControl, CollectorControl, VAVControl
-from trano.elements.inputs import BaseInput
+from trano.elements.inputs import BaseInputOutput
 from trano.elements.space import Space, _get_controllable_element
 from trano.elements.system import (
     VAV,
@@ -38,6 +38,7 @@ from trano.elements.system import (
     Weather,
 )
 from trano.elements.types import Tilt
+from trano.exceptions import WrongSystemFlowError
 from trano.library.library import Library
 from trano.reporting.html import to_html_reporting
 from trano.reporting.reproting import ModelDocumentation
@@ -374,7 +375,12 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         elements_: List[Union[VAV, Space]] = []
         elements = [node for node in self.graph.nodes if isinstance(node, element_type)]
         for element in elements:
-            paths = nx.shortest_path(self.graph, ahu, element)
+            try:
+                paths = nx.shortest_path(self.graph, ahu, element)
+            except Exception as e:
+                raise WrongSystemFlowError(
+                    "Wrong AHU system configuration flow."
+                ) from e
             p = paths[1:-1]
             if p and all(isinstance(p_, Ventilation) for p_ in p):
                 elements_.append(element)
@@ -418,7 +424,15 @@ class Network:  # noqa : PLR0904, #TODO: fix this
                 and node.parameters.path is not None  # type: ignore
             ):
                 # TODO: type ognore needs to be fixed
-                old_path = Path(node.parameters.path)  # type: ignore
+                old_path = Path(node.parameters.path).resolve()  # type: ignore
+                if not old_path.exists():
+                    parents = [Path.cwd(), *Path.cwd().parents]
+                    for parent in parents:
+                        old_path = next(parent.rglob(old_path.name), None)  # type: ignore
+                        if old_path and old_path.exists():
+                            break
+                    if not old_path or not old_path.exists():
+                        raise FileNotFoundError(f"File {old_path} not found")
                 new_path = project_path.joinpath(old_path.name)
                 shutil.copy(old_path, new_path)
                 # TODO: this is not correct
@@ -545,9 +559,9 @@ class Network:  # noqa : PLR0904, #TODO: fix this
             plt.show()
 
 
-def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInput]:
+def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
     port_types = ["Real", "Integer", "Boolean"]
-    ports: Dict[str, List[BaseInput]] = {
+    ports: Dict[str, List[BaseInputOutput]] = {
         f"{port_type}{direction}": []
         for port_type in port_types
         for direction in ["Output", "Input"]
@@ -582,6 +596,6 @@ def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInput]:
 
 
 def _get_non_connected_ports_intersection(
-    input_ports: List[BaseInput], output_ports: List[BaseInput]
-) -> List[BaseInput]:
+    input_ports: List[BaseInputOutput], output_ports: List[BaseInputOutput]
+) -> List[BaseInputOutput]:
     return list(set(input_ports) - set(output_ports).intersection(set(input_ports)))

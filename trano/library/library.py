@@ -80,6 +80,7 @@ class AvailableLibraries(BaseModel):
         # TODO: to be more strict
         return selected_variant[0]()
 
+    # TODO: this code should be library independent
     @classmethod
     def from_config(cls, name: str) -> Optional["AvailableLibraries"]:
         from trano.elements import BaseParameter, Figure, Port, parameters

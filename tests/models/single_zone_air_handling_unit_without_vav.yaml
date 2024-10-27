@@ -1,0 +1,49 @@
+default: !include_default
+spaces:
+  - occupancy:
+      parameters:
+        occupancy: 3600*{9, 17}
+        gain: "[40; 75; 40]"
+        heat_gain_if_occupied: 1/7/3
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    id: SPACE:001
+    external_boundaries:
+      external_walls:
+        - surface: 20
+          azimuth: 0
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 30
+          azimuth: 90
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 50
+          azimuth: 180.0
+          tilt: wall
+          construction: CAVITYWALL:001
+      windows:
+        - surface: 5.0
+          construction: INS3AR2020:001
+          azimuth: 0
+          tilt: wall
+        - surface: 2.0
+          construction: INS3AR2020:001
+          azimuth: 180.0
+          tilt: wall
+      floor_on_grounds:
+        - surface: 50.0
+          construction: CONCRETESLAB:001
+
+
+systems:
+  - air_handling_unit:
+      id: AHU:001
+      control:
+        ahu_control:
+          id: AHU_CONTROL:001
+      inlets:
+        - SPACE:001
+      outlets:
+        - SPACE:001

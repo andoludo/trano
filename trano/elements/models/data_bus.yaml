@@ -1,21 +1,31 @@
-components:
-- classes:
-  - DataBus
-  component_template:
-    bus:
-      real_outputs:
-      - component: TRoo
-        name: TZon
-        port: T
-        target:
-          main: element.spaces
-      - component: TRoo1
-        name: ppmCO2
-        port: ppm
-        target:
-          main: element.spaces
-    category: control
-    template: "\nmodel DataServer\nreplaceable package Medium = Modelica.Media.Interfaces.PartialMedium;\n\
+"components":
+- "classes":
+  - |-
+    DataBus
+  "component_template":
+    "bus":
+      "real_outputs":
+      - "component": |-
+          TRoo
+        "name": |-
+          TZon
+        "port": |-
+          T
+        "target":
+          "main": |-
+            element.spaces
+      - "component": |-
+          TRoo1
+        "name": |-
+          ppmCO2
+        "port": |-
+          ppm
+        "target":
+          "main": |-
+            element.spaces
+    "category": |-
+      control
+    "template": "\nmodel DataServer\nreplaceable package Medium = Modelica.Media.Interfaces.PartialMedium;\n\
       Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[{{ element.spaces |\
       \ length}}]\nTRoo {% raw %}annotation (\nPlacement(transformation(origin={-544,-226},\n\
       extent = {{480, 216}, {500, 236}})));{% endraw %}\nModelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{\
@@ -37,31 +47,49 @@ components:
       {% for index, space in element.spaces|enumerate %}\nconnect(port[{{index + 1}}],TRoo[{{index\
       \ + 1}}]. port);\nconnect(port_a[{{index + 1}}], TRoo1[{{index + 1}}].port);\n\
       {% endfor %}\n{{bus_ports | safe}}\n{% for input in element.non_connected_ports\
-      \ %}\nconnect(dataBus.{{ input.name }}{{ input.target.value }},\n{{ input.name }}{{input.target.evaluated_element\
-      \ | capitalize}}.y);\n{% endfor %}\nend DataServer;\n      "
-  figures: []
-  library: default
-  parameter_processing:
-    function: default_parameters
-  ports:
-  - multi_connection: true
-    names:
-    - port
-    targets:
-    - Space
-  - flow: inlet
-    multi_connection: true
-    names:
-    - port_a
-    targets:
-    - Space
-  - multi_connection: true
-    names:
-    - dataBus
-    targets:
-    - System
-    - Control
-    use_counter: false
-  template: "    {{package_name}}.Common.Controls.ventilation.DataServer\n       \
-    \ {{ element.name }} (redeclare package\n          Medium = Medium)"
-  variant: default
+      \ %}\nconnect(dataBus.{{ input.name }}{{ input.target.value }},\n{{ input.name\
+      \ }}{{input.target.evaluated_element | capitalize}}.y);\n{% endfor %}\nend DataServer;\n\
+      \      "
+  "figures": []
+  "library": |-
+    default
+  "parameter_processing":
+    "function": |-
+      default_parameters
+  "ports":
+  - "multi_connection": !!bool |-
+      true
+    "names":
+    - |-
+      port
+    "targets":
+    - |-
+      Space
+  - "flow": |-
+      inlet
+    "multi_connection": !!bool |-
+      true
+    "names":
+    - |-
+      port_a
+    "targets":
+    - |-
+      Space
+  - "multi_connection": !!bool |-
+      true
+    "names":
+    - |-
+      dataBus
+    "targets":
+    - |-
+      System
+    - |-
+      Control
+    "use_counter": !!bool |-
+      false
+  "template": |2-
+        {{package_name}}.Common.Controls.ventilation.DataServer
+            {{ element.name }} (redeclare package
+              Medium = Medium)
+  "variant": |-
+    default

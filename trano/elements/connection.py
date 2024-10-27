@@ -1,18 +1,37 @@
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from trano import elements
 from trano.elements.types import ConnectionView, Flow, PartialConnection
+from trano.exceptions import IncompatiblePortsError
 
 if TYPE_CHECKING:
     from trano.elements import BaseElement
+
+INCOMPATIBLE_PORTS = [sorted(["dataBus", "y"])]
 
 
 class Connection(BaseModel):
     right: PartialConnection
     left: PartialConnection
     connection_view: ConnectionView = Field(default=ConnectionView())
+
+    @model_validator(mode="after")
+    def _connection_validator(self) -> "Connection":
+        if (
+            sorted(
+                [
+                    part.split(".")[-1]
+                    for part in [self.right.equation, self.left.equation]
+                ]
+            )
+            in INCOMPATIBLE_PORTS
+        ):
+            raise IncompatiblePortsError(
+                f"Incompatible ports {self.right.equation} and {self.left.equation}."
+            )
+        return self
 
     @property
     def path(self) -> List[List[float] | Tuple[float, float]]:

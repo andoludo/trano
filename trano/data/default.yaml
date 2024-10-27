@@ -1,0 +1,239 @@
+constructions:
+- id: FLOORONGROUND:001
+  layers:
+  - material: CONCRETE:001
+    thickness: 0.2
+  - material: ROCKWOOL:001
+    thickness: 0.1
+  - material: SCREED:001
+    thickness: 0.08
+  - material: CONCRETE:001
+    thickness: 0.015
+- id: CONCRETESLAB:001
+  layers:
+  - material: CONCRETE:001
+    thickness: 0.125
+  - material: CONCRETE:001
+    thickness: 0.125
+- id: TABS:001
+  layers:
+  - material: CONCRETE:001
+    thickness: 0.125
+  - material: CONCRETE:001
+    thickness: 0.125
+  - material: ROCKWOOL:001
+    thickness: 0.01
+  - material: SCREED:001
+    thickness: 0.05
+  - material: TILE:001
+    thickness: 0.005
+- id: INSULATEDFLOORHEATING:001
+  layers:
+  - material: CONCRETE:001
+    thickness: 0.1
+  - material: PUR:001
+    thickness: 0.07
+  - material: SCREED:001
+    thickness: 0.05
+  - material: TILE:001
+    thickness: 0.01
+- id: CAVITYWALL:001
+  layers:
+  - material: BRICK:001
+    thickness: 0.08
+  - material: ROCKWOOL:001
+    thickness: 0.1
+  - material: BRICKHOLLOW:001
+    thickness: 0.14
+  - material: GYPSUM:001
+    thickness: 0.015
+- id: CAVITYWALLPARTIALFILL:001
+  layers:
+  - material: BRICK:001
+    thickness: 0.08
+  - material: AIR:001
+    thickness: 0.03
+  - material: ROCKWOOL:001
+    thickness: 0.1
+  - material: BRICKHOLLOW:001
+    thickness: 0.14
+  - material: GYPSUM:001
+    thickness: 0.015
+gas:
+- density: 5.46
+  id: XENON:001
+  longwave_emissivity: 0.0
+  shortwave_emissivity: 0.0
+  specific_heat_capacity: 158.0
+  thermal_conductivity: 0.0055
+- density: 1.2
+  id: AIR:001
+  longwave_emissivity: 0.0
+  shortwave_emissivity: 0.0
+  specific_heat_capacity: 1006.0
+  thermal_conductivity: 0.0256
+- density: 3.48
+  id: KRYPTON:001
+  longwave_emissivity: 0.0
+  shortwave_emissivity: 0.0
+  specific_heat_capacity: 248.0
+  thermal_conductivity: 0.0092
+- density: 1.66
+  id: ARGON:001
+  longwave_emissivity: 0.0
+  shortwave_emissivity: 0.0
+  specific_heat_capacity: 522.0
+  thermal_conductivity: 0.0174
+glass_material:
+- density: 2500.0
+  id: GLASS:001
+  longwave_emissivity: 0.84
+  shortwave_emissivity: 0.67
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 1.0
+glazings:
+- id: INS2AR2020:001
+  layers:
+  - glass: GLASS:001
+    thickness: 0.006
+  - gas: ARGON:001
+    thickness: 0.016
+  - glass: GLASS:001
+    thickness: 0.006
+- id: INS3AR2020:001
+  layers:
+  - glass: GLASS:001
+    thickness: 0.006
+  - gas: ARGON:001
+    thickness: 0.016
+  - glass: GLASS:001
+    thickness: 0.006
+  - gas: ARGON:001
+    thickness: 0.016
+  - glass: GLASS:001
+    thickness: 0.006
+- id: EPCDOUBLE:001
+  layers:
+  - glass: GLASS:001
+    thickness: 0.0038
+  - gas: AIR:001
+    thickness: 0.012
+  - glass: GLASS:001
+    thickness: 0.0038
+- id: EPCSINGLE:001
+  layers:
+  - glass: GLASS:001
+    thickness: 0.0038
+material:
+- density: 1920.0
+  id: BRICK:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 800.0
+  thermal_conductivity: 0.89
+- density: 2700.0
+  id: SLATE:001
+  longwave_emissivity: 0.97
+  shortwave_emissivity: 0.9
+  specific_heat_capacity: 1260.0
+  thermal_conductivity: 1.44
+- density: 640.0
+  id: GYPSUMBOARD:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 1150.0
+  thermal_conductivity: 0.16
+- density: 2240.0
+  id: CONCRETE:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 900.0
+  thermal_conductivity: 1.4
+- density: 2100.0
+  id: TILE:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 1.4
+- density: 1120.0
+  id: GYPSUM:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 0.38
+- density: 2000.0
+  id: SCREED:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 1000.0
+  thermal_conductivity: 1.3
+- density: 1600.0
+  id: GROUND:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.68
+  specific_heat_capacity: 1250.0
+  thermal_conductivity: 2.0
+- density: 540.0
+  id: PLYWOOD:001
+  longwave_emissivity: 0.86
+  shortwave_emissivity: 0.44
+  specific_heat_capacity: 1880.0
+  thermal_conductivity: 0.15
+- density: 850.0
+  id: BRICKHOLLOW:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 880.0
+  thermal_conductivity: 0.3
+- density: 350.0
+  id: YTONG:001
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 1000.0
+  thermal_conductivity: 0.09
+- density: 24.0
+  id: EPS:001
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 1500.0
+  thermal_conductivity: 0.035
+- density: 1.23
+  id: NONE:001
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 1008.0
+  thermal_conductivity: 1000.0
+- density: 120.0
+  id: CELLULARGLASS:001
+  specific_heat_capacity: 800.0
+  thermal_conductivity: 0.042
+- density: 40.0
+  id: PF:001
+  specific_heat_capacity: 1400.0
+  thermal_conductivity: 0.02
+- density: 100.0
+  id: ROCKWOOL:001
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 800.0
+  thermal_conductivity: 0.035
+- density: 40.0
+  id: PUR:001
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 1500.0
+  thermal_conductivity: 0.025
+- density: 30.0
+  id: XPS:001
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 1500.0
+  thermal_conductivity: 0.03
+- density: 30.0
+  id: PIR:001
+  specific_heat_capacity: 1500.0
+  thermal_conductivity: 0.025
+- density: 60.0
+  id: GLASSWOOL:001
+  specific_heat_capacity: 800.0
+  thermal_conductivity: 0.035

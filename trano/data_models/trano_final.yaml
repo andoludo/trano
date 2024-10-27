@@ -1,4 +1,15 @@
 classes:
+  AhuControl:
+    class_uri: schema:AhuControl
+    slots:
+    - id
+  AirHandlingUnit:
+    attributes:
+      control:
+        range: Control
+      parameters:
+        range: Parameter
+    is_a: System
   Boiler:
     attributes:
       control:
@@ -7,6 +18,10 @@ classes:
         range: BoilerParameters
     is_a: System
   BoilerControl:
+    attributes:
+      parameters:
+        multivalued: false
+        range: BoilerControlParameters
     class_uri: schema:BoilerControl
     slots:
     - id
@@ -30,9 +45,9 @@ classes:
         description: None
         ifabsent: string({0.9})
         range: string
-      dp:
+      diff_pressure:
         description: None
-        ifabsent: string((3000 + 2000)*{2,1})
+        ifabsent: string(5000*{2,1})
         range: string
       dp_nominal:
         description: None
@@ -54,10 +69,6 @@ classes:
         description: None
         ifabsent: float(0.1)
         range: float
-      fuel_type:
-        description: None
-        ifabsent: string(Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())
-        range: string
       height_of_tank_without_insulation:
         description: None
         ifabsent: float(2)
@@ -101,6 +112,8 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Construction
+      default:
+        range: Default
       gas:
         inlined: true
         inlined_as_list: true
@@ -116,6 +129,11 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Glazing
+      internal_walls:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: InternalWall
       material:
         inlined: true
         inlined_as_list: true
@@ -131,6 +149,8 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Systems
+      weather:
+        range: Weather
     description: A holder for Space objects
     tree_root: true
   CollectorControl:
@@ -152,6 +172,8 @@ classes:
     - boiler_control
     - collector_control
     - three_way_valve_control
+    - vav_control
+    - ahu_control
   ControlLoopsParameters:
     attributes:
       dt_hys:
@@ -182,6 +204,38 @@ classes:
         description: None
         ifabsent: float(30)
         range: float
+  Default:
+    attributes:
+      constructions:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Construction
+      gas:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Gas
+      glass_material:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: GlassMaterial
+      glazings:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Glazing
+      material:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Material
+  Duct:
+    attributes:
+      parameters:
+        range: Parameter
+    is_a: System
   Emission:
     class_uri: schema:Emission
     slots:
@@ -191,10 +245,23 @@ classes:
     attributes:
       parameters:
         multivalued: false
-        range: ControlLoopsParameters
+        range: EmissionControlParameters
     class_uri: schema:EmissionControl
     slots:
     - id
+  EmissionControlParameters:
+    attributes:
+      schedule:
+        ifabsent: string(3600*{7, 19})
+        range: string
+      temperature_heating_setback:
+        description: None
+        ifabsent: float(16)
+        range: float
+      temperature_heating_setpoint:
+        description: None
+        ifabsent: float(24)
+        range: float
   ExternalBoundaries:
     attributes:
       external_walls:
@@ -239,15 +306,15 @@ classes:
         ifabsent: float(0.0)
         range: float
       solar_reflectance_outside_facing:
-        ifabsent: float(0.053)
+        ifabsent: float(0.075)
         multivalued: true
         range: float
       solar_reflectance_room_facing:
-        ifabsent: float(0.053)
+        ifabsent: float(0.075)
         multivalued: true
         range: float
       solar_transmittance:
-        ifabsent: float(0.486)
+        ifabsent: float(0.6)
         multivalued: true
         range: float
     is_a: Material
@@ -274,6 +341,16 @@ classes:
       thickness:
         description: Thickness [m]
         range: float
+  InternalWall:
+    attributes:
+      construction:
+        range: Construction
+      space_1:
+        range: Space
+      space_2:
+        range: Space
+    slots:
+    - surface
   Layer:
     attributes:
       material:
@@ -466,6 +543,8 @@ classes:
     - parameters
     - occupancy
     - emissions
+    - ventilation_inlets
+    - ventilation_outlets
   SpaceParameter:
     attributes:
       average_room_height:
@@ -523,6 +602,10 @@ classes:
         ifabsent: string(false)
         range: string
   System:
+    attributes:
+      variant:
+        ifabsent: string('default')
+        range: string
     class_uri: schema:System
     slots:
     - id
@@ -536,6 +619,7 @@ classes:
     - boiler
     - pump
     - temperature_sensor
+    - air_handling_unit
   TemperatureSensor:
     is_a: System
   ThreeWayValve:
@@ -600,6 +684,11 @@ classes:
         description: None
         ifabsent: string({0.01,0.01})
         range: string
+  VAV:
+    attributes:
+      control:
+        range: Control
+    is_a: System
   Valve:
     attributes:
       control:
@@ -614,7 +703,6 @@ classes:
     attributes:
       av:
         description: None
-        ifabsent: string(None)
         range: string
       cv:
         description: None
@@ -632,8 +720,6 @@ classes:
         ifabsent: float(0.02)
         range: float
       k_fixed:
-        description: None
-        ifabsent: string(None)
         range: string
       kv:
         description: None
@@ -662,6 +748,30 @@ classes:
         description: None
         ifabsent: float(0.0001)
         range: float
+  VavControl:
+    attributes:
+      variant:
+        ifabsent: string('default')
+        range: string
+    class_uri: schema:VavControl
+    slots:
+    - id
+  VentilationInlet:
+    class_uri: schema:VentilationInlet
+    slots:
+    - duct
+    - vav
+  VentilationOutlet:
+    class_uri: schema:VentilationOutlet
+    slots:
+    - duct
+    - vav
+  Weather:
+    slot_usage:
+      parameters:
+        range: WeatherParameters
+    slots:
+    - parameters
   WeatherParameters:
     attributes:
       path:
@@ -716,6 +826,14 @@ prefixes:
 see_also:
 - https://my-org.github.io/trano
 slots:
+  ahu_control:
+    inlined: true
+    multivalued: false
+    range: AhuControl
+  air_handling_unit:
+    inlined: true
+    multivalued: false
+    range: AirHandlingUnit
   azimuth:
     range: float
     slot_uri: schema:azimuth
@@ -733,6 +851,10 @@ slots:
     multivalued: false
     range: CollectorControl
     slot_uri: schema:collector_control
+  duct:
+    inlined: true
+    multivalued: false
+    range: Duct
   emission_control:
     inlined: true
     multivalued: false
@@ -805,4 +927,22 @@ slots:
     inlined: true
     multivalued: false
     range: Valve
+  vav:
+    inlined: true
+    multivalued: false
+    range: VAV
+  vav_control:
+    inlined: true
+    multivalued: false
+    range: VavControl
+  ventilation_inlets:
+    inlined: true
+    multivalued: true
+    range: VentilationInlet
+    slot_uri: schema:ventilation_inlets
+  ventilation_outlets:
+    inlined: true
+    multivalued: true
+    range: VentilationOutlet
+    slot_uri: schema:ventilation_outlets
 title: trano

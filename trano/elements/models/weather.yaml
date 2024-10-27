@@ -1,12 +1,15 @@
-components:
-- classes:
-  - Weather
-  figures: []
-  library: ideas
-  parameter_processing:
-    function: default_parameters
-  ports: []
-  template: "\n    {% if macros.render_parameters(parameters) | safe %}\n    inner\
+"components":
+- "classes":
+  - |-
+    Weather
+  "figures": []
+  "library": |-
+    ideas
+  "parameter_processing":
+    "function": |-
+      default_parameters
+  "ports": []
+  "template": "\n    {% if macros.render_parameters(parameters) | safe %}\n    inner\
     \ IDEAS.BoundaryConditions.SimInfoManager\n    sim(interZonalAirFlowType=\n  IDEAS.BoundaryConditions.Types.\n\
     \  InterZonalAirFlow.OnePort, {{ macros.render_parameters(parameters) | safe}})\
     \ \"Data reader\"\n    {% raw %}annotation (Placement(transformation(extent={{-96,76},{-76,96}})));{%\
@@ -14,25 +17,35 @@ components:
     \    sim(interZonalAirFlowType=\n  IDEAS.BoundaryConditions.Types.\n  InterZonalAirFlow.OnePort)\
     \ \"Data reader\"\n    {% raw %}annotation (Placement(transformation(extent={{-96,76},{-76,96}})));{%\
     \ endraw %}\n    {% endif %}\n    "
-  variant: default
-- classes:
-  - Weather
-  figures: []
-  library: buildings
-  parameter_processing:
-    function: default_parameters
-  ports:
-  - multi_connection: true
-    names:
-    - weaBus
-    targets:
-    - Space
-    - Boundary
-    use_counter: false
-  template: "\n    {% if macros.render_parameters(parameters) | safe %}\n    Buildings.BoundaryConditions.WeatherData.ReaderTMY3\n\
+  "variant": |-
+    default
+- "classes":
+  - |-
+    Weather
+  "figures": []
+  "library": |-
+    buildings
+  "parameter_processing":
+    "function": |-
+      default_parameters
+  "ports":
+  - "multi_connection": !!bool |-
+      true
+    "names":
+    - |-
+      weaBus
+    "targets":
+    - |-
+      Space
+    - |-
+      Boundary
+    "use_counter": !!bool |-
+      false
+  "template": "\n    {% if macros.render_parameters(parameters) | safe %}\n    Buildings.BoundaryConditions.WeatherData.ReaderTMY3\n\
     \                {{ element.name }}({{ macros.render_parameters(parameters) |\
     \ safe}})\n    {% else %}\n    Buildings.BoundaryConditions.WeatherData.ReaderTMY3\n\
     \                {{ element.name }}(filNam=Modelica.Utilities.Files.loadResource\n\
     \        (\"modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos\"\
     ))\n    {% endif %}\n    "
-  variant: default
+  "variant": |-
+    default

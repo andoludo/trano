@@ -40,6 +40,8 @@ def load_parameters() -> Dict[str, Type["BaseParameter"]]:
                     alias=alias,  # TODO: avoid using eval
                 )
         model = create_model(f"{name}_", __base__=BaseParameter, **attrib_)  # type: ignore # TODO: why?
+        if parameter["classes"] is None:
+            continue
         for class_ in parameter["classes"]:
             classes[class_] = model
     return classes
@@ -49,7 +51,13 @@ PARAMETERS = load_parameters()
 
 
 def param_from_config(name: str) -> Optional[Type[BaseParameter]]:
-    return PARAMETERS.get(name)
+    if name in PARAMETERS:
+        return PARAMETERS[name]
+    elif name.upper() in PARAMETERS:
+        return PARAMETERS[name.upper()]
+    else:
+        return None
+    # TODO: to be replaced with a raise later
 
 
 def change_alias(
