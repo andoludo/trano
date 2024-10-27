@@ -751,8 +751,8 @@ classes:
   VavControl:
     attributes:
       variant:
-        range: string
         ifabsent: string('default')
+        range: string
     class_uri: schema:VavControl
     slots:
     - id

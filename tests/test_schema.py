@@ -14,11 +14,11 @@ from trano.simulate.simulate import SimulationOptions, simulate
 
 @pytest.fixture
 def house() -> Path:
-    return Path(__file__).parents[1].joinpath("tests", "house.yaml")
+    return Path(__file__).parents[1].joinpath("tests", "models", "house.yaml")
 
 
 def test_validate_schema() -> None:
-    house = Path(__file__).parents[1].joinpath("tests", "house.yaml")
+    house = Path(__file__).parents[1].joinpath("tests", "models", "house.yaml")
     data_model_path = (
         Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
     )
@@ -79,7 +79,9 @@ def test_simulate_model_yaml(house: Path) -> None:
 
 
 def test_simulate_simplified_yaml() -> None:
-    model_path = Path(__file__).parents[1].joinpath("tests", "simplified_house.yaml")
+    model_path = (
+        Path(__file__).parents[1].joinpath("tests", "models", "simplified_house.yaml")
+    )
     network = convert_network("simplified_yaml", model_path)
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         results = simulate(
