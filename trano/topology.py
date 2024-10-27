@@ -424,7 +424,15 @@ class Network:  # noqa : PLR0904, #TODO: fix this
                 and node.parameters.path is not None  # type: ignore
             ):
                 # TODO: type ognore needs to be fixed
-                old_path = Path(node.parameters.path)  # type: ignore
+                old_path = Path(node.parameters.path).resolve()  # type: ignore
+                if not old_path.exists():
+                    parents = [Path.cwd(), *Path.cwd().parents]
+                    for parent in parents:
+                        old_path = next(parent.rglob(old_path.name), None)  # type: ignore
+                        if old_path and old_path.exists():
+                            break
+                    if not old_path or not old_path.exists():
+                        raise FileNotFoundError(f"File {old_path} not found")
                 new_path = project_path.joinpath(old_path.name)
                 shutil.copy(old_path, new_path)
                 # TODO: this is not correct

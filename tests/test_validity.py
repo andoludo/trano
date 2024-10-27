@@ -40,7 +40,7 @@ def test_single_zone_hydronic(schema: Path) -> None:
 def test_single_zone_hydronic_weather(schema: Path) -> None:
     house = Path(__file__).parent.joinpath("single_zone_hydronic_weather.yaml")
     network = convert_network("single_zone_hydronic_weather", house)
-
+    Path(__file__).parent.joinpath("model_to_delete.mo").write_text(network.model())
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         results = simulate(
             Path(project_path),
@@ -55,7 +55,7 @@ def test_single_zone_air_handling_unit_simple_vav_control(schema: Path) -> None:
         "single_zone_air_handling_unit_simple_vav_control.yaml"
     )
     network = convert_network("single_zone_air_handling_unit_simple_vav_control", house)
-    Path(__file__).parent.joinpath("model_to_delete.mo").write_text(network.model())
+
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         options = SimulationOptions(
             end_time=3600, check_only=True
