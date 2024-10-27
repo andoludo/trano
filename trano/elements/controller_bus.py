@@ -1,11 +1,12 @@
 import json
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
 from trano.elements.inputs import (
-    BaseInput,
+    BaseInputOutput,
     BooleanInput,
     BooleanOutput,
     IntegerInput,
@@ -14,7 +15,9 @@ from trano.elements.inputs import (
     RealOutput,
     Target,
 )
+from trano.exceptions import ControllerBusPortError
 
+logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from trano.elements import BaseElement
 
@@ -34,8 +37,14 @@ def _evaluate_target(target: Target, element: "BaseElement") -> str | List[str]:
     from trano.elements import BaseElement
 
     target_ = _evaluate(element, target.commands())
-    if target_ is None:
-        raise Exception("Target value is None")
+    if not target_:
+        message = (
+            f"Element {element.name} of type {type(element).__name__} "
+            f"has no valid target {target.commands()}. "
+            f"This indicates that the selected element is incompatible."
+        )
+        logger.error(message)
+        raise ControllerBusPortError(message)
     if isinstance(target_, list) and all(isinstance(t, BaseElement) for t in target_):
         return [
             _evaluate(sub, target.sub_commands())  # type: ignore
@@ -46,12 +55,12 @@ def _evaluate_target(target: Target, element: "BaseElement") -> str | List[str]:
 
 
 def _append_to_port(
-    input_: BaseInput,
-    ports: Dict[str, List[BaseInput]],
+    input_: BaseInputOutput,
+    ports: Dict[str, List[BaseInputOutput]],
     target: Target,
     evaluated_element: str,
     element: "BaseElement",
-) -> Dict[str, List[BaseInput]]:
+) -> Dict[str, List[BaseInputOutput]]:
     ports[type(input_).__name__].append(
         type(input_)(
             **(
@@ -107,7 +116,7 @@ class ControllerBus(BaseModel):
             + self.boolean_outputs
         )
 
-    def _get_targets(self) -> Dict[Target, List[BaseInput]]:
+    def _get_targets(self) -> Dict[Target, List[BaseInputOutput]]:
         return {
             input.target: [
                 input_ for input_ in self.inputs() if input_.target == input.target
@@ -117,8 +126,8 @@ class ControllerBus(BaseModel):
 
     def list_ports(
         self, element: "BaseElement", **kwargs: Any  # noqa: ANN401
-    ) -> Dict[str, List[BaseInput]]:
-        ports: Dict[str, List[BaseInput]] = {
+    ) -> Dict[str, List[BaseInputOutput]]:
+        ports: Dict[str, List[BaseInputOutput]] = {
             "RealOutput": [],
             "RealInput": [],
             "IntegerOutput": [],
@@ -172,7 +181,7 @@ class ControllerBus(BaseModel):
 
 def _append_ports(  # noqa: PLR0913
     ports: List[str],
-    input: BaseInput,
+    input: BaseInputOutput,
     evaluated_target: str,
     case_1_condition: str,
     case_1: str,

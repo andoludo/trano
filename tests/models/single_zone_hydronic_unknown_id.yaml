@@ -1,0 +1,92 @@
+default: !include_default
+spaces:
+  - occupancy:
+      parameters:
+        occupancy: 3600*{9, 17}
+        gain: "[40; 75; 40]"
+        heat_gain_if_occupied: 1/7/3
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    id: SPACE:001
+    external_boundaries:
+      external_walls:
+        - surface: 20
+          azimuth: 0
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 30
+          azimuth: 90
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 50
+          azimuth: 180.0
+          tilt: wall
+          construction: CAVITYWALL:001
+      windows:
+        - surface: 5.0
+          construction: INS3AR2020:001
+          azimuth: 0
+          tilt: wall
+        - surface: 2.0
+          construction: INS3AR2020:001
+          azimuth: 180.0
+          tilt: wall
+      floor_on_grounds:
+        - surface: 50.0
+          construction: CONCRETESLAB:001
+    emissions:
+      - radiator:
+          id: RADIATOR:003
+          parameters:
+            nominal_heating_power_positive_for_heating: 2500
+      - valve:
+          id: VALVE:003
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:001
+              parameters:
+                schedule: 3600*{10, 20}
+                temperature_heating_setpoint: 295.15
+                temperature_heating_setback: 291.15
+systems:
+  - boiler:
+      id: BOILER:001
+      parameters:
+        nominal_heating_power: 2579
+        dp_nominal: 5580
+      control:
+        boiler_control:
+          id: BOILER_CONTROL:001
+          parameters:
+            tsup_nominal: 473.15
+      inlets:
+        - SPLIT_VALVE:002
+  - pump:
+      id: PUMP:001
+      control:
+        collector_control:
+      inlets:
+        - BOILER:001
+  - three_way_valve:
+      id: THREE_WAY_VALVE:001
+      control:
+        three_way_valve_control:
+      inlets:
+        - UNKNOWN:002
+        - PUMP:001
+      outlets:
+        - TEMPERATURE_SENSOR:001
+
+  - temperature_sensor:
+      id: TEMPERATURE_SENSOR:001
+      outlets:
+        - RADIATOR:003
+  - split_valve:
+      id: SPLIT_VALVE:002
+      inlets:
+        - UNKNOWN:003
+      outlets:
+        - BOILER:001
+
+#TODO: Make sure to mention that split valvel is required here!!

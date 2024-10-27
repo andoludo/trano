@@ -31,6 +31,13 @@ imports:
 
 
 classes:
+  Weather:
+    slots:
+      - parameters
+    slot_usage:
+      parameters:
+        range: WeatherParameters
+
   Space:
     description: >-
       Represents a Space
@@ -44,6 +51,8 @@ classes:
       - parameters
       - occupancy
       - emissions
+      - ventilation_inlets
+      - ventilation_outlets
     class_uri: schema:Space
   ExternalWall:
     attributes:
@@ -59,6 +68,16 @@ classes:
       construction:
         description: Construction
         range: Construction
+    slots:
+      - surface
+  InternalWall:
+    attributes:
+      construction:
+        range: Construction
+      space_1:
+        range: Space
+      space_2:
+        range: Space
     slots:
       - surface
   Window:
@@ -118,15 +137,15 @@ classes:
       solar_transmittance:
         range: float
         multivalued: true
-        ifabsent: float(0.486)
+        ifabsent: float(0.6)
       solar_reflectance_outside_facing:
         range: float
         multivalued: true
-        ifabsent: float(0.053)
+        ifabsent: float(0.075)
       solar_reflectance_room_facing:
         range: float
         multivalued: true
-        ifabsent: float(0.053)
+        ifabsent: float(0.075)
       infrared_transmissivity:
         range: float
         ifabsent: float(0.0)
@@ -192,6 +211,10 @@ classes:
     class_uri: schema:Occupancy
 
   System:
+    attributes:
+      variant:
+        range: string
+        ifabsent: string('default')
     slots:
       - id
       - inlets
@@ -205,6 +228,7 @@ classes:
       - boiler
       - pump
       - temperature_sensor
+      - air_handling_unit
     class_uri: schema:Systems
 
   Emission:
@@ -213,6 +237,16 @@ classes:
       - valve
     class_uri: schema:Emission
 
+  VentilationInlet:
+    slots:
+      - duct
+      - vav
+    class_uri: schema:VentilationInlet
+  VentilationOutlet:
+    slots:
+      - duct
+      - vav
+    class_uri: schema:VentilationOutlet
   SplitValve:
     is_a: System
     attributes:
@@ -250,6 +284,13 @@ classes:
         range: BoilerParameters
       control:
         range: Control
+  AirHandlingUnit:
+    is_a: System
+    attributes:
+      parameters:
+        range: Parameter
+      control:
+        range: Control
 
   Pump:
     is_a: System
@@ -258,6 +299,16 @@ classes:
         range: PumpParameters
       control:
         range: Control
+  VAV:
+    is_a: System
+    attributes:
+      control:
+        range: Control
+  Duct:
+    is_a: System
+    attributes:
+        parameters:
+            range: Parameter
 
   TemperatureSensor:
     is_a: System
@@ -268,12 +319,16 @@ classes:
       - id
     attributes:
       parameters:
-        range: ControlLoopsParameters
+        range: EmissionControlParameters
         multivalued: false
     class_uri: schema:EmissionControl
   BoilerControl:
     slots:
       - id
+    attributes:
+      parameters:
+        range: BoilerControlParameters
+        multivalued: false
     class_uri: schema:BoilerControl
   CollectorControl:
     slots:
@@ -283,6 +338,18 @@ classes:
     slots:
       - id
     class_uri: schema:CollectorControl
+  VavControl:
+    attributes:
+      variant:
+        range: string
+        ifabsent: string('default')
+    slots:
+      - id
+    class_uri: schema:VavControl
+  AhuControl:
+    slots:
+      - id
+    class_uri: schema:AhuControl
 
   Control:
     slots:
@@ -290,11 +357,10 @@ classes:
       - boiler_control
       - collector_control
       - three_way_valve_control
+      - vav_control
+      - ahu_control
     class_uri: schema:Control
-  Building:
-    tree_root: true
-    description: >-
-      A holder for Space objects
+  Default:
     attributes:
       material:
         range: Material
@@ -321,6 +387,43 @@ classes:
         inlined: true
         inlined_as_list: true
         multivalued: true
+  Building:
+    tree_root: true
+    description: >-
+      A holder for Space objects
+    attributes:
+      default:
+        range: Default
+      material:
+        range: Material
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      gas:
+        range: Gas
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      glass_material:
+        range: GlassMaterial
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      glazings:
+        range: Glazing
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      constructions:
+        range: Construction
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+      internal_walls:
+        range: InternalWall
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
       spaces:
         range: Space
         inlined: true
@@ -331,6 +434,9 @@ classes:
         inlined: true
         inlined_as_list: true
         multivalued: true
+      weather:
+        range: Weather
+
 
 
 slots:
@@ -384,14 +490,47 @@ slots:
     multivalued: false
     inlined: true
 
+  air_handling_unit:
+    range: AirHandlingUnit
+    multivalued: false
+    inlined: true
+
   pump:
     range: Pump
+    multivalued: false
+    inlined: true
+
+  duct:
+    range: Duct
+    multivalued: false
+    inlined: true
+  vav:
+    range: VAV
+    multivalued: false
+    inlined: true
+
+  vav_control:
+    range: VavControl
+    multivalued: false
+    inlined: true
+  ahu_control:
+    range: AhuControl
     multivalued: false
     inlined: true
 
   emissions:
     slot_uri: schema:emissions
     range: Emission
+    multivalued: true
+    inlined: true
+  ventilation_inlets:
+    slot_uri: schema:ventilation_inlets
+    range: VentilationInlet
+    multivalued: true
+    inlined: true
+  ventilation_outlets:
+    slot_uri: schema:ventilation_outlets
+    range: VentilationOutlet
     multivalued: true
     inlined: true
   emission_control:

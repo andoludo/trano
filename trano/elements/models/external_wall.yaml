@@ -1,23 +1,39 @@
-components:
-- classes:
-  - ExternalWall
-  - MergedExternalWall
-  figures: []
-  library: ideas
-  parameter_processing:
-    function: default_parameters
-  ports:
-  - bus_connection: true
-    multi_connection: true
-    multi_object: true
-    names:
-    - propsBus_a
-    targets:
-    - Space
-  template: "\n    {% set tilts = tilts_processing_ideas(element) %}\n    IDEAS.Buildings.Components.OuterWall[{{\
-    \ element.surfaces | length }}]\n    {{ element.name }}(\n    redeclare parameter\
-    \ {{ package_name }}.Data.Constructions.\n    {{ element.constructions[0].name\
-    \ }}\n    constructionType,\n    A={{  macros.join_list(element.surfaces)}},\n\
-    \    final azi={{macros.join_list(element.azimuths)}},\n    redeclare package\
-    \ Medium = Medium,\n    final inc={{macros.join_list(tilts)}})"
-  variant: default
+"components":
+- "classes":
+  - |-
+    ExternalWall
+  - |-
+    MergedExternalWall
+  "figures": []
+  "library": |-
+    ideas
+  "parameter_processing":
+    "function": |-
+      default_parameters
+  "ports":
+  - "bus_connection": !!bool |-
+      true
+    "multi_connection": !!bool |-
+      true
+    "multi_object": !!bool |-
+      true
+    "names":
+    - |-
+      propsBus_a
+    "targets":
+    - |-
+      Space
+  "template": |2-
+
+        {% set tilts = tilts_processing_ideas(element) %}
+        IDEAS.Buildings.Components.OuterWall[{{ element.surfaces | length }}]
+        {{ element.name }}(
+        redeclare parameter {{ package_name }}.Data.Constructions.
+        {{ element.constructions[0].name }}
+        constructionType,
+        A={{  macros.join_list(element.surfaces)}},
+        final azi={{macros.join_list(element.azimuths)}},
+        redeclare package Medium = Medium,
+        final inc={{macros.join_list(tilts)}})
+  "variant": |-
+    default
