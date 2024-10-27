@@ -60,4 +60,3 @@ systems:
         - DUCT:001
 
 
-#TODO: flow direction matters in defing the systems. Otherwise this will not work.

@@ -339,6 +339,10 @@ classes:
       - id
     class_uri: schema:CollectorControl
   VavControl:
+    attributes:
+      variant:
+        range: string
+        ifabsent: string('default')
     slots:
       - id
     class_uri: schema:VavControl

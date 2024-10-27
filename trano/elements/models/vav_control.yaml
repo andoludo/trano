@@ -383,3 +383,27 @@
         {{ element.name }}
   "variant": |-
     default
+
+- "classes":
+  - |-
+    VAVControl
+  "library": |-
+    default
+  "parameter_processing":
+    "function": |-
+      default_parameters
+  "ports":
+  - "multi_connection": !!bool |-
+      true
+    "names":
+    - |-
+      y
+    "targets":
+    - |-
+      System
+    "use_counter": !!bool |-
+      false
+  "template": |2-
+        Modelica.Blocks.Sources.RealExpression {{ element.name }}(y=1)
+  "variant": |-
+    constant

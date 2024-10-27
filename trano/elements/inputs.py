@@ -26,7 +26,7 @@ class Target(BaseModel):
         return self.sub.split(".")
 
 
-class BaseInput(BaseModel):
+class BaseInputOutput(BaseModel):
     name: str
     component: str
     port: str
@@ -50,6 +50,8 @@ class BaseInput(BaseModel):
             (y={self.default});"""
         return ""
 
+class BaseInput(BaseInputOutput):
+    ...
 
 class RealInput(BaseInput):
     default: float = 0.0
@@ -66,16 +68,16 @@ class BooleanInput(BaseInput):
     input_template: str = "Modelica.Blocks.Sources.BooleanExpression"
 
 
-class BooleanOutput(BaseInput):
+class BooleanOutput(BaseInputOutput):
     default: str = "false"
     input_template: str = "Modelica.Blocks.Sources.BooleanExpression"
 
 
-class IntegerOutput(BaseInput):
+class IntegerOutput(BaseInputOutput):
     default: int = 0
     input_template: str = "Modelica.Blocks.Sources.IntegerExpression"
 
 
-class RealOutput(BaseInput):
+class RealOutput(BaseInputOutput):
     default: float = 0.0
     input_template: str = "Modelica.Blocks.Sources.RealExpression"

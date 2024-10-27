@@ -170,3 +170,47 @@
         mCooVAV_flow_nominal={0.01,0.01}{% endraw %})
   "variant": |-
     default
+- "classes":
+  - |-
+    AirHandlingUnit
+  "library": |-
+    default
+  "parameter_processing":
+    "function": |-
+      default_parameters
+  "ports":
+  - "flow": |-
+      inlet
+    "multi_connection": !!bool |-
+      true
+    "names":
+    - |-
+      port_a
+    "targets":
+    - |-
+      System
+    - |-
+      Space
+    "use_counter": !!bool |-
+      false
+  - "flow": |-
+      outlet
+    "multi_connection": !!bool |-
+      true
+    "names":
+    - |-
+      port_b
+    "targets":
+    - |-
+      System
+    - |-
+      Space
+    "use_counter": !!bool |-
+      false
+  "template": |-
+    {{package_name}}.Common.Fluid.
+        Ventilation.SimpleHVACBuildings
+        {{ element.name }}
+        (redeclare package Medium = Medium)
+  "variant": |-
+    test

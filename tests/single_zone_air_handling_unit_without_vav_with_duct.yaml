@@ -35,17 +35,20 @@ spaces:
       floor_on_grounds:
         - surface: 50.0
           construction: CONCRETESLAB:001
-
+    ventilation_inlets:
+      - duct:
+          id: DUCT:001
+    ventilation_outlets:
+      - duct:
+          id: DUCT:002
 
 systems:
   - air_handling_unit:
       id: AHU:001
-      control:
-        ahu_control:
-          id: AHU_CONTROL:001
+      variant: test
       inlets:
-        - SPACE:001
+        - DUCT:002
       outlets:
-        - SPACE:001
+        - DUCT:001
 
 

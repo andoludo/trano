@@ -23,7 +23,7 @@ from trano.elements import (
 from trano.elements.bus import DataBus
 from trano.elements.construction import extract_properties
 from trano.elements.control import AhuControl, CollectorControl, VAVControl
-from trano.elements.inputs import BaseInput
+from trano.elements.inputs import BaseInputOutput
 from trano.elements.space import Space, _get_controllable_element
 from trano.elements.system import (
     VAV,
@@ -551,9 +551,9 @@ class Network:  # noqa : PLR0904, #TODO: fix this
             plt.show()
 
 
-def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInput]:
+def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
     port_types = ["Real", "Integer", "Boolean"]
-    ports: Dict[str, List[BaseInput]] = {
+    ports: Dict[str, List[BaseInputOutput]] = {
         f"{port_type}{direction}": []
         for port_type in port_types
         for direction in ["Output", "Input"]
@@ -588,6 +588,6 @@ def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInput]:
 
 
 def _get_non_connected_ports_intersection(
-    input_ports: List[BaseInput], output_ports: List[BaseInput]
-) -> List[BaseInput]:
+    input_ports: List[BaseInputOutput], output_ports: List[BaseInputOutput]
+) -> List[BaseInputOutput]:
     return list(set(input_ports) - set(output_ports).intersection(set(input_ports)))

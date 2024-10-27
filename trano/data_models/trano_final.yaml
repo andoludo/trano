@@ -749,6 +749,10 @@ classes:
         ifabsent: float(0.0001)
         range: float
   VavControl:
+    attributes:
+      variant:
+        range: string
+        ifabsent: string('default')
     class_uri: schema:VavControl
     slots:
     - id
