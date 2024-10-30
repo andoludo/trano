@@ -109,14 +109,16 @@ class Port(BaseModel):
             if self.multi_connection and self.bus_connection:
                 first_counter = self.counter
                 last_counter = self.counter + merged_number - 1
-                if first_counter == last_counter:
-                    counter = f"{first_counter}"
-                else:
-                    counter = f"{first_counter}:{last_counter}"
-                if self.multi_object:
-                    equation = f"{node.name}[{counter}].{name}"
-                else:
-                    equation = f"{node.name}.{name}[{counter}]"
+                counter = (
+                    f"{first_counter}"
+                    if first_counter == last_counter
+                    else f"{first_counter}:{last_counter}"
+                )
+                equation = (
+                    f"{node.name}[{counter}].{name}"
+                    if self.multi_object
+                    else f"{node.name}.{name}[{counter}]"
+                )
                 self.counter = last_counter + 1
             elif self.multi_connection and self.use_counter:
                 equation = f"{node.name}.{name}[{self.counter}]"

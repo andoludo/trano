@@ -3,11 +3,11 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import is_success
 from trano.data_models.conversion import convert_network
 from trano.exceptions import IncompatiblePortsError, WrongSystemFlowError
 from trano.library.library import Library
 from trano.simulate.simulate import SimulationOptions, simulate
+from trano.utils.utils import is_success
 
 
 def get_path(file_name: str) -> Path:
@@ -113,6 +113,7 @@ def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> No
         "single_zone_hydronic_unknown_system",
         "single_zone_air_handling_unit_without_vav",
         "single_zone_air_handling_unit",
+        "hello_world_missing_space_parameters",
     ],
 )
 def test_unexpected_configuration(schema: Path, file_name: str) -> None:

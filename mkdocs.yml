@@ -1,22 +1,74 @@
 site_name: trano
-#theme:
-#  name: material
-#  palette:
-#  - media: "(prefers-color-scheme)"
-#    toggle:
-#      icon: material/lightbulb-auto
-#      name: Switch to light mode
-#  - media: '(prefers-color-scheme: light)'
-#    scheme: default
-#    primary: deep purple
-#    accent: amber
-#    toggle:
-#      icon: material/lightbulb
-#      name: Switch to dark mode
-#  - media: '(prefers-color-scheme: dark)'
-#    scheme: slate
-#    primary: deep purple
-#    accent: amber
-#    toggle:
-#      icon: material/lightbulb-outline
-#      name: Switch to system preference
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/lightbulb-auto
+        name: Switch to light mode
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to system preference
+  features:
+  - content.code.annotate
+  - content.code.copy
+  # - content.code.select
+  - content.footnote.tooltips
+  - content.tabs.link
+  - content.tooltips
+  - navigation.footer
+  - navigation.indexes
+  - navigation.instant
+  - navigation.instant.prefetch
+  # - navigation.instant.preview
+  - navigation.instant.progress
+  - navigation.path
+  - navigation.tabs
+  - navigation.tabs.sticky
+  - navigation.top
+  - navigation.tracking
+  - search.highlight
+  - search.share
+  - search.suggest
+  - toc.follow
+
+  icon:
+    repo: fontawesome/brands/github-alt
+  logo: img/icon-white.svg
+  favicon: img/favicon.png
+  language: en
+plugins:
+  - search
+nav:
+  - Trano: index.md
+  - Getting-started: getting-started/index.md
+  - Tutorials:
+    - tutorials/index.md
+    - Hello world: tutorials/hello_world.md
+    - Multizone: tutorials/multizone_free_float.md
+    - TEST: tutorials/tutorial_1.md
+    - TEST2: tutorials/tutorial_2.md
+  - How-to Guides: how-to guides/index.md
+  - Explanation: explanation/index.md
+  - Reference: reference/index.md
+markdown_extensions:
+    - markdown_include.include:
+        base_path: docs
+    - pymdownx.highlight:
+        anchor_linenums: true
+        line_spans: __span
+        pygments_lang_class: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences

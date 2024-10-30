@@ -1,8 +1,7 @@
 import re
 from pathlib import Path
-from typing import Optional, Set
+from typing import Set
 
-import docker
 import pytest
 
 from tests.constructions.constructions import Constructions, Glasses
@@ -60,7 +59,6 @@ from trano.elements.system import (
 )
 from trano.elements.types import Azimuth, Flow, Tilt
 from trano.library.library import Library
-from trano.simulate.simulate import SimulationOptions
 from trano.topology import Network
 
 OVERWRITE_MODELS = False
@@ -72,15 +70,6 @@ RadiatorParameter = param_from_config("Radiator")
 SpaceParameter = param_from_config("Space")
 SplitValveParameters = param_from_config("SplitValve")
 ThreeWayValveParameters = param_from_config("ThreeWayValve")
-
-
-def is_success(
-    results: docker.models.containers.ExecResult,
-    options: Optional[SimulationOptions] = None,
-) -> bool:
-    if options and options.check_only:
-        return "true" in results.output.decode()
-    return "The simulation finished successfully" in results.output.decode()
 
 
 @pytest.fixture

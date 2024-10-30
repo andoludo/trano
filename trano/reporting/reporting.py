@@ -1,39 +1,32 @@
 import abc
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Type
+from typing import TYPE_CHECKING, List, Optional
 
-from pydantic import BaseModel, computed_field
+from pydantic import computed_field
 
-from trano.elements import BaseElement, BaseParameter, BaseSimpleWall
+from trano.elements import BaseElement, BaseSimpleWall, BaseWall
+from trano.elements.envelope import MergedBaseWall
 from trano.elements.space import Space
 from trano.elements.system import Boiler, System
+from trano.reporting.types import (
+    BaseTable,
+    ConstructionTable,
+    ContentDocumentation,
+    ResultFile,
+    SpaceTable,
+    SystemTable,
+    Topic,
+)
+from trano.reporting.utils import _dump_list_attributes, _get_elements, get_description
 
 if TYPE_CHECKING:
     from trano.topology import Network
 
-Topic = Literal["Spaces", "Construction", "Systems", "Base"]
-
-
-class ContentDocumentation(BaseModel):
-    title: Optional[str] = None
-    introduction: Optional[str] = None
-    conclusions: Optional[str] = None
-
-
-def get_description() -> Dict[str, Any]:
-    return {
-        field.alias: (field.description or field.title)
-        for cls in BaseParameter.__subclasses__()
-        for field in cls.model_fields.values()
-        if field.alias
-    }
-
 
 class BaseDocumentation(ContentDocumentation):
-    title: str
-    introduction: str
-    table: Dict[str, Any] | List[Dict[str, Any]]
-    conclusions: str
+    title: Optional[str] = None
+    introduction: Optional[str] = None
+    table: BaseTable | List[BaseTable]
+    conclusions: Optional[str] = None
 
     @classmethod
     @abc.abstractmethod
@@ -48,6 +41,8 @@ class BaseDocumentation(ContentDocumentation):
 
 
 class SpacesDocumentation(BaseDocumentation):
+    table: List[SpaceTable]  # type: ignore
+
     @classmethod
     def from_elements(
         cls, elements: List[BaseElement], content_documentation: ContentDocumentation
@@ -75,27 +70,40 @@ class SpacesDocumentation(BaseDocumentation):
                 mode="json",
                 include={  # type: ignore
                     "name": True,
-                    "parameters": True,
-                    "occupancy": {"name": True, "parameters": True},
+                    "occupancy": {"name": True},
                 },
                 exclude_none=True,
                 by_alias=True,
             )
+            if space.parameters:
+                main_space["parameters"] = space.parameters.model_dump(
+                    by_alias=True, exclude_none=True
+                )
+            if (
+                main_space.get("occupancy")
+                and isinstance(space, Space)
+                and space.occupancy
+                and space.occupancy.parameters
+            ):
+                main_space["occupancy"][
+                    "parameters"
+                ] = space.occupancy.parameters.model_dump(
+                    by_alias=True, exclude_none=True
+                )
             for key, value in document_mapping.items():
                 values = _dump_list_attributes(space, key, value)
                 if values:
                     main_space[key] = _dump_list_attributes(space, key, value)
-            spaces_.append(main_space)
+            spaces_.append(SpaceTable(**main_space))
         data = {
-            "title": "Spaces",
-            "introduction": "Introduction",
             "table": spaces_,
-            "conclusions": "Conclusions",
         } | content_documentation.model_dump(exclude_none=True)
         return cls(**data)
 
 
 class ConstructionDocumentation(BaseDocumentation):
+    table: List[ConstructionTable]  # type: ignore
+
     @classmethod
     def from_elements(
         cls, elements: List[BaseElement], content_documentation: ContentDocumentation
@@ -103,21 +111,25 @@ class ConstructionDocumentation(BaseDocumentation):
         constructions = [
             c.model_dump(by_alias=True, exclude_none=True)
             for c in {
-                w.construction
-                for w in _get_elements(elements, BaseSimpleWall)
-                if isinstance(w, BaseSimpleWall)
+                construction
+                for w in _get_elements(elements, BaseWall)
+                if isinstance(w, (BaseSimpleWall, MergedBaseWall))
+                for construction in (
+                    [w.construction] if hasattr(w, "construction") else w.constructions
+                )
             }
         ]
         data = {
-            "title": "Spaces",
-            "introduction": "Introduction",
-            "table": constructions,
-            "conclusions": "Conclusions",
+            "table": [
+                ConstructionTable(**construction) for construction in constructions
+            ],
         } | content_documentation.model_dump(exclude_none=True)
         return cls(**data)
 
 
 class SystemsDocumentation(BaseDocumentation):
+    table: List[SystemTable]  # type: ignore
+
     @classmethod
     def from_elements(
         cls, elements: List[BaseElement], content_documentation: ContentDocumentation
@@ -132,22 +144,20 @@ class SystemsDocumentation(BaseDocumentation):
             + space.ventilation_inlets
             + space.ventilation_outlets
         }
-
-        systems = [
-            system.model_dump(
-                by_alias=True,
-                exclude_none=True,
-                include={"name": True, "parameters": True, "type": True},  # type: ignore
-            )
-            for system in _get_elements(elements, System)
-            if system not in systems_to_exclude
-        ]
+        systems = []
+        for system in _get_elements(elements, System):
+            if system not in systems_to_exclude:
+                system_ = system.model_dump(
+                    by_alias=True,
+                    exclude_none=True,
+                    include={"name": True, "parameters": True, "type": True},
+                )
+                if system.parameters:
+                    system_["parameters"] = system.parameters.model_dump()
+                systems.append(SystemTable(**system_))
 
         data = {
-            "title": "Spaces",
-            "introduction": "Introduction",
             "table": systems,
-            "conclusions": "Conclusions",
         } | content_documentation.model_dump(exclude_none=True)
         return cls(**data)
 
@@ -156,11 +166,6 @@ class ContentModelDocumentation(ContentDocumentation):
     spaces: ContentDocumentation
     constructions: ContentDocumentation
     systems: ContentDocumentation
-
-
-class ResultFile(BaseModel):
-    path: Path
-    type: Literal["openmodelica", "dymola"] = "openmodelica"
 
 
 class ModelDocumentation(ContentDocumentation):
@@ -187,12 +192,9 @@ class ModelDocumentation(ContentDocumentation):
             elements, content_documentation.systems
         )
         data = content_documentation.model_dump(exclude_none=True) | {
-            "title": "Spaces",
-            "introduction": "Introduction",
             "spaces": spaces_documentation,
             "constructions": constructions,
             "systems": systems,
-            "conclusions": "Conclusions",
             "elements": elements,
             "result": result,
         }
@@ -217,26 +219,6 @@ class ModelDocumentation(ContentDocumentation):
         elements = [
             x
             for x in list(network.graph.nodes)
-            if isinstance(x, (Boiler, Space, BaseSimpleWall))
+            if isinstance(x, (Boiler, Space, BaseSimpleWall, MergedBaseWall))
         ]
         return cls.from_model_elements(elements, content_model_documentation, result)  # type: ignore
-
-
-def _get_elements(
-    elements: List[BaseElement], element_type: Type[Space | System | BaseSimpleWall]
-) -> List[BaseElement]:
-    return [element for element in elements if isinstance(element, element_type)]
-
-
-def _dump_list_attributes(
-    element: BaseElement, attribute_name: str, include_mapping: object
-) -> List[Dict[int, Any]]:
-    return [
-        el.model_dump(
-            by_alias=True,
-            exclude_none=True,
-            mode="json",
-            include=include_mapping,
-        )
-        for el in getattr(element, attribute_name)
-    ]

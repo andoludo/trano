@@ -3,7 +3,7 @@ from pathlib import Path
 
 from trano.reporting.docx import to_docx
 from trano.reporting.html import to_html_reporting
-from trano.reporting.reproting import (
+from trano.reporting.reporting import (
     ContentDocumentation,
     ContentModelDocumentation,
     ModelDocumentation,

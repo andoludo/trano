@@ -54,7 +54,53 @@ def plot(data: Reader, figure: Figure, show: bool = True) -> pyFigure:
     return fig
 
 
-def plot_plot_ly(data: Reader, figure: Figure, show: bool = True) -> plotlyFigure:
+def plot_plot_ly_many(
+    data: Reader, figures: List[Figure], show: bool = False
+) -> plotlyFigure:
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    for figure in figures:
+        for axis, figure_axis in enumerate([figure.left_axis, figure.right_axis]):
+            for line in figure_axis.lines:
+                try:
+                    line_data = pd.DataFrame(data.values(line.key))
+                except KeyError:
+                    logger.warning(f"Key {line.key} not found in data")
+                    continue
+
+                if line_data.empty:
+                    continue
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=line_data.loc[0],
+                        y=line_data.loc[1],
+                        mode="lines",
+                        name=line.label,
+                    ),
+                    secondary_y=bool(axis),
+                )
+    if not fig.data:
+        return None
+    fig.update_layout(
+        xaxis_title="Simulation time [-]",
+        yaxis_title=figure.left_axis.label,
+        yaxis2_title=figure.right_axis.label,
+        legend_title="Legend",
+        autosize=False,
+        width=1000,
+        height=600,
+        margin={"l": 50, "r": 50, "b": 100, "t": 100, "pad": 4},
+    )
+
+    # Show the figure
+    if show:
+        fig.show()
+
+    return fig
+
+
+def plot_plot_ly(data: Reader, figure: Figure, show: bool = False) -> plotlyFigure:
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
@@ -78,7 +124,8 @@ def plot_plot_ly(data: Reader, figure: Figure, show: bool = True) -> plotlyFigur
                 ),
                 secondary_y=bool(axis),
             )
-
+    if not fig.data:
+        return None
     fig.update_layout(
         xaxis_title="Simulation time [-]",
         yaxis_title=figure.left_axis.label,
@@ -106,7 +153,8 @@ def plot_element(
     subsystems = ["control", "emissions", "ventilation_inlets", "ventilation_outlets"]
     for figure in element.figures:
         fig = plot_function(data, figure)
-        figures.append(fig)
+        if fig:
+            figures.append(fig)
         for subsystem in subsystems:
             if hasattr(element, subsystem) and getattr(element, subsystem) is not None:
                 sub_element = getattr(element, subsystem)
@@ -123,6 +171,7 @@ def plot_element(
 
 
 def add_element_figures(document: Document, data: Reader, element: BaseElement) -> None:
+    # TODO: duplicate with the one bellow  !!! to be checked!!!
     figures = plot_element(data, element)
     for figure in figures:
         add_figure(document, figure, size=6)

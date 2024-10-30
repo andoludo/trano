@@ -5,11 +5,12 @@ from pathlib import Path
 import pytest
 from linkml.validator import validate_file
 
-from tests.conftest import _read, clean_model, is_success
+from tests.conftest import _read, clean_model
 from trano.data_models.conversion import convert_model, convert_network
 from trano.data_models.converter import converter
 from trano.scripts.schema import create_final_schema
 from trano.simulate.simulate import SimulationOptions, simulate
+from trano.utils.utils import is_success
 
 
 @pytest.fixture

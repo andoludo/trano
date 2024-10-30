@@ -42,6 +42,9 @@ class Library(BaseModel):
     constants: str = ""
     templates: Templates
     default: bool = False
+    default_parameters: Dict[str, Any] = Field(
+        default_factory=dict
+    )  # TODO: this should be baseparameters
 
     @classmethod
     def from_configuration(cls, name: str) -> "Library":

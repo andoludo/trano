@@ -261,6 +261,17 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
                     }
                 )
             )
+        elif (
+            network.library.default_parameters.get("occupancy") is not None
+            and occupancy_parameter_class is not None
+        ):
+            system_counter.update(["occupancy"])
+            occupancy = Occupancy(
+                name=f"occupancy_{system_counter['occupancy']}",
+                parameters=occupancy_parameter_class(
+                    **network.library.default_parameters["occupancy"]
+                ),
+            )
         emissions = []
         for emission in space.get("emissions", []):
             emission_ = _instantiate_component(emission)

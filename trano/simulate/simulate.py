@@ -23,6 +23,10 @@ class SimulationOptions(BaseModel):
     tolerance: float = Field(default=1e-4)
 
 
+class SimulationLibraryOptions(SimulationOptions):
+    library_name: str = Field(default="Buildings")
+
+
 def simulate(
     project_path: Path,
     model_network: Network,

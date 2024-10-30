@@ -40,8 +40,7 @@ from trano.elements.system import (
 from trano.elements.types import Tilt
 from trano.exceptions import WrongSystemFlowError
 from trano.library.library import Library
-from trano.reporting.html import to_html_reporting
-from trano.reporting.reproting import ModelDocumentation
+from trano.reporting.reporting import ModelDocumentation
 
 
 class Network:  # noqa : PLR0904, #TODO: fix this
@@ -464,7 +463,6 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         template = environment.get_template("base.jinja2")
 
         data = extract_properties(self.library, self.name, self.graph.nodes)
-        documentation = ModelDocumentation.from_network(self)
         diagram_size = self._get_diagram_size()
         return template.render(
             network=self,
@@ -473,7 +471,6 @@ class Network:  # noqa : PLR0904, #TODO: fix this
             library=self.library,
             databus=data_bus,
             dynamic_components=self.dynamic_components,
-            documentation=to_html_reporting(documentation),
             diagram_size=diagram_size,
         )
 

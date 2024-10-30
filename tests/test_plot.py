@@ -4,7 +4,7 @@ import pytest
 from buildingspy.io.outputfile import Reader
 
 from trano.elements.space import Space
-from trano.plot.plot import plot, plot_element, plot_plot_ly
+from trano.plot.plot import plot, plot_element, plot_plot_ly, plot_plot_ly_many
 from trano.topology import Network
 
 
@@ -38,3 +38,14 @@ def test_plot_element(
     figures_plotly = plot_element(data_reader, space[0], plot_function=plot_plot_ly)
     assert len(figures) == 6
     assert len(figures_plotly) == 6
+
+
+def test_plot_plot_ly_many(
+    buildings_two_rooms_with_storage: Network, data_reader: Reader
+) -> None:
+    space = [
+        s for s in buildings_two_rooms_with_storage.graph.nodes if isinstance(s, Space)
+    ]
+    for figures in list(zip(*[s.figures for s in space])):
+        figures_plotly = plot_plot_ly_many(data_reader, figures, show=True)
+        assert figures_plotly
