@@ -1,0 +1,560 @@
+
+## BoilerControlParameters
+The following parameters are valid for the following classes['boilercontrol']
+```yaml 
+threshold_outdoor_air_cutoff:
+  alias: threshold_outdoor_air_cutoff
+  description: None
+  ifabsent: float(288.15)
+  range: float
+threshold_to_switch_off_boiler:
+  alias: threshold_to_switch_off_boiler
+  description: None
+  ifabsent: float(288.15)
+  range: float
+tsup_nominal:
+  alias: TSup_nominal
+  description: None
+  ifabsent: float(353.15)
+  range: float
+
+```
+
+
+
+## BoilerParameters
+The following parameters are valid for the following classes['boiler']
+```yaml 
+coefficients_for_efficiency_curve:
+  alias: a
+  description: None
+  ifabsent: string({0.9})
+  range: string
+diff_pressure:
+  alias: dp
+  description: None
+  ifabsent: string(5000*{2,1})
+  range: string
+dp_nominal:
+  alias: dp_nominal
+  description: None
+  ifabsent: float(5000)
+  range: float
+dt_boi_nominal:
+  alias: dTBoi_nominal
+  description: None
+  ifabsent: float(20)
+  range: float
+dt_rad_nominal:
+  alias: dTRad_nominal
+  description: None
+  ifabsent: float(10)
+  range: float
+effcur:
+  alias: effCur
+  description: None
+  ifabsent: string(Buildings.Fluid.Types.EfficiencyCurves.Constant)
+  range: string
+fraction_of_nominal_flow_rate_where_flow_transitions_to_laminar:
+  alias: deltaM
+  description: None
+  ifabsent: float(0.1)
+  range: float
+height_of_tank_without_insulation:
+  alias: hTan
+  description: None
+  ifabsent: float(2)
+  range: float
+if_actual_temperature_at_port_is_computed:
+  alias: show_T
+  description: None
+  ifabsent: string(false)
+  range: string
+nominal_heating_power:
+  alias: Q_flow_nominal
+  description: None
+  ifabsent: float(2000)
+  range: float
+nominal_mass_flow_radiator_loop:
+  alias: null
+  func: 'lambda self: self.sca_fac_rad * self.nominal_heating_power / self.dt_rad_nominal
+    / 4200'
+  type: float
+nominal_mass_flow_rate_boiler:
+  alias: null
+  func: 'lambda self: self.sca_fac_rad * self.nominal_heating_power / self.dt_rad_nominal
+    / 4200'
+  type: float
+number_of_volume_segments:
+  alias: nSeg
+  description: None
+  ifabsent: int(4)
+  range: integer
+sca_fac_rad:
+  alias: scaFacRad
+  description: None
+  ifabsent: float(1.5)
+  range: float
+tank_volume:
+  alias: VTan
+  description: None
+  ifabsent: float(0.2)
+  range: float
+temperature_used_to_compute_nominal_efficiency:
+  alias: T_nominal
+  description: None
+  ifabsent: float(353.15)
+  range: float
+thickness_of_insulation:
+  alias: dIns
+  description: None
+  ifabsent: float(0.002)
+  range: float
+use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+  alias: linearizeFlowResistance
+  description: None
+  ifabsent: string(false)
+  range: string
+v_flow:
+  alias: V_flow
+  func: 'lambda self: f''{self.nominal_mass_flow_rate_boiler}'' ''/1000*{0.5,1}'''
+  type: str
+
+```
+
+
+
+## EmissionControlParameters
+The following parameters are valid for the following classes['emissioncontrol']
+```yaml 
+schedule:
+  alias: schedule
+  ifabsent: string(3600*{7, 19})
+  range: string
+temperature_heating_setback:
+  alias: THeaSetBack
+  description: None
+  ifabsent: float(16)
+  range: float
+temperature_heating_setpoint:
+  alias: THeaSet
+  description: None
+  ifabsent: float(24)
+  range: float
+
+```
+
+
+
+## OccupancyParameters
+The following parameters are valid for the following classes['occupancy']
+```yaml 
+gain:
+  alias: gain
+  description: None
+  ifabsent: string([35; 70; 30])
+  range: string
+heat_gain_if_occupied:
+  alias: k
+  description: None
+  ifabsent: string(1/6/4)
+  range: string
+occupancy:
+  alias: occupancy
+  description: None
+  ifabsent: string(3600*{7, 19})
+  range: string
+
+```
+
+
+
+## PIDParameters
+The following parameters are valid for the following classes['threewayvalvecontrol', 'collectorcontrol']
+```yaml 
+controller_type:
+  alias: controllerType
+  description: None
+  ifabsent: string(Buildings.Controls.OBC.CDL.Types.SimpleController.PI)
+  range: string
+k:
+  alias: k
+  description: None
+  ifabsent: float(1)
+  range: float
+nd:
+  alias: Nd
+  description: None
+  ifabsent: float(10)
+  range: float
+ni:
+  alias: Ni
+  description: None
+  ifabsent: float(0.9)
+  range: float
+r:
+  alias: r
+  description: None
+  ifabsent: float(1)
+  range: float
+td:
+  alias: Td
+  description: None
+  ifabsent: float(0.1)
+  range: float
+ti:
+  alias: Ti
+  description: None
+  ifabsent: float(0.5)
+  range: float
+y_max:
+  alias: yMax
+  description: None
+  ifabsent: float(1)
+  range: float
+y_min:
+  alias: yMin
+  description: None
+  ifabsent: float(0)
+  range: float
+
+```
+
+
+
+## PumpParameters
+The following parameters are valid for the following classes['pump']
+```yaml 
+constant_input_set_point:
+  alias: constInput
+  description: None
+  range: float
+control_input_type:
+  alias: inputType
+  description: None
+  ifabsent: string(None)
+  range: string
+dp_nominal:
+  alias: dp_nominal
+  description: None
+  ifabsent: float(10000)
+  range: float
+m_flow_nominal:
+  alias: m_flow_nominal
+  description: None
+  ifabsent: float(0.008)
+  range: float
+per:
+  alias: per
+  description: None
+  ifabsent: string(None)
+  range: string
+
+```
+
+
+
+## RadiatorParameter
+The following parameters are valid for the following classes['radiator']
+```yaml 
+air_temperature_at_nominal_condition:
+  alias: TAir_nominal
+  description: None
+  ifabsent: float(293.15)
+  range: float
+dp_nominal:
+  alias: dp_nominal
+  description: None
+  ifabsent: float(0)
+  range: float
+dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity:
+  alias: mDry
+  func: 'lambda self: 0.0263 * abs(self.nominal_heating_power_positive_for_heating)'
+  type: float
+exponent_for_heat_transfer:
+  alias: n
+  description: None
+  ifabsent: float(1.24)
+  range: float
+fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
+  alias: deltaM
+  description: None
+  ifabsent: float(0.01)
+  range: float
+fraction_radiant_heat_transfer:
+  alias: fraRad
+  description: None
+  ifabsent: float(0.3)
+  range: float
+nominal_heating_power_positive_for_heating:
+  alias: Q_flow_nominal
+  description: None
+  ifabsent: float(2000)
+  range: float
+number_of_elements_used_in_the_discretization:
+  alias: nEle
+  description: None
+  ifabsent: int(1)
+  range: integer
+radiative_temperature_at_nominal_condition:
+  alias: TRad_nominal
+  description: None
+  ifabsent: float(293.15)
+  range: float
+use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+  alias: linearized
+  description: None
+  ifabsent: string(false)
+  range: string
+use_m_flow_f_dp_else_dp_f_m_flow:
+  alias: from_dp
+  description: None
+  ifabsent: string(false)
+  range: string
+water_inlet_temperature_at_nominal_condition:
+  alias: T_a_nominal
+  description: None
+  ifabsent: float(363.15)
+  range: float
+water_outlet_temperature_at_nominal_condition:
+  alias: T_b_nominal
+  description: None
+  ifabsent: float(353.15)
+  range: float
+water_volume_of_radiator:
+  alias: VWat
+  func: lambda self:5.8e-5 * abs(self.nominal_heating_power_positive_for_heating)
+  type: float
+
+```
+
+
+
+## SpaceParameter
+The following parameters are valid for the following classes['space']
+```yaml 
+average_room_height:
+  alias: hRoo
+  description: Average room height [m]
+  ifabsent: float(2)
+  range: float
+floor_area:
+  alias: AFlo
+  description: Floor area [m2]
+  ifabsent: float(20)
+  range: float
+linearize_emissive_power:
+  alias: linearizeRadiation
+  description: Set to true to linearize emissive power
+  ifabsent: string(true)
+  range: string
+nominal_mass_flow_rate:
+  alias: m_flow_nominal
+  description: Nominal mass flow rate [kg/s]
+  ifabsent: float(0.01)
+  range: float
+sensible_thermal_mass_scaling_factor:
+  alias: mSenFac
+  description: Factor for scaling the sensible thermal mass of the zone air volume
+  ifabsent: float(1)
+  range: float
+temperature_initial:
+  alias: T_start
+  description: Initial temperature [K]
+  ifabsent: float(294.15)
+  range: float
+volume:
+  alias: null
+  func: lambda self:self.floor_area * self.average_room_height
+  type: float
+
+```
+
+
+
+## SplitValveParameters
+The following parameters are valid for the following classes['splitvalve']
+```yaml 
+dp_nominal:
+  alias: dp_nominal
+  description: None
+  ifabsent: string({10000,-1,-1})
+  range: string
+fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
+  alias: deltaM
+  description: None
+  ifabsent: float(0.3)
+  range: float
+m_flow_nominal:
+  alias: None
+  description: None
+  ifabsent: string(0.008*{1,-1,-1})
+  range: string
+nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
+  alias: mDyn_flow_nominal
+  description: None
+  range: float
+time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance:
+  alias: tau
+  description: None
+  range: float
+use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+  alias: linearized
+  description: None
+  ifabsent: string(false)
+  range: string
+
+```
+
+
+
+## ThreeWayValveParameters
+The following parameters are valid for the following classes['threewayvalve']
+```yaml 
+Av:
+  alias: Av
+  description: None
+  ifabsent: string(None)
+  range: string
+Cv:
+  alias: Cv
+  description: None
+  range: float
+Kv:
+  alias: Kv
+  description: None
+  range: float
+dp_fixed_nominal:
+  alias: dpFixed_nominal
+  description: None
+  ifabsent: string({100,0})
+  range: string
+dp_valve_nominal:
+  alias: dpValve_nominal
+  description: None
+  ifabsent: float(6000)
+  range: float
+fra_k:
+  alias: fraK
+  description: None
+  ifabsent: float(0.7)
+  range: float
+fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
+  alias: deltaM
+  description: None
+  ifabsent: float(0.02)
+  range: float
+m_flow_nominal:
+  alias: m_flow_nominal
+  description: None
+  ifabsent: float(0.0078)
+  range: float
+range_of_significant_deviation_from_equal_percentage_law:
+  alias: delta0
+  description: None
+  ifabsent: float(0.01)
+  range: float
+rangeability:
+  alias: R
+  description: None
+  ifabsent: float(50)
+  range: float
+rho_std:
+  alias: rhoStd
+  description: None
+  range: float
+use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+  alias: linearized
+  description: None
+  ifabsent: string({false, false})
+  range: string
+valve_leakage:
+  alias: l
+  description: None
+  ifabsent: string({0.01,0.01})
+  range: string
+
+```
+
+
+
+## ValveParameters
+The following parameters are valid for the following classes['valve']
+```yaml 
+av:
+  alias: Av
+  description: None
+  range: string
+cv:
+  alias: Cv
+  description: None
+  range: float
+dp_fixed_nominal:
+  alias: dpFixed_nominal
+  description: None
+  ifabsent: float(6000)
+  range: float
+dp_valve_nominal:
+  alias: dpValve_nominal
+  description: None
+  ifabsent: float(6000)
+  range: float
+fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
+  alias: deltaM
+  description: None
+  ifabsent: float(0.02)
+  range: float
+k_fixed:
+  alias: kFixed
+  range: string
+kv:
+  alias: Kv
+  description: None
+  range: float
+m_flow_nominal:
+  alias: m_flow_nominal
+  description: None
+  ifabsent: float(0.01)
+  range: float
+range_of_significant_deviation_from_equal_percentage_law:
+  alias: delta0
+  description: None
+  ifabsent: float(0.01)
+  range: float
+rangeability:
+  alias: R
+  description: None
+  ifabsent: float(50)
+  range: float
+use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
+  alias: linearized
+  description: None
+  ifabsent: string(false)
+  range: string
+use_m_flow_f_dp_else_dp_f_m_flow:
+  alias: from_dp
+  description: None
+  ifabsent: string(true)
+  range: string
+valve_leakage:
+  alias: l
+  description: None
+  ifabsent: float(0.0001)
+  range: float
+
+```
+
+
+
+## WeatherParameters
+The following parameters are valid for the following classes['weather']
+```yaml 
+path:
+  alias: filNam
+  description: None
+  ifabsent: string(None)
+  range: string
+
+```
+
+
