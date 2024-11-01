@@ -55,6 +55,7 @@ def test_single_zone_hydronic(schema: Path) -> None:
         )
         assert is_success(results)
 
+
 @pytest.mark.run(order=23)
 def test_single_zone_hydronic_template(schema: Path) -> None:
     house = get_path("single_zone_hydronic.yaml")
@@ -75,6 +76,7 @@ def test_single_zone_hydronic_weather(schema: Path) -> None:
             options=SimulationOptions(end_time=3600),
         )
         assert is_success(results)
+
 
 @pytest.mark.run(order=24)
 def test_single_zone_hydronic_weather_template(schema: Path) -> None:
@@ -101,6 +103,7 @@ def test_single_zone_air_handling_unit_simple_vav_control(schema: Path) -> None:
         )
         assert is_success(results, options=options)
 
+
 @pytest.mark.run(order=25)
 def test_single_zone_air_handling_unit_simple_vav_control_template(
     schema: Path,
@@ -124,6 +127,7 @@ def test_single_zone_air_handling_unit_complex_vav(schema: Path) -> None:
         )
         assert is_success(results)
 
+
 @pytest.mark.run(order=26)
 def test_single_zone_air_handling_unit_complex_vav_template(schema: Path) -> None:
     house = get_path("single_zone_air_handling_unit_complex_vav.yaml")
@@ -132,6 +136,7 @@ def test_single_zone_air_handling_unit_complex_vav_template(schema: Path) -> Non
         _read(f"{network.name}_yaml")
     )
 
+
 @pytest.mark.run(order=27)
 def test_two_zones_template(schema: Path) -> None:
     house = get_path("two_zones.yaml")
@@ -139,6 +144,7 @@ def test_two_zones_template(schema: Path) -> None:
     assert clean_model(network.model(), f"{network.name}_yaml") == set(
         _read(f"{network.name}_yaml")
     )
+
 
 @pytest.mark.run(order=28)
 def test_two_zones_ideas_template(schema: Path) -> None:
@@ -172,6 +178,7 @@ def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> No
             options=options,  # TODO: investigate why simulation fails
         )
         assert is_success(results, options=options)
+
 
 @pytest.mark.run(order=29)
 def test_single_zone_air_handling_unit_without_vav_with_duct_template(

@@ -13,13 +13,13 @@ from matplotlib.figure import Figure as pyFigure
 from plotly.graph_objects import Figure as plotlyFigure
 from plotly.subplots import make_subplots  # type: ignore
 
-from trano.elements import BaseElement, Figure
+from trano.elements import BaseElement, NamedFigure
 
 logger = logging.getLogger(__name__)
 FIGURE_COUNT = 1
 
 
-def plot(data: Reader, figure: Figure, show: bool = True) -> pyFigure:
+def plot(data: Reader, figure: NamedFigure, show: bool = True) -> pyFigure:
     fig, ax = plt.subplots(figsize=(10, 6))
     fig.subplots_adjust(right=0.9)
     twin1 = ax.twinx()
@@ -55,7 +55,7 @@ def plot(data: Reader, figure: Figure, show: bool = True) -> pyFigure:
 
 
 def plot_plot_ly_many(
-    data: Reader, figures: List[Figure], show: bool = False
+    data: Reader, figures: List[NamedFigure], show: bool = False
 ) -> plotlyFigure:
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -76,7 +76,7 @@ def plot_plot_ly_many(
                         x=line_data.loc[0],
                         y=line_data.loc[1],
                         mode="lines",
-                        name=line.label,
+                        name=f"{figure.name} - {line.label}",
                     ),
                     secondary_y=bool(axis),
                 )
@@ -91,6 +91,8 @@ def plot_plot_ly_many(
         width=1000,
         height=600,
         margin={"l": 50, "r": 50, "b": 100, "t": 100, "pad": 4},
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
     )
 
     # Show the figure
@@ -100,7 +102,7 @@ def plot_plot_ly_many(
     return fig
 
 
-def plot_plot_ly(data: Reader, figure: Figure, show: bool = False) -> plotlyFigure:
+def plot_plot_ly(data: Reader, figure: NamedFigure, show: bool = False) -> plotlyFigure:
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
@@ -147,7 +149,7 @@ def plot_plot_ly(data: Reader, figure: Figure, show: bool = False) -> plotlyFigu
 def plot_element(
     data: Reader,
     element: BaseElement,
-    plot_function: Callable[[Reader, Figure], plotlyFigure | pyFigure] = plot,
+    plot_function: Callable[[Reader, NamedFigure], plotlyFigure | pyFigure] = plot,
 ) -> List[pyFigure]:
     figures = []
     subsystems = ["control", "emissions", "ventilation_inlets", "ventilation_outlets"]

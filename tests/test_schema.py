@@ -13,6 +13,7 @@ from trano.simulate.simulate import SimulationOptions, simulate
 from trano.utils.utils import is_success
 from jsf import JSF
 
+
 @pytest.fixture
 def house() -> Path:
     return Path(__file__).parents[1].joinpath("tests", "models", "house.yaml")
@@ -60,7 +61,10 @@ def test_create_model_json(schema: Path, house: Path) -> None:
         model_ = convert_model(model_name, Path(temp.name))
         assert clean_model(model_, model_name) == set(_read(model_name))
 
+
 from linkml.generators.jsonschemagen import JsonSchemaGenerator
+
+
 def test_create_json_schema() -> None:
     data_model_path = (
         Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
@@ -68,13 +72,14 @@ def test_create_json_schema() -> None:
     a = JsonSchemaGenerator(data_model_path).serialize()
     faker = JSF(json.loads(a))
     fake_json = faker.generate()
-    #TODO: needs validation
+    # TODO: needs validation
 
 
 def test_create_model_yaml(schema: Path, house: Path) -> None:
     model_name = "house"
     model_ = convert_model(model_name, house)
     assert clean_model(model_, model_name) == set(_read(model_name))
+
 
 @pytest.mark.simulate
 def test_simulate_model_yaml(house: Path) -> None:
@@ -87,6 +92,7 @@ def test_simulate_model_yaml(house: Path) -> None:
             options=SimulationOptions(end_time=3600),
         )
         assert is_success(results)
+
 
 @pytest.mark.simulate
 def test_simulate_simplified_yaml() -> None:

@@ -98,15 +98,14 @@ def test_two_zones_ideas() -> None:
     )
 
 
-def test_report_ideas() -> None:
+def test_report() -> None:
     from trano.simulate.simulate import SimulationLibraryOptions
 
     report(
-        path_to_yaml_configuration_folder / "two_zones_ideas.yaml",
+        path_to_yaml_configuration_folder / "three_zones_hydronic_heating.yaml",
         SimulationLibraryOptions(
             start_time=0,
             end_time=2 * 3600 * 24 * 7,
             tolerance=1e-4,
-            library_name="IDEAS",
         ),
     )

@@ -25,7 +25,7 @@ constructions:
 spaces:
   - occupancy:
     parameters:
-      floor_area: 100.0
+      floor_area: 49.0
       average_room_height: 2.5
     id: SPACE:001
     external_boundaries:
@@ -52,18 +52,24 @@ spaces:
           azimuth: 180.0
           tilt: wall
       floor_on_grounds:
-        - surface: 120
+        - surface: 49
           construction: CONCRETESLAB:001
     emissions:
       - radiator:
+          parameters:
+            nominal_heating_power_positive_for_heating: 5000
+            dp_nominal: 100
           id: RADIATOR:003
       - valve:
           id: VALVE:003
           control:
             emission_control:
   - occupancy:
+      parameters:
+        gain: "[ 45; 90; 40 ]"
+        occupancy: 3600*{16, 21}
     parameters:
-      floor_area: 70
+      floor_area: 40
       average_room_height: 2.5
     id: SPACE:002
     external_boundaries:
@@ -90,16 +96,21 @@ spaces:
           azimuth: 180
           tilt: wall
       floor_on_grounds:
-        - surface: 60
+        - surface: 40
           construction: CONCRETESLAB:001
     emissions:
       - radiator:
+          parameters:
+            nominal_heating_power_positive_for_heating: 5000
           id: RADIATOR:001
       - valve:
           id: VALVE:001
           control:
             emission_control:
   - occupancy:
+      parameters:
+        gain: "[35; 70; 30]"
+        occupancy: 3600*{10, 14}
     parameters:
       floor_area: 50.0
       average_room_height: 2.5
@@ -143,6 +154,8 @@ internal_walls:
     surface: 22
 systems:
   - boiler:
+      parameters:
+        nominal_heating_power: 20000
       id: BOILER:001
       control:
         boiler_control:

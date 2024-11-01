@@ -21,7 +21,7 @@ from trano.elements.envelope import (
     WallParameters,
     Window,
 )
-from trano.elements.figure import Figure
+from trano.elements.figure import Figure, NamedFigure
 from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.space import Space
 from trano.elements.system import (
@@ -87,4 +87,5 @@ __all__ = [
     "EmissionControl",
     "Boiler",
     "Pump",
+    "NamedFigure",
 ]
