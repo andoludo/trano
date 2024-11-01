@@ -23,20 +23,20 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Check if version has changed
-        id: version_check
-#       TODO: This just checks the diff what if other files contain +version??
-        run: |
-          if git diff HEAD~1 HEAD | grep '+version'; then
-            echo "VERSION_CHANGED=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "VERSION_CHANGED=false" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
           version: 1.4.1
+
+      - name: Bump patch version
+        run: poetry version patch
+
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Version bump
 
       - name: Build source and wheel archives
         run: |

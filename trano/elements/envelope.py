@@ -28,16 +28,13 @@ class BaseSimpleWall(BaseWall):
     construction: Construction | Glass
 
 
-class BaseInternalElement(BaseSimpleWall):
-    ...
+class BaseInternalElement(BaseSimpleWall): ...
 
 
-class BaseFloorOnGround(BaseSimpleWall):
-    ...
+class BaseFloorOnGround(BaseSimpleWall): ...
 
 
-class BaseExternalWall(BaseSimpleWall):
-    ...
+class BaseExternalWall(BaseSimpleWall): ...
 
 
 class BaseWindow(BaseSimpleWall):
@@ -108,20 +105,16 @@ class MergedBaseWall(BaseWall):
         return sorted(merged_walls, key=lambda x: x.name)  # type: ignore #TODO: what is the issue with this!!!
 
 
-class MergedBaseWindow(MergedBaseWall):
-    ...
+class MergedBaseWindow(MergedBaseWall): ...
 
 
-class MergedBaseExternalWall(MergedBaseWall):
-    ...
+class MergedBaseExternalWall(MergedBaseWall): ...
 
 
-class ExternalDoor(BaseExternalWall):
-    ...
+class ExternalDoor(BaseExternalWall): ...
 
 
-class ExternalWall(ExternalDoor):
-    ...
+class ExternalWall(ExternalDoor): ...
 
 
 class FloorOnGround(BaseFloorOnGround):
@@ -129,16 +122,13 @@ class FloorOnGround(BaseFloorOnGround):
     tilt: Tilt = Tilt.floor
 
 
-class InternalElement(BaseInternalElement):
-    ...
+class InternalElement(BaseInternalElement): ...
 
 
-class MergedFloor(MergedBaseWall):
-    ...
+class MergedFloor(MergedBaseWall): ...
 
 
-class MergedExternalWall(MergedBaseExternalWall):
-    ...
+class MergedExternalWall(MergedBaseExternalWall): ...
 
 
 class MergedWindows(MergedBaseWindow):
@@ -178,12 +168,10 @@ class MergedWindows(MergedBaseWindow):
         return sorted(merged_windows, key=lambda x: x.name)  # type: ignore
 
 
-class Window(BaseWindow):
-    ...
+class Window(BaseWindow): ...
 
 
-class WindowedWall(BaseSimpleWall):
-    ...
+class WindowedWall(BaseSimpleWall): ...
 
 
 class WallParameters(BaseModel):

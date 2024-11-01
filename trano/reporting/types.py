@@ -16,8 +16,7 @@ class BaseReporting(BaseModel):
 
 class BaseTable(abc.ABC, BaseReporting):
     @abstractmethod
-    def to_html(self) -> str:
-        ...
+    def to_html(self) -> str: ...
 
 
 class BaseNestedTable(BaseReporting):
@@ -50,12 +49,10 @@ class BoundaryTable(BaseReporting):
         return value.get("name")
 
 
-class EmissionTable(BaseNestedTable):
-    ...
+class EmissionTable(BaseNestedTable): ...
 
 
-class OccupancyTable(BaseNestedTable):
-    ...
+class OccupancyTable(BaseNestedTable): ...
 
 
 class SystemTable(BaseTable, BaseNestedTable):

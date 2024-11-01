@@ -32,8 +32,7 @@ class BaseDocumentation(ContentDocumentation):
     @abc.abstractmethod
     def from_elements(
         cls, elements: List[BaseElement], content_documentation: ContentDocumentation
-    ) -> "BaseDocumentation":
-        ...
+    ) -> "BaseDocumentation": ...
 
     @computed_field
     def topic(self) -> Topic:
@@ -85,10 +84,10 @@ class SpacesDocumentation(BaseDocumentation):
                 and space.occupancy
                 and space.occupancy.parameters
             ):
-                main_space["occupancy"][
-                    "parameters"
-                ] = space.occupancy.parameters.model_dump(
-                    by_alias=True, exclude_none=True
+                main_space["occupancy"]["parameters"] = (
+                    space.occupancy.parameters.model_dump(
+                        by_alias=True, exclude_none=True
+                    )
                 )
             for key, value in document_mapping.items():
                 values = _dump_list_attributes(space, key, value)

@@ -6,5 +6,4 @@ class ControllerBusPortError(Exception):
     """Exception raised for controller bus port error."""
 
 
-class IncompatiblePortsError(Exception):
-    ...
+class IncompatiblePortsError(Exception): ...

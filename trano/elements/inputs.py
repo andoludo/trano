@@ -51,8 +51,7 @@ class BaseInputOutput(BaseModel):
         return ""
 
 
-class BaseInput(BaseInputOutput):
-    ...
+class BaseInput(BaseInputOutput): ...
 
 
 class RealInput(BaseInput):

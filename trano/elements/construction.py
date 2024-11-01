@@ -47,8 +47,7 @@ class GlassMaterial(Material):
     infrared_absorptivity_room_facing: float
 
 
-class Gas(Material):
-    ...
+class Gas(Material): ...
 
 
 class Layer(BaseModel):

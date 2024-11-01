@@ -37,7 +37,7 @@ def transform_csv_to_table(
     if total_second:
         data.index = (data.index - data.first_valid_index()).total_seconds()  # type: ignore
     else:
-        data.index = data.index.astype(int) // 10 ** 9
+        data.index = data.index.astype(int) // 10**9
     data_str = data.to_csv(sep=",", header=False, lineterminator=";")
     if data_str.endswith(";"):
         data_str = data_str[:-1]

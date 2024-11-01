@@ -155,7 +155,7 @@ class LibraryData(BaseModel):
     component_template: Optional[DynamicComponentTemplate] = None
     ports_factory: Callable[[], List["Port"]]
     variant: str = BaseVariant.default
-    parameter_processing: Callable[
-        ["BaseParameter"], Dict[str, Any]
-    ] = default_parameters
+    parameter_processing: Callable[["BaseParameter"], Dict[str, Any]] = (
+        default_parameters
+    )
     figures: List["Figure"] = Field(default=[])

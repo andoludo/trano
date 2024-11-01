@@ -69,9 +69,9 @@ def _apply_function_to_inlet_outlet_ports(
 
 
 class BaseElement(BaseModel):
-    name_counter: ClassVar[
-        int
-    ] = 0  # TODO: this needs to be removed and replaced with a proper solution.
+    name_counter: ClassVar[int] = (
+        0  # TODO: this needs to be removed and replaced with a proper solution.
+    )
     name: Optional[str] = Field(default=None)
     annotation_template: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},

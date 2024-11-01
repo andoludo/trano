@@ -9,28 +9,24 @@ from trano.elements.space import Space
 from trano.elements.system import VAV, Valve
 
 
-class ControlParameters(BaseParameter):
-    ...
+class ControlParameters(BaseParameter): ...
 
 
 class VAVControl(Control):
     ahu: Optional[BaseElement] = None
 
 
-class ThreeWayValveControl(Control):
-    ...
+class ThreeWayValveControl(Control): ...
 
 
-class EmissionControl(Control):
-    ...
+class EmissionControl(Control): ...
 
 
 class CollectorControl(Control):
     valves: Optional[List[Valve]] = None
 
 
-class BoilerControl(Control):
-    ...
+class BoilerControl(Control): ...
 
 
 class AhuControl(Control):
