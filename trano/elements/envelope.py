@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 
 class BaseWall(BaseElement):
-    ...
 
     # @computed_field  # type: ignore
     @property
