@@ -1,11 +1,9 @@
 # First model
-I assume the previous tutorial has ignited your interest in running your first simulation. This tutorial demonstrates how to generate the Modelica model used in that simulation.
+I assume the previous tutorial has you excited about running your first simulation. In this tutorial, we will focus on generating the Modelica model utilized in that simulation.
 
 ## Input configuration file
 
-The configuration describes a building that has insulated walls and a specific glazing system. The walls are constructed using three layers of a material with uniform thermal properties, a common construction method for energy-efficient structures. The building has a floor area of 100 square meters and an average room height of 2.5 meters, indicating it is likely a single-story or low-rise structure. 
-
-Windows are included in the design, featuring double glazing with an air gap, enhancing thermal performance. The building is also oriented with a specific azimuth (180 degrees), suggesting a planned approach to sunlight exposure. Overall, this building appears to be designed for energy efficiency, likely aiming for good thermal insulation and performance.
+The described configuration outlines a building that features high thermal mass, likely a residential or commercial structure. It has walls constructed with three layers of the same material, all having a thermal conductivity of 0.035 W/m·K and a density of 2000 kg/m³, which indicates good insulation properties. The building includes a floor on the ground and a single window made up of a double-glazed system with an inner layer of air, further enhancing its insulation capabilities. The geometry presents external walls oriented south (180° azimuth), indicating potential passive solar heating benefits. Overall, this building emphasizes energy efficiency, thermal regulation, and comfort.
 
 
 ```yaml
@@ -94,31 +92,32 @@ spaces:
     from trano.main import create_model
 
     create_model(
-        "./first_model.yaml",
+        path_to_yaml_configuration_folder / "first_model.yaml",
     )
 
 ```
-## General Explanation
+### General Explanation
+The code snippet imports a function called `create_model` from the `trano.main` module and invokes it with a path to a YAML configuration file, which defines the specifications for a model.
 
-The code snippet imports the `create_model` function from the `trano.main` module and invokes it with a specified YAML configuration file to create a model.
+### General Description of Parameters
+- **path_to_yaml_configuration_folder**: 
+  - Type: Path
+  - Description: A directory path where configuration files are stored.
 
-## Description and Parameters
-
-- **Function**: `create_model`
-- **Import Source**: `from trano.main`
-- **Parameter**: 
-  - `file_path`: A string indicating the path to the YAML file (e.g., `"./first_model.yaml"`) that contains model configuration settings.
+- **"first_model.yaml"**:
+  - Type: String
+  - Description: The name of the YAML file that contains the model configuration settings.
 
 
 ## Generated Modelica model
 
-The following code snippet is the generated Modelica model based on the configuration file above. You can copy this code and paste it into a Modelica editor to run the simulation, provided that the necessary libraries, such as the [Buildings Library](https://example.com), are loaded within the simulation environment.
+The following code snippet represents the generated Modelica model based on the configuration file above. You can copy this code and paste it into a Modelica editor to run the simulation, provided that the necessary libraries, such as the [Buildings library](https://github.com/rbe/EnergyPlus), are loaded in your simulation environment.
 
 
 ```modelica
 package first_model
 
-package Common
+package Trano
   package Occupancy
 
     model SimpleOccupancy
@@ -239,7 +238,7 @@ constructed by the signals connected to this bus.
 
     package SpaceControls
       model PID
-              extends Common.Controls.Interfaces.BaseSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -281,7 +280,7 @@ constructed by the signals connected to this bus.
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
-              extends Common.Controls.Interfaces.BaseSubstanceSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSubstanceSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -523,7 +522,7 @@ constructed by the signals connected to this bus.
               preserveAspectRatio=false)));
   end AHU_G36;
         model OccupancyOccupancy_1
-extends first_model.Common.Occupancy.SimpleOccupancy ;
+extends first_model.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -695,26 +694,7 @@ end ventilation;
 
   package Fluid
   package Boilers
-  model Simple
 
-  extends Buildings.Fluid.Interfaces.PartialTwoPort;
-  Buildings.Fluid.Sources.Boundary_pT bou(use_T_in = true, nPorts = 2, redeclare
-            final package                                                                      Medium = Medium)  annotation (
-          Placement(transformation(origin = {90, 188}, extent = {{-82, -180}, {-62, -160}})));
-  Modelica.Blocks.Sources.Constant constant1(k = 273 + 70)  annotation (
-          Placement(transformation(origin = {-32, 20}, extent = {{-10, -10}, {10, 10}})));
-  equation
-  connect(constant1.y, bou.T_in) annotation (
-          Line(points = {{-20, 20}, {6, 20}, {6, 22}}, color = {0, 0, 127}));
-  connect(bou.ports[1], port_b) annotation (
-          Line(points = {{28, 18}, {100, 18}, {100, 0}}, color = {0, 127, 255}));
-  connect(bou.ports[2], port_a) annotation (
-          Line(points = {{28, 18}, {-100, 18}, {-100, 0}}, color = {0, 127, 255}));
-      annotation (
-          Icon(graphics={  Rectangle(fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}}), Rectangle(fillColor = {255, 255, 255},
-                  fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
-                  fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
-  end Simple;
 
 partial model PartialBoilerWithStorage
   replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
@@ -979,81 +959,6 @@ end PartialBoilerWithStorage;
   end Boilers;
 
     package Ventilation
-      model SimpleHVAC
-
-        replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
-          "Medium model" annotation (choicesAllMatching=true);
-        IDEAS.Fluid.Movers.FlowControlled_dp
-                                       fanSup(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-          inputType=IDEAS.Fluid.Types.InputType.Constant,
-          nominalValuesDefineDefaultPressureCurve=true,
-          redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Supply fan"
-          annotation (Placement(transformation(extent={{4,6},{24,26}})));
-        IDEAS.Fluid.Movers.FlowControlled_dp
-                                       fanRet(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-          inputType=IDEAS.Fluid.Types.InputType.Constant,
-          nominalValuesDefineDefaultPressureCurve=true,
-          redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Return fan"
-          annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
-        IDEAS.Fluid.HeatExchangers.ConstantEffectiveness
-                                                   hex(
-          redeclare package Medium1 = Medium,
-          redeclare package Medium2 = Medium,
-          m1_flow_nominal=2*100*1.2/3600,
-          m2_flow_nominal=2*100*1.2/3600,
-          dp1_nominal=100,
-          dp2_nominal=100) "Heat exchanger with constant heat recovery effectivity"
-          annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
-        Modelica.Fluid.Interfaces.FluidPort_b port_b(
-          redeclare final package Medium = Medium)
-          "Fluid connector b (positive design flow direction is from port_a to port_b)"
-          annotation (Placement(transformation(extent={{118,1},{86,31}}),
-              iconTransformation(extent={{110,31},{90,49}})));
-
-        Modelica.Fluid.Interfaces.FluidPort_a port_a(
-          redeclare final package Medium = Medium)
-          "Fluid connector a (positive design flow direction is from port_a to port_b)"
-          annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
-              iconTransformation(extent={{90,-49},{110,-31}})));
-        IDEAS.Fluid.Sources.OutsideAir outsideAir(
-          azi=0,                                  nPorts=2, redeclare package
-            Medium = Medium) annotation (
-          Placement(transformation(origin = {-64, 2}, extent = {{-10, -10}, {10, 10}})));
-      equation
-        connect(hex.port_b1, fanSup.port_a) annotation (
-          Line(points = {{-6, 2}, {-6, 16}, {4, 16}}, color = {0, 127, 255}));
-        connect(hex.port_a2, fanRet.port_b) annotation (
-          Line(points = {{-6, -10}, {-6, -24}, {4, -24}}, color = {0, 127, 255}));
-        connect(fanSup.port_b, port_b) annotation (
-          Line(points = {{24, 16}, {102, 16}}, color = {0, 127, 255}));
-        connect(fanRet.port_a, port_a) annotation (
-          Line(points = {{24, -24}, {101, -24}}, color = {0, 127, 255}));
-        connect(
-          outsideAir.ports[1], hex.port_a1) annotation (
-          Line(points={{-54,4},{-40,4},{-40,2},{-26,2}},
-                                              color = {0, 127, 255}));
-        connect(
-          outsideAir.ports[2], hex.port_b2) annotation (
-          Line(points={{-54,0},{-26,0},{-26,-10}},        color = {0, 127, 255}));
-        annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-60},
-                  {100,60}}), graphics={Rectangle(
-                extent={{-100,60},{100,-60}},
-                lineColor={255,128,0},
-                fillColor={255,128,0},
-                fillPattern=FillPattern.Forward)}), Diagram(coordinateSystem(
-                preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
-      end SimpleHVAC;
-
-      model SimpleVAV
-        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-              coordinateSystem(preserveAspectRatio=false)));
-      end SimpleVAV;
 
       model SimpleHVACBuildings
 
@@ -2247,7 +2152,7 @@ end PartialVAVBox;
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
-end Common;
+end Trano;
 
 model building
             parameter Buildings.HeatTransfer.Data.GlazingSystems.Generic ins2ar2020_001(
@@ -2376,7 +2281,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 0, 0 },
     extent = {{-20, -20}, {20, 20}}
 )));
-        first_model.Common.Controls.ventilation.OccupancyOccupancy_1
+        first_model.Trano.Controls.ventilation.OccupancyOccupancy_1
     occupancy_1(    gain=[40; 75; 40],
     k=1/7/3,
     occupancy=3600*{9, 17}
@@ -2391,10 +2296,10 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        first_model.Common.Controls.ventilation.DataServer
+        first_model.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 133.23268958693882, 124.1436761738596 },
+    Placement(transformation(origin = { 160.43310173803508, 79.72475715072618 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -2410,18 +2315,18 @@ points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0
 thickness=0.05,
 smooth=Smooth.None));    connect(occupancy_1.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ 41.61634479346941, 0.0 }    ,{ 41.61634479346941, 124.1436761738596 }    ,{ 133.23268958693882, 124.1436761738596 }    },
+points={{ -50.0, 0.0 }    ,{ 55.21655086901754, 0.0 }    ,{ 55.21655086901754, 79.72475715072618 }    ,{ 160.43310173803508, 79.72475715072618 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 66.61634479346941, 0.0 }    ,{ 66.61634479346941, 124.1436761738596 }    ,{ 133.23268958693882, 124.1436761738596 }    },
+points={{ 0.0, 0.0 }    ,{ 80.21655086901754, 0.0 }    ,{ 80.21655086901754, 79.72475715072618 }    ,{ 160.43310173803508, 79.72475715072618 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 66.61634479346941, 0.0 }    ,{ 66.61634479346941, 124.1436761738596 }    ,{ 133.23268958693882, 124.1436761738596 }    },
+points={{ 0.0, 0.0 }    ,{ 80.21655086901754, 0.0 }    ,{ 80.21655086901754, 79.72475715072618 }    ,{ 160.43310173803508, 79.72475715072618 }    },
 thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-231.12726125253602,-250.0},{204.12646679633698,250.0}})), Icon(
-        coordinateSystem(extent={{-231.12726125253602,-250.0},{204.12646679633698,250.0}})));
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-218.34850791090386,-205.49208329930195},{249.47476959017789,250.0}})), Icon(
+        coordinateSystem(extent={{-218.34850791090386,-205.49208329930195},{249.47476959017789,250.0}})));
 end building;
 
 
