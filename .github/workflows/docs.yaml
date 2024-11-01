@@ -26,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          poetry install --group docs
+          poetry install --only docs
 
       - name: Build documentation
         run: |
