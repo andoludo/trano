@@ -42,13 +42,18 @@ class Library(BaseModel):
     constants: str = ""
     templates: Templates
     default: bool = False
+    default_parameters: Dict[str, Any] = Field(
+        default_factory=dict
+    )  # TODO: this should be baseparameters
 
     @classmethod
     def from_configuration(cls, name: str) -> "Library":
         libraries = read_libraries()
 
         if name not in libraries:
-            raise ValueError(f"Library {name} not found")
+            raise ValueError(
+                f"Library {name} not found. Available libraries: {list(libraries)}"
+            )
         library_data = libraries[name]
         return cls(**library_data)
 
@@ -128,12 +133,7 @@ class AvailableLibraries(BaseModel):
                 variant=(str, component["variant"]),
                 figures=(
                     List[Figure],
-                    Field(
-                        default_factory=lambda: [
-                            Figure(**fig)
-                            for fig in component.get("figures", [])  # noqa: B023
-                        ]
-                    ),
+                    Field([Figure(**fig) for fig in component.get("figures", [])]),
                 ),
                 parameter_processing=(
                     Callable[[BaseParameter], Dict[str, Any]],

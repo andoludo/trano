@@ -41,6 +41,11 @@
     false
   "name": |-
     Buildings
+  "default_parameters":
+    "occupancy":
+      "occupancy": 3600*{9, 17}
+      "gain": "[40; 75; 40]"
+      "heat_gain_if_occupied": 1/7/3
   "templates":
     "construction": |2-
           parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic

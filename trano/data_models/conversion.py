@@ -30,27 +30,12 @@ from trano.elements.construction import (
     Layer,
     Material,
 )
-from trano.elements.control import (  # noqa: F401
-    BoilerControl,
-    CollectorControl,
-    EmissionControl,
-    ThreeWayValveControl,
-)
+from trano.elements.control import BoilerControl  # noqa: F401
 from trano.elements.space import Space
 
 # TODO: fix these imports
-from trano.elements.system import (  # noqa: F401
-    AirHandlingUnit,
-    Boiler,
-    Occupancy,
-    Pump,
-    Radiator,
-    SplitValve,
-    TemperatureSensor,
-    ThreeWayValve,
-    Valve,
-    Weather,
-)
+from trano.elements.system import Boiler  # noqa: F401
+from trano.elements.system import AirHandlingUnit, Occupancy, Weather
 from trano.elements.types import Tilt
 from trano.elements.utils import import_element_function
 from trano.library.library import Library
@@ -260,6 +245,17 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
                         )
                     }
                 )
+            )
+        elif (
+            network.library.default_parameters.get("occupancy") is not None
+            and occupancy_parameter_class is not None
+        ):
+            system_counter.update(["occupancy"])
+            occupancy = Occupancy(
+                name=f"occupancy_{system_counter['occupancy']}",
+                parameters=occupancy_parameter_class(
+                    **network.library.default_parameters["occupancy"]
+                ),
             )
         emissions = []
         for emission in space.get("emissions", []):

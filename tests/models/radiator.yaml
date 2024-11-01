@@ -26,6 +26,6 @@ components:
     - y
     targets:
     - Control
-  template: "\n    {{package_name}}.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission\n\
+  template: "\n    {{package_name}}.Trano.HeatTransfer.IdealHeatingSystem.IdealHeatEmission\n\
     \    {{ element.name }}"
   variant: ideal

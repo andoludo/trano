@@ -1,11 +1,12 @@
 import tempfile
 from pathlib import Path
-
-from tests.conftest import is_success
+import pytest
 from trano.simulate.simulate import SimulationOptions, simulate
 from trano.topology import Network
+from trano.utils.utils import is_success
 
 
+@pytest.mark.simulate
 def test_simulate_buildings_free_float_single_zone(
     buildings_free_float_single_zone: Network,
 ) -> None:
@@ -18,6 +19,7 @@ def test_simulate_buildings_free_float_single_zone(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_buildings_simple_hydronic_two_zones_new(
     buildings_two_rooms_with_storage: Network,
 ) -> None:
@@ -30,6 +32,7 @@ def test_simulate_buildings_simple_hydronic_two_zones_new(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_buildings_free_float_two_zones(
     buildings_free_float_two_zones: Network,
 ) -> None:
@@ -42,6 +45,7 @@ def test_simulate_buildings_free_float_two_zones(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_buildings_free_float_three_zones(
     buildings_free_float_three_zones: Network,
 ) -> None:
@@ -54,6 +58,7 @@ def test_simulate_buildings_free_float_three_zones(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_buildings_simple_hydronic(
     buildings_simple_hydronic: Network,
 ) -> None:
@@ -66,6 +71,7 @@ def test_simulate_buildings_simple_hydronic(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_ideas_free_float_three_zones(
     ideas_free_float_three_zones: Network,
 ) -> None:
@@ -78,6 +84,7 @@ def test_simulate_ideas_free_float_three_zones(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_ideas_simple_hydronic_no_occupancy(
     ideas_simple_hydronic_no_occupancy: Network,
 ) -> None:
@@ -90,6 +97,7 @@ def test_simulate_ideas_simple_hydronic_no_occupancy(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_test_space_1_different_construction_types_network(
     space_1_different_construction_types_network: Network,
 ) -> None:
@@ -102,6 +110,7 @@ def test_simulate_test_space_1_different_construction_types_network(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_ideas_simple_hydronic_three_zones(
     ideas_simple_hydronic_three_zones: Network,
 ) -> None:
@@ -114,6 +123,7 @@ def test_simulate_ideas_simple_hydronic_three_zones(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_one_spaces_air_handling_unit(
     one_spaces_air_handling_unit: Network,
 ) -> None:
@@ -126,6 +136,7 @@ def test_simulate_one_spaces_air_handling_unit(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_two_spaces_air_handling_unit(
     two_spaces_air_handling_unit: Network,
 ) -> None:
@@ -138,6 +149,7 @@ def test_simulate_two_spaces_air_handling_unit(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_house_model(house_model: Network) -> None:
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         results = simulate(
@@ -146,6 +158,7 @@ def test_simulate_house_model(house_model: Network) -> None:
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_building_multiple_internal_walls(
     building_multiple_internal_walls: Network,
 ) -> None:
@@ -158,6 +171,7 @@ def test_simulate_building_multiple_internal_walls(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_building_multiple_internal_walls_ideas(
     building_multiple_internal_walls_ideas: Network,
 ) -> None:
@@ -170,6 +184,7 @@ def test_simulate_building_multiple_internal_walls_ideas(
         assert is_success(results)
 
 
+@pytest.mark.simulate
 def test_simulate_space_1_ideal_heating_network(
     space_1_ideal_heating_network: Network,
 ) -> None:

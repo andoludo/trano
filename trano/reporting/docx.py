@@ -11,7 +11,9 @@ from docx.shared import Pt
 from docx.table import _Cell
 
 from trano.plot.plot import add_element_figures
-from trano.reporting.reproting import ModelDocumentation, Topic, get_description
+from trano.reporting.reporting import ModelDocumentation
+from trano.reporting.types import BaseNestedTable, Topic
+from trano.reporting.utils import get_description
 
 COLUMN_SIZE_WITH_DESCRIPTION = 3
 
@@ -71,23 +73,24 @@ def add_table_caption(doc: Document, caption_text: str) -> None:  # type: ignore
 
 def create_tables_and_figures(
     doc: Document,  # type: ignore
-    data: Union[List[Dict[str, Any]], Dict[str, Any]],
+    data: Union[List[BaseNestedTable], BaseNestedTable],
     topic: Topic,
     documentation: ModelDocumentation,
 ) -> None:
     if isinstance(data, list):
         for d in data:
-            add_table_caption(doc, f"Characteristics of {topic} {d['name']}.")
-            create_table(doc, d)
-            doc.add_paragraph()  # type: ignore
-            insert_figure(doc, d["name"], documentation)
-            doc.add_paragraph()  # type: ignore
+            if d.name:
+                add_table_caption(doc, f"Characteristics of {topic} {d.name}.")
+                create_table(doc, d.model_dump())
+                doc.add_paragraph()  # type: ignore
+                insert_figure(doc, d.name, documentation)
+                doc.add_paragraph()  # type: ignore
 
-    else:
-        add_table_caption(doc, f"Characteristics of {topic} {data['name']}.")
-        create_table(doc, data)
+    elif data.name:
+        add_table_caption(doc, f"Characteristics of {topic} {data.name}.")
+        create_table(doc, data.model_dump())
         doc.add_paragraph()  # type: ignore
-        insert_figure(doc, data["name"], documentation)
+        insert_figure(doc, data.name, documentation)
         doc.add_paragraph()  # type: ignore
 
 
@@ -110,9 +113,11 @@ def to_docx(documentation: ModelDocumentation, path: Path) -> docx.document.Docu
         documentation.constructions,
     ]:
         document.add_heading(doc.topic, level=2)  # type: ignore
-        document.add_paragraph(doc.introduction)
+        if doc.introduction:
+            document.add_paragraph(doc.introduction)
         create_tables_and_figures(document, doc.table, doc.topic, documentation)  # type: ignore
-        document.add_paragraph(doc.conclusions)
+        if doc.conclusions:
+            document.add_paragraph(doc.conclusions)
         document.add_page_break()  # type: ignore
     document.save(str(path))
     return document

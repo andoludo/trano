@@ -474,6 +474,9 @@ classes:
         ifabsent: string(None)
         range: string
   Radiator:
+    attributes:
+      control:
+        range: Control
     is_a: System
     slot_usage:
       parameters:

@@ -24,3 +24,7 @@ class Figure(BaseModel):
                 continue
 
         return self
+
+
+class NamedFigure(Figure):
+    name: str

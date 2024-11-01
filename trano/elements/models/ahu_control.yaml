@@ -449,7 +449,7 @@
       false
   "template": |2-
 
-        {{package_name}}.Common.Controls.ventilation.AhuControl{{ element.name | capitalize}}
+        {{package_name}}.Trano.Controls.ventilation.AhuControl{{ element.name | capitalize}}
         {{ element.name }}
   "variant": |-
     default

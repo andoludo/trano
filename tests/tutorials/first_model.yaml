@@ -1,0 +1,74 @@
+material:
+  - id: MATERIAL:001
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+  - id: MATERIAL:002
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+  - id: MATERIAL:003
+    thermal_conductivity: 0.035
+    density: 2000.0
+    specific_heat_capacity: 1000.0
+
+constructions:
+  - id: CONSTRUCTION:001
+    layers:
+      - material: MATERIAL:001
+        thickness: 0.1
+      - material: MATERIAL:002
+        thickness: 0.1
+      - material: MATERIAL:003
+        thickness: 0.1
+glass_material:
+  - density: 2500.0
+    id: GLASS:001
+    longwave_emissivity: 0.84
+    shortwave_emissivity: 0.67
+    specific_heat_capacity: 840.0
+    thermal_conductivity: 1.0
+gas:
+  - density: 1.2
+    id: AIR:001
+    longwave_emissivity: 0.0
+    shortwave_emissivity: 0.0
+    specific_heat_capacity: 1006.0
+    thermal_conductivity: 0.0256
+glazings:
+- id: INS2AR2020:001
+  layers:
+  - glass: GLASS:001
+    thickness: 0.006
+  - gas: AIR:001
+    thickness: 0.016
+  - glass: GLASS:001
+    thickness: 0.006
+spaces:
+  - parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    external_boundaries:
+      external_walls:
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 100.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+        - surface: 200.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+      floor_on_grounds:
+        - surface: 1.0
+          construction: CONSTRUCTION:001
+      windows:
+        - surface: 1.0
+          azimuth: 180.0
+          tilt: wall
+          construction: INS2AR2020:001
+          width: 1.0
+          height: 1.0

@@ -144,7 +144,7 @@
       false
   "template": |2-
 
-        {{package_name}}.Common.Controls.ventilation.EmissionControl{{ element.name | capitalize}}
+        {{package_name}}.Trano.Controls.ventilation.EmissionControl{{ element.name | capitalize}}
         {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
   "variant": |-
     default

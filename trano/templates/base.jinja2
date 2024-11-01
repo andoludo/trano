@@ -1,7 +1,7 @@
 {% import 'macros.jinja2' as macros %}
-{% import 'common.jinja2' as common %}
+{% import 'Trano.jinja2' as Trano %}
 package {{ network.name }}
-{{ common.common_library(databus, dynamic_components) }}
+{{ Trano.Trano_library(databus, dynamic_components) }}
 {% if data.is_package %}
 {{ data.data|safe }}
 model building
@@ -25,8 +25,6 @@ equation
 {%- endfor %}
 annotation (Diagram(coordinateSystem(extent={{diagram_size}})), Icon(
         coordinateSystem(extent={{diagram_size}})));
-  annotation (
-    Documentation(info="{{ documentation | safe}}"));
 end building;
 
 

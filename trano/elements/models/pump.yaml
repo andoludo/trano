@@ -36,7 +36,7 @@
     "category": |-
       ventilation
     "template": "\nmodel Pump{{ element.name | capitalize}}\nextends {{ package_name\
-      \ }}.Common.Fluid.Ventilation.PartialPump;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ }}.Trano.Fluid.Ventilation.PartialPump;\n{{bus_template}}\nequation\n{{bus_ports\
       \ | safe}}\n end Pump{{ element.name | capitalize}};\n "
   "figures": []
   "library": |-
@@ -76,7 +76,7 @@
     "use_counter": !!bool |-
       false
   "template": |2-
-      {{ package_name }}.Common.
+      {{ package_name }}.Trano.
         Fluid.Ventilation.Pump{{ element.name | capitalize }}
          {{ element.name }}(
          {{ macros.render_parameters(parameters) | safe}},

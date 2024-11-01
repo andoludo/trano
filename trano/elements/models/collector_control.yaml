@@ -112,7 +112,7 @@
       false
   "template": |2-
 
-        {{package_name}}.Common.Controls.ventilation.CollectorControl{{ element.name | capitalize}}
+        {{package_name}}.Trano.Controls.ventilation.CollectorControl{{ element.name | capitalize}}
         {{ element.name }}
   "variant": |-
     default

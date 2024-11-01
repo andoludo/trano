@@ -63,6 +63,21 @@ pytest-mongo = "^3.1.0"
 networkx-stubs = "^0.0.1"
 pytest-ordering = "^0.6"
 types-pyyaml = "^6.0.12.20240808"
+isort = "^5.13.2"
+jsf = "^0.11.2"
+black = "^24.10.0"
+
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.5.42"
+mkdocstrings = "^0.26.2"
+mkdocstrings-python = "^1.12.2"
+markdown-include = "^0.8.1"
+mkdocs-gen-files = "^0.5.0"
+openai = "^1.52.2"
+python-dotenv = "^1.0.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -90,7 +105,7 @@ exclude = [
 ]
 
 [tool.ruff]
-line-length = 96
+line-length = 120
 exclude = [
     ".bzr",
     ".direnv",
@@ -122,6 +137,8 @@ exclude = [
     "conftest.py"
 ]
 
+[tool.isort]
+skip = ["models"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "B006","RUF","UP","SIM","FURB","PIE","PERF","C4","B","PL","S","C901","N","ANN", "ERA001", "PD"]

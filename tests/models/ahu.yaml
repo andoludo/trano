@@ -60,7 +60,7 @@ components:
         target: element.control.name
     category: ventilation
     template: "\n    model Ahu{{ element.name | capitalize}}\n    extends {{ package_name\
-      \ }}.Common.Fluid.Ventilation.PartialAhu;\n    {{bus_template}}\n    equation\n\
+      \ }}.Trano.Fluid.Ventilation.PartialAhu;\n    {{bus_template}}\n    equation\n\
       \    {{bus_ports | safe}}\n     end Ahu{{ element.name | capitalize}};\n   \
       \  "
   ports:
@@ -88,7 +88,7 @@ components:
     - dataBus
     targets:
     - AhuControl
-  template: "{{package_name}}.Common.Fluid.\n    Ventilation.Ahu{{ element.name |\
+  template: "{{package_name}}.Trano.Fluid.\n    Ventilation.Ahu{{ element.name |\
     \ capitalize}}\n    {{ element.name }}\n    (redeclare package MediumA = Medium,\n\
     \    {% raw %}\n    VRoo={100,100},\n    AFlo={20,20},\n    mCooVAV_flow_nominal={0.01,0.01}{%\
     \ endraw %})"

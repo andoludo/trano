@@ -17,7 +17,7 @@
     "category": |-
       control
     "template": "\nmodel Occupancy{{ element.name | capitalize}}\nextends {{ package_name\
-      \ }}.Common.Occupancy.SimpleOccupancy ;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ }}.Trano.Occupancy.SimpleOccupancy ;\n{{bus_template}}\nequation\n{{bus_ports\
       \ | safe}}\n end Occupancy{{ element.name | capitalize}};\n "
   "figures": []
   "library": |-
@@ -44,7 +44,7 @@
       false
   "template": |2-
 
-        {{package_name}}.Common.Controls.ventilation.Occupancy{{ element.name | capitalize}}
+        {{package_name}}.Trano.Controls.ventilation.Occupancy{{ element.name | capitalize}}
         {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
   "variant": |-
     default

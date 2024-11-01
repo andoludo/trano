@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from trano.elements.components import DynamicComponentTemplate
 from trano.elements.connection import Port, _has_inlet_or_outlet, _is_inlet_or_outlet
-from trano.elements.figure import Figure
+from trano.elements.figure import NamedFigure
 from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.types import BaseVariant, Flow
 from trano.library.library import AvailableLibraries, Library
@@ -85,7 +85,7 @@ class BaseElement(BaseModel):
     component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
     libraries_data: Optional[AvailableLibraries] = None
-    figures: List[Figure] = Field(default=[])
+    figures: List[NamedFigure] = Field(default=[])
 
     @model_validator(mode="before")
     @classmethod
@@ -127,7 +127,10 @@ class BaseElement(BaseModel):
         if not self.component_template:
             self.component_template = library_data.component_template
         if not self.figures and library_data.figures:
-            self.figures = [fig.render_key(self) for fig in library_data.figures]
+            self.figures = [
+                NamedFigure(**(fig.render_key(self).model_dump() | {"name": self.name}))
+                for fig in library_data.figures
+            ]
 
         return True
 

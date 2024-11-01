@@ -209,10 +209,11 @@ def extract_data(
     package_name: str, nodes: NodeView, library: "Library"
 ) -> MaterialProperties:
 
-    if library.merged_external_boundaries:
-        data = merged_construction(nodes)
-    else:
-        data = default_construction(nodes)
+    data = (
+        merged_construction(nodes)
+        if library.merged_external_boundaries
+        else default_construction(nodes)
+    )
     data_ = BaseConstructionData(
         template=library.templates.main,
         construction=BaseData(
