@@ -1,4 +1,7 @@
 site_name: Trano
+site_description: Automated building energy simulation tool with Modelica
+repo_name: trano
+repo_url: https://github.com/andoludo/trano
 theme:
   name: material
   palette:
@@ -20,6 +23,7 @@ theme:
       toggle:
         icon: material/lightbulb-outline
         name: Switch to system preference
+
   features:
   - content.code.annotate
   - content.code.copy
