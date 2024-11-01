@@ -251,7 +251,7 @@ class WindowedWallParameters(WallParameters):
         window_height = []
         included_external_walls = []
         for window in windows:
-            wall = get_common_wall_properties(neighbors, window)
+            wall = get_Trano_wall_properties(neighbors, window)
             surfaces.append(wall.surface)
             azimuths.append(wall.azimuth)
             layers.append(wall.construction.name)
@@ -274,7 +274,7 @@ class WindowedWallParameters(WallParameters):
         )
 
 
-def get_common_wall_properties(
+def get_Trano_wall_properties(
     neighbors: list["BaseElement"], window: BaseWindow
 ) -> BaseSimpleWall:
     walls = [

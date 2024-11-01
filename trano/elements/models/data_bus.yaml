@@ -88,7 +88,7 @@
     "use_counter": !!bool |-
       false
   "template": |2-
-        {{package_name}}.Common.Controls.ventilation.DataServer
+        {{package_name}}.Trano.Controls.ventilation.DataServer
             {{ element.name }} (redeclare package
               Medium = Medium)
   "variant": |-

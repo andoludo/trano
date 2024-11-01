@@ -1,6 +1,6 @@
 package house
 
-package Common
+package Trano
   package Occupancy
 
     model SimpleOccupancy
@@ -121,7 +121,7 @@ constructed by the signals connected to this bus.
 
     package SpaceControls
       model PID
-              extends Common.Controls.Interfaces.BaseSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -163,7 +163,7 @@ constructed by the signals connected to this bus.
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
-              extends Common.Controls.Interfaces.BaseSubstanceSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSubstanceSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -453,7 +453,7 @@ connect(dataBus.yCooSystem_008, emissionControl.yCoo);
 connect(dataBus.yHeaSystem_008, emissionControl.yHea);
 end EmissionControlControl_007;
         model OccupancyOccupancy_1
-extends house.Common.Occupancy.SimpleOccupancy ;
+extends house.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -510,7 +510,7 @@ connect(dataBus.yCooSystem_010, emissionControl.yCoo);
 connect(dataBus.yHeaSystem_010, emissionControl.yHea);
 end EmissionControlControl_006;
         model OccupancyOccupancy_2
-extends house.Common.Occupancy.SimpleOccupancy ;
+extends house.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -567,7 +567,7 @@ connect(dataBus.yCooSystem_012, emissionControl.yCoo);
 connect(dataBus.yHeaSystem_012, emissionControl.yHea);
 end EmissionControlControl_005;
         model OccupancyOccupancy_3
-extends house.Common.Occupancy.SimpleOccupancy ;
+extends house.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -665,7 +665,7 @@ annotation (Line(points={{10,0},{110,0}}, color={0,0,127}));  connect(u, conVal.
           -20},{0,-16},{-2,-16},{-2,-12}}, color={0,0,127}));annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
         coordinateSystem(preserveAspectRatio=false)));end ThreeWayValveControlControl_004;
             model BoilerControlControl_001
-    extends house.Common.Controls.ventilation.PartialBoilerControl;
+    extends house.Trano.Controls.ventilation.PartialBoilerControl;
     Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -1170,7 +1170,7 @@ end PartialBoilerWithStorage;
 
 
             model BoilerWithStorageSystem_001
-    extends house.Common.Fluid.Boilers.PartialBoilerWithStorage;
+    extends house.Trano.Fluid.Boilers.PartialBoilerWithStorage;
     Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2367,7 +2367,7 @@ graphics={
       thickness=1)}));
 end PartialVAVBox;
         model PumpSystem_002
-extends house.Common.Fluid.Ventilation.PartialPump;
+extends house.Trano.Fluid.Ventilation.PartialPump;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2464,7 +2464,7 @@ connect(dataBus.TControl_002, temSup.T);
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
-end Common;
+end Trano;
 
 model building
             parameter Buildings.HeatTransfer.Data.GlazingSystems.Generic construction_011(
@@ -2650,7 +2650,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 30, -75 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.EmissionControlControl_007
+        house.Trano.Controls.ventilation.EmissionControlControl_007
     control_007(    schedule=3600*{7, 19},
     THeaSet=24.0,
     THeaSetBack=16.0
@@ -2658,7 +2658,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { -84.251063211854, -144.5018119786159 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.OccupancyOccupancy_1
+        house.Trano.Controls.ventilation.OccupancyOccupancy_1
     occupancy_1(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2729,7 +2729,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 280, 75 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.EmissionControlControl_006
+        house.Trano.Controls.ventilation.EmissionControlControl_006
     control_006(    schedule=3600*{7, 19},
     THeaSet=24.0,
     THeaSetBack=1.0
@@ -2737,7 +2737,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 144.16093143151747, 104.5017178763107 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.OccupancyOccupancy_2
+        house.Trano.Controls.ventilation.OccupancyOccupancy_2
     occupancy_2(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2808,7 +2808,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 530, 75 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.EmissionControlControl_005
+        house.Trano.Controls.ventilation.EmissionControlControl_005
     control_005(    schedule=3600*{7, 19},
     THeaSet=24.0,
     THeaSetBack=1.0
@@ -2816,7 +2816,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 5.9407460924619295, -200.0 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.OccupancyOccupancy_3
+        house.Trano.Controls.ventilation.OccupancyOccupancy_3
     occupancy_3(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2858,7 +2858,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
-      house.Common.
+      house.Trano.
     Fluid.Ventilation.PumpSystem_002
      system_002(
          dp_nominal=10000.0,
@@ -2870,7 +2870,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { -117.52316651044711, -150.83731094395173 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.CollectorControlControl_002
+        house.Trano.Controls.ventilation.CollectorControlControl_002
     control_002 annotation (
     Placement(transformation(origin = { 183.53300413307338, 72.31555702859998 },
     extent = {{-10, -10}, {10, 10}}
@@ -2893,7 +2893,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 30, -275 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.
+        house.Trano.Controls.ventilation.
     ThreeWayValveControlControl_003
     control_003 annotation (
     Placement(transformation(origin = { -20, -275 },
@@ -2917,13 +2917,13 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 530, -125 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.
+        house.Trano.Controls.ventilation.
     ThreeWayValveControlControl_004
     control_004 annotation (
     Placement(transformation(origin = { 480, -125 },
     extent = {{-10, -10}, {10, 10}}
 )));
-    house.Common.Fluid.Boilers.
+    house.Trano.Fluid.Boilers.
 BoilerWithStorageSystem_001 system_001(
     a={0.9},
     dp=5000*{2,1},
@@ -2946,7 +2946,7 @@ redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOil
     Placement(transformation(origin = { 180.83344051895682, -66.05710163992785 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.BoilerControlControl_001
+        house.Trano.Controls.ventilation.BoilerControlControl_001
     control_001(    threshold_outdoor_air_cutoff=288.15,
     threshold_to_switch_off_boiler=288.15,
     TSup_nominal=353.15
@@ -2990,7 +2990,7 @@ redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOil
     Placement(transformation(origin = { 400, -25 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        house.Common.Controls.ventilation.DataServer
+        house.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
     Placement(transformation(origin = { -182.42342299526456, -28.379988966115587 },

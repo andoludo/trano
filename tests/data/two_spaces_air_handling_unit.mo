@@ -1,6 +1,6 @@
 package two_spaces_air_handling_unit
 
-package Common
+package Trano
   package Occupancy
 
     model SimpleOccupancy
@@ -121,7 +121,7 @@ constructed by the signals connected to this bus.
 
     package SpaceControls
       model PID
-              extends Common.Controls.Interfaces.BaseSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -163,7 +163,7 @@ constructed by the signals connected to this bus.
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
-              extends Common.Controls.Interfaces.BaseSubstanceSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSubstanceSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -405,7 +405,7 @@ constructed by the signals connected to this bus.
               preserveAspectRatio=false)));
   end AHU_G36;
         model OccupancyOccupancy_0
-extends two_spaces_air_handling_unit.Common.Occupancy.SimpleOccupancy ;
+extends two_spaces_air_handling_unit.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -468,7 +468,7 @@ connect(dataBus.yLeaValAlaVav_in, rehBoxCon.yLeaValAla);
 connect(dataBus.yLowTemAlaVav_in, rehBoxCon.yLowTemAla);
 end VAVControlVav_in_control;
         model OccupancyOccupancy_1
-extends two_spaces_air_handling_unit.Common.Occupancy.SimpleOccupancy ;
+extends two_spaces_air_handling_unit.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2379,7 +2379,7 @@ graphics={
       thickness=1)}));
 end PartialVAVBox;
         model VAVBoxVav_in
-extends two_spaces_air_handling_unit.Common.Fluid.Ventilation.PartialVAVBox;
+extends two_spaces_air_handling_unit.Trano.Fluid.Ventilation.PartialVAVBox;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2391,7 +2391,7 @@ connect(dataBus.TDisVav_in_control, senTem.T);
  end VAVBoxVav_in;
 
         model VAVBoxVav_in_2
-extends two_spaces_air_handling_unit.Common.Fluid.Ventilation.PartialVAVBox;
+extends two_spaces_air_handling_unit.Trano.Fluid.Ventilation.PartialVAVBox;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2403,7 +2403,7 @@ connect(dataBus.TDisVav_in_control_2, senTem.T);
  end VAVBoxVav_in_2;
 
             model AhuAhu
-    extends two_spaces_air_handling_unit.Common.Fluid.Ventilation.PartialAhu;
+    extends two_spaces_air_handling_unit.Trano.Fluid.Ventilation.PartialAhu;
     Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2508,7 +2508,7 @@ connect(dataBus.dpDucAhu_control, dpDisSupFan.p_rel);
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
-end Common;
+end Trano;
 
 model building
             parameter Buildings.HeatTransfer.Data.GlazingSystems.Generic double_glazing(
@@ -2620,7 +2620,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { 0, 0 },
     extent = {{-20, -20}, {20, 20}}
 )));
-        two_spaces_air_handling_unit.Common.Controls.ventilation.OccupancyOccupancy_0
+        two_spaces_air_handling_unit.Trano.Controls.ventilation.OccupancyOccupancy_0
     occupancy_0(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2628,7 +2628,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { -50, 0 },
     extent = {{-10, -10}, {10, 10}}
 )));
-      two_spaces_air_handling_unit.Common.
+      two_spaces_air_handling_unit.Trano.
     Fluid.Ventilation.VAVBoxVav_in
      vav_in(
     redeclare package MediumA = Medium,
@@ -2644,7 +2644,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { -111.61476755368932, 152.6501474617446 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        two_spaces_air_handling_unit.Common.Controls.ventilation.VAVControlVav_in_control
+        two_spaces_air_handling_unit.Trano.Controls.ventilation.VAVControlVav_in_control
     vav_in_control annotation (
     Placement(transformation(origin = { -124.59282577775998, -131.38906232838605 },
     extent = {{-10, -10}, {10, 10}}
@@ -2699,7 +2699,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { 250, 150 },
     extent = {{-20, -20}, {20, 20}}
 )));
-        two_spaces_air_handling_unit.Common.Controls.ventilation.OccupancyOccupancy_1
+        two_spaces_air_handling_unit.Trano.Controls.ventilation.OccupancyOccupancy_1
     occupancy_1(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2707,7 +2707,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { 200, 150 },
     extent = {{-10, -10}, {10, 10}}
 )));
-      two_spaces_air_handling_unit.Common.
+      two_spaces_air_handling_unit.Trano.
     Fluid.Ventilation.VAVBoxVav_in_2
      vav_in_2(
     redeclare package MediumA = Medium,
@@ -2723,7 +2723,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { 24.697126693482428, 185.3535408438867 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        two_spaces_air_handling_unit.Common.Controls.ventilation.VAVControlVav_in_control_2
+        two_spaces_air_handling_unit.Trano.Controls.ventilation.VAVControlVav_in_control_2
     vav_in_control_2 annotation (
     Placement(transformation(origin = { -25.96563125437091, 184.75274257902757 },
     extent = {{-10, -10}, {10, 10}}
@@ -2762,7 +2762,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
-    two_spaces_air_handling_unit.Common.Fluid.
+    two_spaces_air_handling_unit.Trano.Fluid.
     Ventilation.AhuAhu
     ahu
     (redeclare package MediumA = Medium,
@@ -2773,7 +2773,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { -32.4947924922398, -200.0 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        two_spaces_air_handling_unit.Common.Controls.ventilation.AhuControlAhu_control
+        two_spaces_air_handling_unit.Trano.Controls.ventilation.AhuControlAhu_control
     ahu_control annotation (
     Placement(transformation(origin = { -18.848264133810893, -172.48764808384604 },
     extent = {{-10, -10}, {10, 10}}
@@ -2783,7 +2783,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     Placement(transformation(origin = { -200, 100 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        two_spaces_air_handling_unit.Common.Controls.ventilation.DataServer
+        two_spaces_air_handling_unit.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
     Placement(transformation(origin = { 124.32975871427716, 137.56684051243647 },

@@ -77,7 +77,7 @@
     "category": |-
       ventilation
     "template": "\nmodel VAVBox{{ element.name | capitalize}}\nextends {{ package_name\
-      \ }}.Common.Fluid.Ventilation.PartialVAVBox;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ }}.Trano.Fluid.Ventilation.PartialVAVBox;\n{{bus_template}}\nequation\n{{bus_ports\
       \ | safe}}\n end VAVBox{{ element.name | capitalize}};\n "
   "figures": []
   "library": |-
@@ -109,7 +109,7 @@
     "use_counter": !!bool |-
       false
   "template": |2-
-      {{ package_name }}.Common.
+      {{ package_name }}.Trano.
         Fluid.Ventilation.VAVBox{{ element.name | capitalize }}
          {{ element.name }}(
         redeclare package MediumA = Medium,

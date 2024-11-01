@@ -1,6 +1,6 @@
 package space_1_different_construction_types
 
-package Common
+package Trano
   package Occupancy
 
     model SimpleOccupancy
@@ -121,7 +121,7 @@ constructed by the signals connected to this bus.
 
     package SpaceControls
       model PID
-              extends Common.Controls.Interfaces.BaseSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -163,7 +163,7 @@ constructed by the signals connected to this bus.
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
-              extends Common.Controls.Interfaces.BaseSubstanceSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSubstanceSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -453,7 +453,7 @@ connect(dataBus.yCooEmission, emissionControl.yCoo);
 connect(dataBus.yHeaEmission, emissionControl.yHea);
 end EmissionControlEmission_control;
         model OccupancyOccupancy_0
-extends space_1_different_construction_types.Common.Occupancy.SimpleOccupancy ;
+extends space_1_different_construction_types.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2182,7 +2182,7 @@ end PartialVAVBox;
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
-end Common;
+end Trano;
 
 package Data "Data for transient thermal building simulation"
 extends Modelica.Icons.MaterialPropertiesPackage;
@@ -2432,12 +2432,12 @@ package MediumW = IDEAS.Media.Water "Medium model";
     Placement(transformation(origin = { 159.6958247601017, -58.70919757856324 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        space_1_different_construction_types.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
+        space_1_different_construction_types.Trano.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
     emission annotation (
     Placement(transformation(origin = { 0, -75 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        space_1_different_construction_types.Common.Controls.ventilation.EmissionControlEmission_control
+        space_1_different_construction_types.Trano.Controls.ventilation.EmissionControlEmission_control
     emission_control(    schedule=3600*{7, 19},
     THeaSet=24.0,
     THeaSetBack=16.0
@@ -2445,7 +2445,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     Placement(transformation(origin = { 196.42836232113802, 24.95387851470973 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        space_1_different_construction_types.Common.Controls.ventilation.OccupancyOccupancy_0
+        space_1_different_construction_types.Trano.Controls.ventilation.OccupancyOccupancy_0
     occupancy_0(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2461,7 +2461,7 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        space_1_different_construction_types.Common.Controls.ventilation.DataServer
+        space_1_different_construction_types.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
     Placement(transformation(origin = { 32.712922432148936, -176.79392812480577 },

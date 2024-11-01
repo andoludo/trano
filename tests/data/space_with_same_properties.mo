@@ -1,6 +1,6 @@
 package space_with_same_properties
 
-package Common
+package Trano
   package Occupancy
 
     model SimpleOccupancy
@@ -121,7 +121,7 @@ constructed by the signals connected to this bus.
 
     package SpaceControls
       model PID
-              extends Common.Controls.Interfaces.BaseSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -163,7 +163,7 @@ constructed by the signals connected to this bus.
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
-              extends Common.Controls.Interfaces.BaseSubstanceSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSubstanceSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -405,7 +405,7 @@ constructed by the signals connected to this bus.
               preserveAspectRatio=false)));
   end AHU_G36;
         model OccupancyOccupancy_0
-extends space_with_same_properties.Common.Occupancy.SimpleOccupancy ;
+extends space_with_same_properties.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2129,7 +2129,7 @@ end PartialVAVBox;
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
-end Common;
+end Trano;
 
 model building
             parameter Buildings.HeatTransfer.Data.GlazingSystems.Generic double_glazing(
@@ -2252,7 +2252,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { 0, 0 },
     extent = {{-20, -20}, {20, 20}}
 )));
-        space_with_same_properties.Common.Controls.ventilation.OccupancyOccupancy_0
+        space_with_same_properties.Trano.Controls.ventilation.OccupancyOccupancy_0
     occupancy_0(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2267,7 +2267,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     Placement(transformation(origin = { -100, 200 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        space_with_same_properties.Common.Controls.ventilation.DataServer
+        space_with_same_properties.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
     Placement(transformation(origin = { 101.0469781148643, -173.05399045832283 },

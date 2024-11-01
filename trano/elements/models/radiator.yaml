@@ -64,7 +64,7 @@
       Control
   "template": |2-
 
-        {{package_name}}.Common.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
+        {{package_name}}.Trano.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
         {{ element.name }}
   "variant": |-
     ideal

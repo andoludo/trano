@@ -81,7 +81,7 @@
       TemperatureSensor
   "template": |2-
 
-        {{package_name}}.Common.Controls.ventilation.
+        {{package_name}}.Trano.Controls.ventilation.
         ThreeWayValveControl{{ element.name | capitalize}}
         {{ element.name }}
   "variant": |-

@@ -1,6 +1,6 @@
 package ideas_simple_hydronic_no_occupancy
 
-package Common
+package Trano
   package Occupancy
 
     model SimpleOccupancy
@@ -121,7 +121,7 @@ constructed by the signals connected to this bus.
 
     package SpaceControls
       model PID
-              extends Common.Controls.Interfaces.BaseSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -163,7 +163,7 @@ constructed by the signals connected to this bus.
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
-              extends Common.Controls.Interfaces.BaseSubstanceSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSubstanceSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -478,7 +478,7 @@ annotation (Line(points={{10,0},{110,0}}, color={0,0,127}));  connect(u, conVal.
           -20},{0,-16},{-2,-16},{-2,-12}}, color={0,0,127}));annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
         coordinateSystem(preserveAspectRatio=false)));end ThreeWayValveControlThree_way_valve_control;
             model BoilerControlBoiler_control
-    extends ideas_simple_hydronic_no_occupancy.Common.Controls.ventilation.PartialBoilerControl;
+    extends ideas_simple_hydronic_no_occupancy.Trano.Controls.ventilation.PartialBoilerControl;
     Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -992,7 +992,7 @@ end PartialBoilerWithStorage;
 
 
             model BoilerWithStorageBoiler
-    extends ideas_simple_hydronic_no_occupancy.Common.Fluid.Boilers.PartialBoilerWithStorage;
+    extends ideas_simple_hydronic_no_occupancy.Trano.Fluid.Boilers.PartialBoilerWithStorage;
     Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2189,7 +2189,7 @@ graphics={
       thickness=1)}));
 end PartialVAVBox;
         model PumpPump
-extends ideas_simple_hydronic_no_occupancy.Common.Fluid.Ventilation.PartialPump;
+extends ideas_simple_hydronic_no_occupancy.Trano.Fluid.Ventilation.PartialPump;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2286,7 +2286,7 @@ connect(dataBus.TPump_control, temSup.T);
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
-end Common;
+end Trano;
 
 package Data "Data for transient thermal building simulation"
 extends Modelica.Icons.MaterialPropertiesPackage;
@@ -2491,7 +2491,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     Placement(transformation(origin = { 0, -75 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        ideas_simple_hydronic_no_occupancy.Common.Controls.ventilation.EmissionControlEmission_control
+        ideas_simple_hydronic_no_occupancy.Trano.Controls.ventilation.EmissionControlEmission_control
     emission_control(    schedule=3600*{7, 19},
     THeaSet=24.0,
     THeaSetBack=16.0
@@ -2531,7 +2531,7 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
     Placement(transformation(origin = { -200, -275 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        ideas_simple_hydronic_no_occupancy.Common.Controls.ventilation.
+        ideas_simple_hydronic_no_occupancy.Trano.Controls.ventilation.
     ThreeWayValveControlThree_way_valve_control
     three_way_valve_control annotation (
     Placement(transformation(origin = { -250, -275 },
@@ -2549,7 +2549,7 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
     Placement(transformation(origin = { 130, -175 },
     extent = {{-10, -10}, {10, 10}}
 )));
-    ideas_simple_hydronic_no_occupancy.Common.Fluid.Boilers.
+    ideas_simple_hydronic_no_occupancy.Trano.Fluid.Boilers.
 BoilerWithStorageBoiler boiler(
     a={0.9},
     dp=5000*{2,1},
@@ -2572,7 +2572,7 @@ redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOil
     Placement(transformation(origin = { 230, -275 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        ideas_simple_hydronic_no_occupancy.Common.Controls.ventilation.BoilerControlBoiler_control
+        ideas_simple_hydronic_no_occupancy.Trano.Controls.ventilation.BoilerControlBoiler_control
     boiler_control(    threshold_outdoor_air_cutoff=288.15,
     threshold_to_switch_off_boiler=288.15,
     TSup_nominal=353.15
@@ -2580,7 +2580,7 @@ redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOil
     Placement(transformation(origin = { 180, -275 },
     extent = {{-10, -10}, {10, 10}}
 )));
-      ideas_simple_hydronic_no_occupancy.Common.
+      ideas_simple_hydronic_no_occupancy.Trano.
     Fluid.Ventilation.PumpPump
      pump(
          dp_nominal=10000.0,
@@ -2592,12 +2592,12 @@ redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOil
     Placement(transformation(origin = { -300, -375 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        ideas_simple_hydronic_no_occupancy.Common.Controls.ventilation.CollectorControlPump_control
+        ideas_simple_hydronic_no_occupancy.Trano.Controls.ventilation.CollectorControlPump_control
     pump_control annotation (
     Placement(transformation(origin = { -350, -375 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        ideas_simple_hydronic_no_occupancy.Common.Controls.ventilation.DataServer
+        ideas_simple_hydronic_no_occupancy.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
     Placement(transformation(origin = { -144.31439825323838, 157.1839487377254 },

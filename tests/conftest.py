@@ -575,7 +575,7 @@ def buildings_free_float_single_zone_ahu_complex(
     boundary = Boundary(name="boundary")
     ahu = AirHandlingUnit(
         name="ahu",
-        template="""  {{package_name}}.Common.Fluid.Ventilation.AhuWithEconomizer {{element.name}}(redeclare
+        template="""  {{package_name}}.Trano.Fluid.Ventilation.AhuWithEconomizer {{element.name}}(redeclare
         package
               MediumA =                                                                    Medium,
       VRoo={100,100},
@@ -611,7 +611,7 @@ def buildings_free_float_single_zone_ahu_complex(
         ],
         control=AhuControl(
             name="ahu_control",
-            template="""  {{package_name}}.Common.Controls.ventilation.AHU_G36 {{element.name}}
+            template="""  {{package_name}}.Trano.Controls.ventilation.AHU_G36 {{element.name}}
     annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position) }},
     extent = {% raw %}{{-10, -10}, {10, 10}}
@@ -822,12 +822,12 @@ def remove_annotation(model: str) -> str:
     return model
 
 
-def remove_common_package(model: str) -> str:
-    for annotation in re.findall(r"package Common(.*?)end Common;", model, re.DOTALL):
+def remove_trano_package(model: str) -> str:
+    for annotation in re.findall(r"package Trano(.*?)end Trano;", model, re.DOTALL):
         model = (
             model.replace(annotation, "")
-            .replace("package Common", "")
-            .replace("end Common;", "")
+            .replace("package Trano", "")
+            .replace("end Trano;", "")
         )
     return model
 
@@ -837,7 +837,7 @@ def clean_model(model: str, model_name: str) -> set:
         path_file = Path(__file__).parent.joinpath("data", f"{model_name}.mo")
         with path_file.open("w") as f:
             f.write(model)
-    model = remove_common_package(model)
+    model = remove_trano_package(model)
     model_ = remove_annotation(model)
     return {
         line
@@ -853,7 +853,7 @@ def _read(file_name: str) -> Set:
         line
         for line in set(
             remove_annotation(
-                remove_common_package(
+                remove_trano_package(
                     Path(__file__)
                     .parent.joinpath("data", f"{file_name}.mo")
                     .read_text()

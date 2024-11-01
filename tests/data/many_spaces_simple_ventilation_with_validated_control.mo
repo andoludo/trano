@@ -1,7 +1,7 @@
 within ;
 package many_spaces_simple_ventilation_with_validated_control
 
-package Common
+package Trano
   package Occupancy
 
     model SimpleOccupancy
@@ -113,7 +113,7 @@ constructed by the signals connected to this bus.
 
     package SpaceControls
       model PID
-              extends Common.Controls.Interfaces.BaseSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -155,7 +155,7 @@ constructed by the signals connected to this bus.
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
-              extends Common.Controls.Interfaces.BaseSubstanceSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSubstanceSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -1321,7 +1321,7 @@ constructed by the signals connected to this bus.
         model VAVBoxVav_in_1
 
           extends
-          many_spaces_simple_ventilation_with_validated_control.Common.Fluid.Ventilation.PartialVAVBox;
+          many_spaces_simple_ventilation_with_validated_control.Trano.Fluid.Ventilation.PartialVAVBox;
           Controls.BaseClasses.DataBus dataBus annotation (Placement(
                 transformation(
           extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-368,-4},{-348,
@@ -1364,7 +1364,7 @@ constructed by the signals connected to this bus.
         model VAVBoxVav_in_2
 
           extends
-          many_spaces_simple_ventilation_with_validated_control.Common.Fluid.Ventilation.PartialVAVBox;
+          many_spaces_simple_ventilation_with_validated_control.Trano.Fluid.Ventilation.PartialVAVBox;
           Controls.BaseClasses.DataBus dataBus annotation (Placement(
                 transformation(
           extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-368,-4},{-348,
@@ -1490,7 +1490,7 @@ constructed by the signals connected to this bus.
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
-end Common;
+end Trano;
 
 model building
             parameter Buildings.HeatTransfer.Data.GlazingSystems.Generic double_glazing(
@@ -1592,10 +1592,10 @@ package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
     Placement(transformation(origin = { 0, 50},
     extent = {{-10, -10}, {10, 10}})));
-        many_spaces_simple_ventilation_with_validated_control.Common.Occupancy.SimpleOccupancy occupancy_0 annotation (
+        many_spaces_simple_ventilation_with_validated_control.Trano.Occupancy.SimpleOccupancy occupancy_0 annotation (
     Placement(transformation(origin = { -50, 50},
     extent = {{-10, -10}, {10, 10}})));
-      many_spaces_simple_ventilation_with_validated_control.Common.Fluid.Ventilation.VAVBoxVav_in_1
+      many_spaces_simple_ventilation_with_validated_control.Trano.Fluid.Ventilation.VAVBoxVav_in_1
      vav_in_1(
     redeclare package MediumA = Medium,
       mCooAir_flow_nominal=100*1.2/3600,
@@ -1640,10 +1640,10 @@ package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
     Placement(transformation(origin = { 200, 50},
     extent = {{-10, -10}, {10, 10}})));
-        many_spaces_simple_ventilation_with_validated_control.Common.Occupancy.SimpleOccupancy occupancy_1 annotation (
+        many_spaces_simple_ventilation_with_validated_control.Trano.Occupancy.SimpleOccupancy occupancy_1 annotation (
     Placement(transformation(origin = { 150, 50},
     extent = {{-10, -10}, {10, 10}})));
-      many_spaces_simple_ventilation_with_validated_control.Common.Fluid.Ventilation.VAVBoxVav_in_2
+      many_spaces_simple_ventilation_with_validated_control.Trano.Fluid.Ventilation.VAVBoxVav_in_2
      vav_in_2(
     redeclare package MediumA = Medium,
       mCooAir_flow_nominal=100*1.2/3600,
@@ -1671,12 +1671,12 @@ package Medium = Buildings.Media.Air(extraPropertiesNames={"CO2"}) "Medium model
  annotation (
     Placement(transformation(origin = { -100, 200},
     extent = {{-10, -10}, {10, 10}})));
-    many_spaces_simple_ventilation_with_validated_control.Common.Fluid.Ventilation.SimpleHVACBuildings
+    many_spaces_simple_ventilation_with_validated_control.Trano.Fluid.Ventilation.SimpleHVACBuildings
     ahu(
      redeclare package Medium = Medium) annotation (
     Placement(transformation(origin = { 100, -50},
     extent = {{-10, -10}, {10, 10}})));
-        many_spaces_simple_ventilation_with_validated_control.Common.Controls.SpaceControls.DataServer
+        many_spaces_simple_ventilation_with_validated_control.Trano.Controls.SpaceControls.DataServer
     data_bus( redeclare package
       Medium = Medium) annotation (
     Placement(transformation(origin={19.8297,181.103},

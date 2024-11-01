@@ -1,6 +1,6 @@
 package multiple_internal_walls_ideas
 
-package Common
+package Trano
   package Occupancy
 
     model SimpleOccupancy
@@ -121,7 +121,7 @@ constructed by the signals connected to this bus.
 
     package SpaceControls
       model PID
-              extends Common.Controls.Interfaces.BaseSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -163,7 +163,7 @@ constructed by the signals connected to this bus.
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
-              extends Common.Controls.Interfaces.BaseSubstanceSpaceControl;
+              extends Trano.Controls.Interfaces.BaseSubstanceSpaceControl;
 
                 parameter .Modelica.Blocks.Types.SimpleController controllerType=
                  .Modelica.Blocks.Types.SimpleController.PID "Type of controller";
@@ -405,7 +405,7 @@ constructed by the signals connected to this bus.
               preserveAspectRatio=false)));
   end AHU_G36;
         model OccupancyOccupancy_0
-extends multiple_internal_walls_ideas.Common.Occupancy.SimpleOccupancy ;
+extends multiple_internal_walls_ideas.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -414,7 +414,7 @@ connect(dataBus.OccupiedSpace_1, occSch2.occupied);
  end OccupancyOccupancy_0;
 
         model OccupancyOccupancy_1
-extends multiple_internal_walls_ideas.Common.Occupancy.SimpleOccupancy ;
+extends multiple_internal_walls_ideas.Trano.Occupancy.SimpleOccupancy ;
 Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
@@ -2142,7 +2142,7 @@ end PartialVAVBox;
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
-end Common;
+end Trano;
 
 package Data "Data for transient thermal building simulation"
 extends Modelica.Icons.MaterialPropertiesPackage;
@@ -2265,7 +2265,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     Placement(transformation(origin = { -36.074480204531966, -126.5591340675001 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        multiple_internal_walls_ideas.Common.Controls.ventilation.OccupancyOccupancy_0
+        multiple_internal_walls_ideas.Trano.Controls.ventilation.OccupancyOccupancy_0
     occupancy_0(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2296,7 +2296,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     Placement(transformation(origin = { -170.31427318713654, 68.23834464153917 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        multiple_internal_walls_ideas.Common.Controls.ventilation.OccupancyOccupancy_1
+        multiple_internal_walls_ideas.Trano.Controls.ventilation.OccupancyOccupancy_1
     occupancy_1(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2334,7 +2334,7 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
     Placement(transformation(origin = { 125.0, 0 },
     extent = {{-10, -10}, {10, 10}}
 )));
-        multiple_internal_walls_ideas.Common.Controls.ventilation.DataServer
+        multiple_internal_walls_ideas.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
     Placement(transformation(origin = { 4.25348330279556, 200.0 },

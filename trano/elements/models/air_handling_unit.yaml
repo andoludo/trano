@@ -109,7 +109,7 @@
     "category": |-
       ventilation
     "template": "\n    model Ahu{{ element.name | capitalize}}\n    extends {{ package_name\
-      \ }}.Common.Fluid.Ventilation.PartialAhu;\n    {{bus_template}}\n    equation\n\
+      \ }}.Trano.Fluid.Ventilation.PartialAhu;\n    {{bus_template}}\n    equation\n\
       \    {{bus_ports | safe}}\n     end Ahu{{ element.name | capitalize}};\n   \
       \  "
   "figures": []
@@ -160,7 +160,7 @@
     - |-
       AhuControl
   "template": |-
-    {{package_name}}.Common.Fluid.
+    {{package_name}}.Trano.Fluid.
         Ventilation.Ahu{{ element.name | capitalize}}
         {{ element.name }}
         (redeclare package MediumA = Medium,
@@ -208,7 +208,7 @@
     "use_counter": !!bool |-
       false
   "template": |-
-    {{package_name}}.Common.Fluid.
+    {{package_name}}.Trano.Fluid.
         Ventilation.SimpleHVACBuildings
         {{ element.name }}
         (redeclare package Medium = Medium)
