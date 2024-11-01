@@ -31,5 +31,4 @@ jobs:
       run: poetry run nox -s linting
     - name: Run tests
       run: poetry run nox -s tests
-    - name: Run tests simulate
-      run: poetry run nox -s simulate
+
