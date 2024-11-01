@@ -17,6 +17,13 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3
+          cd /usr/local/bin
+          ln -s /opt/poetry/bin/poetry
+          poetry config virtualenvs.create false
+
       - name: Install dependencies
         run: |
           poetry install --group docs
