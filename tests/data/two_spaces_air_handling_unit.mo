@@ -412,7 +412,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_1, occSch2.occupied);
  end OccupancyOccupancy_0;
-
+ 
         model VAVControlVav_in_control
 Buildings.Controls.OBC.ASHRAE.G36.TerminalUnits.Reheat.Controller rehBoxCon(
 venStd=Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard.ASHRAE62_1,
@@ -475,7 +475,7 @@ Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.OccupiedSpace_2, occSch2.occupied);
  end OccupancyOccupancy_1;
-
+ 
         model VAVControlVav_in_control_2
 Buildings.Controls.OBC.ASHRAE.G36.TerminalUnits.Reheat.Controller rehBoxCon(
 venStd=Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard.ASHRAE62_1,
@@ -633,28 +633,28 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Cont
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TCooSetVav_in_control_2
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TSupSetVav_in_control
-            (y=293.15);
-Modelica.Blocks.Sources.RealExpression
-            TSupSetVav_in_control_2
-            (y=293.15);
-Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_in_control
+            ppmCO2SetVav_in_control_2
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             THeaSetVav_in_control
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
+            TSupSetVav_in_control
+            (y=293.15);
+Modelica.Blocks.Sources.RealExpression
             TCooSetVav_in_control
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_in_control_2
+            ppmCO2SetVav_in_control
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
+            TCooSetVav_in_control_2
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
             THeaSetVav_in_control_2
+            (y=293.15);
+Modelica.Blocks.Sources.RealExpression
+            TSupSetVav_in_control_2
             (y=293.15);
 Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_in_control_2
@@ -663,20 +663,26 @@ Modelica.Blocks.Sources.IntegerExpression
             uAhuOpeModAhu_control
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            oveFloSetVav_in_control
+            uOpeModVav_in_control
+            (y=1);
+Modelica.Blocks.Sources.IntegerExpression
+            oveDamPosVav_in_control
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_in_control_2
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            oveDamPosVav_in_control
+            oveFloSetVav_in_control
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             oveDamPosVav_in_control_2
             (y=0);
-Modelica.Blocks.Sources.IntegerExpression
-            uOpeModVav_in_control
-            (y=1);
+Modelica.Blocks.Sources.BooleanExpression
+            u1HotPlaVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1WinVav_in_control_2
+            (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1OccVav_in_control
             (y=false);
@@ -684,13 +690,7 @@ Modelica.Blocks.Sources.BooleanExpression
             uHeaOffVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_in_control
+            u1SupFanAhu_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1HotPlaVav_in_control
@@ -699,16 +699,16 @@ Modelica.Blocks.Sources.BooleanExpression
             u1WinVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1HotPlaVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1WinVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1SupFanAhu_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
             u1FanVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            uHeaOffVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1FanVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1OccVav_in_control_2
             (y=false);
 equation
 connect(port[1],TRoo[1]. port);
@@ -719,60 +719,60 @@ connect(dataBus.TZonSpace_1, TRoo[1].T);
 connect(dataBus.TZonSpace_2, TRoo[2].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_2, TRoo1[2].ppm);
-connect(dataBus.TCooSetSpace_2,
-TCooSetVav_in_control_2.y);
-connect(dataBus.TSupSetSpace_1,
-TSupSetVav_in_control.y);
-connect(dataBus.TSupSetSpace_2,
-TSupSetVav_in_control_2.y);
-connect(dataBus.ppmCO2SetSpace_1,
-ppmCO2SetVav_in_control.y);
-connect(dataBus.THeaSetSpace_1,
-THeaSetVav_in_control.y);
-connect(dataBus.TCooSetSpace_1,
-TCooSetVav_in_control.y);
 connect(dataBus.ppmCO2SetSpace_2,
 ppmCO2SetVav_in_control_2.y);
+connect(dataBus.THeaSetSpace_1,
+THeaSetVav_in_control.y);
+connect(dataBus.TSupSetSpace_1,
+TSupSetVav_in_control.y);
+connect(dataBus.TCooSetSpace_1,
+TCooSetVav_in_control.y);
+connect(dataBus.ppmCO2SetSpace_1,
+ppmCO2SetVav_in_control.y);
+connect(dataBus.TCooSetSpace_2,
+TCooSetVav_in_control_2.y);
 connect(dataBus.THeaSetSpace_2,
 THeaSetVav_in_control_2.y);
+connect(dataBus.TSupSetSpace_2,
+TSupSetVav_in_control_2.y);
 connect(dataBus.uOpeModSpace_2,
 uOpeModVav_in_control_2.y);
 connect(dataBus.uAhuOpeModAhu_control,
 uAhuOpeModAhu_control.y);
-connect(dataBus.oveFloSetSpace_1,
-oveFloSetVav_in_control.y);
-connect(dataBus.oveFloSetSpace_2,
-oveFloSetVav_in_control_2.y);
-connect(dataBus.oveDamPosSpace_1,
-oveDamPosVav_in_control.y);
-connect(dataBus.oveDamPosSpace_2,
-oveDamPosVav_in_control_2.y);
 connect(dataBus.uOpeModSpace_1,
 uOpeModVav_in_control.y);
-connect(dataBus.u1OccSpace_1,
-u1OccVav_in_control.y);
-connect(dataBus.uHeaOffSpace_1,
-uHeaOffVav_in_control.y);
-connect(dataBus.u1OccSpace_2,
-u1OccVav_in_control_2.y);
-connect(dataBus.uHeaOffSpace_2,
-uHeaOffVav_in_control_2.y);
-connect(dataBus.u1FanSpace_1,
-u1FanVav_in_control.y);
-connect(dataBus.u1HotPlaSpace_1,
-u1HotPlaVav_in_control.y);
-connect(dataBus.u1WinSpace_1,
-u1WinVav_in_control.y);
+connect(dataBus.oveDamPosSpace_1,
+oveDamPosVav_in_control.y);
+connect(dataBus.oveFloSetSpace_2,
+oveFloSetVav_in_control_2.y);
+connect(dataBus.oveFloSetSpace_1,
+oveFloSetVav_in_control.y);
+connect(dataBus.oveDamPosSpace_2,
+oveDamPosVav_in_control_2.y);
 connect(dataBus.u1HotPlaSpace_2,
 u1HotPlaVav_in_control_2.y);
 connect(dataBus.u1WinSpace_2,
 u1WinVav_in_control_2.y);
+connect(dataBus.u1OccSpace_1,
+u1OccVav_in_control.y);
+connect(dataBus.uHeaOffSpace_1,
+uHeaOffVav_in_control.y);
 connect(dataBus.u1SupFanAhu_control,
 u1SupFanAhu_control.y);
+connect(dataBus.u1HotPlaSpace_1,
+u1HotPlaVav_in_control.y);
+connect(dataBus.u1WinSpace_1,
+u1WinVav_in_control.y);
 connect(dataBus.u1FanSpace_2,
 u1FanVav_in_control_2.y);
+connect(dataBus.uHeaOffSpace_2,
+uHeaOffVav_in_control_2.y);
+connect(dataBus.u1FanSpace_1,
+u1FanVav_in_control.y);
+connect(dataBus.u1OccSpace_2,
+u1OccVav_in_control_2.y);
 end DataServer;
-
+      
 
 
       partial model PartialBoilerControl
@@ -913,26 +913,7 @@ end ventilation;
 
   package Fluid
   package Boilers
-  model Simple
 
-  extends Buildings.Fluid.Interfaces.PartialTwoPort;
-  Buildings.Fluid.Sources.Boundary_pT bou(use_T_in = true, nPorts = 2, redeclare
-            final package                                                                      Medium = Medium)  annotation (
-          Placement(transformation(origin = {90, 188}, extent = {{-82, -180}, {-62, -160}})));
-  Modelica.Blocks.Sources.Constant constant1(k = 273 + 70)  annotation (
-          Placement(transformation(origin = {-32, 20}, extent = {{-10, -10}, {10, 10}})));
-  equation
-  connect(constant1.y, bou.T_in) annotation (
-          Line(points = {{-20, 20}, {6, 20}, {6, 22}}, color = {0, 0, 127}));
-  connect(bou.ports[1], port_b) annotation (
-          Line(points = {{28, 18}, {100, 18}, {100, 0}}, color = {0, 127, 255}));
-  connect(bou.ports[2], port_a) annotation (
-          Line(points = {{28, 18}, {-100, 18}, {-100, 0}}, color = {0, 127, 255}));
-      annotation (
-          Icon(graphics={  Rectangle(fillPattern = FillPattern.Solid, extent = {{-80, 80}, {80, -80}}), Rectangle(fillColor = {255, 255, 255},
-                  fillPattern =                                                                                                                              FillPattern.Solid, extent = {{-68, 70}, {70, -70}}), Polygon(lineColor = {0, 0, 255}, fillColor = {0, 0, 255},
-                  fillPattern =                                                                                                                                                                                                        FillPattern.Solid, points = {{-68, 18}, {-68, 18}, {-54, 32}, {-28, 16}, {0, 30}, {26, 16}, {46, 32}, {70, 18}, {70, 18}, {70, -70}, {70, -70}, {-68, -70}, {-68, -70}, {-68, 18}}, smooth = Smooth.Bezier)}));
-  end Simple;
 
 partial model PartialBoilerWithStorage
   replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
@@ -1197,81 +1178,6 @@ end PartialBoilerWithStorage;
   end Boilers;
 
     package Ventilation
-      model SimpleHVAC
-
-        replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
-          "Medium model" annotation (choicesAllMatching=true);
-        IDEAS.Fluid.Movers.FlowControlled_dp
-                                       fanSup(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-          inputType=IDEAS.Fluid.Types.InputType.Constant,
-          nominalValuesDefineDefaultPressureCurve=true,
-          redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Supply fan"
-          annotation (Placement(transformation(extent={{4,6},{24,26}})));
-        IDEAS.Fluid.Movers.FlowControlled_dp
-                                       fanRet(
-          energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-          inputType=IDEAS.Fluid.Types.InputType.Constant,
-          nominalValuesDefineDefaultPressureCurve=true,
-          redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Return fan"
-          annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
-        IDEAS.Fluid.HeatExchangers.ConstantEffectiveness
-                                                   hex(
-          redeclare package Medium1 = Medium,
-          redeclare package Medium2 = Medium,
-          m1_flow_nominal=2*100*1.2/3600,
-          m2_flow_nominal=2*100*1.2/3600,
-          dp1_nominal=100,
-          dp2_nominal=100) "Heat exchanger with constant heat recovery effectivity"
-          annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
-        Modelica.Fluid.Interfaces.FluidPort_b port_b(
-          redeclare final package Medium = Medium)
-          "Fluid connector b (positive design flow direction is from port_a to port_b)"
-          annotation (Placement(transformation(extent={{118,1},{86,31}}),
-              iconTransformation(extent={{110,31},{90,49}})));
-
-        Modelica.Fluid.Interfaces.FluidPort_a port_a(
-          redeclare final package Medium = Medium)
-          "Fluid connector a (positive design flow direction is from port_a to port_b)"
-          annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
-              iconTransformation(extent={{90,-49},{110,-31}})));
-        IDEAS.Fluid.Sources.OutsideAir outsideAir(
-          azi=0,                                  nPorts=2, redeclare package
-            Medium = Medium) annotation (
-          Placement(transformation(origin = {-64, 2}, extent = {{-10, -10}, {10, 10}})));
-      equation
-        connect(hex.port_b1, fanSup.port_a) annotation (
-          Line(points = {{-6, 2}, {-6, 16}, {4, 16}}, color = {0, 127, 255}));
-        connect(hex.port_a2, fanRet.port_b) annotation (
-          Line(points = {{-6, -10}, {-6, -24}, {4, -24}}, color = {0, 127, 255}));
-        connect(fanSup.port_b, port_b) annotation (
-          Line(points = {{24, 16}, {102, 16}}, color = {0, 127, 255}));
-        connect(fanRet.port_a, port_a) annotation (
-          Line(points = {{24, -24}, {101, -24}}, color = {0, 127, 255}));
-        connect(
-          outsideAir.ports[1], hex.port_a1) annotation (
-          Line(points={{-54,4},{-40,4},{-40,2},{-26,2}},
-                                              color = {0, 127, 255}));
-        connect(
-          outsideAir.ports[2], hex.port_b2) annotation (
-          Line(points={{-54,0},{-26,0},{-26,-10}},        color = {0, 127, 255}));
-        annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-60},
-                  {100,60}}), graphics={Rectangle(
-                extent={{-100,60},{100,-60}},
-                lineColor={255,128,0},
-                fillColor={255,128,0},
-                fillPattern=FillPattern.Forward)}), Diagram(coordinateSystem(
-                preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
-      end SimpleHVAC;
-
-      model SimpleVAV
-        annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-              coordinateSystem(preserveAspectRatio=false)));
-      end SimpleVAV;
 
       model SimpleHVACBuildings
 
@@ -2389,7 +2295,7 @@ connect(dataBus.y_actualVav_in, vav.y_actual);
 connect(dataBus.VDis_flowVav_in_control, senVolFlo.V_flow);
 connect(dataBus.TDisVav_in_control, senTem.T);
  end VAVBoxVav_in;
-
+ 
         model VAVBoxVav_in_2
 extends two_spaces_air_handling_unit.Trano.Fluid.Ventilation.PartialVAVBox;
 Controls.BaseClasses.DataBus dataBus
@@ -2401,7 +2307,7 @@ connect(dataBus.y_actualVav_in_2, vav.y_actual);
 connect(dataBus.VDis_flowVav_in_control_2, senVolFlo.V_flow);
 connect(dataBus.TDisVav_in_control_2, senTem.T);
  end VAVBoxVav_in_2;
-
+ 
             model AhuAhu
     extends two_spaces_air_handling_unit.Trano.Fluid.Ventilation.PartialAhu;
     Controls.BaseClasses.DataBus dataBus
@@ -2420,7 +2326,7 @@ connect(dataBus.TAirSupAhu_control, TSup.T);
 connect(dataBus.TAirMixAhu_control, TMix.T);
 connect(dataBus.dpDucAhu_control, dpDisSupFan.p_rel);
      end AhuAhu;
-
+     
 
     end Ventilation;
   end Fluid;
@@ -2532,11 +2438,11 @@ model building
         tauIR=0.0,
         absIR_a=0.84,
         absIR_b=0.84)
-
+        
     },
     final gas={
             Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
-
+            
     },
     UFra=1.4)
     annotation (
@@ -2641,12 +2547,12 @@ package MediumW = Buildings.Media.Water "Medium model";
     THeaAirInl_nominal=30,
     THeaAirDis_nominal=25
     ) annotation (
-    Placement(transformation(origin = { -111.61476755368932, 152.6501474617446 },
+    Placement(transformation(origin = { -190.39079513450062, 64.31621530787011 },
     extent = {{-10, -10}, {10, 10}}
 )));
         two_spaces_air_handling_unit.Trano.Controls.ventilation.VAVControlVav_in_control
     vav_in_control annotation (
-    Placement(transformation(origin = { -124.59282577775998, -131.38906232838605 },
+    Placement(transformation(origin = { -70.44645649236038, -187.72144157186273 },
     extent = {{-10, -10}, {10, 10}}
 )));
       Buildings.Fluid.FixedResistances.PressureDrop
@@ -2655,7 +2561,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { -104.78345037223664, -178.33125956133173 },
+    Placement(transformation(origin = { 138.23092077839743, 163.48177130240973 },
     extent = {{-10, -10}, {10, 10}}
 )));
       Buildings.Fluid.FixedResistances.PressureDrop
@@ -2664,7 +2570,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { 186.17938830157001, -10.461609257857779 },
+    Placement(transformation(origin = { -163.20832917215753, -82.05835048409304 },
     extent = {{-10, -10}, {10, 10}}
 )));
     Buildings.ThermalZones.Detailed.MixedAir space_2(
@@ -2720,12 +2626,12 @@ package MediumW = Buildings.Media.Water "Medium model";
     THeaAirInl_nominal=30,
     THeaAirDis_nominal=25
     ) annotation (
-    Placement(transformation(origin = { 24.697126693482428, 185.3535408438867 },
+    Placement(transformation(origin = { 171.97251022237938, 104.26305642543184 },
     extent = {{-10, -10}, {10, 10}}
 )));
         two_spaces_air_handling_unit.Trano.Controls.ventilation.VAVControlVav_in_control_2
     vav_in_control_2 annotation (
-    Placement(transformation(origin = { -25.96563125437091, 184.75274257902757 },
+    Placement(transformation(origin = { -19.270867880934546, -191.67043119717843 },
     extent = {{-10, -10}, {10, 10}}
 )));
       Buildings.Fluid.FixedResistances.PressureDrop
@@ -2734,7 +2640,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { 73.88716012974669, 170.91424769037658 },
+    Placement(transformation(origin = { -117.90146313924969, -162.49556126562678 },
     extent = {{-10, -10}, {10, 10}}
 )));
       Buildings.Fluid.FixedResistances.PressureDrop
@@ -2743,7 +2649,7 @@ package MediumW = Buildings.Media.Water "Medium model";
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { -176.7446669313813, 81.74534680012812 },
+    Placement(transformation(origin = { 29.373404470759432, 157.2189471779767 },
     extent = {{-10, -10}, {10, 10}}
 )));
         Buildings.HeatTransfer.Conduction.MultiLayer
@@ -2770,12 +2676,12 @@ package MediumW = Buildings.Media.Water "Medium model";
     VRoo={100,100},
     AFlo={20,20},
     mCooVAV_flow_nominal={0.01,0.01}) annotation (
-    Placement(transformation(origin = { -32.4947924922398, -200.0 },
+    Placement(transformation(origin = { -194.4537637228302, -42.96416384764686 },
     extent = {{-10, -10}, {10, 10}}
 )));
         two_spaces_air_handling_unit.Trano.Controls.ventilation.AhuControlAhu_control
     ahu_control annotation (
-    Placement(transformation(origin = { -18.848264133810893, -172.48764808384604 },
+    Placement(transformation(origin = { -127.22940147985034, 147.88606082987212 },
     extent = {{-10, -10}, {10, 10}}
 )));
       Buildings.Fluid.Sources.Outside boundary
@@ -2786,7 +2692,7 @@ package MediumW = Buildings.Media.Water "Medium model";
         two_spaces_air_handling_unit.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 124.32975871427716, 137.56684051243647 },
+    Placement(transformation(origin = { -163.26789718969033, -127.32055952772596 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -2798,7 +2704,7 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.ports[1],pressure_drop_duct_out.port_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -52.39172518611832, 0.0 }    ,{ -52.39172518611832, -178.33125956133173 }    ,{ -104.78345037223664, -178.33125956133173 }    },
+points={{ 0.0, 0.0 }    ,{ 69.11546038919872, 0.0 }    ,{ 69.11546038919872, 163.48177130240973 }    ,{ 138.23092077839743, 163.48177130240973 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_1.surf_surBou[1],internal_space_1_space_2.port_a)
@@ -2812,22 +2718,22 @@ points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0
 thickness=0.05,
 smooth=Smooth.None));    connect(vav_in.dataBus,vav_in_control.dataBus)
 annotation (Line(
-points={{ -111.61476755368932, 152.6501474617446 }    ,{ -118.10379666572464, 152.6501474617446 }    ,{ -118.10379666572464, -131.38906232838605 }    ,{ -124.59282577775998, -131.38906232838605 }    },
+points={{ -190.39079513450062, 64.31621530787011 }    ,{ -130.4186258134305, 64.31621530787011 }    ,{ -130.4186258134305, -187.72144157186273 }    ,{ -70.44645649236038, -187.72144157186273 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(vav_in.port_bAir,space_1.ports[2])
 annotation (Line(
-points={{ -111.61476755368932, 152.6501474617446 }    ,{ -55.80738377684466, 152.6501474617446 }    ,{ -55.80738377684466, 0.0 }    ,{ 0.0, 0.0 }    },
+points={{ -190.39079513450062, 64.31621530787011 }    ,{ -95.19539756725031, 64.31621530787011 }    ,{ -95.19539756725031, 0.0 }    ,{ 0.0, 0.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_out.port_b,ahu.port_a)
 annotation (Line(
-points={{ -104.78345037223664, -178.33125956133173 }    ,{ -68.63912143223823, -178.33125956133173 }    ,{ -68.63912143223823, -200.0 }    ,{ -32.4947924922398, -200.0 }    },
+points={{ 138.23092077839743, 163.48177130240973 }    ,{ -28.111421472216364, 163.48177130240973 }    ,{ -28.111421472216392, -42.96416384764686 }    ,{ -194.4537637228302, -42.96416384764686 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_in.port_b,vav_in.port_aAir)
 annotation (Line(
-points={{ 186.17938830157001, -10.461609257857779 }    ,{ 37.28231037394036, -10.461609257857779 }    ,{ 37.282310373940334, 152.6501474617446 }    ,{ -111.61476755368932, 152.6501474617446 }    },
+points={{ -163.20832917215753, -82.05835048409304 }    ,{ -176.79956215332908, -82.05835048409304 }    ,{ -176.79956215332908, 64.31621530787011 }    ,{ -190.39079513450062, 64.31621530787011 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.qGai_flow,occupancy_1.y)
@@ -2837,7 +2743,7 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.ports[1],pressure_drop_duct_out_2.port_a)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 161.94358006487334, 150.0 }    ,{ 161.94358006487334, 170.91424769037658 }    ,{ 73.88716012974669, 170.91424769037658 }    },
+points={{ 250.0, 150.0 }    ,{ 66.04926843037515, 150.0 }    ,{ 66.04926843037516, -162.49556126562678 }    ,{ -117.90146313924969, -162.49556126562678 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(space_2.surf_surBou[1],internal_space_1_space_2.port_b)
@@ -2851,42 +2757,42 @@ points={{ 250.0, 150.0 }    ,{ 75.0, 150.0 }    ,{ 75.0, 200.0 }    ,{ -100.0, 2
 thickness=0.05,
 smooth=Smooth.None));    connect(vav_in_2.dataBus,vav_in_control_2.dataBus)
 annotation (Line(
-points={{ 24.697126693482428, 185.3535408438867 }    ,{ -0.6342522804442403, 185.3535408438867 }    ,{ -0.6342522804442403, 184.75274257902757 }    ,{ -25.96563125437091, 184.75274257902757 }    },
+points={{ 171.97251022237938, 104.26305642543184 }    ,{ 76.35082117072241, 104.26305642543184 }    ,{ 76.35082117072243, -191.67043119717843 }    ,{ -19.270867880934546, -191.67043119717843 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(vav_in_2.port_bAir,space_2.ports[2])
 annotation (Line(
-points={{ 24.697126693482428, 185.3535408438867 }    ,{ 137.3485633467412, 185.3535408438867 }    ,{ 137.34856334674123, 150.0 }    ,{ 250.0, 150.0 }    },
+points={{ 171.97251022237938, 104.26305642543184 }    ,{ 210.98625511118968, 104.26305642543184 }    ,{ 210.98625511118968, 150.0 }    ,{ 250.0, 150.0 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_out_2.port_b,ahu.port_a)
 annotation (Line(
-points={{ 73.88716012974669, 170.91424769037658 }    ,{ 20.69618381875344, 170.91424769037658 }    ,{ 20.696183818753447, -200.0 }    ,{ -32.4947924922398, -200.0 }    },
+points={{ -117.90146313924969, -162.49556126562678 }    ,{ -156.17761343103993, -162.49556126562678 }    ,{ -156.17761343103993, -42.96416384764686 }    ,{ -194.4537637228302, -42.96416384764686 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(pressure_drop_duct_in_2.port_b,vav_in_2.port_aAir)
 annotation (Line(
-points={{ -176.7446669313813, 81.74534680012812 }    ,{ -76.02377011894943, 81.74534680012812 }    ,{ -76.02377011894943, 185.3535408438867 }    ,{ 24.697126693482428, 185.3535408438867 }    },
+points={{ 29.373404470759432, 157.2189471779767 }    ,{ 100.6729573465694, 157.2189471779767 }    ,{ 100.6729573465694, 104.26305642543184 }    ,{ 171.97251022237938, 104.26305642543184 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ahu.dataBus,ahu_control.dataBus)
 annotation (Line(
-points={{ -32.4947924922398, -200.0 }    ,{ -25.671528313025348, -200.0 }    ,{ -25.671528313025348, -172.48764808384604 }    ,{ -18.848264133810893, -172.48764808384604 }    },
+points={{ -194.4537637228302, -42.96416384764686 }    ,{ -160.84158260134026, -42.96416384764686 }    ,{ -160.84158260134026, 147.88606082987212 }    ,{ -127.22940147985034, 147.88606082987212 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ahu.port_b,pressure_drop_duct_in.port_a)
 annotation (Line(
-points={{ -32.4947924922398, -200.0 }    ,{ 76.84229790466512, -200.0 }    ,{ 76.8422979046651, -10.461609257857779 }    ,{ 186.17938830157001, -10.461609257857779 }    },
+points={{ -194.4537637228302, -42.96416384764686 }    ,{ -178.83104644749386, -42.96416384764686 }    ,{ -178.83104644749386, -82.05835048409304 }    ,{ -163.20832917215753, -82.05835048409304 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(ahu.port_b,pressure_drop_duct_in_2.port_a)
 annotation (Line(
-points={{ -32.4947924922398, -200.0 }    ,{ -104.61972971181055, -200.0 }    ,{ -104.61972971181055, 81.74534680012812 }    ,{ -176.7446669313813, 81.74534680012812 }    },
+points={{ -194.4537637228302, -42.96416384764686 }    ,{ -82.54017962603538, -42.96416384764686 }    ,{ -82.54017962603538, 157.2189471779767 }    ,{ 29.373404470759432, 157.2189471779767 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(boundary.ports,ahu.ports)
 annotation (Line(
-points={{ -200.0, 100.0 }    ,{ -116.2473962461199, 100.0 }    ,{ -116.2473962461199, -200.0 }    ,{ -32.4947924922398, -200.0 }    },
+points={{ -200.0, 100.0 }    ,{ -197.2268818614151, 100.0 }    ,{ -197.2268818614151, -42.96416384764686 }    ,{ -194.4537637228302, -42.96416384764686 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(boundary.weaBus,weather_13.weaBus)
@@ -2895,44 +2801,42 @@ points={{ -200.0, 100.0 }    ,{ -150.0, 100.0 }    ,{ -150.0, 200.0 }    ,{ -100
 thickness=0.05,
 smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ 37.164879357138574, 0.0 }    ,{ 37.16487935713859, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ -50.0, 0.0 }    ,{ -106.63394859484517, 0.0 }    ,{ -106.63394859484517, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(vav_in_control.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -124.59282577775998, -131.38906232838605 }    ,{ -0.13153353174141102, -131.38906232838605 }    ,{ -0.13153353174141102, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ -70.44645649236038, -187.72144157186273 }    ,{ -116.85717684102536, -187.72144157186273 }    ,{ -116.85717684102536, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(occupancy_1.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ 200.0, 150.0 }    ,{ 162.16487935713857, 150.0 }    ,{ 162.16487935713857, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ 200.0, 150.0 }    ,{ 18.36605140515485, 150.0 }    ,{ 18.36605140515482, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(vav_in_control_2.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -25.96563125437091, 184.75274257902757 }    ,{ 49.18206372995313, 184.75274257902757 }    ,{ 49.18206372995313, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ -19.270867880934546, -191.67043119717843 }    ,{ -91.26938253531243, -191.67043119717843 }    ,{ -91.26938253531245, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(ahu_control.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -18.848264133810893, -172.48764808384604 }    ,{ 52.74074729023314, -172.48764808384604 }    ,{ 52.74074729023313, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ -127.22940147985034, 147.88606082987212 }    ,{ -145.24864933477033, 147.88606082987212 }    ,{ -145.24864933477033, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 62.16487935713858, 0.0 }    ,{ 62.16487935713858, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ 0.0, 0.0 }    ,{ -81.63394859484517, 0.0 }    ,{ -81.63394859484517, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.ports[3],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 62.16487935713858, 0.0 }    ,{ 62.16487935713858, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ 0.0, 0.0 }    ,{ -81.63394859484517, 0.0 }    ,{ -81.63394859484517, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_2.heaPorAir,data_bus.port[2])
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 187.16487935713857, 150.0 }    ,{ 187.16487935713857, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ 250.0, 150.0 }    ,{ 43.36605140515485, 150.0 }    ,{ 43.36605140515482, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_2.ports[3],data_bus.port_a[2])
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 187.16487935713857, 150.0 }    ,{ 187.16487935713857, 137.56684051243647 }    ,{ 124.32975871427716, 137.56684051243647 }    },
+points={{ 250.0, 150.0 }    ,{ 43.36605140515485, 150.0 }    ,{ 43.36605140515482, -127.32055952772596 }    ,{ -163.26789718969033, -127.32055952772596 }    },
 thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-250.0,-250.0},{300.0,250.0}})), Icon(
-        coordinateSystem(extent={{-250.0,-250.0},{300.0,250.0}})));
-  annotation (
-    Documentation(info="<html><head><title>Spaces</title></head><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_1</td></tr><tr><th>parameters</th><td></td></tr><tr><th>occupancy</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_0</td></tr><tr><th>parameters</th><td></td></tr></table></td></tr><tr><th>ventilation_inlets</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th></tr></thead><tbody><tr><td>pressure_drop_duct_in</td></tr><tr><td>vav_in</td></tr></tbody></table></td></tr><tr><th>ventilation_outlets</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th></tr></thead><tbody><tr><td>pressure_drop_duct_out</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>w1_1</td><td>10</td><td>135</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>w2_1</td><td>10</td><td>45</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>floor_2</td><td>10</td><td>90</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>win1_1</td><td>1</td><td>45</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10</td><td>10</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>space_2</td></tr><tr><th>parameters</th><td></td></tr><tr><th>occupancy</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>occupancy_1</td></tr><tr><th>parameters</th><td></td></tr></table></td></tr><tr><th>ventilation_inlets</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th></tr></thead><tbody><tr><td>pressure_drop_duct_in_2</td></tr><tr><td>vav_in_2</td></tr></tbody></table></td></tr><tr><th>ventilation_outlets</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th></tr></thead><tbody><tr><td>pressure_drop_duct_out_2</td></tr></tbody></table></td></tr><tr><th>external_boundaries</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>w2_2</td><td>10</td><td>45</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>floor_3</td><td>10</td><td>90</td><td>floor</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr></table></td></tr><tr><td>win1_2</td><td>1</td><td>45</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr></table></td></tr></tbody></table></td></tr><tr><th>internal_elements</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>name</th><th>surface</th><th>azimuth</th><th>tilt</th><th>construction</th></tr></thead><tbody><tr><td>internal_space_1_space_2</td><td>10</td><td>10</td><td>wall</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr></table></td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>external_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>concrete</td></tr><tr><th>k</th><td>1.4</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2240.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>insulation_board</td></tr><tr><th>k</th><td>0.03</td></tr><tr><th>c</th><td>1200.0</td></tr><tr><th>rho</th><td>40.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.02</td></tr><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>plywood</td></tr><tr><th>k</th><td>0.12</td></tr><tr><th>c</th><td>1210.0</td></tr><tr><th>rho</th><td>540.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.1</td></tr></tbody></table></td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>double_glazing</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>thickness</th><th>material</th><th>layer_type</th></tr></thead><tbody><tr><td>0.003</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>id_100</td></tr><tr><th>k</th><td>1.0</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2500.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr><tr><th>solar_transmittance</th><td><ul><li>0.646</li></ul></td></tr><tr><th>solar_reflectance_outside_facing</th><td><ul><li>0.062</li></ul></td></tr><tr><th>solar_reflectance_room_facing</th><td><ul><li>0.063</li></ul></td></tr><tr><th>infrared_transmissivity</th><td>0.0</td></tr><tr><th>infrared_absorptivity_outside_facing</th><td>0.84</td></tr><tr><th>infrared_absorptivity_room_facing</th><td>0.84</td></tr></table></td><td>glass</td></tr><tr><td>0.0127</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>Air</td></tr><tr><th>k</th><td>0.025</td></tr><tr><th>c</th><td>1005.0</td></tr><tr><th>rho</th><td>1.2</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>gas</td></tr><tr><td>0.003</td><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>id_100</td></tr><tr><th>k</th><td>1.0</td></tr><tr><th>c</th><td>840.0</td></tr><tr><th>rho</th><td>2500.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr><tr><th>solar_transmittance</th><td><ul><li>0.646</li></ul></td></tr><tr><th>solar_reflectance_outside_facing</th><td><ul><li>0.062</li></ul></td></tr><tr><th>solar_reflectance_room_facing</th><td><ul><li>0.063</li></ul></td></tr><tr><th>infrared_transmissivity</th><td>0.0</td></tr><tr><th>infrared_absorptivity_outside_facing</th><td>0.84</td></tr><tr><th>infrared_absorptivity_room_facing</th><td>0.84</td></tr></table></td><td>glass</td></tr></tbody></table></td></tr><tr><th>u_value_frame</th><td>1.4</td></tr></table><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>internal_wall</td></tr><tr><th>layers</th><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><thead><tr><th>material</th><th>thickness</th></tr></thead><tbody><tr><td><table border='1'  align='center' bgcolor='#f0f0f0' style='border-collapse: collapse; margin-top: 20px; margin-bottom: 20px;'><tr><th>name</th><td>brick</td></tr><tr><th>k</th><td>0.89</td></tr><tr><th>c</th><td>790.0</td></tr><tr><th>rho</th><td>1920.0</td></tr><tr><th>epsLw</th><td>0.85</td></tr><tr><th>epsSw</th><td>0.65</td></tr></table></td><td>0.2</td></tr></tbody></table></td></tr></table></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body><body><h1>Spaces</h1><p><h2>Introduction</h2><p>Introduction</p></p><p></p><p><h2>Conclusions</h2><p>Conclusions</p></p></body></html>"));
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-250.0,-241.67043119717843},{300.0,250.0}})), Icon(
+        coordinateSystem(extent={{-250.0,-241.67043119717843},{300.0,250.0}})));
 end building;
 
 
