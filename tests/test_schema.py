@@ -11,7 +11,7 @@ from trano.data_models.converter import converter
 from trano.scripts.schema import create_final_schema
 from trano.simulate.simulate import SimulationOptions, simulate
 from trano.utils.utils import is_success
-
+from jsf import JSF
 
 @pytest.fixture
 def house() -> Path:
@@ -59,6 +59,16 @@ def test_create_model_json(schema: Path, house: Path) -> None:
         Path(temp.name).write_text(json.dumps(data))
         model_ = convert_model(model_name, Path(temp.name))
         assert clean_model(model_, model_name) == set(_read(model_name))
+
+from linkml.generators.jsonschemagen import JsonSchemaGenerator
+def test_create_json_schema() -> None:
+    data_model_path = (
+        Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
+    )
+    a = JsonSchemaGenerator(data_model_path).serialize()
+    faker = JSF(json.loads(a))
+    fake_json = faker.generate()
+    #TODO: needs validation
 
 
 def test_create_model_yaml(schema: Path, house: Path) -> None:
