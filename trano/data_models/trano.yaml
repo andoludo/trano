@@ -254,6 +254,10 @@ classes:
         range: SplitValveParameters
   Radiator:
     is_a: System
+    attributes:
+      control:
+        range: Control #TODO: create radiator control
+
 
     slots:
       - parameters

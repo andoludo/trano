@@ -7,16 +7,28 @@ from trano.reporting.html import to_html_reporting
 from trano.reporting.reporting import ModelDocumentation
 from trano.reporting.types import ResultFile
 from trano.simulate.simulate import SimulationLibraryOptions, simulate
+from trano.topology import Network
 from trano.utils.utils import is_success
 
 
-def simulate_model(model: Path | str, options: SimulationLibraryOptions) -> None:
+def _create_network(model: Path | str, library: str) -> Network:
+    library_ = Library.from_configuration(library)
     model = Path(model).resolve()
-    network = convert_network(
-        model.stem, model, library=Library.from_configuration(options.library_name)
-    )
+    return convert_network(model.stem, model, library=library_)
+
+
+def create_model(model: Path | str, library: str = "Buildings") -> None:
+    network = _create_network(model, library)
+    modelica_model = network.model()
+    Path(model).resolve().with_suffix(".mo").write_text(modelica_model)
+
+
+def simulate_model(model: Path | str, options: SimulationLibraryOptions) -> None:
+
+    network = _create_network(model, options.library_name)
+    model = Path(model).resolve()
     results = simulate(
-        Path(model.parent),
+        model.parent,
         network,
         options=options,
     )
@@ -47,4 +59,6 @@ def report(model: Path | str, options: SimulationLibraryOptions) -> None:
         ),
     )
     html = to_html_reporting(reporting)
-    Path(model.parent / "report.html").write_text(html)
+    report_path = Path(model.parent / f"{model.stem}.html")
+    report_path.write_text(html)
+    webbrowser.open(f"file://{report_path}")

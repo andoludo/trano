@@ -1,11 +1,13 @@
 # First model
-In this tutorial, we will generate the Modelica model used in the previous simulation. Building on the excitement from the last tutorial, let's dive straight into the process.
+I assume the previous tutorial has ignited your interest in running your first simulation. This tutorial demonstrates how to generate the Modelica model used in that simulation.
 
 ## Input configuration file
 
-The described building configuration represents a structure designed with high thermal insulation properties. It features walls made of three layers of identical materials, each with low thermal conductivity (0.035) and high density (2000 kg/m³). The building also includes a window assembly with double glazing, composed of two layers of glass separated by an air gap. The building has a floor area of 100 m² and an average room height of 2.5 m, with external walls oriented to the south (azimuth 180°). Overall, this configuration suggests an emphasis on energy efficiency and thermal stability, typical of modern residential or low-energy buildings.
+The configuration describes a building that has insulated walls and a specific glazing system. The walls are constructed using three layers of a material with uniform thermal properties, a common construction method for energy-efficient structures. The building has a floor area of 100 square meters and an average room height of 2.5 meters, indicating it is likely a single-story or low-rise structure. 
 
- 
+Windows are included in the design, featuring double glazing with an air gap, enhancing thermal performance. The building is also oriented with a specific azimuth (180 degrees), suggesting a planned approach to sunlight exposure. Overall, this building appears to be designed for energy efficiency, likely aiming for good thermal insulation and performance.
+
+
 ```yaml
 material:
   - id: MATERIAL:001
@@ -90,29 +92,29 @@ spaces:
 
 ```python title='Test tutorials'
     from trano.main import create_model
+
     create_model(
         "./first_model.yaml",
     )
 
 ```
-### General Explanation
-The code snippet imports the `create_model` function from the `trano.main` module and calls it with a specified YAML configuration file to initialize a model.
+## General Explanation
 
-### Function Description
+The code snippet imports the `create_model` function from the `trano.main` module and invokes it with a specified YAML configuration file to create a model.
+
+## Description and Parameters
+
 - **Function**: `create_model`
-- **Purpose**: To create and configure a model based on the provided settings in a YAML file.
-
-### Parameters Description
-- **`"./first_model.yaml"`**
-  - **Type**: String
-  - **Description**: Path to the YAML file containing model configuration.
+- **Import Source**: `from trano.main`
+- **Parameter**: 
+  - `file_path`: A string indicating the path to the YAML file (e.g., `"./first_model.yaml"`) that contains model configuration settings.
 
 
 ## Generated Modelica model
 
-The following code snippet represents the generated Modelica model corresponding to the configuration file above. You can copy and paste this code into a Modelica editor to run the simulation, provided that the necessary libraries, such as the Buildings library, are loaded in the simulation environment.
+The following code snippet is the generated Modelica model based on the configuration file above. You can copy this code and paste it into a Modelica editor to run the simulation, provided that the necessary libraries, such as the [Buildings Library](https://example.com), are loaded within the simulation environment.
 
- 
+
 ```modelica
 package first_model
 

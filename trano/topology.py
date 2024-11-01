@@ -40,10 +40,9 @@ from trano.elements.system import (
 from trano.elements.types import Tilt
 from trano.exceptions import WrongSystemFlowError
 from trano.library.library import Library
-from trano.reporting.reporting import ModelDocumentation
 
 
-class Network:  # noqa : PLR0904, #TODO: fix this
+class Network:  # : PLR0904, #TODO: fix this
     def __init__(
         self,
         name: str,
@@ -243,7 +242,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         )
 
     def _assign_position(
-        self, system_1: System, system_2: System  # noqa :  PLR6301
+        self, system_1: System, system_2: System  # :  PLR6301
     ) -> None:
         # TODO: change position to object
         if system_1.position and not system_2.position:
@@ -301,7 +300,7 @@ class Network:  # noqa : PLR0904, #TODO: fix this
         self._assign_position(system_1, system_2)
 
     def connect_edges(
-        self, edge: Tuple[BaseElement, BaseElement]  # noqa :  PLR6301
+        self, edge: Tuple[BaseElement, BaseElement]  # :  PLR6301
     ) -> list[Connection]:
         return connect(edge)
 

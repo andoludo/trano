@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 from trano.main import report
@@ -5,12 +7,36 @@ from trano.main import report
 load_dotenv()
 
 
-def test_multizone_free_float() -> None:
+path_to_yaml_configuration_folder = Path(__file__).parent
+
+
+def test_first_simulation() -> None:
     from trano.main import simulate_model
     from trano.simulate.simulate import SimulationLibraryOptions
 
     simulate_model(
-        "./multizone_free_float.yaml",
+        path_to_yaml_configuration_folder / "first_simulation.yaml",
+        SimulationLibraryOptions(
+            start_time=0,
+            end_time=2 * 3600 * 24 * 7,
+        ),
+    )
+
+
+def test_first_model() -> None:
+    from trano.main import create_model
+
+    create_model(
+        path_to_yaml_configuration_folder / "first_model.yaml",
+    )
+
+
+def test_two_zones() -> None:
+    from trano.main import simulate_model
+    from trano.simulate.simulate import SimulationLibraryOptions
+
+    simulate_model(
+        path_to_yaml_configuration_folder / "two_zones.yaml",
         SimulationLibraryOptions(
             start_time=0,
             end_time=2 * 3600 * 24 * 7,
@@ -20,12 +46,12 @@ def test_multizone_free_float() -> None:
     )
 
 
-def test_simulate_model_buildings() -> None:
+def test_three_zones_ideal_heating() -> None:
     from trano.main import simulate_model
     from trano.simulate.simulate import SimulationLibraryOptions
 
     simulate_model(
-        "./hello_world.yaml",
+        path_to_yaml_configuration_folder / "three_zones_ideal_heating.yaml",
         SimulationLibraryOptions(
             start_time=0,
             end_time=2 * 3600 * 24 * 7,
@@ -35,12 +61,27 @@ def test_simulate_model_buildings() -> None:
     )
 
 
-def test_simulate_model_ideas() -> None:
+def test_three_zones_hydronic_heating() -> None:
     from trano.main import simulate_model
     from trano.simulate.simulate import SimulationLibraryOptions
 
     simulate_model(
-        "./hello_world.yaml",
+        path_to_yaml_configuration_folder / "three_zones_hydronic_heating.yaml",
+        SimulationLibraryOptions(
+            start_time=0,
+            end_time=2 * 3600 * 24 * 7,
+            tolerance=1e-4,
+            library_name="Buildings",
+        ),
+    )
+
+
+def test_two_zones_ideas() -> None:
+    from trano.main import simulate_model
+    from trano.simulate.simulate import SimulationLibraryOptions
+
+    simulate_model(
+        path_to_yaml_configuration_folder / "two_zones_ideas.yaml",
         SimulationLibraryOptions(
             start_time=0,
             end_time=2 * 3600 * 24 * 7,
@@ -50,15 +91,15 @@ def test_simulate_model_ideas() -> None:
     )
 
 
-def test_report() -> None:
+def test_report_ideas() -> None:
     from trano.simulate.simulate import SimulationLibraryOptions
 
     report(
-        "./multizone_free_float.yaml",
+        path_to_yaml_configuration_folder / "two_zones_ideas.yaml",
         SimulationLibraryOptions(
             start_time=0,
             end_time=2 * 3600 * 24 * 7,
             tolerance=1e-4,
-            library_name="Buildings",
+            library_name="IDEAS",
         ),
     )

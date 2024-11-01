@@ -1,7 +1,7 @@
 
 ## BoilerControlParameters
-The following parameters are valid for the following classes['boilercontrol']
-```yaml 
+The following parameters are valid for the following classes boilercontrol
+```yaml
 threshold_outdoor_air_cutoff:
   alias: threshold_outdoor_air_cutoff
   description: None
@@ -23,8 +23,8 @@ tsup_nominal:
 
 
 ## BoilerParameters
-The following parameters are valid for the following classes['boiler']
-```yaml 
+The following parameters are valid for the following classes boiler
+```yaml
 coefficients_for_efficiency_curve:
   alias: a
   description: None
@@ -125,8 +125,8 @@ v_flow:
 
 
 ## EmissionControlParameters
-The following parameters are valid for the following classes['emissioncontrol']
-```yaml 
+The following parameters are valid for the following classes emissioncontrol
+```yaml
 schedule:
   alias: schedule
   ifabsent: string(3600*{7, 19})
@@ -147,8 +147,8 @@ temperature_heating_setpoint:
 
 
 ## OccupancyParameters
-The following parameters are valid for the following classes['occupancy']
-```yaml 
+The following parameters are valid for the following classes occupancy
+```yaml
 gain:
   alias: gain
   description: None
@@ -170,8 +170,8 @@ occupancy:
 
 
 ## PIDParameters
-The following parameters are valid for the following classes['threewayvalvecontrol', 'collectorcontrol']
-```yaml 
+The following parameters are valid for the following classes threewayvalvecontrol,collectorcontrol
+```yaml
 controller_type:
   alias: controllerType
   description: None
@@ -223,8 +223,8 @@ y_min:
 
 
 ## PumpParameters
-The following parameters are valid for the following classes['pump']
-```yaml 
+The following parameters are valid for the following classes pump
+```yaml
 constant_input_set_point:
   alias: constInput
   description: None
@@ -255,8 +255,8 @@ per:
 
 
 ## RadiatorParameter
-The following parameters are valid for the following classes['radiator']
-```yaml 
+The following parameters are valid for the following classes radiator
+```yaml
 air_temperature_at_nominal_condition:
   alias: TAir_nominal
   description: None
@@ -331,8 +331,8 @@ water_volume_of_radiator:
 
 
 ## SpaceParameter
-The following parameters are valid for the following classes['space']
-```yaml 
+The following parameters are valid for the following classes space
+```yaml
 average_room_height:
   alias: hRoo
   description: Average room height [m]
@@ -373,8 +373,8 @@ volume:
 
 
 ## SplitValveParameters
-The following parameters are valid for the following classes['splitvalve']
-```yaml 
+The following parameters are valid for the following classes splitvalve
+```yaml
 dp_nominal:
   alias: dp_nominal
   description: None
@@ -409,8 +409,8 @@ use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
 
 
 ## ThreeWayValveParameters
-The following parameters are valid for the following classes['threewayvalve']
-```yaml 
+The following parameters are valid for the following classes threewayvalve
+```yaml
 Av:
   alias: Av
   description: None
@@ -479,8 +479,8 @@ valve_leakage:
 
 
 ## ValveParameters
-The following parameters are valid for the following classes['valve']
-```yaml 
+The following parameters are valid for the following classes valve
+```yaml
 av:
   alias: Av
   description: None
@@ -547,8 +547,8 @@ valve_leakage:
 
 
 ## WeatherParameters
-The following parameters are valid for the following classes['weather']
-```yaml 
+The following parameters are valid for the following classes weather
+```yaml
 path:
   alias: filNam
   description: None
@@ -556,5 +556,3 @@ path:
   range: string
 
 ```
-
-

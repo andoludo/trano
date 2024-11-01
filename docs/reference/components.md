@@ -18,7 +18,7 @@ The following template is used for this component:
   InterZonalAirFlow.OnePort) "Data reader"
     {% raw %}annotation (Placement(transformation(extent={{-96,76},{-76,96}})));{% endraw %}
     {% endif %}
-    
+
 ```
 
 
@@ -35,7 +35,7 @@ The following template is used for this component:
                 {{ element.name }}(filNam=Modelica.Utilities.Files.loadResource
         ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
     {% endif %}
-    
+
 ```
 
 
@@ -53,7 +53,7 @@ The following template is used for this component:
     A = {{ element.surface }}, inc = IDEAS.Types.Tilt.
     {{ element.tilt.value | capitalize }}, azi =
     {{ element.azimuth }}) "Partition wall between the two
-    rooms" 
+    rooms"
 ```
 
 
@@ -66,7 +66,7 @@ The following template is used for this component:
             {{ element.surface }}, layers =
     {{ element.construction.name }}, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
-    rooms" 
+    rooms"
 ```
 
 
@@ -116,7 +116,7 @@ The following template is used for this component:
                 {{ macros.render_parameters(parameters) | safe}},
     redeclare package Medium = MediumW
 
-    ) "Radiator valve" 
+    ) "Radiator valve"
 ```
 
 
@@ -158,7 +158,7 @@ The following template is used for this component:
     redeclare package Medium = MediumW,
     use_inputFilter=false,
     {{ macros.render_parameters(parameters) | safe}},
-    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-wayvalve" 
+    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-wayvalve"
 ```
 
 
@@ -196,7 +196,7 @@ The following template is used for this component:
     {{ macros.render_parameters(parameters) | safe}},
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
-    "Flow splitter" 
+    "Flow splitter"
 ```
 
 
@@ -284,7 +284,7 @@ The following template is used for this component:
     m_flow_nominal=100*1.2/3600,
     redeclare package Medium = Medium,
     allowFlowReversal = false,
-    dp_nominal=40) "Pressure drop for return duct" 
+    dp_nominal=40) "Pressure drop for return duct"
 ```
 
 
@@ -339,7 +339,7 @@ The following template is used for this component:
     m_flow_nominal=100*1.2/3600,
     dpDamper_nominal=50,
     allowFlowReversal=false,
-    dpFixed_nominal=50) "VAV box for room" 
+    dpFixed_nominal=50) "VAV box for room"
 ```
 
 
@@ -385,7 +385,7 @@ The following template is used for this component:
 {{package_name}}.Common.Fluid.Boilers.
 BoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(
 {{ macros.render_parameters(parameters) | safe}},
-redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue()) "Boiler" 
+redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue()) "Boiler"
 ```
 
 
@@ -397,7 +397,7 @@ The following template is used for this component:
 ```jinja
     Buildings.Fluid.Sensors.TemperatureTwoPort {{ element.name }}(
     redeclare package Medium = MediumW,
-    m_flow_nominal=mRad_flow_nominal) "Radiator" 
+    m_flow_nominal=mRad_flow_nominal) "Radiator"
 ```
 
 
@@ -411,7 +411,7 @@ The following template is used for this component:
             RadiatorEN442_2 {{ element.name }}(
             {{ macros.render_parameters(parameters) | safe}},
     redeclare package Medium = MediumW,
-    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator" 
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator"
 ```
 
 
@@ -555,5 +555,3 @@ The following template is used for this component:
     ThreeWayValveControl{{ element.name | capitalize}}
     {{ element.name }}
 ```
-
-

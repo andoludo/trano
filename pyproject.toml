@@ -63,6 +63,7 @@ pytest-mongo = "^3.1.0"
 networkx-stubs = "^0.0.1"
 pytest-ordering = "^0.6"
 types-pyyaml = "^6.0.12.20240808"
+isort = "^5.13.2"
 
 
 
@@ -134,6 +135,8 @@ exclude = [
     "conftest.py"
 ]
 
+[tool.isort]
+skip = ["models"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "B006","RUF","UP","SIM","FURB","PIE","PERF","C4","B","PL","S","C901","N","ANN", "ERA001", "PD"]

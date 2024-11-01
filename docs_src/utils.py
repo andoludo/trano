@@ -1,7 +1,7 @@
 import ast
 import os
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import List, Optional, Union
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -10,129 +10,93 @@ from pydantic import BaseModel
 load_dotenv()
 
 
-class Context(BaseModel):
+class Text(BaseModel):
+    content: str
+
+    def write(self) -> str:
+        return self.content
+
+
+class TitleText(Text):
+    tag: str = "##"
+
+    def write(self) -> str:
+        return f"{self.tag} {self.content}"
+
+
+class CleanedText(Text):
+    def write(self) -> str:
+        return _clean_text(self.content)
+
+
+class DisplayObject(BaseModel):
+    object: Union[Path, str]
+    language: Optional[str] = None
+
+    def write(self) -> str:
+        object = (
+            self.object if isinstance(self.object, str) else self.object.read_text()
+        )
+        if self.language:
+            return f"""
+```{self.language}
+{object}
+```
+            """
+        return object
+
+
+class CommentObject(BaseModel):
     question: str
-    answer: Optional[str] = None
-    object: str
+    object: Path
+
+    def write(self) -> str:
+        return _ai_assistant(f"{self.question}:{self.object.read_text()}")
 
 
-class BeforeAfterContext(BaseModel):
-    before: Context
-    after: Context
+class CommentCodeObject(CommentObject):
+    language: str
+    function_name: str
+    question: str = """
+Give a general explanation of the code snippet and a general description and parameters
+description (as bullet points). Don't be verbose.
+Be to the point and do not repeat or rewrite the code snippet. Format as markdown.
+"""
 
-
-class Configuration(BaseModel):
-    path: Optional[Path] = None
-    object_before: Optional[str] = None
-    object_after: Optional[str] = None
-    question_before: str
-    question_after: str
-
-    def get_contexts(self) -> BeforeAfterContext:
-        contexts = [
-            Context(
-                object=self.object_before
-                if self.object_before is not None
-                else self.path.read_text(),
-                question=self.question_before,
-            ),
-            Context(
-                object=self.object_after
-                if self.object_after is not None
-                else self.path.read_text(),
-                question=self.question_after,
-            ),
-        ]
-        contexts = [get_context(c) for c in contexts]
-        return BeforeAfterContext(before=contexts[0], after=contexts[1])
-
-
-class Source(BaseModel):
-    title: str
-    source: str
-    report_path: Optional[Configuration] = None
-    question: str
-
-    def report(self) -> Optional[str]:
-        if self.report_path.path:
-            return self.report_path.path.read_text()
-        return None
+    def write(self) -> str:
+        code_snippet = extract_function_snippet(self.object, self.function_name)
+        return f"""
+```{self.language} title='{self.object.stem.replace("_", " ").capitalize()}'
+{code_snippet}
+```
+{_ai_assistant(f"{self.question}:{code_snippet}")}
+"""
 
 
 class Tutorial(BaseModel):
     title: str
-    name: str
-    configuration: Configuration
-    code_blocks_source: list[Source]
-    test_file_path: Optional[Path] = None
-    destination_path: Optional[Path] = None
-
-    def model_post_init(self, __context: Any) -> None:  # noqa: ANN401
-        source_path = Path(__file__).parents[1].joinpath("tests/tutorials")
-        self.configuration.path = source_path.joinpath(f"{self.name}.yaml")
-        self.test_file_path = source_path.joinpath("test_tutorials.py")
-        self.destination_path = (
-            Path(__file__).parents[1].joinpath(f"docs/tutorials/{self.name}.md")
-        )
-        for code_block_source in self.code_blocks_source:
-            file_ = code_block_source.source.replace("test_", "")
-            path_ = source_path.joinpath(f"{file_}.html")
-            if path_.exists():
-                code_block_source.report_path.path = path_
-
-    def write(self) -> None:
-        self.destination_path.write_text(self.build())
+    contents: List[
+        Union[
+            Text,
+            TitleText,
+            CleanedText,
+            CommentObject,
+            CommentCodeObject,
+            DisplayObject,
+        ]
+    ]
 
     def build(self) -> str:
-        configuration_paragraph = self.configuration.get_contexts()
-
-        output = f"""
-## {self.title}
-{configuration_paragraph.before.answer}
-
-```yaml title='{self.configuration_title()}'
-{self.configuration.path.read_text()}
-```
-\n
-{configuration_paragraph.after.answer}
-"""
-        for source, code_block in zip(
-            self.code_blocks_source, self.code_blocks_with_context()
-        ):
-            if code_block:
-                output += f"""
-## {source.title}
-```python title='{source.source.replace("test_", " ").replace("_", " ").capitalize()}'
-{code_block.object}
-```
-{code_block.answer}
-                """
-
-            if source.report_path:
-                report_context = source.report_path.get_contexts()
-                output += f"""
-## Results
-{report_context.before.answer}
-{source.report()}
-{report_context.after.answer}
-"""
+        output = f"# {self.title}\n"
+        for content in self.contents:
+            output += f"{content.write()}\n\n"
         return output
 
-    def code_blocks(self) -> List[Context]:
-        return [
-            Context(
-                object=extract_function_snippet(self.test_file_path, code_block.source),
-                question=code_block.question,
-            )
-            for code_block in self.code_blocks_source
-        ]
+    def write(self, destination_path: Path) -> None:
+        destination_path.write_text(self.build())
 
-    def code_blocks_with_context(self) -> List[Context]:
-        contexts = [get_context(code_block) for code_block in self.code_blocks()]
-        return contexts
-
-    def configuration_title(self) -> str:
-        return self.configuration.path.stem.replace("_", " ").capitalize()
+    def name(self) -> str:
+        return self.title.replace(" ", "_").lower()
 
 
 def extract_function_snippet(file_path: Path, function_name: str) -> Optional[str]:
@@ -143,22 +107,32 @@ def extract_function_snippet(file_path: Path, function_name: str) -> Optional[st
             start_line = node.body[0].lineno
             end_line = node.body[-1].end_lineno
             with open(file_path) as f:
-                lines = f.readlines()[start_line - 1: end_line]
+                lines = f.readlines()[start_line - 1 : end_line]
             function_text = "".join(lines)
             return function_text
     return None
 
 
-def get_context(context: Context) -> Context:
+def _ai_assistant(question: str) -> str:
+    if not question:
+        return ""
     client = OpenAI(
         api_key=os.environ.get("OPENAI_API_KEY"),
     )
     chat_completion = client.chat.completions.create(
         messages=[
-            {"role": "user", "content": f"{context.question}:{context.object}"},
+            {"role": "user", "content": f"{question}"},
         ],
         model="gpt-4o-mini",
-        temperature=0,  # Set temperature to 0 for more deterministic responses
     )
-    context.answer = chat_completion.choices[0].message.content
-    return context
+    return chat_completion.choices[0].message.content
+
+
+def _clean_text(text: str) -> str:
+    question = f"""
+    fix spelling, improve flow, to the point, reduce redundancy and add software development tone.
+    Format it into markdown
+    . If there is a link please embed it as a markdown link. DO not add title. Just give the answer:
+    {text}
+    """
+    return _ai_assistant(question)
