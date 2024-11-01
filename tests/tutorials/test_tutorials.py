@@ -3,6 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from trano.main import report
+import pytest
 
 load_dotenv()
 
@@ -10,6 +11,7 @@ load_dotenv()
 path_to_yaml_configuration_folder = Path(__file__).parent
 
 
+@pytest.mark.simulate
 def test_first_simulation() -> None:
     from trano.main import simulate_model
     from trano.simulate.simulate import SimulationLibraryOptions
@@ -23,6 +25,7 @@ def test_first_simulation() -> None:
     )
 
 
+@pytest.mark.simulate
 def test_first_model() -> None:
     from trano.main import create_model
 
@@ -31,6 +34,7 @@ def test_first_model() -> None:
     )
 
 
+@pytest.mark.simulate
 def test_two_zones() -> None:
     from trano.main import simulate_model
     from trano.simulate.simulate import SimulationLibraryOptions
@@ -46,6 +50,7 @@ def test_two_zones() -> None:
     )
 
 
+@pytest.mark.simulate
 def test_three_zones_ideal_heating() -> None:
     from trano.main import simulate_model
     from trano.simulate.simulate import SimulationLibraryOptions
@@ -61,6 +66,7 @@ def test_three_zones_ideal_heating() -> None:
     )
 
 
+@pytest.mark.simulate
 def test_three_zones_hydronic_heating() -> None:
     from trano.main import simulate_model
     from trano.simulate.simulate import SimulationLibraryOptions
@@ -76,6 +82,7 @@ def test_three_zones_hydronic_heating() -> None:
     )
 
 
+@pytest.mark.simulate
 def test_two_zones_ideas() -> None:
     from trano.main import simulate_model
     from trano.simulate.simulate import SimulationLibraryOptions

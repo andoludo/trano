@@ -28,6 +28,8 @@ jobs:
       run: poetry install
 
     - name: Linting & mypy
-      run: poetry run nox
+      run: poetry run nox -s linting
     - name: Run tests
-      run: poetry run pytest -k "not test_simulate"
+      run: poetry run nox -s tests
+    - name: Run tests simulate
+      run: poetry run nox -s simulate
