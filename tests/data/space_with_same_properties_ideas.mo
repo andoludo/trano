@@ -2078,15 +2078,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.12,
-      c=1210.0,
-      rho=540.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2240.0,
+      epsLw=0.88,
+      epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.12,
+      c=1210.0,
+      rho=540.0,
       epsLw=0.88,
       epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
@@ -2178,7 +2178,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 90, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -161.05190940958497, 148.93698221935108 },
+    Placement(transformation(origin = { 109.02904917738086, 157.0293989580927 },
     extent = {{-10, -10}, {10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2189,7 +2189,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -53.295650890106515, -189.23449809007104 },
+    Placement(transformation(origin = { 200.0, -5.451064162044433 },
     extent = {{-10, -10}, {10, 10}}
 )));
         space_with_same_properties_ideas.Trano.Controls.ventilation.OccupancyOccupancy_0
@@ -2211,19 +2211,19 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
         space_with_same_properties_ideas.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 147.6279696705786, -148.89430624242604 },
+    Placement(transformation(origin = { -62.44212962928004, 155.82086337249365 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
 
 equation    connect(bed.propsBus[1:2],merged_bw_bw2[1:2].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -80.52595470479248, 0.0 }    ,{ -80.52595470479248, 148.93698221935108 }    ,{ -161.05190940958497, 148.93698221935108 }    },
+points={{ 0.0, 0.0 }    ,{ 54.51452458869043, 0.0 }    ,{ 54.51452458869043, 157.0293989580927 }    ,{ 109.02904917738086, 157.0293989580927 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(bed.propsBus[3],merged_window[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -26.647825445053257, 0.0 }    ,{ -26.647825445053257, -189.23449809007104 }    ,{ -53.295650890106515, -189.23449809007104 }    },
+points={{ 0.0, 0.0 }    ,{ 100.0, 0.0 }    ,{ 100.0, -5.451064162044433 }    ,{ 200.0, -5.451064162044433 }    },
 color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(bed.yOcc,occupancy_0.y)
@@ -2233,18 +2233,18 @@ color={255,204,51},
 thickness=0.5,
 smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ 48.813984835289304, 0.0 }    ,{ 48.813984835289304, -148.89430624242604 }    ,{ 147.6279696705786, -148.89430624242604 }    },
+points={{ -50.0, 0.0 }    ,{ -56.221064814640016, 0.0 }    ,{ -56.221064814640016, 155.82086337249365 }    ,{ -62.44212962928004, 155.82086337249365 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(bed.gainCon,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 73.8139848352893, 0.0 }    ,{ 73.8139848352893, -148.89430624242604 }    ,{ 147.6279696705786, -148.89430624242604 }    },
+points={{ 0.0, 0.0 }    ,{ -31.22106481464002, 0.0 }    ,{ -31.22106481464002, 155.82086337249365 }    ,{ -62.44212962928004, 155.82086337249365 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(bed.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 73.8139848352893, 0.0 }    ,{ 73.8139848352893, -148.89430624242604 }    ,{ 147.6279696705786, -148.89430624242604 }    },
+points={{ 0.0, 0.0 }    ,{ -31.22106481464002, 0.0 }    ,{ -31.22106481464002, 155.82086337249365 }    ,{ -62.44212962928004, 155.82086337249365 }    },
 thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-211.05190940958497,-239.23449809007104},{197.6279696705786,250.0}})), Icon(
-        coordinateSystem(extent={{-211.05190940958497,-239.23449809007104},{197.6279696705786,250.0}})));
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-150.0,-55.45106416204443},{250.0,250.0}})), Icon(
+        coordinateSystem(extent={{-150.0,-55.45106416204443},{250.0,250.0}})));
 end building;
 
 

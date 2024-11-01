@@ -2176,7 +2176,7 @@ parameter Integer nRoo = 2 "Number of rooms";
         space_with_same_properties.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 57.223236249887684, 169.1924280613508 },
+    Placement(transformation(origin = { 51.79415786047908, 195.75057643413734 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -2192,18 +2192,18 @@ points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0
 thickness=0.05,
 smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ 3.6116181249438455, 0.0 }    ,{ 3.6116181249438384, 169.1924280613508 }    ,{ 57.223236249887684, 169.1924280613508 }    },
+points={{ -50.0, 0.0 }    ,{ 0.8970789302395445, 0.0 }    ,{ 0.8970789302395374, 195.75057643413734 }    ,{ 51.79415786047908, 195.75057643413734 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(bed.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 28.611618124943842, 0.0 }    ,{ 28.611618124943842, 169.1924280613508 }    ,{ 57.223236249887684, 169.1924280613508 }    },
+points={{ 0.0, 0.0 }    ,{ 25.89707893023954, 0.0 }    ,{ 25.89707893023954, 195.75057643413734 }    ,{ 51.79415786047908, 195.75057643413734 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(bed.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 28.611618124943842, 0.0 }    ,{ 28.611618124943842, 169.1924280613508 }    ,{ 57.223236249887684, 169.1924280613508 }    },
+points={{ 0.0, 0.0 }    ,{ 25.89707893023954, 0.0 }    ,{ 25.89707893023954, 195.75057643413734 }    ,{ 51.79415786047908, 195.75057643413734 }    },
 thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-172.3645212262835,-245.64340676029514},{188.55543055131596,250.0}})), Icon(
-        coordinateSystem(extent={{-172.3645212262835,-245.64340676029514},{188.55543055131596,250.0}})));
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-225.78978181187756,-250.0},{101.79415786047909,250.0}})), Icon(
+        coordinateSystem(extent={{-225.78978181187756,-250.0},{101.79415786047909,250.0}})));
 end building;
 
 

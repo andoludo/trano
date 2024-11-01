@@ -2148,7 +2148,7 @@ package MediumW = Buildings.Media.Water "Medium model";
         buildings_free_float_single_zone.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { -99.89669933949007, -155.0398993141866 },
+    Placement(transformation(origin = { 22.806335877302978, 200.0 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -2164,18 +2164,18 @@ points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0
 thickness=0.05,
 smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ -74.94834966974503, 0.0 }    ,{ -74.94834966974503, -155.0398993141866 }    ,{ -99.89669933949007, -155.0398993141866 }    },
+points={{ -50.0, 0.0 }    ,{ -13.596832061348508, 0.0 }    ,{ -13.596832061348515, 200.0 }    ,{ 22.806335877302978, 200.0 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -49.948349669745035, 0.0 }    ,{ -49.948349669745035, -155.0398993141866 }    ,{ -99.89669933949007, -155.0398993141866 }    },
+points={{ 0.0, 0.0 }    ,{ 11.403167938651489, 0.0 }    ,{ 11.403167938651489, 200.0 }    ,{ 22.806335877302978, 200.0 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -49.948349669745035, 0.0 }    ,{ -49.948349669745035, -155.0398993141866 }    ,{ -99.89669933949007, -155.0398993141866 }    },
+points={{ 0.0, 0.0 }    ,{ 11.403167938651489, 0.0 }    ,{ 11.403167938651489, 200.0 }    ,{ 22.806335877302978, 200.0 }    },
 thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-249.77938465281704,-250.0},{230.82651021363554,250.0}})), Icon(
-        coordinateSystem(extent={{-249.77938465281704,-250.0},{230.82651021363554,250.0}})));
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-242.74320191687877,-243.70512731382382},{235.55394163803754,250.0}})), Icon(
+        coordinateSystem(extent={{-242.74320191687877,-243.70512731382382},{235.55394163803754,250.0}})));
 end building;
 
 

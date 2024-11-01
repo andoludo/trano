@@ -2155,7 +2155,7 @@ package MediumW = Buildings.Media.Water "Medium model";
         buildings_free_float_single_zone_with_data.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { -103.47714004798937, -139.45048837610557 },
+    Placement(transformation(origin = { -162.16752814621822, -67.38520391734902 },
     extent = {{-10, -10}, {10, 10}}
 )));
 
@@ -2171,18 +2171,18 @@ points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0
 thickness=0.05,
 smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ -76.73857002399468, 0.0 }    ,{ -76.73857002399468, -139.45048837610557 }    ,{ -103.47714004798937, -139.45048837610557 }    },
+points={{ -50.0, 0.0 }    ,{ -106.08376407310911, 0.0 }    ,{ -106.08376407310911, -67.38520391734902 }    ,{ -162.16752814621822, -67.38520391734902 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -51.73857002399468, 0.0 }    ,{ -51.73857002399468, -139.45048837610557 }    ,{ -103.47714004798937, -139.45048837610557 }    },
+points={{ 0.0, 0.0 }    ,{ -81.08376407310911, 0.0 }    ,{ -81.08376407310911, -67.38520391734902 }    ,{ -162.16752814621822, -67.38520391734902 }    },
 thickness=0.05,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -51.73857002399468, 0.0 }    ,{ -51.73857002399468, -139.45048837610557 }    ,{ -103.47714004798937, -139.45048837610557 }    },
+points={{ 0.0, 0.0 }    ,{ -81.08376407310911, 0.0 }    ,{ -81.08376407310911, -67.38520391734902 }    ,{ -162.16752814621822, -67.38520391734902 }    },
 thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-242.6703770458425,-189.45048837610557},{240.70497933217857,250.0}})), Icon(
-        coordinateSystem(extent={{-242.6703770458425,-189.45048837610557},{240.70497933217857,250.0}})));
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-212.16752814621822,-227.27528256981242},{250.0,250.0}})), Icon(
+        coordinateSystem(extent={{-212.16752814621822,-227.27528256981242},{250.0,250.0}})));
 end building;
 
 

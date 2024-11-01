@@ -66,7 +66,7 @@ def test_create_model_yaml(schema: Path, house: Path) -> None:
     model_ = convert_model(model_name, house)
     assert clean_model(model_, model_name) == set(_read(model_name))
 
-
+@pytest.mark.simulate
 def test_simulate_model_yaml(house: Path) -> None:
     model_name = "house"
     network = convert_network(model_name, house)
@@ -78,7 +78,7 @@ def test_simulate_model_yaml(house: Path) -> None:
         )
         assert is_success(results)
 
-
+@pytest.mark.simulate
 def test_simulate_simplified_yaml() -> None:
     model_path = (
         Path(__file__).parents[1].joinpath("tests", "models", "simplified_house.yaml")
