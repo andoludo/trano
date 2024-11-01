@@ -30,13 +30,14 @@ jobs:
           version: 1.4.1
 
       - name: Bump patch version
+        if: "! contains(github.event.head_commit.message, 'Auto-increment patch version')"
         run: poetry version patch
 
 
-#      - name: Commit changes
-#        uses: stefanzweifel/git-auto-commit-action@v5
-#        with:
-#          commit_message: Version bump
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Auto-increment patch version
 
       - name: Build source and wheel archives
         run: |
