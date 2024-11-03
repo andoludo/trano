@@ -25,16 +25,16 @@ class LibraryChoice(str, Enum):
     buildings = "Buildings"
 
 
-def _create_network(model: Path | str, library: str) -> Network:
+def _create_network(model: str, library: str) -> Network:
     library_ = Library.from_configuration(library)
-    model = Path(model).resolve()
-    return convert_network(model.stem, model, library=library_)
+    model_ = Path(model).resolve()
+    return convert_network(str(model_.stem), model_, library=library_)
 
 
 @app.command()
 def create_model(
     model: Annotated[
-        Path | str,
+        str,
         typer.Argument(help="Local path to the '.yaml' model configuration file"),
     ],
     library: Annotated[
@@ -47,27 +47,24 @@ def create_model(
         TextColumn("[progress.description]{task.description}"),
         transient=True,
     ) as progress:
+        modelica_model_path = Path(model).resolve().with_suffix(".mo")
         task = progress.add_task(
-            description=f"Generating model {Path(model).with_suffix('mo').name} with library {library}",
+            description=f"Generating model {modelica_model_path.name} with library {library}",
             total=None,
         )
         network = _create_network(model, library)
         modelica_model = network.model()
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)
-        modelica_model_path = Path(model).resolve().with_suffix(".mo")
         modelica_model_path.write_text(modelica_model)
-        progress.update(
-            task,
-            completed=True,
-            description=f"Modelica model generated at {modelica_model_path}",
-        )
+        progress.remove_task(task)
+        print(f"{CHECKMARK} Model generated at {modelica_model_path}")
 
 
 @app.command()
 def simulate_model(
     model: Annotated[
-        Path | str,
+        str,
         typer.Argument(help="Local path to the '.yaml' model configuration file."),
     ],
     library: Annotated[
@@ -95,18 +92,19 @@ def simulate_model(
         transient=True,
     ) as progress:
         task = progress.add_task(
-            description=f"Generating model {Path(model).with_suffix('mo').name} with library {options.library_name}",
+            description=f"Generating model {Path(model).stem} with library {options.library_name}",
             total=None,
         )
         network = _create_network(model, options.library_name)
-        model = Path(model).resolve()
-        progress.update(task, completed=True)
+        model_ = Path(model).resolve()
+        progress.remove_task(task)
+        print(f"{CHECKMARK} Model generated successfully.")
         task = progress.add_task(
             description="Simulating model ...",
             total=None,
         )
         results = simulate(
-            model.parent,
+            model_.parent,
             network,
             options=options,
         )
@@ -115,17 +113,16 @@ def simulate_model(
             print(f"{CROSS_MARK} Simulation failed. See logs for more information.")
             return
 
-        result_path = Path(model.parent) / "results" / f"{model.stem}.building_res.mat"
+        result_path = (
+            Path(model_.parent) / "results" / f"{model_.stem}.building_res.mat"
+        )
         if not result_path.exists():
             print(
                 f"{CROSS_MARK} Simulation failed. Result file not found in {result_path}."
             )
             return
-        progress.update(
-            task,
-            completed=True,
-            description=f"Simulation results available at {result_path}",
-        )
+        progress.remove_task(task)
+        print(f"{CHECKMARK} Simulation results available at {result_path}")
 
         task = progress.add_task(
             description="Creating report ...",
@@ -136,14 +133,11 @@ def simulate_model(
             result=ResultFile(path=result_path),
         )
         html = to_html_reporting(reporting)
-        report_path = Path(model.parent / f"{model.stem}.html")
+        report_path = Path(model_.parent / f"{model_.stem}.html")
         report_path.write_text(html)
         webbrowser.open(f"file://{report_path}")
-        progress.update(
-            task,
-            completed=True,
-            description=f"Simulation successful. Report available at {report_path}",
-        )
+        progress.remove_task(task)
+        print(f"{CHECKMARK} Report available at {report_path}")
 
 
 @app.command()
@@ -159,30 +153,33 @@ def verify() -> None:
             description="Verify generating model...",
             total=None,
         )
-        network = _create_network(model_path, options.library_name)
-        progress.update(
+        network = _create_network(str(model_path), options.library_name)
+
+        progress.remove_task(
             task,
-            completed=True,
-            description="Model generated successfully. Your system is compatible for model generation.",
         )
-        task = progress.add_task(
+        print(
+            f"{CHECKMARK} Model generated successfully. Your system is compatible for model generation."
+        )
+        task_ = progress.add_task(
             description="Verify simulation...",
             total=None,
         )
-        with tempfile.NamedTemporaryFile() as temp_file:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
             try:
                 simulate(
-                    Path(temp_file.name),
+                    Path(project_path),
                     network,
                     options=options,
                 )
             except Exception as e:
                 print(f"{CROSS_MARK} Simulation failed. Reason {e}.")
                 return
-        progress.update(
-            task,
-            completed=True,
-            description="Model simulated successfully. Your system is compatible for simulation.",
+        progress.remove_task(
+            task_,
+        )
+        print(
+            f"{CHECKMARK} Model simulated successfully. Your system is compatible for simulation."
         )
 
 
