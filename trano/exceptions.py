@@ -7,3 +7,9 @@ class ControllerBusPortError(Exception):
 
 
 class IncompatiblePortsError(Exception): ...
+
+
+class DockerNotInstalledError(Exception): ...
+
+
+class DockerClientError(Exception): ...

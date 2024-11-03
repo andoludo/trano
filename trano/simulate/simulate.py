@@ -1,4 +1,6 @@
+import platform
 import shutil
+import subprocess
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -8,11 +10,39 @@ import docker  # type: ignore
 from jinja2 import Environment
 from pydantic import BaseModel, Field
 
+from trano.exceptions import DockerNotInstalledError, DockerClientError
 from trano.topology import Network
 
 
+def check_docker_installed() -> None:
+    try:
+        subprocess.run(
+            ["docker", "--version"],  # noqa: S603, S607
+            check=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        raise DockerNotInstalledError(
+            "Docker is not installed on the system. Simulation cannot be run."
+        ) from e
+
+
 def client() -> docker.DockerClient:
-    client = docker.DockerClient(base_url="unix:///var/run/docker.sock")
+    check_docker_installed()
+    system = platform.system()
+
+    if system in ("Linux", "Darwin"):
+        base_url = "unix:///var/run/docker.sock"
+    elif system == "Windows":
+        base_url = "npipe:////./pipe/docker_engine"
+    else:
+        raise NotImplementedError(f"Unsupported platform: {system}")
+    try:
+        client = docker.DockerClient(base_url=base_url)
+    except Exception as e:
+        raise DockerClientError(
+            f"Docker client cannot be initialized with base url: '{base_url}'. "
+            f"Simulation cannot be run on your {system} system."
+        ) from e
     return client
 
 
