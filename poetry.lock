@@ -2094,18 +2094,6 @@ files = [
 ]
 
 [[package]]
-name = "mat4py"
-version = "0.6.0"
-description = "Load and save data in the Matlab (TM) MAT-file format."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "mat4py-0.6.0-py2.py3-none-any.whl", hash = "sha256:1c15f39c7df092f01506044f65999fc9c7d71306f8fc850b1003e15ed64c6bae"},
-    {file = "mat4py-0.6.0.tar.gz", hash = "sha256:438927e6c16831a337596f593eb0b391c4cf6c982280b635ae412e80dff7fd07"},
-]
-
-[[package]]
 name = "matplotlib"
 version = "3.9.2"
 description = "Python plotting package"
@@ -3972,14 +3960,14 @@ files = [
 
 [[package]]
 name = "rich"
-version = "13.9.3"
+version = "13.9.4"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
 python-versions = ">=3.8.0"
 files = [
-    {file = "rich-13.9.3-py3-none-any.whl", hash = "sha256:9836f5096eb2172c9e77df411c1b009bace4193d6a481d534fea75ebba758283"},
-    {file = "rich-13.9.3.tar.gz", hash = "sha256:bc1e01b899537598cf02579d2b9f4a415104d3fc439313a7a2c165d76557a08e"},
+    {file = "rich-13.9.4-py3-none-any.whl", hash = "sha256:6049d5e6ec054bf2779ab3358186963bac2ea89175919d699e378b99738c2a90"},
+    {file = "rich-13.9.4.tar.gz", hash = "sha256:439594978a49a09530cff7ebc4b5c7103ef57baf48d5ea3184f21d9a2befa098"},
 ]
 
 [package.dependencies]
@@ -5043,13 +5031,13 @@ files = [
 
 [[package]]
 name = "yattag"
-version = "1.16.0"
+version = "1.16.1"
 description = "Generate HTML or XML in a pythonic way. Pure python alternative to web template engines.Can fill HTML forms with default values and error messages."
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "yattag-1.16.0.tar.gz", hash = "sha256:0978247b9754d9f44e3703c64374ab9fa872d18de95ac5772fdfdd3c3f0d0706"},
+    {file = "yattag-1.16.1.tar.gz", hash = "sha256:baa8f254e7ea5d3e0618281ad2ff5610e0e5360b3608e695c29bfb3b29d051f4"},
 ]
 
 [[package]]
@@ -5075,4 +5063,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "569a0c1f8c23d8f9d85a8c1a0a964f49d28ce97ccf26afc89bec47c60741f0b4"
+content-hash = "179f3694970e2a9a107d32c7156d88835cac44e8e03627738ae32a5b11488143"

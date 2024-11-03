@@ -1,12 +1,18 @@
 from pathlib import Path
 
-from docs_src.utils import CleanedText, DisplayObject, TitleText, Tutorial
+from docs_src.utils import CleanedText, DisplayObject, TitleText, Tutorial, Text
 
 INSTALLATIONS = [
     Tutorial(
         title="Installation",
         contents=[
             TitleText(content="""Python package"""),
+            Text(
+                content="""
+!!! warning
+    Trano requires python 3.9 or higher and docker to be installed on the system.
+            """
+            ),
             CleanedText(
                 content="""Trano is a python package that can be installed using pip."""
             ),
