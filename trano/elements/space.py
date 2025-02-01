@@ -20,6 +20,7 @@ from trano.elements.envelope import (
     WindowedWallParameters,
 )
 from trano.elements.system import BaseOccupancy, Emission, System
+from trano.elements.types import ContainerTypes
 
 MAX_X_SPACES = 3
 
@@ -53,6 +54,7 @@ class Space(BaseElement):
     ventilation_inlets: List[System] = Field(default=[])
     ventilation_outlets: List[System] = Field(default=[])
     occupancy: Optional[BaseOccupancy] = None
+    container_type: ContainerTypes = "envelope"
 
     def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
         self._assign_space()

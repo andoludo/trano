@@ -1,0 +1,20 @@
+{% import 'macros.jinja2' as macros %}
+model building_container
+  {% raw %}
+    envelope envelope1
+      annotation (Placement(transformation(extent={{-84,0},{-64,20}})));
+    emission emission1
+      annotation (Placement(transformation(extent={{-44,0},{-24,20}})));
+    distribution distribution1
+      annotation (Placement(transformation(extent={{-4,0},{16,20}})));
+    production production1
+      annotation (Placement(transformation(extent={{36,0},{56,20}})));
+  {% endraw %}
+  equation
+   {%- for connection in container.connections -%}
+    {#line break#}
+    {{ macros.connect_main_container(connection) }}
+{%- endfor %}
+    annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+          coordinateSystem(preserveAspectRatio=false)));
+  end building_container;

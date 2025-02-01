@@ -1,7 +1,8 @@
 import itertools
 import shutil
+from email.contentmanager import maintype
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union, get_args
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -22,6 +23,7 @@ from trano.elements import (
 )
 from trano.elements.bus import DataBus
 from trano.elements.construction import extract_properties
+from trano.elements.containers import containers_factory
 from trano.elements.control import AhuControl, CollectorControl, VAVControl
 from trano.elements.inputs import BaseInputOutput
 from trano.elements.space import Space, _get_controllable_element
@@ -37,10 +39,15 @@ from trano.elements.system import (
     Ventilation,
     Weather,
 )
-from trano.elements.types import Tilt
+from trano.elements.types import Tilt, ContainerTypes
 from trano.exceptions import WrongSystemFlowError
 from trano.library.library import Library
+from pydantic import BaseModel
 
+class ComponentModel(BaseModel):
+    id: int
+    model: str
+    container: str
 
 class Network:  # : PLR0904, #TODO: fix this
     def __init__(
@@ -55,6 +62,7 @@ class Network:  # : PLR0904, #TODO: fix this
         self._system_controls: List[Control] = []
         self.library = library or Library.load_default()
         self.external_data = external_data
+        self.containers = containers_factory()
         self.dynamic_components: Dict[DynamicTemplateCategories, List[str]] = {
             "ventilation": [],
             "control": [],
@@ -302,7 +310,7 @@ class Network:  # : PLR0904, #TODO: fix this
     def connect_edges(
         self, edge: Tuple[BaseElement, BaseElement]  # :  PLR6301
     ) -> list[Connection]:
-        return connect(edge)
+        return connect(self.containers, edge)
 
     def merge_spaces(self, space_1: "Space", space_2: "Space") -> None:
         internal_elements = nx.shortest_path(self.graph, space_1, space_2)[1:-1]
@@ -436,20 +444,31 @@ class Network:  # : PLR0904, #TODO: fix this
                 # TODO: this is not correct
                 node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
-    def model(self) -> str:
+    def assign_container_type(self):
+        for node in list(self.graph.nodes):
+            if node.container_type is None :
+                self.graph.neighbors(node)
+                container_types = {s.container_type for s in  list(self.graph.predecessors(node)) + list(self.graph.successors(node)) if s.container_type}
+                node.container_type = next(iter(sorted(container_types, key={v: i for i, v in enumerate(get_args(ContainerTypes))}.get)))
+
+    def model(self, include_container=False) -> str:
         Space.counter = 0
+        self.assign_container_type()
         self._build_full_space_control()
         data_bus = self._build_data_bus()
         self.configure_ahu_control()
         self.configure_collector_control()
 
         data_bus.non_connected_ports = get_non_connected_ports(self.graph.nodes)
-
+        self.containers.assign_nodes(self.graph.nodes, self.graph)
         self.generate_graphs()
 
-        self._connect_space_controls()
+        self._connect_space_controls() #TODO: What is this for?
 
-        element_models = self.build_element_models()
+        component_models = self.build_element_models()
+        self.containers.assign_models(component_models)
+        container_model = self.containers.build()
+        element_models = [c.model for c in component_models]
         environment = Environment(
             trim_blocks=True,
             lstrip_blocks=True,
@@ -463,6 +482,18 @@ class Network:  # : PLR0904, #TODO: fix this
 
         data = extract_properties(self.library, self.name, self.graph.nodes)
         diagram_size = self._get_diagram_size()
+        if include_container:
+            return template.render(
+                network=self,
+                data=data,
+                element_models=element_models,
+                library=self.library,
+                databus=data_bus,
+                dynamic_components=self.dynamic_components,
+                diagram_size=diagram_size,
+                containers = container_model,
+                main = self.containers.main
+            )
         return template.render(
             network=self,
             data=data,
@@ -471,6 +502,7 @@ class Network:  # : PLR0904, #TODO: fix this
             databus=data_bus,
             dynamic_components=self.dynamic_components,
             diagram_size=diagram_size,
+            containers = []
         )
 
     def _get_diagram_size(self) -> str:
@@ -490,7 +522,7 @@ class Network:  # : PLR0904, #TODO: fix this
                     component
                 )
 
-    def build_element_models(self) -> List[str]:
+    def build_element_models(self) -> List[ComponentModel]:
         environment = Environment(
             trim_blocks=True,
             lstrip_blocks=True,
@@ -503,6 +535,11 @@ class Network:  # : PLR0904, #TODO: fix this
             if not node.template:
                 continue
             environment.globals.update(self.library.functions)
+            if node.component_template:
+                self.build_dynamic_component_template(node)
+            package_name = self.name
+            library_name = self.library.name
+            parameters = node.processed_parameters(self.library)
             rtemplate = environment.from_string(
                 "{% import 'macros.jinja2' as macros %}"
                 + node.template
@@ -510,15 +547,28 @@ class Network:  # : PLR0904, #TODO: fix this
                 + node.annotation_template
             )
 
-            if node.component_template:
-                self.build_dynamic_component_template(node)
+
             model = rtemplate.render(
                 element=node,
-                package_name=self.name,
-                library_name=self.library.name,
-                parameters=node.processed_parameters(self.library),
+                package_name=package_name,
+                library_name=library_name,
+                parameters=parameters,
             )
-            models.append(model)
+            rtemplate = environment.from_string(
+                "{% import 'macros.jinja2' as macros %}"
+                + node.template
+                + " "
+                + node.container_annotation_template
+            )
+
+            node.container_position = node.container_position or node.position
+            container = rtemplate.render(
+                element=node,
+                package_name=package_name,
+                library_name=library_name,
+                parameters=parameters,
+            )
+            models.append(ComponentModel(id=hash(node), model=model, container=container))
         return models
 
     def add_boiler_plate_spaces(
@@ -589,6 +639,7 @@ def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
             ]
         )
     )
+
 
 
 def _get_non_connected_ports_intersection(

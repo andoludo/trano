@@ -226,3 +226,15 @@ def test_unexpected_configuration_should_fail_but_pass_(
     house = get_path(f"{file_name}.yaml")
     network = convert_network(file_name, house)
     network.model()
+
+
+@pytest.mark.parametrize("library_name", ["IDEAS"])
+def test_three_zones_hydronic_with_containers(schema: Path, library_name: str) -> None:
+    house = get_path("three_zones_hydronic_containers.yaml")
+    network = convert_network(
+        "three_zones_hydronic_containers",
+        house,
+        library=Library.from_configuration(library_name),
+    )
+    model_ = network.model(include_container=True)
+    assert clean_model(model_, network.name) == set(_read(network.name))

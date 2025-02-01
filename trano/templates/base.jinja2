@@ -2,6 +2,9 @@
 {% import 'Trano.jinja2' as Trano %}
 package {{ network.name }}
 {{ Trano.Trano_library(databus, dynamic_components) }}
+{% for container in containers %}
+    {{ container|safe }}
+{% endfor %}
 {% if data.is_package %}
 {{ data.data|safe }}
 model building
@@ -26,6 +29,6 @@ equation
 annotation (Diagram(coordinateSystem(extent={{diagram_size}})), Icon(
         coordinateSystem(extent={{diagram_size}})));
 end building;
-
+{{ main|safe }}
 
 end {{ network.name }};

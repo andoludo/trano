@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, computed_field
 
 from trano.elements.base import BaseElement
 from trano.elements.inputs import BaseInputOutput
+from trano.elements.types import ContainerTypes
 
 
 class ValidationData(BaseModel):
@@ -19,6 +20,7 @@ class DataBus(BaseElement):
     spaces: List[str]
     non_connected_ports: List[BaseInputOutput] = Field(default=[])
     external_data: Optional[Path] = None
+    container_type: ContainerTypes = "bus"
 
     @computed_field
     def validation_data(self) -> ValidationData:

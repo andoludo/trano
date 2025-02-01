@@ -1,0 +1,29 @@
+{% import 'macros.jinja2' as macros %}
+model {{ container.name }}
+
+
+{{ container.template|safe  }}
+
+
+
+{% for element_model in container.element_models %}
+    {{ element_model|safe }}
+{% endfor %}
+
+
+equation
+{%- for connection in container.connections -%}
+    {#line break#}
+    {{ macros.connect_container(connection) }}
+{%- endfor %}
+{% raw %}
+  annotation (
+    Icon(
+      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+        graphics={Rectangle(
+          extent={{-60,100},{60,-100}},
+          lineColor={238,46,47},
+          fillColor={215,215,215},
+          fillPattern=FillPattern.Forward)}));
+{% endraw %}
+end {{ container.name }};

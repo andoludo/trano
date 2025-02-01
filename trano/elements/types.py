@@ -1,8 +1,12 @@
 from enum import Enum
-from typing import List, Literal, Optional
+
+from typing import List, Literal, Optional, Any
 
 from pydantic import BaseModel, Field
 
+DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
+ContainerTypes = Literal["envelope","distribution", "emission","production","bus"]
+Pattern = Literal["Solid","Dot", "Dash", "DashDot"]
 
 class Tilt(Enum):
     wall = "wall"
@@ -41,19 +45,36 @@ class Axis(BaseModel):
     lines: List[Line] = Field(default=[])
     label: str
 
-
-class PartialConnection(BaseModel):
+class BasePartialConnection(BaseModel):
     equation: str
     position: List[float]
+    container_position: List[float]
+    port: Any
+    sub_port: int
+
+class ContainerConnection(BasePartialConnection):
+    container_type: Optional[ContainerTypes] = None
+
+
+
+
+class PartialConnection(ContainerConnection):
+    connected_container_type: Optional[ContainerTypes] = None
+
+    def to_base_partial_connection(self) -> BasePartialConnection:
+        return BasePartialConnection(equation=self.equation, position=self.position, container_position=self.container_position, port=self.port, sub_port=self.sub_port)
+
 
 
 class ConnectionView(BaseModel):
     color: Optional[str] = "{255,204,51}"
-    thickness: float = 0.5
+    thickness: float = 0.1
+    disabled: bool = False
+    pattern: Pattern = "Solid"
 
 
 class BaseVariant:
     default: str = "default"
 
 
-DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
+

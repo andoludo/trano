@@ -5,13 +5,14 @@ from pydantic import BaseModel, model_validator
 
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
-from trano.elements.types import Azimuth, Tilt
+from trano.elements.types import Azimuth, Tilt, ContainerTypes
 
 if TYPE_CHECKING:
     pass
 
 
 class BaseWall(BaseElement):
+    container_type: ContainerTypes = "envelope"
 
     # @computed_field  # type: ignore
     @property

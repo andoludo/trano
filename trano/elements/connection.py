@@ -3,18 +3,25 @@ from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from trano import elements
-from trano.elements.types import ConnectionView, Flow, PartialConnection
+
+from trano.elements.types import (
+    ConnectionView,
+    Flow,
+    PartialConnection,
+    BasePartialConnection,
+)
 from trano.exceptions import IncompatiblePortsError
 
 if TYPE_CHECKING:
     from trano.elements import BaseElement
+    from trano.elements.containers import Containers
 
 INCOMPATIBLE_PORTS = [sorted(["dataBus", "y"])]
 
 
 class Connection(BaseModel):
-    right: PartialConnection
-    left: PartialConnection
+    right: BasePartialConnection
+    left: BasePartialConnection
     connection_view: ConnectionView = Field(default=ConnectionView())
 
     @model_validator(mode="after")
@@ -53,6 +60,127 @@ class Connection(BaseModel):
                 self.right.position,
             ]
 
+    @property
+    def container_path(self) -> List[List[float] | Tuple[float, float]]:
+        square_size = 30  # Each square is 30x30
+        buffer = 10  # Additional spacing to avoid overlap
+        # TODO: change these 0 locator into x,y???
+        if self.left.container_position[0] < self.right.container_position[0]:
+            mid_x = (
+                self.right.container_position[0] - self.left.container_position[0]
+            ) / 2
+            if self.left.container_position[1] < self.right.container_position[1]:
+                mid_y = (
+                    self.right.container_position[1] - self.left.container_position[1]
+                ) / 2
+                path = [
+                    self.left.container_position,
+                    (
+                        self.left.container_position[0],
+                        self.left.container_position[1] + mid_y,
+                    ),
+                    # Move outside left square
+                    (
+                        self.left.container_position[0] + mid_x,
+                        self.left.container_position[1] + mid_y,
+                    ),  # Midway above both squares
+                    (
+                        self.right.container_position[0] - mid_x,
+                        self.right.container_position[1] - mid_y,
+                    ),  # Midway above both squares
+                    (
+                        self.right.container_position[0],
+                        self.right.container_position[1] - mid_y,
+                    ),
+                    # Move outside right square
+                    self.right.container_position,
+                ]
+            else:
+                mid_y = (
+                    self.left.container_position[1] - self.right.container_position[1]
+                ) / 2
+                path = [
+                    self.left.container_position,
+                    (
+                        self.left.container_position[0],
+                        self.left.container_position[1] - mid_y,
+                    ),
+                    # Move outside left square
+                    (
+                        self.left.container_position[0] + mid_x,
+                        self.left.container_position[1] - mid_y,
+                    ),  # Midway above both squares
+                    (
+                        self.right.container_position[0] - mid_x,
+                        self.right.container_position[1] + mid_y,
+                    ),  # Midway above both squares
+                    (
+                        self.right.container_position[0],
+                        self.right.container_position[1] + mid_y,
+                    ),
+                    # Move outside right square
+                    self.right.container_position,
+                ]
+
+        else:
+            mid_x = (
+                            self.left.container_position[0] - self.right.container_position[0]
+                    ) / 2
+            if self.left.container_position[1] < self.right.container_position[1]:
+                mid_y = (
+                                self.right.container_position[1] - self.left.container_position[1]
+                        ) / 2
+                path = [
+                    self.left.container_position,
+                    (
+                        self.left.container_position[0],
+                        self.left.container_position[1] + mid_y,
+                    ),
+                    # Move outside left square
+                    (
+                        self.left.container_position[0] - mid_x,
+                        self.left.container_position[1] + mid_y,
+                    ),  # Midway above both squares
+                    (
+                        self.right.container_position[0] + mid_x,
+                        self.right.container_position[1] - mid_y,
+                    ),  # Midway above both squares
+                    (
+                        self.right.container_position[0],
+                        self.right.container_position[1] - mid_y,
+                    ),
+                    # Move outside right square
+                    self.right.container_position,
+                ]
+            else:
+                mid_y = (
+                                self.left.container_position[1] - self.right.container_position[1]
+                        ) / 2
+                path = [
+                    self.left.container_position,
+                    (
+                        self.left.container_position[0],
+                        self.left.container_position[1] - mid_y,
+                    ),
+                    # Move outside left square
+                    (
+                        self.left.container_position[0] - mid_x,
+                        self.left.container_position[1] - mid_y,
+                    ),  # Midway above both squares
+                    (
+                        self.right.container_position[0] + mid_x,
+                        self.right.container_position[1] + mid_y,
+                    ),  # Midway above both squares
+                    (
+                        self.right.container_position[0],
+                        self.right.container_position[1] + mid_y,
+                    ),
+                    # Move outside right square
+                    self.right.container_position,
+                ]
+
+        return path
+
 
 class Port(BaseModel):
     names: list[str]
@@ -63,7 +191,15 @@ class Port(BaseModel):
     multi_object: bool = False
     bus_connection: bool = False
     use_counter: bool = True
+    same_counter_per_name: bool = False
     counter: int = Field(default=1)
+
+    def get_opposite_flow(self) -> Flow:
+        if self.flow == Flow.inlet:
+            return Flow.outlet
+        if self.flow == Flow.outlet:
+            return Flow.inlet
+        return self.flow
 
     @field_validator("targets")
     @classmethod
@@ -91,21 +227,18 @@ class Port(BaseModel):
             target == Control for target in self.targets
         )
 
-    def link(
-        self, node: "BaseElement", connected_node: "BaseElement"
-    ) -> list[PartialConnection]:
-
-        from trano.elements.envelope import MergedBaseWall
-
+    def base_equation(
+        self,
+        merged_number: int = 1,
+        node_name: Optional[str] = None,
+        position: Optional[List[float]] = None,
+        container_position: Optional[List[float]] = None,
+    ) -> List[BasePartialConnection]:
         self.available = False
         partial_connections = []
-        merged_number = 1
-        if isinstance(node, MergedBaseWall):
-            merged_number = len(node.surfaces)
-
-        if isinstance(connected_node, MergedBaseWall):
-            merged_number = len(connected_node.surfaces)
-        for name in self.names:
+        position = position or [0, 0]
+        container_position = container_position or [0, 0]
+        for sub_port_number, name in enumerate(self.names):
             if self.multi_connection and self.bus_connection:
                 first_counter = self.counter
                 last_counter = self.counter + merged_number - 1
@@ -114,29 +247,74 @@ class Port(BaseModel):
                     if first_counter == last_counter
                     else f"{first_counter}:{last_counter}"
                 )
-                equation = (
-                    f"{node.name}[{counter}].{name}"
-                    if self.multi_object
-                    else f"{node.name}.{name}[{counter}]"
-                )
+                if node_name:
+                    equation = (
+                        f"{node_name}[{counter}].{name}"
+                        if self.multi_object
+                        else f"{node_name}.{name}[{counter}]"
+                    )
+                else:
+                    equation = f"{name}[{counter}]" if self.multi_object else f"{name}"
                 self.counter = last_counter + 1
             elif self.multi_connection and self.use_counter:
-                equation = f"{node.name}.{name}[{self.counter}]"
-                self.counter += 1
+                if node_name:
+                    equation = f"{node_name}.{name}[{self.counter}]"
+                else:
+                    equation = f"{name}[{self.counter}]"
+                if not self.same_counter_per_name:
+                    self.counter += 1
             else:
-                equation = f"{node.name}.{name}"
-
+                if node_name:
+                    equation = f"{node_name}.{name}"
+                else:
+                    equation = f"{name}"
             partial_connections.append(
-                PartialConnection(equation=equation, position=node.position)
+                BasePartialConnection(
+                    equation=equation,
+                    position=position,
+                    container_position=container_position,
+                    port=self,
+                    sub_port=sub_port_number
+                )
             )
-
+        if self.same_counter_per_name:
+            self.counter += 1
         return partial_connections
+
+    def link(
+        self, node: "BaseElement", connected_node: "BaseElement"
+    ) -> list[PartialConnection]:
+
+        from trano.elements.envelope import MergedBaseWall
+
+        merged_number = 1
+        if isinstance(node, MergedBaseWall):
+            merged_number = len(node.surfaces)
+
+        if isinstance(connected_node, MergedBaseWall):
+            merged_number = len(connected_node.surfaces)
+        base_equations = self.base_equation(merged_number, node.name, node.position)
+
+        return [
+            PartialConnection(
+                equation=b.equation,
+                position=node.position or b.position,
+                container_position=node.container_position
+                or node.position
+                or b.position,
+                port=self,
+                container_type=node.container_type,
+                connected_container_type=connected_node.container_type,
+                sub_port=b.sub_port,
+            )
+            for b in base_equations
+        ]
 
 
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
     from trano.elements.bus import DataBus
     from trano.elements.envelope import BaseSimpleWall
-    from trano.elements.system import Weather
+    from trano.elements.system import Weather,  System, Control
 
     if any(isinstance(e, BaseSimpleWall) for e in edge):
         return ConnectionView(color="{191,0,0}", thickness=0.1)
@@ -144,10 +322,16 @@ def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionVie
         return ConnectionView(color=None, thickness=0.05)
     if any(isinstance(e, Weather) for e in edge):
         return ConnectionView(color=None, thickness=0.05)
+    if any(isinstance(e, Control) for e in edge):
+        return ConnectionView(color="{139, 0, 0}", thickness=0.1, pattern="Dash")
+    if all(isinstance(e, System) for e in edge):
+        return ConnectionView(color="{0, 0, 139}", thickness=0.75)
     return ConnectionView()
 
 
-def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:
+def connect(
+    containers: "Containers", edge: Tuple["BaseElement", "BaseElement"]
+) -> list[Connection]:
     connections = []
     edge_first = edge[0]
     edge_second = edge[1]
@@ -160,27 +344,32 @@ def connect(edge: Tuple["BaseElement", "BaseElement"]) -> list[Connection]:
         other_port = edge_second._get_target_compatible_port(
             edge_first, Flow.inlet, ports_to_skip=edge_second_ports_to_skip
         )
+
         if any(port is None for port in [current_port, other_port]):
             break
-        for left, right in zip(
+        left_right = list(zip(
             current_port.link(edge_first, edge_second),  # type: ignore
             other_port.link(edge_second, edge_first),  # type: ignore
-        ):
-            connections.append(
-                Connection(
-                    left=left, right=right, connection_view=connection_color(edge)
-                )
+        strict=True))
+        containers.add_connection(left_right)
+        for left, right in left_right:
+
+            connection = Connection(
+                left=left.to_base_partial_connection(),
+                right=right.to_base_partial_connection(),
+                connection_view=connection_color(edge),
             )
+            if left.container_type == right.container_type:
+                containers.add_connection_(connection, left.container_type)
+            connections.append(connection)
         edge_first_ports_to_skip.append(current_port)  # type: ignore
         edge_second_ports_to_skip.append(other_port)  # type: ignore
     return connections
 
 
-def _has_inlet_or_outlet(target: "BaseElement") -> bool:
-    return bool([port for port in target.ports if port.flow == Flow.inlet_or_outlet])
+def _has_inlet_or_outlet(ports: List[Port]) -> bool:
+    return bool([port for port in ports if port.flow == Flow.inlet_or_outlet])
 
 
-def _is_inlet_or_outlet(target: "BaseElement") -> bool:
-    return bool(
-        [port for port in target.ports if port.flow in [Flow.inlet, Flow.outlet]]
-    )
+def _is_inlet_or_outlet(ports: List[Port]) -> bool:
+    return bool([port for port in ports if port.flow in [Flow.inlet, Flow.outlet]])
