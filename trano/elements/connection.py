@@ -237,7 +237,7 @@ class Port(BaseModel):
         position: Optional[List[float]] = None,
         container_position: Optional[List[float]] = None,
     ) -> List[BasePartialConnection]:
-        self.available = False
+        self.connected = True
         partial_connections = []
         position = position or [0, 0]
         container_position = container_position or [0, 0]
@@ -352,12 +352,22 @@ def connect(
                 ):
                     left_right = list(
                         zip(
-                            current_port.link(edge_first, edge_second),  # type: ignore
-                            other_port.link(edge_second, edge_first),  # type: ignore
+                            first_port.link(edge_first, edge_second),  # type: ignore
+                            second_port.link(edge_second, edge_first),  # type: ignore
                             strict=True,
                         )
                     )
+                    # containers.add_connection(left_right)
+                    for left, right in left_right:
 
+                        connection = Connection(
+                            left=left.to_base_partial_connection(),
+                            right=right.to_base_partial_connection(),
+                            connection_view=connection_color(edge),
+                        )
+                        if left.container_type == right.container_type:
+                            containers.add_connection_(connection, left.container_type)
+                        connections.append(connection)
     # while True:
     #     current_port = edge_first._get_target_compatible_port(
     #         edge_second, Flow.outlet, ports_to_skip=edge_first_ports_to_skip
