@@ -1,0 +1,46 @@
+{
+    "components": [
+        {
+            "classes": [
+                "ThreeWayValve"
+            ],
+            "figures": [],
+            "library": "default",
+            "parameter_processing": {
+                "function": "default_parameters"
+            },
+            "ports": [
+                {
+                    "flow": "inlet",
+                    "names": [
+                        "port_1"
+                    ],"medium": "fluid"
+                },
+                {
+                    "flow": "outlet",
+                    "names": [
+                        "port_2"
+                    ],"medium": "fluid"
+                },
+                {
+                    "flow": "inlet_or_outlet",
+                    "names": [
+                        "port_3"
+                    ],"medium": "fluid"
+                },
+                {
+                    "names": [
+                        "y"
+                    ],
+                    "targets": [
+                        "Control"
+                    ],
+                                        "medium": "data",
+                    "flow": "undirected"
+                }
+            ],
+            "template": "    {{library_name}}.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear\n             {{ element.name }}(\n    redeclare package Medium = MediumW,\n    use_inputFilter=false,\n    {{ macros.render_parameters(parameters) | safe}},\n    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) \"Three-wayvalve\" ",
+            "variant": "default"
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 import itertools
 import shutil
-from email.contentmanager import maintype
+
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Type, Union, get_args
 
@@ -69,6 +69,8 @@ class Network:  # : PLR0904, #TODO: fix this
             "boiler": [],
         }
 
+    def get_edge(self, first_edge: Type[BaseElement], second_edge: Type[BaseElement]) -> Connection:
+        return next(edge for edge in self.graph.edges if isinstance(edge[0], first_edge) and isinstance(edge[1], second_edge) )
     def add_node(self, node: BaseElement) -> None:
 
         if not node.libraries_data:

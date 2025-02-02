@@ -9,6 +9,7 @@ from trano.elements.types import (
     Flow,
     PartialConnection,
     BasePartialConnection,
+    Medium,
 )
 from trano.exceptions import IncompatiblePortsError
 
@@ -124,12 +125,12 @@ class Connection(BaseModel):
 
         else:
             mid_x = (
-                            self.left.container_position[0] - self.right.container_position[0]
-                    ) / 2
+                self.left.container_position[0] - self.right.container_position[0]
+            ) / 2
             if self.left.container_position[1] < self.right.container_position[1]:
                 mid_y = (
-                                self.right.container_position[1] - self.left.container_position[1]
-                        ) / 2
+                    self.right.container_position[1] - self.left.container_position[1]
+                ) / 2
                 path = [
                     self.left.container_position,
                     (
@@ -154,8 +155,8 @@ class Connection(BaseModel):
                 ]
             else:
                 mid_y = (
-                                self.left.container_position[1] - self.right.container_position[1]
-                        ) / 2
+                    self.left.container_position[1] - self.right.container_position[1]
+                ) / 2
                 path = [
                     self.left.container_position,
                     (
@@ -185,8 +186,9 @@ class Connection(BaseModel):
 class Port(BaseModel):
     names: list[str]
     targets: Optional[List[Any]] = None
-    available: bool = True
-    flow: Flow = Field(default=Flow.undirected)
+    connected: bool = False
+    flow: Flow
+    medium: Medium
     multi_connection: bool = False
     multi_object: bool = False
     bus_connection: bool = False
@@ -194,11 +196,12 @@ class Port(BaseModel):
     same_counter_per_name: bool = False
     counter: int = Field(default=1)
 
-    def get_opposite_flow(self) -> Flow:
-        if self.flow == Flow.inlet:
-            return Flow.outlet
-        if self.flow == Flow.outlet:
-            return Flow.inlet
+    def get_compatible_flow(self) -> Flow:
+        if self.medium == Medium.fluid:
+            if self.flow == Flow.inlet:
+                return Flow.outlet
+            if self.flow == Flow.outlet:
+                return Flow.inlet
         return self.flow
 
     @field_validator("targets")
@@ -218,7 +221,7 @@ class Port(BaseModel):
         return targets
 
     def is_available(self) -> bool:
-        return self.multi_connection or self.available
+        return self.multi_connection or not self.connected
 
     def is_controllable(self) -> bool:
         from trano.elements.base import Control
@@ -274,7 +277,7 @@ class Port(BaseModel):
                     position=position,
                     container_position=container_position,
                     port=self,
-                    sub_port=sub_port_number
+                    sub_port=sub_port_number,
                 )
             )
         if self.same_counter_per_name:
@@ -314,7 +317,7 @@ class Port(BaseModel):
 def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
     from trano.elements.bus import DataBus
     from trano.elements.envelope import BaseSimpleWall
-    from trano.elements.system import Weather,  System, Control
+    from trano.elements.system import Weather, System, Control
 
     if any(isinstance(e, BaseSimpleWall) for e in edge):
         return ConnectionView(color="{191,0,0}", thickness=0.1)
@@ -337,33 +340,54 @@ def connect(
     edge_second = edge[1]
     edge_first_ports_to_skip: List[Port] = []
     edge_second_ports_to_skip: List[Port] = []
-    while True:
-        current_port = edge_first._get_target_compatible_port(
-            edge_second, Flow.outlet, ports_to_skip=edge_first_ports_to_skip
-        )
-        other_port = edge_second._get_target_compatible_port(
-            edge_first, Flow.inlet, ports_to_skip=edge_second_ports_to_skip
-        )
 
-        if any(port is None for port in [current_port, other_port]):
-            break
-        left_right = list(zip(
-            current_port.link(edge_first, edge_second),  # type: ignore
-            other_port.link(edge_second, edge_first),  # type: ignore
-        strict=True))
-        containers.add_connection(left_right)
-        for left, right in left_right:
+    for first_port in edge_first.ports:
+        for second_port in edge_second.ports:
+            if first_port.is_available() and second_port.is_available():
+                if (
+                    any(isinstance(edge_second, t) for t in first_port.targets)
+                    and any(isinstance(edge_first, t) for t in second_port.targets)
+                    and first_port.medium == second_port.medium
+                    and first_port.get_compatible_flow() == second_port.flow
+                ):
+                    left_right = list(
+                        zip(
+                            current_port.link(edge_first, edge_second),  # type: ignore
+                            other_port.link(edge_second, edge_first),  # type: ignore
+                            strict=True,
+                        )
+                    )
 
-            connection = Connection(
-                left=left.to_base_partial_connection(),
-                right=right.to_base_partial_connection(),
-                connection_view=connection_color(edge),
-            )
-            if left.container_type == right.container_type:
-                containers.add_connection_(connection, left.container_type)
-            connections.append(connection)
-        edge_first_ports_to_skip.append(current_port)  # type: ignore
-        edge_second_ports_to_skip.append(other_port)  # type: ignore
+    # while True:
+    #     current_port = edge_first._get_target_compatible_port(
+    #         edge_second, Flow.outlet, ports_to_skip=edge_first_ports_to_skip
+    #     )
+    #     other_port = edge_second._get_target_compatible_port(
+    #         edge_first, Flow.inlet, ports_to_skip=edge_second_ports_to_skip
+    #     )
+    #
+    #     if any(port is None for port in [current_port, other_port]):
+    #         break
+    #     left_right = list(
+    #         zip(
+    #             current_port.link(edge_first, edge_second),  # type: ignore
+    #             other_port.link(edge_second, edge_first),  # type: ignore
+    #             strict=True,
+    #         )
+    #     )
+    #     containers.add_connection(left_right)
+    #     for left, right in left_right:
+    #
+    #         connection = Connection(
+    #             left=left.to_base_partial_connection(),
+    #             right=right.to_base_partial_connection(),
+    #             connection_view=connection_color(edge),
+    #         )
+    #         if left.container_type == right.container_type:
+    #             containers.add_connection_(connection, left.container_type)
+    #         connections.append(connection)
+    #     edge_first_ports_to_skip.append(current_port)  # type: ignore
+    #     edge_second_ports_to_skip.append(other_port)  # type: ignore
     return connections
 
 

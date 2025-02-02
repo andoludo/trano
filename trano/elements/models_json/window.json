@@ -1,0 +1,31 @@
+{
+    "components": [
+        {
+            "classes": [
+                "Window"
+            ],
+            "figures": [],
+            "library": "ideas",
+            "parameter_processing": {
+                "function": "default_parameters"
+            },
+            "ports": [
+                {
+                    "bus_connection": true,
+                    "multi_connection": true,
+                    "multi_object": true,
+                    "names": [
+                        "propsBus_a"
+                    ],
+                    "targets": [
+                        "Space"
+                    ],
+                                                            "medium": "data",
+                    "flow": "undirected"
+                }
+            ],
+            "template": "\n    {% set tilts = tilts_processing_ideas(element) %}\n    IDEAS.Buildings.Components.Window[{{ element.surfaces | length }}]\n    {{ element.name }}(\n    redeclare parameter {{ package_name }}.Data.Glazing.\n    {{ element.constructions[0].name }} glazing,\n    A={{  macros.join_list(element.surfaces)}},\n    final azi={{macros.join_list(element.azimuths)}},\n    redeclare package Medium = Medium,\n    final inc={{macros.join_list(tilts)}})",
+            "variant": "default"
+        }
+    ]
+}

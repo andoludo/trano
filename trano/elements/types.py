@@ -24,10 +24,16 @@ class Azimuth:
 class Flow(Enum):
     inlet = "inlet"
     outlet = "outlet"
+    radiative = "radiative"
+    convective = "convective"
     inlet_or_outlet = "inlet_or_outlet"
     undirected = "undirected"
     interchangeable_port = "interchangeable_port"
 
+class Medium(Enum):
+    fluid = "fluid"
+    heat = "heat"
+    data = "data"
 
 Boolean = Literal["true", "false"]
 

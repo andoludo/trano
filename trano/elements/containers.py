@@ -11,7 +11,7 @@ from trano.elements.types import (
     Flow,
     PartialConnection,
     ConnectionView,
-    ContainerConnection,
+    ContainerConnection, Medium,
 )
 from jinja2 import Environment, FileSystemLoader
 
@@ -400,20 +400,20 @@ package MediumW = IDEAS.Media.Water "Medium model";
             PortGroup(
                 connected_container_name="emission",
                 ports=[
-                    Port(names=["port_a1"], flow=Flow.outlet, multi_connection=True),
-                    Port(names=["port_b1"], flow=Flow.inlet, multi_connection=True),
+                    Port(names=["port_a1"], flow=Flow.outlet, multi_connection=True, medium=Medium.fluid),
+                    Port(names=["port_b1"], flow=Flow.inlet, multi_connection=True, medium=Medium.fluid),
                 ],
             ),
             PortGroup(
                 connected_container_name="production",
                 ports=[
-                    Port(names=["port_a"], flow=Flow.outlet),
-                    Port(names=["port_b"], flow=Flow.inlet),
+                    Port(names=["port_a"], flow=Flow.outlet, medium=Medium.fluid),
+                    Port(names=["port_b"], flow=Flow.inlet, medium=Medium.fluid),
                 ],
             ),
             PortGroup(
                 connected_container_name="bus",
-                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False)],
+                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
             ),
         ],
     )
@@ -454,35 +454,43 @@ package MediumW = IDEAS.Media.Water "Medium model";
             PortGroup(
                 connected_container_name="distribution",
                 ports=[
-                    Port(names=["port_a"], flow=Flow.outlet, multi_connection=True),
-                    Port(names=["port_b"], flow=Flow.inlet, multi_connection=True),
+                    Port(names=["port_a"], flow=Flow.outlet, multi_connection=True, medium=Medium.fluid),
+                    Port(names=["port_b"], flow=Flow.inlet, multi_connection=True, medium=Medium.fluid),
                 ],
             ),
             PortGroup(
                 connected_container_name="envelope",
                 ports=[
                     Port(
-                        names=["heatPortCon", "heatPortRad"],
+                        names=[ "heatPortRad"],
                         multi_connection=True,
-                        same_counter_per_name=True,
-                    ),  # TODO: this is always considered as one port?
+                        same_counter_per_name=True, medium=Medium.heat, flow= Flow.radiative
+                    ),
+                    Port(
+                        names=["heatPortCon"],
+                        multi_connection=True,
+                        same_counter_per_name=True, medium=Medium.heat, flow= Flow.convective
+                    )
                 ],
             ),
             PortGroup(
                 connected_container_name="bus",
-                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False)],
+                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
             ),
         ],
     )
     envelope_container = Container(
         name="envelope",
         template="""
-      replaceable package Medium=Modelica.Media.Interfaces.PartialMedium;
-  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[1] heatPortCon
+replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
+constrainedby Modelica.Media.Interfaces.PartialMedium
+"Medium in the component"
+annotation (choicesAllMatching = true);
+  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon
     "Nodes for convective heat gains"
     annotation (Placement(transformation(extent={{90,40},{110,60}}),
         iconTransformation(extent={{90,40},{110,60}})));
-  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[1] heatPortRad
+  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad
     "Nodes for radiative heat gains"
     annotation (Placement(transformation(extent={{90,-62},{110,-42}}),
         iconTransformation(extent={{90,-62},{110,-42}})));
@@ -504,16 +512,21 @@ package MediumW = IDEAS.Media.Water "Medium model";
                 connected_container_name="emission",
                 ports=[
                     Port(
-                        names=["heatPortCon", "heatPortRad"],
+                        names=[ "heatPortRad"],
                         multi_connection=True,
-                        same_counter_per_name=True,
+                        same_counter_per_name=True, medium=Medium.heat, flow= Flow.radiative
+                    ),
+                    Port(
+                        names=["heatPortCon"],
+                        multi_connection=True,
+                        same_counter_per_name=True, medium=Medium.heat, flow= Flow.convective
                     ),
                     # TODO: this is always considered as one port?
                 ],
             ),
             PortGroup(
                 connected_container_name="bus",
-                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False)],
+                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
             ),
         ],
     )
@@ -550,13 +563,13 @@ package MediumW = IDEAS.Media.Water "Medium model";
             PortGroup(
                 connected_container_name="distribution",
                 ports=[
-                    Port(names=["port_a1"], flow=Flow.outlet),
-                    Port(names=["port_b1"], flow=Flow.inlet),
+                    Port(names=["port_a1"], flow=Flow.outlet, medium=Medium.fluid),
+                    Port(names=["port_b1"], flow=Flow.inlet, medium=Medium.fluid),
                 ],
             ),
             PortGroup(
                 connected_container_name="bus",
-                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False)],
+                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
             ),
         ],
     )
