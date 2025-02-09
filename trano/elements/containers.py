@@ -5,13 +5,13 @@ from typing import List, Optional, get_args, Callable, Any, Tuple
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from trano.elements import Port, Connection, Control
-from trano.elements.base import find_port
+from trano.elements.base import find_port, ElementPort
+from trano.elements.connection import ContainerConnection, PartialConnection, connect
 from trano.elements.types import (
     ContainerTypes,
     Flow,
-    PartialConnection,
     ConnectionView,
-    ContainerConnection, Medium,
+    Medium,
 )
 from jinja2 import Environment, FileSystemLoader
 
@@ -34,6 +34,9 @@ class Container(BaseModel):
     template: str
     size: List[List[float]] = [[-100, -100], [100, 100]]
     left_boundary: Optional[ContainerTypes] = None
+
+    def get_equation_view(self):
+        return {c.equation_view() for c in self.connections}
 
     @model_validator(mode="after")
     def _validate(self) -> "Container":
@@ -190,7 +193,7 @@ class Containers(BaseModel):
         return [c.build(template) for c in self.containers]
 
     def add_connection_(self, connection: Connection, container_type) -> "Containers":
-        container = self._get_container(container_type)
+        container = self.get_container(container_type)
         if container:
             container.connections.append(connection)
 
@@ -211,70 +214,95 @@ class Containers(BaseModel):
             connection_view = ConnectionView(color=None, thickness=0.2, disabled=True)
         return connection_view
 
-    def add_connection(
-        self, connections: List[Tuple[PartialConnection, PartialConnection]]
-    ) -> List[List[ContainerConnection]]:
-
-        if len(connections) == 1:
-            container_connections_final = []
-            for p in connections[0]:
-                container_conection = self.add_single_connection(p)
-                container_connections_final.append(container_conection)
-            if all(container_connections_final):
-                self.connections += [
-                    MainContainerConnection.from_list(container_connections_final)
-                ]
-        else:
-            container_connections_final = []
-            # TODO: this is a lot of complication for nothing.
-            # better avoid using multiple names in ports, will facilitate things
-            port_same_categories = [list(group) for group in list(zip(*connections))]
-            for p in port_same_categories:
-                container = self._get_container(p[0].container_type)
-                if not container:
-                    continue
-                port_group = container.get_port_group(p[0].connected_container_type)
-                if port_group:
-                    connection_view = self._get_connection_view(
-                        p[0].connected_container_type
+    def connect(self, connections: List[Connection]):
+        for connection in connections:
+            edge_left = connection.left
+            edge_right = connection.right
+            for edge_1, edge_2 in [(edge_left, edge_right), (edge_right, edge_left)]:
+                container = self.get_container(edge_1.container_type)
+                if container:
+                    port_group = container.get_port_group(
+                        edge_2.container_type
                     )
-                    port_ = p[0].port
-                    container_port = find_port(
-                        port_.get_opposite_flow(), port_group.ports, [], [port_]
-                    )
-                    container_connections = container_port.base_equation()
-                    current_group = []
-                    for l, r in [
-                        (p_, c)
-                        for p_ in p
-                        for c in container_connections
-                        if p_.sub_port == c.sub_port
-                    ]:
-                        container.connections.append(
-                            Connection(
-                                left=l.to_base_partial_connection(),
-                                right=r,
-                                connection_view=connection_view,
-                            )
+                    if port_group:
+                        connection_view = self._get_connection_view(
+                            edge_2.container_type
                         )
-                        cc = ContainerConnection.model_validate(
-                            (r.model_dump() | {"container_type": container.name})
-                        )
-                        current_group.append(cc)
-                    container_connections_final.append(current_group)
-            container_connections_final = [
-                list(group) for group in list(zip(*container_connections_final))
-            ]
-            if all(container_connections_final):
-                self.connections += [
-                    MainContainerConnection.from_list(cf)
-                    for cf in container_connections_final
-                ]
+                        element_1 = ElementPort(name=edge_1.name,ports = [edge_1.port.without_targets().disconnect()], container_type=edge_1.container_type)
+                        element_2 = ElementPort(ports = port_group.ports, container_type=edge_2.container_type)
+                        connections = connect(element_1, element_2)
+                        container.connections += connections
+                        # container.connections.append(
+                        #     Connection(
+                        #         left=container_connection,
+                        #         right=partial_connection.to_base_partial_connection(),
+                        #         connection_view=connection_view,
+                        #     )
+                        # )
+    # def add_connection(
+    #     self, connections: List[Tuple[PartialConnection, PartialConnection]]
+    # ) -> List[List[ContainerConnection]]:
+    #
+    #     if len(connections) == 1:
+    #         container_connections_final = []
+    #         for p in connections[0]:
+    #             container_conection = self.add_single_connection(p)
+    #             container_connections_final.append(container_conection)
+    #         if all(container_connections_final):
+    #             self.connections += [
+    #                 MainContainerConnection.from_list(container_connections_final)
+    #             ]
+    #     else:
+    #         container_connections_final = []
+    #         # TODO: this is a lot of complication for nothing.
+    #         # better avoid using multiple names in ports, will facilitate things
+    #         port_same_categories = [list(group) for group in list(zip(*connections))]
+    #         for p in port_same_categories:
+    #             container = self._get_container(p[0].container_type)
+    #             if not container:
+    #                 continue
+    #             port_group = container.get_port_group(p[0].connected_container_type)
+    #             if port_group:
+    #                 connection_view = self._get_connection_view(
+    #                     p[0].connected_container_type
+    #                 )
+    #                 port_ = p[0].port
+    #                 container_port = find_port(
+    #                     port_.get_opposite_flow(), port_group.ports, [], [port_]
+    #                 )
+    #                 container_connections = container_port.base_equation()
+    #                 current_group = []
+    #                 for l, r in [
+    #                     (p_, c)
+    #                     for p_ in p
+    #                     for c in container_connections
+    #                     if p_.sub_port == c.sub_port
+    #                 ]:
+    #                     container.connections.append(
+    #                         Connection(
+    #                             left=l.to_base_partial_connection(),
+    #                             right=r,
+    #                             connection_view=connection_view,
+    #                         )
+    #                     )
+    #                     cc = ContainerConnection.model_validate(
+    #                         (r.model_dump() | {"container_type": container.name})
+    #                     )
+    #                     current_group.append(cc)
+    #                 container_connections_final.append(current_group)
+    #         container_connections_final = [
+    #             list(group) for group in list(zip(*container_connections_final))
+    #         ]
+    #         if all(container_connections_final):
+    #             self.connections += [
+    #                 MainContainerConnection.from_list(cf)
+    #                 for cf in container_connections_final
+    #             ]
 
     def add_single_connection(
         self, partial_connection: PartialConnection
     ) -> ContainerConnection:
-        container = self._get_container(partial_connection.container_type)
+        container = self.get_container(partial_connection.container_type)
         if container:
             port_group = container.get_port_group(
                 partial_connection.connected_container_type
@@ -309,7 +337,7 @@ class Containers(BaseModel):
 
     def assign_nodes(self, nodes, graph) -> None:
         for container_type in get_args(ContainerTypes):
-            container = self._get_container(container_type)
+            container = self.get_container(container_type)
             node_types = [
                 node for node in nodes if node.container_type == container_type
             ]
@@ -320,7 +348,7 @@ class Containers(BaseModel):
 
     def assign_models(self, element_models) -> None:
         for container_type in get_args(ContainerTypes):
-            container = self._get_container(container_type)
+            container = self.get_container(container_type)
             if container:
                 element_models_ = [
                     c.container
@@ -331,7 +359,7 @@ class Containers(BaseModel):
 
                 container.element_models.extend(element_models_)
 
-    def _get_container(self, container_type: ContainerTypes) -> Optional[Container]:
+    def get_container(self, container_type: ContainerTypes) -> Optional[Container]:
         for container in self.containers:
             if container.name == container_type:
                 return container

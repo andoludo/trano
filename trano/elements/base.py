@@ -1,12 +1,14 @@
-from typing import Any, Callable, ClassVar, Dict, List, Optional
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Type
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
+
+from trano.elements.common_base import BaseElementPosition, LimitConnection
 
 from trano.elements.components import DynamicComponentTemplate
 from trano.elements.connection import Port, _has_inlet_or_outlet, _is_inlet_or_outlet
 from trano.elements.figure import NamedFigure
 from trano.elements.parameters import BaseParameter, param_from_config
-from trano.elements.types import BaseVariant, Flow, ContainerTypes
+from trano.elements.types import BaseVariant, Flow, ContainerTypes, Medium
 from trano.library.library import AvailableLibraries, Library
 
 
@@ -109,30 +111,28 @@ def find_port(
         raise
     return None
 
-class BaseElement(BaseModel):
+
+class BaseElementPort(BaseElementPosition):
+    name: Optional[str] = Field(default=None)
+    ports: list[Port] = Field(default=[], validate_default=True)
+    container_type: Optional[ContainerTypes] = None
+    def available_ports(self) -> List[Port]:
+        return [port for port in self.ports if not port.connected]
+
+class BaseElement(BaseElementPort):
     name_counter: ClassVar[
         int
     ] = 0  # TODO: this needs to be removed and replaced with a proper solution.
-    name: Optional[str] = Field(default=None)
-    annotation_template: str = """annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-10, -10}, {10, 10}}
-    {% endraw %})));"""
-    container_annotation_template: str = """annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.container_position) }},
-    extent = {% raw %}{{10, -10}, {-10, 10}}
-    {% endraw %})));"""
+
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
     parameters: Optional[BaseParameter] = None
-    position: Optional[List[float]] = None
-    container_position: Optional[List[float]] = None
-    ports: list[Port] = Field(default=[], validate_default=True)
     template: Optional[str] = None
     component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
     libraries_data: Optional[AvailableLibraries] = None
     figures: List[NamedFigure] = Field(default=[])
-    container_type: Optional[ContainerTypes] = None
+    limit_connection_per_medium: Optional[LimitConnection] = None
+
 
     @model_validator(mode="before")
     @classmethod
@@ -173,6 +173,8 @@ class BaseElement(BaseModel):
             self.template = library_data.template
         if not self.component_template:
             self.component_template = library_data.component_template
+        if self.limit_connection_per_medium is None and library_data.limit_connection_per_medium is not None:
+            self.limit_connection_per_medium = LimitConnection.model_validate(library_data.limit_connection_per_medium)
         if not self.figures and library_data.figures:
             self.figures = [
                 NamedFigure(**(fig.render_key(self).model_dump() | {"name": self.name}))
@@ -189,8 +191,9 @@ class BaseElement(BaseModel):
         return {}
 
     def get_position(self, layout: Dict["BaseElement", Any]) -> None:
-        if not self.position:
-            self.position = list(layout.get(self))  # type: ignore
+        if self.position.is_empty():
+            x, y= list(layout.get(self))  # type: ignore
+            self.position.set(x, y)
 
     def get_controllable_ports(self) -> List[Port]:
         return [port for port in self.ports if port.is_controllable()]
@@ -220,12 +223,54 @@ class BaseElement(BaseModel):
         return hash(f"{self.name}-{type(self).__name__}")
 
 
+class ElementPort(BaseElementPort):
+    element_type: Optional[Type[BaseElement]] = None
+    merged_number: int = 1
+    limit_connection_per_medium: Optional[LimitConnection] = None
+
+    def has_target(self, targets: List[BaseElement]) -> bool:
+        return (not targets) or (self.element_type is not None and targets and any(issubclass(self.element_type, t) for t in targets))
+
+
+
+
+
+
+    def connection_limit_reached(self, current_connections: int, medium: Medium) -> bool:
+        if self.limit_connection_per_medium is None and current_connections == 1:
+            return True
+        if self.limit_connection_per_medium:
+            if not self.limit_connection_per_medium.medium_has_limit(medium) and current_connections == 1:
+                return True
+            if self.limit_connection_per_medium.limit_reached(current_connections, medium):
+                return True
+        return False
+
+
+
+    @classmethod
+    def from_element(cls, element: BaseElement) -> "ElementPort":
+        from trano.elements.envelope import MergedBaseWall
+        merged_number = 1
+        if isinstance(element, MergedBaseWall):
+            merged_number = len(element.surfaces)
+        if element.position is not None:
+            element_port = cls(**(element.model_dump() | {"element_type": type(element), "merged_number": merged_number}))
+        else:
+            element_port =  cls(**(element.model_dump(exclude={"position"}) | {"element_type": type(element), "merged_number": merged_number}))
+        element_port.ports = element.ports
+        return element_port
+
+
+
+
 # This has to be here for now!!!
 class Control(BaseElement):
-    position: Optional[List[float]] = None
     controllable_element: Optional[BaseElement] = None
     space_name: Optional[str] = None
     container_annotation_template: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.container_position) }},
     extent = {% raw %}{{5, -5}, {-5, 5}}
     {% endraw %})));"""
+
+

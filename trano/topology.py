@@ -21,7 +21,9 @@ from trano.elements import (
     InternalElement,
     connect,
 )
+from trano.elements.base import ElementPort
 from trano.elements.bus import DataBus
+from trano.elements.common_base import BasePosition
 from trano.elements.construction import extract_properties
 from trano.elements.containers import containers_factory
 from trano.elements.control import AhuControl, CollectorControl, VAVControl
@@ -70,7 +72,7 @@ class Network:  # : PLR0904, #TODO: fix this
         }
 
     def get_edge(self, first_edge: Type[BaseElement], second_edge: Type[BaseElement]) -> Connection:
-        return next(edge for edge in self.graph.edges if isinstance(edge[0], first_edge) and isinstance(edge[1], second_edge) )
+        return next(edge for edge in self.graph.edges if ((isinstance(edge[0], first_edge) and isinstance(edge[1], second_edge)) or (isinstance(edge[1], first_edge) and isinstance(edge[0], second_edge))))
     def add_node(self, node: BaseElement) -> None:
 
         if not node.libraries_data:
@@ -227,12 +229,10 @@ class Network:  # : PLR0904, #TODO: fix this
             construction=Constructions.internal_wall,
             tilt=Tilt.wall,
         )
-        if space_1.position is None or space_2.position is None:
+        if space_1.position.is_empty() or space_2.position.is_empty():
             raise Exception("Position not assigned to spaces")
-        internal_element.position = [
-            space_1.position[0] + (space_2.position[0] - space_1.position[0]) / 2,
-            space_1.position[1],
-        ]  # TODO: this is to be moved somewher
+        internal_element.position.between_two_objects(space_1.position.global_, space_2.position.global_)
+
         self.add_node(internal_element)
         self.graph.add_edge(
             space_1,
@@ -255,20 +255,24 @@ class Network:  # : PLR0904, #TODO: fix this
         self, system_1: System, system_2: System  # :  PLR6301
     ) -> None:
         # TODO: change position to object
-        if system_1.position and not system_2.position:
-            system_2.position = [system_1.position[0] + 100, system_1.position[1] - 100]
+        if not system_1.position.is_empty() and not system_2.position:
+            position = BasePosition()
+            position.set(system_1.position.global_.location.x + 100, system_1.position.global_.location.y - 100)
+            system_2.position = position
             if hasattr(system_2, "control") and system_2.control:
-                system_2.control.position = [
-                    system_2.position[0] - 50,
-                    system_2.position[1],
-                ]
-        if system_2.position and not system_1.position:
-            system_1.position = [system_2.position[0] - 100, system_2.position[1] - 100]
+                system_2.control.position.set(
+                    system_2.position.global_.location.x - 50,
+                    system_2.position.global_.location.y
+                )
+        if not system_1.position.is_empty()  and not system_1.position:
+            position = BasePosition()
+            position.set_global(system_2.position.global_.location.x - 100, system_2.position.global_.location.y - 100)
+            system_1.position = position
             if hasattr(system_1, "control") and system_1.control:
-                system_1.control.position = [
-                    system_1.position[0] - 50,
-                    system_1.position[1],
-                ]
+                system_1.control.position.set(
+                    system_2.position.global_.location.x - 50,
+                    system_2.position.global_.location.y
+                )
 
     def connect_elements(self, element_1: BaseElement, element_2: BaseElement) -> None:
         for element in [element_1, element_2]:
@@ -312,7 +316,7 @@ class Network:  # : PLR0904, #TODO: fix this
     def connect_edges(
         self, edge: Tuple[BaseElement, BaseElement]  # :  PLR6301
     ) -> list[Connection]:
-        return connect(self.containers, edge)
+        return connect(ElementPort.from_element(edge[0]), ElementPort.from_element(edge[1]))
 
     def merge_spaces(self, space_1: "Space", space_2: "Space") -> None:
         internal_elements = nx.shortest_path(self.graph, space_1, space_2)[1:-1]
@@ -508,9 +512,8 @@ class Network:  # : PLR0904, #TODO: fix this
         )
 
     def _get_diagram_size(self) -> str:
-        array = np.array([n.position for n in list(self.graph.nodes)]).T
-        x = array[0]
-        y = array[1]
+        x = [n.position.global_.location.x for n in list(self.graph.nodes)]
+        y = [n.position.global_.location.y for n in list(self.graph.nodes)]
         return f"{{{{{min(x) - 50},{min(y) - 50}}},{{{max(x) + 50},{max(y) + 50}}}}}"
 
     def build_dynamic_component_template(self, node: BaseElement) -> None:
@@ -546,7 +549,7 @@ class Network:  # : PLR0904, #TODO: fix this
                 "{% import 'macros.jinja2' as macros %}"
                 + node.template
                 + " "
-                + node.annotation_template
+                + node.position.global_.annotation
             )
 
 
@@ -560,10 +563,9 @@ class Network:  # : PLR0904, #TODO: fix this
                 "{% import 'macros.jinja2' as macros %}"
                 + node.template
                 + " "
-                + node.container_annotation_template
+                + node.position.container.annotation
             )
 
-            node.container_position = node.container_position or node.position
             container = rtemplate.render(
                 element=node,
                 package_name=package_name,
@@ -585,7 +587,7 @@ class Network:  # : PLR0904, #TODO: fix this
             for combination in itertools.combinations(spaces, 2):
                 self.connect_spaces(*combination)
         weather = weather or Weather()
-        weather.position = [-100, 200]  # TODO: move somewhere else
+        weather.position.set(-100, 200)
         self.add_node(weather)
         for space in spaces:
             self.connect_system(space, weather)

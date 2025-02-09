@@ -1,6 +1,6 @@
 from enum import Enum
 
-from typing import List, Literal, Optional, Any
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -50,26 +50,6 @@ class Line(BaseModel):
 class Axis(BaseModel):
     lines: List[Line] = Field(default=[])
     label: str
-
-class BasePartialConnection(BaseModel):
-    equation: str
-    position: List[float]
-    container_position: List[float]
-    port: Any
-    sub_port: int
-
-class ContainerConnection(BasePartialConnection):
-    container_type: Optional[ContainerTypes] = None
-
-
-
-
-class PartialConnection(ContainerConnection):
-    connected_container_type: Optional[ContainerTypes] = None
-
-    def to_base_partial_connection(self) -> BasePartialConnection:
-        return BasePartialConnection(equation=self.equation, position=self.position, container_position=self.container_position, port=self.port, sub_port=self.sub_port)
-
 
 
 class ConnectionView(BaseModel):

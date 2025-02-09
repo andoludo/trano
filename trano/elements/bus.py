@@ -16,7 +16,6 @@ class ValidationData(BaseModel):
 
 class DataBus(BaseElement):
     name: str
-    position: Optional[List[float]] = None
     spaces: List[str]
     non_connected_ports: List[BaseInputOutput] = Field(default=[])
     external_data: Optional[Path] = None

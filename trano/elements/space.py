@@ -39,10 +39,6 @@ def _get_controllable_element(elements: List[System]) -> Optional["System"]:
 
 
 class Space(BaseElement):
-    annotation_template: str = """annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position) }},
-    extent = {% raw %}{{-20, -20}, {20, 20}}
-    {% endraw %})));"""
     counter: ClassVar[int] = 0
     name: str
     external_boundaries: list[
@@ -117,17 +113,17 @@ class Space(BaseElement):
         return _get_controllable_element(self.emissions)
 
     def assign_position(self) -> None:
-        self.position = [
+        x, y = [
             250 * (Space.counter % MAX_X_SPACES),
             150 * ceil(Space.counter / MAX_X_SPACES),
         ]
+        self.position.set(x, y)
         Space.counter += 1
-        x = self.position[0]
-        y = self.position[1]
+
         for i, emission in enumerate(self.emissions):
-            emission.position = [x + i * 30, y - 75]
+            emission.position.set(x + i * 30, y - 75)
         if self.occupancy:
-            self.occupancy.position = [x - 50, y]
+            self.occupancy.position.set(x - 50, y)
 
     def find_emission(self) -> Optional["Emission"]:
         emissions = [

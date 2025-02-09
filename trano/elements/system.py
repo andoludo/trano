@@ -6,7 +6,6 @@ from trano.elements.types import BaseVariant, ContainerTypes
 from pydantic import model_validator
 
 class System(BaseElement):
-    position: Optional[List[float]] = None
     control: Optional[Control] = None
 
     @model_validator(mode="after")

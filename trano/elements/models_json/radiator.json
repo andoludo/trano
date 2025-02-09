@@ -4,6 +4,7 @@
             "classes": [
                 "Radiator"
             ],
+            "limit_connection_per_medium": {"limits": [{"number": 2, "medium": "heat"}]},
             "figures": [],
             "library": "default",
             "parameter_processing": {
@@ -52,6 +53,7 @@
             "classes": [
                 "Radiator"
             ],
+            "limit_connection_per_medium": {"limits": [{"number": 2, "medium": "heat"}]},
             "figures": [],
             "library": "default",
             "parameter_processing": {

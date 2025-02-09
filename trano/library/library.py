@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, create_model
 
+from trano.elements.common_base import LimitConnection
 from trano.elements.components import COMPONENTS, DynamicComponentTemplate
 from trano.elements.parameters import default_parameters
 from trano.elements.types import BaseVariant
@@ -139,6 +140,7 @@ class AvailableLibraries(BaseModel):
                     Callable[[BaseParameter], Dict[str, Any]],
                     parameter_processing,
                 ),
+                limit_connection_per_medium = (Optional[LimitConnection], component.get("limit_connection_per_medium", None)),
             )
 
             if component["library"] == "default":
@@ -159,3 +161,4 @@ class LibraryData(BaseModel):
         default_parameters
     )
     figures: List["Figure"] = Field(default=[])
+    limit_connection_per_medium: Optional[LimitConnection] = None
