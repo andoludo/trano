@@ -16,7 +16,7 @@ class ElementLocation(BaseModel):
 class ElementPosition(BaseModel):
     location: ElementLocation = Field(default_factory=ElementLocation)
     annotation: str = """annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.location) }},
+    Placement(transformation(origin = {{ macros.join_list(element.position.global_.coordinate()) }},
     extent = {% raw %}{{10, -10}, {-10, 10}}
     {% endraw %})));"""
 
@@ -53,17 +53,22 @@ class BaseElementPosition(BaseModel):
     position: BasePosition = Field(default_factory=BasePosition)
     model_config = ConfigDict(validate_assignment=True)
 
-
-
-class MediumLimitConnection(BaseModel):
+class BaseLimitConnection(BaseModel):
     number: int
-    medium: Medium
+
+
+
+class ElementOrMediumLimitConnection(BaseLimitConnection):
+    element: Optional[str] = None
+    medium: Optional[Medium] = None
 
 class LimitConnection(BaseModel):
-    limits: List[MediumLimitConnection] = Field(default_factory=list)
+    limits: List[ElementOrMediumLimitConnection] = Field(default_factory=list)
 
-    def limit_reached(self, current_connections: int, medium: Medium) -> bool:
-        return any(limit.number <= current_connections for limit in self.limits if limit.medium == medium)
+    def limit_reached(self, current_connections: int, medium: Medium, element: str) -> bool:
+        medium_limit =  any(limit.number <= current_connections for limit in self.limits if limit.medium == medium)
+        element_limit = any(limit.number <= current_connections for limit in self.limits if limit.element == element)
+        return medium_limit or element_limit
 
     def medium_has_limit(self, medium: Medium) -> bool:
         return any(limit.medium == medium for limit in self.limits)

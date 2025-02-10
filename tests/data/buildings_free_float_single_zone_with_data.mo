@@ -2134,29 +2134,29 @@ package MediumW = Buildings.Media.Water "Medium model";
                     azi={ 45.0 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { 0, 0 },
-    extent = {{-20, -20}, {20, 20}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         buildings_free_float_single_zone_with_data.Trano.Controls.ventilation.OccupancyOccupancy_0
     occupancy_0(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
 ) annotation (
-    Placement(transformation(origin = { -50, 0 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
                 weather_20(filNam=Modelica.Utilities.Files.loadResource
         ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
      annotation (
-    Placement(transformation(origin = { -100, 200 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         buildings_free_float_single_zone_with_data.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { -162.16752814621822, -67.38520391734902 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
 
 
@@ -2164,25 +2164,29 @@ equation    connect(space_1.qGai_flow,occupancy_0.y)
 annotation (Line(
 points={{ 0.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -50.0, 0.0 }    },
 color={255,204,51},
-thickness=0.5,
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.weaBus,weather_20.weaBus)
 annotation (Line(
 points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0 }    },
-thickness=0.05,
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ -106.08376407310911, 0.0 }    ,{ -106.08376407310911, -67.38520391734902 }    ,{ -162.16752814621822, -67.38520391734902 }    },
-thickness=0.05,
+points={{ -50.0, 0.0 }    ,{ 65.028937350233, 0.0 }    ,{ 65.028937350233, 32.14158615703747 }    ,{ 180.057874700466, 32.14158615703747 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -81.08376407310911, 0.0 }    ,{ -81.08376407310911, -67.38520391734902 }    ,{ -162.16752814621822, -67.38520391734902 }    },
-thickness=0.05,
+points={{ 0.0, 0.0 }    ,{ 90.028937350233, 0.0 }    ,{ 90.028937350233, 32.14158615703747 }    ,{ 180.057874700466, 32.14158615703747 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -81.08376407310911, 0.0 }    ,{ -81.08376407310911, -67.38520391734902 }    ,{ -162.16752814621822, -67.38520391734902 }    },
-thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-212.16752814621822,-227.27528256981242},{250.0,250.0}})), Icon(
-        coordinateSystem(extent={{-212.16752814621822,-227.27528256981242},{250.0,250.0}})));
+points={{ 0.0, 0.0 }    ,{ 90.028937350233, 0.0 }    ,{ 90.028937350233, 32.14158615703747 }    ,{ 180.057874700466, 32.14158615703747 }    },
+color={255,204,51},
+thickness=0.1,
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-240.12807435130318,-223.58888808177957},{230.057874700466,250}})), Icon(
+        coordinateSystem(extent={{-240.12807435130318,-223.58888808177957},{230.057874700466,250}})));
 end building;
 
 

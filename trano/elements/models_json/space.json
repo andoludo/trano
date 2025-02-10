@@ -272,7 +272,7 @@
                         "BaseInternalElement"
                     ],
                     "medium": "heat",
-                    "flow": "undirected"
+                    "flow": "interchangeable_port"
                 },
                 {
                     "names": [
@@ -281,7 +281,7 @@
                     "targets": [
                         "BaseOccupancy"
                     ],
-                    "medium": "heat",
+                    "medium": "data",
                     "flow": "undirected"
                 },
                 {
@@ -308,6 +308,8 @@
                     "names": [
                         "heaPorAir"
                     ],
+                    "multi_connection": true,
+                                    "use_counter": false,
                     "targets": [
                         "Emission"
                     ],

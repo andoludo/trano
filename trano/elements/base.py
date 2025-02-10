@@ -232,6 +232,10 @@ class ElementPort(BaseElementPort):
         return (not targets) or (self.element_type is not None and targets and any(issubclass(self.element_type, t) for t in targets))
 
 
+    def get_connection_per_target(self, target: Type[BaseElement]) -> int:
+        return len([target_ for port in self.ports for target_ in port.targets if issubclass(target, target_)])
+
+
 
 
 
@@ -246,10 +250,13 @@ class ElementPort(BaseElementPort):
                 return True
         return False
 
+    @classmethod
+    def from_element_without_ports(cls, element: BaseElement) -> "ElementPort":
+        return cls.from_element(element, use_original_ports=False)
 
 
     @classmethod
-    def from_element(cls, element: BaseElement) -> "ElementPort":
+    def from_element(cls, element: BaseElement, use_original_ports: bool = True) -> "ElementPort":
         from trano.elements.envelope import MergedBaseWall
         merged_number = 1
         if isinstance(element, MergedBaseWall):
@@ -258,7 +265,8 @@ class ElementPort(BaseElementPort):
             element_port = cls(**(element.model_dump() | {"element_type": type(element), "merged_number": merged_number}))
         else:
             element_port =  cls(**(element.model_dump(exclude={"position"}) | {"element_type": type(element), "merged_number": merged_number}))
-        element_port.ports = element.ports
+        if use_original_ports:
+            element_port.ports = element.ports
         return element_port
 
 

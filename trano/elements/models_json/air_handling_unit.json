@@ -179,7 +179,8 @@
                         "System",
                         "Space"
                     ],
-                    "use_counter": false
+                    "use_counter": false,
+                    "medium": "fluid"
                 },
                 {
                     "flow": "outlet",
@@ -191,7 +192,8 @@
                         "System",
                         "Space"
                     ],
-                    "use_counter": false
+                    "use_counter": false,
+                    "medium": "fluid"
                 }
             ],
             "template": "{{package_name}}.Trano.Fluid.\n    Ventilation.SimpleHVACBuildings\n    {{ element.name }}\n    (redeclare package Medium = Medium)",

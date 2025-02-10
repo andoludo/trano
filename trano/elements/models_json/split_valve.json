@@ -15,6 +15,8 @@
                     "names": [
                         "port_1"
                     ],
+                    "multi_connection": true,
+                    "use_counter": false,
                     "medium": "fluid"
                 },
                 {

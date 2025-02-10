@@ -16,7 +16,7 @@ from trano.elements import (
 from trano.elements.base import ElementPort
 from trano.elements.containers import containers_factory
 from trano.elements.envelope import MergedExternalWall, MergedWindows, FloorOnGround
-from trano.elements.system import Occupancy, Weather, Valve, Duct, Pump
+from trano.elements.system import Occupancy, Weather, Valve, Duct, Pump, VAV
 from trano.elements.types import Flow, Medium
 from trano.library.library import Library
 from trano.topology import Network
@@ -30,13 +30,20 @@ def house_ideas() -> Network:
         house,
         library=Library.from_configuration("IDEAS"),
     )
-
+@pytest.fixture(scope="module")
+def house_buildings() -> Network:
+    house = get_path("three_zones_hydronic_containers.yaml")
+    return convert_network(
+        "three_zones_hydronic_containers",
+        house,
+        library=Library.from_configuration("Buildings"),
+    )
 
 def test_connect_space_radiator(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Space, Radiator)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
     assert len(connections) == 2
     assert {c.equation_view() for c in connections} == {
@@ -48,20 +55,29 @@ def test_connect_space_radiator(house_ideas: Network) -> None:
 def test_connect_space_internal_wall(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Space, InternalElement)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {
         ("internal_space_001_space_002_cavitywall.propsBus_a", "space_001.propsBus[1]")
     }
 
+def test_connect_space_internal_wall_buildings(house_buildings: Network) -> None:
+
+    edge = house_buildings.get_edge(Space, InternalElement)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    connections = connect(e1, e2)
+    assert len(connections) == 1
+    assert {c.equation_view() for c in connections} == {('internal_space_001_space_002_cavitywall.port_a', 'space_001.surf_surBou[1]')}
+
 
 def test_connect_space_merged_external_wall(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Space, MergedExternalWall)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {
@@ -75,8 +91,8 @@ def test_connect_space_merged_external_wall(house_ideas: Network) -> None:
 def test_connect_space_merged_windows(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Space, MergedWindows)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {
@@ -87,21 +103,43 @@ def test_connect_space_merged_windows(house_ideas: Network) -> None:
 def test_connect_space_floor_on_ground(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Space, FloorOnGround)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
-    connections = connect(e1, e2)
-    assert len(connections) == 1
-    assert {c.equation_view() for c in connections} == {
-        ("flooronground_8.propsBus_a", "space_001.propsBus[1]")
-    }
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    e1_ = ElementPort.from_element_without_ports(edge[0])
+    e2_ = ElementPort.from_element_without_ports(edge[1])
+    for edge in [(e1, e2), (e2_, e1_)]:
+        connections = connect(*edge)
+        assert len(connections) == 1
+        assert {c.equation_view() for c in connections} == {
+            ("flooronground_8.propsBus_a", "space_001.propsBus[1]")
+        }
 
 
 def test_connect_space_occupancy(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Space, Occupancy)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
+    assert len(connections) == 1
+    assert {c.equation_view() for c in connections} == {
+        ("occupancy_1.y", "space_001.yOcc")
+    }
+
+def test_connect_space_occupancy_buildings(house_buildings: Network) -> None:
+    edge = house_buildings.get_edge(Space, Occupancy)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    connections = connect(e2, e1)
+    assert len(connections) == 1
+    assert {c.equation_view() for c in connections} == {('occupancy_1.y', 'space_001.qGai_flow')}
+
+def test_connect_space_occupancy_inverted(house_ideas: Network) -> None:
+
+    edge = house_ideas.get_edge(Space, Occupancy)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    connections = connect(e2, e1)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {
         ("occupancy_1.y", "space_001.yOcc")
@@ -111,8 +149,8 @@ def test_connect_space_occupancy(house_ideas: Network) -> None:
 def test_connect_radiator_valve(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Radiator, Valve)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {('radiator_003.port_b', 'valve_003.port_a')}
@@ -121,8 +159,8 @@ def test_connect_radiator_valve(house_ideas: Network) -> None:
 def test_connect_valve_emission_control(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Valve, EmissionControl)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {("control_1.y", "valve_003.y")}
@@ -131,8 +169,8 @@ def test_connect_valve_emission_control(house_ideas: Network) -> None:
 def test_connect_valve_split_valve(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Valve, SplitValve)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {('split_valve_001.port_1', 'valve_003.port_b')}
@@ -215,7 +253,7 @@ def test_connect_multi_connection_split_valve(house_ideas: Network) -> None:
         container_type="distribution",
         ports=[
             Port(
-                flow=Flow.inlet,
+                flow=Flow.inlet_or_outlet,
                 medium=Medium.fluid,
                 names=["port_1"],
                 multi_connection=True,
@@ -241,10 +279,10 @@ def test_connect_multi_connection_split_valve(house_ideas: Network) -> None:
     assert len(connections_full) == 3
     assert sorted(connections_full) == [('duct_001.port_2', 'split_valve_001.port_1'),
  ('duct_002.port_1', 'split_valve_001.port_2'),
- ('duct_003.port_2', 'split_valve_001.port_3')]
+ ('duct_003.port_1', 'split_valve_001.port_3')]
 
-
-def test_connect_four_connections_split_valve(house_ideas: Network) -> None:
+@pytest.fixture
+def system_fixtures():
     split_valve = ElementPort(
         name="split_valve_001",
         element_type=SplitValve,
@@ -328,7 +366,7 @@ def test_connect_four_connections_split_valve(house_ideas: Network) -> None:
                 use_counter=False,
             ),
             Port(
-                flow=Flow.outlet,
+                flow=Flow.inlet_or_outlet,
                 medium=Medium.fluid,
                 names=["port_2"],
                 multi_connection=True,
@@ -357,8 +395,12 @@ def test_connect_four_connections_split_valve(house_ideas: Network) -> None:
             ),
         ],
     )
-    connections_full = []
+    return split_valve, duct_1, duct_2, duct_3, duct_4
 
+def test_connect_four_connections_split_valve(house_ideas: Network, system_fixtures) -> None:
+
+    connections_full = []
+    split_valve, duct_1, duct_2, duct_3, duct_4 = system_fixtures
     connections = connect(duct_1, split_valve)
     connections_full += [c.equation_view() for c in connections]
     connections = connect(split_valve, duct_2)
@@ -372,12 +414,29 @@ def test_connect_four_connections_split_valve(house_ideas: Network) -> None:
  ('duct_002.port_1', 'split_valve_001.port_2'),
  ('duct_003.port_2', 'split_valve_001.port_3'),
  ('duct_004.port_2', 'split_valve_001.port_1')]
+def test_connect_four_connections_split_valve_mixed(house_ideas: Network, system_fixtures) -> None:
 
+    connections_full = []
+    split_valve, duct_1, duct_2, duct_3, duct_4 = system_fixtures
+    connections = connect(duct_1, split_valve)
+    connections_full += [c.equation_view() for c in connections]
+    connections = connect(duct_4, split_valve)
+    connections_full += [c.equation_view() for c in connections]
+    connections = connect(split_valve, duct_2)
+    connections_full += [c.equation_view() for c in connections]
+    connections = connect(duct_3, split_valve)
+    connections_full += [c.equation_view() for c in connections]
+
+    assert len(connections_full) == 4
+    assert sorted(connections_full) == [('duct_001.port_2', 'split_valve_001.port_1'),
+ ('duct_002.port_1', 'split_valve_001.port_2'),
+ ('duct_003.port_2', 'split_valve_001.port_3'),
+ ('duct_004.port_2', 'split_valve_001.port_1')]
 def test_container_connect_space_radiator(house_ideas: Network) -> None:
     containers = containers_factory()
     edge = house_ideas.get_edge(Space, Radiator)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
 
     connections = connect(e1, e2)
     containers.connect(connections)
@@ -393,28 +452,56 @@ def test_container_connect_space_radiator(house_ideas: Network) -> None:
 
 
 def test_connect_databus(house_ideas: Network) -> None:
-    data_bus = house_ideas._build_data_bus()
+    house_ideas._build_data_bus()
     edge = house_ideas.get_edge(Space, DataBus)
-    e1 = ElementPort.from_element(edge[0])
-    e2 = ElementPort.from_element(edge[1])
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
-    assert len(connections) == 1
-    assert {c.equation_view() for c in connections} == {('data_bus.port_a[1]', 'space_001.ports[1]')}
+    assert len(connections) == 2
+    assert {c.equation_view() for c in connections} == {('data_bus.port[1]', 'space_001.gainCon'),
+ ('data_bus.port_a[1]', 'space_001.ports[1]')}
 
+
+def test_connect_databus_buildings(house_buildings: Network) -> None:
+    house_buildings._build_data_bus()
+    edge = house_buildings.get_edge(Space, DataBus)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    connections = connect(e1, e2)
+    assert len(connections) == 2
+    assert {c.equation_view() for c in connections} == {('data_bus.port[1]', 'space_001.heaPorAir'), ('data_bus.port_a[1]', 'space_001.ports[1]')}
 
 def test_connect_three_way_valve_split_valve(house_ideas: Network) -> None:
     edge_1 = house_ideas.get_edge(ThreeWayValve, SplitValve)
     edge_2 = house_ideas.get_edge(ThreeWayValve, Pump)
     edge_3 = house_ideas.get_edge(ThreeWayValve, TemperatureSensor)
-    three_way_valve = ElementPort.from_element(edge_1[0])
-    split_valve = ElementPort.from_element(edge_1[1])
-    pump = ElementPort.from_element(edge_2[0])
-    temperature_sensor = ElementPort.from_element(edge_3[1])
+    three_way_valve = ElementPort.from_element_without_ports(edge_1[0])
+    split_valve = ElementPort.from_element_without_ports(edge_1[1])
+    pump = ElementPort.from_element_without_ports(edge_2[0])
+    temperature_sensor = ElementPort.from_element_without_ports(edge_3[1])
     split_valve.ports[0].connected = True
     split_valve.ports[1].connected = True
     connections = connect(three_way_valve, temperature_sensor)
     connections += connect(pump, three_way_valve)
     connections += connect(three_way_valve, split_valve)
 
+    assert len(connections) == 3
+    assert {c.equation_view() for c in connections} == {('pump_001.port_b', 'three_way_valve_001.port_1'), ('split_valve_001.port_3', 'three_way_valve_001.port_3'), ('temperature_sensor_001.port_a', 'three_way_valve_001.port_2')}
+
+
+def test_ideas_free_float_single_zone(ideas_free_float_single_zone: Network) -> None:
+    edge = ideas_free_float_single_zone.get_edge(Space, MergedWindows)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    e1.ports[0].connected = True
+    connections = connect(e1, e2)
     assert len(connections) == 1
-    assert {c.equation_view() for c in connections} == {('data_bus.port_a[1]', 'space_001.ports[1]')}
+    assert {c.equation_view() for c in connections} == {('merged_win1_1[1].propsBus_a', 'space_1.propsBus[1]')}
+
+def test_one_spaces_air_handling_unit(one_spaces_air_handling_unit: Network) -> None:
+    edge = one_spaces_air_handling_unit.get_edge(Space, VAV)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    connections = connect(e1, e2)
+    assert len(connections) == 1
+    assert {c.equation_view() for c in connections} == {('space_1.ports[1]', 'vav_in.port_bAir')}

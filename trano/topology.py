@@ -1,4 +1,5 @@
 import itertools
+import logging
 import shutil
 
 from pathlib import Path
@@ -45,7 +46,7 @@ from trano.elements.types import Tilt, ContainerTypes
 from trano.exceptions import WrongSystemFlowError
 from trano.library.library import Library
 from pydantic import BaseModel
-
+logger = logging.getLogger(__name__)
 class ComponentModel(BaseModel):
     id: int
     model: str
@@ -316,7 +317,10 @@ class Network:  # : PLR0904, #TODO: fix this
     def connect_edges(
         self, edge: Tuple[BaseElement, BaseElement]  # :  PLR6301
     ) -> list[Connection]:
-        return connect(ElementPort.from_element(edge[0]), ElementPort.from_element(edge[1]))
+        connection =  connect(ElementPort.from_element(edge[0]), ElementPort.from_element(edge[1]))
+        if not connection:
+            logger.warning(f"Connection not possible between {edge[0].name} and {edge[1].name}")
+        return connection
 
     def merge_spaces(self, space_1: "Space", space_2: "Space") -> None:
         internal_elements = nx.shortest_path(self.graph, space_1, space_2)[1:-1]

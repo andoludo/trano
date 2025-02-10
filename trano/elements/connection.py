@@ -11,7 +11,7 @@ from trano.elements.types import (
     Medium,
     ContainerTypes,
 )
-from trano.exceptions import IncompatiblePortsError, ConnectionLimitReached
+from trano.exceptions import IncompatiblePortsError, ConnectionLimitReached, NoConnectionFoundError
 
 if TYPE_CHECKING:
     from trano.elements import BaseElement, ThreeWayValve
@@ -39,34 +39,43 @@ class Port(BaseModel):
         self.connected = True
         self.connection_counter += 1
 
-    def get_compatible_flow(self, flow: Flow) -> bool:
+    def get_compatible_port(self, port: "Port") -> bool:
         if self.medium == Medium.fluid:
             if self.flow == Flow.inlet:
-                return flow in [Flow.outlet, Flow.inlet_or_outlet]
+                return (port.flow in [Flow.outlet]) or (port.flow in [Flow.inlet_or_outlet] and port.multi_connection and port.use_counter)
             if self.flow == Flow.outlet:
-                return flow in [Flow.inlet, Flow.inlet_or_outlet]
+                return port.flow in [Flow.inlet] or (port.flow in [Flow.inlet_or_outlet] and port.multi_connection and port.use_counter)
+            if self.flow == Flow.inlet_or_outlet and self.multi_connection and self.use_counter:
+                return port.flow in [Flow.inlet, Flow.outlet]
             if self.flow == Flow.inlet_or_outlet:
-                return flow in [Flow.inlet, Flow.outlet, Flow.inlet_or_outlet]
+                return port.flow in [Flow.inlet_or_outlet]
         if self.medium == Medium.data:
             return True
-        return self.flow == flow
+        return self.flow == port.flow
 
     def similar_flow(self, port: "Port") -> bool:
-        if self.medium == Medium.fluid:
-            return self.flow == port.flow or any([f == Flow.inlet_or_outlet for f in [self.flow, port.flow]])
         return self.flow == port.flow
 
     def is_complementary(self, port: "Port") -> bool:
-        return self.medium == port.medium and self.get_compatible_flow(port.flow)
+        return self.medium == port.medium and self.get_compatible_port(port)
 
     def is_inlet(self) -> bool:
-        return self.flow in [Flow.inlet, Flow.inlet_or_outlet] and self.medium == Medium.fluid
+        return self.flow in [Flow.inlet] and self.medium == Medium.fluid
 
     def is_outlet(self) -> bool:
-        return self.flow in [Flow.outlet, Flow.inlet_or_outlet] and self.medium == Medium.fluid
+        return self.flow in [Flow.outlet] and self.medium == Medium.fluid
+
+    def is_extended_inlet(self) -> bool:
+        return self.flow in [Flow.inlet_or_outlet] and self.medium == Medium.fluid and self.multi_connection and self.use_counter
+
+    def is_extended_outlet(self) -> bool:
+        return self.flow in [Flow.inlet_or_outlet] and self.medium == Medium.fluid and self.multi_connection and self.use_counter
 
     def with_directed_flow(self) -> bool:
-        return self.flow in [Flow.inlet, Flow.outlet, Flow.inlet_or_outlet]
+        return self.flow in [Flow.inlet, Flow.outlet]
+
+    def bidirectional_flow(self) -> bool:
+        return self.flow in [Flow.inlet_or_outlet] and self.medium == Medium.fluid
 
     def without_targets(self) -> "Port":
         return Port.model_validate(self.model_dump(exclude={"targets"}))
@@ -92,7 +101,10 @@ class Port(BaseModel):
 
     def is_available(self, available_ports: List["Port"]) -> bool:
         if self.multi_connection and self.connected:
-            return not any((p.medium==self.medium and self.similar_flow(p)) for p in available_ports)
+            if self.medium == Medium.fluid:
+                return not any((p.medium==self.medium and self.similar_flow(p)) for p in available_ports)
+            else:
+                return True
         else:
             return not self.connected
 
@@ -198,6 +210,21 @@ def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionVie
         return ConnectionView(color="{0, 0, 139}", thickness=0.75)
     return ConnectionView()
 
+def check_flow_direction(first_port: Port, second_port: Port) -> bool:
+    if first_port.medium == Medium.fluid and second_port.medium == Medium.fluid:
+        if (
+                second_port.with_directed_flow()
+                and first_port.with_directed_flow()
+        ):
+            return first_port.is_outlet() and second_port.is_inlet()
+        elif second_port.bidirectional_flow() and first_port.bidirectional_flow():
+            return True
+        elif (first_port.is_outlet() and second_port.is_extended_inlet()) or (first_port.is_extended_outlet() and second_port.is_inlet()):
+            return True
+        else:
+            return False
+    else:
+        return True
 
 def connect(
     edge_first: "ElementPort", edge_second: "ElementPort"
@@ -206,51 +233,36 @@ def connect(
     try:
         for first_port in edge_first.ports:
             for second_port in edge_second.ports:
-                if first_port.is_available(edge_first.available_ports()) and second_port.is_available(edge_second.available_ports()):
-                    if (
-                        edge_second.has_target(first_port.targets)
-                        and edge_first.has_target(second_port.targets)
-                        and first_port.is_complementary(second_port)
-                        and (
-                            (first_port.is_outlet() and second_port.is_inlet())
-                            if (
-                                second_port.with_directed_flow()
-                                and first_port.with_directed_flow()
-                            )
-                            else True
+                available = first_port.is_available(edge_first.available_ports()) and second_port.is_available(edge_second.available_ports())
+                has_targets = edge_second.has_target(first_port.targets) and edge_first.has_target(second_port.targets)
+                complementarity = first_port.is_complementary(second_port)
+                flow_direction = check_flow_direction(first_port, second_port)
+                if available and has_targets and complementarity and flow_direction:
+                    merged_number = max(
+                        edge_first.merged_number, edge_second.merged_number
+                    )
+                    left_right = list(
+                        zip(
+                            first_port.link(merged_number, edge_first.name, edge_first.position, edge_first.container_type, edge_second.container_type),  # type: ignore
+                            second_port.link(merged_number, edge_second.name, edge_second.position, edge_second.container_type, edge_first.container_type),  # type: ignore
+                            strict=True,
                         )
-                    ):
-                        from trano.elements import BaseElement, ThreeWayValve
-                        if issubclass(edge_first.element_type, ThreeWayValve) or issubclass(edge_second.element_type, ThreeWayValve):
-                            a = 12
-                        merged_number = max(
-                            edge_first.merged_number, edge_second.merged_number
+                    )
+                    for left, right in left_right:
+                        connection = Connection(
+                            left=left,
+                            right=right,
+                            connection_view=connection_color(
+                                (edge_first, edge_second)
+                            ),
                         )
-                        left_right = list(
-                            zip(
-                                first_port.link(merged_number, edge_first.name, edge_first.position, edge_first.container_type, edge_second.container_type),  # type: ignore
-                                second_port.link(merged_number, edge_second.name, edge_second.position, edge_second.container_type, edge_first.container_type),  # type: ignore
-                                strict=True,
-                            )
-                        )
-                        for left, right in left_right:
-                            connection = Connection(
-                                left=left,
-                                right=right,
-                                connection_view=connection_color(
-                                    (edge_first, edge_second)
-                                ),
-                            )
-                            connections.append(connection)
-                        first_port.set_connected()
-                        second_port.set_connected()
-                        current_connection_numbers = len(connections)
-                        if edge_second.connection_limit_reached(
-                            current_connection_numbers, first_port.medium
-                        ) and edge_first.connection_limit_reached(
-                            current_connection_numbers, first_port.medium
-                        ):
-                            raise ConnectionLimitReached
+                        connections.append(connection)
+                    first_port.set_connected()
+                    second_port.set_connected()
+                    current_connection_numbers = len(connections)
+                    allowed_connections = edge_first.get_connection_per_target(edge_second.element_type)
+                    if current_connection_numbers >= allowed_connections :
+                        raise ConnectionLimitReached
     except ConnectionLimitReached:
         ...
 

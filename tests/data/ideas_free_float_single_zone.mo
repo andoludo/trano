@@ -2074,25 +2074,25 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Bui
       c=840.0,
       rho=2240.0,
       epsLw=0.88,
+      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.025,
+      c=1005.0,
+      rho=1.2,
+      epsLw=0.88,
       epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.12,
       c=1210.0,
       rho=540.0,
-      epsLw=0.88,
-      epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
       epsLw=0.88,
       epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.03,
       c=1200.0,
       rho=40.0,
       epsLw=0.88,
-      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
+      epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record external_wall
@@ -2122,8 +2122,8 @@ annotation (choicesAllMatching = true);
     redeclare package Medium = Medium,
     nSurf=6,
     T_start=293.15) annotation (
-    Placement(transformation(origin = { 0, 0 },
-    extent = {{-20, -20}, {20, 20}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[4]
     merged_w1_1_w2_1_w3_1_w4_1(
@@ -2134,8 +2134,8 @@ annotation (choicesAllMatching = true);
     final azi={ 135, 0, 45, 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 110.04134239516654, -153.87906583769796 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
     merged_win1_1(
@@ -2145,58 +2145,60 @@ annotation (choicesAllMatching = true);
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -105.75237577599536, 169.33380509518534 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_2(
     redeclare parameter ideas_free_float_single_zone.Data.Constructions.
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { -200.00000000000003, -33.59519077719929 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
             inner IDEAS.BoundaryConditions.SimInfoManager
     sim(interZonalAirFlowType=
   IDEAS.BoundaryConditions.Types.
   InterZonalAirFlow.OnePort) "Data reader"
 annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotation (
-    Placement(transformation(origin = { -100, 200 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         ideas_free_float_single_zone.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 162.16007190806218, 15.174305722301433 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
 
 
 equation    connect(space_1.propsBus[1:4],merged_w1_1_w2_1_w3_1_w4_1[1:4].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 55.02067119758327, 0.0 }    ,{ 55.02067119758327, -153.87906583769796 }    ,{ 110.04134239516654, -153.87906583769796 }    },
+points={{ 0.0, 0.0 }    ,{ 43.121612616346944, 0.0 }    ,{ 43.121612616346944, 164.8202251744484 }    ,{ 86.24322523269389, 164.8202251744484 }    },
 color={255,204,51},
-thickness=0.5,
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.propsBus[5],merged_win1_1[1].propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -52.87618788799768, 0.0 }    ,{ -52.87618788799768, 169.33380509518534 }    ,{ -105.75237577599536, 169.33380509518534 }    },
+points={{ 0.0, 0.0 }    ,{ -94.04498287411901, 0.0 }    ,{ -94.04498287411901, -20.11638996121096 }    ,{ -188.08996574823803, -20.11638996121096 }    },
 color={255,204,51},
-thickness=0.5,
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.propsBus[6],floor_2.propsBus_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -100.00000000000001, 0.0 }    ,{ -100.00000000000001, -33.59519077719929 }    ,{ -200.00000000000003, -33.59519077719929 }    },
-color={191,0,0},
+points={{ 0.0, 0.0 }    ,{ 100.0, 0.0 }    ,{ 100.0, -9.007371531972252 }    ,{ 200.0, -9.007371531972252 }    },
+color={255,204,51},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_1.gainCon,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 81.08003595403109, 0.0 }    ,{ 81.08003595403109, 15.174305722301433 }    ,{ 162.16007190806218, 15.174305722301433 }    },
-thickness=0.05,
+points={{ 0.0, 0.0 }    ,{ -58.95539967971842, 0.0 }    ,{ -58.95539967971842, 155.96773812736703 }    ,{ -117.91079935943684, 155.96773812736703 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 81.08003595403109, 0.0 }    ,{ 81.08003595403109, 15.174305722301433 }    ,{ 162.16007190806218, 15.174305722301433 }    },
-thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-250.00000000000003,-203.87906583769796},{212.16007190806218,250.0}})), Icon(
-        coordinateSystem(extent={{-250.00000000000003,-203.87906583769796},{212.16007190806218,250.0}})));
+points={{ 0.0, 0.0 }    ,{ -58.95539967971842, 0.0 }    ,{ -58.95539967971842, 155.96773812736703 }    ,{ -117.91079935943684, 155.96773812736703 }    },
+color={255,204,51},
+thickness=0.1,
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-238.08996574823803,-70.11638996121096},{250.0,250}})), Icon(
+        coordinateSystem(extent={{-238.08996574823803,-70.11638996121096},{250.0,250}})));
 end building;
 
 

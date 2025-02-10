@@ -2170,16 +2170,16 @@ package MediumW = Buildings.Media.Water "Medium model";
                     azi={ 45.0, 90.0 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { 0, 0 },
-    extent = {{-20, -20}, {20, 20}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         buildings_free_float_three_zones.Trano.Controls.ventilation.OccupancyOccupancy_0
     occupancy_0(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
 ) annotation (
-    Placement(transformation(origin = { -50, 0 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
     Buildings.ThermalZones.Detailed.MixedAir space_2(
         redeclare package Medium = Medium,
@@ -2216,16 +2216,16 @@ package MediumW = Buildings.Media.Water "Medium model";
                     azi={ 0.0, 90.0 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { 250, 150 },
-    extent = {{-20, -20}, {20, 20}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         buildings_free_float_three_zones.Trano.Controls.ventilation.OccupancyOccupancy_1
     occupancy_1(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
 ) annotation (
-    Placement(transformation(origin = { 200, 150 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
     Buildings.ThermalZones.Detailed.MixedAir space_3(
         redeclare package Medium = Medium,
@@ -2262,16 +2262,16 @@ package MediumW = Buildings.Media.Water "Medium model";
                     azi={ 45.0 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { 500, 150 },
-    extent = {{-20, -20}, {20, 20}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         buildings_free_float_three_zones.Trano.Controls.ventilation.OccupancyOccupancy_2
     occupancy_2(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
 ) annotation (
-    Placement(transformation(origin = { 450, 150 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         Buildings.HeatTransfer.Conduction.MultiLayer
                 internal_space_1_space_2(A =
@@ -2279,8 +2279,8 @@ package MediumW = Buildings.Media.Water "Medium model";
     internal_wall, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
     rooms"  annotation (
-    Placement(transformation(origin = { 125.0, 0 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         Buildings.HeatTransfer.Conduction.MultiLayer
                 internal_space_1_space_3(A =
@@ -2288,8 +2288,8 @@ package MediumW = Buildings.Media.Water "Medium model";
     internal_wall, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
     rooms"  annotation (
-    Placement(transformation(origin = { 250.0, 0 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         Buildings.HeatTransfer.Conduction.MultiLayer
                 internal_space_2_space_3(A =
@@ -2297,21 +2297,21 @@ package MediumW = Buildings.Media.Water "Medium model";
     internal_wall, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
     rooms"  annotation (
-    Placement(transformation(origin = { 375.0, 150 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
                 weather_2(filNam=Modelica.Utilities.Files.loadResource
         ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
      annotation (
-    Placement(transformation(origin = { -100, 200 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
         buildings_free_float_three_zones.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { -142.66439366882759, -158.600619682468 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = {  },
+    extent = {{10, -10}, {-10, 10}}
 )));
 
 
@@ -2319,97 +2319,109 @@ equation    connect(space_1.qGai_flow,occupancy_0.y)
 annotation (Line(
 points={{ 0.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -50.0, 0.0 }    },
 color={255,204,51},
-thickness=0.5,
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.surf_surBou[1],internal_space_1_space_2.port_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 62.5, 0.0 }    ,{ 62.5, 0.0 }    ,{ 125.0, 0.0 }    },
-color={191,0,0},
+points={{ 0.0, 0.0 }    ,{ -62.5, 0.0 }    ,{ -62.5, 75.0 }    ,{ -125.0, 75.0 }    },
+color={255,204,51},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_1.surf_surBou[2],internal_space_1_space_3.port_a)
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 125.0, 0.0 }    ,{ 125.0, 0.0 }    ,{ 250.0, 0.0 }    },
-color={191,0,0},
+points={{ 0.0, 0.0 }    ,{ -125.0, 0.0 }    ,{ -125.0, 75.0 }    ,{ -250.0, 75.0 }    },
+color={255,204,51},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_1.weaBus,weather_2.weaBus)
 annotation (Line(
 points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0 }    },
-thickness=0.05,
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_2.qGai_flow,occupancy_1.y)
 annotation (Line(
 points={{ 250.0, 150.0 }    ,{ 225.0, 150.0 }    ,{ 225.0, 150.0 }    ,{ 200.0, 150.0 }    },
 color={255,204,51},
-thickness=0.5,
+thickness=0.1,
 smooth=Smooth.None));    connect(space_2.surf_surBou[1],internal_space_1_space_2.port_b)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 187.5, 150.0 }    ,{ 187.5, 0.0 }    ,{ 125.0, 0.0 }    },
-color={191,0,0},
+points={{ 250.0, 150.0 }    ,{ 62.5, 150.0 }    ,{ 62.5, 75.0 }    ,{ -125.0, 75.0 }    },
+color={255,204,51},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_2.surf_surBou[2],internal_space_2_space_3.port_a)
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 312.5, 150.0 }    ,{ 312.5, 150.0 }    ,{ 375.0, 150.0 }    },
-color={191,0,0},
+points={{ 250.0, 150.0 }    ,{ 62.5, 150.0 }    ,{ 62.5, 150.0 }    ,{ -125.0, 150.0 }    },
+color={255,204,51},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_2.weaBus,weather_2.weaBus)
 annotation (Line(
 points={{ 250.0, 150.0 }    ,{ 75.0, 150.0 }    ,{ 75.0, 200.0 }    ,{ -100.0, 200.0 }    },
-thickness=0.05,
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_3.qGai_flow,occupancy_2.y)
 annotation (Line(
 points={{ 500.0, 150.0 }    ,{ 475.0, 150.0 }    ,{ 475.0, 150.0 }    ,{ 450.0, 150.0 }    },
 color={255,204,51},
-thickness=0.5,
+thickness=0.1,
 smooth=Smooth.None));    connect(space_3.surf_surBou[1],internal_space_1_space_3.port_b)
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 375.0, 150.0 }    ,{ 375.0, 0.0 }    ,{ 250.0, 0.0 }    },
-color={191,0,0},
+points={{ 500.0, 150.0 }    ,{ 125.0, 150.0 }    ,{ 125.0, 75.0 }    ,{ -250.0, 75.0 }    },
+color={255,204,51},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_3.surf_surBou[2],internal_space_2_space_3.port_b)
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 437.5, 150.0 }    ,{ 437.5, 150.0 }    ,{ 375.0, 150.0 }    },
-color={191,0,0},
+points={{ 500.0, 150.0 }    ,{ 187.5, 150.0 }    ,{ 187.5, 150.0 }    ,{ -125.0, 150.0 }    },
+color={255,204,51},
 thickness=0.1,
 smooth=Smooth.None));    connect(space_3.weaBus,weather_2.weaBus)
 annotation (Line(
 points={{ 500.0, 150.0 }    ,{ 200.0, 150.0 }    ,{ 200.0, 200.0 }    ,{ -100.0, 200.0 }    },
-thickness=0.05,
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(occupancy_0.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ -50.0, 0.0 }    ,{ -96.33219683441379, 0.0 }    ,{ -96.33219683441379, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
+points={{ -50.0, 0.0 }    ,{ -121.08569576030084, 0.0 }    ,{ -121.08569576030084, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(occupancy_1.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ 200.0, 150.0 }    ,{ 28.667803165586207, 150.0 }    ,{ 28.667803165586207, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
+points={{ 200.0, 150.0 }    ,{ 3.914304239699163, 150.0 }    ,{ 3.914304239699163, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(occupancy_2.dataBus,data_bus.dataBus)
 annotation (Line(
-points={{ 450.0, 150.0 }    ,{ 153.66780316558618, 150.0 }    ,{ 153.66780316558624, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
+points={{ 450.0, 150.0 }    ,{ 128.91430423969916, 150.0 }    ,{ 128.91430423969916, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.heaPorAir,data_bus.port[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -71.33219683441379, 0.0 }    ,{ -71.33219683441379, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
+points={{ 0.0, 0.0 }    ,{ -96.08569576030084, 0.0 }    ,{ -96.08569576030084, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_1.ports[1],data_bus.port_a[1])
 annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -71.33219683441379, 0.0 }    ,{ -71.33219683441379, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
+points={{ 0.0, 0.0 }    ,{ -96.08569576030084, 0.0 }    ,{ -96.08569576030084, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_2.heaPorAir,data_bus.port[2])
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 53.66780316558621, 150.0 }    ,{ 53.66780316558621, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
+points={{ 250.0, 150.0 }    ,{ 28.914304239699163, 150.0 }    ,{ 28.914304239699163, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_2.ports[1],data_bus.port_a[2])
 annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 53.66780316558621, 150.0 }    ,{ 53.66780316558621, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
+points={{ 250.0, 150.0 }    ,{ 28.914304239699163, 150.0 }    ,{ 28.914304239699163, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_3.heaPorAir,data_bus.port[3])
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 178.66780316558618, 150.0 }    ,{ 178.66780316558624, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
+points={{ 500.0, 150.0 }    ,{ 153.91430423969916, 150.0 }    ,{ 153.91430423969916, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
 smooth=Smooth.None));    connect(space_3.ports[1],data_bus.port_a[3])
 annotation (Line(
-points={{ 500.0, 150.0 }    ,{ 178.66780316558618, 150.0 }    ,{ 178.66780316558624, -158.600619682468 }    ,{ -142.66439366882759, -158.600619682468 }    },
-thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-248.58771602946862,-248.74958109897506},{550.0,250.0}})), Icon(
-        coordinateSystem(extent={{-248.58771602946862,-248.74958109897506},{550.0,250.0}})));
+points={{ 500.0, 150.0 }    ,{ 153.91430423969916, 150.0 }    ,{ 153.91430423969916, 30.026472175527434 }    ,{ -192.17139152060167, 30.026472175527434 }    },
+color={255,204,51},
+thickness=0.1,
+smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-300.0,-248.23526625742585},{550,250}})), Icon(
+        coordinateSystem(extent={{-300.0,-248.23526625742585},{550,250}})));
 end building;
 
 

@@ -42,7 +42,7 @@
                     "targets": [
                         "Space"
                     ],
-                   "flow": "undirected",
+                   "flow": "convective",
                     "medium": "heat"
                 },
                 {
