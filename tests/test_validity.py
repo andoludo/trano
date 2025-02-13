@@ -5,6 +5,7 @@ import pytest
 
 from tests.conftest import clean_model, _read
 from trano.data_models.conversion import convert_network
+from trano.elements.containers import containers_factory
 from trano.exceptions import IncompatiblePortsError, WrongSystemFlowError
 from trano.library.library import Library
 from trano.simulate.simulate import SimulationOptions, simulate
@@ -238,3 +239,10 @@ def test_three_zones_hydronic_with_containers(schema: Path, library_name: str) -
     )
     model_ = network.model(include_container=True)
     assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_containers():
+    import json
+    path_ = Path("/home/aan/Documents/trano/trano/elements/config/containers.json")
+    contaienrs = containers_factory()
+    path_.write_text(json.dumps(contaienrs.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True), indent=4))

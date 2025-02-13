@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type
 
-from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
+from pydantic import BaseModel, Field, field_validator, model_validator, computed_field, ConfigDict
 from jinja2 import Environment, FileSystemLoader
 from trano import elements
 from trano.elements.common_base import BaseElementPosition, BasePosition
@@ -25,6 +25,7 @@ INCOMPATIBLE_PORTS = [sorted(["dataBus", "y"])]
 logger = logging.getLogger(__name__)
 
 class Port(BaseModel):
+
     names: list[str]
     targets: List[Any] = Field(default_factory=list)
     connected: bool = False

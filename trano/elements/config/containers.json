@@ -1,0 +1,286 @@
+{
+    "containers": [
+        {
+            "name": "distribution",
+            "port_groups": [
+                {
+                    "connected_container_name": "emission",
+                    "ports": [
+                        {
+                            "names": [
+                                "port_a1"
+                            ],
+                            "flow": "outlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        },
+                        {
+                            "names": [
+                                "port_b1"
+                            ],
+                            "flow": "inlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        }
+                    ]
+                },
+                {
+                    "connected_container_name": "production",
+                    "ports": [
+                        {
+                            "names": [
+                                "port_a"
+                            ],
+                            "flow": "outlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "use_counter": false,
+                            "ignore_direction": true
+                        },
+                        {
+                            "names": [
+                                "port_b"
+                            ],
+                            "flow": "inlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "use_counter": false,
+                            "ignore_direction": true
+                        }
+                    ]
+                },
+                {
+                    "connected_container_name": "bus",
+                    "ports": [
+                        {
+                            "names": [
+                                "dataBus"
+                            ],
+                            "flow": "undirected",
+                            "medium": "data",
+                            "multi_connection": true,
+                            "use_counter": false
+                        }
+                    ]
+                }
+            ],
+            "template": "\n                  parameter Real mRad_flow_nominal = 123;\n\n\npackage MediumW = IDEAS.Media.Water \"Medium model\";\n        replaceable package Medium=Modelica.Media.Interfaces.PartialMedium;\n  Modelica.Fluid.Interfaces.FluidPort_a port_a(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{90,-60},{110,-40}}),\n        iconTransformation(extent={{90,-60},{110,-40}})));\n  Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{90,40},{110,60}}),\n        iconTransformation(extent={{90,40},{110,60}})));\n  Modelica.Fluid.Interfaces.FluidPort_a[#port_a1#] port_a1(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{-110,-58},{-90,-38}}),\n        iconTransformation(extent={{-110,-58},{-90,-38}})));\n  Modelica.Fluid.Interfaces.FluidPort_b[#port_b1#] port_b1(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{-110,40},{-90,60}}),\n        iconTransformation(extent={{-110,38},{-90,58}})));\n          Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(\n        transformation(extent={{-118,68},{-78,108}}), iconTransformation(extent\n          ={{-228,58},{-208,78}})));\n       ",
+            "left_boundary": "emission"
+        },
+        {
+            "name": "emission",
+            "port_groups": [
+                {
+                    "connected_container_name": "distribution",
+                    "ports": [
+                        {
+                            "names": [
+                                "port_a"
+                            ],
+                            "flow": "outlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        },
+                        {
+                            "names": [
+                                "port_b"
+                            ],
+                            "flow": "inlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        }
+                    ]
+                },
+                {
+                    "connected_container_name": "envelope",
+                    "ports": [
+                        {
+                            "names": [
+                                "heatPortRad"
+                            ],
+                            "flow": "radiative",
+                            "medium": "heat",
+                            "multi_connection": true,
+                            "same_counter_per_name": true
+                        },
+                        {
+                            "names": [
+                                "heatPortCon"
+                            ],
+                            "flow": "convective",
+                            "medium": "heat",
+                            "multi_connection": true,
+                            "same_counter_per_name": true
+                        }
+                    ]
+                },
+                {
+                    "connected_container_name": "bus",
+                    "ports": [
+                        {
+                            "names": [
+                                "dataBus"
+                            ],
+                            "flow": "undirected",
+                            "medium": "data",
+                            "multi_connection": true,
+                            "use_counter": false
+                        }
+                    ]
+                }
+            ],
+            "template": "\npackage MediumW = IDEAS.Media.Water \"Medium model\";\n  Modelica.Fluid.Interfaces.FluidPort_a[#port_a#] port_a (redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{90,-60},{110,-40}}),\n        iconTransformation(extent={{90,-60},{110,-40}})));\n  Modelica.Fluid.Interfaces.FluidPort_b[#port_b#] port_b(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{90,40},{110,60}}),\n        iconTransformation(extent={{90,40},{110,60}})));\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n    \"Nodes for convective heat gains\"\n    annotation (Placement(transformation(extent={{-108,42},{-88,62}}),\n        iconTransformation(extent={{-108,42},{-88,62}})));\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad\n    \"Nodes for radiative heat gains\"\n    annotation (Placement(transformation(extent={{-110,-60},{-90,-40}}),\n        iconTransformation(extent={{-110,-60},{-90,-40}})));\n                  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(\n        transformation(extent={{-118,68},{-78,108}}), iconTransformation(extent\n          ={{-228,58},{-208,78}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={255,128,0},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n         ",
+            "left_boundary": "envelope"
+        },
+        {
+            "name": "envelope",
+            "port_groups": [
+                {
+                    "connected_container_name": "emission",
+                    "ports": [
+                        {
+                            "names": [
+                                "heatPortRad"
+                            ],
+                            "flow": "radiative",
+                            "medium": "heat",
+                            "multi_connection": true,
+                            "same_counter_per_name": true
+                        },
+                        {
+                            "names": [
+                                "heatPortCon"
+                            ],
+                            "flow": "convective",
+                            "medium": "heat",
+                            "multi_connection": true,
+                            "same_counter_per_name": true
+                        }
+                    ]
+                },
+                {
+                    "connected_container_name": "bus",
+                    "ports": [
+                        {
+                            "names": [
+                                "dataBus"
+                            ],
+                            "flow": "undirected",
+                            "medium": "data",
+                            "multi_connection": true,
+                            "use_counter": false
+                        },
+                        {
+                            "names": [
+                                "ports_b"
+                            ],
+                            "flow": "inlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        },
+                        {
+                            "names": [
+                                "heatPortCon1"
+                            ],
+                            "flow": "convective",
+                            "medium": "heat",
+                            "multi_connection": true,
+                            "same_counter_per_name": true
+                        }
+                    ]
+                }
+            ],
+            "template": "\nreplaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={\"CO2\"})\nconstrainedby Modelica.Media.Interfaces.PartialMedium\n\"Medium in the component\"\nannotation (choicesAllMatching = true);\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n    \"Nodes for convective heat gains\"\n    annotation (Placement(transformation(extent={{90,40},{110,60}}),\n        iconTransformation(extent={{90,40},{110,60}})));\n          Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon1#]  heatPortCon1\n\"Nodes for convective heat gains\"\nannotation (Placement(transformation(extent={{90,40},{110,60}}),\n    iconTransformation(extent={{-4,98},{6,108}})));\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad\n    \"Nodes for radiative heat gains\"\n    annotation (Placement(transformation(extent={{90,-62},{110,-42}}),\n        iconTransformation(extent={{90,-62},{110,-42}})));\n              three_zones_hydronic_containers.Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n        Modelica.Fluid.Interfaces.FluidPorts_b[#ports_b#] ports_b(redeclare package Medium =\n    Medium) annotation (Placement(\n        transformation(extent={{-108,-38},{-88,42}}), iconTransformation(extent\n          ={{-108,-38},{-88,42}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={255,128,0},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n             "
+        },
+        {
+            "name": "production",
+            "port_groups": [
+                {
+                    "connected_container_name": "distribution",
+                    "ports": [
+                        {
+                            "names": [
+                                "port_a1"
+                            ],
+                            "flow": "outlet",
+                            "medium": "fluid",
+                            "ignore_direction": true
+                        },
+                        {
+                            "names": [
+                                "port_b1"
+                            ],
+                            "flow": "inlet",
+                            "medium": "fluid",
+                            "ignore_direction": true
+                        }
+                    ]
+                },
+                {
+                    "connected_container_name": "bus",
+                    "ports": [
+                        {
+                            "names": [
+                                "dataBus"
+                            ],
+                            "flow": "undirected",
+                            "medium": "data",
+                            "multi_connection": true,
+                            "use_counter": false
+                        }
+                    ]
+                }
+            ],
+            "template": "\n          parameter Real mRad_flow_nominal = 123;\n\n\npackage MediumW = IDEAS.Media.Water \"Medium model\";\n        Modelica.Fluid.Interfaces.FluidPort_a port_a1(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{-110,-58},{-90,-38}}),\n        iconTransformation(extent={{-110,-58},{-90,-38}})));\n  Modelica.Fluid.Interfaces.FluidPort_b port_b1(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{-110,40},{-90,60}}),\n        iconTransformation(extent={{-110,38},{-90,58}})));\n                      three_zones_hydronic_containers.Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={28,108,200},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n                 ",
+            "left_boundary": "distribution"
+        },
+        {
+            "name": "bus",
+            "port_groups": [
+                {
+                    "connected_container_name": "envelope",
+                    "ports": [
+                        {
+                            "names": [
+                                "port_b"
+                            ],
+                            "flow": "outlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        },
+                        {
+                            "names": [
+                                "heatPortCon"
+                            ],
+                            "flow": "convective",
+                            "medium": "heat",
+                            "multi_connection": true,
+                            "same_counter_per_name": true
+                        }
+                    ]
+                }
+            ],
+            "port_groups_per_medium": [
+                {
+                    "medium": "data",
+                    "port": {
+                        "names": [
+                            "dataBus"
+                        ],
+                        "flow": "undirected",
+                        "medium": "data",
+                        "multi_connection": true,
+                        "use_counter": false
+                    }
+                }
+            ],
+            "template": "\n    package Medium = IDEAS.Media.Air (extraPropertiesNames={\"CO2\"})  \"Medium model\";\n      Modelica.Fluid.Interfaces.FluidPort_b[#port_b#] port_b(redeclare package Medium =\n            Medium)\n        annotation (Placement(transformation(extent={{90,40},{110,60}}),\n            iconTransformation(extent={{90,40},{110,60}})));\n      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n        \"Nodes for convective heat gains\"\n        annotation (Placement(transformation(extent={{-108,42},{-88,62}}),\n            iconTransformation(extent={{-108,42},{-88,62}})));\n\n     \n    \n                      Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(\n            transformation(extent={{-118,68},{-78,108}}), iconTransformation(extent\n              ={{-228,58},{-208,78}})));\n      annotation (\n        Icon(\n          coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n            graphics={Rectangle(\n              extent={{-60,100},{60,-100}},\n              lineColor={255,128,0},\n              fillColor={215,215,215},\n              fillPattern=FillPattern.Forward)}));\n             "
+        }
+    ]
+}

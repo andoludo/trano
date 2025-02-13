@@ -21,7 +21,7 @@ class Azimuth:
     west = 135
 
 
-class Flow(Enum):
+class Flow(str, Enum):
     inlet = "inlet"
     outlet = "outlet"
     radiative = "radiative"
@@ -30,7 +30,7 @@ class Flow(Enum):
     undirected = "undirected"
     interchangeable_port = "interchangeable_port"
 
-class Medium(Enum):
+class Medium(str, Enum):
     fluid = "fluid"
     heat = "heat"
     data = "data"
