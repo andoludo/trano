@@ -10,7 +10,7 @@
                         {
                             "component": "Boiy",
                             "name": "yBoiCon",
-                            "port": "y",
+                            "port": "u",
                             "target": {
                                 "main": "element.name"
                             }

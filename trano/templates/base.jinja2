@@ -24,7 +24,7 @@ model building
 equation
 {%- for edge in network.edge_attributes -%}
     {#line break#}
-    {{ macros.connect(edge) }}
+    {{ edge.equation }}
 {%- endfor %}
 annotation (Diagram(coordinateSystem(extent={{diagram_size}})), Icon(
         coordinateSystem(extent={{diagram_size}})));

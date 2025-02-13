@@ -1,7 +1,9 @@
+import logging
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type
 
-from pydantic import BaseModel, Field, field_validator, model_validator
-
+from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
+from jinja2 import Environment, FileSystemLoader
 from trano import elements
 from trano.elements.common_base import BaseElementPosition, BasePosition
 
@@ -20,6 +22,7 @@ if TYPE_CHECKING:
 
 INCOMPATIBLE_PORTS = [sorted(["dataBus", "y"])]
 
+logger = logging.getLogger(__name__)
 
 class Port(BaseModel):
     names: list[str]
@@ -32,6 +35,7 @@ class Port(BaseModel):
     bus_connection: bool = False
     use_counter: bool = True
     same_counter_per_name: bool = False
+    ignore_direction: bool = False
     counter: int = Field(default=1)
     connection_counter: int = Field(default=0)
 
@@ -74,6 +78,7 @@ class Port(BaseModel):
     def with_directed_flow(self) -> bool:
         return self.flow in [Flow.inlet, Flow.outlet]
 
+
     def bidirectional_flow(self) -> bool:
         return self.flow in [Flow.inlet_or_outlet] and self.medium == Medium.fluid
 
@@ -82,6 +87,21 @@ class Port(BaseModel):
 
     def disconnect(self) -> "Port":
         return Port.model_validate(self.model_dump(exclude={"connected"}))
+    def set_ignore_direction(self) -> "Port":
+        port = Port.model_validate(self.model_dump())
+        port.ignore_direction = True
+        return port
+
+    def reset_counter(self) -> "Port":
+        self.counter = 1
+        return self
+
+    def substract_counter(self) -> "Port":
+        if self.counter != 1:
+            return Port.model_validate((self.model_dump(exclude={"counter"})|{"counter": self.counter - 1}))
+        return self
+
+
 
     @field_validator("targets")
     @classmethod
@@ -212,7 +232,9 @@ def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionVie
 
 def check_flow_direction(first_port: Port, second_port: Port) -> bool:
     if first_port.medium == Medium.fluid and second_port.medium == Medium.fluid:
-        if (
+        if (first_port.ignore_direction and second_port.ignore_direction):
+            return first_port.get_compatible_port(second_port)
+        elif (
                 second_port.with_directed_flow()
                 and first_port.with_directed_flow()
         ):
@@ -221,6 +243,7 @@ def check_flow_direction(first_port: Port, second_port: Port) -> bool:
             return True
         elif (first_port.is_outlet() and second_port.is_extended_inlet()) or (first_port.is_extended_outlet() and second_port.is_inlet()):
             return True
+
         else:
             return False
     else:
@@ -276,12 +299,16 @@ class BasePartialConnection(BaseElementPosition):
     sub_port: int
 
 
-class ContainerConnection(BasePartialConnection):
+class BasePartialConnectionWithContainerType(BasePartialConnection):
     container_type: Optional[ContainerTypes] = None
 
 
-class PartialConnection(ContainerConnection):
+class PartialConnection(BasePartialConnectionWithContainerType):
     connected_container_type: Optional[ContainerTypes] = None
+
+    def reset_port_counter(self) -> "PartialConnection":
+        self.port.reset_counter()
+        return self
 
     def to_base_partial_connection(self) -> BasePartialConnection:
         return BasePartialConnection.model_validate(
@@ -294,11 +321,55 @@ class Connection(BaseModel):
     left: PartialConnection
     connection_view: ConnectionView = Field(default=ConnectionView())
 
+    def in_the_same_container(self) -> bool:
+        return bool(self.left.name is not None) and bool(self.right.name is not None)
+
+    def reset_counters(self) -> "Connection":
+        self.left.reset_port_counter()
+        self.right.reset_port_counter()
+        return self
+
+
+
+
+
     def equation_view(self):
         return tuple(sorted([self.left.equation, self.right.equation]))
 
+    @computed_field
+    def equation(self) -> str:
+        environment = Environment(
+            trim_blocks=True,
+            lstrip_blocks=True,
+            loader=FileSystemLoader(
+                str(Path(__file__).parents[1].joinpath("templates"))
+            ),
+            autoescape=True,
+        )
+        annotation_template =  environment.from_string("""
+        {% import 'macros.jinja2' as macros %}
+        
+        
+        connect({{ connection.left.equation }},{{ connection.right.equation }})
+            {% if not connection.connection_view.disabled %}
+        annotation (Line(
+        points={{ macros.connect_path(connection.path) }},
+            {% if connection.connection_view.color %}
+        color={{ connection.connection_view.color }},
+            {% endif %}
+        thickness={{ connection.connection_view.thickness }},pattern = LinePattern.{{ connection.connection_view.pattern }},
+        smooth=Smooth.None))
+            {% endif %}
+            ;""")
+
+        return annotation_template.render(
+            connection=self,
+        )
+
     @model_validator(mode="after")
     def _connection_validator(self) -> "Connection":
+        if self.right.position.container.is_empty() or self.left.position.container.is_empty():
+            logger.debug(f"Connection position still empty for {self.right.name} and {self.left.name}.")
         if (
             sorted(
                 [
@@ -332,127 +403,33 @@ class Connection(BaseModel):
                 (self.right.position.global_.location.x + mid_path, self.right.position.global_.location.y),
                 self.right.position.global_.coordinate(),
             ]
-
+class ContainerConnection(Connection):
+    source: Tuple[str, str]
+    def get_container_equation(self):
+        if self.right.name is None:
+            return self.right
+        if self.left.name is None:
+            return self.left
+        return None
     @property
-    def container_path(self) -> List[List[float] | Tuple[float, float]]:
-        square_size = 30  # Each square is 30x30
-        buffer = 10  # Additional spacing to avoid overlap
-        # TODO: change these 0 locator into x,y???
-        if self.left.container_position[0] < self.right.container_position[0]:
-            mid_x = (
-                self.right.container_position[0] - self.left.container_position[0]
-            ) / 2
-            if self.left.container_position[1] < self.right.container_position[1]:
-                mid_y = (
-                    self.right.container_position[1] - self.left.container_position[1]
-                ) / 2
-                path = [
-                    self.left.container_position,
-                    (
-                        self.left.container_position[0],
-                        self.left.container_position[1] + mid_y,
-                    ),
-                    # Move outside left square
-                    (
-                        self.left.container_position[0] + mid_x,
-                        self.left.container_position[1] + mid_y,
-                    ),  # Midway above both squares
-                    (
-                        self.right.container_position[0] - mid_x,
-                        self.right.container_position[1] - mid_y,
-                    ),  # Midway above both squares
-                    (
-                        self.right.container_position[0],
-                        self.right.container_position[1] - mid_y,
-                    ),
-                    # Move outside right square
-                    self.right.container_position,
-                ]
-            else:
-                mid_y = (
-                    self.left.container_position[1] - self.right.container_position[1]
-                ) / 2
-                path = [
-                    self.left.container_position,
-                    (
-                        self.left.container_position[0],
-                        self.left.container_position[1] - mid_y,
-                    ),
-                    # Move outside left square
-                    (
-                        self.left.container_position[0] + mid_x,
-                        self.left.container_position[1] - mid_y,
-                    ),  # Midway above both squares
-                    (
-                        self.right.container_position[0] - mid_x,
-                        self.right.container_position[1] + mid_y,
-                    ),  # Midway above both squares
-                    (
-                        self.right.container_position[0],
-                        self.right.container_position[1] + mid_y,
-                    ),
-                    # Move outside right square
-                    self.right.container_position,
-                ]
+    def path(self) -> List[List[float] | Tuple[float, float]]:
+        if self.left.position.container.location.x < self.right.position.container.location.x:
+            mid_path = (self.right.position.container.location.x - self.left.position.container.location.x) / 2
+            return [
+                self.left.position.container.coordinate(),
+                (self.left.position.container.location.x + mid_path, self.left.position.container.location.y),
+                (self.right.position.container.location.x - mid_path, self.right.position.container.location.y),
+                self.right.position.container.coordinate(),
+            ]
 
         else:
-            mid_x = (
-                self.left.container_position[0] - self.right.container_position[0]
-            ) / 2
-            if self.left.container_position[1] < self.right.container_position[1]:
-                mid_y = (
-                    self.right.container_position[1] - self.left.container_position[1]
-                ) / 2
-                path = [
-                    self.left.container_position,
-                    (
-                        self.left.container_position[0],
-                        self.left.container_position[1] + mid_y,
-                    ),
-                    # Move outside left square
-                    (
-                        self.left.container_position[0] - mid_x,
-                        self.left.container_position[1] + mid_y,
-                    ),  # Midway above both squares
-                    (
-                        self.right.container_position[0] + mid_x,
-                        self.right.container_position[1] - mid_y,
-                    ),  # Midway above both squares
-                    (
-                        self.right.container_position[0],
-                        self.right.container_position[1] - mid_y,
-                    ),
-                    # Move outside right square
-                    self.right.container_position,
-                ]
-            else:
-                mid_y = (
-                    self.left.container_position[1] - self.right.container_position[1]
-                ) / 2
-                path = [
-                    self.left.container_position,
-                    (
-                        self.left.container_position[0],
-                        self.left.container_position[1] - mid_y,
-                    ),
-                    # Move outside left square
-                    (
-                        self.left.container_position[0] - mid_x,
-                        self.left.container_position[1] - mid_y,
-                    ),  # Midway above both squares
-                    (
-                        self.right.container_position[0] + mid_x,
-                        self.right.container_position[1] + mid_y,
-                    ),  # Midway above both squares
-                    (
-                        self.right.container_position[0],
-                        self.right.container_position[1] + mid_y,
-                    ),
-                    # Move outside right square
-                    self.right.container_position,
-                ]
-
-        return path
+            mid_path = (self.left.position.container.location.x - self.right.position.container.location.x) / 2
+            return [
+                self.left.position.container.coordinate(),
+                (self.left.position.container.location.x - mid_path, self.left.position.container.location.y),
+                (self.right.position.container.location.x + mid_path, self.right.position.container.location.y),
+                self.right.position.container.coordinate(),
+            ]
 
 
 def _has_inlet_or_outlet(ports: List[Port]) -> bool:

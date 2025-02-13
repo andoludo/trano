@@ -193,7 +193,7 @@ class BaseElement(BaseElementPort):
     def get_position(self, layout: Dict["BaseElement", Any]) -> None:
         if self.position.is_empty():
             x, y= list(layout.get(self))  # type: ignore
-            self.position.set(x, y)
+            self.position.set_global(x, y)
 
     def get_controllable_ports(self) -> List[Port]:
         return [port for port in self.ports if port.is_controllable()]

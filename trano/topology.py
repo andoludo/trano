@@ -168,6 +168,7 @@ class Network:  # : PLR0904, #TODO: fix this
             spaces=[space.name for space in spaces],
             external_data=self.external_data,
         )
+        data_bus.position.set_container(0, 0)
         self.add_node(data_bus)
         for space in spaces:
             self.graph.add_edge(space, data_bus)
@@ -258,10 +259,10 @@ class Network:  # : PLR0904, #TODO: fix this
         # TODO: change position to object
         if not system_1.position.is_empty() and not system_2.position:
             position = BasePosition()
-            position.set(system_1.position.global_.location.x + 100, system_1.position.global_.location.y - 100)
+            position.set_global(system_1.position.global_.location.x + 100, system_1.position.global_.location.y - 100)
             system_2.position = position
             if hasattr(system_2, "control") and system_2.control:
-                system_2.control.position.set(
+                system_2.control.position.set_global(
                     system_2.position.global_.location.x - 50,
                     system_2.position.global_.location.y
                 )
@@ -270,7 +271,7 @@ class Network:  # : PLR0904, #TODO: fix this
             position.set_global(system_2.position.global_.location.x - 100, system_2.position.global_.location.y - 100)
             system_1.position = position
             if hasattr(system_1, "control") and system_1.control:
-                system_1.control.position.set(
+                system_1.control.position.set_global(
                     system_2.position.global_.location.x - 50,
                     system_2.position.global_.location.y
                 )
@@ -477,6 +478,8 @@ class Network:  # : PLR0904, #TODO: fix this
 
         component_models = self.build_element_models()
         self.containers.assign_models(component_models)
+        self.containers.connect(self.edge_attributes)
+        self.containers.build_main_connections()
         container_model = self.containers.build()
         element_models = [c.model for c in component_models]
         environment = Environment(
@@ -591,7 +594,7 @@ class Network:  # : PLR0904, #TODO: fix this
             for combination in itertools.combinations(spaces, 2):
                 self.connect_spaces(*combination)
         weather = weather or Weather()
-        weather.position.set(-100, 200)
+        weather.position.set_global(-100, 200)
         self.add_node(weather)
         for space in spaces:
             self.connect_system(space, weather)

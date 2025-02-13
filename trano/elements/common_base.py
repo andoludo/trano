@@ -27,7 +27,10 @@ class ElementPosition(BaseModel):
 
 
 class BasePosition(BaseModel):
-    container:ElementPosition = Field(default_factory=ElementPosition)
+    container:ElementPosition = Field(default_factory=lambda : ElementPosition(annotation= """annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
+    extent = {% raw %}{{10, -10}, {-10, 10}}
+    {% endraw %})));"""))
     global_:ElementPosition = Field(default_factory=ElementPosition)
 
     def set_global(self, x: float, y: float) -> None:
@@ -37,14 +40,24 @@ class BasePosition(BaseModel):
     def set_container(self, x: float, y: float) -> None:
         self.container.location.x = x
         self.container.location.y = y
+
+    @property
+    def x_container(self) -> float:
+        return self.container.location.x
+    @property
+    def y_container(self) -> float:
+        return self.container.location.y
+
     def is_empty(self) -> bool:
-        return self.container.is_empty() and self.global_.is_empty()
+        return self.global_.is_empty()
 
     def set(self, x: float, y: float) -> None:
         self.set_global(x, y)
         self.set_container(x, y)
     def between_two_objects(self, position_1: ElementPosition, position_2: ElementPosition) -> None:
         self.set((position_1.location.x - position_2.location.x) / 2, (position_1.location.y + position_2.location.y) / 2)
+
+
 
 
 

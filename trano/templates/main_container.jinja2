@@ -1,4 +1,4 @@
-{% import 'macros.jinja2' as macros %}
+
 model building_container
   {% raw %}
     envelope envelope1
@@ -9,12 +9,33 @@ model building_container
       annotation (Placement(transformation(extent={{-4,0},{16,20}})));
     production production1
       annotation (Placement(transformation(extent={{36,0},{56,20}})));
+   bus bus1
+            annotation (Placement(transformation(extent={{-84,30},{-64,50}})));
   {% endraw %}
   equation
    {%- for connection in container.connections -%}
     {#line break#}
-    {{ macros.connect_main_container(connection) }}
+    connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ connection.right.container_type }}1.{{ connection.right.equation }})
+{{ connection.annotation }};
 {%- endfor %}
+{% raw %}
+  connect(bus1.dataBus, envelope1.dataBus) annotation (Line(
+      points={{-95.8,46.8},{-95.8,16.8}},
+      color={255,204,51},
+      thickness=0.5));
+  connect(envelope1.dataBus, emission1.dataBus) annotation (Line(
+      points={{-95.8,16.8},{-95.8,26},{-55.8,26},{-55.8,16.8}},
+      color={255,204,51},
+      thickness=0.5));
+  connect(envelope1.dataBus, distribution1.dataBus) annotation (Line(
+      points={{-95.8,16.8},{-95.8,26},{-15.8,26},{-15.8,16.8}},
+      color={255,204,51},
+      thickness=0.5));
+  connect(envelope1.dataBus, production1.dataBus) annotation (Line(
+      points={{-95.8,16.8},{-95.8,26},{24.2,26},{24.2,16.8}},
+      color={255,204,51},
+      thickness=0.5));
+{% endraw %}
     annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
           coordinateSystem(preserveAspectRatio=false)));
   end building_container;

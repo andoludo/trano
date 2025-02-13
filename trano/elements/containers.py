@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from random import randint
 from typing import List, Optional, get_args, Callable, Any, Tuple
@@ -6,7 +7,9 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from trano.elements import Port, Connection, Control
 from trano.elements.base import find_port, ElementPort
-from trano.elements.connection import ContainerConnection, PartialConnection, connect
+from trano.elements.common_base import BasePosition
+from trano.elements.connection import BasePartialConnectionWithContainerType, PartialConnection, connect, \
+    ContainerConnection
 from trano.elements.types import (
     ContainerTypes,
     Flow,
@@ -15,11 +18,15 @@ from trano.elements.types import (
 )
 from jinja2 import Environment, FileSystemLoader
 
+from trano.exceptions import NoConnectionFoundError
 
+logger = logging.getLogger(__name__)
 class PortGroup(BaseModel):
     connected_container_name: ContainerTypes
     ports: List[Port]
-
+class PortGroupMedium(BaseModel):
+    medium: Medium
+    port: Port
 
 import random
 from networkx import DiGraph, shortest_path
@@ -28,7 +35,8 @@ from networkx import DiGraph, shortest_path
 class Container(BaseModel):
     name: ContainerTypes
     port_groups: List[PortGroup]
-    connections: List[Connection] = Field(default=[])
+    port_groups_per_medium: List[PortGroupMedium] = Field(default=[])
+    connections: List[ContainerConnection] = Field(default=[])
     elements: list = Field(default=[])
     element_models: list = Field(default=[])
     template: str
@@ -61,7 +69,21 @@ class Container(BaseModel):
 
     def build(self, template):
         self._initialize_template()
+        self.add_grouped_by_medium_connection()
         return template.render(container=self)
+
+    def add_grouped_by_medium_connection(self):
+        for group_per_medium in self.port_groups_per_medium:
+            for element in self.elements:
+                for element_port in element.ports:
+                    if element_port.medium == group_per_medium.medium:
+                        position = BasePosition()
+                        position.set(element.position.x_container, element.position.y_container)
+                        e1 = ElementPort(ports=[element_port.without_targets()], container_type=self.name, position=position, name=element.name)
+                        e2 = ElementPort(ports=[group_per_medium.port], container_type=self.name, position=position)
+                        connections = connect(e1, e2)
+                        if connections:
+                            self.connections+=[ContainerConnection.model_validate((c.model_dump() | {"source": tuple(sorted([c.right.equation, c.left.equation]))})) for c in connections]
 
     def assign_position(self, graph):
         left_elements = []
@@ -69,7 +91,7 @@ class Container(BaseModel):
         postitions = []
         if self.left_boundary is None:
             for element in self.elements:
-                element.container_position = [randint(-90, 90), randint(-90, 90)]
+                element.position.set_container(randint(-90, 90), randint(-90, 90))
 
         for element in self.elements:
             if self.left_boundary in {
@@ -100,25 +122,25 @@ class Container(BaseModel):
             ystep = 200 / (len(e))
             for eid in e:
                 element = [el for el in self.elements if hash(el) == eid][0]
-                element.container_position = [
+                element.position.set_container(
                     -90 + xstep * (postitions.index(e)) + randint(0, 40),
-                    -90 + ystep * (e.index(eid)) + randint(0, 40),
-                ]
+                    -90 + ystep * (e.index(eid)) + randint(0, 40)
+                )
                 if element.control:
-                    element.control.container_position = [
-                        element.container_position[0] + 20,
-                        element.container_position[1] + 20,
-                    ]
+                    element.control.position.set_container(
+                        element.position.x_container + 20,
+                        element.position.y_container + 20)
+
 
 
 class MainContainerConnection(BaseModel):
-    left: ContainerConnection
-    right: ContainerConnection
+    left: PartialConnection
+    right: PartialConnection
     annotation: Optional[str] = None
 
     @classmethod
     def from_list(
-        cls, connections: List[ContainerConnection]
+        cls, connections: List[BasePartialConnectionWithContainerType]
     ) -> "MainContainerConnection":
         return cls(left=connections[0], right=connections[1])
     def get_equation(self) -> str:
@@ -166,6 +188,16 @@ class Containers(BaseModel):
             annotation="""annotation (Line(points={{-24,
           5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
         ),
+        ConnectionList(
+            connection_type=["envelope1.ports_b", "bus1.port_b"],
+            annotation="""annotation (Line(points={{-24,
+      5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
+        ),
+        ConnectionList(
+            connection_type=["envelope1.heatPortCon1", "bus1.heatPortCon"],
+            annotation="""annotation (Line(points={{-24,
+    5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
+        ),
     ]
 
     def _set_connection_annotation(self):
@@ -192,6 +224,12 @@ class Containers(BaseModel):
 
         return [c.build(template) for c in self.containers]
 
+    def build_main_connections(self):
+        connections= [conn for c in self.containers for conn in c.connections if not conn.in_the_same_container()]
+        couple_connections = {c.source: [c_.get_container_equation() for c_ in connections if c_.source == c.source] for c in connections}
+        for _, equations in couple_connections.items():
+            if len(equations) == 2:
+                self.connections +=[MainContainerConnection.from_list(equations)]
     def add_connection_(self, connection: Connection, container_type) -> "Containers":
         container = self.get_container(container_type)
         if container:
@@ -213,11 +251,15 @@ class Containers(BaseModel):
         if connected_container_name in ["bus"]:
             connection_view = ConnectionView(color=None, thickness=0.2, disabled=True)
         return connection_view
-
     def connect(self, connections: List[Connection]):
         for connection in connections:
             edge_left = connection.left
             edge_right = connection.right
+            if edge_left.container_type == edge_right.container_type:
+                container = self.get_container(edge_left.container_type)
+                container.connections += [ContainerConnection.model_validate((connection.model_dump() | {"source": tuple(sorted([edge_right.equation, edge_left.equation]))}))]
+                continue
+
             for edge_1, edge_2 in [(edge_left, edge_right), (edge_right, edge_left)]:
                 container = self.get_container(edge_1.container_type)
                 if container:
@@ -228,10 +270,17 @@ class Containers(BaseModel):
                         connection_view = self._get_connection_view(
                             edge_2.container_type
                         )
-                        element_1 = ElementPort(name=edge_1.name,ports = [edge_1.port.without_targets().disconnect()], container_type=edge_1.container_type)
-                        element_2 = ElementPort(ports = port_group.ports, container_type=edge_2.container_type)
-                        connections = connect(element_1, element_2)
-                        container.connections += connections
+                        container_position = BasePosition()
+                        container_position.set(0,0)
+                        element_1 = ElementPort(name=edge_1.name,ports = [edge_1.port.without_targets().disconnect().set_ignore_direction().substract_counter()], container_type=edge_1.container_type, position=edge_1.position)
+                        element_2 = ElementPort(ports = port_group.ports, container_type=edge_1.container_type, position=container_position)
+
+                        connections_ = connect(element_1, element_2)
+                        if edge_1.container_type == "bus" and edge_2.container_type =="envelope" and connections_:
+                            a = 12
+                        if not connections_:
+                            logger.debug(f"Element {element_1.name} from container {element_1.container_type} cannot be connected with container {element_2.container_type}")
+                        container.connections += [ContainerConnection.model_validate((c.model_copy(update={"connection_view":connection_view}).model_dump()|{"source": tuple(sorted([edge_1.equation, edge_2.equation]))})) for c in connections_]
                         # container.connections.append(
                         #     Connection(
                         #         left=container_connection,
@@ -299,41 +348,41 @@ class Containers(BaseModel):
     #                 for cf in container_connections_final
     #             ]
 
-    def add_single_connection(
-        self, partial_connection: PartialConnection
-    ) -> ContainerConnection:
-        container = self.get_container(partial_connection.container_type)
-        if container:
-            port_group = container.get_port_group(
-                partial_connection.connected_container_type
-            )
-            if port_group:
-                connection_view = self._get_connection_view(
-                    partial_connection.connected_container_type
-                )
-                port_ = partial_connection.port
-                container_port = find_port(
-                    port_.get_opposite_flow(), port_group.ports, [], [port_]
-                )
-                container_connections = container_port.base_equation()
-                right = partial_connection.to_base_partial_connection()
-                container_connection = next(
-                    c for c in container_connections if c.sub_port == right.sub_port
-                )
-                container.connections.append(
-                    Connection(
-                        left=container_connection,
-                        right=partial_connection.to_base_partial_connection(),
-                        connection_view=connection_view,
-                    )
-                )
-
-                return ContainerConnection.model_validate(
-                    (
-                        container_connection.model_dump()
-                        | {"container_type": container.name}
-                    )
-                )
+    # def add_single_connection(
+    #     self, partial_connection: PartialConnection
+    # ) -> ContainerConnection:
+    #     container = self.get_container(partial_connection.container_type)
+    #     if container:
+    #         port_group = container.get_port_group(
+    #             partial_connection.connected_container_type
+    #         )
+    #         if port_group:
+    #             connection_view = self._get_connection_view(
+    #                 partial_connection.connected_container_type
+    #             )
+    #             port_ = partial_connection.port
+    #             container_port = find_port(
+    #                 port_.get_opposite_flow(), port_group.ports, [], [port_]
+    #             )
+    #             container_connections = container_port.base_equation()
+    #             right = partial_connection.to_base_partial_connection()
+    #             container_connection = next(
+    #                 c for c in container_connections if c.sub_port == right.sub_port
+    #             )
+    #             container.connections.append(
+    #                 Connection(
+    #                     left=container_connection,
+    #                     right=partial_connection.to_base_partial_connection(),
+    #                     connection_view=connection_view,
+    #                 )
+    #             )
+    #
+    #             return ContainerConnection.model_validate(
+    #                 (
+    #                     container_connection.model_dump()
+    #                     | {"container_type": container.name}
+    #                 )
+    #             )
 
     def assign_nodes(self, nodes, graph) -> None:
         for container_type in get_args(ContainerTypes):
@@ -428,20 +477,20 @@ package MediumW = IDEAS.Media.Water "Medium model";
             PortGroup(
                 connected_container_name="emission",
                 ports=[
-                    Port(names=["port_a1"], flow=Flow.outlet, multi_connection=True, medium=Medium.fluid),
-                    Port(names=["port_b1"], flow=Flow.inlet, multi_connection=True, medium=Medium.fluid),
+                    Port(names=["port_a1"], flow=Flow.outlet, multi_connection=True, medium=Medium.fluid, ignore_direction=True),
+                    Port(names=["port_b1"], flow=Flow.inlet, multi_connection=True, medium=Medium.fluid, ignore_direction=True),
                 ],
             ),
             PortGroup(
                 connected_container_name="production",
                 ports=[
-                    Port(names=["port_a"], flow=Flow.outlet, medium=Medium.fluid),
-                    Port(names=["port_b"], flow=Flow.inlet, medium=Medium.fluid),
+                    Port(names=["port_a"], flow=Flow.outlet, medium=Medium.fluid, ignore_direction=True,multi_connection=True, use_counter=False),
+                    Port(names=["port_b"], flow=Flow.inlet, medium=Medium.fluid, ignore_direction=True,multi_connection=True, use_counter=False),
                 ],
             ),
             PortGroup(
                 connected_container_name="bus",
-                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
+                ports=[Port(names=["dataBus"], multi_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
             ),
         ],
     )
@@ -482,8 +531,8 @@ package MediumW = IDEAS.Media.Water "Medium model";
             PortGroup(
                 connected_container_name="distribution",
                 ports=[
-                    Port(names=["port_a"], flow=Flow.outlet, multi_connection=True, medium=Medium.fluid),
-                    Port(names=["port_b"], flow=Flow.inlet, multi_connection=True, medium=Medium.fluid),
+                    Port(names=["port_a"], flow=Flow.outlet, multi_connection=True, medium=Medium.fluid, ignore_direction=True),
+                    Port(names=["port_b"], flow=Flow.inlet, multi_connection=True, medium=Medium.fluid, ignore_direction=True),
                 ],
             ),
             PortGroup(
@@ -503,7 +552,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
             ),
             PortGroup(
                 connected_container_name="bus",
-                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
+                ports=[Port(names=["dataBus"], multi_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
             ),
         ],
     )
@@ -518,6 +567,10 @@ annotation (choicesAllMatching = true);
     "Nodes for convective heat gains"
     annotation (Placement(transformation(extent={{90,40},{110,60}}),
         iconTransformation(extent={{90,40},{110,60}})));
+          Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon1#]  heatPortCon1
+"Nodes for convective heat gains"
+annotation (Placement(transformation(extent={{90,40},{110,60}}),
+    iconTransformation(extent={{-4,98},{6,108}})));
   Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad
     "Nodes for radiative heat gains"
     annotation (Placement(transformation(extent={{90,-62},{110,-42}}),
@@ -526,6 +579,10 @@ annotation (choicesAllMatching = true);
                                                  dataBus annotation (Placement(
     transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent
       ={{-228,58},{-208,78}})));
+        Modelica.Fluid.Interfaces.FluidPorts_b[#ports_b#] ports_b(redeclare package Medium =
+    Medium) annotation (Placement(
+        transformation(extent={{-108,-38},{-88,42}}), iconTransformation(extent
+          ={{-108,-38},{-88,42}})));
   annotation (
     Icon(
       coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
@@ -554,7 +611,13 @@ annotation (choicesAllMatching = true);
             ),
             PortGroup(
                 connected_container_name="bus",
-                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
+                ports=[Port(names=["dataBus"], multi_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected),
+                       Port(names=["ports_b"], multi_connection=True, flow=Flow.inlet, medium=Medium.fluid, ignore_direction=True),
+                    Port(
+                        names=["heatPortCon1"],
+                        multi_connection=True,
+                        same_counter_per_name=True, medium=Medium.heat, flow= Flow.convective
+                    )],
             ),
         ],
     )
@@ -591,15 +654,58 @@ package MediumW = IDEAS.Media.Water "Medium model";
             PortGroup(
                 connected_container_name="distribution",
                 ports=[
-                    Port(names=["port_a1"], flow=Flow.outlet, medium=Medium.fluid),
-                    Port(names=["port_b1"], flow=Flow.inlet, medium=Medium.fluid),
+                    Port(names=["port_a1"], flow=Flow.outlet, medium=Medium.fluid, ignore_direction=True),
+                    Port(names=["port_b1"], flow=Flow.inlet, medium=Medium.fluid, ignore_direction=True),
                 ],
             ),
             PortGroup(
                 connected_container_name="bus",
-                ports=[Port(names=["dataBus"], bus_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
+                ports=[Port(names=["dataBus"], multi_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected)],
             ),
         ],
+    )
+    bus_container = Container(
+        name="bus",
+        template="""
+    package Medium = IDEAS.Media.Air (extraPropertiesNames={"CO2"})  "Medium model";
+      Modelica.Fluid.Interfaces.FluidPort_b[#port_b#] port_b(redeclare package Medium =
+            Medium)
+        annotation (Placement(transformation(extent={{90,40},{110,60}}),
+            iconTransformation(extent={{90,40},{110,60}})));
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon
+        "Nodes for convective heat gains"
+        annotation (Placement(transformation(extent={{-108,42},{-88,62}}),
+            iconTransformation(extent={{-108,42},{-88,62}})));
+
+     
+    
+                      Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
+            transformation(extent={{-118,68},{-78,108}}), iconTransformation(extent
+              ={{-228,58},{-208,78}})));
+      annotation (
+        Icon(
+          coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+            graphics={Rectangle(
+              extent={{-60,100},{60,-100}},
+              lineColor={255,128,0},
+              fillColor={215,215,215},
+              fillPattern=FillPattern.Forward)}));
+             """,
+        port_groups=[
+            PortGroup(
+                connected_container_name="envelope",
+                ports=[
+                    Port(names=["port_b"], flow=Flow.outlet, multi_connection=True, medium=Medium.fluid,
+                         ignore_direction=True),
+                    Port(
+                        names=["heatPortCon"],
+                        multi_connection=True,
+                        same_counter_per_name=True, medium=Medium.heat, flow=Flow.convective
+                    )
+                ],
+            )
+        ],
+        port_groups_per_medium=[PortGroupMedium(medium=Medium.data, port=Port(names=["dataBus"], multi_connection=True, use_counter=False, medium=Medium.data, flow= Flow.undirected))]
     )
     return Containers(
         containers=[
@@ -607,5 +713,6 @@ package MediumW = IDEAS.Media.Water "Medium model";
             emission_container,
             envelope_container,
             production_container,
+            bus_container
         ]
     )

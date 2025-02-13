@@ -117,13 +117,13 @@ class Space(BaseElement):
             250 * (Space.counter % MAX_X_SPACES),
             150 * ceil(Space.counter / MAX_X_SPACES),
         ]
-        self.position.set(x, y)
+        self.position.set_global(x, y)
         Space.counter += 1
 
         for i, emission in enumerate(self.emissions):
-            emission.position.set(x + i * 30, y - 75)
+            emission.position.set_global(x + i * 30, y - 75)
         if self.occupancy:
-            self.occupancy.position.set(x - 50, y)
+            self.occupancy.position.set_global(x - 50, y)
 
     def find_emission(self) -> Optional["Emission"]:
         emissions = [

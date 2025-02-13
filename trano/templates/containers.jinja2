@@ -14,7 +14,7 @@ model {{ container.name }}
 equation
 {%- for connection in container.connections -%}
     {#line break#}
-    {{ macros.connect_container(connection) }}
+    {{ connection.equation }}
 {%- endfor %}
 {% raw %}
   annotation (

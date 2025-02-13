@@ -11,12 +11,13 @@ from trano.elements import (
     InternalElement,
     EmissionControl,
     SplitValve,
-    Port, DataBus, ThreeWayValve, TemperatureSensor,
+    Port, DataBus, ThreeWayValve, TemperatureSensor, CollectorControl,
 )
-from trano.elements.base import ElementPort
+from trano.elements.base import ElementPort, Control
+from trano.elements.common_base import BasePosition
 from trano.elements.containers import containers_factory
 from trano.elements.envelope import MergedExternalWall, MergedWindows, FloorOnGround
-from trano.elements.system import Occupancy, Weather, Valve, Duct, Pump, VAV
+from trano.elements.system import Occupancy, Weather, Valve, Duct, Pump, VAV, Boiler
 from trano.elements.types import Flow, Medium
 from trano.library.library import Library
 from trano.topology import Network
@@ -505,3 +506,132 @@ def test_one_spaces_air_handling_unit(one_spaces_air_handling_unit: Network) -> 
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {('space_1.ports[1]', 'vav_in.port_bAir')}
+
+def test_container_connect_emission_distribution(house_ideas: Network) -> None:
+    containers = containers_factory()
+    house_ideas.assign_container_type()
+    edge = house_ideas.get_edge(TemperatureSensor, Radiator)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    e1.position.set(1, 1)
+    e2.position.set(1, 1)
+    connections = connect(e1, e2)
+    containers.connect(connections)
+
+    assert containers.get_container("distribution").get_equation_view() == {('port_b1[1]', 'temperature_sensor_001.port_b')}
+    assert containers.get_container("emission").get_equation_view() == {('port_a[1]', 'radiator_001.port_a')}
+
+def test_container_connect_emission_distribution_split_valve(house_ideas: Network) -> None:
+    containers = containers_factory()
+    house_ideas.assign_container_type()
+    edge = house_ideas.get_edge(SplitValve, Valve)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    e1.position.set(1, 1)
+    e2.position.set(1, 1)
+    connections = connect(e1, e2)
+    containers.connect(connections)
+
+    assert containers.get_container("distribution").get_equation_view() == {('port_a1[1]', 'split_valve_001.port_1')}
+    assert containers.get_container("emission").get_equation_view() == {('port_b[1]', 'valve_003.port_b')}
+
+def test_container_connect_emission_production(house_ideas: Network) -> None:
+    containers = containers_factory()
+    house_ideas.assign_container_type()
+    edge = house_ideas.get_edge(SplitValve, Boiler)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    e1.position.set(1, 1)
+    e2.position.set(1, 1)
+    connections = connect(e2, e1)
+    containers.connect(connections)
+
+    assert containers.get_container("distribution").get_equation_view() == {('port_a', 'split_valve_001.port_1')}
+    assert containers.get_container("production").get_equation_view() == {('boiler_001.port_b', 'port_b1')}
+
+def test_connection_container():
+    e1 = ElementPort.model_validate({
+    'container_type': 'emission',
+    'name': 'radiator_001',
+    'ports': [
+        {
+            'flow': 'inlet',
+            'medium': 'fluid',
+            'names': ['port_a'],
+            'ignore_direction': True
+        }
+    ],
+    'position': {
+        'container': {
+            'annotation': '''annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
+    extent = {% raw %}{{10, -10}, {-10, 10}}
+    {% endraw %})));''',
+            'location': {'x': 1.0, 'y': 1.0}
+        },
+        'global_': {'location': {'x': 1.0, 'y': 1.0}}
+    }
+}
+)
+    e2 = ElementPort.model_validate({
+    'container_type': 'distribution',
+    'ports': [
+        {
+            'flow': 'outlet',
+            'medium': 'fluid',
+            'multi_connection': True,
+            'names': ['port_a'],
+            'ignore_direction': True
+        },
+        {
+            'flow': 'inlet',
+            'medium': 'fluid',
+            'multi_connection': True,
+            'names': ['port_b'],
+            'ignore_direction': True
+        }
+    ],
+    'position': {}
+}
+)
+    connections = connect(e1, e2)
+    assert {c.equation_view() for c in connections} == {('port_a[1]', 'radiator_001.port_a')}
+
+def test_container_connect_control_databus(house_ideas: Network) -> None:
+    containers = containers_factory()
+    house_ideas._build_data_bus()
+    house_ideas.assign_container_type()
+    edge = house_ideas.get_edge(CollectorControl, DataBus)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    e1.position.set(1, 1)
+    e2.position.set(1, 1)
+    connections = connect(e1, e2)
+    containers.connect(connections)
+
+    assert containers.get_container("distribution").get_equation_view() == {('control_5.dataBus', 'dataBus')}
+
+def test_container_envelope_databus(house_ideas: Network) -> None:
+    containers = containers_factory()
+    house_ideas._build_data_bus()
+    house_ideas.assign_container_type()
+    edge = house_ideas.get_edge(Space, DataBus)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    e1.position.set(1, 1)
+    e2.position.set(1, 1)
+    connections = connect(e1, e2)
+    containers.connect(connections)
+
+    assert containers.get_container("bus").get_equation_view() == {('data_bus.port[1]', 'heatPortCon[1]'), ('data_bus.port_a[1]', 'port_b[1]')}
+    assert containers.get_container("envelope").get_equation_view() == {('heatPortCon1[1]', 'space_001.gainCon'), ('ports_b[1]', 'space_001.ports[1]')}
+
+
+def test_container_per_medium_connection(house_ideas: Network) -> None:
+    containers = containers_factory()
+    house_ideas._build_data_bus()
+    house_ideas.assign_container_type()
+    containers.assign_nodes(house_ideas.graph.nodes, house_ideas.graph)
+    bus_container = containers.get_container("bus")
+    bus_container.add_grouped_by_medium_connection()
+    assert bus_container.connections
