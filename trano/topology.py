@@ -480,6 +480,8 @@ class Network:  # : PLR0904, #TODO: fix this
         self.containers.assign_models(component_models)
         self.containers.connect(self.edge_attributes)
         self.containers.build_main_connections()
+        data = extract_properties(self.library, self.name, self.graph.nodes)
+        self.containers.add_data(data)
         container_model = self.containers.build()
         element_models = [c.model for c in component_models]
         environment = Environment(
@@ -493,7 +495,7 @@ class Network:  # : PLR0904, #TODO: fix this
 
         template = environment.get_template("base.jinja2")
 
-        data = extract_properties(self.library, self.name, self.graph.nodes)
+
         diagram_size = self._get_diagram_size()
         if include_container:
             return template.render(

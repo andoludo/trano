@@ -1,19 +1,16 @@
 {% import 'macros.jinja2' as macros %}
 model {{ container.name }}
 
+{% if container.has_data() %}
+{{ container.data.data|safe }}
+{% endif %}
 
 {{ container.template|safe  }}
-
-
-
 {% for element_model in container.element_models %}
     {{ element_model|safe }}
 {% endfor %}
-
-
 equation
 {%- for connection in container.connections -%}
-    {#line break#}
     {{ connection.equation }}
 {%- endfor %}
 {% raw %}

@@ -12,9 +12,9 @@ from trano.simulate.simulate import SimulationOptions, simulate
 from trano.utils.utils import is_success
 
 
+
 def get_path(file_name: str) -> Path:
     return Path(__file__).parent.joinpath("models", file_name)
-
 
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
 @pytest.mark.simulate
@@ -32,16 +32,7 @@ def test_three_zones_hydronic(schema: Path, library_name: str) -> None:
         assert is_success(results)
 
 
-@pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
-@pytest.mark.run(order=22)
-def test_three_zones_hydronic_template(library_name: str) -> None:
-    house = get_path("three_zones_hydronic.yaml")
-    network = convert_network(
-        "three_zones_hydronic", house, library=Library.from_configuration(library_name)
-    )
-    assert clean_model(network.model(), f"{network.name}_{library_name}_yaml") == set(
-        _read(f"{network.name}_{library_name}_yaml")
-    )
+
 
 
 @pytest.mark.simulate
@@ -57,13 +48,8 @@ def test_single_zone_hydronic(schema: Path) -> None:
         assert is_success(results)
 
 
-@pytest.mark.run(order=23)
-def test_single_zone_hydronic_template(schema: Path) -> None:
-    house = get_path("single_zone_hydronic.yaml")
-    network = convert_network("single_zone_hydronic", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+
+
 
 
 @pytest.mark.simulate
@@ -79,13 +65,8 @@ def test_single_zone_hydronic_weather(schema: Path) -> None:
         assert is_success(results)
 
 
-@pytest.mark.run(order=24)
-def test_single_zone_hydronic_weather_template(schema: Path) -> None:
-    house = get_path("single_zone_hydronic_weather.yaml")
-    network = convert_network("single_zone_hydronic_weather", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+
+
 
 
 @pytest.mark.simulate
@@ -105,15 +86,7 @@ def test_single_zone_air_handling_unit_simple_vav_control(schema: Path) -> None:
         assert is_success(results, options=options)
 
 
-@pytest.mark.run(order=25)
-def test_single_zone_air_handling_unit_simple_vav_control_template(
-    schema: Path,
-) -> None:
-    house = get_path("single_zone_air_handling_unit_simple_vav_control.yaml")
-    network = convert_network("single_zone_air_handling_unit_simple_vav_control", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+
 
 
 @pytest.mark.simulate
@@ -127,33 +100,6 @@ def test_single_zone_air_handling_unit_complex_vav(schema: Path) -> None:
             options=SimulationOptions(end_time=3600),
         )
         assert is_success(results)
-
-
-@pytest.mark.run(order=26)
-def test_single_zone_air_handling_unit_complex_vav_template(schema: Path) -> None:
-    house = get_path("single_zone_air_handling_unit_complex_vav.yaml")
-    network = convert_network("single_zone_air_handling_unit_complex_vav", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
-
-
-@pytest.mark.run(order=27)
-def test_two_zones_template(schema: Path) -> None:
-    house = get_path("two_zones.yaml")
-    network = convert_network("two_zones", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
-
-
-@pytest.mark.run(order=28)
-def test_two_zones_ideas_template(schema: Path) -> None:
-    house = get_path("two_zones_ideas.yaml")
-    network = convert_network("two_zones_ideas", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
 
 
 def test_single_zone_air_handling_unit_wrong_flow(schema: Path) -> None:
@@ -180,19 +126,6 @@ def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> No
         )
         assert is_success(results, options=options)
 
-
-@pytest.mark.run(order=29)
-def test_single_zone_air_handling_unit_without_vav_with_duct_template(
-    schema: Path,
-) -> None:
-    house = get_path("single_zone_air_handling_unit_without_vav_with_duct.yaml")
-    # TODO: remove ducts here
-    network = convert_network(
-        "single_zone_air_handling_unit_without_vav_with_duct", house
-    )
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
 
 
 @pytest.mark.parametrize(
@@ -228,21 +161,13 @@ def test_unexpected_configuration_should_fail_but_pass_(
     network = convert_network(file_name, house)
     network.model()
 
-
-@pytest.mark.parametrize("library_name", ["IDEAS"])
-def test_three_zones_hydronic_with_containers(schema: Path, library_name: str) -> None:
-    house = get_path("three_zones_hydronic_containers.yaml")
-    network = convert_network(
-        "three_zones_hydronic_containers",
-        house,
-        library=Library.from_configuration(library_name),
-    )
-    model_ = network.model(include_container=True)
-    assert clean_model(model_, network.name) == set(_read(network.name))
+# COntailer tests
 
 
-def test_containers():
-    import json
-    path_ = Path("/home/aan/Documents/trano/trano/elements/config/containers.json")
-    contaienrs = containers_factory()
-    path_.write_text(json.dumps(contaienrs.model_dump(exclude_unset=True, exclude_defaults=True, exclude_none=True), indent=4))
+
+
+
+
+def test_print():
+    tt = "\nreplaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={\"CO2\"})\nconstrainedby Modelica.Media.Interfaces.PartialMedium\n\"Medium in the component\"\nannotation (choicesAllMatching = true);\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n    \"Nodes for convective heat gains\"\n    annotation (Placement(transformation(extent={{90,40},{110,60}}),\n        iconTransformation(extent={{90,40},{110,60}})));\n          Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon1#]  heatPortCon1\n\"Nodes for convective heat gains\"\nannotation (Placement(transformation(extent={{90,40},{110,60}}),\n    iconTransformation(extent={{-4,98},{6,108}})));\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad\n    \"Nodes for radiative heat gains\"\n    annotation (Placement(transformation(extent={{90,-62},{110,-42}}),\n        iconTransformation(extent={{90,-62},{110,-42}})));\n              three_zones_hydronic_containers.Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n        Modelica.Fluid.Interfaces.FluidPorts_b[#ports_b#] ports_b(redeclare package Medium =\n    Medium) annotation (Placement(\n        transformation(extent={{-108,-38},{-88,42}}), iconTransformation(extent\n          ={{-108,-38},{-88,42}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={255,128,0},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n             "
+    a = 12

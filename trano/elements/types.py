@@ -5,7 +5,8 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
-ContainerTypes = Literal["envelope","distribution", "emission","production","bus"]
+SystemContainerTypes = Literal["envelope","distribution", "emission","production","ventilation"]
+ContainerTypes = Literal[SystemContainerTypes,"bus"]
 Pattern = Literal["Solid","Dot", "Dash", "DashDot"]
 
 class Tilt(Enum):

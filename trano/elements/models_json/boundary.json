@@ -33,7 +33,7 @@
                     "use_counter": false
                 }
             ],
-            "template": "  Buildings.Fluid.Sources.Outside {{ element.name }}\n    (nPorts=2,redeclare package Medium = Medium)",
+            "template": "  Buildings.Fluid.Sources.Boundary_pT {{ element.name }}\n    (nPorts=2,redeclare package Medium = Medium)",
             "variant": "default"
         }
     ]

@@ -2,14 +2,14 @@ import json
 import logging
 from pathlib import Path
 from random import randint
-from typing import List, Optional, get_args
+from typing import List, Optional, get_args, Tuple
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, Field, model_validator
 
 from trano.elements import Port, Connection, Control
 from trano.elements.base import ElementPort
-from trano.elements.common_base import BasePosition
+from trano.elements.common_base import BasePosition, Point, BaseProperties
 from trano.elements.connection import (
     BasePartialConnectionWithContainerType,
     PartialConnection,
@@ -20,14 +20,15 @@ from trano.elements.types import (
     ContainerTypes,
     Flow,
     ConnectionView,
-    Medium,
+    Medium, SystemContainerTypes,
 )
+from trano.exceptions import ContainerNotFoundError
 
 logger = logging.getLogger(__name__)
 
 
 class PortGroup(BaseModel):
-    connected_container_name: ContainerTypes
+    connected_container_names: List[ContainerTypes]
     ports: List[Port]
 
 
@@ -36,7 +37,11 @@ class PortGroupMedium(BaseModel):
     port: Port
 
 
-class Container(BaseModel):
+class BaseContainer(BaseModel):
+    component_size: Point = Field(default=Point(x=20, y=20))
+
+
+class Container(BaseContainer):
     name: ContainerTypes
     port_groups: List[PortGroup]
     port_groups_per_medium: List[PortGroupMedium] = Field(default=[])
@@ -46,14 +51,36 @@ class Container(BaseModel):
     template: str
     size: List[List[float]] = [[-100, -100], [100, 100]]
     left_boundary: Optional[ContainerTypes] = None
+    location: Point
+    data: Optional[BaseProperties] = None
+
+    def has_data(self) -> bool:
+        return self.data is not None
+
+    def set_data(self, data: BaseProperties) -> None:
+        if self.name == data.container_type:
+            self.data = data
+
+    def contain_elements(self) -> bool:
+        return bool(self.elements)
 
     def get_equation_view(self):
         return {c.equation_view() for c in self.connections}
 
+    def main_equation(self) -> str:
+        location = f"{self.location.x},{self.location.y}"
+        size = f"{self.location.x+self.component_size.x},{self.location.y+self.component_size.y}"
+        return (
+            f"{self.name} {self.name}1 annotation (Placement(transformation(extent={{{{{location}}},"
+            f"{{{size}}}}})));"
+        )
+
     @model_validator(mode="after")
     def _validate(self) -> "Container":
         if self.name in [
-            port_group.connected_container_name for port_group in self.port_groups
+            container_name
+            for port_group in self.port_groups
+            for container_name in port_group.connected_container_names
         ]:
             raise ValueError(f"Container {self.name} cannot be connected to itself.")
         return self
@@ -62,7 +89,7 @@ class Container(BaseModel):
         self, connected_container_name: ContainerTypes
     ) -> Optional[PortGroup]:
         for port_group in self.port_groups:
-            if port_group.connected_container_name == connected_container_name:
+            if connected_container_name in port_group.connected_container_names:
                 return port_group
         return None
 
@@ -180,15 +207,55 @@ class MainContainerConnection(BaseModel):
         return f"connect({self.left.container_type}1.{self.left.equation}, {self.right.container_type}1.{self.right.equation})"
 
 
+class Location(BaseModel):
+    point_1: Point
+    point_2: Point
+
+
 class ConnectionList(BaseModel):
     connection_type: List[str]
     annotation: str
+
+
+class BusConnection(BaseModel):
+    connection_type: Tuple[str, str]
+    location: str
+
+    @model_validator(mode="after")
+    def _validator(self):
+        self.connection_type = tuple(sorted(list(self.connection_type)))
+
+        return self
+    def equation(self):
+        return f"connect({self.connection_type[0]}1.dataBus, {self.connection_type[1]}1.dataBus) annotation (Line(points={self.location}, color={{255,204,51}}, thickness=0.5));"
 
 
 class Containers(BaseModel):
     containers: List[Container]
     main: Optional[str] = None
     connections: List[MainContainerConnection] = Field(default=[])
+    bus_connections: List[BusConnection] = [
+        BusConnection(
+            connection_type=("bus", "envelope"),
+            location="{{-95.8,46.8},{-95.8,16.8}}",
+        ),
+        BusConnection(
+            connection_type=("emission", "envelope"),
+            location="{{-95.8,16.8},{-95.8,26},{-55.8,26},{-55.8,16.8}}",
+        ),
+        BusConnection(
+            connection_type=("distribution", "envelope"),
+            location="{{-95.8,16.8},{-95.8,26},{-15.8,26},{-15.8,16.8}}",
+        ),
+        BusConnection(
+            connection_type=("production", "envelope"),
+            location="{{-95.8,16.8},{-95.8,26},{24.2,26},{24.2,16.8}}",
+        ),
+        BusConnection(
+            connection_type=("ventilation", "envelope"),
+            location="{{-44.1,-32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}}",
+        )
+    ]
     connection_list: List[ConnectionList] = [
         ConnectionList(
             connection_type=["envelope1.heatPortCon", "emission1.heatPortCon"],
@@ -230,8 +297,28 @@ class Containers(BaseModel):
             connection_type=["envelope1.heatPortCon1", "bus1.heatPortCon"],
             annotation="""annotation (Line(points={{-24,
     5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
+        ),        ConnectionList(
+            connection_type=["envelope1.ports_a", "ventilation1.ports_b"],
+            annotation="""annotation (Line(points={{-84.1,
+          3.4},{-88,3.4},{-88,-14},{-48,-14},{-48,-20.2},{-43.9,-20.2}}, color={
+          0,127,255}));""",
+        ),
+        ConnectionList(
+            connection_type=["ventilation1.ports_a", "envelope1.ports_b"],
+            annotation="""annotation (Line(points={{-44.1,
+          -32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}},
+        color={0,127,255}));""",
+        ),        ConnectionList(
+            connection_type=["ventilation1.ports_b", "envelope1.ports_b"],
+            annotation="""annotation (Line(points={{-44.1,
+          -32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}},
+        color={0,127,255}));""",
         ),
     ]
+
+    def add_data(self, data):
+        for container in self.containers:
+            container.set_data(data)
     @classmethod
     def load_from_config(cls):
         config = Path(__file__).parents[1].joinpath("elements/config/containers.json")
@@ -266,7 +353,7 @@ class Containers(BaseModel):
         self._set_connection_annotation()
         self.main = main_template.render(container=self)
 
-        return [c.build(template) for c in self.containers]
+        return [c.build(template) for c in self.in_use_containers()]
 
     def build_main_connections(self):
         connections = [
@@ -287,17 +374,11 @@ class Containers(BaseModel):
             if len(equations) == 2:
                 self.connections += [MainContainerConnection.from_list(equations)]
 
-
     def _get_connection_view(
         self, connected_container_name: ContainerTypes
     ) -> ConnectionView:
         connection_view = ConnectionView()
-        if connected_container_name in [
-            "emission",
-            "production",
-            "envelope",
-            "distribution",
-        ]:
+        if connected_container_name in get_args(SystemContainerTypes):
             connection_view = ConnectionView(
                 color="{0, 0, 139}", thickness=0.1, pattern="Dash"
             )
@@ -311,6 +392,10 @@ class Containers(BaseModel):
             edge_right = connection.right
             if edge_left.container_type == edge_right.container_type:
                 container = self.get_container(edge_left.container_type)
+                if not container:
+                    raise ContainerNotFoundError(
+                        f"Container {edge_left.container_type} not found."
+                    )
                 container.connections += [
                     ContainerConnection.model_validate(
                         (
@@ -351,11 +436,13 @@ class Containers(BaseModel):
                             container_type=edge_1.container_type,
                             position=container_position,
                         )
+                        if edge_left.container_type == "envelope" and "space" in edge_left.name and edge_right.container_type == "bus":
+                            a = 12
                         connections_ = connect(element_1, element_2)
                         if not connections_:
                             logger.debug(
                                 f"Element {element_1.name} from container {element_1.container_type} "
-                                f"cannot be connected with container {element_2.container_type}"
+                                f"cannot be connected with container {edge_2.container_type}"
                             )
                         container.connections += [
                             ContainerConnection.model_validate(
@@ -372,6 +459,7 @@ class Containers(BaseModel):
                             )
                             for c in connections_
                         ]
+
     def assign_nodes(self, nodes, graph) -> None:
         for container_type in get_args(ContainerTypes):
             container = self.get_container(container_type)
@@ -382,6 +470,18 @@ class Containers(BaseModel):
             if container:
                 container.elements.extend(node_types)
                 container.assign_position(graph)
+
+    def in_use_containers(self):
+        return [c for c in self.containers if c.contain_elements()]
+
+    def bus_equations(self):
+        containers = {container.name for container in self.in_use_containers()}
+        equations = []
+        for bus_connection in self.bus_connections:
+            if set(bus_connection.connection_type).issubset(containers):
+                equations.append(bus_connection.equation())
+        return equations
+
 
     def assign_models(self, element_models) -> None:
         for container_type in get_args(ContainerTypes):
@@ -427,11 +527,34 @@ class Containers(BaseModel):
         )
         environment.filters["frozenset"] = frozenset
         environment.filters["enumerate"] = enumerate
-        template = environment.get_template("main_container.jinja2")
+        template_ ="""
+model building_container
+
+{% for container_ in container.in_use_containers() %}
+{{ container_.main_equation() | safe }}
+{% endfor %}
+
+equation
+
+{% for connection in container.connections %}
+connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ connection.right.container_type }}1.{{ connection.right.equation }})
+{{ connection.annotation }};
+{% endfor %}
+
+{% for bus_equation in container.bus_equations() %}
+{{ bus_equation | safe }}
+{% endfor %}
+
+annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+coordinateSystem(preserveAspectRatio=false)));
+
+end building_container;
+"""
+        template = environment.from_string(
+            template_
+        )
         return template
 
 
 def containers_factory() -> Containers:
     return Containers.load_from_config()
-
-

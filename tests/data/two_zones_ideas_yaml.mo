@@ -2179,7 +2179,7 @@ parameter Integer nRoo = 2 "Number of rooms";
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
     Placement(transformation(origin = { 0, 0 },
-    extent = {{-20, -20}, {20, 20}}
+    extent = {{10, -10}, {-10, 10}}
 )));
         two_zones_ideas.Trano.Controls.ventilation.OccupancyOccupancy_1
     occupancy_1(    gain=[40; 75; 40],
@@ -2187,7 +2187,7 @@ parameter Integer nRoo = 2 "Number of rooms";
     occupancy=3600*{9, 17}
 ) annotation (
     Placement(transformation(origin = { -50, 0 },
-    extent = {{-10, -10}, {10, 10}}
+    extent = {{10, -10}, {-10, 10}}
 )));
     Buildings.ThermalZones.Detailed.MixedAir space_002(
         redeclare package Medium = Medium,
@@ -2225,7 +2225,7 @@ parameter Integer nRoo = 2 "Number of rooms";
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
     Placement(transformation(origin = { 250, 150 },
-    extent = {{-20, -20}, {20, 20}}
+    extent = {{10, -10}, {-10, 10}}
 )));
         two_zones_ideas.Trano.Controls.ventilation.OccupancyOccupancy_2
     occupancy_2(    gain=[40; 75; 40],
@@ -2233,14 +2233,14 @@ parameter Integer nRoo = 2 "Number of rooms";
     occupancy=3600*{9, 17}
 ) annotation (
     Placement(transformation(origin = { 200, 150 },
-    extent = {{-10, -10}, {10, 10}}
+    extent = {{10, -10}, {-10, 10}}
 )));
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
                 weather(filNam=Modelica.Utilities.Files.loadResource
         ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
      annotation (
     Placement(transformation(origin = { -100, 200 },
-    extent = {{-10, -10}, {10, 10}}
+    extent = {{10, -10}, {-10, 10}}
 )));
         Buildings.HeatTransfer.Conduction.MultiLayer
                 internal_space_002_space_001_construction(A =
@@ -2248,71 +2248,127 @@ parameter Integer nRoo = 2 "Number of rooms";
     construction_001, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
     rooms"  annotation (
-    Placement(transformation(origin = { 125.0, 150 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = { 125.0, 75.0 },
+    extent = {{10, -10}, {-10, 10}}
 )));
         two_zones_ideas.Trano.Controls.ventilation.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 174.12118499150094, 61.44749887703715 },
-    extent = {{-10, -10}, {10, 10}}
+    Placement(transformation(origin = { 80.26366173362388, -183.71240644915972 },
+    extent = {{10, -10}, {-10, 10}}
 )));
 
 
-equation    connect(space_001.qGai_flow,occupancy_1.y)
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -50.0, 0.0 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(space_001.weaBus,weather.weaBus)
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0 }    },
-thickness=0.05,
-smooth=Smooth.None));    connect(space_001.surf_surBou[1],internal_space_002_space_001_construction.port_a)
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 62.5, 0.0 }    ,{ 62.5, 150.0 }    ,{ 125.0, 150.0 }    },
-color={191,0,0},
-thickness=0.1,
-smooth=Smooth.None));    connect(space_002.qGai_flow,occupancy_2.y)
-annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 225.0, 150.0 }    ,{ 225.0, 150.0 }    ,{ 200.0, 150.0 }    },
-color={255,204,51},
-thickness=0.5,
-smooth=Smooth.None));    connect(space_002.weaBus,weather.weaBus)
-annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 75.0, 150.0 }    ,{ 75.0, 200.0 }    ,{ -100.0, 200.0 }    },
-thickness=0.05,
-smooth=Smooth.None));    connect(space_002.surf_surBou[1],internal_space_002_space_001_construction.port_b)
-annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 187.5, 150.0 }    ,{ 187.5, 150.0 }    ,{ 125.0, 150.0 }    },
-color={191,0,0},
-thickness=0.1,
-smooth=Smooth.None));    connect(occupancy_1.dataBus,data_bus.dataBus)
-annotation (Line(
-points={{ -50.0, 0.0 }    ,{ 62.06059249575047, 0.0 }    ,{ 62.06059249575047, 61.44749887703715 }    ,{ 174.12118499150094, 61.44749887703715 }    },
-thickness=0.05,
-smooth=Smooth.None));    connect(occupancy_2.dataBus,data_bus.dataBus)
-annotation (Line(
-points={{ 200.0, 150.0 }    ,{ 187.06059249575048, 150.0 }    ,{ 187.06059249575048, 61.44749887703715 }    ,{ 174.12118499150094, 61.44749887703715 }    },
-thickness=0.05,
-smooth=Smooth.None));    connect(space_001.heaPorAir,data_bus.port[1])
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 87.06059249575047, 0.0 }    ,{ 87.06059249575047, 61.44749887703715 }    ,{ 174.12118499150094, 61.44749887703715 }    },
-thickness=0.05,
-smooth=Smooth.None));    connect(space_001.ports[1],data_bus.port_a[1])
-annotation (Line(
-points={{ 0.0, 0.0 }    ,{ 87.06059249575047, 0.0 }    ,{ 87.06059249575047, 61.44749887703715 }    ,{ 174.12118499150094, 61.44749887703715 }    },
-thickness=0.05,
-smooth=Smooth.None));    connect(space_002.heaPorAir,data_bus.port[2])
-annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 212.06059249575048, 150.0 }    ,{ 212.06059249575048, 61.44749887703715 }    ,{ 174.12118499150094, 61.44749887703715 }    },
-thickness=0.05,
-smooth=Smooth.None));    connect(space_002.ports[1],data_bus.port_a[2])
-annotation (Line(
-points={{ 250.0, 150.0 }    ,{ 212.06059249575048, 150.0 }    ,{ 212.06059249575048, 61.44749887703715 }    ,{ 174.12118499150094, 61.44749887703715 }    },
-thickness=0.05,
-smooth=Smooth.None));annotation (Diagram(coordinateSystem(extent={{-249.43758616921485,-247.28971409141687},{300.0,250.0}})), Icon(
-        coordinateSystem(extent={{-249.43758616921485,-247.28971409141687},{300.0,250.0}})));
+equation    
+        
+        
+        connect(space_001.qGai_flow,occupancy_1.y)
+        annotation (Line(
+        points={{ 0.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -50.0, 0.0 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_001.weaBus,weather.weaBus)
+        annotation (Line(
+        points={{ 0.0, 0.0 }    ,{ -50.0, 0.0 }    ,{ -50.0, 200.0 }    ,{ -100.0, 200.0 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_001.surf_surBou[1],internal_space_002_space_001_construction.port_a)
+        annotation (Line(
+        points={{ 0.0, 0.0 }    ,{ 62.5, 0.0 }    ,{ 62.5, 75.0 }    ,{ 125.0, 75.0 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_002.qGai_flow,occupancy_2.y)
+        annotation (Line(
+        points={{ 250.0, 150.0 }    ,{ 225.0, 150.0 }    ,{ 225.0, 150.0 }    ,{ 200.0, 150.0 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_002.weaBus,weather.weaBus)
+        annotation (Line(
+        points={{ 250.0, 150.0 }    ,{ 75.0, 150.0 }    ,{ 75.0, 200.0 }    ,{ -100.0, 200.0 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_002.surf_surBou[1],internal_space_002_space_001_construction.port_b)
+        annotation (Line(
+        points={{ 250.0, 150.0 }    ,{ 187.5, 150.0 }    ,{ 187.5, 75.0 }    ,{ 125.0, 75.0 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(occupancy_1.dataBus,data_bus.dataBus)
+        annotation (Line(
+        points={{ -50.0, 0.0 }    ,{ 15.131830866811939, 0.0 }    ,{ 15.131830866811939, -183.71240644915972 }    ,{ 80.26366173362388, -183.71240644915972 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(occupancy_2.dataBus,data_bus.dataBus)
+        annotation (Line(
+        points={{ 200.0, 150.0 }    ,{ 140.13183086681192, 150.0 }    ,{ 140.13183086681192, -183.71240644915972 }    ,{ 80.26366173362388, -183.71240644915972 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_001.heaPorAir,data_bus.port[1])
+        annotation (Line(
+        points={{ 0.0, 0.0 }    ,{ 40.13183086681194, 0.0 }    ,{ 40.13183086681194, -183.71240644915972 }    ,{ 80.26366173362388, -183.71240644915972 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_001.ports[1],data_bus.port_a[1])
+        annotation (Line(
+        points={{ 0.0, 0.0 }    ,{ 40.13183086681194, 0.0 }    ,{ 40.13183086681194, -183.71240644915972 }    ,{ 80.26366173362388, -183.71240644915972 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_002.heaPorAir,data_bus.port[2])
+        annotation (Line(
+        points={{ 250.0, 150.0 }    ,{ 165.13183086681192, 150.0 }    ,{ 165.13183086681192, -183.71240644915972 }    ,{ 80.26366173362388, -183.71240644915972 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;    
+        
+        
+        connect(space_002.ports[1],data_bus.port_a[2])
+        annotation (Line(
+        points={{ 250.0, 150.0 }    ,{ 165.13183086681192, 150.0 }    ,{ 165.13183086681192, -183.71240644915972 }    ,{ 80.26366173362388, -183.71240644915972 }    },
+        color={255,204,51},
+        thickness=0.1,pattern = LinePattern.Solid,
+        smooth=Smooth.None))
+            ;annotation (Diagram(coordinateSystem(extent={{-250.0,-233.71240644915972},{300,250}})), Icon(
+        coordinateSystem(extent={{-250.0,-233.71240644915972},{300,250}})));
 end building;
 
 

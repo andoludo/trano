@@ -5,6 +5,9 @@ from jinja2 import Environment, FileSystemLoader
 from networkx.classes.reportviews import NodeView
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from trano.elements.common_base import BaseProperties
+from trano.elements.types import ContainerTypes
+
 if TYPE_CHECKING:
 
     from trano.library.library import Library
@@ -148,9 +151,9 @@ class BaseConstructionData(BaseModel):
         return model
 
 
-class MaterialProperties(BaseModel):
-    data: str
-    is_package: bool
+class MaterialProperties(BaseProperties):
+    container_type: ContainerTypes = "envelope"
+
 
 
 class BaseTemplateData(BaseModel):

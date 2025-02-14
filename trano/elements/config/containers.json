@@ -2,9 +2,13 @@
     "containers": [
         {
             "name": "distribution",
+            "location": {
+                "x": -4,
+                "y": 0
+            },
             "port_groups": [
                 {
-                    "connected_container_name": "emission",
+                    "connected_container_names": ["emission"],
                     "ports": [
                         {
                             "names": [
@@ -27,7 +31,7 @@
                     ]
                 },
                 {
-                    "connected_container_name": "production",
+                    "connected_container_names": ["production"],
                     "ports": [
                         {
                             "names": [
@@ -52,7 +56,7 @@
                     ]
                 },
                 {
-                    "connected_container_name": "bus",
+                    "connected_container_names": ["bus"],
                     "ports": [
                         {
                             "names": [
@@ -71,9 +75,13 @@
         },
         {
             "name": "emission",
+                        "location": {
+                "x": -44,
+                "y": 0
+            },
             "port_groups": [
                 {
-                    "connected_container_name": "distribution",
+                    "connected_container_names": ["distribution"],
                     "ports": [
                         {
                             "names": [
@@ -96,7 +104,7 @@
                     ]
                 },
                 {
-                    "connected_container_name": "envelope",
+                    "connected_container_names": ["envelope"],
                     "ports": [
                         {
                             "names": [
@@ -119,7 +127,7 @@
                     ]
                 },
                 {
-                    "connected_container_name": "bus",
+                    "connected_container_names": ["bus"],
                     "ports": [
                         {
                             "names": [
@@ -138,9 +146,14 @@
         },
         {
             "name": "envelope",
+                                                        "location": {
+                "x": -84,
+                "y": 0
+            },
             "port_groups": [
                 {
-                    "connected_container_name": "emission",
+                    "connected_container_names": ["emission"],
+
                     "ports": [
                         {
                             "names": [
@@ -163,7 +176,7 @@
                     ]
                 },
                 {
-                    "connected_container_name": "bus",
+                    "connected_container_names": ["bus", "ventilation"],
                     "ports": [
                         {
                             "names": [
@@ -183,6 +196,15 @@
                             "multi_connection": true,
                             "ignore_direction": true
                         },
+                                         {
+                            "names": [
+                                "ports_a"
+                            ],
+                            "flow": "outlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        },
                         {
                             "names": [
                                 "heatPortCon1"
@@ -195,13 +217,17 @@
                     ]
                 }
             ],
-            "template": "\nreplaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={\"CO2\"})\nconstrainedby Modelica.Media.Interfaces.PartialMedium\n\"Medium in the component\"\nannotation (choicesAllMatching = true);\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n    \"Nodes for convective heat gains\"\n    annotation (Placement(transformation(extent={{90,40},{110,60}}),\n        iconTransformation(extent={{90,40},{110,60}})));\n          Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon1#]  heatPortCon1\n\"Nodes for convective heat gains\"\nannotation (Placement(transformation(extent={{90,40},{110,60}}),\n    iconTransformation(extent={{-4,98},{6,108}})));\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad\n    \"Nodes for radiative heat gains\"\n    annotation (Placement(transformation(extent={{90,-62},{110,-42}}),\n        iconTransformation(extent={{90,-62},{110,-42}})));\n              three_zones_hydronic_containers.Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n        Modelica.Fluid.Interfaces.FluidPorts_b[#ports_b#] ports_b(redeclare package Medium =\n    Medium) annotation (Placement(\n        transformation(extent={{-108,-38},{-88,42}}), iconTransformation(extent\n          ={{-108,-38},{-88,42}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={255,128,0},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n             "
+            "template": "replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={\"CO2\"})\nconstrainedby Modelica.Media.Interfaces.PartialMedium\n\"Medium in the component\"\nannotation (choicesAllMatching = true);\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n    \"Nodes for convective heat gains\"\n    annotation (Placement(transformation(extent={{90,40},{110,60}}),\n        iconTransformation(extent={{90,40},{110,60}})));\n          Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon1#]  heatPortCon1\n\"Nodes for convective heat gains\"\nannotation (Placement(transformation(extent={{90,40},{110,60}}),\n    iconTransformation(extent={{-4,98},{6,108}})));\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad\n    \"Nodes for radiative heat gains\"\n    annotation (Placement(transformation(extent={{90,-62},{110,-42}}),\n        iconTransformation(extent={{90,-62},{110,-42}})));\n              Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n    Modelica.Fluid.Interfaces.FluidPorts_b[#ports_b#] ports_b(redeclare package Medium\n      =\nMedium) annotation (Placement(\n    transformation(extent={{-106,30},{-92,86}}),  iconTransformation(extent={{-106,30},\n            {-92,86}})));\n    Modelica.Fluid.Interfaces.FluidPorts_a[#ports_a#] ports_a(redeclare package Medium\n      = Medium)\n        annotation (Placement(\n    transformation(extent={{-110,-100},{-90,-20}}),\n                                                  iconTransformation(extent={{-108,\n            -92},{-94,-40}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={255,128,0},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));"
         },
         {
             "name": "production",
+                                                        "location": {
+                "x": 36,
+                "y": 0
+            },
             "port_groups": [
                 {
-                    "connected_container_name": "distribution",
+                    "connected_container_names": ["distribution"],
                     "ports": [
                         {
                             "names": [
@@ -222,7 +248,7 @@
                     ]
                 },
                 {
-                    "connected_container_name": "bus",
+                    "connected_container_names": ["bus"],
                     "ports": [
                         {
                             "names": [
@@ -236,14 +262,18 @@
                     ]
                 }
             ],
-            "template": "\n          parameter Real mRad_flow_nominal = 123;\n\n\npackage MediumW = IDEAS.Media.Water \"Medium model\";\n        Modelica.Fluid.Interfaces.FluidPort_a port_a1(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{-110,-58},{-90,-38}}),\n        iconTransformation(extent={{-110,-58},{-90,-38}})));\n  Modelica.Fluid.Interfaces.FluidPort_b port_b1(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{-110,40},{-90,60}}),\n        iconTransformation(extent={{-110,38},{-90,58}})));\n                      three_zones_hydronic_containers.Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={28,108,200},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n                 ",
+            "template": "\n          parameter Real mRad_flow_nominal = 123;\n\n\npackage MediumW = IDEAS.Media.Water \"Medium model\";\n        Modelica.Fluid.Interfaces.FluidPort_a port_a1(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{-110,-58},{-90,-38}}),\n        iconTransformation(extent={{-110,-58},{-90,-38}})));\n  Modelica.Fluid.Interfaces.FluidPort_b port_b1(redeclare package Medium =\n        MediumW)\n    annotation (Placement(transformation(extent={{-110,40},{-90,60}}),\n        iconTransformation(extent={{-110,38},{-90,58}})));\n                      Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={28,108,200},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n                 ",
             "left_boundary": "distribution"
         },
         {
             "name": "bus",
+                                                        "location": {
+                "x": -84,
+                "y": 30
+            },
             "port_groups": [
                 {
-                    "connected_container_name": "envelope",
+                    "connected_container_names": ["envelope"],
                     "ports": [
                         {
                             "names": [
@@ -281,6 +311,52 @@
                 }
             ],
             "template": "\n    package Medium = IDEAS.Media.Air (extraPropertiesNames={\"CO2\"})  \"Medium model\";\n      Modelica.Fluid.Interfaces.FluidPort_b[#port_b#] port_b(redeclare package Medium =\n            Medium)\n        annotation (Placement(transformation(extent={{90,40},{110,60}}),\n            iconTransformation(extent={{90,40},{110,60}})));\n      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n        \"Nodes for convective heat gains\"\n        annotation (Placement(transformation(extent={{-108,42},{-88,62}}),\n            iconTransformation(extent={{-108,42},{-88,62}})));\n\n     \n    \n                      Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(\n            transformation(extent={{-118,68},{-78,108}}), iconTransformation(extent\n              ={{-228,58},{-208,78}})));\n      annotation (\n        Icon(\n          coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n            graphics={Rectangle(\n              extent={{-60,100},{60,-100}},\n              lineColor={255,128,0},\n              fillColor={215,215,215},\n              fillPattern=FillPattern.Forward)}));\n             "
-        }
+        },
+         {
+            "name": "ventilation",
+                                                     "location": {
+                "x": -44,
+                "y": -30
+            },
+            "port_groups": [
+                {
+                    "connected_container_names": ["envelope"],
+                    "ports": [
+                            {
+                            "names": [
+                                "ports_b"
+                            ],
+                            "flow": "inlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        },
+                                                {
+                            "names": [
+                                "ports_a"
+                            ],
+                            "flow": "outlet",
+                            "medium": "fluid",
+                            "multi_connection": true,
+                            "ignore_direction": true
+                        }
+                    ]
+                },
+                {
+                    "connected_container_names": ["bus"],
+                    "ports": [
+                        {
+                            "names": [
+                                "dataBus"
+                            ],
+                            "flow": "undirected",
+                            "medium": "data",
+                            "multi_connection": true,
+                            "use_counter": false
+                        }
+                    ]
+                }
+            ],
+            "template": "\n  replaceable package Medium = IDEAS.Media.Air (extraPropertiesNames={\"CO2\"})\n  constrainedby Modelica.Media.Interfaces.PartialMedium\n  \"Medium in the component\"\n  annotation (choicesAllMatching = true);\n\n          Trano.Controls.BaseClasses.DataBus\n                                             dataBus annotation (Placement(\ntransformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n  ={{-228,58},{-208,78}})));\n    Modelica.Fluid.Interfaces.FluidPorts_b[3] ports_b(redeclare package Medium\n      =\nMedium) annotation (Placement(\n    transformation(extent={{-108,0},{-92,54}}),   iconTransformation(extent={{-108,0},\n            {-92,54}})));\n    Modelica.Fluid.Interfaces.FluidPorts_a[3] ports_a(redeclare package Medium\n      =\nMedium) annotation (Placement(\n    transformation(extent={{-110,-76},{-90,-6}}), iconTransformation(extent={{-110,\n            -70},{-94,-22}})));\n  annotation (\nIcon(\n  coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n    graphics={Rectangle(\n      extent={{-60,100},{60,-100}},\n      lineColor={255,128,0},\n      fillColor={215,215,215},\n      fillPattern=FillPattern.Forward)}));\n\n\n  annotation (\nIcon(\n  coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n    graphics={Rectangle(\n      extent={{-60,100},{60,-100}},\n      lineColor={238,46,47},\n      fillColor={215,215,215},\n      fillPattern=FillPattern.Forward)}));"}
     ]
 }

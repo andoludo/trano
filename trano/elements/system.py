@@ -32,7 +32,8 @@ class SpaceHeatingSystem(SpaceSystem):
 class Emission(SpaceHeatingSystem): ...
 
 
-class Ventilation(SpaceSystem): ...
+class Ventilation(SpaceSystem):
+    container_type: ContainerTypes = "ventilation"
 
 
 class BaseWeather(System): ...

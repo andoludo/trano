@@ -39,7 +39,14 @@ def house_buildings() -> Network:
         house,
         library=Library.from_configuration("Buildings"),
     )
-
+@pytest.fixture(scope="module")
+def house_ventilation():
+    house = get_path("single_zone_air_handling_unit_complex_vav_containers.yaml")
+    return convert_network(
+        "single_zone_air_handling_unit_complex_vav_containers",
+        house,
+        library=Library.from_configuration("IDEAS"),
+    )
 def test_connect_space_radiator(house_ideas: Network) -> None:
 
     edge = house_ideas.get_edge(Space, Radiator)
@@ -635,3 +642,16 @@ def test_container_per_medium_connection(house_ideas: Network) -> None:
     bus_container = containers.get_container("bus")
     bus_container.add_grouped_by_medium_connection()
     assert bus_container.connections
+
+
+def test_container_envelope_ventilation(house_ventilation: Network) -> None:
+    containers = containers_factory()
+    edge = house_ventilation.get_edge(Space, VAV)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    e1.position.set(1, 1)
+    e2.position.set(1, 1)
+    connections = connect(e1, e2)
+    containers.connect(connections)
+    assert containers.get_container("envelope").get_equation_view() == {('ports_b[1]', 'space_001.ports[1]')}
+    assert containers.get_container("ventilation").get_equation_view() == {('ports_b[1]', 'vav_001.port_bAir')}

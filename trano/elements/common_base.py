@@ -2,10 +2,15 @@ from typing import Optional, List, Dict, Any, Tuple
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
-from trano.elements.types import Medium
+from trano.elements.types import Medium, ContainerTypes
 
 
-class ElementLocation(BaseModel):
+class BaseProperties(BaseModel):
+    container_type: ContainerTypes
+    is_package: bool
+    data: str
+
+class Point(BaseModel):
     x: Optional[float] = None
     y: Optional[float] = None
 
@@ -14,7 +19,7 @@ class ElementLocation(BaseModel):
 
 
 class ElementPosition(BaseModel):
-    location: ElementLocation = Field(default_factory=ElementLocation)
+    location: Point = Field(default_factory=Point)
     annotation: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position.global_.coordinate()) }},
     extent = {% raw %}{{10, -10}, {-10, 10}}

@@ -11,6 +11,8 @@ model building_container
       annotation (Placement(transformation(extent={{36,0},{56,20}})));
    bus bus1
             annotation (Placement(transformation(extent={{-84,30},{-64,50}})));
+         ventilation ventilation1
+            annotation (Placement(transformation(extent={{-44,-30},{-24,-10}})));
   {% endraw %}
   equation
    {%- for connection in container.connections -%}
