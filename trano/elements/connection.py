@@ -2,23 +2,22 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type
 
-from pydantic import BaseModel, Field, field_validator, model_validator, computed_field, ConfigDict
 from jinja2 import Environment, FileSystemLoader
+from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
+
 from trano import elements
 from trano.elements.common_base import BaseElementPosition, BasePosition
-
 from trano.elements.types import (
     ConnectionView,
     Flow,
     Medium,
     ContainerTypes,
 )
-from trano.exceptions import IncompatiblePortsError, ConnectionLimitReached, NoConnectionFoundError
+from trano.exceptions import IncompatiblePortsError, ConnectionLimitReached
 
 if TYPE_CHECKING:
-    from trano.elements import BaseElement, ThreeWayValve
+    from trano.elements import BaseElement
     from trano.elements.base import ElementPort
-    from trano.elements.containers import Containers
 
 INCOMPATIBLE_PORTS = [sorted(["dataBus", "y"])]
 
@@ -35,7 +34,6 @@ class Port(BaseModel):
     multi_object: bool = False
     bus_connection: bool = False
     use_counter: bool = True
-    same_counter_per_name: bool = False
     ignore_direction: bool = False
     counter: int = Field(default=1)
     connection_counter: int = Field(default=0)
@@ -168,8 +166,7 @@ class Port(BaseModel):
                     equation = f"{element_name}.{name}[{self.counter}]"
                 else:
                     equation = f"{name}[{self.counter}]"
-                if not self.same_counter_per_name:
-                    self.counter += 1
+                self.counter += 1
             else:
                 if element_name:
                     equation = f"{element_name}.{name}"
@@ -184,8 +181,7 @@ class Port(BaseModel):
                     name=element_name,
                 )
             )
-        if self.same_counter_per_name:
-            self.counter += 1
+
         return partial_connections
 
     def link(
@@ -433,9 +429,4 @@ class ContainerConnection(Connection):
             ]
 
 
-def _has_inlet_or_outlet(ports: List[Port]) -> bool:
-    return bool([port for port in ports if port.flow == Flow.inlet_or_outlet])
 
-
-def _is_inlet_or_outlet(ports: List[Port]) -> bool:
-    return bool([port for port in ports if port.flow in [Flow.inlet, Flow.outlet]])

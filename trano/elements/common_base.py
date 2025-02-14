@@ -1,8 +1,8 @@
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict
 
-from trano.elements.types import Medium, ContainerTypes
+from trano.elements.types import ContainerTypes
 
 
 class BaseProperties(BaseModel):
@@ -71,22 +71,6 @@ class BaseElementPosition(BaseModel):
     position: BasePosition = Field(default_factory=BasePosition)
     model_config = ConfigDict(validate_assignment=True)
 
-class BaseLimitConnection(BaseModel):
-    number: int
 
 
 
-class ElementOrMediumLimitConnection(BaseLimitConnection):
-    element: Optional[str] = None
-    medium: Optional[Medium] = None
-
-class LimitConnection(BaseModel):
-    limits: List[ElementOrMediumLimitConnection] = Field(default_factory=list)
-
-    def limit_reached(self, current_connections: int, medium: Medium, element: str) -> bool:
-        medium_limit =  any(limit.number <= current_connections for limit in self.limits if limit.medium == medium)
-        element_limit = any(limit.number <= current_connections for limit in self.limits if limit.element == element)
-        return medium_limit or element_limit
-
-    def medium_has_limit(self, medium: Medium) -> bool:
-        return any(limit.medium == medium for limit in self.limits)

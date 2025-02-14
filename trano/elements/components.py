@@ -14,13 +14,11 @@ if TYPE_CHECKING:
 
 
 def _load_components() -> Dict[str, Any]:
-    libraries_path = Path(__file__).parent.joinpath("models")
     libraries_json_path = Path(__file__).parent.joinpath("models_json")
     libraries_json_path.mkdir(exist_ok=True)
     data: Dict[str, Any] = {"components": []}
     for file in libraries_json_path.glob("*.json"):
         file_data = json.loads(file.read_text())
-        # Path(libraries_json_path / f"{file.stem}.json").write_text(json.dumps(file_data, indent=4))
         data["components"] += file_data.get("components", [])
     return data
 

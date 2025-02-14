@@ -436,8 +436,6 @@ class Containers(BaseModel):
                             container_type=edge_1.container_type,
                             position=container_position,
                         )
-                        if edge_left.container_type == "envelope" and "space" in edge_left.name and edge_right.container_type == "bus":
-                            a = 12
                         connections_ = connect(element_1, element_2)
                         if not connections_:
                             logger.debug(
