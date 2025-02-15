@@ -3,7 +3,7 @@ from typing import List, Optional, TYPE_CHECKING, Type, Union
 from trano.elements import Control
 from trano.elements.base import BaseElement
 from trano.elements.types import BaseVariant, ContainerTypes
-from pydantic import model_validator
+from pydantic import model_validator, BaseModel
 
 from trano.exceptions import WrongSystemFlowError
 import networkx as nx
@@ -70,7 +70,24 @@ class SplitValve(DistributionSystem): ...
 class Radiator(Emission): ...
 
 
-class Pump(DistributionSystem): ...
+class HydronicSystemControl(BaseModel):
+    def configure(self, network: "Network") -> None:
+        from trano.elements import  CollectorControl
+        if hasattr(self,"control") and isinstance(self.control, CollectorControl):
+            self.control.valves = self._get_linked_valves(network)
+    def _get_linked_valves(self, network: "Network") -> List[Valve]:
+        valves_: List[Valve] = []
+        valves = [node for node in network.graph.nodes if isinstance(node, Valve)]
+        for valve in valves:
+            paths = list(nx.all_simple_paths(network.graph, self, valve))
+            for path in paths:
+                p = path[1:-1]
+                if p and all(isinstance(p_, System) for p_ in p):
+                    valves_.append(valve)
+                    break
+        return valves_
+
+class Pump(HydronicSystemControl,DistributionSystem):...
 
 
 class Occupancy(BaseOccupancy): ...
@@ -92,7 +109,7 @@ class VAV(Damper):
 class ProductionSystem(System):
     container_type: ContainerTypes = "production"
 
-class Boiler(ProductionSystem): ...
+class Boiler(HydronicSystemControl,ProductionSystem): ...
 
 
 class AirHandlingUnit(Ventilation):

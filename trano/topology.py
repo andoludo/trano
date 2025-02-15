@@ -268,28 +268,28 @@ class Network:  # : PLR0904, #TODO: fix this
         ):
             self.edge_attributes += self.connect_edges(edge)
 
-    def get_linked_valves(self, pump_collector: BaseElement) -> List[Valve]:
-        valves_: List[Valve] = []
-        valves = [node for node in self.graph.nodes if isinstance(node, Valve)]
-        for valve in valves:
-            paths = list(nx.all_simple_paths(self.graph, pump_collector, valve))
-            for path in paths:
-                p = path[1:-1]
-                if p and all(isinstance(p_, System) for p_ in p):
-                    valves_.append(valve)
-                    break
-        return valves_
+    # def get_linked_valves(self, pump_collector: BaseElement) -> List[Valve]:
+    #     valves_: List[Valve] = []
+    #     valves = [node for node in self.graph.nodes if isinstance(node, Valve)]
+    #     for valve in valves:
+    #         paths = list(nx.all_simple_paths(self.graph, pump_collector, valve))
+    #         for path in paths:
+    #             p = path[1:-1]
+    #             if p and all(isinstance(p_, System) for p_ in p):
+    #                 valves_.append(valve)
+    #                 break
+    #     return valves_
 
-    def configure_collector_control(self) -> None:
-        pump_collectors = [
-            node
-            for node in self.graph.nodes
-            if isinstance(node, (Pump, Boiler))
-            and isinstance(node.control, CollectorControl)
-        ]
-        for pump_collector in pump_collectors:
-            if isinstance(pump_collector.control, CollectorControl):
-                pump_collector.control.valves = self.get_linked_valves(pump_collector)
+    # def configure_collector_control(self) -> None:
+    #     pump_collectors = [
+    #         node
+    #         for node in self.graph.nodes
+    #         if isinstance(node, (Pump, Boiler))
+    #         and isinstance(node.control, CollectorControl)
+    #     ]
+    #     for pump_collector in pump_collectors:
+    #         if isinstance(pump_collector.control, CollectorControl):
+    #             pump_collector.control.valves = self.get_linked_valves(pump_collector)
 
     def set_weather_path_to_container_path(self, project_path: Path) -> None:
         for node in self.graph.nodes:
@@ -325,7 +325,7 @@ class Network:  # : PLR0904, #TODO: fix this
         for node in self.graph.nodes:
             node.configure(self)
         # self.configure_ahu_control()
-        self.configure_collector_control()
+        # self.configure_collector_control()
         data_bus.non_connected_ports = get_non_connected_ports(self.graph.nodes)
 
 
