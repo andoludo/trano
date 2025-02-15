@@ -113,39 +113,6 @@ class Network:  # : PLR0904, #TODO: fix this
 
 
 
-    def _build_data_bus(self) -> DataBus:
-        # TODO: this feels like it does not belong here!!!!
-
-        spaces = sorted(
-            [node for node in self.graph.nodes if isinstance(node, Space)],
-            key=lambda x: x.name,
-        )
-        controls = sorted(
-            [node for node in self.graph.nodes if isinstance(node, Control)],
-            key=lambda x: x.name,  # type: ignore
-        )
-        ahus = sorted(
-            [node for node in self.graph.nodes if isinstance(node, AirHandlingUnit)],
-            key=lambda x: x.name,  # type: ignore
-        )
-        data_bus = DataBus(
-            name="data_bus",
-            spaces=[space.name for space in spaces],
-            external_data=self.external_data,
-        )
-        data_bus.position.set_container(0, 0)
-        self.add_node(data_bus)
-        for space in spaces:
-            self.graph.add_edge(space, data_bus)
-            if space.occupancy:
-                self.graph.add_edge(space.occupancy, data_bus)
-        for control in controls:
-            self.graph.add_edge(control, data_bus)
-        for ahu in ahus:
-            self.graph.add_edge(ahu, data_bus)
-        return data_bus
-
-
     def connect_spaces(
         self,
         space_1: "Space",
@@ -301,37 +268,6 @@ class Network:  # : PLR0904, #TODO: fix this
         ):
             self.edge_attributes += self.connect_edges(edge)
 
-
-    def get_ahu_space_elements(self, ahu: AirHandlingUnit) -> List[Space]:
-        return [x for x in self._get_ahu_elements(ahu, Space) if isinstance(x, Space)]
-
-    def get_ahu_vav_elements(self, ahu: AirHandlingUnit) -> List[VAV]:
-        return [x for x in self._get_ahu_elements(ahu, VAV) if isinstance(x, VAV)]
-
-    def _get_ahu_elements(
-        self, ahu: AirHandlingUnit, element_type: Type[Union[VAV, Space]]
-    ) -> List[Union[VAV, Space]]:
-        elements_: List[Union[VAV, Space]] = []
-        elements = [node for node in self.graph.nodes if isinstance(node, element_type)]
-        for element in elements:
-            try:
-                paths = nx.shortest_path(self.graph, ahu, element)
-            except Exception as e:
-                raise WrongSystemFlowError(
-                    "Wrong AHU system configuration flow."
-                ) from e
-            p = paths[1:-1]
-            if p and all(isinstance(p_, Ventilation) for p_ in p):
-                elements_.append(element)
-        return elements_
-
-    def configure_ahu_control(self) -> None:
-        ahus = [node for node in self.graph.nodes if isinstance(node, AirHandlingUnit)]
-        for ahu in ahus:
-            if ahu.control and isinstance(ahu.control, AhuControl):
-                ahu.control.spaces = self.get_ahu_space_elements(ahu)
-                ahu.control.vavs = self.get_ahu_vav_elements(ahu)
-
     def get_linked_valves(self, pump_collector: BaseElement) -> List[Valve]:
         valves_: List[Valve] = []
         valves = [node for node in self.graph.nodes if isinstance(node, Valve)]
@@ -384,11 +320,15 @@ class Network:  # : PLR0904, #TODO: fix this
         for node in self.graph.nodes:
             node.assign_container_type(self)
             node.processing(self)
-        data_bus = self._build_data_bus()
-        self.configure_ahu_control()
+        data_bus = DataBus()
+        data_bus.add_to_network(self)
+        for node in self.graph.nodes:
+            node.configure(self)
+        # self.configure_ahu_control()
         self.configure_collector_control()
-
         data_bus.non_connected_ports = get_non_connected_ports(self.graph.nodes)
+
+
         self.containers.assign_nodes(self.graph.nodes, self.graph)
         self.generate_graphs()
         component_models = self.build_element_models()

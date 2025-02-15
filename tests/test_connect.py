@@ -460,7 +460,8 @@ def test_container_connect_space_radiator(house_ideas: Network) -> None:
 
 
 def test_connect_databus(house_ideas: Network) -> None:
-    house_ideas._build_data_bus()
+    data_bus = DataBus()
+    data_bus.add_to_network(house_ideas)
     edge = house_ideas.get_edge(Space, DataBus)
     e1 = ElementPort.from_element_without_ports(edge[0])
     e2 = ElementPort.from_element_without_ports(edge[1])
@@ -471,7 +472,8 @@ def test_connect_databus(house_ideas: Network) -> None:
 
 
 def test_connect_databus_buildings(house_buildings: Network) -> None:
-    house_buildings._build_data_bus()
+    data_bus = DataBus()
+    data_bus.add_to_network(house_buildings)
     edge = house_buildings.get_edge(Space, DataBus)
     e1 = ElementPort.from_element_without_ports(edge[0])
     e2 = ElementPort.from_element_without_ports(edge[1])
@@ -609,7 +611,8 @@ def test_connection_container():
 
 def test_container_connect_control_databus(house_ideas: Network) -> None:
     containers = containers_factory()
-    house_ideas._build_data_bus()
+    data_bus = DataBus()
+    data_bus.add_to_network(house_ideas)
     for node in house_ideas.graph.nodes:
         node.assign_container_type(house_ideas)
     edge = house_ideas.get_edge(CollectorControl, DataBus)
@@ -624,7 +627,8 @@ def test_container_connect_control_databus(house_ideas: Network) -> None:
 
 def test_container_envelope_databus(house_ideas: Network) -> None:
     containers = containers_factory()
-    house_ideas._build_data_bus()
+    data_bus = DataBus()
+    data_bus.add_to_network(house_ideas)
     for node in house_ideas.graph.nodes:
         node.assign_container_type(house_ideas)
     edge = house_ideas.get_edge(Space, DataBus)
@@ -641,7 +645,8 @@ def test_container_envelope_databus(house_ideas: Network) -> None:
 
 def test_container_per_medium_connection(house_ideas: Network) -> None:
     containers = containers_factory()
-    house_ideas._build_data_bus()
+    data_bus = DataBus()
+    data_bus.add_to_network(house_ideas)
     for node in house_ideas.graph.nodes:
         node.assign_container_type(house_ideas)
     containers.assign_nodes(house_ideas.graph.nodes, house_ideas.graph)

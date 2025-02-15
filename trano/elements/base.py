@@ -113,6 +113,9 @@ class BaseElement(BaseElementPort):
     def processing(self, network: "Network") -> None:
         ...
 
+    def configure(self, network: "Network") -> None:
+        ...
+
     def assign_container_type(self, network: "Network") -> None:
         if self.container_type is None:
             network.graph.neighbors(self)
