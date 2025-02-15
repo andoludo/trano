@@ -4,6 +4,7 @@ from typing import ClassVar, List, Optional, Union, TYPE_CHECKING
 from networkx import Graph
 from pydantic import Field
 
+
 from trano.elements.base import BaseElement
 from trano.elements.envelope import (
     BaseExternalWall,
@@ -19,7 +20,7 @@ from trano.elements.envelope import (
     WallParameters,
     WindowedWallParameters,
 )
-from trano.elements.system import BaseOccupancy, Emission, System
+from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUnit
 from trano.elements.types import ContainerTypes
 
 if TYPE_CHECKING:
@@ -227,3 +228,32 @@ class Space(BaseSpace):
         network._add_subsequent_systems(self.ventilation_outlets)
         network._add_subsequent_systems(self.ventilation_inlets)
         self.assign_position()
+
+    def processing(self, network: "Network") -> None:
+        from trano.elements import VAVControl
+        _neighbors = []
+        if self.get_last_ventilation_inlet():
+            _neighbors += list(
+                network.graph.predecessors(self.get_last_ventilation_inlet())  # type: ignore
+            )
+        if self.get_last_ventilation_outlet():
+            _neighbors += list(
+                network.graph.predecessors(self.get_last_ventilation_outlet())  # type: ignore
+            )
+        neighbors = list(set(_neighbors))
+        controllable_ventilation_elements = list(
+            filter(
+                None,
+                [
+                    _get_controllable_element(self.ventilation_inlets),
+                    _get_controllable_element(self.ventilation_outlets),
+                ],
+            )
+        )
+        for controllable_element in controllable_ventilation_elements:
+            if controllable_element.control and isinstance(
+                    controllable_element.control, VAVControl
+            ):
+                controllable_element.control.ahu = next(
+                    (n for n in neighbors if isinstance(n, AirHandlingUnit)), None
+                )

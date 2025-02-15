@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, Dict, List, Optional, Type
+from typing import Any, ClassVar, Dict, List, Optional, Type, TYPE_CHECKING, get_args
 
 from pydantic import ConfigDict, Field, field_validator, model_validator
 
@@ -10,6 +10,9 @@ from trano.elements.parameters import BaseParameter, param_from_config
 from trano.elements.types import BaseVariant, Flow, ContainerTypes, Medium
 from trano.library.library import AvailableLibraries, Library
 
+if TYPE_CHECKING:
+    from trano.topology import Network
+
 
 class BaseElementPort(BaseElementPosition):
     name: Optional[str] = Field(default=None)
@@ -17,6 +20,9 @@ class BaseElementPort(BaseElementPosition):
     container_type: Optional[ContainerTypes] = None
     def available_ports(self) -> List[Port]:
         return [port for port in self.ports if not port.connected]
+
+
+
 
 class BaseElement(BaseElementPort):
     name_counter: ClassVar[
@@ -101,6 +107,20 @@ class BaseElement(BaseElementPort):
 
     def __hash__(self) -> int:
         return hash(f"{self.name}-{type(self).__name__}")
+
+    def add_to_network(self, network: "Network") -> None:
+        ...
+    def processing(self, network: "Network") -> None:
+        ...
+
+    def assign_container_type(self, network: "Network") -> None:
+        if self.container_type is None:
+            network.graph.neighbors(self)
+            container_types = {s.container_type for s in
+                               list(network.graph.predecessors(self)) + list(network.graph.successors(self)) if
+                               s.container_type}
+            self.container_type = next(
+                iter(sorted(container_types, key={v: i for i, v in enumerate(get_args(ContainerTypes))}.get)))
 
 
 class ElementPort(BaseElementPort):

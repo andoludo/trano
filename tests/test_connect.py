@@ -516,7 +516,8 @@ def test_one_spaces_air_handling_unit(one_spaces_air_handling_unit: Network) -> 
 
 def test_container_connect_emission_distribution(house_ideas: Network) -> None:
     containers = containers_factory()
-    house_ideas.assign_container_type()
+    for node in house_ideas.graph.nodes:
+        node.assign_container_type(house_ideas)
     edge = house_ideas.get_edge(TemperatureSensor, Radiator)
     e1 = ElementPort.from_element_without_ports(edge[0])
     e2 = ElementPort.from_element_without_ports(edge[1])
@@ -530,7 +531,8 @@ def test_container_connect_emission_distribution(house_ideas: Network) -> None:
 
 def test_container_connect_emission_distribution_split_valve(house_ideas: Network) -> None:
     containers = containers_factory()
-    house_ideas.assign_container_type()
+    for node in house_ideas.graph.nodes:
+        node.assign_container_type(house_ideas)
     edge = house_ideas.get_edge(SplitValve, Valve)
     e1 = ElementPort.from_element_without_ports(edge[0])
     e2 = ElementPort.from_element_without_ports(edge[1])
@@ -544,7 +546,8 @@ def test_container_connect_emission_distribution_split_valve(house_ideas: Networ
 
 def test_container_connect_emission_production(house_ideas: Network) -> None:
     containers = containers_factory()
-    house_ideas.assign_container_type()
+    for node in house_ideas.graph.nodes:
+        node.assign_container_type(house_ideas)
     edge = house_ideas.get_edge(SplitValve, Boiler)
     e1 = ElementPort.from_element_without_ports(edge[0])
     e2 = ElementPort.from_element_without_ports(edge[1])
@@ -607,7 +610,8 @@ def test_connection_container():
 def test_container_connect_control_databus(house_ideas: Network) -> None:
     containers = containers_factory()
     house_ideas._build_data_bus()
-    house_ideas.assign_container_type()
+    for node in house_ideas.graph.nodes:
+        node.assign_container_type(house_ideas)
     edge = house_ideas.get_edge(CollectorControl, DataBus)
     e1 = ElementPort.from_element_without_ports(edge[0])
     e2 = ElementPort.from_element_without_ports(edge[1])
@@ -621,7 +625,8 @@ def test_container_connect_control_databus(house_ideas: Network) -> None:
 def test_container_envelope_databus(house_ideas: Network) -> None:
     containers = containers_factory()
     house_ideas._build_data_bus()
-    house_ideas.assign_container_type()
+    for node in house_ideas.graph.nodes:
+        node.assign_container_type(house_ideas)
     edge = house_ideas.get_edge(Space, DataBus)
     e1 = ElementPort.from_element_without_ports(edge[0])
     e2 = ElementPort.from_element_without_ports(edge[1])
@@ -637,7 +642,8 @@ def test_container_envelope_databus(house_ideas: Network) -> None:
 def test_container_per_medium_connection(house_ideas: Network) -> None:
     containers = containers_factory()
     house_ideas._build_data_bus()
-    house_ideas.assign_container_type()
+    for node in house_ideas.graph.nodes:
+        node.assign_container_type(house_ideas)
     containers.assign_nodes(house_ideas.graph.nodes, house_ideas.graph)
     bus_container = containers.get_container("bus")
     bus_container.add_grouped_by_medium_connection()

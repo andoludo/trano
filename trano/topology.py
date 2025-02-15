@@ -145,38 +145,6 @@ class Network:  # : PLR0904, #TODO: fix this
             self.graph.add_edge(ahu, data_bus)
         return data_bus
 
-    def _build_full_space_control(self) -> None:
-        spaces = [node for node in self.graph.nodes if isinstance(node, Space)]
-
-        for space in spaces:
-            _neighbors = []
-            if space.get_last_ventilation_inlet():
-                _neighbors += list(
-                    self.graph.predecessors(space.get_last_ventilation_inlet())  # type: ignore
-                )
-            if space.get_last_ventilation_outlet():
-                _neighbors += list(
-                    self.graph.predecessors(space.get_last_ventilation_outlet())  # type: ignore
-                )
-            neighbors = list(set(_neighbors))
-            controllable_ventilation_elements = list(
-                filter(
-                    None,
-                    [
-                        _get_controllable_element(space.ventilation_inlets),
-                        _get_controllable_element(space.ventilation_outlets),
-                    ],
-                )
-            )
-            for controllable_element in controllable_ventilation_elements:
-                if controllable_element.control and isinstance(
-                    controllable_element.control, VAVControl
-                ):
-                    controllable_element.control.ahu = next(
-                        (n for n in neighbors if isinstance(n, AirHandlingUnit)), None
-                    )
-
-
 
     def connect_spaces(
         self,
@@ -333,14 +301,6 @@ class Network:  # : PLR0904, #TODO: fix this
         ):
             self.edge_attributes += self.connect_edges(edge)
 
-    def _connect_space_controls(self) -> None:
-        undirected_graph = self.graph.to_undirected()
-        space_controls = [
-            node for node in undirected_graph.nodes if isinstance(node, Space)
-        ]
-        for space_control in space_controls:
-            for system_control in self._system_controls:
-                shortest_path(undirected_graph, system_control, space_control)
 
     def get_ahu_space_elements(self, ahu: AirHandlingUnit) -> List[Space]:
         return [x for x in self._get_ahu_elements(ahu, Space) if isinstance(x, Space)]
@@ -417,17 +377,13 @@ class Network:  # : PLR0904, #TODO: fix this
                 # TODO: this is not correct
                 node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
-    def assign_container_type(self):
-        for node in list(self.graph.nodes):
-            if node.container_type is None :
-                self.graph.neighbors(node)
-                container_types = {s.container_type for s in  list(self.graph.predecessors(node)) + list(self.graph.successors(node)) if s.container_type}
-                node.container_type = next(iter(sorted(container_types, key={v: i for i, v in enumerate(get_args(ContainerTypes))}.get)))
+
 
     def model(self, include_container=False) -> str:
         Space.counter = 0
-        self.assign_container_type()
-        self._build_full_space_control()
+        for node in self.graph.nodes:
+            node.assign_container_type(self)
+            node.processing(self)
         data_bus = self._build_data_bus()
         self.configure_ahu_control()
         self.configure_collector_control()
@@ -435,9 +391,6 @@ class Network:  # : PLR0904, #TODO: fix this
         data_bus.non_connected_ports = get_non_connected_ports(self.graph.nodes)
         self.containers.assign_nodes(self.graph.nodes, self.graph)
         self.generate_graphs()
-
-        self._connect_space_controls() #TODO: What is this for?
-
         component_models = self.build_element_models()
         self.containers.assign_models(component_models)
         self.containers.connect(self.edge_attributes)
