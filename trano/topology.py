@@ -98,22 +98,6 @@ class Network:  # : PLR0904, #TODO: fix this
             self.graph.add_edge(node, node_control)
             node_control.controllable_element = node
 
-    def add_space(self, space: "Space") -> None:
-        self.add_node(space)
-        if self.library.merged_external_boundaries:
-            external_boundaries = space.merged_external_boundaries
-        else:
-            external_boundaries = space.external_boundaries  # type: ignore
-        for boundary in external_boundaries:
-            self.add_node(boundary)
-            self.graph.add_edge(
-                space,
-                boundary,
-            )
-        self._build_space_emission(space)  # TODO: perhaps move to space
-        self._build_occupancy(space)
-        self._build_space_ventilation(space)
-        space.assign_position()
 
     def _add_subsequent_systems(self, systems: List[System]) -> None:
         for system1, system2 in zip(systems[:-1], systems[1:]):
@@ -126,27 +110,8 @@ class Network:  # : PLR0904, #TODO: fix this
                 system2,
             )
 
-    def _build_space_ventilation(self, space: "Space") -> None:
-        # Assumption: first element always the one connected to the space.
-        if space.get_ventilation_inlet():
-            self.add_node(space.get_ventilation_inlet())  # type: ignore
-            self.graph.add_edge(space.get_ventilation_inlet(), space)
-        if space.get_ventilation_outlet():
-            self.add_node(space.get_ventilation_outlet())  # type: ignore
-            self.graph.add_edge(space, space.get_ventilation_outlet())
-        # The rest is connected to each other
-        self._add_subsequent_systems(space.ventilation_outlets)
-        self._add_subsequent_systems(space.ventilation_inlets)
 
-    def _build_space_emission(self, space: "Space") -> None:
-        emission = space.find_emission()
-        if emission:
-            self.add_node(emission)
-            self.graph.add_edge(
-                space,
-                emission,
-            )
-            self._add_subsequent_systems(space.emissions)
+
 
     def _build_data_bus(self) -> DataBus:
         # TODO: this feels like it does not belong here!!!!
@@ -211,10 +176,7 @@ class Network:  # : PLR0904, #TODO: fix this
                         (n for n in neighbors if isinstance(n, AirHandlingUnit)), None
                     )
 
-    def _build_occupancy(self, space: "Space") -> None:
-        if space.occupancy:
-            self.add_node(space.occupancy)
-            self.connect_system(space, space.occupancy)
+
 
     def connect_spaces(
         self,
@@ -591,7 +553,7 @@ class Network:  # : PLR0904, #TODO: fix this
         weather: Optional[Weather] = None,
     ) -> None:
         for space in spaces:
-            self.add_space(space)
+            space.add_to_network(self)
         if create_internal:
             for combination in itertools.combinations(spaces, 2):
                 self.connect_spaces(*combination)

@@ -1,5 +1,5 @@
 from math import ceil
-from typing import ClassVar, List, Optional, Union
+from typing import ClassVar, List, Optional, Union, TYPE_CHECKING
 
 from networkx import Graph
 from pydantic import Field
@@ -22,6 +22,9 @@ from trano.elements.envelope import (
 from trano.elements.system import BaseOccupancy, Emission, System
 from trano.elements.types import ContainerTypes
 
+if TYPE_CHECKING:
+    from trano.topology import Network
+
 MAX_X_SPACES = 3
 
 
@@ -38,7 +41,7 @@ def _get_controllable_element(elements: List[System]) -> Optional["System"]:
     return controllable_elements[0]
 
 
-class Space(BaseElement):
+class BaseSpace(BaseElement):
     counter: ClassVar[int] = 0
     name: str
     external_boundaries: list[
@@ -187,3 +190,40 @@ class Space(BaseElement):
         self.volume: float = self.volume + other.volume
         self.external_boundaries += other.external_boundaries
         return self
+
+
+class Space(BaseSpace):
+    def add_to_network(self, network: "Network") -> None:
+        network.add_node(self)
+        if network.library.merged_external_boundaries:
+            external_boundaries = self.merged_external_boundaries
+        else:
+            external_boundaries = self.external_boundaries  # type: ignore
+        for boundary in external_boundaries:
+            network.add_node(boundary)
+            network.graph.add_edge(
+                self,
+                boundary,
+            )
+        emission = self.find_emission()
+        if emission:
+            network.add_node(emission)
+            network.graph.add_edge(
+                self,
+                emission,
+            )
+            network._add_subsequent_systems(self.emissions)
+        if self.occupancy:
+            network.add_node(self.occupancy)
+            network.connect_system(self, self.occupancy)
+        # Assumption: first element always the one connected to the space.
+        if self.get_ventilation_inlet():
+            network.add_node(self.get_ventilation_inlet())  # type: ignore
+            network.graph.add_edge(self.get_ventilation_inlet(), self)
+        if self.get_ventilation_outlet():
+            network.add_node(self.get_ventilation_outlet())  # type: ignore
+            network.graph.add_edge(self, self.get_ventilation_outlet())
+        # The rest is connected to each other
+        network._add_subsequent_systems(self.ventilation_outlets)
+        network._add_subsequent_systems(self.ventilation_inlets)
+        self.assign_position()
