@@ -88,10 +88,10 @@ class AvailableLibraries(BaseModel):
 
     # TODO: this code should be library independent
     @classmethod
-    def from_config(cls, name: str) -> Optional["AvailableLibraries"]:
+    def from_config(cls, name: str, data:Optional[Dict[str, Any]] = None) -> Optional["AvailableLibraries"]:
         from trano.elements import BaseParameter, Figure, Port, parameters
 
-        data = deepcopy(COMPONENTS)
+        data = data or deepcopy(COMPONENTS)
         components_data__ = [
             component
             for component in data["components"]

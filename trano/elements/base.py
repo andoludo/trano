@@ -52,9 +52,10 @@ class BaseElement(BaseElementPort):
     @model_validator(mode="before")
     @classmethod
     def validate_libraries_data(cls, value: Dict[str, Any]) -> Dict[str, Any]:
-        libraries_data = AvailableLibraries.from_config(cls.__name__)
-        if libraries_data:
-            value["libraries_data"] = libraries_data
+        if "libraries_data" not in value:
+            libraries_data = AvailableLibraries.from_config(cls.__name__)
+            if libraries_data:
+                value["libraries_data"] = libraries_data
 
         parameter_class = param_from_config(cls.__name__)
         if parameter_class and isinstance(value, dict) and not value.get("parameters"):
@@ -128,7 +129,7 @@ class BaseElement(BaseElementPort):
         self._environment.globals.update(network.library.functions)
         if self.component_template:
             component = self.component_template.render(
-                self.name, self, self.processed_parameters(network.library)
+                network.name, self, self.processed_parameters(network.library)
             )
             if self.component_template.category:
                 network.dynamic_components[self.component_template.category].append(

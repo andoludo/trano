@@ -33,6 +33,21 @@ class DynamicComponentTemplate(BaseModel):
     function: Callable[[Any], Any] = Field(default=lambda _: {})
     bus: ControllerBus
 
+    def _has_required_attributes(self, element: "BaseElement") -> None:
+        for target in self.bus.main_targets():
+            if "element" not in target:
+                raise ValueError(
+                    f"Target {target} should start with the word 'element'"
+                )
+            attributes = target.split(".")[1:]
+            for attr in attributes:
+                if not hasattr(element, attr):
+                    raise ValueError(
+                        f"Element {element} does not have attribute {attr}"
+                    )
+                element = getattr(element, attr)
+
+
     def render(
         self, package_name: str, element: "BaseElement", parameters: Dict[str, Any]
     ) -> str:

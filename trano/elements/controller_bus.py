@@ -97,6 +97,10 @@ class ControllerBus(BaseModel):
     def from_configuration(cls, file_path: Path) -> "ControllerBus":
         return cls(**json.loads(file_path.read_text()))
 
+
+    def main_targets(self) -> List[str]:
+        return list({input.target.main for input in self.inputs()})
+
     def inputs(
         self,
     ) -> List[
