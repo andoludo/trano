@@ -1,16 +1,12 @@
 import itertools
 import logging
 import shutil
-
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type, Union, get_args
+from typing import Dict, List, Optional, Tuple, Type
 
-import matplotlib.pyplot as plt
 import networkx as nx
-import numpy as np
 from jinja2 import Environment, FileSystemLoader
-from networkx import DiGraph, shortest_path
-from networkx.classes.reportviews import NodeView
+from networkx import DiGraph
 from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from tests.constructions.constructions import Constructions
@@ -26,31 +22,20 @@ from trano.elements.base import ElementPort
 from trano.elements.bus import DataBus
 from trano.elements.common_base import BasePosition
 from trano.elements.construction import extract_properties
-from trano.elements.containers import containers_factory
-from trano.elements.control import AhuControl, CollectorControl, VAVControl
-from trano.elements.inputs import BaseInputOutput
-from trano.elements.space import Space, _get_controllable_element
+from trano.elements.containers import containers_factory, ContainerInput
+from trano.elements.space import Space
 from trano.elements.system import (
-    VAV,
-    AirHandlingUnit,
-    Boiler,
-    Pump,
     System,
     TemperatureSensor,
     ThreeWayValve,
-    Valve,
-    Ventilation,
     Weather,
 )
-from trano.elements.types import Tilt, ContainerTypes
-from trano.exceptions import WrongSystemFlowError
+from trano.elements.types import Tilt
+from trano.elements.utils import generate_normalized_layout
 from trano.library.library import Library
-from pydantic import BaseModel
+
 logger = logging.getLogger(__name__)
-class ComponentModel(BaseModel):
-    id: int
-    model: str
-    container: str
+
 
 class Network:  # : PLR0904, #TODO: fix this
     def __init__(
@@ -58,6 +43,7 @@ class Network:  # : PLR0904, #TODO: fix this
         name: str,
         library: Optional[Library] = None,
         external_data: Optional[Path] = None,
+        diagram_scale: Optional[float] = None,
     ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
@@ -66,14 +52,31 @@ class Network:  # : PLR0904, #TODO: fix this
         self.library = library or Library.load_default()
         self.external_data = external_data
         self.containers = containers_factory()
+        self.diagram_scale = diagram_scale or 1000
         self.dynamic_components: Dict[DynamicTemplateCategories, List[str]] = {
             "ventilation": [],
             "control": [],
             "boiler": [],
         }
 
-    def get_edge(self, first_edge: Type[BaseElement], second_edge: Type[BaseElement]) -> Connection:
-        return next(edge for edge in self.graph.edges if ((isinstance(edge[0], first_edge) and isinstance(edge[1], second_edge)) or (isinstance(edge[1], first_edge) and isinstance(edge[0], second_edge))))
+    @property
+    def diagram_size(self) -> str:
+        return f"{{{{{-50},{-50}}},{{{self.diagram_scale},{self.diagram_scale}}}}}"
+
+    def get_edge(
+        self, first_edge: Type[BaseElement], second_edge: Type[BaseElement]
+    ) -> Connection:
+        return next(
+            edge
+            for edge in self.graph.edges
+            if (
+                (isinstance(edge[0], first_edge) and isinstance(edge[1], second_edge))
+                or (
+                    isinstance(edge[1], first_edge) and isinstance(edge[0], second_edge)
+                )
+            )
+        )
+
     def add_node(self, node: BaseElement) -> None:
 
         if not node.libraries_data:
@@ -98,7 +101,6 @@ class Network:  # : PLR0904, #TODO: fix this
             self.graph.add_edge(node, node_control)
             node_control.controllable_element = node
 
-
     def _add_subsequent_systems(self, systems: List[System]) -> None:
         for system1, system2 in zip(systems[:-1], systems[1:]):
             if not self.graph.has_node(system1):  # type: ignore
@@ -109,9 +111,6 @@ class Network:  # : PLR0904, #TODO: fix this
                 system1,
                 system2,
             )
-
-
-
 
     def connect_spaces(
         self,
@@ -128,9 +127,11 @@ class Network:  # : PLR0904, #TODO: fix this
             construction=Constructions.internal_wall,
             tilt=Tilt.wall,
         )
-        if space_1.position.is_empty() or space_2.position.is_empty():
+        if space_1.position.is_global_empty() or space_2.position.is_global_empty():
             raise Exception("Position not assigned to spaces")
-        internal_element.position.between_two_objects(space_1.position.global_, space_2.position.global_)
+        internal_element.position.between_two_objects(
+            space_1.position.global_, space_2.position.global_
+        )
 
         self.add_node(internal_element)
         self.graph.add_edge(
@@ -154,23 +155,29 @@ class Network:  # : PLR0904, #TODO: fix this
         self, system_1: System, system_2: System  # :  PLR6301
     ) -> None:
         # TODO: change position to object
-        if not system_1.position.is_empty() and not system_2.position:
+        if not system_1.position.is_global_empty() and not system_2.position:
             position = BasePosition()
-            position.set_global(system_1.position.global_.location.x + 100, system_1.position.global_.location.y - 100)
+            position.set_global(
+                system_1.position.global_.location.x + 100,
+                system_1.position.global_.location.y - 100,
+            )
             system_2.position = position
             if hasattr(system_2, "control") and system_2.control:
                 system_2.control.position.set_global(
                     system_2.position.global_.location.x - 50,
-                    system_2.position.global_.location.y
+                    system_2.position.global_.location.y,
                 )
-        if not system_1.position.is_empty()  and not system_1.position:
+        if not system_1.position.is_global_empty() and not system_1.position:
             position = BasePosition()
-            position.set_global(system_2.position.global_.location.x - 100, system_2.position.global_.location.y - 100)
+            position.set_global(
+                system_2.position.global_.location.x - 100,
+                system_2.position.global_.location.y - 100,
+            )
             system_1.position = position
             if hasattr(system_1, "control") and system_1.control:
                 system_1.control.position.set_global(
                     system_2.position.global_.location.x - 50,
-                    system_2.position.global_.location.y
+                    system_2.position.global_.location.y,
                 )
 
     def connect_elements(self, element_1: BaseElement, element_2: BaseElement) -> None:
@@ -215,9 +222,13 @@ class Network:  # : PLR0904, #TODO: fix this
     def connect_edges(
         self, edge: Tuple[BaseElement, BaseElement]  # :  PLR6301
     ) -> list[Connection]:
-        connection =  connect(ElementPort.from_element(edge[0]), ElementPort.from_element(edge[1]))
+        connection = connect(
+            ElementPort.from_element(edge[0]), ElementPort.from_element(edge[1])
+        )
         if not connection:
-            logger.warning(f"Connection not possible between {edge[0].name} and {edge[1].name}")
+            logger.warning(
+                f"Connection not possible between {edge[0].name} and {edge[1].name}"
+            )
         return connection
 
     def merge_spaces(self, space_1: "Space", space_2: "Space") -> None:
@@ -226,22 +237,23 @@ class Network:  # : PLR0904, #TODO: fix this
         merged_space.internal_elements = internal_elements
         self.graph = nx.contracted_nodes(self.graph, merged_space, space_2)
 
-    def generate_layout(self) -> Dict[Any, Any]:
-        # nodes = [n for n in self.graph.nodes if isinstance(n, Space)] # noqa : E800
-        # for i, n in enumerate(nodes): # : E800
-        #     n.assign_position([200*i, 50]) # noqa : E800
-
-        return nx.spring_layout(self.graph, k=10, dim=2, scale=200)  # type: ignore
-
-    def generate_graphs(self) -> None:
-        layout = self.generate_layout()
+    def assign_nodes_position(self) -> None:
+        global_position = generate_normalized_layout(self, scale=self.diagram_scale)
+        container_positions = {
+            container.name: generate_normalized_layout(
+                self, scale=container.scale, container_type=container.name
+            )
+            for container in self.containers.containers
+        }
         for node in self.graph.nodes:
-            node.get_position(layout)
-            if isinstance(node, Space):
-                node.get_neighhors(self.graph)
-        # Sorting is necessary here since we need to keep the same
-        # index for the same space indatabus
-        # TODO: not sure where to put this!!!!
+            node.set_position(global_position)
+            if node.container_type and container_positions[node.container_type]:
+                node.set_position(
+                    container_positions[node.container_type], global_=False
+                )
+
+    def connect(self) -> None:
+        self.assign_nodes_position()
         data_bus = next(
             bus for bus in list(self.graph.nodes) if isinstance(bus, DataBus)
         )
@@ -268,29 +280,6 @@ class Network:  # : PLR0904, #TODO: fix this
         ):
             self.edge_attributes += self.connect_edges(edge)
 
-    # def get_linked_valves(self, pump_collector: BaseElement) -> List[Valve]:
-    #     valves_: List[Valve] = []
-    #     valves = [node for node in self.graph.nodes if isinstance(node, Valve)]
-    #     for valve in valves:
-    #         paths = list(nx.all_simple_paths(self.graph, pump_collector, valve))
-    #         for path in paths:
-    #             p = path[1:-1]
-    #             if p and all(isinstance(p_, System) for p_ in p):
-    #                 valves_.append(valve)
-    #                 break
-    #     return valves_
-
-    # def configure_collector_control(self) -> None:
-    #     pump_collectors = [
-    #         node
-    #         for node in self.graph.nodes
-    #         if isinstance(node, (Pump, Boiler))
-    #         and isinstance(node.control, CollectorControl)
-    #     ]
-    #     for pump_collector in pump_collectors:
-    #         if isinstance(pump_collector.control, CollectorControl):
-    #             pump_collector.control.valves = self.get_linked_valves(pump_collector)
-
     def set_weather_path_to_container_path(self, project_path: Path) -> None:
         for node in self.graph.nodes:
             if (
@@ -313,8 +302,6 @@ class Network:  # : PLR0904, #TODO: fix this
                 # TODO: this is not correct
                 node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
-
-
     def model(self, include_container=False) -> str:
         Space.counter = 0
         for node in self.graph.nodes:
@@ -324,20 +311,19 @@ class Network:  # : PLR0904, #TODO: fix this
         data_bus.add_to_network(self)
         for node in self.graph.nodes:
             node.configure(self)
-        # self.configure_ahu_control()
-        # self.configure_collector_control()
-        data_bus.non_connected_ports = get_non_connected_ports(self.graph.nodes)
-
-
-        self.containers.assign_nodes(self.graph.nodes, self.graph)
-        self.generate_graphs()
-        component_models = self.build_element_models()
-        self.containers.assign_models(component_models)
-        self.containers.connect(self.edge_attributes)
-        self.containers.build_main_connections()
+        data_bus.configure(self)
+        self.connect()
         data = extract_properties(self.library, self.name, self.graph.nodes)
-        self.containers.add_data(data)
-        container_model = self.containers.build()
+        component_models = []
+        for node in self.graph.nodes:
+            model = node.model(self)
+            if model:
+                component_models.append(model)
+
+        container_input = ContainerInput(
+            nodes=list(self.graph.nodes), connections=self.edge_attributes, data=data
+        )
+        container_model = self.containers.build(container_input)
         element_models = [c.model for c in component_models]
         environment = Environment(
             trim_blocks=True,
@@ -347,98 +333,18 @@ class Network:  # : PLR0904, #TODO: fix this
         )
         environment.filters["frozenset"] = frozenset
         environment.filters["enumerate"] = enumerate
-
         template = environment.get_template("base.jinja2")
-
-
-        diagram_size = self._get_diagram_size()
-        if include_container:
-            return template.render(
+        return template.render(
                 network=self,
                 data=data,
                 element_models=element_models,
                 library=self.library,
                 databus=data_bus,
                 dynamic_components=self.dynamic_components,
-                diagram_size=diagram_size,
-                containers = container_model,
-                main = self.containers.main
+                diagram_size=self.diagram_size,
+                containers=container_model if include_container else [],
+                main=self.containers.main if include_container else "",
             )
-        return template.render(
-            network=self,
-            data=data,
-            element_models=element_models,
-            library=self.library,
-            databus=data_bus,
-            dynamic_components=self.dynamic_components,
-            diagram_size=diagram_size,
-            containers = []
-        )
-
-    def _get_diagram_size(self) -> str:
-        x = [n.position.global_.location.x for n in list(self.graph.nodes)]
-        y = [n.position.global_.location.y for n in list(self.graph.nodes)]
-        return f"{{{{{min(x) - 50},{min(y) - 50}}},{{{max(x) + 50},{max(y) + 50}}}}}"
-
-    def build_dynamic_component_template(self, node: BaseElement) -> None:
-
-        if node.component_template:
-            component = node.component_template.render(
-                self.name, node, node.processed_parameters(self.library)
-            )
-            if node.component_template.category:
-                self.dynamic_components[node.component_template.category].append(
-                    component
-                )
-
-    def build_element_models(self) -> List[ComponentModel]:
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(str(Path(__file__).parent.joinpath("templates"))),
-            autoescape=True,
-        )
-        environment.filters["enumerate"] = enumerate
-        models = []
-        for node in self.graph.nodes:
-            if not node.template:
-                continue
-            environment.globals.update(self.library.functions)
-            if node.component_template:
-                self.build_dynamic_component_template(node)
-            package_name = self.name
-            library_name = self.library.name
-            parameters = node.processed_parameters(self.library)
-            rtemplate = environment.from_string(
-                "{% import 'macros.jinja2' as macros %}"
-                + node.template
-                + " "
-                + node.position.global_.annotation
-            )
-
-
-            model = rtemplate.render(
-                element=node,
-                package_name=package_name,
-                library_name=library_name,
-                parameters=parameters,
-            )
-            rtemplate = environment.from_string(
-                "{% import 'macros.jinja2' as macros %}"
-                + node.template
-                + " "
-                + node.position.container.annotation
-            )
-
-            container = rtemplate.render(
-                element=node,
-                package_name=package_name,
-                library_name=library_name,
-                parameters=parameters,
-            )
-            models.append(ComponentModel(id=hash(node), model=model, container=container))
-        return models
-
     def add_boiler_plate_spaces(
         self,
         spaces: list[Space],
@@ -455,62 +361,3 @@ class Network:  # : PLR0904, #TODO: fix this
         self.add_node(weather)
         for space in spaces:
             self.connect_system(space, weather)
-
-    def plot(self, use_pyvis: bool = True) -> None:
-        if use_pyvis:
-            net = PyvisNetwork(notebook=True)
-            plot_graph = DiGraph()
-            for node in self.graph.nodes:
-                plot_graph.add_node(node.name)
-            for edge in self.graph.edges:
-                plot_graph.add_edge(edge[0].name, edge[1].name)
-            net.from_nx(plot_graph)
-            net.toggle_physics(True)
-            net.show("example.html")
-        else:
-            nx.draw(self.graph)
-            plt.draw()
-            plt.show()
-
-
-def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
-    port_types = ["Real", "Integer", "Boolean"]
-    ports: Dict[str, List[BaseInputOutput]] = {
-        f"{port_type}{direction}": []
-        for port_type in port_types
-        for direction in ["Output", "Input"]
-    }
-
-    for node in nodes:
-        if not (
-            hasattr(node, "component_template")
-            and hasattr(node.component_template, "bus")
-        ):
-            continue
-        if node.component_template and node.component_template.bus:
-            node_ports = node.component_template.bus.list_ports(node)
-            for port_type in port_types:
-                ports[f"{port_type}Output"] += node_ports[f"{port_type}Output"]
-                ports[f"{port_type}Input"] += node_ports[f"{port_type}Input"]
-
-    for port_type in port_types:
-        ports[f"{port_type}Output"] = list(set(ports[f"{port_type}Output"]))
-        ports[f"{port_type}Input"] = list(set(ports[f"{port_type}Input"]))
-
-    return list(
-        itertools.chain(
-            *[
-                _get_non_connected_ports_intersection(
-                    ports[f"{port_type}Input"], ports[f"{port_type}Output"]
-                )
-                for port_type in port_types
-            ]
-        )
-    )
-
-
-
-def _get_non_connected_ports_intersection(
-    input_ports: List[BaseInputOutput], output_ports: List[BaseInputOutput]
-) -> List[BaseInputOutput]:
-    return list(set(input_ports) - set(output_ports).intersection(set(input_ports)))

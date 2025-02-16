@@ -6,8 +6,8 @@ from typing import List, Optional, get_args, Tuple
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, Field, model_validator
-
-from trano.elements import Port, Connection, Control
+from networkx.classes.reportviews import NodeView
+from trano.elements import Port, Connection, Control, BaseElement
 from trano.elements.base import ElementPort
 from trano.elements.common_base import BasePosition, Point, BaseProperties
 from trano.elements.connection import (
@@ -40,6 +40,10 @@ class PortGroupMedium(BaseModel):
 class BaseContainer(BaseModel):
     component_size: Point = Field(default=Point(x=20, y=20))
 
+class ContainerInput(BaseModel):
+    nodes: List[BaseElement]
+    connections: List[Connection]
+    data: BaseProperties
 
 class Container(BaseContainer):
     name: ContainerTypes
@@ -47,12 +51,12 @@ class Container(BaseContainer):
     port_groups_per_medium: List[PortGroupMedium] = Field(default=[])
     connections: List[ContainerConnection] = Field(default=[])
     elements: list = Field(default=[])
-    element_models: list = Field(default=[])
     template: str
     size: List[List[float]] = [[-100, -100], [100, 100]]
     left_boundary: Optional[ContainerTypes] = None
     location: Point
     data: Optional[BaseProperties] = None
+    scale: int = 200
 
     def has_data(self) -> bool:
         return self.data is not None
@@ -143,54 +147,6 @@ class Container(BaseContainer):
                                 )
                                 for c in connections
                             ]
-
-    def assign_position(self, graph):
-        left_elements = []
-        seen = set()
-        postitions = []
-        if self.left_boundary is None:
-            for element in self.elements:
-                element.position.set_container(randint(-90, 90), randint(-90, 90))
-
-        for element in self.elements:
-            if self.left_boundary in {
-                e.container_type
-                for e in list(graph.successors(element))
-                + list(graph.predecessors(element))
-                if not isinstance(e, Control)
-            }:
-                left_elements.append(element)
-        seen = seen | {hash(l) for l in left_elements}
-        postitions.append(tuple({hash(l) for l in left_elements}))
-        while True:
-            new_e = [
-                e_
-                for e in left_elements
-                for e_ in list(graph.successors(e)) + list(graph.predecessors(e))
-                if e_.container_type == self.name and not isinstance(e_, Control)
-            ]
-            left_elements = [e_ for e_ in new_e if hash(e_) not in seen]
-            if not left_elements:
-                break
-            seen = seen | {hash(l) for l in left_elements}
-            postitions.append(tuple({hash(l) for l in left_elements}))
-        xstep = 200 / (len(postitions))
-        for e in postitions:
-            if not e:
-                continue
-            ystep = 200 / (len(e))
-            for eid in e:
-                element = [el for el in self.elements if hash(el) == eid][0]
-                element.position.set_container(
-                    -90 + xstep * (postitions.index(e)) + randint(0, 40),
-                    -90 + ystep * (e.index(eid)) + randint(0, 40),
-                )
-                if element.control:
-                    element.control.position.set_container(
-                        element.position.x_container + 20,
-                        element.position.y_container + 20,
-                    )
-
 
 class MainContainerConnection(BaseModel):
     left: PartialConnection
@@ -347,7 +303,12 @@ class Containers(BaseModel):
             raise ValueError("Containers must have unique names.")
         return self
 
-    def build(self):
+    def build(self, container_input: ContainerInput):
+        self.assign_nodes(container_input.nodes)
+        # self.containers.assign_models(component_models)
+        self.connect(container_input.connections)
+        self.build_main_connections()
+        self.add_data(container_input.data)
         template = self._template()
         main_template = self._main_template()
         self._set_connection_annotation()
@@ -458,7 +419,7 @@ class Containers(BaseModel):
                             for c in connections_
                         ]
 
-    def assign_nodes(self, nodes, graph) -> None:
+    def assign_nodes(self, nodes) -> None:
         for container_type in get_args(ContainerTypes):
             container = self.get_container(container_type)
             node_types = [
@@ -467,7 +428,7 @@ class Containers(BaseModel):
 
             if container:
                 container.elements.extend(node_types)
-                container.assign_position(graph)
+
 
     def in_use_containers(self):
         return [c for c in self.containers if c.contain_elements()]
@@ -480,19 +441,6 @@ class Containers(BaseModel):
                 equations.append(bus_connection.equation())
         return equations
 
-
-    def assign_models(self, element_models) -> None:
-        for container_type in get_args(ContainerTypes):
-            container = self.get_container(container_type)
-            if container:
-                element_models_ = [
-                    c.container
-                    for e in container.elements
-                    for c in element_models
-                    if hash(e) == c.id
-                ]
-
-                container.element_models.extend(element_models_)
 
     def get_container(self, container_type: ContainerTypes) -> Optional[Container]:
         for container in self.containers:

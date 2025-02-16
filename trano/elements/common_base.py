@@ -53,9 +53,10 @@ class BasePosition(BaseModel):
     def y_container(self) -> float:
         return self.container.location.y
 
-    def is_empty(self) -> bool:
+    def is_global_empty(self) -> bool:
         return self.global_.is_empty()
-
+    def is_container_empty(self) -> bool:
+        return self.container.is_empty()
     def set(self, x: float, y: float) -> None:
         self.set_global(x, y)
         self.set_container(x, y)
@@ -63,7 +64,10 @@ class BasePosition(BaseModel):
         self.set((position_1.location.x - position_2.location.x) / 2, (position_1.location.y + position_2.location.y) / 2)
 
 
-
+class ComponentModel(BaseModel):
+    id: int
+    model: str
+    container: str
 
 
 

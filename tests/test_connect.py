@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import networkx as nx
 import pytest
 
 from tests.test_validity import get_path
@@ -649,7 +650,7 @@ def test_container_per_medium_connection(house_ideas: Network) -> None:
     data_bus.add_to_network(house_ideas)
     for node in house_ideas.graph.nodes:
         node.assign_container_type(house_ideas)
-    containers.assign_nodes(house_ideas.graph.nodes, house_ideas.graph)
+    containers.assign_nodes(house_ideas.graph.nodes)
     bus_container = containers.get_container("bus")
     bus_container.add_grouped_by_medium_connection()
     assert bus_container.connections
@@ -666,3 +667,23 @@ def test_container_envelope_ventilation(house_ventilation: Network) -> None:
     containers.connect(connections)
     assert containers.get_container("envelope").get_equation_view() == {('ports_b[1]', 'space_001.ports[1]')}
     assert containers.get_container("ventilation").get_equation_view() == {('ports_b[1]', 'vav_001.port_bAir')}
+
+
+def test_assign_container_position(house_ideas: Network) -> None:
+    edges = house_ideas.graph.edges
+    nodes = house_ideas.graph.nodes
+    envelope_edges = [(e[0].name, e[1].name) for e in edges if e[0].container_type == "emission" and e[1].container_type == "emission"]
+    envelope_nodes = [e.name for e in nodes if e.container_type ==  "emission"]
+    # envelope_edges = [(e[0].name, e[1].name) for e in edges]
+    # envelope_nodes = [e.name for e in nodes]
+    new_graph = nx.DiGraph()
+    new_graph.add_nodes_from(envelope_nodes)
+    new_graph.add_edges_from(envelope_edges)
+    # pos = nx.nx_agraph.graphviz_layout(new_graph)
+    pos = nx.nx_pydot.pydot_layout(new_graph, prog="sfdp")
+    # pos = nx.multipartite_layout(new_graph)
+    from matplotlib import pyplot as plt
+    # Draw the graph
+    plt.figure(figsize=(6, 3))
+    nx.draw(new_graph, pos, with_labels=True, node_color="lightblue", edge_color="gray", node_size=2000, font_size=10)
+    plt.show()

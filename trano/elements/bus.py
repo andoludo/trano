@@ -1,9 +1,10 @@
+import itertools
 from pathlib import Path
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, Dict
 
 import pandas as pd
 from pydantic import BaseModel, Field, computed_field
-
+from networkx.classes.reportviews import NodeView
 
 from trano.elements.base import BaseElement, Control
 from trano.elements.inputs import BaseInputOutput
@@ -59,6 +60,49 @@ class DataBus(BaseElement):
             network.graph.add_edge(control, self)
         for ahu in ahus:
             network.graph.add_edge(ahu, self)
+
+    def configure(self, network: "Network") -> None:
+        self.non_connected_ports = get_non_connected_ports(network.graph.nodes)
+
+def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
+    port_types = ["Real", "Integer", "Boolean"]
+    ports: Dict[str, List[BaseInputOutput]] = {
+        f"{port_type}{direction}": []
+        for port_type in port_types
+        for direction in ["Output", "Input"]
+    }
+
+    for node in nodes:
+        if not (
+                hasattr(node, "component_template")
+                and hasattr(node.component_template, "bus")
+        ):
+            continue
+        if node.component_template and node.component_template.bus:
+            node_ports = node.component_template.bus.list_ports(node)
+            for port_type in port_types:
+                ports[f"{port_type}Output"] += node_ports[f"{port_type}Output"]
+                ports[f"{port_type}Input"] += node_ports[f"{port_type}Input"]
+
+    for port_type in port_types:
+        ports[f"{port_type}Output"] = list(set(ports[f"{port_type}Output"]))
+        ports[f"{port_type}Input"] = list(set(ports[f"{port_type}Input"]))
+
+    return list(
+        itertools.chain(
+            *[
+                _get_non_connected_ports_intersection(
+                    ports[f"{port_type}Input"], ports[f"{port_type}Output"]
+                )
+                for port_type in port_types
+            ]
+        )
+    )
+
+def _get_non_connected_ports_intersection(
+        input_ports: List[BaseInputOutput], output_ports: List[BaseInputOutput]
+) -> List[BaseInputOutput]:
+    return list(set(input_ports) - set(output_ports).intersection(set(input_ports)))
 
 
 

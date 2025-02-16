@@ -257,3 +257,5 @@ class Space(BaseSpace):
                 controllable_element.control.ahu = next(
                     (n for n in neighbors if isinstance(n, AirHandlingUnit)), None
                 )
+
+        self.get_neighhors(network.graph)

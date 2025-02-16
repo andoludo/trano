@@ -1,13 +1,16 @@
+from functools import cache
+from pathlib import Path
 from typing import Any, ClassVar, Dict, List, Optional, Type, TYPE_CHECKING, get_args
 
-from pydantic import ConfigDict, Field, field_validator, model_validator
+from jinja2 import Environment, FileSystemLoader
+from pydantic import ConfigDict, Field, field_validator, model_validator, PrivateAttr
 
-from trano.elements.common_base import BaseElementPosition
+from trano.elements.common_base import BaseElementPosition, ComponentModel
 from trano.elements.components import DynamicComponentTemplate
 from trano.elements.connection import Port
 from trano.elements.figure import NamedFigure
 from trano.elements.parameters import BaseParameter, param_from_config
-from trano.elements.types import BaseVariant, Flow, ContainerTypes, Medium
+from trano.elements.types import BaseVariant, ContainerTypes
 from trano.library.library import AvailableLibraries, Library
 
 if TYPE_CHECKING:
@@ -18,11 +21,19 @@ class BaseElementPort(BaseElementPosition):
     name: Optional[str] = Field(default=None)
     ports: list[Port] = Field(default=[], validate_default=True)
     container_type: Optional[ContainerTypes] = None
+
     def available_ports(self) -> List[Port]:
         return [port for port in self.ports if not port.connected]
 
-
-
+def default_environment():
+    environment =  Environment(
+        trim_blocks=True,
+        lstrip_blocks=True,
+        loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
+        autoescape=True,
+    )
+    environment.filters["enumerate"] = enumerate
+    return environment
 
 class BaseElement(BaseElementPort):
     name_counter: ClassVar[
@@ -36,8 +47,7 @@ class BaseElement(BaseElementPort):
     variant: str = BaseVariant.default
     libraries_data: Optional[AvailableLibraries] = None
     figures: List[NamedFigure] = Field(default=[])
-
-
+    _environment: Optional[Environment] = PrivateAttr(default_factory=default_environment)
 
     @model_validator(mode="before")
     @classmethod
@@ -93,10 +103,16 @@ class BaseElement(BaseElementPort):
                 return library_data.parameter_processing(self.parameters)
         return {}
 
-    def get_position(self, layout: Dict["BaseElement", Any]) -> None:
-        if self.position.is_empty():
-            x, y= list(layout.get(self))  # type: ignore
-            self.position.set_global(x, y)
+    def set_position(self, layout: Dict[str, Any], global_: bool = True) -> None:
+        if (
+            self.position.is_global_empty()
+            if global_
+            else self.position.is_container_empty()
+        ):
+            x, y = list(layout.get(self.name))  # type: ignore
+            self.position.set_global(x, y) if global_ else self.position.set_container(
+                x, y
+            )
 
     def get_controllable_ports(self) -> List[Port]:
         return [port for port in self.ports if port.is_controllable()]
@@ -105,11 +121,52 @@ class BaseElement(BaseElementPort):
     def type(self) -> str:
         return type(self).__name__
 
+    @cache
+    def model(self, network: "Network") -> Optional[ComponentModel]:
+        if not self.template:
+            return None
+        self._environment.globals.update(network.library.functions)
+        if self.component_template:
+            component = self.component_template.render(
+                self.name, self, self.processed_parameters(network.library)
+            )
+            if self.component_template.category:
+                network.dynamic_components[self.component_template.category].append(
+                    component
+                )
+        package_name = network.name
+        library_name = network.library.name
+        parameters = self.processed_parameters(network.library)
+        component_model = {"id": hash(self)}
+        for model_type, annotation in {
+            "model": self.position.global_.annotation,
+            "container": self.position.container.annotation,
+        }.items():
+            template = self._environment.from_string(
+                "{% import 'macros.jinja2' as macros %}"
+                + self.template
+                + " "
+                + annotation
+            )
+            component_model.update(
+                {
+                    model_type: template.render(
+                        element=self,
+                        package_name=package_name,
+                        library_name=library_name,
+                        parameters=parameters,
+                    )
+                }
+            )
+
+        return ComponentModel.model_validate(component_model)
+
     def __hash__(self) -> int:
         return hash(f"{self.name}-{type(self).__name__}")
 
     def add_to_network(self, network: "Network") -> None:
         ...
+
     def processing(self, network: "Network") -> None:
         ...
 
@@ -119,47 +176,73 @@ class BaseElement(BaseElementPort):
     def assign_container_type(self, network: "Network") -> None:
         if self.container_type is None:
             network.graph.neighbors(self)
-            container_types = {s.container_type for s in
-                               list(network.graph.predecessors(self)) + list(network.graph.successors(self)) if
-                               s.container_type}
+            container_types = {
+                s.container_type
+                for s in list(network.graph.predecessors(self))
+                + list(network.graph.successors(self))
+                if s.container_type
+            }
             self.container_type = next(
-                iter(sorted(container_types, key={v: i for i, v in enumerate(get_args(ContainerTypes))}.get)))
+                iter(
+                    sorted(
+                        container_types,
+                        key={v: i for i, v in enumerate(get_args(ContainerTypes))}.get,
+                    )
+                )
+            )
 
 
 class ElementPort(BaseElementPort):
     element_type: Optional[Type[BaseElement]] = None
     merged_number: int = 1
+
     def has_target(self, targets: List[BaseElement]) -> bool:
-        return (not targets) or (self.element_type is not None and targets and any(issubclass(self.element_type, t) for t in targets))
+        return (not targets) or (
+            self.element_type is not None
+            and targets
+            and any(issubclass(self.element_type, t) for t in targets)
+        )
+
     def get_connection_per_target(self, target: Type[BaseElement]) -> int:
-        return len([target_ for port in self.ports for target_ in port.targets if issubclass(target, target_)])
-
-
-
-
-
-
+        return len(
+            [
+                target_
+                for port in self.ports
+                for target_ in port.targets
+                if issubclass(target, target_)
+            ]
+        )
 
     @classmethod
     def from_element_without_ports(cls, element: BaseElement) -> "ElementPort":
         return cls.from_element(element, use_original_ports=False)
 
-
     @classmethod
-    def from_element(cls, element: BaseElement, use_original_ports: bool = True) -> "ElementPort":
+    def from_element(
+        cls, element: BaseElement, use_original_ports: bool = True
+    ) -> "ElementPort":
         from trano.elements.envelope import MergedBaseWall
+
         merged_number = 1
         if isinstance(element, MergedBaseWall):
             merged_number = len(element.surfaces)
         if element.position is not None:
-            element_port = cls(**(element.model_dump() | {"element_type": type(element), "merged_number": merged_number}))
+            element_port = cls(
+                **(
+                    element.model_dump()
+                    | {"element_type": type(element), "merged_number": merged_number}
+                )
+            )
         else:
-            element_port =  cls(**(element.model_dump(exclude={"position"}) | {"element_type": type(element), "merged_number": merged_number}))
+            element_port = cls(
+                **(
+                    element.model_dump(exclude={"position"})
+                    | {"element_type": type(element), "merged_number": merged_number}
+                )
+            )
         if use_original_ports:
             element_port.ports = element.ports
         return element_port
-
-
 
 
 # This has to be here for now!!!
@@ -170,5 +253,3 @@ class Control(BaseElement):
     Placement(transformation(origin = {{ macros.join_list(element.container_position) }},
     extent = {% raw %}{{5, -5}, {-5, 5}}
     {% endraw %})));"""
-
-
