@@ -6,15 +6,18 @@ from jinja2 import Environment, FileSystemLoader
 from pydantic import ConfigDict, Field, field_validator, model_validator, PrivateAttr
 
 from trano.elements.common_base import BaseElementPosition, ComponentModel
-from trano.elements.components import DynamicComponentTemplate
+from trano.elements.library.base import DynamicComponentTemplate, LibraryData
 from trano.elements.connection import Port
 from trano.elements.figure import NamedFigure
-from trano.elements.parameters import BaseParameter, param_from_config
+
+from trano.elements.library.parameters import param_from_config
+from trano.elements.common_base import BaseParameter
 from trano.elements.types import BaseVariant, ContainerTypes
-from trano.library.library import AvailableLibraries, Library
+
 
 if TYPE_CHECKING:
     from trano.topology import Network
+    from trano.elements.library.library import AvailableLibraries, Library
 
 
 class BaseElementPort(BaseElementPosition):
@@ -45,21 +48,21 @@ class BaseElement(BaseElementPort):
     template: Optional[str] = None
     component_template: Optional[DynamicComponentTemplate] = None
     variant: str = BaseVariant.default
-    libraries_data: Optional[AvailableLibraries] = None
+    libraries_data: List[LibraryData] = Field(default=[])
     figures: List[NamedFigure] = Field(default=[])
     _environment: Optional[Environment] = PrivateAttr(default_factory=default_environment)
+
+
 
     @model_validator(mode="before")
     @classmethod
     def validate_libraries_data(cls, value: Dict[str, Any]) -> Dict[str, Any]:
-        if "libraries_data" not in value:
-            libraries_data = AvailableLibraries.from_config(cls.__name__)
-            if libraries_data:
-                value["libraries_data"] = libraries_data
-
-        parameter_class = param_from_config(cls.__name__)
-        if parameter_class and isinstance(value, dict) and not value.get("parameters"):
-            value["parameters"] = parameter_class()
+        if isinstance(value, dict) :
+            from trano.elements.library.components import COMPONENTS
+            value["libraries_data"] = COMPONENTS.get_components(cls.__name__)
+            parameter_class = param_from_config(cls.__name__)
+            if parameter_class and isinstance(value, dict) and not value.get("parameters"):
+                value["parameters"] = parameter_class()
 
         return value
 
@@ -77,14 +80,20 @@ class BaseElement(BaseElementPort):
             return value.lower().replace(":", "_")
         return value
 
+    def get_library_data(self, library: "Library") -> Optional[LibraryData]:
+        libraries_data = [library_ for library_ in self.libraries_data if (library_.library == library.name.lower() or library_.library == "default") and library_.variant == self.variant]
+        if libraries_data:
+            return libraries_data[0]
+        return None
+
     def assign_library_property(self, library: "Library") -> bool:
         if not self.libraries_data:
             return False
-        library_data = self.libraries_data.get_library_data(library, self.variant)
+        library_data = self.get_library_data(library)
         if not library_data:
             return False
         if not self.ports:
-            self.ports = library_data.ports_factory()
+            self.ports = library_data.ports()
         if not self.template:
             self.template = library_data.template
         if not self.component_template:
@@ -99,7 +108,7 @@ class BaseElement(BaseElementPort):
 
     def processed_parameters(self, library: "Library") -> Any:  # noqa: ANN401
         if self.libraries_data:
-            library_data = self.libraries_data.get_library_data(library, self.variant)
+            library_data = self.get_library_data(library)
             if library_data and self.parameters:
                 return library_data.parameter_processing(self.parameters)
         return {}

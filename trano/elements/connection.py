@@ -105,7 +105,7 @@ class Port(BaseModel):
     @field_validator("targets")
     @classmethod
     def validate_targets(cls, values: List[str]) -> List[Type["BaseElement"]]:
-        from trano.elements import BaseElement
+        from trano.elements.base import BaseElement
 
         targets: List[Type[BaseElement]] = []
         for value in values:

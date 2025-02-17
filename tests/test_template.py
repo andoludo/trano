@@ -5,7 +5,7 @@ import pytest
 from tests.conftest import _read, clean_model
 from trano.data_models.conversion import convert_network
 from trano.elements.space import Space
-from trano.library.library import Library
+from trano.elements.library.library import Library
 from trano.topology import Network
 def get_path(file_name: str) -> Path:
     return Path(__file__).parent.joinpath("models", file_name)

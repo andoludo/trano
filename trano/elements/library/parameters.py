@@ -2,19 +2,16 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Type
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, computed_field, create_model
+from pydantic import ConfigDict, Field, computed_field, create_model
 
+from trano.elements.common_base import BaseParameter
 from trano.elements.utils import _get_default, _get_type
-
-
-class BaseParameter(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
 
 
 def load_parameters() -> Dict[str, Type["BaseParameter"]]:
     # TODO: remove absoluth path reference
     parameter_path = (
-        Path(__file__).parents[1].joinpath("data_models", "parameters.yaml")
+        Path(__file__).parents[2].joinpath("data_models", "parameters.yaml")
     )
     data = yaml.safe_load(parameter_path.read_text())
     classes = {}

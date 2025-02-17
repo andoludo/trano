@@ -2,7 +2,9 @@ import pytest
 
 from trano.elements import VAV, VAVControl
 from trano.elements.bus import get_non_connected_ports
-from trano.library.library import Library, AvailableLibraries
+from trano.elements.library.components import COMPONENTS
+
+from trano.elements.library.library import Library, AvailableLibraries
 
 
 @pytest.fixture
@@ -480,3 +482,8 @@ def test_dynamic_template_vav(vav_library_data):
  'connect(dataBus.TDisVavcontrol_0, senTem.T);\n'
  ' end VAVBoxVav_0;\n'
  ' ')
+
+
+def test_available_libraries():
+    COMPONENTS
+    a = 12

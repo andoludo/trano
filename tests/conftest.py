@@ -58,7 +58,7 @@ from trano.elements.system import (
     Weather,
 )
 from trano.elements.types import Azimuth, Flow, Tilt
-from trano.library.library import Library
+from trano.elements.library.library import Library
 from trano.topology import Network
 
 OVERWRITE_MODELS = False

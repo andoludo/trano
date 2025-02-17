@@ -32,7 +32,7 @@ from trano.elements.system import (
 )
 from trano.elements.types import Tilt
 from trano.elements.utils import generate_normalized_layout
-from trano.library.library import Library
+from trano.elements.library.library import Library
 
 logger = logging.getLogger(__name__)
 

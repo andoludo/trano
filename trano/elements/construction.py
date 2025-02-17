@@ -10,7 +10,7 @@ from trano.elements.types import ContainerTypes
 
 if TYPE_CHECKING:
 
-    from trano.library.library import Library
+    from trano.elements.library.library import Library
 
 
 class Material(BaseModel):

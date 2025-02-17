@@ -3,7 +3,8 @@
         {
             "classes": [
                 "ExternalWall",
-                "MergedExternalWall"
+                "MergedExternalWall",
+                "ExternalDoor"
             ],
             "figures": [],
             "library": "ideas",

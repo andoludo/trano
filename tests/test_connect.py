@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import networkx as nx
 import pytest
 
@@ -14,13 +12,12 @@ from trano.elements import (
     SplitValve,
     Port, DataBus, ThreeWayValve, TemperatureSensor, CollectorControl,
 )
-from trano.elements.base import ElementPort, Control
-from trano.elements.common_base import BasePosition
+from trano.elements.base import ElementPort
 from trano.elements.containers import containers_factory
 from trano.elements.envelope import MergedExternalWall, MergedWindows, FloorOnGround
-from trano.elements.system import Occupancy, Weather, Valve, Duct, Pump, VAV, Boiler
+from trano.elements.system import Occupancy, Valve, Duct, Pump, VAV, Boiler
 from trano.elements.types import Flow, Medium
-from trano.library.library import Library
+from trano.elements.library.library import Library
 from trano.topology import Network
 
 

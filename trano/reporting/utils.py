@@ -6,7 +6,7 @@ from jinja2 import Template
 from trano.plot.plot import plot_element, plot_plot_ly
 
 if TYPE_CHECKING:
-    from trano.elements import BaseElement, BaseSimpleWall, BaseWall, Space, System
+    from trano.elements import BaseElement, BaseSimpleWall, BaseWall, Space, System, BaseParameter
     from trano.reporting.reporting import ModelDocumentation
 
 
@@ -273,8 +273,6 @@ def get_figures(element_name: str, documentation: "ModelDocumentation") -> list:
 
 
 def get_description() -> Dict[str, Any]:
-    from trano.elements import BaseParameter
-
     return {
         field.alias: (field.description or field.title)
         for cls in BaseParameter.__subclasses__()

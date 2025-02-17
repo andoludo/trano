@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
-from trano.elements.inputs import (
+from trano.elements.data_bus.inputs import (
     BaseInputOutput,
     BooleanInput,
     BooleanOutput,

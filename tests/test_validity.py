@@ -3,11 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import clean_model, _read
 from trano.data_models.conversion import convert_network
-from trano.elements.containers import containers_factory
 from trano.exceptions import IncompatiblePortsError, WrongSystemFlowError
-from trano.library.library import Library
+from trano.elements.library.library import Library
 from trano.simulate.simulate import SimulationOptions, simulate
 from trano.utils.utils import is_success
 

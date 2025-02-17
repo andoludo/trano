@@ -6,7 +6,7 @@ from typing import Optional, Annotated
 from rich import print
 import typer
 from trano.data_models.conversion import convert_network
-from trano.library.library import Library
+from trano.elements.library.library import Library
 from trano.reporting.html import to_html_reporting
 from trano.reporting.reporting import ModelDocumentation
 from trano.reporting.types import ResultFile

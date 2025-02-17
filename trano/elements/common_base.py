@@ -76,5 +76,5 @@ class BaseElementPosition(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
 
-
-
+class BaseParameter(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, extra="allow")

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, computed_field
 from networkx.classes.reportviews import NodeView
 
 from trano.elements.base import BaseElement, Control
-from trano.elements.inputs import BaseInputOutput
+from trano.elements.data_bus.inputs import BaseInputOutput
 from trano.elements.types import ContainerTypes
 
 if TYPE_CHECKING:

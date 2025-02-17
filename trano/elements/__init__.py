@@ -22,7 +22,8 @@ from trano.elements.envelope import (
     Window,
 )
 from trano.elements.figure import Figure, NamedFigure
-from trano.elements.parameters import BaseParameter, param_from_config
+from trano.elements.library.parameters import param_from_config
+from trano.elements.common_base import BaseParameter
 from trano.elements.space import Space
 from trano.elements.system import (
     VAV,
@@ -78,7 +79,6 @@ __all__ = [
     "Control",
     "connect",
     "Connection",
-    "BaseParameter",
     "Port",
     "VAV",
     "Duct",
