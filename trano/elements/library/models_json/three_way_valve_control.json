@@ -71,7 +71,7 @@
                     "flow": "undirected"
                 }
             ],
-            "template": "\n    {{package_name}}.Trano.Controls.ventilation.\n    ThreeWayValveControl{{ element.name | capitalize}}\n    {{ element.name }}",
+            "template": "\n    {{package_name}}.Components.BaseClasses.\n    ThreeWayValveControl{{ element.name | capitalize}}\n    {{ element.name }}",
             "variant": "default"
         }
     ]

@@ -404,92 +404,6 @@ constructed by the signals connected to this bus.
               fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
               preserveAspectRatio=false)));
   end AHU_G36;
-        model EmissionControlEmission_control
-  parameter Real schedule[:]=3600*{7,19};
-
-  parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
-    parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
-Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
-annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
-annotation (Placement(transformation(extent={{100,-8},{120,12}})));
-
-  Buildings.Controls.SetPoints.OccupancySchedule
-                                   occSch2(firstEntryOccupied=true, occupancy=
-        schedule)
-
-annotation (Placement(transformation(extent={{-116,-36},{-96,-16}})));
-  Buildings.Controls.OBC.CDL.Reals.Switch switch2
-annotation (Placement(transformation(extent={{-70,-26},{-50,-6}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant setpoint(k=THeaSet)
-    "Heat gain if occupied in room 2"
-    annotation (Placement(transformation(extent={{-116,14},{-96,34}})));
-  Buildings.Controls.OBC.CDL.Reals.Sources.Constant setback(k=THeaSetBack)
-    "Heat gain if occupied in room 2"
-    annotation (Placement(transformation(extent={{-112,-82},{-92,-62}})));
-Controls.BaseClasses.DataBus dataBus
-    annotation (Placement(transformation(
-  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
-equation
-connect(emissionControl.yHea, y) annotation (Line(points={{34.4,-21.2},{96,-21.2},
-{96,2},{110,2}}, color={0,0,127}));
-  connect(
-emissionControl.yHea, y) annotation (Line(points={{60.4,-21.2},{96,-21.2},{96,2},
-          {110,2}}, color={0,0,127}));
-  connect(occSch2.
-              occupied, switch2.u2) annotation (Line(
-  points={{-95,-32},{-78,-32},{-78,-16},{-72,-16}},
-  color={255,0,255},
-  smooth=Smooth.None));
-  connect(setpoint.y, switch2.u1) annotation (Line(points={{-94,24},{-90,24},{-90,
-          -8},{-72,-8}}, color={0,0,127}));
-  connect(setback.y, switch2.u3)
-    annotation (Line(points={{-90,-72},{-72,-72},{-72,-24}}, color={0,0,127}));
-      connect(switch2.y, emissionControl.THeaSet) annotation (Line(points={{-52,-22},
-          {-52,-21.2},{-42.4,-21.2}}, color={0,0,127}));
-connect(dataBus.TCooSetSpace_1, emissionControl.TCooSet);
-connect(dataBus.TZonSpace_1, emissionControl.TZon);
-connect(dataBus.yCooEmission, emissionControl.yCoo);
-connect(dataBus.yHeaEmission, emissionControl.yHea);
-end EmissionControlEmission_control;
-        model OccupancyOccupancy_0
-extends space_1_different_construction_types.Trano.Occupancy.SimpleOccupancy ;
-Controls.BaseClasses.DataBus dataBus
-    annotation (Placement(transformation(
-  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
-equation
-connect(dataBus.OccupiedSpace_1, occSch2.occupied);
- end OccupancyOccupancy_0;
- 
-        model DataServer
-replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
-Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[1]
-TRoo annotation (
-Placement(transformation(origin={-544,-226},
-extent = {{480, 216}, {500, 236}})));Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[1]
-port annotation (
-Placement(transformation(extent={{-112,-10},{-92,10}}),
-iconTransformation(extent = {{-110, -10}, {-90, 10}})));Buildings.Fluid.Sensors.PPM[1] TRoo1(redeclare
-package Medium = Medium)annotation (
-Placement(transformation(origin={-542,-268},
-extent = {{480, 216}, {500, 236}})));Modelica.Fluid.Interfaces.FluidPort_a[1]
-port_a(redeclare package Medium
-= Medium)annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
-iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Controls.BaseClasses.DataBus dataBus
-    annotation (Placement(transformation(
-  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
-Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control
-            (y=298.15);
-equation
-connect(port[1],TRoo[1]. port);
-connect(port_a[1], TRoo1[1].port);
-connect(dataBus.TZonSpace_1, TRoo[1].T);
-connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
-connect(dataBus.TCooSetSpace_1,
-TCooSetEmission_control.y);
-end DataServer;
-      
 
 
       partial model PartialBoilerControl
@@ -2090,12 +2004,108 @@ end PartialVAVBox;
             fillPattern =                                                                            FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25)}));
 end Trano;
 
+
+package Components
+  package Containers
+  end Containers;
+
+  package BaseClasses
+        model EmissionControlEmission_control
+  parameter Real schedule[:]=3600*{7,19};
+
+  parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
+    parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
+Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
+emissionControl
+annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
+annotation (Placement(transformation(extent={{100,-8},{120,12}})));
+
+  Buildings.Controls.SetPoints.OccupancySchedule
+                                   occSch2(firstEntryOccupied=true, occupancy=
+        schedule)
+
+annotation (Placement(transformation(extent={{-116,-36},{-96,-16}})));
+  Buildings.Controls.OBC.CDL.Reals.Switch switch2
+annotation (Placement(transformation(extent={{-70,-26},{-50,-6}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant setpoint(k=THeaSet)
+    "Heat gain if occupied in room 2"
+    annotation (Placement(transformation(extent={{-116,14},{-96,34}})));
+  Buildings.Controls.OBC.CDL.Reals.Sources.Constant setback(k=THeaSetBack)
+    "Heat gain if occupied in room 2"
+    annotation (Placement(transformation(extent={{-112,-82},{-92,-62}})));
+Trano.Controls.BaseClasses.DataBus dataBus
+    annotation (Placement(transformation(
+  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
+equation
+connect(emissionControl.yHea, y) annotation (Line(points={{34.4,-21.2},{96,-21.2},
+{96,2},{110,2}}, color={0,0,127}));
+  connect(
+emissionControl.yHea, y) annotation (Line(points={{60.4,-21.2},{96,-21.2},{96,2},
+          {110,2}}, color={0,0,127}));
+  connect(occSch2.
+              occupied, switch2.u2) annotation (Line(
+  points={{-95,-32},{-78,-32},{-78,-16},{-72,-16}},
+  color={255,0,255},
+  smooth=Smooth.None));
+  connect(setpoint.y, switch2.u1) annotation (Line(points={{-94,24},{-90,24},{-90,
+          -8},{-72,-8}}, color={0,0,127}));
+  connect(setback.y, switch2.u3)
+    annotation (Line(points={{-90,-72},{-72,-72},{-72,-24}}, color={0,0,127}));
+      connect(switch2.y, emissionControl.THeaSet) annotation (Line(points={{-52,-22},
+          {-52,-21.2},{-42.4,-21.2}}, color={0,0,127}));
+connect(dataBus.TCooSetSpace_1, emissionControl.TCooSet);
+connect(dataBus.TZonSpace_1, emissionControl.TZon);
+connect(dataBus.yCooEmission, emissionControl.yCoo);
+connect(dataBus.yHeaEmission, emissionControl.yHea);
+end EmissionControlEmission_control;
+        model OccupancyOccupancy_0
+extends space_1_different_construction_types.Trano.Occupancy.SimpleOccupancy ;
+Trano.Controls.BaseClasses.DataBus dataBus
+    annotation (Placement(transformation(
+  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
+equation
+connect(dataBus.OccupiedSpace_1, occSch2.occupied);
+ end OccupancyOccupancy_0;
+ 
+        model DataServer
+replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
+Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[1]
+TRoo annotation (
+Placement(transformation(origin={-544,-226},
+extent = {{480, 216}, {500, 236}})));Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[1]
+port annotation (
+Placement(transformation(extent={{-112,-10},{-92,10}}),
+iconTransformation(extent = {{-110, -10}, {-90, 10}})));Buildings.Fluid.Sensors.PPM[1] TRoo1(redeclare
+package Medium = Medium)annotation (
+Placement(transformation(origin={-542,-268},
+extent = {{480, 216}, {500, 236}})));Modelica.Fluid.Interfaces.FluidPort_a[1]
+port_a(redeclare package Medium
+= Medium)annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
+iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Trano.Controls.BaseClasses.DataBus dataBus
+    annotation (Placement(transformation(
+  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
+Modelica.Blocks.Sources.RealExpression
+            TCooSetEmission_control
+            (y=298.15);
+equation
+connect(port[1],TRoo[1]. port);
+connect(port_a[1], TRoo1[1].port);
+connect(dataBus.TZonSpace_1, TRoo[1].T);
+connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
+connect(dataBus.TCooSetSpace_1,
+TCooSetEmission_control.y);
+end DataServer;
+      
+  end BaseClasses;
+end Components;
+
+
 package Data "Data for transient thermal building simulation"
 extends Modelica.Icons.MaterialPropertiesPackage;
 
 package Glazing "Library of building glazing systems"
 extends Modelica.Icons.MaterialPropertiesPackage;
-    record  simple_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+    record  double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
           final nLay=3,
       final checkLowPerformanceGlazing=false,
           mats={space_1_different_construction_types.Data.Materials.id_100
@@ -2128,7 +2138,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
       final g_value=0.78
 
     ) "space_1_different_construction_types";
-    record  double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+    record  simple_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
           final nLay=3,
       final checkLowPerformanceGlazing=false,
           mats={space_1_different_construction_types.Data.Materials.id_100
@@ -2174,6 +2184,11 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick = IDEAS.Buildi
       c=840.0,
       rho=2500.0,
       epsLw=0.88,
+      epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.12,
+      c=1210.0,
+      rho=540.0,
+      epsLw=0.88,
       epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.025,
       c=1005.0,
@@ -2189,11 +2204,6 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick = IDEAS.Buildi
       c=840.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.12,
-      c=1210.0,
-      rho=540.0,
-      epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record test_wall
     "test_wall"
@@ -2202,19 +2212,19 @@ package Constructions "Library of building envelope constructions"      record t
         (d=0.4),space_1_different_construction_types.Data.Materials.insulation_board
         (d=0.2),space_1_different_construction_types.Data.Materials.plywood
         (d=0.4)    });
-    end test_wall;      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={space_1_different_construction_types.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;      record external_wall
+    end test_wall;      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={space_1_different_construction_types.Data.Materials.concrete
         (d=0.2),space_1_different_construction_types.Data.Materials.insulation_board
         (d=0.02),space_1_different_construction_types.Data.Materials.plywood
         (d=0.1)    });
-    end external_wall;
+    end external_wall;      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={space_1_different_construction_types.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;
 end Constructions;
 end Data;
 model building
@@ -2281,7 +2291,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 135, 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -118.42780346435347, -158.0290230439653 },
+    Placement(transformation(origin = { 830.0200700817234, 100.52932005632668 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -2293,7 +2303,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 0 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 173.93303487374465, 60.10247735476323 },
+    Placement(transformation(origin = { 608.7584836023775, 0.0 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -2305,7 +2315,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -65.52969278886033, 200.0 },
+    Placement(transformation(origin = { 979.7952197414171, 321.60279621806484 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2316,7 +2326,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 189.74132186220876, -60.26427482601313 },
+    Placement(transformation(origin = { 1000.0, 617.6825588412794 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -2327,7 +2337,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 45 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 125.23648607664991, 163.64828789510665 },
+    Placement(transformation(origin = { 668.4780412523884, 1000.0 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.SlabOnGround floor_2(
@@ -2335,7 +2345,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     external_wall constructionType,
     redeclare package Medium = Medium,
     A=10) annotation (
-    Placement(transformation(origin = { -29.946132345846003, -171.38596596936426 },
+    Placement(transformation(origin = { 871.4687335836157, 859.2712733856366 },
     extent = {{10, -10}, {-10, 10}}
 )));
         space_1_different_construction_types.Trano.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
@@ -2343,15 +2353,15 @@ package MediumW = IDEAS.Media.Water "Medium model";
     Placement(transformation(origin = { 0, -75 },
     extent = {{10, -10}, {-10, 10}}
 )));
-        space_1_different_construction_types.Trano.Controls.ventilation.EmissionControlEmission_control
+        space_1_different_construction_types.Components.BaseClasses.EmissionControlEmission_control
     emission_control(    schedule=3600*{7, 19},
     THeaSet=24.0,
     THeaSetBack=16.0
 ) annotation (
-    Placement(transformation(origin = { -188.83393007489477, 26.48193319979203 },
+    Placement(transformation(origin = { 0.0, 513.0004023335345 },
     extent = {{10, -10}, {-10, 10}}
 )));
-        space_1_different_construction_types.Trano.Controls.ventilation.OccupancyOccupancy_0
+        space_1_different_construction_types.Components.BaseClasses.OccupancyOccupancy_0
     occupancy_0(    gain=[35; 70; 30],
     k=1/6/4,
     occupancy=3600*{7, 19}
@@ -2367,10 +2377,10 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
     Placement(transformation(origin = { -100, 200 },
     extent = {{10, -10}, {-10, 10}}
 )));
-        space_1_different_construction_types.Trano.Controls.ventilation.DataServer
+        space_1_different_construction_types.Components.BaseClasses.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 62.584610198588585, -172.96095943870515 },
+    Placement(transformation(origin = { 259.72571529732767, 355.7257091128546 },
     extent = {{10, -10}, {-10, 10}}
 )));
 
@@ -2380,7 +2390,7 @@ equation
         
         connect(space_1.propsBus[1:2],merged_w1_1_w3_1[1:2].propsBus_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ -59.21390173217674, 0.0 }    ,{ -59.21390173217674, -158.0290230439653 }    ,{ -118.42780346435347, -158.0290230439653 }    },
+        points={{ 0.0, 0.0 }    ,{ 415.0100350408617, 0.0 }    ,{ 415.0100350408617, 100.52932005632668 }    ,{ 830.0200700817234, 100.52932005632668 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2389,7 +2399,7 @@ equation
         
         connect(space_1.propsBus[3],merged_w2_1[1].propsBus_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 86.96651743687232, 0.0 }    ,{ 86.96651743687232, 60.10247735476323 }    ,{ 173.93303487374465, 60.10247735476323 }    },
+        points={{ 0.0, 0.0 }    ,{ 304.37924180118875, 0.0 }    ,{ 304.37924180118875, 0.0 }    ,{ 608.7584836023775, 0.0 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2398,7 +2408,7 @@ equation
         
         connect(space_1.propsBus[4],merged_w4_1[1].propsBus_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ -32.764846394430165, 0.0 }    ,{ -32.764846394430165, 200.0 }    ,{ -65.52969278886033, 200.0 }    },
+        points={{ 0.0, 0.0 }    ,{ 489.89760987070855, 0.0 }    ,{ 489.89760987070855, 321.60279621806484 }    ,{ 979.7952197414171, 321.60279621806484 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2407,7 +2417,7 @@ equation
         
         connect(space_1.propsBus[5],merged_win1_1[1].propsBus_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 94.87066093110438, 0.0 }    ,{ 94.87066093110438, -60.26427482601313 }    ,{ 189.74132186220876, -60.26427482601313 }    },
+        points={{ 0.0, 0.0 }    ,{ 500.0, 0.0 }    ,{ 500.0, 617.6825588412794 }    ,{ 1000.0, 617.6825588412794 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2416,7 +2426,7 @@ equation
         
         connect(space_1.propsBus[6],merged_win1_2[1].propsBus_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 62.618243038324955, 0.0 }    ,{ 62.618243038324955, 163.64828789510665 }    ,{ 125.23648607664991, 163.64828789510665 }    },
+        points={{ 0.0, 0.0 }    ,{ 334.2390206261942, 0.0 }    ,{ 334.2390206261942, 1000.0 }    ,{ 668.4780412523884, 1000.0 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2425,7 +2435,7 @@ equation
         
         connect(space_1.propsBus[7],floor_2.propsBus_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ -14.973066172923001, 0.0 }    ,{ -14.973066172923001, -171.38596596936426 }    ,{ -29.946132345846003, -171.38596596936426 }    },
+        points={{ 0.0, 0.0 }    ,{ 435.7343667918079, 0.0 }    ,{ 435.7343667918079, 859.2712733856366 }    ,{ 871.4687335836157, 859.2712733856366 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2461,7 +2471,7 @@ equation
         
         connect(emission.y,emission_control.y)
         annotation (Line(
-        points={{ 0.0, -75.0 }    ,{ -94.41696503744738, -75.0 }    ,{ -94.41696503744738, 26.48193319979203 }    ,{ -188.83393007489477, 26.48193319979203 }    },
+        points={{ 0.0, -75.0 }    ,{ 0.0, -75.0 }    ,{ 0.0, 513.0004023335345 }    ,{ 0.0, 513.0004023335345 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2470,7 +2480,7 @@ equation
         
         connect(emission_control.dataBus,data_bus.dataBus)
         annotation (Line(
-        points={{ -188.83393007489477, 26.48193319979203 }    ,{ -63.12465993815309, 26.48193319979203 }    ,{ -63.124659938153094, -172.96095943870515 }    ,{ 62.584610198588585, -172.96095943870515 }    },
+        points={{ 0.0, 513.0004023335345 }    ,{ 129.86285764866383, 513.0004023335345 }    ,{ 129.86285764866383, 355.7257091128546 }    ,{ 259.72571529732767, 355.7257091128546 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2479,7 +2489,7 @@ equation
         
         connect(occupancy_0.dataBus,data_bus.dataBus)
         annotation (Line(
-        points={{ -50.0, 0.0 }    ,{ 6.292305099294296, 0.0 }    ,{ 6.292305099294289, -172.96095943870515 }    ,{ 62.584610198588585, -172.96095943870515 }    },
+        points={{ -50.0, 0.0 }    ,{ 104.86285764866383, 0.0 }    ,{ 104.86285764866383, 355.7257091128546 }    ,{ 259.72571529732767, 355.7257091128546 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2488,7 +2498,7 @@ equation
         
         connect(space_1.gainCon,data_bus.port[1])
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 31.292305099294293, 0.0 }    ,{ 31.292305099294293, -172.96095943870515 }    ,{ 62.584610198588585, -172.96095943870515 }    },
+        points={{ 0.0, 0.0 }    ,{ 129.86285764866383, 0.0 }    ,{ 129.86285764866383, 355.7257091128546 }    ,{ 259.72571529732767, 355.7257091128546 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2497,12 +2507,12 @@ equation
         
         connect(space_1.ports[1],data_bus.port_a[1])
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 31.292305099294293, 0.0 }    ,{ 31.292305099294293, -172.96095943870515 }    ,{ 62.584610198588585, -172.96095943870515 }    },
+        points={{ 0.0, 0.0 }    ,{ 129.86285764866383, 0.0 }    ,{ 129.86285764866383, 355.7257091128546 }    ,{ 259.72571529732767, 355.7257091128546 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
-            ;annotation (Diagram(coordinateSystem(extent={{-238.83393007489477,-222.96095943870515},{239.74132186220876,250.0}})), Icon(
-        coordinateSystem(extent={{-238.83393007489477,-222.96095943870515},{239.74132186220876,250.0}})));
+            ;annotation (Diagram(coordinateSystem(extent={{-50,-50},{1000,1000}})), Icon(
+        coordinateSystem(extent={{-50,-50},{1000,1000}})));
 end building;
 
 

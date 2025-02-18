@@ -5,7 +5,7 @@ from random import randint
 from typing import List, Optional, get_args, Tuple
 
 from jinja2 import Environment, FileSystemLoader
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, computed_field
 from networkx.classes.reportviews import NodeView
 from trano.elements import Port, Connection, Control, BaseElement
 from trano.elements.base import ElementPort
@@ -44,19 +44,30 @@ class ContainerInput(BaseModel):
     nodes: List[BaseElement]
     connections: List[Connection]
     data: BaseProperties
+class ContainerLayout(BaseModel):
+    bottom_left: Point = Point(x=-100, y=-100)
+    top_right: Point =  Point(x=100, y=100)
+    global_origin: Point
+
+    @computed_field
+    def scale(self) -> int:
+        scale_x = int(self.top_right.x - self.bottom_left.x)
+        scale_y = int(self.top_right.y - self.bottom_left.y)
+        if scale_x !=scale_y:
+            raise ValueError("Scale x and y must be equal")
+        return scale_x
 
 class Container(BaseContainer):
     name: ContainerTypes
     port_groups: List[PortGroup]
-    port_groups_per_medium: List[PortGroupMedium] = Field(default=[])
-    connections: List[ContainerConnection] = Field(default=[])
-    elements: list = Field(default=[])
+    port_groups_per_medium: List[PortGroupMedium] = Field(default_factory=list)
+    connections: List[ContainerConnection] = Field(default_factory=list)
+    elements: list = Field(default_factory=list)
     template: str
-    size: List[List[float]] = [[-100, -100], [100, 100]]
     left_boundary: Optional[ContainerTypes] = None
-    location: Point
     data: Optional[BaseProperties] = None
-    scale: int = 200
+    layout: ContainerLayout = Field(default_factory=ContainerLayout)
+
 
     def has_data(self) -> bool:
         return self.data is not None
@@ -72,10 +83,10 @@ class Container(BaseContainer):
         return {c.equation_view() for c in self.connections}
 
     def main_equation(self) -> str:
-        location = f"{self.location.x},{self.location.y}"
-        size = f"{self.location.x+self.component_size.x},{self.location.y+self.component_size.y}"
+        location = f"{self.layout.global_origin.x},{self.layout.global_origin.y}"
+        size = f"{self.layout.global_origin.x+self.component_size.x},{self.layout.global_origin.y+self.component_size.y}"
         return (
-            f"{self.name} {self.name}1 annotation (Placement(transformation(extent={{{{{location}}},"
+            f"Components.Containers.{self.name} {self.name}1 annotation (Placement(transformation(extent={{{{{location}}},"
             f"{{{size}}}}})));"
         )
 

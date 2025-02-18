@@ -83,7 +83,7 @@ def _append_to_port(
 
 
 class ControllerBus(BaseModel):
-    template: str = """Controls.BaseClasses.DataBus dataBus
+    template: str = """Trano.Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));"""
     real_inputs: list[RealInput] = Field(default=[])

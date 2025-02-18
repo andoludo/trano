@@ -359,7 +359,7 @@
                     "use_counter": false
                 }
             ],
-            "template": "\n    {{package_name}}.Trano.Controls.ventilation.AhuControl{{ element.name | capitalize}}\n    {{ element.name }}",
+            "template": "\n    {{package_name}}.Components.BaseClasses.AhuControl{{ element.name | capitalize}}\n    {{ element.name }}",
             "variant": "default"
         }
     ]

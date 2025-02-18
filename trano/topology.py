@@ -151,41 +151,41 @@ class Network:  # : PLR0904, #TODO: fix this
             system,
         )
 
-    def _assign_position(
-        self, system_1: System, system_2: System  # :  PLR6301
-    ) -> None:
-        # TODO: change position to object
-        if not system_1.position.is_global_empty() and not system_2.position:
-            position = BasePosition()
-            position.set_global(
-                system_1.position.global_.location.x + 100,
-                system_1.position.global_.location.y - 100,
-            )
-            system_2.position = position
-            if hasattr(system_2, "control") and system_2.control:
-                system_2.control.position.set_global(
-                    system_2.position.global_.location.x - 50,
-                    system_2.position.global_.location.y,
-                )
-        if not system_1.position.is_global_empty() and not system_1.position:
-            position = BasePosition()
-            position.set_global(
-                system_2.position.global_.location.x - 100,
-                system_2.position.global_.location.y - 100,
-            )
-            system_1.position = position
-            if hasattr(system_1, "control") and system_1.control:
-                system_1.control.position.set_global(
-                    system_2.position.global_.location.x - 50,
-                    system_2.position.global_.location.y,
-                )
+    # def _assign_position(
+    #     self, system_1: System, system_2: System  # :  PLR6301
+    # ) -> None:
+    #     # TODO: change position to object
+    #     if not system_1.position.is_global_empty() and not system_2.position:
+    #         position = BasePosition()
+    #         position.set_global(
+    #             system_1.position.global_.location.x + 100,
+    #             system_1.position.global_.location.y - 100,
+    #         )
+    #         system_2.position = position
+    #         if hasattr(system_2, "control") and system_2.control:
+    #             system_2.control.position.set_global(
+    #                 system_2.position.global_.location.x - 50,
+    #                 system_2.position.global_.location.y,
+    #             )
+    #     if not system_1.position.is_global_empty() and not system_1.position:
+    #         position = BasePosition()
+    #         position.set_global(
+    #             system_2.position.global_.location.x - 100,
+    #             system_2.position.global_.location.y - 100,
+    #         )
+    #         system_1.position = position
+    #         if hasattr(system_1, "control") and system_1.control:
+    #             system_1.control.position.set_global(
+    #                 system_2.position.global_.location.x - 50,
+    #                 system_2.position.global_.location.y,
+    #             )
 
     def connect_elements(self, element_1: BaseElement, element_2: BaseElement) -> None:
         for element in [element_1, element_2]:
             if element not in self.graph.nodes:
                 self.add_node(element)
         self.graph.add_edge(element_1, element_2)
-        self._assign_position(element_1, element_2)  # type: ignore
+        # self._assign_position(element_1, element_2)  # type: ignore
 
     def connect_systems(self, system_1: System, system_2: System) -> None:
 
@@ -217,7 +217,7 @@ class Network:  # : PLR0904, #TODO: fix this
             if system_1.control:
                 self.graph.add_edge(system_1.control, system_2)
         self.graph.add_edge(system_1, system_2)
-        self._assign_position(system_1, system_2)
+        # self._assign_position(system_1, system_2)
 
     def connect_edges(
         self, edge: Tuple[BaseElement, BaseElement]  # :  PLR6301
@@ -241,7 +241,7 @@ class Network:  # : PLR0904, #TODO: fix this
         global_position = generate_normalized_layout(self, scale=self.diagram_scale)
         container_positions = {
             container.name: generate_normalized_layout(
-                self, scale=container.scale, container_type=container.name
+                self, scale=container.layout.scale, origin=container.layout.bottom_left, container_type=container.name
             )
             for container in self.containers.containers
         }
@@ -254,9 +254,11 @@ class Network:  # : PLR0904, #TODO: fix this
 
     def connect(self) -> None:
         self.assign_nodes_position()
-        data_bus = next(
+        data_buses = [
             bus for bus in list(self.graph.nodes) if isinstance(bus, DataBus)
-        )
+        ]
+
+        data_bus = data_buses[0] if data_buses else None
         new_edges = [edge for edge in self.graph.edges if data_bus not in edge]
         edge_with_databus = [edge for edge in self.graph.edges if data_bus in edge]
         edges_with_bus_without_space = [

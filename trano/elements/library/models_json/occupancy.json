@@ -49,7 +49,7 @@
                     "flow": "undirected"
                 }
             ],
-            "template": "\n    {{package_name}}.Trano.Controls.ventilation.Occupancy{{ element.name | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})",
+            "template": "\n    {{package_name}}.Components.BaseClasses.Occupancy{{ element.name | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})",
             "variant": "default"
         }
     ]

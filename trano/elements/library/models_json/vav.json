@@ -118,7 +118,7 @@
                     "flow": "undirected"
                 }
             ],
-            "template": "  {{ package_name }}.Trano.\n    Fluid.Ventilation.VAVBox{{ element.name | capitalize }}\n     {{ element.name }}(\n    redeclare package MediumA = Medium,\n    mCooAir_flow_nominal=100*1.2/3600,\n    mHeaAir_flow_nominal=100*1.2/3600,\n    VRoo=100,\n    allowFlowReversal=false,\n    THeaWatInl_nominal=90,\n    THeaWatOut_nominal=60,\n    THeaAirInl_nominal=30,\n    THeaAirDis_nominal=25\n    )",
+            "template": "  {{ package_name }}.Components.BaseClasses.VAVBox{{ element.name | capitalize }}\n     {{ element.name }}(\n    redeclare package MediumA = Medium,\n    mCooAir_flow_nominal=100*1.2/3600,\n    mHeaAir_flow_nominal=100*1.2/3600,\n    VRoo=100,\n    allowFlowReversal=false,\n    THeaWatInl_nominal=90,\n    THeaWatOut_nominal=60,\n    THeaAirInl_nominal=30,\n    THeaAirDis_nominal=25\n    )",
             "variant": "complex"
         }
     ]

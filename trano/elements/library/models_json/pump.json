@@ -76,7 +76,7 @@
                     "flow": "undirected"
                 }
             ],
-            "template": "  {{ package_name }}.Trano.\n    Fluid.Ventilation.Pump{{ element.name | capitalize }}\n     {{ element.name }}(\n     {{ macros.render_parameters(parameters) | safe}},\n    redeclare package Medium = MediumW\n\n    )",
+            "template": "  {{ package_name }}.Components.BaseClasses.Pump{{ element.name | capitalize }}\n     {{ element.name }}(\n     {{ macros.render_parameters(parameters) | safe}},\n    redeclare package Medium = MediumW\n\n    )",
             "variant": "default"
         }
     ]

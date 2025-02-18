@@ -117,7 +117,7 @@
                     "use_counter": false
                 }
             ],
-            "template": "\n{{package_name}}.Trano.Fluid.Boilers.\nBoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters) | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue()) \"Boiler\" ",
+            "template": "\n{{package_name}}.Components.BaseClasses.\nBoilerWithStorage{{ element.name | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters) | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue()) \"Boiler\" ",
             "variant": "default"
         }
     ]

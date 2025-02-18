@@ -103,7 +103,7 @@
                     "medium": "data"
                 }
             ],
-            "template": "\n    {{package_name}}.Trano.Controls.ventilation.EmissionControl{{ element.name | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})",
+            "template": "\n    {{package_name}}.Components.BaseClasses.EmissionControl{{ element.name | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})",
             "variant": "default"
         }
     ]

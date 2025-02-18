@@ -70,7 +70,7 @@
                     "medium": "data"
                 }
             ],
-            "template": "    {{package_name}}.Trano.Controls.ventilation.DataServer\n        {{ element.name }} (redeclare package\n          Medium = Medium)",
+            "template": "    {{package_name}}.Components.BaseClasses.DataServer\n        {{ element.name }} (redeclare package\n          Medium = Medium)",
             "variant": "default"
         }
     ]

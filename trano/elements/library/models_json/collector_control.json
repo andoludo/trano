@@ -77,7 +77,7 @@
                     "medium": "data"
                 }
             ],
-            "template": "\n    {{package_name}}.Trano.Controls.ventilation.CollectorControl{{ element.name | capitalize}}\n    {{ element.name }}",
+            "template": "\n    {{package_name}}.Components.BaseClasses.CollectorControl{{ element.name | capitalize}}\n    {{ element.name }}",
             "variant": "default"
         }
     ]

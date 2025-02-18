@@ -325,7 +325,7 @@
                     "flow": "undirected"
                 }
             ],
-            "template": "\n    {{package_name}}.Trano.Controls.ventilation.VAVControl{{ element.name | capitalize}}\n    {{ element.name }}",
+            "template": "\n    {{package_name}}.Components.BaseClasses.VAVControl{{ element.name | capitalize}}\n    {{ element.name }}",
             "variant": "default"
         },
         {

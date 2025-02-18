@@ -157,7 +157,7 @@
                     ]
                 }
             ],
-            "template": "{{package_name}}.Trano.Fluid.\n    Ventilation.Ahu{{ element.name | capitalize}}\n    {{ element.name }}\n    (redeclare package MediumA = Medium,\n    {% raw %}\n    VRoo={100,100},\n    AFlo={20,20},\n    mCooVAV_flow_nominal={0.01,0.01}{% endraw %})",
+            "template": "{{package_name}}.Components.BaseClasses.Ahu{{ element.name | capitalize}}\n    {{ element.name }}\n    (redeclare package MediumA = Medium,\n    {% raw %}\n    VRoo={100,100},\n    AFlo={20,20},\n    mCooVAV_flow_nominal={0.01,0.01}{% endraw %})",
             "variant": "default"
         },
         {

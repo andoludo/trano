@@ -2,10 +2,10 @@
     "containers": [
         {
             "name": "distribution",
-            "location": {
+                                                                 "layout": {"global_origin": {
                 "x": -4,
                 "y": 0
-            },
+            }},
             "port_groups": [
                 {
                     "connected_container_names": ["emission"],
@@ -75,10 +75,10 @@
         },
         {
             "name": "emission",
-                        "location": {
+                                                                 "layout": {"global_origin": {
                 "x": -44,
                 "y": 0
-            },
+            }},
             "port_groups": [
                 {
                     "connected_container_names": ["distribution"],
@@ -146,10 +146,10 @@
         },
         {
             "name": "envelope",
-                                                        "location": {
-                "x": -84,
+                                                                 "layout": {"global_origin": {
+                   "x": -84,
                 "y": 0
-            },
+            }},
             "port_groups": [
                 {
                     "connected_container_names": ["emission"],
@@ -221,10 +221,10 @@
         },
         {
             "name": "production",
-                                                        "location": {
+                                                                 "layout": {"global_origin": {
                 "x": 36,
                 "y": 0
-            },
+            }},
             "port_groups": [
                 {
                     "connected_container_names": ["distribution"],
@@ -267,10 +267,10 @@
         },
         {
             "name": "bus",
-                                                        "location": {
+                                                                 "layout": {"global_origin": {
                 "x": -84,
                 "y": 30
-            },
+            }},
             "port_groups": [
                 {
                     "connected_container_names": ["envelope"],
@@ -314,10 +314,10 @@
         },
          {
             "name": "ventilation",
-                                                     "location": {
+                                                     "layout": {"global_origin": {
                 "x": -44,
                 "y": -30
-            },
+            }},
             "port_groups": [
                 {
                     "connected_container_names": ["envelope"],

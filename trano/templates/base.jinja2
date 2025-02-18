@@ -2,9 +2,34 @@
 {% import 'Trano.jinja2' as Trano %}
 package {{ network.name }}
 {{ Trano.Trano_library(databus, dynamic_components) }}
+
+package Components
+  package Containers
 {% for container in containers %}
     {{ container|safe }}
 {% endfor %}
+  end Containers;
+
+  package BaseClasses
+    {% if dynamic_components.control %}
+    {% for v in  dynamic_components.control %}
+        {{  v |safe }}
+    {% endfor %}
+    {% endif %}
+    {% if dynamic_components.boiler %}
+    {% for v in  dynamic_components.boiler %}
+        {{  v |safe }}
+    {% endfor %}
+    {% endif %}
+    {% if dynamic_components.ventilation %}
+    {% for v in  dynamic_components.ventilation %}
+        {{  v |safe }}
+    {% endfor %}
+    {% endif %}
+  end BaseClasses;
+end Components;
+
+
 {% if data.is_package %}
 {{ data.data|safe }}
 model building

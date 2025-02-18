@@ -51,6 +51,7 @@ class BaseElement(BaseElementPort):
     libraries_data: List[LibraryData] = Field(default=[])
     figures: List[NamedFigure] = Field(default=[])
     _environment: Optional[Environment] = PrivateAttr(default_factory=default_environment)
+    component_model: Optional[ComponentModel] = None
 
 
 
@@ -58,8 +59,9 @@ class BaseElement(BaseElementPort):
     @classmethod
     def validate_libraries_data(cls, value: Dict[str, Any]) -> Dict[str, Any]:
         if isinstance(value, dict) :
-            from trano.elements.library.components import COMPONENTS
-            value["libraries_data"] = COMPONENTS.get_components(cls.__name__)
+            if "libraries_data" not in value:
+                from trano.elements.library.components import COMPONENTS
+                value["libraries_data"] = COMPONENTS.get_components(cls.__name__)
             parameter_class = param_from_config(cls.__name__)
             if parameter_class and isinstance(value, dict) and not value.get("parameters"):
                 value["parameters"] = parameter_class()
@@ -168,8 +170,9 @@ class BaseElement(BaseElementPort):
                     )
                 }
             )
-
-        return ComponentModel.model_validate(component_model)
+        component_model = ComponentModel.model_validate(component_model)
+        self.component_model = component_model
+        return component_model
 
     def __hash__(self) -> int:
         return hash(f"{self.name}-{type(self).__name__}")

@@ -26,6 +26,7 @@ class DynamicComponentTemplate(BaseModel):
     function: Callable[[Any], Any] = Field(default=lambda _: {})
     bus: ControllerBus
 
+
     def _has_required_attributes(self, element: "BaseElement") -> None:
         for target in self.bus.main_targets():
             if "element" not in target:

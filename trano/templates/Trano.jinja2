@@ -404,13 +404,7 @@ constructed by the signals connected to this bus.
               fillPattern=FillPattern.Solid)}), Diagram(coordinateSystem(
               preserveAspectRatio=false)));
   end AHU_G36;
-        {% endraw %}
-    {% if dynamic_components.control %}
-    {% for v in  dynamic_components.control %}
-        {{  v |safe }}
-    {% endfor %}
-    {% endif %}
-    {% raw %}
+
 
       partial model PartialBoilerControl
   parameter Modelica.Units.SI.Temperature TSup_nominal=80 + 273.15 "Check for temperature at the bottom of the tank";
@@ -811,13 +805,7 @@ Rectangle(
 end PartialBoilerWithStorage;
 
 
-    {% endraw %}
-    {% if dynamic_components.boiler %}
-    {% for v in  dynamic_components.boiler %}
-        {{  v |safe }}
-    {% endfor %}
-    {% endif %}
-    {% raw %}
+
   end Boilers;
 
     package Ventilation
@@ -1927,13 +1915,7 @@ graphics={
     Line(points={{-100,80},{-38,80},{-38,38},{-10,38}}, color={255,255,0},
       thickness=1)}));
 end PartialVAVBox;
-    {% endraw %}
-    {% if dynamic_components.ventilation %}
-    {% for v in  dynamic_components.ventilation %}
-        {{  v |safe }}
-    {% endfor %}
-    {% endif %}
-    {% raw %}
+
     end Ventilation;
   end Fluid;
 

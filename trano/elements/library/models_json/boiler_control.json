@@ -74,7 +74,7 @@
                     "use_counter": false
                 }
             ],
-            "template": "\n    {{package_name}}.Trano.Controls.ventilation.BoilerControl{{ element.name | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})",
+            "template": "\n    {{package_name}}.Components.BaseClasses.BoilerControl{{ element.name | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})",
             "variant": "default"
         },
         {
@@ -151,7 +151,7 @@
                     "use_counter": false
                 }
             ],
-            "template": "\n    {{package_name}}.Trano.Controls.ventilation.BoilerControl{{ element.name | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})",
+            "template": "\n    {{package_name}}.Components.BaseClasses.BoilerControl{{ element.name | capitalize}}\n    {{ element.name }}({{ macros.render_parameters(parameters) | safe}})",
             "variant": "default"
         }
     ]
