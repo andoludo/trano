@@ -9,6 +9,8 @@ SystemContainerTypes = Literal["envelope","distribution", "emission","production
 ContainerTypes = Literal[SystemContainerTypes,"bus"]
 Pattern = Literal["Solid","Dot", "Dash", "DashDot"]
 
+TILT_MAPPING = {"wall": 90, "ceiling": 0, "floor": 180}
+
 class Tilt(Enum):
     wall = "wall"
     ceiling = "ceiling"

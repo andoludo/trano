@@ -18,7 +18,7 @@ from trano.elements.envelope import (
     MergedExternalWall,
     MergedWindows,
     WallParameters,
-    WindowedWallParameters,
+    WindowedWallParameters, VerticalWallParameters, RoofWallParameters,
 )
 from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUnit
 from trano.elements.types import ContainerTypes
@@ -175,6 +175,20 @@ class BaseSpace(BaseElement):
         self.boundaries = []
         windowed_wall_parameters = WindowedWallParameters.from_neighbors(neighbors)
         for wall in [ExternalWall, BaseWindow, InternalElement, FloorOnGround]:
+            if wall == ExternalWall:
+                self.boundaries.append(
+                    VerticalWallParameters.from_neighbors_(
+                        neighbors,
+                        wall,  # type: ignore
+                    )
+                )
+                self.boundaries.append(
+                    RoofWallParameters.from_neighbors_(
+                        neighbors,
+                        wall,  # type: ignore
+                    )
+                )
+
             self.boundaries.append(
                 WallParameters.from_neighbors(
                     neighbors,

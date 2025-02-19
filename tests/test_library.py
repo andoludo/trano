@@ -10,6 +10,7 @@ from trano.elements.library.base import LibraryData
 from trano.elements.library.components import COMPONENTS
 
 from trano.elements.library.library import Library, Templates
+from trano.elements.system import Weather
 from trano.elements.types import Azimuth, Tilt
 from trano.topology import Network
 
@@ -403,15 +404,109 @@ def test_dynamic_template_vav(vav_library_data):
         " "
     )
 
+@pytest.fixture
+def weather(request):
+    return Weather(name="weather_1",
+        libraries_data=[LibraryData.model_validate(request.param)])
 
 @pytest.fixture
-def new_space_template():
+def simple_space_template(request):
+    return Space(
+        name="space_1",
+        libraries_data=[LibraryData.model_validate(request.param)],
+        external_boundaries=[
+            ExternalWall(
+                name="w1_1",
+                surface=10,
+                azimuth=Azimuth.west,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w2_1",
+                surface=10,
+                azimuth=Azimuth.north,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w3_1",
+                surface=10,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="w4_1",
+                surface=10,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            FloorOnGround(
+                name="floor_2", surface=10, construction=Constructions.external_wall
+            ),
+            Window(
+                name="win1_1",
+                surface=1,
+                azimuth=Azimuth.east,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+        ],
+    )
+
+
+def iso_13790():
+    zone_space_template = """
+Zone5R1C.Zone {{ element.name }}(
+{{ macros.render_parameters(parameters) | safe }},
+{%- for boundary in element.boundaries -%}
+    {%- if boundary.type == 'ExternalWallVerticalOnly' -%}
+        {%- if boundary.number %}
+            AWal={{ macros.join_list(boundary.surfaces) }},
+            nOrientations={{ boundary.number }},
+            surAzi={{ macros.join_list(boundary.azimuths_to_radians()) }},
+            surTil={{ macros.join_list(boundary.tilts_to_radians()) }},
+            UWal = {{boundary.average_u_value}},
+            {%- endif %}
+        {%- endif %}
+    {%- if boundary.type == 'BaseWindow' -%}
+        {%- if boundary.number %}
+            AWin={{ macros.join_list(boundary.window_area_by_orientation) }},
+            UWin={{ boundary.average_u_value }},
+            {%- endif %}
+        {%- endif %}
+    {%- if boundary.type == 'FloorOnGround' -%}
+        {%- if boundary.number %}
+            AFlo={{ boundary.surfaces[0] }},
+            UFlo={{ boundary.average_u_value }},
+            {%- endif %}
+        {%- endif %}
+    {%- if boundary.type == 'ExternalWallRoof' -%}
+        {%- if boundary.number %}
+            ARoo={{ boundary.surfaces[0] }},
+            URoo={{ boundary.average_u_value }},
+            {%- endif %}
+        {%- endif %}
+{%- endfor %}
+{% raw %}
+redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Light buiMas,
+gFac=0.5) "Thermal zone"
+annotation (Placement(transformation(extent={{26,-12},{54,16}})));
+{% endraw %}
+    """
     return {
         "classes": ["Space"],
         "library": "reduced_order",
         "parameter_processing": {
-            "function": "exclude_parameters",
-            "parameter": ["volume"],
+            "function": "modify_alias",
+            "parameter": {
+                "floor_area": "AFlo",
+                "volume": "VRoo"
+            }
         },
         "ports": [
             {
@@ -467,70 +562,187 @@ def new_space_template():
                 "targets": ["Ventilation", "Control", "DataBus"],
             },
         ],
-        "template": 'Buildings.ThermalZones.Detailed.MixedAir {{ element.name }}(\n        redeclare package Medium = Medium,\n        {{ macros.render_parameters(parameters) | safe}},\n        {%- if element.number_ventilation_ports != 0 -%}\n        nPorts = {{ element.number_ventilation_ports }},\n        {%- endif %}\n        {%- for boundary in element.boundaries -%}\n            {%- if boundary.type == \'ExternalWall\' -%}\n                {%- if boundary.number %}\n                    nConExt={{ boundary.number }},\n                    datConExt(\n                    {{ macros.element_parameters(boundary) }},\n                    azi={{ macros.join_list(boundary.azimuths) }}),\n                {% else %}\n                    nConExt=0,\n                {%- endif %}\n            {%- endif %}\n            {%- if boundary.type == "InternalElement"-%}\n                {%- if boundary.number %}\n                    nSurBou={{ boundary.number }},\n                    surBou(\n                    A={{ macros.join_list(boundary.surfaces) }},\n                    til={{ macros.convert_tilts(boundary.tilts) }}),\n                {% else %}\n                    nSurBou=0,\n                {%- endif %}\n            {%- endif %}\n            {%- if boundary.type == "WindowedWall" -%}\n                {%- if boundary.number %}\n                    nConExtWin={{ boundary.number }},\n                    datConExtWin(\n                    {{ macros.element_parameters(boundary) }},\n                    glaSys={{ macros.join_list(boundary.window_layers) }},\n                    wWin={{ macros.join_list(boundary.window_width) }},\n                    hWin={{ macros.join_list(boundary.window_height) }},\n                    azi={{ macros.join_list(boundary.azimuths) }}),\n                {% else %}\n                    nConExtWin=0,\n                {%- endif %}\n            {%- endif %}\n            {%- if boundary.type == "FloorOnGround" -%}\n                {%- if boundary.number %}\n                    nConBou={{ boundary.number }},\n                    datConBou(\n                    {{ macros.element_parameters(boundary) }},\n                    azi={{ macros.join_list(boundary.azimuths) }}),\n                {% else %}\n                    nConBou=0,\n                {%- endif %}\n            {%- endif %}\n        {%- endfor %}\n        nConPar=0,\n        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)',
+        "template": zone_space_template,
+        "variant": "default",
+    }
+
+@pytest.mark.parametrize("simple_space_template", [
+    (iso_13790())
+], indirect=True)
+def test_use_new_space_library(simple_space_template: Space):
+    library = Library(
+        name="reduced_order",
+        merged_external_boundaries=False,
+        templates=Templates(construction="", glazing="", main=""),
+    )
+    network = Network(name="house_model", library=library)
+    network.add_boiler_plate_spaces([simple_space_template])
+    network.connect()
+    simple_space_template.get_neighhors(network.graph)
+    model = simple_space_template.model(network)
+    a = 12
+
+def reduced_order_weather():
+    template ="""
+      Trano.BoundaryConditions.WeatherData.ReadearTMYReducedOrder
+    {{ element.name }}
+    {% raw %}annotation (Placement(transformation(extent={{-52,70},{-32,90}})));{% endraw %}
+    """
+    return {
+            "classes": [
+                "Weather"
+            ],
+            "figures": [],
+            "library": "reduced_order",
+            "parameter_processing": {
+                "function": "default_parameters"
+            },
+            "ports": [],
+            "template": template,
+            "variant": "default"
+        }
+
+
+def reduced_order():
+    zone_space_template = """
+Buildings.ThermalZones.ReducedOrder.RC.FourElements {{ element.name }}(
+{{ macros.render_parameters(parameters) | safe }},
+{%- for boundary in element.boundaries -%}
+    {%- if boundary.type == 'ExternalWallVerticalOnly' -%}
+        {%- if boundary.number %}
+            nOrientations={{ boundary.number }},
+            AExt={{ macros.join_list(boundary.surfaces) }},
+            hConExt=2.7,
+            nExt=1,
+            RExt={{ macros.join_list([boundary.average_resistance_external]) }},
+            RExtRem={{ boundary.average_resistance_external_remaining }},
+            CExt={{ macros.join_list([boundary.total_thermal_capacitance]) }},
+            {%- endif %}
+        {%- endif %}
+    {%- if boundary.type == 'BaseWindow' -%}
+        {%- if boundary.number %}
+            AWin={{ macros.join_list(boundary.window_area_by_orientation) }},
+            ATransparent={{ macros.join_list(boundary.window_area_by_orientation) }},
+            RWin={{ boundary.total_thermal_resistance}},
+            hConWin=2.7,
+            gWin=1,
+            ratioWinConRad=0.09,
+            {%- endif %}
+        {%- endif %}
+    {%- if boundary.type == 'FloorOnGround' -%}
+        {%- if boundary.number %}
+            AFloor={{ boundary.surfaces[0] }},
+            hConFloor=2.7,
+            nFloor=1,
+            RFloor={{ macros.join_list([boundary.average_resistance_external]) }},
+            RFloorRem={{ boundary.average_resistance_external_remaining }},
+            CFloor={{ macros.join_list([boundary.total_thermal_capacitance]) }},
+            {%- endif %}
+        {%- endif %}
+    {%- if boundary.type == 'ExternalWallRoof' -%}
+        {%- if boundary.number %}
+            ARoof={{ boundary.surfaces[0] }},
+            hConRoof=2.7,
+            nRoof=1,
+            RRoof={{ macros.join_list([boundary.average_resistance_external]) }},
+            RRoofRem={{ boundary.average_resistance_external_remaining }},
+            CRoof={{ macros.join_list([boundary.total_thermal_capacitance]) }},
+            {%- endif %}
+        {%- endif %}
+{%- endfor %}
+{% raw %}
+    redeclare replaceable package Medium = Modelica.Media.Air.SimpleAir,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    extWallRC(thermCapExt(each der_T(fixed=true))),
+    intWallRC(thermCapInt(each der_T(fixed=true))),
+    floorRC(thermCapExt(each der_T(fixed=true))),
+    T_start=295.15,
+    roofRC(thermCapExt(each der_T(fixed=true)))) "Thermal zone"
+    annotation (Placement(transformation(extent={{44,-2},{92,34}})));
+{% endraw %}
+    """
+    return {
+        "classes": ["Space"],
+        "library": "reduced_order",
+        "parameter_processing": {
+            "function": "modify_alias",
+            "parameter": {
+                "volume": "	VAir"
+            }
+        },
+        "ports": [
+            {
+                "multi_connection": True,
+                "names": ["surf_surBou"],
+                "targets": ["BaseInternalElement"],
+                "medium": "heat",
+                "flow": "interchangeable_port",
+            },
+            {
+                "names": ["qGai_flow"],
+                "targets": ["BaseOccupancy"],
+                "medium": "data",
+                "flow": "undirected",
+            },
+            {
+                "names": ["weaBus"],
+                "targets": ["BaseWeather"],
+                "medium": "data",
+                "flow": "undirected",
+            },
+            {
+                "names": ["heaPorRad"],
+                "targets": ["Emission"],
+                "medium": "heat",
+                "flow": "radiative",
+            },
+            {
+                "names": ["heaPorAir"],
+                "multi_connection": True,
+                "use_counter": False,
+                "targets": ["Emission"],
+                "medium": "heat",
+                "flow": "convective",
+            },
+            {
+                "names": ["heaPorAir"],
+                "targets": ["DataBus"],
+                "medium": "heat",
+                "flow": "convective",
+            },
+            {
+                "names": ["heaPorAir"],
+                "targets": ["VAVControl"],
+                "medium": "heat",
+                "flow": "convective",
+            },
+            {
+                "flow": "inlet_or_outlet",
+                "multi_connection": True,
+                "names": ["ports"],
+                "medium": "fluid",
+                "targets": ["Ventilation", "Control", "DataBus"],
+            },
+        ],
+        "template": zone_space_template,
         "variant": "default",
     }
 
 
-@pytest.fixture
-def simple_space_with_new_template(new_space_template: Dict[str, Any]):
-    return Space(
-        name="space_1",
-        libraries_data=[LibraryData.model_validate(new_space_template)],
-        external_boundaries=[
-            ExternalWall(
-                name="w1_1",
-                surface=10,
-                azimuth=Azimuth.west,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w2_1",
-                surface=10,
-                azimuth=Azimuth.north,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w3_1",
-                surface=10,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            ExternalWall(
-                name="w4_1",
-                surface=10,
-                azimuth=Azimuth.south,
-                tilt=Tilt.wall,
-                construction=Constructions.external_wall,
-            ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
-            Window(
-                name="win1_1",
-                surface=1,
-                azimuth=Azimuth.east,
-                tilt=Tilt.wall,
-                width=1,
-                height=1,
-                construction=Glasses.double_glazing,
-            ),
-        ],
-    )
 
-
-def test_use_new_space_library(simple_space_with_new_template: Space):
+@pytest.mark.parametrize("simple_space_template, weather", [
+    (reduced_order(), reduced_order_weather())
+], indirect=True)
+def test_use_new_rc_space_library(simple_space_template: Space, weather: Weather):
     library = Library(
         name="reduced_order",
-        merged_external_boundaries=True,
+        merged_external_boundaries=False,
         templates=Templates(construction="", glazing="", main=""),
     )
     network = Network(name="house_model", library=library)
-    network.add_boiler_plate_spaces([simple_space_with_new_template])
-    network.connect()
-    simple_space_with_new_template.get_neighhors(network.graph)
-    model = simple_space_with_new_template.model(network)
-
+    network.add_boiler_plate_spaces([simple_space_template], weather= weather)
+    # network.connect()
+    # simple_space_template.get_neighhors(network.graph)
+    # model = simple_space_template.model(network)
+    model = network.model(include_container=True)
+    a = 12
