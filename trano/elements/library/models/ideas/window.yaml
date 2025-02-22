@@ -1,0 +1,28 @@
+- classes:
+  - Window
+  figures: []
+  library: ideas
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - bus_connection: true
+    flow: undirected
+    medium: data
+    multi_connection: true
+    multi_object: true
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |2-
+
+        {% set tilts = tilts_processing_ideas(element) %}
+        IDEAS.Buildings.Components.Window[{{ element.surfaces | length }}]
+        {{ element.name }}(
+        redeclare parameter {{ package_name }}.Data.Glazing.
+        {{ element.constructions[0].name }} glazing,
+        A={{  macros.join_list(element.surfaces)}},
+        final azi={{macros.join_list(element.azimuths)}},
+        redeclare package Medium = Medium,
+        final inc={{macros.join_list(tilts)}})
+  variant: default

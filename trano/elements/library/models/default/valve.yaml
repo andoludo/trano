@@ -1,0 +1,32 @@
+- classes:
+  - Valve
+  figures:
+  - left_axis:
+      label: Valve control signal [-]
+      lines:
+      - label: Valve control signal [-]
+        template: |-
+          {{ element.name }}.y
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_a
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_b
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - Control
+  template: "    {{ library_name }}.Fluid.Actuators.Valves.TwoWayEqualPercentage\n\
+    \            {{ element.name }}(\n                {{ macros.render_parameters(parameters)\
+    \ | safe}},\n    redeclare package Medium = MediumW\n\n    ) \"Radiator valve\"\
+    \ "
+  variant: default

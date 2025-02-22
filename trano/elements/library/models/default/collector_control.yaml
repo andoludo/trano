@@ -1,0 +1,90 @@
+- classes:
+  - CollectorControl
+  component_template:
+    bus:
+      real_inputs:
+      - component: conPum
+        name: y_gain
+        port: u_m
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: mulMax
+        default: 25.0
+        multi: true
+        name: yHea
+        port: u
+        target:
+          main: element.valves
+          sub: name
+      real_outputs:
+      - component: conPum
+        name: y
+        port: y
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: mulMax
+        name: yBoiCon
+        port: y
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: mulMax
+        name: yPumBoi
+        port: y
+        target:
+          main: |-
+            element.controllable_element.name
+    category: control
+    template: |-
+      model CollectorControl{{ element.name | capitalize}}
+      Buildings.Controls.OBC.CDL.Reals.PIDWithReset
+      conPum({{ macros.render_parameters(parameters) | safe}}) "Controller for pump"
+      {% raw %}annotation (Placement(transformation(extent={{54,-10},{74,10}})));{% endraw %}
+      Buildings.Controls.OBC.CDL.Reals.MultiMax
+      mulMax(nin={{ element.valves | length }})
+      "Maximum radiator valve position"
+      {% raw %}annotation (Placement(transformation(extent={{-76,-10},{-56,10}})));{% endraw %}
+      Buildings.Controls.OBC.CDL.Reals.Hysteresis
+      hysPum(uLow=0.01, uHigh=0.5)
+      "Hysteresis for pump"
+      {% raw %}annotation (Placement(transformation(extent={{-26,-10},{-6,10}})));{% endraw %}
+      Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToRea
+      "Conversion from boolean to real signal"
+      {% raw %}annotation (Placement(transformation(extent={{14,-10},{34,10}})));{% endraw %}
+      {{bus_template}}
+      equation
+      connect(mulMax.y,hysPum. u) {% raw %}annotation (Line(
+      points={{-54,0},{-28,0}},
+      color={0,0,127},
+      smooth=Smooth.None));{% endraw %}
+      connect(hysPum.y,conPum. trigger) {% raw %}annotation (Line(points={{-4,0},{4,0},{4,-18},
+      {58,-18},{58,-12}},     color={255,0,255}));{% endraw %}
+      connect(hysPum.y,booToRea. u)
+      {% raw %}annotation (Line(points={{-4,0},{12,0}},   color={255,0,255}));{% endraw %}
+      connect(booToRea.y,conPum. u_s)
+      {% raw %}annotation (Line(points={{36,0},{52,0}},     color={0,0,127}));{% endraw %}
+      {% raw %}annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+      coordinateSystem(preserveAspectRatio=false)));{% endraw %}
+      {{bus_ports | safe}}
+      end CollectorControl{{ element.name | capitalize}};
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    - System
+    use_counter: false
+  template: |2-
+
+        {{package_name}}.Components.BaseClasses.CollectorControl{{ element.name | capitalize}}
+        {{ element.name }}
+  variant: default

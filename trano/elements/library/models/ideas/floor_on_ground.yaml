@@ -1,0 +1,21 @@
+- classes:
+  - FloorOnGround
+  figures: []
+  library: ideas
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |2-
+
+        IDEAS.Buildings.Components.SlabOnGround {{ element.name }}(
+        redeclare parameter {{ package_name }}.Data.Constructions.
+        {{ element.construction.name }} constructionType,
+        redeclare package Medium = Medium,
+        A={{  element.surface}})
+  variant: default

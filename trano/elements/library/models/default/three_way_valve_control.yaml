@@ -1,0 +1,72 @@
+- classes:
+  - ThreeWayValveControl
+  component_template:
+    bus:
+      boolean_inputs:
+      - component: conVal
+        default: 'true'
+        name: trigger
+        port: trigger
+        target:
+          main: |-
+            element.name
+      real_inputs:
+      - component: conVal
+        default: 363.15
+        name: TColSet
+        port: u_s
+        target:
+          main: |-
+            element.name
+    category: control
+    template: |-
+      model ThreeWayValveControl{{ element.name | capitalize}}
+        Buildings.Controls.OBC.CDL.Reals.PIDWithReset
+                                            conVal(
+          {{ macros.render_parameters(parameters) | safe}}) "Controller for pump"
+          {% raw %}annotation (Placement(transformation(extent={{-12,-10},{8,10}})));{% endraw %}
+        Modelica.Blocks.Interfaces.RealOutput y
+          {% raw %}annotation (Placement(transformation(extent={{100,-10},{120,10}})));{% endraw %}
+        Modelica.Blocks.Interfaces.RealInput u
+          {% raw %}annotation (Placement(transformation(extent={{-138,-20},{-98,20}})));{% endraw %}
+              {{bus_template}}
+      equation
+      {{bus_ports | safe}}
+        connect(conVal.y, y)
+          {% raw %}annotation (Line(points={{10,0},{110,0}}, color={0,0,127}));{% endraw %}
+        connect(u, conVal.u_m) {% raw %}annotation (Line(points={{-118,0},{-22,0},{-22,-20},{0,
+                -20},{0,-16},{-2,-16},{-2,-12}}, color={0,0,127}));{% endraw %}
+        {% raw %}annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+              coordinateSystem(preserveAspectRatio=false)));{% endraw %}
+      end ThreeWayValveControl{{ element.name | capitalize}};
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - ThreeWayValve
+  - flow: undirected
+    medium: data
+    names:
+    - u
+    targets:
+    - TemperatureSensor
+  template: |2-
+
+        {{package_name}}.Components.BaseClasses.
+        ThreeWayValveControl{{ element.name | capitalize}}
+        {{ element.name }}
+  variant: default

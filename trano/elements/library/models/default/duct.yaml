@@ -1,0 +1,20 @@
+- classes:
+  - Duct
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_a
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_b
+  template: "  {{ library_name }}.Fluid.FixedResistances.PressureDrop\n    {{ element.name\
+    \ }}(\n    m_flow_nominal=100*1.2/3600,\n    redeclare package Medium = Medium,\n\
+    \    allowFlowReversal = false,\n    dp_nominal=40) \"Pressure drop for return\
+    \ duct\" "
+  variant: default

@@ -1,0 +1,24 @@
+- classes:
+  - InternalElement
+  figures: []
+  library: buildings
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: interchangeable_port
+    medium: heat
+    names:
+    - port_a
+    targets:
+    - Space
+  - flow: interchangeable_port
+    medium: heat
+    names:
+    - port_b
+    targets:
+    - Space
+  template: "    Buildings.HeatTransfer.Conduction.MultiLayer\n                {{\
+    \ element.name }}(A =\n            {{ element.surface }}, layers =\n    {{ element.construction.name\
+    \ }}, stateAtSurface_a = true, stateAtSurface_b = true)\n    \"Partition wall\
+    \ between the two\n    rooms\" "
+  variant: default

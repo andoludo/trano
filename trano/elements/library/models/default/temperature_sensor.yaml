@@ -1,0 +1,29 @@
+- classes:
+  - TemperatureSensor
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+  - flow: undirected
+    medium: data
+    names:
+    - T
+    targets:
+    - Control
+  template: "    Buildings.Fluid.Sensors.TemperatureTwoPort {{ element.name }}(\n\
+    \    redeclare package Medium = MediumW,\n    m_flow_nominal=mRad_flow_nominal)\
+    \ \"Radiator\" "
+  variant: default
