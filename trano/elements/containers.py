@@ -393,7 +393,7 @@ class Containers(BaseModel):
             for c in connections
         }
         for equations in couple_connections.values():
-            if len(equations) == 2:  # noqa: PLR2004
+            if len(equations) == 2:
                 self.connections += [MainContainerConnection.from_list(equations)]  # type: ignore
 
     def _get_connection_view(

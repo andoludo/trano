@@ -121,3 +121,6 @@ def wrap_with_raw(template: str) -> str:
     return re.sub(
         pattern, lambda m: f"{{% raw %}} {m.group(0)} {{% endraw %}}", template
     )
+def camel_to_snake(camel_str: str) ->str:
+    snake_str = re.sub(r'(?<!^)(?=[A-Z])', '_', camel_str).lower()
+    return snake_str

@@ -1,7 +1,9 @@
-from codecs import namereplace_errors
+import json
+from pathlib import Path
 from typing import Dict, Any
 
 import pytest
+import yaml
 
 from tests.constructions.constructions import Constructions, Glasses
 from trano.elements import (
@@ -16,8 +18,6 @@ from trano.elements import (
 from trano.elements.bus import get_non_connected_ports
 from trano.elements.common_base import MediumTemplate
 from trano.elements.library.base import LibraryData
-from trano.elements.library.components import COMPONENTS
-
 from trano.elements.library.library import Library, Templates
 from trano.elements.system import Weather, Occupancy
 from trano.elements.types import Azimuth, Tilt
@@ -25,7 +25,7 @@ from trano.topology import Network
 
 
 @pytest.fixture
-def vav_library_data():
+def vav_library_data() -> Dict[str, Any]:
     libraries_data = {
         "components": [
             {
@@ -319,7 +319,7 @@ def vav_library_data():
     return libraries_data
 
 
-def test_dynamic_template_vav(vav_library_data):
+def test_dynamic_template_vav(vav_library_data: Dict[str, Any]) -> None:
     vav_library = LibraryData.model_validate(vav_library_data["components"][1])
     vav_control_library = LibraryData.model_validate(vav_library_data["components"][0])
     vav = VAV(variant="complex", libraries_data=[vav_library])
@@ -471,7 +471,7 @@ def simple_space_template(request):
     )
 
 
-def iso_13790():
+def iso_13790() -> Dict[str, Any]:
     zone_space_template = """
 Zone5R1C.Zone {{ element.name }}(
 {{ macros.render_parameters(parameters) | safe }},
@@ -977,3 +977,43 @@ def test_use_new_rc_space_library(
     assert {
         c.equation_view() for c in network.containers.get_container("bus").connections
     } == {("data_bus.u[1]", "u[1]")}
+
+
+# @pytest.skip("Generate files")
+def test_split_library():
+    components = []
+    path_ = Path("/home/aan/Documents/trano/trano/elements/library/models_json")
+    main_path = Path("/home/aan/Documents/trano/trano/elements/library/models")
+
+    class BlockStyleDumper(yaml.Dumper):
+        def represent_scalar(self, tag, value, style=None):
+            if isinstance(value, str) and ("\n" in value or "element.name" in value):
+                style = "|"  # Force block style for multiline strings
+            return super().represent_scalar(tag, value, style)
+
+    main_path.mkdir(exist_ok=True)
+    for file in path_.glob("*.json"):
+        file_data = json.loads(file.read_text())
+        components += file_data.get("components", [])
+    libraries = {c["library"] for c in components}
+    for library in libraries:
+        library_components = [c for c in components if c["library"] == library]
+        library_path = main_path / library
+        library_path.mkdir(exist_ok=True)
+        components_final = {
+            LibraryData(**component).json_file_name(): [
+                cp
+                for cp in library_components
+                if LibraryData(**cp).json_file_name() == LibraryData(**component).json_file_name()
+            ]
+            for component in library_components
+        }
+        for file_name, components_ in components_final.items():
+            file = library_path / f"{file_name}.yaml"
+            with file.open("w") as file:
+                file.write(
+                    yaml.dump(
+                        components_, Dumper=BlockStyleDumper, default_flow_style=False
+                    )
+                )
+            # file.write_text(yaml.safe_dump(component, indent=4))

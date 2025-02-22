@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Any, Dict
 
+import yaml
 from pydantic import BaseModel
 
 
@@ -13,12 +14,12 @@ class Components(BaseModel):
 
     @classmethod
     def load(cls) -> "Components":
-        libraries_json_path = Path(__file__).parent.joinpath("models_json")
+        libraries_json_path = Path(__file__).parent.joinpath("models")
         libraries_json_path.mkdir(exist_ok=True)
         components = []
-        for file in libraries_json_path.glob("*.json"):
-            file_data = json.loads(file.read_text())
-            components += file_data.get("components", [])
+        for file in libraries_json_path.rglob("*.yaml"):
+            file_data = yaml.safe_load(file.read_text())
+            components += file_data
 
         return cls(components=components)
 

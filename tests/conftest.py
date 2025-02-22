@@ -199,9 +199,7 @@ def buildings_two_rooms_with_storage(space_1: Space, space_2: Space) -> Network:
     dpVal_nominal = 6000  # noqa: N806
     dpRoo_nominal = 6000  # noqa: N806
     dpThrWayVal_nominal = 6000  # noqa: N806
-    dp_nominal = (
-        dpPip_nominal + dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
-    )  # noqa: N806
+    dp_nominal = dpPip_nominal + dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
 
     network = Network(name="buildings_two_rooms_with_storage")
     network.add_boiler_plate_spaces([space_1, space_2])
@@ -300,12 +298,12 @@ def buildings_simple_hydronic_three_zones(
     network.connect_systems(temperature_sensor, three_way_valve_control)
     network.connect_systems(temperature_sensor_2, three_way_valve_control_2)
 
-    # # check if controllable # noqa : E800
-    # if pump.get_controllable_ports(): # noqa : E800
+    # # check if controllable # : E800
+    # if pump.get_controllable_ports(): # : E800
     #     pump_control = Control(name="pump_control") # noqa : E800
     #     network.graph.add_edge(pump, pump_control) # noqa : E800
     #
-    # if three_way_valve.get_controllable_ports(): # noqa : E800
+    # if three_way_valve.get_controllable_ports(): # : E800
     #     three_way_valve_control = Control(name="three_way_valve_control") # noqa : E800
     #     network.graph.add_edge(three_way_valve, three_way_valve_control) # noqa : E800
     # undirected_graph = network.graph.to_undirected() # noqa : E800
@@ -356,12 +354,12 @@ def ideas_simple_hydronic_three_zones(
     network.connect_systems(temperature_sensor, three_way_valve_control)
     network.connect_systems(temperature_sensor_2, three_way_valve_control_2)
 
-    # # check if controllable # noqa : E800
-    # if pump.get_controllable_ports(): # noqa : E800
+    # # check if controllable # : E800
+    # if pump.get_controllable_ports(): # : E800
     #     pump_control = Control(name="pump_control") # noqa : E800
     #     network.graph.add_edge(pump, pump_control) # noqa : E800
     #
-    # if three_way_valve.get_controllable_ports(): # noqa : E800
+    # if three_way_valve.get_controllable_ports(): # : E800
     #     three_way_valve_control = Control(name="three_way_valve_control") # noqa : E800
     #     network.graph.add_edge(three_way_valve, three_way_valve_control) # noqa : E800
     # undirected_graph = network.graph.to_undirected() # noqa : E800

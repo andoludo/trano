@@ -133,8 +133,6 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
-    "test_*",
-    "conftest.py"
 ]
 
 [tool.isort]
@@ -143,7 +141,7 @@ skip = ["models"]
 [tool.ruff.lint]
 select = ["E", "W", "F", "B006","RUF","UP","SIM","FURB","PIE","PERF","C4","B","PL","S","C901","N","ANN", "ERA001", "PD"]
 ignore = []
-extend-ignore = ["ANN101","ANN102"]
+extend-ignore = ["ANN101","ANN102","S101","PLR2004"]
 
 fixable = ["ALL"]
 unfixable = []
