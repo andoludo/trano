@@ -221,8 +221,8 @@ class Port(BaseModel):
         merged_number: int,
         element_name: str | None,
         element_position: BasePosition,
-        container_type: ContainerTypes,
-        connected_container_type: ContainerTypes,
+        container_type: ContainerTypes | None,
+        connected_container_type: ContainerTypes | None,
     ) -> list["PartialConnection"]:
         base_equations = self.base_equation(
             merged_number, element_name, element_position
@@ -305,15 +305,15 @@ def connect(
                                 merged_number,
                                 edge_first.name,
                                 edge_first.position,
-                                edge_first.final_container_type(),
-                                edge_second.final_container_type(),
+                                edge_first.container_type,
+                                edge_second.container_type,
                             ),
                             second_port.link(
                                 merged_number,
                                 edge_second.name,
                                 edge_second.position,
-                                edge_second.final_container_type(),
-                                edge_first.final_container_type(),
+                                edge_second.container_type,
+                                edge_first.container_type,
                             ),
                             strict=True,
                         )

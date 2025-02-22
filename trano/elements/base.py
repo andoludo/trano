@@ -36,11 +36,6 @@ class BaseElementPort(BaseElementPosition):
     def available_ports(self) -> List[Port]:
         return [port for port in self.ports if not port.connected]
 
-    def final_container_type(self) -> ContainerTypes:
-        if self.container_type is None:
-            raise ValueError("Container type is not assigned")
-        return self.container_type
-
 
 def default_environment() -> Environment:
     environment = Environment(
