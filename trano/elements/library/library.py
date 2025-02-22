@@ -1,8 +1,7 @@
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, cast
 
-import yaml
 from pydantic import BaseModel, Field
 
 from trano.elements.common_base import MediumTemplate
@@ -24,12 +23,8 @@ class Templates(BaseModel):
 
 
 def read_libraries() -> Dict[str, Dict[str, Any]]:
-    library_path = Path(__file__).parent.joinpath("library.yaml")
     library_json_path = Path(__file__).parent.joinpath("library.json")
-    data: Dict[str, Dict[str, Any]] = yaml.safe_load(library_path.read_text())
-
-
-    return json.loads(library_json_path.read_text())
+    return cast(Dict[str, Dict[str, Any]], json.loads(library_json_path.read_text()))
 
 
 class Library(BaseModel):

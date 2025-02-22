@@ -7,8 +7,11 @@ from trano.data_models.conversion import convert_network
 from trano.elements.space import Space
 from trano.elements.library.library import Library
 from trano.topology import Network
+
+
 def get_path(file_name: str) -> Path:
     return Path(__file__).parent.joinpath("models", file_name)
+
 
 @pytest.mark.run(order=1)  # TODO: code smell!
 def test_template_buildings_free_float_single_zone(
@@ -215,6 +218,7 @@ def test_template_buildings_free_float_single_zone_with_data(
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
 
+
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
 @pytest.mark.run(order=22)
 def test_three_zones_hydronic_template(library_name: str) -> None:
@@ -226,19 +230,24 @@ def test_three_zones_hydronic_template(library_name: str) -> None:
         _read(f"{network.name}_{library_name}_yaml")
     )
 
+
 @pytest.mark.run(order=23)
 def test_single_zone_hydronic_template(schema: Path) -> None:
     house = get_path("single_zone_hydronic.yaml")
     network = convert_network("single_zone_hydronic", house)
     assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml"))
+        _read(f"{network.name}_yaml")
+    )
+
 
 @pytest.mark.run(order=24)
 def test_single_zone_hydronic_weather_template(schema: Path) -> None:
     house = get_path("single_zone_hydronic_weather.yaml")
     network = convert_network("single_zone_hydronic_weather", house)
     assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml"))
+        _read(f"{network.name}_yaml")
+    )
+
 
 @pytest.mark.run(order=25)
 def test_single_zone_air_handling_unit_simple_vav_control_template(
@@ -249,7 +258,6 @@ def test_single_zone_air_handling_unit_simple_vav_control_template(
     assert clean_model(network.model(), f"{network.name}_yaml") == set(
         _read(f"{network.name}_yaml")
     )
-
 
 
 @pytest.mark.run(order=26)
@@ -278,6 +286,7 @@ def test_two_zones_ideas_template(schema: Path) -> None:
         _read(f"{network.name}_yaml")
     )
 
+
 @pytest.mark.run(order=29)
 def test_single_zone_air_handling_unit_without_vav_with_duct_template(
     schema: Path,
@@ -290,6 +299,8 @@ def test_single_zone_air_handling_unit_without_vav_with_duct_template(
     assert clean_model(network.model(), f"{network.name}_yaml") == set(
         _read(f"{network.name}_yaml")
     )
+
+
 @pytest.mark.run(order=30)
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
 def test_three_zones_hydronic_with_containers(schema: Path, library_name: str) -> None:
@@ -302,9 +313,12 @@ def test_three_zones_hydronic_with_containers(schema: Path, library_name: str) -
     model_ = network.model(include_container=True)
     assert clean_model(model_, network.name) == set(_read(network.name))
 
+
 @pytest.mark.run(order=31)
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
-def test_single_zone_air_handling_unit_complex_vav_containers(schema: Path, library_name: str) -> None:
+def test_single_zone_air_handling_unit_complex_vav_containers(
+    schema: Path, library_name: str
+) -> None:
     house = get_path("single_zone_air_handling_unit_complex_vav_containers.yaml")
     network = convert_network(
         f"single_zone_air_handling_unit_complex_vav_containers_{library_name}",

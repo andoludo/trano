@@ -6,4 +6,4 @@ class BaseBoundary(BaseElement): ...
 
 
 class Boundary(BaseBoundary):
-    container_type:ContainerTypes = "ventilation"
+    container_type: ContainerTypes = "ventilation"

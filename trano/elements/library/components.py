@@ -1,7 +1,6 @@
 import json
-from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Any, Dict
+from typing import List, Any, Dict
 
 from pydantic import BaseModel
 
@@ -23,15 +22,12 @@ class Components(BaseModel):
 
         return cls(components=components)
 
-    @cached_property
-    def libraries(self) -> List[str]:
-        return [component.library for component in self.components]
-
-    def get_components(self,component_name: str) -> List[LibraryData]:
-        return [LibraryData.model_validate(c) for c in self.components if component_name in c["classes"]]
-
+    def get_components(self, component_name: str) -> List[LibraryData]:
+        return [
+            LibraryData.model_validate(c)
+            for c in self.components
+            if component_name in c["classes"]
+        ]
 
 
 COMPONENTS = Components.load()
-
-

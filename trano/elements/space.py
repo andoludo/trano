@@ -18,7 +18,9 @@ from trano.elements.envelope import (
     MergedExternalWall,
     MergedWindows,
     WallParameters,
-    WindowedWallParameters, VerticalWallParameters, RoofWallParameters,
+    WindowedWallParameters,
+    VerticalWallParameters,
+    RoofWallParameters,
 )
 from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUnit
 from trano.elements.types import ContainerTypes
@@ -198,7 +200,7 @@ class BaseSpace(BaseElement):
             )
         self.boundaries += [windowed_wall_parameters]
 
-    def __add__(self, other: "Space") -> "Space":
+    def __add__(self, other: "BaseSpace") -> "BaseSpace":
         self.name = (
             f"merge_{self.name.replace('merge', '')}_{other.name.replace('merge', '')}"
         )
@@ -245,6 +247,7 @@ class Space(BaseSpace):
 
     def processing(self, network: "Network") -> None:
         from trano.elements import VAVControl
+
         _neighbors = []
         if self.get_last_ventilation_inlet():
             _neighbors += list(
@@ -266,7 +269,7 @@ class Space(BaseSpace):
         )
         for controllable_element in controllable_ventilation_elements:
             if controllable_element.control and isinstance(
-                    controllable_element.control, VAVControl
+                controllable_element.control, VAVControl
             ):
                 controllable_element.control.ahu = next(
                     (n for n in neighbors if isinstance(n, AirHandlingUnit)), None

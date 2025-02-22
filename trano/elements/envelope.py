@@ -1,5 +1,5 @@
 import math
-from math import sqrt, isinf
+from math import sqrt
 from typing import TYPE_CHECKING, Dict, List, Optional, Type, Union
 
 import numpy as np
@@ -31,16 +31,13 @@ class BaseSimpleWall(BaseWall):
     construction: Construction | Glass
 
 
-class BaseInternalElement(BaseSimpleWall):
-    ...
+class BaseInternalElement(BaseSimpleWall): ...
 
 
-class BaseFloorOnGround(BaseSimpleWall):
-    ...
+class BaseFloorOnGround(BaseSimpleWall): ...
 
 
-class BaseExternalWall(BaseSimpleWall):
-    ...
+class BaseExternalWall(BaseSimpleWall): ...
 
 
 class BaseWindow(BaseSimpleWall):
@@ -111,20 +108,16 @@ class MergedBaseWall(BaseWall):
         return sorted(merged_walls, key=lambda x: x.name)  # type: ignore #TODO: what is the issue with this!!!
 
 
-class MergedBaseWindow(MergedBaseWall):
-    ...
+class MergedBaseWindow(MergedBaseWall): ...
 
 
-class MergedBaseExternalWall(MergedBaseWall):
-    ...
+class MergedBaseExternalWall(MergedBaseWall): ...
 
 
-class ExternalDoor(BaseExternalWall):
-    ...
+class ExternalDoor(BaseExternalWall): ...
 
 
-class ExternalWall(ExternalDoor):
-    ...
+class ExternalWall(ExternalDoor): ...
 
 
 class FloorOnGround(BaseFloorOnGround):
@@ -132,16 +125,13 @@ class FloorOnGround(BaseFloorOnGround):
     tilt: Tilt = Tilt.floor
 
 
-class InternalElement(BaseInternalElement):
-    ...
+class InternalElement(BaseInternalElement): ...
 
 
-class MergedFloor(MergedBaseWall):
-    ...
+class MergedFloor(MergedBaseWall): ...
 
 
-class MergedExternalWall(MergedBaseExternalWall):
-    ...
+class MergedExternalWall(MergedBaseExternalWall): ...
 
 
 class MergedWindows(MergedBaseWindow):
@@ -181,15 +171,16 @@ class MergedWindows(MergedBaseWindow):
         return sorted(merged_windows, key=lambda x: x.name)  # type: ignore
 
 
-class Window(BaseWindow):
-    ...
+class Window(BaseWindow): ...
 
 
-class WindowedWall(BaseSimpleWall):
-    ...
+class WindowedWall(BaseSimpleWall): ...
+
 
 def parallel_resistance(resistances: list[float]) -> float:
     return 1 / sum([1 / resistance for resistance in resistances])
+
+
 class WallParameters(BaseModel):
     number: int
     surfaces: list[float]
@@ -200,7 +191,7 @@ class WallParameters(BaseModel):
     window_area_by_orientation: list[float]
     type: str
     average_resistance_external: float = Field(default=0)
-    average_resistance_external_remaining: float= Field(default=0)
+    average_resistance_external_remaining: float = Field(default=0)
     total_thermal_capacitance: float = Field(default=0)
     total_thermal_resistance: float = Field(default=0)
 
@@ -222,7 +213,7 @@ class WallParameters(BaseModel):
         neighbors: list["BaseElement"],
         wall: Type["BaseSimpleWall"],
         filter: Optional[list[str]] = None,
-        suffix_type: Optional[str] = None
+        suffix_type: Optional[str] = None,
     ) -> "WallParameters":
         constructions = [
             neighbor
@@ -247,10 +238,30 @@ class WallParameters(BaseModel):
             exterior_construction.construction.u_value
             for exterior_construction in constructions
         ]
-        average_resistance_external = np.mean([exterior_construction.construction.resistance_external for exterior_construction in constructions])
-        average_resistance_external_remaining = np.mean([exterior_construction.construction.resistance_external_remaining for exterior_construction in constructions])
-        total_thermal_capacitance = total_surface*np.mean([exterior_construction.construction.total_thermal_capacitance for exterior_construction in constructions])
-        total_thermal_resistance = total_surface*np.mean([exterior_construction.construction.total_thermal_resistance for exterior_construction in constructions])
+        average_resistance_external = np.mean(
+            [  # type: ignore
+                exterior_construction.construction.resistance_external
+                for exterior_construction in constructions
+            ]
+        )
+        average_resistance_external_remaining = np.mean(
+            [  # type: ignore
+                exterior_construction.construction.resistance_external_remaining
+                for exterior_construction in constructions
+            ]
+        )
+        total_thermal_capacitance = total_surface * np.mean(
+            [  # type: ignore
+                exterior_construction.construction.total_thermal_capacitance
+                for exterior_construction in constructions
+            ]
+        )
+        total_thermal_resistance = total_surface * np.mean(
+            [
+                exterior_construction.construction.total_thermal_resistance
+                for exterior_construction in constructions
+            ]
+        )
 
         tilt = [exterior_construction.tilt for exterior_construction in constructions]
         type = wall.__name__ if not suffix_type else f"{wall.__name__}{suffix_type}"
@@ -259,9 +270,11 @@ class WallParameters(BaseModel):
                 neighbor for neighbor in neighbors if isinstance(neighbor, ExternalWall)
             ]
             window_area_by_orientation = [
-                construction.surface
-                if exterior_construction.azimuth == construction.azimuth
-                else 0
+                (
+                    construction.surface
+                    if exterior_construction.azimuth == construction.azimuth
+                    else 0
+                )
                 for exterior_construction in external_walls
                 for construction in constructions
             ]
@@ -274,29 +287,32 @@ class WallParameters(BaseModel):
             type=type,
             u_values=u_values,
             window_area_by_orientation=window_area_by_orientation,
-            average_resistance_external = average_resistance_external,
-        average_resistance_external_remaining = average_resistance_external_remaining,
+            average_resistance_external=average_resistance_external,
+            average_resistance_external_remaining=average_resistance_external_remaining,
             total_thermal_capacitance=total_thermal_capacitance,
             total_thermal_resistance=total_thermal_resistance,
         )
 
+
 class VerticalWallParameters(WallParameters):
     @classmethod
     def from_neighbors_(
-        cls,
-        neighbors: list["BaseElement"],
-        wall: Type["BaseSimpleWall"]) -> "VerticalWallParameters":
-        neighbors = [n for n in neighbors if hasattr(n, "tilt") and n.tilt==Tilt.wall]
-        return super().from_neighbors(neighbors, wall, suffix_type="VerticalOnly")
+        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+    ) -> "VerticalWallParameters":
+        neighbors = [n for n in neighbors if hasattr(n, "tilt") and n.tilt == Tilt.wall]
+        return cls.from_neighbors(neighbors, wall, suffix_type="VerticalOnly")  # type: ignore
+
 
 class RoofWallParameters(WallParameters):
     @classmethod
     def from_neighbors_(
-        cls,
-        neighbors: list["BaseElement"],
-        wall: Type["BaseSimpleWall"]) -> "VerticalWallParameters":
-        neighbors = [n for n in neighbors if hasattr(n, "tilt") and n.tilt==Tilt.ceiling]
-        return super().from_neighbors(neighbors, wall, suffix_type="Roof")
+        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+    ) -> "RoofWallParameters":
+        neighbors = [
+            n for n in neighbors if hasattr(n, "tilt") and n.tilt == Tilt.ceiling
+        ]
+        return cls.from_neighbors(neighbors, wall, suffix_type="Roof")  # type: ignore
+
 
 class WindowedWallParameters(WallParameters):
     window_layers: list[str]
@@ -319,7 +335,7 @@ class WindowedWallParameters(WallParameters):
         window_height = []
         included_external_walls = []
         u_values = []
-        window_area_by_orientation=[]
+        window_area_by_orientation: List[float] = []
         for window in windows:
             wall = get_common_wall_properties(neighbors, window)
             surfaces.append(wall.surface)
@@ -343,7 +359,7 @@ class WindowedWallParameters(WallParameters):
             window_width=window_width,
             window_height=window_height,
             included_external_walls=included_external_walls,
-            window_area_by_orientation=window_area_by_orientation
+            window_area_by_orientation=window_area_by_orientation,
         )
 
 

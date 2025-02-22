@@ -5,11 +5,14 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
-SystemContainerTypes = Literal["envelope","distribution", "emission","production","ventilation"]
-ContainerTypes = Literal[SystemContainerTypes,"bus"]
-Pattern = Literal["Solid","Dot", "Dash", "DashDot"]
+SystemContainerTypes = Literal[
+    "envelope", "distribution", "emission", "production", "ventilation"
+]
+ContainerTypes = Literal[SystemContainerTypes, "bus"]
+Pattern = Literal["Solid", "Dot", "Dash", "DashDot"]
 
 TILT_MAPPING = {"wall": 90, "ceiling": 0, "floor": 180}
+
 
 class Tilt(Enum):
     wall = "wall"
@@ -33,10 +36,12 @@ class Flow(str, Enum):
     undirected = "undirected"
     interchangeable_port = "interchangeable_port"
 
+
 class Medium(str, Enum):
     fluid = "fluid"
     heat = "heat"
     data = "data"
+
 
 Boolean = Literal["true", "false"]
 
@@ -64,6 +69,3 @@ class ConnectionView(BaseModel):
 
 class BaseVariant:
     default: str = "default"
-
-
-

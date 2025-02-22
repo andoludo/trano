@@ -1,18 +1,20 @@
-import json
 import logging
 from pathlib import Path
-from random import randint
 from types import SimpleNamespace
-from typing import List, Optional, get_args, Tuple
+from typing import List, Optional, get_args, Tuple, cast, Set
 
 import yaml
-from black.brackets import field
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, Template
 from pydantic import BaseModel, Field, model_validator, computed_field, field_validator
-from networkx.classes.reportviews import NodeView
-from trano.elements import Port, Connection, Control, BaseElement
+
+from trano.elements import Port, Connection, BaseElement
 from trano.elements.base import ElementPort
-from trano.elements.common_base import BasePosition, Point, BaseProperties, MediumTemplate
+from trano.elements.common_base import (
+    BasePosition,
+    Point,
+    BaseProperties,
+    MediumTemplate,
+)
 from trano.elements.connection import (
     BasePartialConnectionWithContainerType,
     PartialConnection,
@@ -21,24 +23,24 @@ from trano.elements.connection import (
 )
 from trano.elements.types import (
     ContainerTypes,
-    Flow,
     ConnectionView,
-    Medium, SystemContainerTypes,
+    Medium,
+    SystemContainerTypes,
 )
 from trano.elements.utils import wrap_with_raw
 from trano.exceptions import ContainerNotFoundError
 
 logger = logging.getLogger(__name__)
 ENVIRONMENT = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(
-                str(Path(__file__).parents[1].joinpath("templates"))
-            ),
-            autoescape=True,
-        )
+    trim_blocks=True,
+    lstrip_blocks=True,
+    loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
+    autoescape=True,
+)
 ENVIRONMENT.filters["frozenset"] = frozenset
 ENVIRONMENT.filters["enumerate"] = enumerate
+
+
 class PortGroup(BaseModel):
     connected_container_names: List[ContainerTypes]
     ports: List[Port]
@@ -52,42 +54,46 @@ class PortGroupMedium(BaseModel):
 class BaseContainer(BaseModel):
     component_size: Point = Field(default=Point(x=20, y=20))
 
+
 class ContainerInput(BaseModel):
     nodes: List[BaseElement]
     connections: List[Connection]
     data: BaseProperties
     medium: MediumTemplate
 
+
 class ContainerLayout(BaseModel):
     bottom_left: Point = Point(x=-100, y=-100)
-    top_right: Point =  Point(x=100, y=100)
+    top_right: Point = Point(x=100, y=100)
     global_origin: Point
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
+    @property
     def scale(self) -> int:
-        scale_x = int(self.top_right.x - self.bottom_left.x)
-        scale_y = int(self.top_right.y - self.bottom_left.y)
-        if scale_x !=scale_y:
+        scale_x = int(self.top_right.c_.x - self.bottom_left.c_.x)
+        scale_y = int(self.top_right.c_.y - self.bottom_left.c_.y)
+        if scale_x != scale_y:
             raise ValueError("Scale x and y must be equal")
         return scale_x
+
 
 class Container(BaseContainer):
     name: ContainerTypes
     port_groups: List[PortGroup]
     port_groups_per_medium: List[PortGroupMedium] = Field(default_factory=list)
     connections: List[ContainerConnection] = Field(default_factory=list)
-    elements: list = Field(default_factory=list)
+    elements: List[BaseElement] = Field(default_factory=list)
     template: str
     left_boundary: Optional[ContainerTypes] = None
     data: Optional[BaseProperties] = None
-    layout: ContainerLayout = Field(default_factory=ContainerLayout)
-
+    layout: ContainerLayout = Field(
+        default_factory=lambda: ContainerLayout(global_origin=Point(x=0, y=0))
+    )
 
     @field_validator("template")
     @classmethod
-    def _template_validator(cls, value: str)->str:
+    def _template_validator(cls, value: str) -> str:
         return wrap_with_raw(value)
-
 
     def has_data(self) -> bool:
         return self.data is not None
@@ -99,14 +105,18 @@ class Container(BaseContainer):
     def contain_elements(self) -> bool:
         return bool(self.elements)
 
-    def get_equation_view(self):
+    def get_equation_view(self) -> Set[Tuple[str, ...]]:
         return {c.equation_view() for c in self.connections}
 
     def main_equation(self) -> str:
-        location = f"{self.layout.global_origin.x},{self.layout.global_origin.y}"
-        size = f"{self.layout.global_origin.x+self.component_size.x},{self.layout.global_origin.y+self.component_size.y}"
+        location = f"{self.layout.global_origin.c_.x},{self.layout.global_origin.c_.y}"
+        size = (
+            f"{self.layout.global_origin.c_.x+self.component_size.c_.x},"
+            f"{self.layout.global_origin.c_.y+self.component_size.c_.y}"
+        )
         return (
-            f"Components.Containers.{self.name} {self.name}1 annotation (Placement(transformation(extent={{{{{location}}},"
+            f"Components.Containers.{self.name} {self.name}1 "
+            f"annotation (Placement(transformation(extent={{{{{location}}},"
             f"{{{size}}}}})));"
         )
 
@@ -121,33 +131,31 @@ class Container(BaseContainer):
         return self
 
     def get_port_group(
-        self, connected_container_name: ContainerTypes
+        self, connected_container_name: Optional[ContainerTypes] = None
     ) -> Optional[PortGroup]:
         for port_group in self.port_groups:
             if connected_container_name in port_group.connected_container_names:
                 return port_group
         return None
 
-    def _initialize_template(self, medium):
+    def _initialize_template(self, medium: MediumTemplate) -> None:
         ports = {}
         for port_group in self.port_groups:
             for port in port_group.ports:
                 for name in port.names:
                     ports[name] = str(port.counter - 1)
         try:
-            template = ENVIRONMENT.from_string(
-                self.template
-            )
+            template = ENVIRONMENT.from_string(self.template)
         except:
             raise
         self.template = template.render(medium=medium, ports=SimpleNamespace(**ports))
 
-    def build(self, template, medium: MediumTemplate):
+    def build(self, template: Template, medium: MediumTemplate) -> str:
         self._initialize_template(medium)
         self.add_grouped_by_medium_connection()
         return template.render(container=self)
 
-    def add_grouped_by_medium_connection(self):
+    def add_grouped_by_medium_connection(self) -> None:
         for group_per_medium in self.port_groups_per_medium:
             for element in self.elements:
                 for element_port in element.ports:
@@ -171,19 +179,16 @@ class Container(BaseContainer):
                         if connections:
                             self.connections += [
                                 ContainerConnection.model_validate(
-                                    (
-                                        c.model_dump()
-                                        | {
-                                            "source": tuple(
-                                                sorted(
-                                                    [c.right.equation, c.left.equation]
-                                                )
-                                            )
-                                        }
-                                    )
+                                    c.model_dump()
+                                    | {
+                                        "source": tuple(
+                                            sorted([c.right.equation, c.left.equation])
+                                        )
+                                    }
                                 )
                                 for c in connections
                             ]
+
 
 class MainContainerConnection(BaseModel):
     left: PartialConnection
@@ -197,7 +202,10 @@ class MainContainerConnection(BaseModel):
         return cls(left=connections[0], right=connections[1])
 
     def get_equation(self) -> str:
-        return f"connect({self.left.container_type}1.{self.left.equation}, {self.right.container_type}1.{self.right.equation})"
+        return (
+            f"connect({self.left.container_type}1.{self.left.equation}, "
+            f"{self.right.container_type}1.{self.right.equation})"
+        )
 
 
 class Location(BaseModel):
@@ -215,12 +223,18 @@ class BusConnection(BaseModel):
     location: str
 
     @model_validator(mode="after")
-    def _validator(self):
-        self.connection_type = tuple(sorted(list(self.connection_type)))
+    def _validator(self) -> "BusConnection":
+        self.connection_type = cast(
+            Tuple[str, str], tuple(sorted(self.connection_type))
+        )
 
         return self
-    def equation(self):
-        return f"connect({self.connection_type[0]}1.dataBus, {self.connection_type[1]}1.dataBus) annotation (Line(points={self.location}, color={{255,204,51}}, thickness=0.5));"
+
+    def equation(self) -> str:
+        return (
+            f"connect({self.connection_type[0]}1.dataBus, {self.connection_type[1]}1.dataBus) "
+            f"annotation (Line(points={self.location}, color={{255,204,51}}, thickness=0.5));"
+        )
 
 
 class Containers(BaseModel):
@@ -247,7 +261,7 @@ class Containers(BaseModel):
         BusConnection(
             connection_type=("ventilation", "envelope"),
             location="{{-44.1,-32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}}",
-        )
+        ),
     ]
     connection_list: List[ConnectionList] = [
         ConnectionList(
@@ -295,7 +309,8 @@ class Containers(BaseModel):
             connection_type=["envelope1.heatPortCon1", "bus1.heatPortCon"],
             annotation="""annotation (Line(points={{-24,
     5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
-        ),        ConnectionList(
+        ),
+        ConnectionList(
             connection_type=["envelope1.ports_a", "ventilation1.ports_b"],
             annotation="""annotation (Line(points={{-84.1,
           3.4},{-88,3.4},{-88,-14},{-48,-14},{-48,-20.2},{-43.9,-20.2}}, color={
@@ -306,7 +321,8 @@ class Containers(BaseModel):
             annotation="""annotation (Line(points={{-44.1,
           -32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}},
         color={0,127,255}));""",
-        ),        ConnectionList(
+        ),
+        ConnectionList(
             connection_type=["ventilation1.ports_b", "envelope1.ports_b"],
             annotation="""annotation (Line(points={{-44.1,
           -32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}},
@@ -314,25 +330,24 @@ class Containers(BaseModel):
         ),
     ]
 
-    def add_data(self, data):
+    def add_data(self, data: BaseProperties) -> None:
         for container in self.containers:
             container.set_data(data)
+
     @classmethod
-    def load_from_config(cls):
-        # config = Path(__file__).parents[1].joinpath("elements/config/containers.json")
-        # data = json.loads(config.read_text())
-        config_yaml = Path(__file__).parents[1].joinpath("elements/config/containers.yaml")
+    def load_from_config(cls) -> "Containers":
+        config_yaml = (
+            Path(__file__).parents[1].joinpath("elements/config/containers.yaml")
+        )
         data = yaml.safe_load(config_yaml.read_text())
         return cls.model_validate(data)
 
-    def _set_connection_annotation(self):
+    def _set_connection_annotation(self) -> None:
         for connection in self.connections:
             for connection_list in self.connection_list:
                 if all(
-                    [
-                        c in connection.get_equation()
-                        for c in connection_list.connection_type
-                    ]
+                    c in connection.get_equation()
+                    for c in connection_list.connection_type
                 ):
                     connection.annotation = connection_list.annotation
 
@@ -348,9 +363,8 @@ class Containers(BaseModel):
             raise ValueError("Containers must have unique names.")
         return self
 
-    def build(self, container_input: ContainerInput):
+    def build(self, container_input: ContainerInput) -> List[str]:
         self.assign_nodes(container_input.nodes)
-        # self.containers.assign_models(component_models)
         self.connect(container_input.connections)
         self.build_main_connections()
         self.add_data(container_input.data)
@@ -359,9 +373,11 @@ class Containers(BaseModel):
         self._set_connection_annotation()
         self.main = main_template.render(container=self)
 
-        return [c.build(template,container_input.medium) for c in self.in_use_containers()]
+        return [
+            c.build(template, container_input.medium) for c in self.in_use_containers()
+        ]
 
-    def build_main_connections(self):
+    def build_main_connections(self) -> None:
         connections = [
             conn
             for c in self.containers
@@ -376,12 +392,12 @@ class Containers(BaseModel):
             ]
             for c in connections
         }
-        for _, equations in couple_connections.items():
-            if len(equations) == 2:
-                self.connections += [MainContainerConnection.from_list(equations)]
+        for equations in couple_connections.values():
+            if len(equations) == 2:  # noqa: PLR2004
+                self.connections += [MainContainerConnection.from_list(equations)]  # type: ignore
 
     def _get_connection_view(
-        self, connected_container_name: ContainerTypes
+        self, connected_container_name: Optional[ContainerTypes] = None
     ) -> ConnectionView:
         connection_view = ConnectionView()
         if connected_container_name in get_args(SystemContainerTypes):
@@ -392,7 +408,7 @@ class Containers(BaseModel):
             connection_view = ConnectionView(color=None, thickness=0.2, disabled=True)
         return connection_view
 
-    def connect(self, connections: List[Connection]):
+    def connect(self, connections: List[Connection]) -> None:
         for connection in connections:
             edge_left = connection.left
             edge_right = connection.right
@@ -404,14 +420,12 @@ class Containers(BaseModel):
                     )
                 container.connections += [
                     ContainerConnection.model_validate(
-                        (
-                            connection.model_dump()
-                            | {
-                                "source": tuple(
-                                    sorted([edge_right.equation, edge_left.equation])
-                                )
-                            }
-                        )
+                        connection.model_dump()
+                        | {
+                            "source": tuple(
+                                sorted([edge_right.equation, edge_left.equation])
+                            )
+                        }
                     )
                 ]
                 continue
@@ -450,21 +464,19 @@ class Containers(BaseModel):
                             )
                         container.connections += [
                             ContainerConnection.model_validate(
-                                (
-                                    c.model_copy(
-                                        update={"connection_view": connection_view}
-                                    ).model_dump()
-                                    | {
-                                        "source": tuple(
-                                            sorted([edge_1.equation, edge_2.equation])
-                                        )
-                                    }
-                                )
+                                c.model_copy(
+                                    update={"connection_view": connection_view}
+                                ).model_dump()
+                                | {
+                                    "source": tuple(
+                                        sorted([edge_1.equation, edge_2.equation])
+                                    )
+                                }
                             )
                             for c in connections_
                         ]
 
-    def assign_nodes(self, nodes) -> None:
+    def assign_nodes(self, nodes: List[BaseElement]) -> None:
         for container_type in get_args(ContainerTypes):
             container = self.get_container(container_type)
             node_types = [
@@ -474,31 +486,31 @@ class Containers(BaseModel):
             if container:
                 container.elements.extend(node_types)
 
-
-    def in_use_containers(self):
+    def in_use_containers(self) -> List[Container]:
         return [c for c in self.containers if c.contain_elements()]
 
-    def bus_equations(self):
+    def bus_equations(self) -> List[str]:
         containers = {container.name for container in self.in_use_containers()}
-        equations = []
-        for bus_connection in self.bus_connections:
-            if set(bus_connection.connection_type).issubset(containers):
-                equations.append(bus_connection.equation())
-        return equations
+        return [
+            bus_connection.equation()
+            for bus_connection in self.bus_connections
+            if set(bus_connection.connection_type).issubset(containers)
+        ]
 
-
-    def get_container(self, container_type: ContainerTypes) -> Optional[Container]:
+    def get_container(
+        self, container_type: Optional[ContainerTypes] = None
+    ) -> Optional[Container]:
         for container in self.containers:
             if container.name == container_type:
                 return container
         return None
 
-    def _template(self):
+    def _template(self) -> Template:
         template = ENVIRONMENT.get_template("containers.jinja2")
         return template
 
-    def _main_template(self):
-        template_ ="""
+    def _main_template(self) -> Template:
+        template_ = """
 model building_container
 
 {% for container_ in container.in_use_containers() %}
@@ -508,7 +520,8 @@ model building_container
 equation
 
 {% for connection in container.connections %}
-connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ connection.right.container_type }}1.{{ connection.right.equation }})
+connect({{ connection.left.container_type }}1.{{ connection.left.equation }},
+{{ connection.right.container_type }}1.{{ connection.right.equation }})
 {{ connection.annotation }};
 {% endfor %}
 
@@ -521,9 +534,7 @@ coordinateSystem(preserveAspectRatio=false)));
 
 end building_container;
 """
-        template = ENVIRONMENT.from_string(
-            template_
-        )
+        template = ENVIRONMENT.from_string(template_)
         return template
 
 

@@ -3,21 +3,29 @@ from pathlib import Path
 from typing import Any, ClassVar, Dict, List, Optional, Type, TYPE_CHECKING, get_args
 
 from jinja2 import Environment, FileSystemLoader
-from pydantic import ConfigDict, Field, field_validator, model_validator, PrivateAttr
+from pydantic import (
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+    PrivateAttr,
+)
 
-from trano.elements.common_base import BaseElementPosition, ComponentModel, MediumTemplate
-from trano.elements.library.base import DynamicComponentTemplate, LibraryData
+from trano.elements.common_base import (
+    BaseElementPosition,
+    ComponentModel,
+    MediumTemplate,
+)
+from trano.elements.common_base import BaseParameter
 from trano.elements.connection import Port
 from trano.elements.figure import NamedFigure
-
+from trano.elements.library.base import DynamicComponentTemplate, LibraryData
 from trano.elements.library.parameters import param_from_config
-from trano.elements.common_base import BaseParameter
 from trano.elements.types import BaseVariant, ContainerTypes
-
 
 if TYPE_CHECKING:
     from trano.topology import Network
-    from trano.elements.library.library import AvailableLibraries, Library
+    from trano.elements.library.library import Library
 
 
 class BaseElementPort(BaseElementPosition):
@@ -28,8 +36,14 @@ class BaseElementPort(BaseElementPosition):
     def available_ports(self) -> List[Port]:
         return [port for port in self.ports if not port.connected]
 
-def default_environment():
-    environment =  Environment(
+    def final_container_type(self) -> ContainerTypes:
+        if self.container_type is None:
+            raise ValueError("Container type is not assigned")
+        return self.container_type
+
+
+def default_environment() -> Environment:
+    environment = Environment(
         trim_blocks=True,
         lstrip_blocks=True,
         loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
@@ -38,10 +52,11 @@ def default_environment():
     environment.filters["enumerate"] = enumerate
     return environment
 
+
 class BaseElement(BaseElementPort):
-    name_counter: ClassVar[
-        int
-    ] = 0  # TODO: this needs to be removed and replaced with a proper solution.
+    name_counter: ClassVar[int] = (
+        0  # TODO: this needs to be removed and replaced with a proper solution.
+    )
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
     medium: MediumTemplate = Field(default_factory=MediumTemplate)
@@ -51,20 +66,23 @@ class BaseElement(BaseElementPort):
     variant: str = BaseVariant.default
     libraries_data: List[LibraryData] = Field(default=[])
     figures: List[NamedFigure] = Field(default=[])
-    _environment: Optional[Environment] = PrivateAttr(default_factory=default_environment)
+    _environment: Environment = PrivateAttr(default_factory=default_environment)
     component_model: Optional[ComponentModel] = None
-
-
 
     @model_validator(mode="before")
     @classmethod
     def validate_libraries_data(cls, value: Dict[str, Any]) -> Dict[str, Any]:
-        if isinstance(value, dict) :
+        if isinstance(value, dict):
             if "libraries_data" not in value:
                 from trano.elements.library.components import COMPONENTS
+
                 value["libraries_data"] = COMPONENTS.get_components(cls.__name__)
             parameter_class = param_from_config(cls.__name__)
-            if parameter_class and isinstance(value, dict) and not value.get("parameters"):
+            if (
+                parameter_class
+                and isinstance(value, dict)
+                and not value.get("parameters")
+            ):
                 value["parameters"] = parameter_class()
 
         return value
@@ -84,7 +102,15 @@ class BaseElement(BaseElementPort):
         return value
 
     def get_library_data(self, library: "Library") -> Optional[LibraryData]:
-        libraries_data = [library_ for library_ in self.libraries_data if (library_.library == library.name.lower() or library_.library == "default") and library_.variant == self.variant]
+        libraries_data = [
+            library_
+            for library_ in self.libraries_data
+            if (
+                library_.library == library.name.lower()
+                or library_.library == "default"
+            )
+            and library_.variant == self.variant
+        ]
         if libraries_data:
             return libraries_data[0]
         return None
@@ -127,8 +153,10 @@ class BaseElement(BaseElementPort):
             else self.position.is_container_empty()
         ):
             x, y = list(layout.get(self.name))  # type: ignore
-            self.position.set_global(x, y) if global_ else self.position.set_container(
-                x, y
+            (
+                self.position.set_global(x, y)
+                if global_
+                else self.position.set_container(x, y)
             )
 
     def get_controllable_ports(self) -> List[Port]:
@@ -138,7 +166,7 @@ class BaseElement(BaseElementPort):
     def type(self) -> str:
         return type(self).__name__
 
-    @cache
+    @cache  # noqa: B019
     def model(self, network: "Network") -> Optional[ComponentModel]:
         if not self.template:
             return None
@@ -154,7 +182,7 @@ class BaseElement(BaseElementPort):
         package_name = network.name
         library_name = network.library.name
         parameters = self.processed_parameters(network.library)
-        component_model = {"id": hash(self)}
+        component_model: Dict[str, Any] = {"id": hash(self)}
         for model_type, annotation in {
             "model": self.position.global_.annotation,
             "container": self.position.container.annotation,
@@ -175,36 +203,33 @@ class BaseElement(BaseElementPort):
                     )
                 }
             )
-        component_model = ComponentModel.model_validate(component_model)
-        self.component_model = component_model
-        return component_model
+        component_model_ = ComponentModel.model_validate(component_model)
+        self.component_model = component_model_
+        return component_model_
 
     def __hash__(self) -> int:
         return hash(f"{self.name}-{type(self).__name__}")
 
-    def add_to_network(self, network: "Network") -> None:
-        ...
+    def add_to_network(self, network: "Network") -> None: ...
 
-    def processing(self, network: "Network") -> None:
-        ...
+    def processing(self, network: "Network") -> None: ...
 
-    def configure(self, network: "Network") -> None:
-        ...
+    def configure(self, network: "Network") -> None: ...
 
     def assign_container_type(self, network: "Network") -> None:
         if self.container_type is None:
             network.graph.neighbors(self)
             container_types = {
                 s.container_type
-                for s in list(network.graph.predecessors(self))
-                + list(network.graph.successors(self))
+                for s in list(network.graph.predecessors(self))  # type: ignore
+                + list(network.graph.successors(self))  # type: ignore
                 if s.container_type
             }
             self.container_type = next(
                 iter(
                     sorted(
                         container_types,
-                        key={v: i for i, v in enumerate(get_args(ContainerTypes))}.get,
+                        key=lambda type_: {v: i for i, v in enumerate(get_args(ContainerTypes))}.get(type_),  # type: ignore
                     )
                 )
             )
@@ -214,14 +239,18 @@ class ElementPort(BaseElementPort):
     element_type: Optional[Type[BaseElement]] = None
     merged_number: int = 1
 
-    def has_target(self, targets: List[BaseElement]) -> bool:
-        return (not targets) or (
+    def has_target(self, targets: List[Type[BaseElement]]) -> bool:
+        return (not targets) or bool(
             self.element_type is not None
             and targets
             and any(issubclass(self.element_type, t) for t in targets)
         )
 
-    def get_connection_per_target(self, target: Type[BaseElement]) -> int:
+    def get_connection_per_target(
+        self, target: Optional[Type[BaseElement]] = None
+    ) -> int:
+        if target is None:
+            return 0
         return len(
             [
                 target_

@@ -56,42 +56,51 @@ class Layer(BaseModel):
     material: Material
     thickness: float
 
-    @computed_field
-    def thermal_resistance(self)->float:
-        return self.thickness/self.material.thermal_conductivity
+    @computed_field  # type: ignore
+    @property
+    def thermal_resistance(self) -> float:
+        return self.thickness / self.material.thermal_conductivity
 
-    @computed_field
-    def thermal_capacitance(self)->float:
-        return self.thickness*self.material.specific_heat_capacity*self.material.density
+    @computed_field  # type: ignore
+    @property
+    def thermal_capacitance(self) -> float:
+        return (
+            self.thickness
+            * self.material.specific_heat_capacity
+            * self.material.density
+        )
 
-#TODO: Add units
+
+# TODO: Add units
 class BaseConstruction(BaseModel):
     layers: list[Layer]
-    @computed_field
-    def total_thermal_resistance(self)->float:
+
+    @computed_field  # type: ignore
+    @property
+    def total_thermal_resistance(self) -> float:
         return sum([layer.thermal_resistance for layer in self.layers])
 
     @computed_field
-    def total_thermal_capacitance(self)->float:
+    def total_thermal_capacitance(self) -> float:
         return sum([layer.thermal_capacitance for layer in self.layers])
 
     @computed_field
-    def u_value(self)->float:
+    def u_value(self) -> float:
         if not self.total_thermal_resistance:
             return 0.0
-        return 1.0/self.total_thermal_resistance
+        return 1.0 / self.total_thermal_resistance
 
     @computed_field
-    def resistance_external(self)->float:
-        return self.total_thermal_resistance/2.0
+    def resistance_external(self) -> float:
+        return self.total_thermal_resistance / 2.0
 
     @computed_field
-    def resistance_external_remaining(self)->float:
-        return self.total_thermal_resistance/2.0
+    def resistance_external_remaining(self) -> float:
+        return self.total_thermal_resistance / 2.0
+
 
 class Construction(BaseConstruction):
     name: str
-
 
     def __hash__(self) -> int:
         return hash(self.name)
@@ -119,7 +128,7 @@ class GasLayer(Layer):
 
 class Glass(BaseConstruction):
     name: str
-    layers: list[GlassLayer | GasLayer]
+    layers: List[GlassLayer | GasLayer]  # type: ignore
     u_value_frame: float
 
     def __hash__(self) -> int:
@@ -184,7 +193,6 @@ class BaseConstructionData(BaseModel):
 
 class MaterialProperties(BaseProperties):
     container_type: ContainerTypes = "envelope"
-
 
 
 class BaseTemplateData(BaseModel):

@@ -23,6 +23,7 @@ INCOMPATIBLE_PORTS = [sorted(["dataBus", "y"])]
 
 logger = logging.getLogger(__name__)
 
+
 class Port(BaseModel):
 
     names: list[str]
@@ -38,17 +39,29 @@ class Port(BaseModel):
     counter: int = Field(default=1)
     connection_counter: int = Field(default=0)
 
-    def set_connected(self) ->None:
+    def set_connected(self) -> None:
         self.connected = True
         self.connection_counter += 1
 
-    def get_compatible_port(self, port: "Port") -> bool:
+    def get_compatible_port(self, port: "Port") -> bool:  # noqa: PLR0911
         if self.medium == Medium.fluid:
             if self.flow == Flow.inlet:
-                return (port.flow in [Flow.outlet]) or (port.flow in [Flow.inlet_or_outlet] and port.multi_connection and port.use_counter)
+                return (port.flow in [Flow.outlet]) or (
+                    port.flow in [Flow.inlet_or_outlet]
+                    and port.multi_connection
+                    and port.use_counter
+                )
             if self.flow == Flow.outlet:
-                return port.flow in [Flow.inlet] or (port.flow in [Flow.inlet_or_outlet] and port.multi_connection and port.use_counter)
-            if self.flow == Flow.inlet_or_outlet and self.multi_connection and self.use_counter:
+                return port.flow in [Flow.inlet] or (
+                    port.flow in [Flow.inlet_or_outlet]
+                    and port.multi_connection
+                    and port.use_counter
+                )
+            if (
+                self.flow == Flow.inlet_or_outlet
+                and self.multi_connection
+                and self.use_counter
+            ):
                 return port.flow in [Flow.inlet, Flow.outlet]
             if self.flow == Flow.inlet_or_outlet:
                 return port.flow in [Flow.inlet_or_outlet]
@@ -76,14 +89,23 @@ class Port(BaseModel):
         return self.flow in [Flow.outlet] and self.medium == Medium.fluid
 
     def is_extended_inlet(self) -> bool:
-        return self.flow in [Flow.inlet_or_outlet] and self.medium == Medium.fluid and self.multi_connection and self.use_counter
+        return (
+            self.flow in [Flow.inlet_or_outlet]
+            and self.medium == Medium.fluid
+            and self.multi_connection
+            and self.use_counter
+        )
 
     def is_extended_outlet(self) -> bool:
-        return self.flow in [Flow.inlet_or_outlet] and self.medium == Medium.fluid and self.multi_connection and self.use_counter
+        return (
+            self.flow in [Flow.inlet_or_outlet]
+            and self.medium == Medium.fluid
+            and self.multi_connection
+            and self.use_counter
+        )
 
     def with_directed_flow(self) -> bool:
         return self.flow in [Flow.inlet, Flow.outlet]
-
 
     def bidirectional_flow(self) -> bool:
         return self.flow in [Flow.inlet_or_outlet] and self.medium == Medium.fluid
@@ -93,6 +115,7 @@ class Port(BaseModel):
 
     def disconnect(self) -> "Port":
         return Port.model_validate(self.model_dump(exclude={"connected"}))
+
     def set_ignore_direction(self) -> "Port":
         port = Port.model_validate(self.model_dump())
         port.ignore_direction = True
@@ -104,10 +127,10 @@ class Port(BaseModel):
 
     def substract_counter(self) -> "Port":
         if self.counter != 1:
-            return Port.model_validate((self.model_dump(exclude={"counter"})|{"counter": self.counter - 1}))
+            return Port.model_validate(
+                self.model_dump(exclude={"counter"}) | {"counter": self.counter - 1}
+            )
         return self
-
-
 
     @field_validator("targets")
     @classmethod
@@ -128,12 +151,14 @@ class Port(BaseModel):
     def is_available(self, available_ports: List["Port"]) -> bool:
         if self.multi_connection and self.connected:
             if self.medium == Medium.fluid:
-                return not any((p.medium==self.medium and self.similar_flow(p)) for p in available_ports)
+                return not any(
+                    (p.medium == self.medium and self.similar_flow(p))
+                    for p in available_ports
+                )
             else:
                 return True
         else:
             return not self.connected
-
 
     def is_controllable(self) -> bool:
         from trano.elements.base import Control
@@ -169,16 +194,16 @@ class Port(BaseModel):
                     equation = f"{name}[{counter}]" if self.multi_object else f"{name}"
                 self.counter = last_counter + 1
             elif self.multi_connection and self.use_counter:
-                if element_name:
-                    equation = f"{element_name}.{name}[{self.counter}]"
-                else:
-                    equation = f"{name}[{self.counter}]"
+                equation = (
+                    f"{element_name}.{name}[{self.counter}]"
+                    if element_name
+                    else f"{name}[{self.counter}]"
+                )
                 self.counter += 1
+            elif element_name:
+                equation = f"{element_name}.{name}"
             else:
-                if element_name:
-                    equation = f"{element_name}.{name}"
-                else:
-                    equation = f"{name}"
+                equation = f"{name}"
             partial_connections.append(
                 BasePartialConnection(
                     equation=equation,
@@ -191,10 +216,10 @@ class Port(BaseModel):
 
         return partial_connections
 
-    def link(
+    def link(  # noqa: PLR0913
         self,
         merged_number: int,
-        element_name: str,
+        element_name: str | None,
         element_position: BasePosition,
         container_type: ContainerTypes,
         connected_container_type: ContainerTypes,
@@ -217,10 +242,11 @@ class Port(BaseModel):
         ]
 
 
-def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionView:
+def connection_color(edge: Tuple["ElementPort", "ElementPort"]) -> ConnectionView:
     from trano.elements.bus import DataBus
     from trano.elements.envelope import BaseSimpleWall
-    from trano.elements.system import Weather, System, Control
+    from trano.elements.system import Weather, System
+    from trano.elements.base import Control
 
     if any(isinstance(e, BaseSimpleWall) for e in edge):
         return ConnectionView(color="{191,0,0}", thickness=0.1)
@@ -234,24 +260,25 @@ def connection_color(edge: Tuple["BaseElement", "BaseElement"]) -> ConnectionVie
         return ConnectionView(color="{0, 0, 139}", thickness=0.75)
     return ConnectionView()
 
+
 def check_flow_direction(first_port: Port, second_port: Port) -> bool:
     if first_port.medium == Medium.fluid and second_port.medium == Medium.fluid:
-        if (first_port.ignore_direction and second_port.ignore_direction):
+        if first_port.ignore_direction and second_port.ignore_direction:
             return first_port.get_compatible_port(second_port)
-        elif (
-                second_port.with_directed_flow()
-                and first_port.with_directed_flow()
-        ):
+        elif second_port.with_directed_flow() and first_port.with_directed_flow():
             return first_port.is_outlet() and second_port.is_inlet()
-        elif second_port.bidirectional_flow() and first_port.bidirectional_flow():
-            return True
-        elif (first_port.is_outlet() and second_port.is_extended_inlet()) or (first_port.is_extended_outlet() and second_port.is_inlet()):
-            return True
-
         else:
-            return False
+            return (
+                second_port.bidirectional_flow()
+                and first_port.bidirectional_flow()
+                or (
+                    (first_port.is_outlet() and second_port.is_extended_inlet())
+                    or (first_port.is_extended_outlet() and second_port.is_inlet())
+                )
+            )
     else:
         return True
+
 
 def connect(
     edge_first: "ElementPort", edge_second: "ElementPort"
@@ -260,8 +287,12 @@ def connect(
     try:
         for first_port in edge_first.ports:
             for second_port in edge_second.ports:
-                available = first_port.is_available(edge_first.available_ports()) and second_port.is_available(edge_second.available_ports())
-                has_targets = edge_second.has_target(first_port.targets) and edge_first.has_target(second_port.targets)
+                available = first_port.is_available(
+                    edge_first.available_ports()
+                ) and second_port.is_available(edge_second.available_ports())
+                has_targets = edge_second.has_target(
+                    first_port.targets
+                ) and edge_first.has_target(second_port.targets)
                 complementarity = first_port.is_complementary(second_port)
                 flow_direction = check_flow_direction(first_port, second_port)
                 if available and has_targets and complementarity and flow_direction:
@@ -270,8 +301,20 @@ def connect(
                     )
                     left_right = list(
                         zip(
-                            first_port.link(merged_number, edge_first.name, edge_first.position, edge_first.container_type, edge_second.container_type),  # type: ignore
-                            second_port.link(merged_number, edge_second.name, edge_second.position, edge_second.container_type, edge_first.container_type),  # type: ignore
+                            first_port.link(
+                                merged_number,
+                                edge_first.name,
+                                edge_first.position,
+                                edge_first.final_container_type(),
+                                edge_second.final_container_type(),
+                            ),
+                            second_port.link(
+                                merged_number,
+                                edge_second.name,
+                                edge_second.position,
+                                edge_second.final_container_type(),
+                                edge_first.final_container_type(),
+                            ),
                             strict=True,
                         )
                     )
@@ -279,16 +322,16 @@ def connect(
                         connection = Connection(
                             left=left,
                             right=right,
-                            connection_view=connection_color(
-                                (edge_first, edge_second)
-                            ),
+                            connection_view=connection_color((edge_first, edge_second)),
                         )
                         connections.append(connection)
                     first_port.set_connected()
                     second_port.set_connected()
                     current_connection_numbers = len(connections)
-                    allowed_connections = edge_first.get_connection_per_target(edge_second.element_type)
-                    if current_connection_numbers >= allowed_connections :
+                    allowed_connections = edge_first.get_connection_per_target(
+                        edge_second.element_type
+                    )
+                    if current_connection_numbers >= allowed_connections:
                         raise ConnectionLimitReached
     except ConnectionLimitReached:
         ...
@@ -333,11 +376,7 @@ class Connection(BaseModel):
         self.right.reset_port_counter()
         return self
 
-
-
-
-
-    def equation_view(self):
+    def equation_view(self) -> Tuple[str, ...]:
         return tuple(sorted([self.left.equation, self.right.equation]))
 
     @computed_field
@@ -350,10 +389,8 @@ class Connection(BaseModel):
             ),
             autoescape=True,
         )
-        annotation_template =  environment.from_string("""
-        {% import 'macros.jinja2' as macros %}
-        
-        
+        annotation_template = environment.from_string(
+            """{% import 'macros.jinja2' as macros %}        
         connect({{ connection.left.equation }},{{ connection.right.equation }})
             {% if not connection.connection_view.disabled %}
         annotation (Line(
@@ -361,10 +398,12 @@ class Connection(BaseModel):
             {% if connection.connection_view.color %}
         color={{ connection.connection_view.color }},
             {% endif %}
-        thickness={{ connection.connection_view.thickness }},pattern = LinePattern.{{ connection.connection_view.pattern }},
+        thickness={{ connection.connection_view.thickness }},pattern =
+        LinePattern.{{ connection.connection_view.pattern }},
         smooth=Smooth.None))
             {% endif %}
-            ;""")
+            ;"""  # noqa: W291
+        )
 
         return annotation_template.render(
             connection=self,
@@ -372,8 +411,13 @@ class Connection(BaseModel):
 
     @model_validator(mode="after")
     def _connection_validator(self) -> "Connection":
-        if self.right.position.container.is_empty() or self.left.position.container.is_empty():
-            logger.debug(f"Connection position still empty for {self.right.name} and {self.left.name}.")
+        if (
+            self.right.position.container.is_empty()
+            or self.left.position.container.is_empty()
+        ):
+            logger.debug(
+                f"Connection position still empty for {self.right.name} and {self.left.name}."
+            )
         if (
             sorted(
                 [
@@ -390,50 +434,95 @@ class Connection(BaseModel):
 
     @property
     def path(self) -> List[List[float] | Tuple[float, float]]:
-        if self.left.position.global_.location.x < self.right.position.global_.location.x:
-            mid_path = (self.right.position.global_.location.x- self.left.position.global_.location.x) / 2
+        if (
+            self.left.position.global_.location.c_.x
+            < self.right.position.global_.location.c_.x
+        ):
+            mid_path = (
+                self.right.position.global_.location.c_.x
+                - self.left.position.global_.location.c_.x
+            ) / 2
             return [
                 self.left.position.global_.coordinate(),
-                (self.left.position.global_.location.x + mid_path, self.left.position.global_.location.y),
-                (self.right.position.global_.location.x - mid_path, self.right.position.global_.location.y),
+                (
+                    self.left.position.global_.location.c_.x + mid_path,
+                    self.left.position.global_.location.c_.y,
+                ),
+                (
+                    self.right.position.global_.location.c_.x - mid_path,
+                    self.right.position.global_.location.c_.y,
+                ),
                 self.right.position.global_.coordinate(),
             ]
 
         else:
-            mid_path = (self.left.position.global_.location.x - self.right.position.global_.location.x) / 2
+            mid_path = (
+                self.left.position.global_.location.c_.x
+                - self.right.position.global_.location.c_.x
+            ) / 2
             return [
                 self.left.position.global_.coordinate(),
-                (self.left.position.global_.location.x - mid_path, self.left.position.global_.location.y),
-                (self.right.position.global_.location.x + mid_path, self.right.position.global_.location.y),
+                (
+                    self.left.position.global_.location.c_.x - mid_path,
+                    self.left.position.global_.location.c_.y,
+                ),
+                (
+                    self.right.position.global_.location.c_.x + mid_path,
+                    self.right.position.global_.location.c_.y,
+                ),
                 self.right.position.global_.coordinate(),
             ]
+
+
 class ContainerConnection(Connection):
     source: Tuple[str, str]
-    def get_container_equation(self):
+
+    def get_container_equation(
+        self,
+    ) -> Optional[BasePartialConnectionWithContainerType]:
         if self.right.name is None:
             return self.right
         if self.left.name is None:
             return self.left
         return None
+
     @property
     def path(self) -> List[List[float] | Tuple[float, float]]:
-        if self.left.position.container.location.x < self.right.position.container.location.x:
-            mid_path = (self.right.position.container.location.x - self.left.position.container.location.x) / 2
+        if (
+            self.left.position.container.location.c_.x
+            < self.right.position.container.location.c_.x
+        ):
+            mid_path = (
+                self.right.position.container.location.c_.x
+                - self.left.position.container.location.c_.x
+            ) / 2
             return [
                 self.left.position.container.coordinate(),
-                (self.left.position.container.location.x + mid_path, self.left.position.container.location.y),
-                (self.right.position.container.location.x - mid_path, self.right.position.container.location.y),
+                (
+                    self.left.position.container.location.c_.x + mid_path,
+                    self.left.position.container.location.c_.y,
+                ),
+                (
+                    self.right.position.container.location.c_.x - mid_path,
+                    self.right.position.container.location.c_.y,
+                ),
                 self.right.position.container.coordinate(),
             ]
 
         else:
-            mid_path = (self.left.position.container.location.x - self.right.position.container.location.x) / 2
+            mid_path = (
+                self.left.position.container.location.c_.x
+                - self.right.position.container.location.c_.x
+            ) / 2
             return [
                 self.left.position.container.coordinate(),
-                (self.left.position.container.location.x - mid_path, self.left.position.container.location.y),
-                (self.right.position.container.location.x + mid_path, self.right.position.container.location.y),
+                (
+                    self.left.position.container.location.c_.x - mid_path,
+                    self.left.position.container.location.c_.y,
+                ),
+                (
+                    self.right.position.container.location.c_.x + mid_path,
+                    self.right.position.container.location.c_.y,
+                ),
                 self.right.position.container.coordinate(),
             ]
-
-
-

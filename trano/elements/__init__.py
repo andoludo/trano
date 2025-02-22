@@ -40,7 +40,8 @@ from trano.elements.system import (
     TemperatureSensor,
     ThreeWayValve,
     Valve,
-    Ventilation, Weather,
+    Ventilation,
+    Weather,
 )
 from trano.elements.types import DynamicTemplateCategories
 
@@ -89,4 +90,5 @@ __all__ = [
     "Pump",
     "NamedFigure",
     "Weather",
+    "BaseParameter",
 ]

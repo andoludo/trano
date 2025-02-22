@@ -5,18 +5,17 @@ from typing import Optional, Callable, Any, Dict, List, TYPE_CHECKING
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
-from trano.elements.figure import Figure
+from trano.elements.common_base import BaseParameter
+from trano.elements.connection import Port
 from trano.elements.data_bus.controller_bus import ControllerBus
+from trano.elements.figure import Figure
 from trano.elements.library import parameters
 from trano.elements.library.parameters import default_parameters
-from trano.elements.common_base import BaseParameter
-from trano.elements.types import BaseVariant,DynamicTemplateCategories
-from trano.elements.connection import Port
+from trano.elements.types import BaseVariant, DynamicTemplateCategories
 from trano.elements.utils import compose_func
 
 if TYPE_CHECKING:
     from trano.elements.base import BaseElement
-    # from trano.elements import BaseElement, Port, BaseParameter, Figure
 
 
 class DynamicComponentTemplate(BaseModel):
@@ -25,7 +24,6 @@ class DynamicComponentTemplate(BaseModel):
     category: Optional[DynamicTemplateCategories] = None
     function: Callable[[Any], Any] = Field(default=lambda _: {})
     bus: ControllerBus
-
 
     def _has_required_attributes(self, element: "BaseElement") -> None:
         for target in self.bus.main_targets():
@@ -40,7 +38,6 @@ class DynamicComponentTemplate(BaseModel):
                         f"Element {element} does not have attribute {attr}"
                     )
                 element = getattr(element, attr)
-
 
     def render(
         self, package_name: str, element: "BaseElement", parameters: Dict[str, Any]
@@ -70,7 +67,6 @@ class DynamicComponentTemplate(BaseModel):
         return component
 
 
-
 class LibraryData(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     template: str = ""
@@ -78,33 +74,29 @@ class LibraryData(BaseModel):
     variant: str = BaseVariant.default
     figures: List[Figure] = Field(default=[])
     ports: Callable[[], List[Port]]
-    parameter_processing: Callable[[BaseParameter], Dict[str, Any]] = (
-        default_parameters
-    )
+    parameter_processing: Callable[[BaseParameter], Dict[str, Any]] = default_parameters
     library: str
     classes: List[str]
 
     @field_validator("parameter_processing", mode="before")
     @classmethod
-    def _parameters_processing_validator(cls, value: Dict[str, Any]) -> Callable[[BaseParameter], Dict[str, Any]] :
+    def _parameters_processing_validator(
+        cls, value: Dict[str, Any]
+    ) -> Callable[[BaseParameter], Dict[str, Any]]:
 
-        if value.get("parameter", None):
+        if value.get("parameter"):
             function_name = value["function"]
             parameter_processing = partial(
                 getattr(parameters, function_name),
-                **{
-                    function_name:value.get(
-                        "parameter", {}
-                    )
-                },
+                **{function_name: value.get("parameter", {})},
             )
         else:
-            parameter_processing = getattr(
-                parameters, value["function"]
-            )
+            parameter_processing = getattr(parameters, value["function"])
         return parameter_processing
 
     @field_validator("ports", mode="before")
     @classmethod
-    def _ports_factory_validator(cls, value: List[Dict[str, Any]]) -> Callable[[], List[Port]]:
+    def _ports_factory_validator(
+        cls, value: List[Dict[str, Any]]
+    ) -> Callable[[], List[Port]]:
         return compose_func([Port(**port) for port in value])

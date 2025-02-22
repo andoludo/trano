@@ -71,8 +71,14 @@ def generate_normalized_layout(
     origin: Optional[Point] = None,
     container_type: Optional[str] = None,
 ) -> Dict[str, Tuple[float, float]]:
-    def normalize(value, min_val, max_val, scale=200):
-        return ((value - min_val) / (max_val - min_val)) * scale if max_val != min_val else scale/2
+    def normalize(
+        value: float, min_val: float, max_val: float, scale: int = 200
+    ) -> float:
+        return (
+            ((value - min_val) / (max_val - min_val)) * scale
+            if max_val != min_val
+            else scale / 2
+        )
 
     origin = origin or Point(x=0, y=0)
     new_graph = nx.DiGraph()
@@ -98,18 +104,20 @@ def generate_normalized_layout(
     x_values, y_values = zip(*pos.values())
     x_min, x_max = min(x_values), max(x_values)
     y_min, y_max = min(y_values), max(y_values)
-    try:
-        return {
-            node: (
-                origin.x + normalize(x, x_min, x_max, scale),
-                origin.y + normalize(y, y_min, y_max, scale),
-            )
-            for node, (x, y) in pos.items()
-        }
-    except:
-        raise
+    return {
+        node: (
+            origin.c_.x + normalize(x, x_min, x_max, scale),
+            origin.c_.y + normalize(y, y_min, y_max, scale),
+        )
+        for node, (x, y) in pos.items()
+    }
 
-def wrap_with_raw(template: str):
-    pattern = r"(\{\s*-?\d+\s*,\s*-?\d+\s*(?:,\s*-?\d+\s*)?\})|(\{\{\s*-?\d+\s*,\s*-?\d+\s*\},\{\s*-?\d+\s*,\s*-?\d+\s*\}\})"
-    return re.sub(pattern, lambda m: f"{{% raw %}} {m.group(0)} {{% endraw %}}", template)
 
+def wrap_with_raw(template: str) -> str:
+    pattern = (
+        r"(\{\s*-?\d+\s*,\s*-?\d+\s*(?:,\s*-?\d+\s*)?\})|"
+        r"(\{\{\s*-?\d+\s*,\s*-?\d+\s*\},\{\s*-?\d+\s*,\s*-?\d+\s*\}\})"
+    )
+    return re.sub(
+        pattern, lambda m: f"{{% raw %}} {m.group(0)} {{% endraw %}}", template
+    )

@@ -34,6 +34,7 @@ class DataBus(BaseElement):
 
     def add_to_network(self, network: "Network") -> None:
         from trano.elements import Space, AirHandlingUnit
+
         spaces = sorted(
             [node for node in network.graph.nodes if isinstance(node, Space)],
             key=lambda x: x.name,
@@ -64,6 +65,7 @@ class DataBus(BaseElement):
     def configure(self, network: "Network") -> None:
         self.non_connected_ports = get_non_connected_ports(network.graph.nodes)
 
+
 def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
     port_types = ["Real", "Integer", "Boolean"]
     ports: Dict[str, List[BaseInputOutput]] = {
@@ -74,8 +76,8 @@ def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
 
     for node in nodes:
         if not (
-                hasattr(node, "component_template")
-                and hasattr(node.component_template, "bus")
+            hasattr(node, "component_template")
+            and hasattr(node.component_template, "bus")
         ):
             continue
         if node.component_template and node.component_template.bus:
@@ -99,11 +101,11 @@ def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
         )
     )
 
+
 def _get_non_connected_ports_intersection(
-        input_ports: List[BaseInputOutput], output_ports: List[BaseInputOutput]
+    input_ports: List[BaseInputOutput], output_ports: List[BaseInputOutput]
 ) -> List[BaseInputOutput]:
     return list(set(input_ports) - set(output_ports).intersection(set(input_ports)))
-
 
 
 def transform_csv_to_table(

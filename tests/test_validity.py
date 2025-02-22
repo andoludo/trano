@@ -10,9 +10,9 @@ from trano.simulate.simulate import SimulationOptions, simulate
 from trano.utils.utils import is_success
 
 
-
 def get_path(file_name: str) -> Path:
     return Path(__file__).parent.joinpath("models", file_name)
+
 
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
 @pytest.mark.simulate
@@ -30,9 +30,6 @@ def test_three_zones_hydronic(schema: Path, library_name: str) -> None:
         assert is_success(results)
 
 
-
-
-
 @pytest.mark.simulate
 def test_single_zone_hydronic(schema: Path) -> None:
     house = get_path("single_zone_hydronic.yaml")
@@ -46,10 +43,6 @@ def test_single_zone_hydronic(schema: Path) -> None:
         assert is_success(results)
 
 
-
-
-
-
 @pytest.mark.simulate
 def test_single_zone_hydronic_weather(schema: Path) -> None:
     house = get_path("single_zone_hydronic_weather.yaml")
@@ -61,10 +54,6 @@ def test_single_zone_hydronic_weather(schema: Path) -> None:
             options=SimulationOptions(end_time=3600),
         )
         assert is_success(results)
-
-
-
-
 
 
 @pytest.mark.simulate
@@ -82,9 +71,6 @@ def test_single_zone_air_handling_unit_simple_vav_control(schema: Path) -> None:
             options=options,
         )
         assert is_success(results, options=options)
-
-
-
 
 
 @pytest.mark.simulate
@@ -125,7 +111,6 @@ def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> No
         assert is_success(results, options=options)
 
 
-
 @pytest.mark.parametrize(
     "file_name",
     [
@@ -159,13 +144,10 @@ def test_unexpected_configuration_should_fail_but_pass_(
     network = convert_network(file_name, house)
     network.model()
 
+
 # COntailer tests
 
 
-
-
-
-
 def test_print():
-    tt = "\nreplaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={\"CO2\"})\nconstrainedby Modelica.Media.Interfaces.PartialMedium\n\"Medium in the component\"\nannotation (choicesAllMatching = true);\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n    \"Nodes for convective heat gains\"\n    annotation (Placement(transformation(extent={{90,40},{110,60}}),\n        iconTransformation(extent={{90,40},{110,60}})));\n          Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon1#]  heatPortCon1\n\"Nodes for convective heat gains\"\nannotation (Placement(transformation(extent={{90,40},{110,60}}),\n    iconTransformation(extent={{-4,98},{6,108}})));\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad\n    \"Nodes for radiative heat gains\"\n    annotation (Placement(transformation(extent={{90,-62},{110,-42}}),\n        iconTransformation(extent={{90,-62},{110,-42}})));\n              three_zones_hydronic_containers.Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n        Modelica.Fluid.Interfaces.FluidPorts_b[#ports_b#] ports_b(redeclare package Medium =\n    Medium) annotation (Placement(\n        transformation(extent={{-108,-38},{-88,42}}), iconTransformation(extent\n          ={{-108,-38},{-88,42}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={255,128,0},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n             "
+    tt = '\nreplaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})\nconstrainedby Modelica.Media.Interfaces.PartialMedium\n"Medium in the component"\nannotation (choicesAllMatching = true);\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon#] heatPortCon\n    "Nodes for convective heat gains"\n    annotation (Placement(transformation(extent={{90,40},{110,60}}),\n        iconTransformation(extent={{90,40},{110,60}})));\n          Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortCon1#]  heatPortCon1\n"Nodes for convective heat gains"\nannotation (Placement(transformation(extent={{90,40},{110,60}}),\n    iconTransformation(extent={{-4,98},{6,108}})));\n  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[#heatPortRad#] heatPortRad\n    "Nodes for radiative heat gains"\n    annotation (Placement(transformation(extent={{90,-62},{110,-42}}),\n        iconTransformation(extent={{90,-62},{110,-42}})));\n              three_zones_hydronic_containers.Trano.Controls.BaseClasses.DataBus\n                                                 dataBus annotation (Placement(\n    transformation(extent={{-120,52},{-80,92}}),  iconTransformation(extent\n      ={{-228,58},{-208,78}})));\n        Modelica.Fluid.Interfaces.FluidPorts_b[#ports_b#] ports_b(redeclare package Medium =\n    Medium) annotation (Placement(\n        transformation(extent={{-108,-38},{-88,42}}), iconTransformation(extent\n          ={{-108,-38},{-88,42}})));\n  annotation (\n    Icon(\n      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),\n        graphics={Rectangle(\n          extent={{-60,100},{60,-100}},\n          lineColor={255,128,0},\n          fillColor={215,215,215},\n          fillPattern=FillPattern.Forward)}));\n             '
     a = 12

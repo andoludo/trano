@@ -2,12 +2,11 @@ import itertools
 import logging
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Dict, List, Optional, Tuple, Type, cast
 
 import networkx as nx
 from jinja2 import Environment, FileSystemLoader
 from networkx import DiGraph
-from pyvis.network import Network as PyvisNetwork  # type: ignore
 
 from tests.constructions.constructions import Constructions
 from trano.elements import (
@@ -20,7 +19,6 @@ from trano.elements import (
 )
 from trano.elements.base import ElementPort
 from trano.elements.bus import DataBus
-from trano.elements.common_base import BasePosition
 from trano.elements.construction import extract_properties
 from trano.elements.containers import containers_factory, ContainerInput
 from trano.elements.space import Space
@@ -43,7 +41,7 @@ class Network:  # : PLR0904, #TODO: fix this
         name: str,
         library: Optional[Library] = None,
         external_data: Optional[Path] = None,
-        diagram_scale: Optional[float] = None,
+        diagram_scale: Optional[int] = None,
     ) -> None:
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
@@ -66,15 +64,22 @@ class Network:  # : PLR0904, #TODO: fix this
     def get_edge(
         self, first_edge: Type[BaseElement], second_edge: Type[BaseElement]
     ) -> Connection:
-        return next(
-            edge
-            for edge in self.graph.edges
-            if (
-                (isinstance(edge[0], first_edge) and isinstance(edge[1], second_edge))
-                or (
-                    isinstance(edge[1], first_edge) and isinstance(edge[0], second_edge)
+        return cast(
+            Connection,
+            next(
+                edge
+                for edge in self.graph.edges
+                if (
+                    (
+                        isinstance(edge[0], first_edge)
+                        and isinstance(edge[1], second_edge)
+                    )
+                    or (
+                        isinstance(edge[1], first_edge)
+                        and isinstance(edge[0], second_edge)
+                    )
                 )
-            )
+            ),
         )
 
     def add_node(self, node: BaseElement) -> None:
@@ -151,41 +156,11 @@ class Network:  # : PLR0904, #TODO: fix this
             system,
         )
 
-    # def _assign_position(
-    #     self, system_1: System, system_2: System  # :  PLR6301
-    # ) -> None:
-    #     # TODO: change position to object
-    #     if not system_1.position.is_global_empty() and not system_2.position:
-    #         position = BasePosition()
-    #         position.set_global(
-    #             system_1.position.global_.location.x + 100,
-    #             system_1.position.global_.location.y - 100,
-    #         )
-    #         system_2.position = position
-    #         if hasattr(system_2, "control") and system_2.control:
-    #             system_2.control.position.set_global(
-    #                 system_2.position.global_.location.x - 50,
-    #                 system_2.position.global_.location.y,
-    #             )
-    #     if not system_1.position.is_global_empty() and not system_1.position:
-    #         position = BasePosition()
-    #         position.set_global(
-    #             system_2.position.global_.location.x - 100,
-    #             system_2.position.global_.location.y - 100,
-    #         )
-    #         system_1.position = position
-    #         if hasattr(system_1, "control") and system_1.control:
-    #             system_1.control.position.set_global(
-    #                 system_2.position.global_.location.x - 50,
-    #                 system_2.position.global_.location.y,
-    #             )
-
     def connect_elements(self, element_1: BaseElement, element_2: BaseElement) -> None:
         for element in [element_1, element_2]:
             if element not in self.graph.nodes:
                 self.add_node(element)
         self.graph.add_edge(element_1, element_2)
-        # self._assign_position(element_1, element_2)  # type: ignore
 
     def connect_systems(self, system_1: System, system_2: System) -> None:
 
@@ -217,7 +192,6 @@ class Network:  # : PLR0904, #TODO: fix this
             if system_1.control:
                 self.graph.add_edge(system_1.control, system_2)
         self.graph.add_edge(system_1, system_2)
-        # self._assign_position(system_1, system_2)
 
     def connect_edges(
         self, edge: Tuple[BaseElement, BaseElement]  # :  PLR6301
@@ -241,7 +215,10 @@ class Network:  # : PLR0904, #TODO: fix this
         global_position = generate_normalized_layout(self, scale=self.diagram_scale)
         container_positions = {
             container.name: generate_normalized_layout(
-                self, scale=container.layout.scale, origin=container.layout.bottom_left, container_type=container.name
+                self,
+                scale=container.layout.scale,
+                origin=container.layout.bottom_left,
+                container_type=container.name,
             )
             for container in self.containers.containers
         }
@@ -254,9 +231,7 @@ class Network:  # : PLR0904, #TODO: fix this
 
     def connect(self) -> None:
         self.assign_nodes_position()
-        data_buses = [
-            bus for bus in list(self.graph.nodes) if isinstance(bus, DataBus)
-        ]
+        data_buses = [bus for bus in list(self.graph.nodes) if isinstance(bus, DataBus)]
 
         data_bus = data_buses[0] if data_buses else None
         new_edges = [edge for edge in self.graph.edges if data_bus not in edge]
@@ -304,7 +279,9 @@ class Network:  # : PLR0904, #TODO: fix this
                 # TODO: this is not correct
                 node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
-    def model(self, include_container=False, data_bus: Optional[DataBus] = None) -> str:
+    def model(
+        self, include_container: bool = False, data_bus: Optional[DataBus] = None
+    ) -> str:
         Space.counter = 0
         for node in self.graph.nodes:
             node.assign_container_type(self)
@@ -323,7 +300,10 @@ class Network:  # : PLR0904, #TODO: fix this
                 component_models.append(model)
 
         container_input = ContainerInput(
-            nodes=list(self.graph.nodes), connections=self.edge_attributes, data=data, medium=self.library.medium
+            nodes=list(self.graph.nodes),
+            connections=self.edge_attributes,
+            data=data,
+            medium=self.library.medium,
         )
         container_model = self.containers.build(container_input)
         element_models = [c.model for c in component_models]
@@ -337,16 +317,17 @@ class Network:  # : PLR0904, #TODO: fix this
         environment.filters["enumerate"] = enumerate
         template = environment.get_template("base.jinja2")
         return template.render(
-                network=self,
-                data=data,
-                element_models=element_models,
-                library=self.library,
-                databus=data_bus,
-                dynamic_components=self.dynamic_components,
-                diagram_size=self.diagram_size,
-                containers=container_model if include_container else [],
-                main=self.containers.main if include_container else "",
-            )
+            network=self,
+            data=data,
+            element_models=element_models,
+            library=self.library,
+            databus=data_bus,
+            dynamic_components=self.dynamic_components,
+            diagram_size=self.diagram_size,
+            containers=container_model if include_container else [],
+            main=self.containers.main if include_container else "",
+        )
+
     def add_boiler_plate_spaces(
         self,
         spaces: list[Space],

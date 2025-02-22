@@ -974,4 +974,6 @@ def test_use_new_rc_space_library(
         ("space_1.TAir", "y"),
         ("space_1.weaBus", "weather_1.weaBus"),
     }
-    assert {c.equation_view() for c in network.containers.get_container("bus").connections} == {('data_bus.u[1]', 'u[1]')}
+    assert {
+        c.equation_view() for c in network.containers.get_container("bus").connections
+    } == {("data_bus.u[1]", "u[1]")}

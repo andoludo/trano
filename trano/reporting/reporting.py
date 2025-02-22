@@ -67,7 +67,7 @@ class SpacesDocumentation(BaseDocumentation):
         for space in spaces:
             main_space = space.model_dump(
                 mode="json",
-                include={  # type: ignore
+                include={
                     "name": True,
                     "occupancy": {"name": True},
                 },

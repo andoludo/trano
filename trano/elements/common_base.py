@@ -10,12 +10,22 @@ class BaseProperties(BaseModel):
     is_package: bool
     data: str
 
+
+class MandatoryPoint(BaseModel):
+    x: float
+    y: float
+
+
 class Point(BaseModel):
     x: Optional[float] = None
     y: Optional[float] = None
 
-    def is_valid(self) ->bool:
+    def is_valid(self) -> bool:
         return self.x is not None and self.y is not None
+
+    @property
+    def c_(self) -> MandatoryPoint:
+        return MandatoryPoint(x=self.x, y=self.y)
 
 
 class ElementPosition(BaseModel):
@@ -25,18 +35,23 @@ class ElementPosition(BaseModel):
     extent = {% raw %}{{10, -10}, {-10, 10}}
     {% endraw %})));"""
 
-    def is_empty(self) ->bool:
+    def is_empty(self) -> bool:
         return not self.location.is_valid()
-    def coordinate(self)-> Tuple[float, float]:
-        return self.location.x, self.location.y
+
+    def coordinate(self) -> Tuple[float, float]:
+        return self.location.c_.x, self.location.c_.y
 
 
 class BasePosition(BaseModel):
-    container:ElementPosition = Field(default_factory=lambda : ElementPosition(annotation= """annotation (
+    container: ElementPosition = Field(
+        default_factory=lambda: ElementPosition(
+            annotation="""annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
     extent = {% raw %}{{10, -10}, {-10, 10}}
-    {% endraw %})));"""))
-    global_:ElementPosition = Field(default_factory=ElementPosition)
+    {% endraw %})));"""
+        )
+    )
+    global_: ElementPosition = Field(default_factory=ElementPosition)
 
     def set_global(self, x: float, y: float) -> None:
         self.global_.location.x = x
@@ -48,27 +63,35 @@ class BasePosition(BaseModel):
 
     @property
     def x_container(self) -> float:
-        return self.container.location.x
+        return self.container.location.c_.x
+
     @property
     def y_container(self) -> float:
-        return self.container.location.y
+        return self.container.location.c_.y
 
     def is_global_empty(self) -> bool:
         return self.global_.is_empty()
+
     def is_container_empty(self) -> bool:
         return self.container.is_empty()
+
     def set(self, x: float, y: float) -> None:
         self.set_global(x, y)
         self.set_container(x, y)
-    def between_two_objects(self, position_1: ElementPosition, position_2: ElementPosition) -> None:
-        self.set((position_1.location.x - position_2.location.x) / 2, (position_1.location.y + position_2.location.y) / 2)
+
+    def between_two_objects(
+        self, position_1: ElementPosition, position_2: ElementPosition
+    ) -> None:
+        self.set(
+            (position_1.location.c_.x - position_2.location.c_.x) / 2,
+            (position_1.location.c_.y + position_2.location.c_.y) / 2,
+        )
 
 
 class ComponentModel(BaseModel):
     id: int
     model: str
     container: str
-
 
 
 class BaseElementPosition(BaseModel):
@@ -83,7 +106,6 @@ class BaseParameter(BaseModel):
 class MediumTemplate(BaseModel):
     air: Optional[str] = None
     water: Optional[str] = None
-
 
     def is_empty(self) -> bool:
         return self.air is None or self.water is None
