@@ -1,8 +1,11 @@
+import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 import yaml
 from pydantic import BaseModel, Field
+
+from trano.elements.common_base import MediumTemplate
 
 if TYPE_CHECKING:
     from trano.elements import WallParameters
@@ -22,8 +25,11 @@ class Templates(BaseModel):
 
 def read_libraries() -> Dict[str, Dict[str, Any]]:
     library_path = Path(__file__).parent.joinpath("library.yaml")
+    library_json_path = Path(__file__).parent.joinpath("library.json")
     data: Dict[str, Dict[str, Any]] = yaml.safe_load(library_path.read_text())
-    return data
+
+
+    return json.loads(library_json_path.read_text())
 
 
 class Library(BaseModel):
@@ -32,6 +38,7 @@ class Library(BaseModel):
     functions: Dict[str, Callable[[Any], Any]] = {
         "tilts_processing_ideas": tilts_processing_ideas
     }
+    medium: MediumTemplate
     constants: str = ""
     templates: Templates
     default: bool = False

@@ -684,3 +684,156 @@ def test_assign_container_position(house_ideas: Network) -> None:
     plt.figure(figsize=(6, 3))
     nx.draw(new_graph, pos, with_labels=True, node_color="lightblue", edge_color="gray", node_size=2000, font_size=10)
     plt.show()
+
+
+def test_connect_envelope_databus_data():
+    element_1 = {
+  "position" : {
+    "container" : {
+      "location" : {
+        "x" : -0.20497222956889516,
+        "y" : -0.07534687126711503
+      },
+      "annotation" : "annotation (\n    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));"
+    },
+    "global_" : {
+      "location" : {
+        "x" : 0.0,
+        "y" : 0.0
+      }
+    }
+  },
+  "name" : "space_1",
+  "ports" : [ {
+    "names" : [ "TAir" ],
+    "flow" : "outlet",
+    "medium" : "data",
+    "ignore_direction" : True,
+    "connection_counter" : 1
+  } ],
+  "container_type" : "envelope"
+}
+    element_2 = {
+  "position" : {
+    "container" : {
+      "location" : {
+        "x" : -0.20497222956889516,
+        "y" : -0.07534687126711503
+      },
+      "annotation" : "annotation (\n    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));"
+    },
+    "global_" : {
+      "location" : {
+        "x" : 0.0,
+        "y" : 0.0
+      }
+    }
+  },
+  "ports" : [ {
+    "names" : [ "dataBus" ],
+    "flow" : "undirected",
+    "medium" : "data",
+    "multi_connection" : True,
+    "use_counter" : False,
+    "connection_counter" : 1
+  }, {
+    "names" : [ "y" ],
+    "flow" : "inlet",
+    "medium" : "data",
+    "multi_connection" : True,
+    "use_counter" : False
+  }, {
+    "names" : [ "ports_b" ],
+    "flow" : "inlet",
+    "medium" : "fluid",
+    "multi_connection" : True,
+    "ignore_direction" : True
+  }, {
+    "names" : [ "ports_a" ],
+    "flow" : "outlet",
+    "medium" : "fluid",
+    "multi_connection" : True,
+    "ignore_direction" : True
+  }, {
+    "names" : [ "heatPortCon1" ],
+    "flow" : "convective",
+    "medium" : "heat",
+    "multi_connection" : True
+  } ],
+  "container_type" : "envelope"
+}
+
+    connections = connect(ElementPort.model_validate(element_1), ElementPort.model_validate(element_2))
+    assert {c.equation_view() for c in connections} == {('space_1.TAir', 'y')}
+
+
+def test_connect_data_bus_data():
+    element_1 = {
+  "position" : {
+    "container" : {
+      "location" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "annotation" : "annotation (\n    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));"
+    },
+    "global_" : {
+      "location" : {
+        "x" : 5.2602026228672445,
+        "y" : 650.3793214643335
+      }
+    }
+  },
+  "name" : "data_bus",
+  "ports" : [ {
+    "names" : [ "dataBus" ],
+    "connected" : False,
+    "flow" : "undirected",
+    "medium" : "data",
+    "multi_connection" : True,
+    "use_counter" : False,
+    "ignore_direction" : True,
+    "connection_counter" : 1
+  } ],
+  "container_type" : "bus"
+}
+    element_2 = {
+  "position" : {
+    "container" : {
+      "location" : {
+        "x" : 0.0,
+        "y" : 0.0
+      },
+      "annotation" : "annotation (\n    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));"
+    },
+    "global_" : {
+      "location" : {
+        "x" : 5.2602026228672445,
+        "y" : 650.3793214643335
+      }
+    }
+  },
+  "ports" : [ {
+    "names" : [ "port_b" ],
+    "flow" : "outlet",
+    "medium" : "fluid",
+    "multi_connection" : True,
+    "ignore_direction" : True
+  }, {
+    "names" : [ "heatPortCon" ],
+    "flow" : "convective",
+    "medium" : "heat",
+    "multi_connection" : True
+  }, {
+    "names" : [ "u" ],
+    "connected" : False,
+    "flow" : "outlet",
+    "medium" : "data",
+    "multi_connection" : True,
+    "counter" : 1,
+    "connection_counter" : 1
+  } ],
+  "container_type" : "bus"
+}
+    connections = connect(ElementPort.model_validate(element_1), ElementPort.model_validate(element_2))
+    assert not connections

@@ -53,7 +53,14 @@ class Port(BaseModel):
             if self.flow == Flow.inlet_or_outlet:
                 return port.flow in [Flow.inlet_or_outlet]
         if self.medium == Medium.data:
-            return True
+            if self.flow == Flow.inlet:
+                return port.flow in [Flow.outlet]
+            elif self.flow == Flow.outlet:
+                return port.flow in [Flow.inlet]
+            elif self.flow == Flow.undirected:
+                return port.flow in [Flow.undirected, Flow.interchangeable_port]
+            else:
+                return True
         return self.flow == port.flow
 
     def similar_flow(self, port: "Port") -> bool:

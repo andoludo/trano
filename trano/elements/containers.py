@@ -2,14 +2,17 @@ import json
 import logging
 from pathlib import Path
 from random import randint
+from types import SimpleNamespace
 from typing import List, Optional, get_args, Tuple
 
+import yaml
+from black.brackets import field
 from jinja2 import Environment, FileSystemLoader
-from pydantic import BaseModel, Field, model_validator, computed_field
+from pydantic import BaseModel, Field, model_validator, computed_field, field_validator
 from networkx.classes.reportviews import NodeView
 from trano.elements import Port, Connection, Control, BaseElement
 from trano.elements.base import ElementPort
-from trano.elements.common_base import BasePosition, Point, BaseProperties
+from trano.elements.common_base import BasePosition, Point, BaseProperties, MediumTemplate
 from trano.elements.connection import (
     BasePartialConnectionWithContainerType,
     PartialConnection,
@@ -22,11 +25,20 @@ from trano.elements.types import (
     ConnectionView,
     Medium, SystemContainerTypes,
 )
+from trano.elements.utils import wrap_with_raw
 from trano.exceptions import ContainerNotFoundError
 
 logger = logging.getLogger(__name__)
-
-
+ENVIRONMENT = Environment(
+            trim_blocks=True,
+            lstrip_blocks=True,
+            loader=FileSystemLoader(
+                str(Path(__file__).parents[1].joinpath("templates"))
+            ),
+            autoescape=True,
+        )
+ENVIRONMENT.filters["frozenset"] = frozenset
+ENVIRONMENT.filters["enumerate"] = enumerate
 class PortGroup(BaseModel):
     connected_container_names: List[ContainerTypes]
     ports: List[Port]
@@ -44,6 +56,8 @@ class ContainerInput(BaseModel):
     nodes: List[BaseElement]
     connections: List[Connection]
     data: BaseProperties
+    medium: MediumTemplate
+
 class ContainerLayout(BaseModel):
     bottom_left: Point = Point(x=-100, y=-100)
     top_right: Point =  Point(x=100, y=100)
@@ -67,6 +81,12 @@ class Container(BaseContainer):
     left_boundary: Optional[ContainerTypes] = None
     data: Optional[BaseProperties] = None
     layout: ContainerLayout = Field(default_factory=ContainerLayout)
+
+
+    @field_validator("template")
+    @classmethod
+    def _template_validator(cls, value: str)->str:
+        return wrap_with_raw(value)
 
 
     def has_data(self) -> bool:
@@ -108,16 +128,22 @@ class Container(BaseContainer):
                 return port_group
         return None
 
-    def _initialize_template(self):
+    def _initialize_template(self, medium):
+        ports = {}
         for port_group in self.port_groups:
             for port in port_group.ports:
                 for name in port.names:
-                    self.template = self.template.replace(
-                        f"#{name}#", str(port.counter - 1)
-                    )
+                    ports[name] = str(port.counter - 1)
+        try:
+            template = ENVIRONMENT.from_string(
+                self.template
+            )
+        except:
+            raise
+        self.template = template.render(medium=medium, ports=SimpleNamespace(**ports))
 
-    def build(self, template):
-        self._initialize_template()
+    def build(self, template, medium: MediumTemplate):
+        self._initialize_template(medium)
         self.add_grouped_by_medium_connection()
         return template.render(container=self)
 
@@ -261,6 +287,11 @@ class Containers(BaseModel):
       5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
         ),
         ConnectionList(
+            connection_type=["envelope1.y", "bus1.u"],
+            annotation="""annotation (Line(points={{-24,
+    5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
+        ),
+        ConnectionList(
             connection_type=["envelope1.heatPortCon1", "bus1.heatPortCon"],
             annotation="""annotation (Line(points={{-24,
     5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
@@ -288,8 +319,11 @@ class Containers(BaseModel):
             container.set_data(data)
     @classmethod
     def load_from_config(cls):
-        config = Path(__file__).parents[1].joinpath("elements/config/containers.json")
-        return cls.model_validate(json.loads(config.read_text()))
+        # config = Path(__file__).parents[1].joinpath("elements/config/containers.json")
+        # data = json.loads(config.read_text())
+        config_yaml = Path(__file__).parents[1].joinpath("elements/config/containers.yaml")
+        data = yaml.safe_load(config_yaml.read_text())
+        return cls.model_validate(data)
 
     def _set_connection_annotation(self):
         for connection in self.connections:
@@ -325,7 +359,7 @@ class Containers(BaseModel):
         self._set_connection_annotation()
         self.main = main_template.render(container=self)
 
-        return [c.build(template) for c in self.in_use_containers()]
+        return [c.build(template,container_input.medium) for c in self.in_use_containers()]
 
     def build_main_connections(self):
         connections = [
@@ -460,30 +494,10 @@ class Containers(BaseModel):
         return None
 
     def _template(self):
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(
-                str(Path(__file__).parents[1].joinpath("templates"))
-            ),
-            autoescape=True,
-        )
-        environment.filters["frozenset"] = frozenset
-        environment.filters["enumerate"] = enumerate
-        template = environment.get_template("containers.jinja2")
+        template = ENVIRONMENT.get_template("containers.jinja2")
         return template
 
     def _main_template(self):
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(
-                str(Path(__file__).parents[1].joinpath("templates"))
-            ),
-            autoescape=True,
-        )
-        environment.filters["frozenset"] = frozenset
-        environment.filters["enumerate"] = enumerate
         template_ ="""
 model building_container
 
@@ -507,7 +521,7 @@ coordinateSystem(preserveAspectRatio=false)));
 
 end building_container;
 """
-        template = environment.from_string(
+        template = ENVIRONMENT.from_string(
             template_
         )
         return template

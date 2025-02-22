@@ -1998,6 +1998,269 @@ end PartialVAVBox;
   end IdealHeatEmission;
   end IdealHeatingSystem;
   end HeatTransfer;
+
+    package BoundaryConditions
+  package WeatherData
+    model ReadearTMYReducedOrder
+      Buildings.BoundaryConditions.WeatherData.ReaderTMY3
+                                                weaDat(
+        calTSky=Buildings.BoundaryConditions.Types.SkyTemperatureCalculation.HorizontalRadiation,
+        computeWetBulbTemperature=false,
+        filNam=Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_CA_San.Francisco.Intl.AP.724940_TMY3.mos"))
+        "Weather data reader"
+        annotation (Placement(transformation(extent={{-84,56},{-64,76}})));
+
+      Buildings.BoundaryConditions.SolarIrradiation.DiffusePerez
+                                                       HDifTil[2](
+        each outSkyCon=true,
+        each outGroCon=true,
+        each til=1.5707963267949,
+        azi={3.1415926535898,4.7123889803847})
+        "Calculates diffuse solar radiation on titled surface for both directions"
+        annotation (Placement(transformation(extent={{-56,24},{-36,44}})));
+      Buildings.BoundaryConditions.SolarIrradiation.DirectTiltedSurface
+                                                              HDirTil[2](each til=1.5707963267949,
+          azi={3.1415926535898,4.7123889803847})
+        "Calculates direct solar radiation on titled surface for both directions"
+        annotation (Placement(transformation(extent={{-56,56},{-36,76}})));
+      Buildings.ThermalZones.ReducedOrder.SolarGain.CorrectionGDoublePane
+                                      corGDouPan(UWin=2.1, n=2)
+        "Correction factor for solar transmission"
+        annotation (Placement(transformation(extent={{18,50},{38,70}})));
+      Buildings.ThermalZones.ReducedOrder.EquivalentAirTemperature.VDI6007WithWindow
+                                                 eqAirTemp(
+        wfGro=0,
+        withLongwave=true,
+        aExt=0.7,
+        hConWallOut=20,
+        hRad=5,
+        hConWinOut=20,
+        n=2,
+        wfWall={0.3043478260869566,0.6956521739130435},
+        wfWin={0.5,0.5},
+        TGro=285.15) "Computes equivalent air temperature"
+        annotation (Placement(transformation(extent={{-12,-10},{8,10}})));
+      Modelica.Blocks.Math.Add solRad[2]
+        "Sums up solar radiation of both directions"
+        annotation (Placement(transformation(extent={{-26,10},{-16,20}})));
+      Buildings.HeatTransfer.Sources.PrescribedTemperature preTem
+        "Prescribed temperature for exterior walls outdoor surface temperature"
+        annotation (Placement(transformation(extent={{20,-2},{32,10}})));
+      Buildings.HeatTransfer.Sources.PrescribedTemperature preTem1
+        "Prescribed temperature for windows outdoor surface temperature"
+        annotation (Placement(transformation(extent={{20,18},{32,30}})));
+      Modelica.Thermal.HeatTransfer.Components.Convection theConWin
+        "Outdoor convective heat transfer of windows"
+        annotation (Placement(transformation(extent={{50,20},{40,30}})));
+      Modelica.Thermal.HeatTransfer.Components.Convection theConWall
+        "Outdoor convective heat transfer of walls"
+        annotation (Placement(transformation(extent={{48,10},{38,0}})));
+      Modelica.Blocks.Sources.Constant const[2](each k=0)
+        "Sets sunblind signal to zero (open)"
+        annotation (Placement(transformation(extent={{-8,18},{-2,24}})));
+      Modelica.Blocks.Sources.Constant hConWall(k=25*11.5)
+        "Outdoor coefficient of heat transfer for walls"
+        annotation (Placement(transformation(extent={{-4,-4},{4,4}}, rotation=90,
+        origin={42,-12})));
+      Modelica.Blocks.Sources.Constant hConWin(k=20*14)
+        "Outdoor coefficient of heat transfer for windows"
+        annotation (Placement(transformation(extent={{4,-4},{-4,4}},
+        rotation=90,origin={44,42})));
+      Buildings.HeatTransfer.Sources.PrescribedTemperature preTemFloor
+        "Prescribed temperature for floor plate outdoor surface temperature"
+        annotation (Placement(transformation(extent={{-6,-6},{6,6}},
+        rotation=90,origin={35,-32})));
+      Modelica.Blocks.Sources.Constant TSoil(k=283.15)
+        "Outdoor surface temperature for floor plate"
+        annotation (Placement(transformation(extent={{-4,-4},{4,4}},
+        rotation=180,origin={-8,-36})));
+      Buildings.ThermalZones.ReducedOrder.EquivalentAirTemperature.VDI6007
+                                       eqAirTempVDI(
+        aExt=0.7,
+        n=1,
+        wfWall={1},
+        wfWin={0},
+        wfGro=0,
+        hConWallOut=20,
+        hRad=5,
+        TGro=285.15) "Computes equivalent air temperature for roof"
+        annotation (Placement(transformation(extent={{18,78},{38,98}})));
+      Buildings.HeatTransfer.Sources.PrescribedTemperature preTemRoof
+        "Prescribed temperature for roof outdoor surface temperature"
+        annotation (Placement(transformation(extent={{-6,-6},{6,6}},rotation=-90,
+        origin={57,68})));
+      Modelica.Thermal.HeatTransfer.Components.Convection theConRoof
+        "Outdoor convective heat transfer of roof"
+        annotation (Placement(transformation(extent={{5,-5},{-5,5}},rotation=-90,
+        origin={59,47})));
+      Modelica.Blocks.Sources.Constant hConRoof(k=25*11.5)
+        "Outdoor coefficient of heat transfer for roof"
+        annotation (Placement(transformation(extent={{4,-4},{-4,4}},origin={78,49})));
+      Modelica.Blocks.Sources.Constant const1(k=0)
+        "Sets sunblind signal to zero (open)"
+        annotation (Placement(transformation(extent={{80,94},{74,100}})));
+      Buildings.BoundaryConditions.WeatherData.Bus
+                                         weaBus "Weather data bus"
+        annotation (Placement(transformation(extent={{-88,-6},{-54,26}}),
+        iconTransformation(extent={{-96,70},{-66,100}})));
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a ConvRoof annotation (
+          Placement(transformation(extent={{-10,-10},{10,10}}, origin={102,70}),
+            iconTransformation(extent={{98,66},{118,86}})));
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a ConvWin annotation (
+          Placement(transformation(extent={{-10,-10},{10,10}}, origin={102,40}),
+            iconTransformation(extent={{98,22},{118,42}})));
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a ConvWall annotation (
+          Placement(transformation(extent={{-10,-10},{10,10}}, origin={102,-20}),
+            iconTransformation(extent={{98,-40},{118,-20}})));
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a TempFloor annotation (
+          Placement(transformation(extent={{-10,-10},{10,10}}, origin={102,-80}),
+            iconTransformation(extent={{98,-82},{118,-62}})));
+      Modelica.Blocks.Interfaces.RealOutput[2] solarRadTrans annotation (
+          Placement(transformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={0,-110}), iconTransformation(
+            extent={{-10,-10},{10,10}},
+            rotation=-90,
+            origin={0,-110})));
+    equation
+      connect(eqAirTemp.TEqAirWin,preTem1. T)
+        annotation (Line(points={{9,3.8},{12,3.8},{12,24},{18.8,24}},
+        color={0,0,127}));
+      connect(eqAirTemp.TEqAir,preTem. T)
+        annotation (Line(points={{9,0},{16,0},{16,4},{18.8,4}},
+        color={0,0,127}));
+      connect(weaDat.weaBus,weaBus)
+        annotation (Line(points={{-64,66},{-62,66},{-62,22},{-72,22},{-72,16},{-71,16},
+              {-71,10}},  color={255,204,51},
+        thickness=0.5), Text(textString="%second",index=1,extent={{6,3},{6,3}}));
+      connect(weaBus.TDryBul,eqAirTemp. TDryBul)
+        annotation (Line(points={{-70.915,10.08},{-70.915,2},{-26,2},{-26,-6},{-14,-6}},
+        color={255,204,51},
+        thickness=0.5), Text(textString="%first",index=-1,extent={{-6,3},{-6,3}}));
+      connect(const.y,eqAirTemp. sunblind)
+        annotation (Line(points={{-1.7,21},{0,21},{0,12},{-2,12}},
+        color={0,0,127}));
+      connect(HDifTil.HSkyDifTil,corGDouPan. HSkyDifTil)
+        annotation (Line(points={{-35,40},{6,40},{6,62},{12,62},{12,61.8},{16,61.8},
+              {16,62}},
+        color={0,0,127}));
+      connect(HDirTil.H,corGDouPan. HDirTil)
+        annotation (Line(points={{-35,66},{16,66}},        color={0,0,127}));
+      connect(HDirTil.H,solRad. u1)
+        annotation (Line(points={{-35,66},{-30,66},{-30,18},{-27,18}},
+        color={0,0,127}));
+      connect(HDifTil.H,solRad. u2)
+        annotation (Line(points={{-35,34},{-32,34},{-32,12},{-27,12}},
+        color={0,0,127}));
+      connect(HDifTil.HGroDifTil,corGDouPan. HGroDifTil)
+        annotation (Line(points={{-35,28},{8,28},{8,58},{16,58}},
+        color={0,0,127}));
+      connect(solRad.y,eqAirTemp. HSol)
+        annotation (Line(points={{-15.5,15},{-14,15},{-14,6}},
+        color={0,0,127}));
+      connect(weaDat.weaBus,HDifTil [1].weaBus)
+        annotation (Line(points={{-64,66},{-62,66},{-62,34},{-56,34}},
+        color={255,204,51},thickness=0.5));
+      connect(weaDat.weaBus,HDifTil [2].weaBus)
+        annotation (Line(points={{-64,66},{-62,66},{-62,34},{-56,34}},
+        color={255,204,51},thickness=0.5));
+      connect(weaDat.weaBus,HDirTil [1].weaBus)
+        annotation (Line(
+        points={{-64,66},{-56,66}},
+        color={255,204,51},
+        thickness=0.5));
+      connect(weaDat.weaBus,HDirTil [2].weaBus)
+        annotation (Line(
+        points={{-64,66},{-56,66}},
+        color={255,204,51},
+        thickness=0.5));
+      connect(preTem1.port,theConWin. fluid)
+        annotation (Line(points={{32,24},{40,24},{40,25}}, color={191,0,0}));
+      connect(theConWall.fluid,preTem. port)
+        annotation (Line(points={{38,5},{36,5},{36,4},{32,4}}, color={191,0,0}));
+      connect(hConWall.y,theConWall. Gc)
+        annotation (Line(points={{42,-7.6},{42,0},{43,0}},    color={0,0,127}));
+      connect(hConWin.y,theConWin. Gc)
+        annotation (Line(points={{44,37.6},{44,30},{45,30}}, color={0,0,127}));
+      connect(weaBus.TBlaSky,eqAirTemp. TBlaSky)
+        annotation (Line(
+        points={{-70.915,10.08},{-46,10.08},{-46,6},{-20,6},{-20,0},{-14,0}},
+        color={255,204,51},
+        thickness=0.5), Text(
+        textString="%first",
+        index=-1,
+        extent={{-6,3},{-6,3}}));
+      connect(TSoil.y,preTemFloor. T)
+      annotation (Line(points={{-12.4,-36},{-16,-36},{-16,-44},{35,-44},{35,-39.2}},
+                                                                color={0,0,127}));
+      connect(preTemRoof.port,theConRoof. fluid)
+        annotation (Line(points={{57,62},{59,62},{59,52}}, color={191,0,0}));
+      connect(eqAirTempVDI.TEqAir,preTemRoof. T)
+        annotation (Line(
+        points={{39,88},{57,88},{57,75.2}}, color={0,0,127}));
+      connect(theConRoof.Gc,hConRoof. y)
+        annotation (Line(points={{64,47},{64,49},{73.6,49}},  color={0,0,127}));
+      connect(eqAirTempVDI.TDryBul,eqAirTemp. TDryBul)
+        annotation (Line(points={{16,82},{-92,82},{-92,10},{-72,10},{-72,6},{-70,6},
+              {-70,2},{-26,2},{-26,-6},{-14,-6}},
+        color={0,0,127}));
+      connect(eqAirTempVDI.TBlaSky,eqAirTemp. TBlaSky)
+        annotation (Line(points={{16,88},{8,88},{8,80},{-88,80},{-88,30},{-72,30},{-72,
+              10},{-46,10},{-46,6},{-20,6},{-20,0},{-14,0}},
+        color={0,0,127}));
+      connect(eqAirTempVDI.HSol[1],weaBus. HGloHor)
+        annotation (Line(points={{16,94},{-94,94},{-94,-10},{-72,-10},{-72,10.08},{-70.915,
+              10.08}},
+        color={0,0,127}),Text(
+        textString="%second",
+        index=1,
+        extent={{6,3},{6,3}}));
+      connect(HDirTil.inc,corGDouPan. inc)
+        annotation (Line(points={{-35,62},{2,62},{2,54},{16,54}},
+        color={0,0,127}));
+      connect(const1.y,eqAirTempVDI. sunblind[1])
+        annotation (Line(points={{73.7,97},{42,97},{42,110},{28,110},{28,100}},
+                                          color={0,0,127}));
+      connect(preTemFloor.port, TempFloor) annotation (Line(points={{35,-26},{35,-22},
+              {86,-22},{86,-80},{102,-80}}, color={191,0,0}));
+      connect(theConWall.solid, ConvWall) annotation (Line(points={{48,5},{88,5},{88,
+              -20},{102,-20}}, color={191,0,0}));
+      connect(theConWin.solid, ConvWin) annotation (Line(points={{50,25},{86,25},{86,
+              40},{102,40}}, color={191,0,0}));
+      connect(theConRoof.solid, ConvRoof) annotation (Line(points={{59,42},{59,38},{
+              82,38},{82,42},{86,42},{86,70},{102,70}}, color={191,0,0}));
+      connect(corGDouPan.solarRadWinTrans, solarRadTrans) annotation (Line(
+            points={{39,60},{44,60},{44,-2},{0,-2},{0,-110}}, color={0,0,127}));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+            Rectangle(
+              extent={{-100,100},{100,-100}},
+              lineColor={124,142,255},
+              fillColor={124,142,255},
+              fillPattern=FillPattern.Solid),
+            Ellipse(
+              extent={{-74,68},{6,-6}},
+              lineColor={255,220,220},
+              lineThickness=1,
+              fillPattern=FillPattern.Sphere,
+              fillColor={255,255,0}),
+            Polygon(
+              points={{32,8},{40,4},{50,0},{60,-2},{62,-4},{74,-14},{66,-30},{62,
+                  -44},{54,-46},{-40,-46},{-66,-30},{-56,6},{-16,14},{-10.211,12.158},
+                  {-14,6},{-2,16},{12,18},{28,14},{32,8}},
+              lineColor={220,220,220},
+              lineThickness=0.1,
+              fillPattern=FillPattern.Sphere,
+              smooth=Smooth.Bezier,
+              fillColor={230,230,230}),
+            Text(
+              extent={{212,-192},{-54,-278}},
+              textColor={255,255,255},
+              textString=DynamicSelect("", String(weaBus.TDryBul-273.15, format=".1f")))}),
+          Diagram(coordinateSystem(preserveAspectRatio=false)));
+    end ReadearTMYReducedOrder;
+  end WeatherData;
+end BoundaryConditions;
   annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0"),
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
@@ -2032,15 +2295,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record gypsum_001 = IDEAS.B
       c=900.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
-      epsLw=0.88,
       epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.89,
       c=800.0,
       rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record concreteslab_001
@@ -2108,11 +2371,11 @@ Medium) annotation (Placement(
     redeclare package Medium = Medium,
     nSurf=4,
     T_start=293.15) annotation (
-    Placement(transformation(origin = { 0.18737103417743128, -0.09359137055837152 },
+    Placement(transformation(origin = { 0.18899973683581095, -0.09759999999999991 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[3]
-    merged_externalwall_80_externalwall_81_externalwall_82(
+    merged_externalwall_17_externalwall_18_externalwall_19(
     redeclare parameter single_zone_air_handling_unit_complex_vav_containers_IDEAS.Data.Constructions.
     cavitywall_001
     constructionType,
@@ -2120,15 +2383,15 @@ Medium) annotation (Placement(
     final azi={ 0.0, 90.0, 180.0 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -100.0, 1.7623730964467086 },
+    Placement(transformation(origin = { -100.0, 1.7584000000000088 },
     extent = {{10, -10}, {-10, 10}}
 )));
-        IDEAS.Buildings.Components.SlabOnGround flooronground_29(
+        IDEAS.Buildings.Components.SlabOnGround flooronground_8(
     redeclare parameter single_zone_air_handling_unit_complex_vav_containers_IDEAS.Data.Constructions.
     concreteslab_001 constructionType,
     redeclare package Medium = Medium,
     A=50.0) annotation (
-    Placement(transformation(origin = { -0.29805434550586085, -100.0 },
+    Placement(transformation(origin = { -0.2974552820242735, -100.0 },
     extent = {{10, -10}, {-10, 10}}
 )));
         single_zone_air_handling_unit_complex_vav_containers_IDEAS.Components.BaseClasses.OccupancyOccupancy_1
@@ -2136,7 +2399,7 @@ Medium) annotation (Placement(
     k=1/7/3,
     occupancy=3600*{9, 17}
 ) annotation (
-    Placement(transformation(origin = { 100.0, -2.20653553299492 },
+    Placement(transformation(origin = { 100.0, -2.2095999999999947 },
     extent = {{10, -10}, {-10, 10}}
 )));
             inner IDEAS.BoundaryConditions.SimInfoManager
@@ -2144,24 +2407,24 @@ Medium) annotation (Placement(
   IDEAS.BoundaryConditions.Types.
   InterZonalAirFlow.OnePort) "Data reader"
 annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotation (
-    Placement(transformation(origin = { 3.665989390214037, 100.0 },
+    Placement(transformation(origin = { 3.667551855307565, 100.0 },
     extent = {{10, -10}, {-10, 10}}
 )));
 equation
         
         
-        connect(space_001.propsBus[1:3],merged_externalwall_80_externalwall_81_externalwall_82[1:3].propsBus_a)
+        connect(space_001.propsBus[1:3],merged_externalwall_17_externalwall_18_externalwall_19[1:3].propsBus_a)
         annotation (Line(
-        points={{ 0.18737103417743128, -0.09359137055837152 }    ,{ -49.906314482911284, -0.09359137055837152 }    ,{ -49.906314482911284, 1.7623730964467086 }    ,{ -100.0, 1.7623730964467086 }    },
+        points={{ 0.18899973683581095, -0.09759999999999991 }    ,{ -49.905500131582095, -0.09759999999999991 }    ,{ -49.905500131582095, 1.7584000000000088 }    ,{ -100.0, 1.7584000000000088 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
             ;
         
         
-        connect(space_001.propsBus[4],flooronground_29.propsBus_a)
+        connect(space_001.propsBus[4],flooronground_8.propsBus_a)
         annotation (Line(
-        points={{ 0.18737103417743128, -0.09359137055837152 }    ,{ -0.055341655664214784, -0.09359137055837152 }    ,{ -0.055341655664214784, -100.0 }    ,{ -0.29805434550586085, -100.0 }    },
+        points={{ 0.18899973683581095, -0.09759999999999991 }    ,{ -0.05422777259423128, -0.09759999999999991 }    ,{ -0.05422777259423128, -100.0 }    ,{ -0.2974552820242735, -100.0 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2170,7 +2433,7 @@ equation
         
         connect(space_001.yOcc,occupancy_1.y)
         annotation (Line(
-        points={{ 0.18737103417743128, -0.09359137055837152 }    ,{ 50.093685517088716, -0.09359137055837152 }    ,{ 50.093685517088716, -2.20653553299492 }    ,{ 100.0, -2.20653553299492 }    },
+        points={{ 0.18899973683581095, -0.09759999999999991 }    ,{ 50.094499868417905, -0.09759999999999991 }    ,{ 50.094499868417905, -2.2095999999999947 }    ,{ 100.0, -2.2095999999999947 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2179,7 +2442,7 @@ equation
         
         connect(space_001.ports[1],ports_b[1])
         annotation (Line(
-        points={{ 0.18737103417743128, -0.09359137055837152 }    ,{ 0.09368551708871564, -0.09359137055837152 }    ,{ 0.09368551708871564, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 0.18899973683581095, -0.09759999999999991 }    ,{ 0.09449986841790547, -0.09759999999999991 }    ,{ 0.09449986841790547, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern = LinePattern.Dash,
         smooth=Smooth.None))
@@ -2188,7 +2451,7 @@ equation
         
         connect(space_001.ports[2],ports_b[2])
         annotation (Line(
-        points={{ 0.18737103417743128, -0.09359137055837152 }    ,{ 0.09368551708871564, -0.09359137055837152 }    ,{ 0.09368551708871564, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 0.18899973683581095, -0.09759999999999991 }    ,{ 0.09449986841790547, -0.09759999999999991 }    ,{ 0.09449986841790547, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern = LinePattern.Dash,
         smooth=Smooth.None))
@@ -2218,7 +2481,7 @@ end envelope;
 
 
 
-    package Medium = IDEAS.Media.Air (extraPropertiesNames={"CO2"})  "Medium model";
+    package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"});
       Modelica.Fluid.Interfaces.FluidPort_b[1] port_b(redeclare package Medium =
             Medium)
         annotation (Placement(transformation(extent={{90,40},{110,60}}),
@@ -2240,8 +2503,7 @@ end envelope;
               extent={{-60,100},{60,-100}},
               lineColor={255,128,0},
               fillColor={215,215,215},
-              fillPattern=FillPattern.Forward)}));
-             
+              fillPattern=FillPattern.Forward)}));             
         single_zone_air_handling_unit_complex_vav_containers_IDEAS.Components.BaseClasses.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
@@ -2289,7 +2551,7 @@ end bus;
 
 
 
-  replaceable package Medium = IDEAS.Media.Air (extraPropertiesNames={"CO2"})
+  replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
   constrainedby Modelica.Media.Interfaces.PartialMedium
   "Medium in the component"
   annotation (choicesAllMatching = true);
@@ -2637,29 +2899,32 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TSupSetVav_control_001
+            THeaSetVav_control_001
             (y=293.15);
-Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_control_001
-            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TCooSetVav_control_001
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            THeaSetVav_control_001
+            ppmCO2SetVav_control_001
+            (y=0.0);
+Modelica.Blocks.Sources.RealExpression
+            TSupSetVav_control_001
             (y=293.15);
 Modelica.Blocks.Sources.IntegerExpression
             oveDamPosVav_control_001
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            uAhuOpeModAhu_control_001
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_control_001
             (y=1);
 Modelica.Blocks.Sources.IntegerExpression
+            uAhuOpeModAhu_control_001
+            (y=0);
+Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_control_001
             (y=0);
+Modelica.Blocks.Sources.BooleanExpression
+            u1FanVav_control_001
+            (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1WinVav_control_001
             (y=false);
@@ -2667,50 +2932,47 @@ Modelica.Blocks.Sources.BooleanExpression
             u1SupFanAhu_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
+            u1OccVav_control_001
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
             uHeaOffVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1HotPlaVav_control_001
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_control_001
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_control_001
             (y=false);
 equation
 connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_001, TRoo[1].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
-connect(dataBus.TSupSetSpace_001,
-TSupSetVav_control_001.y);
-connect(dataBus.ppmCO2SetSpace_001,
-ppmCO2SetVav_control_001.y);
-connect(dataBus.TCooSetSpace_001,
-TCooSetVav_control_001.y);
 connect(dataBus.THeaSetSpace_001,
 THeaSetVav_control_001.y);
+connect(dataBus.TCooSetSpace_001,
+TCooSetVav_control_001.y);
+connect(dataBus.ppmCO2SetSpace_001,
+ppmCO2SetVav_control_001.y);
+connect(dataBus.TSupSetSpace_001,
+TSupSetVav_control_001.y);
 connect(dataBus.oveDamPosSpace_001,
 oveDamPosVav_control_001.y);
-connect(dataBus.uAhuOpeModAhu_control_001,
-uAhuOpeModAhu_control_001.y);
 connect(dataBus.uOpeModSpace_001,
 uOpeModVav_control_001.y);
+connect(dataBus.uAhuOpeModAhu_control_001,
+uAhuOpeModAhu_control_001.y);
 connect(dataBus.oveFloSetSpace_001,
 oveFloSetVav_control_001.y);
+connect(dataBus.u1FanSpace_001,
+u1FanVav_control_001.y);
 connect(dataBus.u1WinSpace_001,
 u1WinVav_control_001.y);
 connect(dataBus.u1SupFanAhu_control_001,
 u1SupFanAhu_control_001.y);
+connect(dataBus.u1OccSpace_001,
+u1OccVav_control_001.y);
 connect(dataBus.uHeaOffSpace_001,
 uHeaOffVav_control_001.y);
 connect(dataBus.u1HotPlaSpace_001,
 u1HotPlaVav_control_001.y);
-connect(dataBus.u1OccSpace_001,
-u1OccVav_control_001.y);
-connect(dataBus.u1FanSpace_001,
-u1FanVav_control_001.y);
 end DataServer;
       
         model VAVBoxVav_001
@@ -2771,15 +3033,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record gypsum_001 = IDEAS.B
       c=900.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
-      epsLw=0.88,
       epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.89,
       c=800.0,
       rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record concreteslab_001
@@ -2855,7 +3117,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[3]
-    merged_externalwall_80_externalwall_81_externalwall_82(
+    merged_externalwall_17_externalwall_18_externalwall_19(
     redeclare parameter single_zone_air_handling_unit_complex_vav_containers_IDEAS.Data.Constructions.
     cavitywall_001
     constructionType,
@@ -2863,15 +3125,15 @@ package MediumW = IDEAS.Media.Water "Medium model";
     final azi={ 0.0, 90.0, 180.0 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall, IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 46.213071196190704, 867.6961510401699 },
+    Placement(transformation(origin = { 46.21116043119848, 867.6953818827709 },
     extent = {{10, -10}, {-10, 10}}
 )));
-        IDEAS.Buildings.Components.SlabOnGround flooronground_29(
+        IDEAS.Buildings.Components.SlabOnGround flooronground_8(
     redeclare parameter single_zone_air_handling_unit_complex_vav_containers_IDEAS.Data.Constructions.
     concreteslab_001 constructionType,
     redeclare package Medium = Medium,
     A=50.0) annotation (
-    Placement(transformation(origin = { 0.0, 527.4688833373864 },
+    Placement(transformation(origin = { 0.0, 527.4755772646537 },
     extent = {{10, -10}, {-10, 10}}
 )));
         single_zone_air_handling_unit_complex_vav_containers_IDEAS.Components.BaseClasses.OccupancyOccupancy_1
@@ -2894,12 +3156,12 @@ package MediumW = IDEAS.Media.Water "Medium model";
     THeaAirInl_nominal=30,
     THeaAirDis_nominal=25
     ) annotation (
-    Placement(transformation(origin = { 750.1688048615802, 670.8818782747109 },
+    Placement(transformation(origin = { 750.2289861199184, 670.8925399644761 },
     extent = {{10, -10}, {-10, 10}}
 )));
         single_zone_air_handling_unit_complex_vav_containers_IDEAS.Components.BaseClasses.VAVControlVav_control_001
     vav_control_001 annotation (
-    Placement(transformation(origin = { 866.972999991231, 1000.0 },
+    Placement(transformation(origin = { 867.0119072782359, 1000.0 },
     extent = {{10, -10}, {-10, 10}}
 )));
       IDEAS.Fluid.FixedResistances.PressureDrop
@@ -2908,7 +3170,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { 497.14566324964716, 358.68724161563466 },
+    Placement(transformation(origin = { 497.1640949763969, 358.6922735346359 },
     extent = {{10, -10}, {-10, 10}}
 )));
       IDEAS.Fluid.FixedResistances.PressureDrop
@@ -2917,7 +3179,7 @@ package MediumW = IDEAS.Media.Water "Medium model";
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { 1000.0, 399.74133928768816 },
+    Placement(transformation(origin = { 1000.0, 399.7446714031971 },
     extent = {{10, -10}, {-10, 10}}
 )));
             inner IDEAS.BoundaryConditions.SimInfoManager
@@ -2935,23 +3197,23 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
     VRoo={100,100},
     AFlo={20,20},
     mCooVAV_flow_nominal={0.01,0.01}) annotation (
-    Placement(transformation(origin = { 755.4302550926456, 378.15311829858734 },
+    Placement(transformation(origin = { 755.4252096103716, 378.1527531083481 },
     extent = {{10, -10}, {-10, 10}}
 )));
         single_zone_air_handling_unit_complex_vav_containers_IDEAS.Components.BaseClasses.AhuControlAhu_control_001
     ahu_control_001 annotation (
-    Placement(transformation(origin = { 924.5858800213965, 693.4538942807244 },
+    Placement(transformation(origin = { 924.610723596139, 693.4502664298401 },
     extent = {{10, -10}, {-10, 10}}
 )));
       Buildings.Fluid.Sources.Boundary_pT boundary
     (nPorts=2,redeclare package Medium = Medium) annotation (
-    Placement(transformation(origin = { 582.5126932486825, 0.0 },
+    Placement(transformation(origin = { 582.540689072078, 0.0 },
     extent = {{10, -10}, {-10, 10}}
 )));
         single_zone_air_handling_unit_complex_vav_containers_IDEAS.Components.BaseClasses.DataServer
         data_bus (redeclare package
           Medium = Medium) annotation (
-    Placement(transformation(origin = { 643.194752580303, 792.165012269803 },
+    Placement(transformation(origin = { 643.2308180088777, 792.173623445826 },
     extent = {{10, -10}, {-10, 10}}
 )));
 
@@ -2959,18 +3221,18 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
 equation    
         
         
-        connect(space_001.propsBus[1:3],merged_externalwall_80_externalwall_81_externalwall_82[1:3].propsBus_a)
+        connect(space_001.propsBus[1:3],merged_externalwall_17_externalwall_18_externalwall_19[1:3].propsBus_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 23.106535598095352, 0.0 }    ,{ 23.106535598095352, 867.6961510401699 }    ,{ 46.213071196190704, 867.6961510401699 }    },
+        points={{ 0.0, 0.0 }    ,{ 23.10558021559924, 0.0 }    ,{ 23.10558021559924, 867.6953818827709 }    ,{ 46.21116043119848, 867.6953818827709 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
             ;    
         
         
-        connect(space_001.propsBus[4],flooronground_29.propsBus_a)
+        connect(space_001.propsBus[4],flooronground_8.propsBus_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 527.4688833373864 }    ,{ 0.0, 527.4688833373864 }    },
+        points={{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 527.4755772646537 }    ,{ 0.0, 527.4755772646537 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2988,7 +3250,7 @@ equation
         
         connect(space_001.ports[1],duct_002.port_a)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 248.57283162482358, 0.0 }    ,{ 248.57283162482358, 358.68724161563466 }    ,{ 497.14566324964716, 358.68724161563466 }    },
+        points={{ 0.0, 0.0 }    ,{ 248.58204748819844, 0.0 }    ,{ 248.58204748819844, 358.6922735346359 }    ,{ 497.1640949763969, 358.6922735346359 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -2997,7 +3259,7 @@ equation
         
         connect(vav_001.dataBus,vav_control_001.dataBus)
         annotation (Line(
-        points={{ 750.1688048615802, 670.8818782747109 }    ,{ 808.5709024264056, 670.8818782747109 }    ,{ 808.5709024264056, 1000.0 }    ,{ 866.972999991231, 1000.0 }    },
+        points={{ 750.2289861199184, 670.8925399644761 }    ,{ 808.6204466990771, 670.8925399644761 }    ,{ 808.6204466990771, 1000.0 }    ,{ 867.0119072782359, 1000.0 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3006,7 +3268,7 @@ equation
         
         connect(vav_001.port_bAir,space_001.ports[2])
         annotation (Line(
-        points={{ 750.1688048615802, 670.8818782747109 }    ,{ 375.0844024307901, 670.8818782747109 }    ,{ 375.0844024307901, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 750.2289861199184, 670.8925399644761 }    ,{ 375.1144930599592, 670.8925399644761 }    ,{ 375.1144930599592, 0.0 }    ,{ 0.0, 0.0 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3015,7 +3277,7 @@ equation
         
         connect(duct_002.port_b,ahu_001.port_a)
         annotation (Line(
-        points={{ 497.14566324964716, 358.68724161563466 }    ,{ 626.2879591711463, 358.68724161563466 }    ,{ 626.2879591711463, 378.15311829858734 }    ,{ 755.4302550926456, 378.15311829858734 }    },
+        points={{ 497.1640949763969, 358.6922735346359 }    ,{ 626.2946522933842, 358.6922735346359 }    ,{ 626.2946522933842, 378.1527531083481 }    ,{ 755.4252096103716, 378.1527531083481 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3024,7 +3286,7 @@ equation
         
         connect(duct_001.port_b,vav_001.port_aAir)
         annotation (Line(
-        points={{ 1000.0, 399.74133928768816 }    ,{ 875.0844024307901, 399.74133928768816 }    ,{ 875.0844024307901, 670.8818782747109 }    ,{ 750.1688048615802, 670.8818782747109 }    },
+        points={{ 1000.0, 399.7446714031971 }    ,{ 875.1144930599592, 399.7446714031971 }    ,{ 875.1144930599592, 670.8925399644761 }    ,{ 750.2289861199184, 670.8925399644761 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3033,7 +3295,7 @@ equation
         
         connect(ahu_001.dataBus,ahu_control_001.dataBus)
         annotation (Line(
-        points={{ 755.4302550926456, 378.15311829858734 }    ,{ 840.008067557021, 378.15311829858734 }    ,{ 840.008067557021, 693.4538942807244 }    ,{ 924.5858800213965, 693.4538942807244 }    },
+        points={{ 755.4252096103716, 378.1527531083481 }    ,{ 840.0179666032552, 378.1527531083481 }    ,{ 840.0179666032552, 693.4502664298401 }    ,{ 924.610723596139, 693.4502664298401 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3042,7 +3304,7 @@ equation
         
         connect(ahu_001.port_b,duct_001.port_a)
         annotation (Line(
-        points={{ 755.4302550926456, 378.15311829858734 }    ,{ 877.7151275463227, 378.15311829858734 }    ,{ 877.7151275463227, 399.74133928768816 }    ,{ 1000.0, 399.74133928768816 }    },
+        points={{ 755.4252096103716, 378.1527531083481 }    ,{ 877.7126048051857, 378.1527531083481 }    ,{ 877.7126048051857, 399.7446714031971 }    ,{ 1000.0, 399.7446714031971 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3051,7 +3313,7 @@ equation
         
         connect(boundary.ports,ahu_001.ports)
         annotation (Line(
-        points={{ 582.5126932486825, 0.0 }    ,{ 668.971474170664, 0.0 }    ,{ 668.971474170664, 378.15311829858734 }    ,{ 755.4302550926456, 378.15311829858734 }    },
+        points={{ 582.540689072078, 0.0 }    ,{ 668.9829493412248, 0.0 }    ,{ 668.9829493412248, 378.1527531083481 }    ,{ 755.4252096103716, 378.1527531083481 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3060,7 +3322,7 @@ equation
         
         connect(occupancy_1.dataBus,data_bus.dataBus)
         annotation (Line(
-        points={{ -50.0, 0.0 }    ,{ 296.5973762901515, 0.0 }    ,{ 296.5973762901515, 792.165012269803 }    ,{ 643.194752580303, 792.165012269803 }    },
+        points={{ -50.0, 0.0 }    ,{ 296.61540900443885, 0.0 }    ,{ 296.61540900443885, 792.173623445826 }    ,{ 643.2308180088777, 792.173623445826 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3069,7 +3331,7 @@ equation
         
         connect(vav_control_001.dataBus,data_bus.dataBus)
         annotation (Line(
-        points={{ 866.972999991231, 1000.0 }    ,{ 755.083876285767, 1000.0 }    ,{ 755.083876285767, 792.165012269803 }    ,{ 643.194752580303, 792.165012269803 }    },
+        points={{ 867.0119072782359, 1000.0 }    ,{ 755.1213626435567, 1000.0 }    ,{ 755.1213626435567, 792.173623445826 }    ,{ 643.2308180088777, 792.173623445826 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3078,7 +3340,7 @@ equation
         
         connect(ahu_control_001.dataBus,data_bus.dataBus)
         annotation (Line(
-        points={{ 924.5858800213965, 693.4538942807244 }    ,{ 783.8903163008497, 693.4538942807244 }    ,{ 783.8903163008497, 792.165012269803 }    ,{ 643.194752580303, 792.165012269803 }    },
+        points={{ 924.610723596139, 693.4502664298401 }    ,{ 783.9207708025083, 693.4502664298401 }    ,{ 783.9207708025083, 792.173623445826 }    ,{ 643.2308180088777, 792.173623445826 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3087,7 +3349,7 @@ equation
         
         connect(space_001.gainCon,data_bus.port[1])
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 321.5973762901515, 0.0 }    ,{ 321.5973762901515, 792.165012269803 }    ,{ 643.194752580303, 792.165012269803 }    },
+        points={{ 0.0, 0.0 }    ,{ 321.61540900443885, 0.0 }    ,{ 321.61540900443885, 792.173623445826 }    ,{ 643.2308180088777, 792.173623445826 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))
@@ -3096,7 +3358,7 @@ equation
         
         connect(space_001.ports[3],data_bus.port_a[1])
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 321.5973762901515, 0.0 }    ,{ 321.5973762901515, 792.165012269803 }    ,{ 643.194752580303, 792.165012269803 }    },
+        points={{ 0.0, 0.0 }    ,{ 321.61540900443885, 0.0 }    ,{ 321.61540900443885, 792.173623445826 }    ,{ 643.2308180088777, 792.173623445826 }    },
         color={255,204,51},
         thickness=0.1,pattern = LinePattern.Solid,
         smooth=Smooth.None))

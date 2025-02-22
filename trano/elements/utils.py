@@ -108,3 +108,8 @@ def generate_normalized_layout(
         }
     except:
         raise
+
+def wrap_with_raw(template: str):
+    pattern = r"(\{\s*-?\d+\s*,\s*-?\d+\s*(?:,\s*-?\d+\s*)?\})|(\{\{\s*-?\d+\s*,\s*-?\d+\s*\},\{\s*-?\d+\s*,\s*-?\d+\s*\}\})"
+    return re.sub(pattern, lambda m: f"{{% raw %}} {m.group(0)} {{% endraw %}}", template)
+

@@ -5,7 +5,7 @@ from typing import Any, ClassVar, Dict, List, Optional, Type, TYPE_CHECKING, get
 from jinja2 import Environment, FileSystemLoader
 from pydantic import ConfigDict, Field, field_validator, model_validator, PrivateAttr
 
-from trano.elements.common_base import BaseElementPosition, ComponentModel
+from trano.elements.common_base import BaseElementPosition, ComponentModel, MediumTemplate
 from trano.elements.library.base import DynamicComponentTemplate, LibraryData
 from trano.elements.connection import Port
 from trano.elements.figure import NamedFigure
@@ -44,6 +44,7 @@ class BaseElement(BaseElementPort):
     ] = 0  # TODO: this needs to be removed and replaced with a proper solution.
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
+    medium: MediumTemplate = Field(default_factory=MediumTemplate)
     parameters: Optional[BaseParameter] = None
     template: Optional[str] = None
     component_template: Optional[DynamicComponentTemplate] = None
@@ -89,9 +90,13 @@ class BaseElement(BaseElementPort):
         return None
 
     def assign_library_property(self, library: "Library") -> bool:
+        if library.medium.is_empty():
+            raise ValueError("Library medium is empty")
         if not self.libraries_data:
             return False
         library_data = self.get_library_data(library)
+        if self.medium.is_empty():
+            self.medium = library.medium
         if not library_data:
             return False
         if not self.ports:

@@ -78,3 +78,12 @@ class BaseElementPosition(BaseModel):
 
 class BaseParameter(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+
+class MediumTemplate(BaseModel):
+    air: Optional[str] = None
+    water: Optional[str] = None
+
+
+    def is_empty(self) -> bool:
+        return self.air is None or self.water is None
