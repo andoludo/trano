@@ -314,6 +314,14 @@ class RoofWallParameters(WallParameters):
         return cls.from_neighbors(neighbors, wall, suffix_type="Roof")  # type: ignore
 
 
+class ExternalWallParameters(WallParameters):
+    @classmethod
+    def from_neighbors_(
+        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+    ) -> "RoofWallParameters":
+        return cls.from_neighbors(neighbors, wall, suffix_type="External")  # type: ignore
+
+
 class WindowedWallParameters(WallParameters):
     window_layers: list[str]
     window_width: list[float]

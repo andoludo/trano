@@ -12,7 +12,7 @@ from trano.elements.figure import Figure
 from trano.elements.library import parameters
 from trano.elements.library.parameters import default_parameters
 from trano.elements.types import BaseVariant, DynamicTemplateCategories
-from trano.elements.utils import compose_func, camel_to_snake
+from trano.elements.utils import compose_func, json_component_name
 
 if TYPE_CHECKING:
     from trano.elements.base import BaseElement
@@ -102,4 +102,4 @@ class LibraryData(BaseModel):
         return compose_func([Port(**port) for port in value])
 
     def json_file_name(self) -> str:
-        return "_".join([camel_to_snake(c_) for c_ in sorted([c for c in self.classes])])
+        return json_component_name(self.classes)

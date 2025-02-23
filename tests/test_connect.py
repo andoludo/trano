@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import networkx as nx
 import pytest
 
@@ -46,7 +48,7 @@ def house_buildings() -> Network:
 
 
 @pytest.fixture(scope="module")
-def house_ventilation():
+def house_ventilation() -> Network:
     house = get_path("single_zone_air_handling_unit_complex_vav_containers.yaml")
     return convert_network(
         "single_zone_air_handling_unit_complex_vav_containers",
@@ -312,7 +314,7 @@ def test_connect_multi_connection_split_valve(house_ideas: Network) -> None:
 
 
 @pytest.fixture
-def system_fixtures():
+def system_fixtures() -> Tuple[ElementPort, ...]:
     split_valve = ElementPort(
         name="split_valve_001",
         element_type=SplitValve,
@@ -429,7 +431,7 @@ def system_fixtures():
 
 
 def test_connect_four_connections_split_valve(
-    house_ideas: Network, system_fixtures
+    house_ideas: Network, system_fixtures: Tuple[ElementPort, ...]
 ) -> None:
 
     connections_full = []
@@ -452,7 +454,7 @@ def test_connect_four_connections_split_valve(
 
 
 def test_connect_four_connections_split_valve_mixed(
-    house_ideas: Network, system_fixtures
+    house_ideas: Network, system_fixtures: Tuple[ElementPort, ...]
 ) -> None:
 
     connections_full = []
@@ -629,7 +631,7 @@ def test_container_connect_emission_production(house_ideas: Network) -> None:
     }
 
 
-def test_connection_container():
+def test_connection_container() -> None:
     e1 = ElementPort.model_validate(
         {
             "container_type": "emission",
@@ -763,14 +765,10 @@ def test_assign_container_position(house_ideas: Network) -> None:
         if e[0].container_type == "emission" and e[1].container_type == "emission"
     ]
     envelope_nodes = [e.name for e in nodes if e.container_type == "emission"]
-    # envelope_edges = [(e[0].name, e[1].name) for e in edges]
-    # envelope_nodes = [e.name for e in nodes]
     new_graph = nx.DiGraph()
     new_graph.add_nodes_from(envelope_nodes)
     new_graph.add_edges_from(envelope_edges)
-    # pos = nx.nx_agraph.graphviz_layout(new_graph)
     pos = nx.nx_pydot.pydot_layout(new_graph, prog="sfdp")
-    # pos = nx.multipartite_layout(new_graph)
     from matplotlib import pyplot as plt
 
     # Draw the graph
@@ -787,12 +785,14 @@ def test_assign_container_position(house_ideas: Network) -> None:
     plt.show()
 
 
-def test_connect_envelope_databus_data():
+def test_connect_envelope_databus_data() -> None:
     element_1 = {
         "position": {
             "container": {
                 "location": {"x": -0.20497222956889516, "y": -0.07534687126711503},
-                "annotation": "annotation (\n    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));",
+                "annotation": "annotation (\n    Placement(transformation(origin = "
+                "{{ macros.join_list(element.position.container.coordinate()) }},\n    "
+                "extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));",
             },
             "global_": {"location": {"x": 0.0, "y": 0.0}},
         },
@@ -812,7 +812,9 @@ def test_connect_envelope_databus_data():
         "position": {
             "container": {
                 "location": {"x": -0.20497222956889516, "y": -0.07534687126711503},
-                "annotation": "annotation (\n    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));",
+                "annotation": "annotation (\n    Placement(transformation(origin = "
+                "{{ macros.join_list(element.position.container.coordinate()) }},"
+                "\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));",
             },
             "global_": {"location": {"x": 0.0, "y": 0.0}},
         },
@@ -862,12 +864,14 @@ def test_connect_envelope_databus_data():
     assert {c.equation_view() for c in connections} == {("space_1.TAir", "y")}
 
 
-def test_connect_data_bus_data():
+def test_connect_data_bus_data() -> None:
     element_1 = {
         "position": {
             "container": {
                 "location": {"x": 0.0, "y": 0.0},
-                "annotation": "annotation (\n    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));",
+                "annotation": "annotation (\n    Placement(transformation(origin = "
+                "{{ macros.join_list(element.position.container.coordinate()) }},\n    "
+                "extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));",
             },
             "global_": {"location": {"x": 5.2602026228672445, "y": 650.3793214643335}},
         },
@@ -890,7 +894,9 @@ def test_connect_data_bus_data():
         "position": {
             "container": {
                 "location": {"x": 0.0, "y": 0.0},
-                "annotation": "annotation (\n    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},\n    extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));",
+                "annotation": "annotation (\n    Placement(transformation(origin = "
+                "{{ macros.join_list(element.position.container.coordinate()) }},\n    "
+                "extent = {% raw %}{{10, -10}, {-10, 10}}\n    {% endraw %})));",
             },
             "global_": {"location": {"x": 5.2602026228672445, "y": 650.3793214643335}},
         },

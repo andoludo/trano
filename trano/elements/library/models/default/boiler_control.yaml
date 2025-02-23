@@ -117,4 +117,4 @@
 
         {{package_name}}.Components.BaseClasses.BoilerControl{{ element.name | capitalize}}
         {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
-  variant: default
+  variant: complex

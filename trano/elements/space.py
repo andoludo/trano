@@ -2,7 +2,7 @@ from math import ceil
 from typing import ClassVar, List, Optional, Union, TYPE_CHECKING
 
 from networkx import Graph
-from pydantic import Field
+from pydantic import Field, BaseModel
 
 
 from trano.elements.base import BaseElement
@@ -21,6 +21,7 @@ from trano.elements.envelope import (
     WindowedWallParameters,
     VerticalWallParameters,
     RoofWallParameters,
+    ExternalWallParameters,
 )
 from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUnit
 from trano.elements.types import ContainerTypes
@@ -44,6 +45,56 @@ def _get_controllable_element(elements: List[System]) -> Optional["System"]:
     return controllable_elements[0]
 
 
+class BoundaryParameter(BaseModel):
+    number_orientations: int = 0
+    area_per_orientation: List[float] = Field(default_factory=lambda: [0.0])
+    average_resistance_external: float = Field(0.001)
+    average_resistance_external_remaining: float = Field(0.001)
+    total_thermal_capacitance: float = Field(10000)
+    tilts: List[float] = Field(default_factory=lambda: [0.0])
+    azimuths: List[float] = Field(default_factory=lambda: [0.0])
+    average_u_value: float = 0.001
+
+    @classmethod
+    def from_parameter(cls, parameter: WallParameters) -> "BoundaryParameter":
+        if not parameter.number:
+            return cls()
+        return cls(
+            number_orientations=parameter.number,
+            area_per_orientation=parameter.surfaces,
+            average_resistance_external=parameter.average_resistance_external,
+            average_resistance_external_remaining=parameter.average_resistance_external_remaining,
+            total_thermal_capacitance=parameter.total_thermal_capacitance,
+            tilts=parameter.tilts_to_radians(),
+            azimuths=parameter.azimuths_to_radians(),
+            average_u_value=parameter.average_u_value,
+        )
+
+
+class BoundaryParameters(BaseModel):
+    roofs: BoundaryParameter = Field(default_factory=BoundaryParameter)
+    external_boundaries: BoundaryParameter = Field(default_factory=BoundaryParameter)
+    vertical_walls: BoundaryParameter = Field(default_factory=BoundaryParameter)
+    windows: BoundaryParameter = Field(default_factory=BoundaryParameter)
+    floors: BoundaryParameter = Field(default_factory=BoundaryParameter)
+
+    @classmethod
+    def from_boundaries(cls, parameters: List[WallParameters]) -> "BoundaryParameters":
+        data = {}
+        for p in parameters:
+            if p.type == "ExternalWallRoof":
+                data["roofs"] = BoundaryParameter.from_parameter(p)
+            elif p.type == "ExternalWallVerticalOnly":
+                data["vertical_walls"] = BoundaryParameter.from_parameter(p)
+            elif p.type == "ExternalWallExternal":
+                data["external_boundaries"] = BoundaryParameter.from_parameter(p)
+            elif p.type == "FloorOnGround":
+                data["floors"] = BoundaryParameter.from_parameter(p)
+            elif p.type == "BaseWindow":
+                data["windows"] = BoundaryParameter.from_parameter(p)
+        return cls(**data)
+
+
 class BaseSpace(BaseElement):
     counter: ClassVar[int] = 0
     name: str
@@ -57,6 +108,7 @@ class BaseSpace(BaseElement):
     ventilation_outlets: List[System] = Field(default=[])
     occupancy: Optional[BaseOccupancy] = None
     container_type: ContainerTypes = "envelope"
+    boundary_parameters: Optional[BoundaryParameters] = None
 
     def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
         self._assign_space()
@@ -190,6 +242,12 @@ class BaseSpace(BaseElement):
                         wall,  # type: ignore
                     )
                 )
+                self.boundaries.append(
+                    ExternalWallParameters.from_neighbors_(
+                        neighbors,
+                        wall,  # type: ignore
+                    )
+                )
 
             self.boundaries.append(
                 WallParameters.from_neighbors(
@@ -199,6 +257,7 @@ class BaseSpace(BaseElement):
                 )
             )
         self.boundaries += [windowed_wall_parameters]
+        self.boundary_parameters = BoundaryParameters.from_boundaries(self.boundaries)
 
     def __add__(self, other: "BaseSpace") -> "BaseSpace":
         self.name = (

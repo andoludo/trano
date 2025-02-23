@@ -3,9 +3,11 @@ from pathlib import Path
 import pytest
 
 from tests.conftest import _read, clean_model
+from tests.fixtures.two_spaces import two_spaces
 from trano.data_models.conversion import convert_network
+from trano.elements.common_base import MediumTemplate
 from trano.elements.space import Space
-from trano.elements.library.library import Library
+from trano.elements.library.library import Library, Templates
 from trano.topology import Network
 
 
@@ -326,4 +328,21 @@ def test_single_zone_air_handling_unit_complex_vav_containers(
         library=Library.from_configuration(library_name),
     )
     model_ = network.model(include_container=True)
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+@pytest.mark.run(order=32)
+def test_template_buildings_free_float_two_zones_reduced_order() -> None:
+    library = Library(
+        name="reduced_order",
+        merged_external_boundaries=False,
+        templates=Templates(construction="", glazing="", main=""),
+        medium=MediumTemplate(air="AixLib.Media.Air", water="AixLib.Media.Water"),
+    )
+    network = Network(
+        name="reduced_order_two_zones",
+        library=library,
+    )
+    network.add_boiler_plate_spaces(two_spaces())
+    model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))

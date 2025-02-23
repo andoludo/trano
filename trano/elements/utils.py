@@ -1,7 +1,9 @@
 import re
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Tuple, Dict, Optional
 
 import networkx as nx
+import yaml
 
 from trano import elements
 from trano.elements.common_base import Point
@@ -10,6 +12,15 @@ if TYPE_CHECKING:
 
     from trano.elements import Port
     from trano.topology import Network
+
+
+class BlockStyleDumper(yaml.Dumper):
+    def represent_scalar(
+        self, tag: Any, value: Any, style: Optional[str] = None  # noqa: ANN401
+    ) -> Any:  # noqa: ANN401
+        if isinstance(value, str) and ("\n" in value):
+            style = "|"
+        return super().represent_scalar(tag, value, style)
 
 
 def to_snake_case(name: str) -> str:
@@ -121,6 +132,35 @@ def wrap_with_raw(template: str) -> str:
     return re.sub(
         pattern, lambda m: f"{{% raw %}} {m.group(0)} {{% endraw %}}", template
     )
-def camel_to_snake(camel_str: str) ->str:
-    snake_str = re.sub(r'(?<!^)(?=[A-Z])', '_', camel_str).lower()
+
+
+def camel_to_snake(camel_str: str) -> str:
+    snake_str = re.sub(r"(?<!^)(?=[A-Z])", "_", camel_str).lower()
     return snake_str
+
+
+def json_component_name(classes: List[str]) -> str:
+    return "_".join([camel_to_snake(c_) for c_ in sorted(c for c in classes)])
+
+
+def dump_components(
+    library_path: Path, library_components: List[Dict[str, Any]]
+) -> None:
+    library_path.mkdir(exist_ok=True)
+    components_final = {
+        json_component_name(component["classes"]): [
+            cp
+            for cp in library_components
+            if json_component_name(component["classes"])
+            == json_component_name(cp["classes"])
+        ]
+        for component in library_components
+    }
+    for file_name, components_ in components_final.items():
+        file = library_path / f"{file_name}.yaml"
+        with file.open("w") as file_:
+            file_.write(
+                yaml.dump(
+                    components_, Dumper=BlockStyleDumper, default_flow_style=False
+                )
+            )

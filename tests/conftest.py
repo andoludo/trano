@@ -629,7 +629,7 @@ def buildings_free_float_single_zone_ahu_complex(
         space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
     )
     network.connect_elements(boundary, ahu)
-    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
     network.connect_elements(boundary, weather)
     return network
 
@@ -662,7 +662,7 @@ def vav_ventilation_control(
     )
     network.connect_systems(space_1_simple_ventilation_vav_control, ahu)
     network.connect_elements(boundary, ahu)
-    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
     network.connect_elements(boundary, weather)
     return network
 
@@ -686,7 +686,7 @@ def one_spaces_air_handling_unit(
     )
     boundary = Boundary(name="boundary")
     network.connect_elements(boundary, ahu)
-    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
     network.connect_elements(boundary, weather)
     return network
 
@@ -720,7 +720,7 @@ def two_spaces_air_handling_unit(
     )
     boundary = Boundary(name="boundary")
     network.connect_elements(boundary, ahu)
-    weather = [n for n in network.graph.nodes if isinstance(n, Weather)][0]
+    weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
     network.connect_elements(boundary, weather)
     return network
 

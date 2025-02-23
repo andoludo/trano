@@ -1,0 +1,63 @@
+- classes:
+  - DataBus
+  component_template:
+    bus:
+      real_outputs:
+      - component: TRoo
+        name: TZon
+        port: y
+        target:
+          main: element.spaces
+    category: control
+    template: |
+      model DataServerReducedOrder
+      replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
+      Modelica.Blocks.Interfaces.RealInput[{{ element.spaces | length }}] u
+      {% raw %}annotation (Placement(transformation(extent={{-142,20},{-102,60}})));{% endraw %}
+      Modelica.Blocks.Routing.RealPassThrough[{{ element.spaces | length }}] TRoo
+      {% raw %}annotation (Placement(transformation(extent={{-46,30},{-26,50}})));{% endraw %}
+      {{ bus_template }}
+      {% for input in element.non_connected_ports %}
+      {{ input.input_model | safe }}
+      {% endfor %}
+      {% if element.validation_data.data %}
+      Modelica.Blocks.Sources.CombiTimeTable combiTimeTable(
+      tableOnFile = False,
+      table = [{{ element.validation_data.data | safe }}]
+      ) {% raw %}annotation (
+      Placement(transformation(extent={{-4,-34},{40,10}}))
+      );{% endraw %}
+      {% endif %}
+      equation
+      {% if element.validation_data.data %}
+      {% for index, column in element.validation_data.columns | enumerate %}
+      connect(dataBus.{{ column }}, combiTimeTable.y[{{ index + 1 }}]);
+      {% endfor %}
+      {% endif %}
+      {% for index, space in element.spaces | enumerate %}
+      connect(u[{{ index + 1 }}], TRoo[{{ index + 1 }}].u);
+      {% endfor %}
+      {{ bus_ports | safe }}
+      {% for input in element.non_connected_ports %}
+      connect(dataBus.{{ input.name }}{{ input.target.value }}, 
+          {{ input.name }}{{ input.target.evaluated_element | capitalize }}.y);
+      {% endfor %}
+      end DataServerReducedOrder;
+
+  figures: []
+  library: reduced_order
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: data
+    multi_connection: true
+    names:
+    - u
+    targets:
+    - Space
+  template: |2-
+        {{package_name}}.Components.BaseClasses.DataServerReducedOrder
+            {{ element.name }} (redeclare package
+              Medium = Medium)
+  variant: default

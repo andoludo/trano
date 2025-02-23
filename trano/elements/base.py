@@ -97,15 +97,26 @@ class BaseElement(BaseElementPort):
         return value
 
     def get_library_data(self, library: "Library") -> Optional[LibraryData]:
-        libraries_data = [
+        libraries_data_variants = [
             library_
             for library_ in self.libraries_data
-            if (
-                library_.library == library.name.lower()
-                or library_.library == "default"
-            )
-            and library_.variant == self.variant
+            if library_.variant == self.variant
         ]
+        if not libraries_data_variants:
+            raise ValueError(
+                f"Library data not found for {self.name} in {library.name} for variant {self.variant}"
+            )
+        libraries_data = [
+            library_
+            for library_ in libraries_data_variants
+            if (library_.library == library.name.lower())
+        ]
+        if not libraries_data:
+            libraries_data = [
+                library_
+                for library_ in libraries_data_variants
+                if (library_.library == "default")
+            ]
         if libraries_data:
             return libraries_data[0]
         return None

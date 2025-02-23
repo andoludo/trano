@@ -1,0 +1,19 @@
+- classes:
+  - Weather
+  figures: []
+  library: reduced_order
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - weaBus
+    targets:
+    - Space
+    use_counter: false
+  template: "\n      AixLib.BoundaryConditions.WeatherData.ReaderTMY3\n    {{ element.name\
+    \ }}\n    {% raw %}annotation (Placement(transformation(extent={{-52,70},{-32,90}})));{%\
+    \ endraw %}\n    "
+  variant: default

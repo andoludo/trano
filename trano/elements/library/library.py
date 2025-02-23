@@ -9,7 +9,8 @@ from trano.elements.common_base import MediumTemplate
 if TYPE_CHECKING:
     from trano.elements import WallParameters
 
-#TODO: this must go!!!
+
+# TODO: this must go!!!
 def tilts_processing_ideas(element: "WallParameters") -> List[str]:
     return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
 

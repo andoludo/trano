@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import List, Any, Dict
 
@@ -24,11 +23,16 @@ class Components(BaseModel):
         return cls(components=components)
 
     def get_components(self, component_name: str) -> List[LibraryData]:
-        return [
+        libraries_data = [
             LibraryData.model_validate(c)
             for c in self.components
             if component_name in c["classes"]
         ]
+        if len({(ld.variant, ld.library) for ld in libraries_data}) != len(
+            libraries_data
+        ):
+            raise ValueError(f"Duplicate variant for {component_name}")
+        return libraries_data
 
 
 COMPONENTS = Components.load()
