@@ -243,7 +243,7 @@
           main: |-
             element.controllable_element.name
       template: |-
-        Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(
+        Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(
           extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
     category: control
     template: |-

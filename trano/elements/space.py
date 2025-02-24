@@ -54,6 +54,7 @@ class BoundaryParameter(BaseModel):
     tilts: List[float] = Field(default_factory=lambda: [0.0])
     azimuths: List[float] = Field(default_factory=lambda: [0.0])
     average_u_value: float = 0.001
+    total_thermal_resistance: float = 0.001
 
     @classmethod
     def from_parameter(cls, parameter: WallParameters) -> "BoundaryParameter":
@@ -68,6 +69,7 @@ class BoundaryParameter(BaseModel):
             tilts=parameter.tilts_to_radians(),
             azimuths=parameter.azimuths_to_radians(),
             average_u_value=parameter.average_u_value,
+            tottal_thermal_resistance=parameter.total_thermal_resistance,
         )
 
 
