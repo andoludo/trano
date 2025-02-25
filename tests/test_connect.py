@@ -930,3 +930,80 @@ def test_connect_data_bus_data() -> None:
         ElementPort.model_validate(element_1), ElementPort.model_validate(element_2)
     )
     assert not connections
+
+
+def test_connection_expected_ports() -> None:
+    e1 = ElementPort.model_validate(
+        {
+            "element_type": Radiator,
+            "container_type": "emission",
+            "name": "radiator_001",
+            "ports": [
+                {
+                    "flow": "undirected",
+                    "medium": "data",
+                    "names": ["y"],
+                    "ignore_direction": True,
+                    "expected_ports": ["y"],
+                    "targets": [EmissionControl],
+                },
+                {
+                    "flow": "undirected",
+                    "medium": "data",
+                    "names": ["y1"],
+                    "ignore_direction": True,
+                    "targets": [EmissionControl],
+                    "expected_ports": ["y1"],
+                },
+            ],
+            "position": {
+                "container": {
+                    "annotation": """annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
+    extent = {% raw %}{{10, -10}, {-10, 10}}
+    {% endraw %})));""",
+                    "location": {"x": 1.0, "y": 1.0},
+                },
+                "global_": {"location": {"x": 1.0, "y": 1.0}},
+            },
+        }
+    )
+    e2 = ElementPort.model_validate(
+        {
+            "element_type": EmissionControl,
+            "container_type": "distribution",
+            "ports": [
+                {
+                    "flow": "undirected",
+                    "medium": "data",
+                    "names": ["y1"],
+                    "ignore_direction": True,
+                    "targets": [Radiator],
+                    "expected_ports": ["y1"],
+                },
+                {
+                    "flow": "undirected",
+                    "medium": "data",
+                    "names": ["y"],
+                    "ignore_direction": True,
+                    "targets": [Radiator],
+                    "expected_ports": ["y"],
+                },
+            ],
+            "position": {
+                "container": {
+                    "annotation": """annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
+    extent = {% raw %}{{10, -10}, {-10, 10}}
+    {% endraw %})));""",
+                    "location": {"x": 1.0, "y": 1.0},
+                },
+                "global_": {"location": {"x": 1.0, "y": 1.0}},
+            },
+        }
+    )
+    connections = connect(e1, e2)
+    assert {c.equation_view() for c in connections} == {
+        ("radiator_001.y", "y"),
+        ("radiator_001.y1", "y1"),
+    }

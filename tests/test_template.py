@@ -3,11 +3,10 @@ from pathlib import Path
 import pytest
 
 from tests.conftest import _read, clean_model
-from tests.fixtures.two_spaces import two_spaces
+from tests.fixtures.three_spaces import three_spaces
 from trano.data_models.conversion import convert_network
-from trano.elements.common_base import MediumTemplate
 from trano.elements.space import Space
-from trano.elements.library.library import Library, Templates
+from trano.elements.library.library import Library
 from trano.topology import Network
 
 
@@ -332,17 +331,46 @@ def test_single_zone_air_handling_unit_complex_vav_containers(
 
 
 @pytest.mark.run(order=32)
-def test_template_buildings_free_float_two_zones_reduced_order() -> None:
-    library = Library(
-        name="reduced_order",
-        merged_external_boundaries=False,
-        templates=Templates(construction="", glazing="", main=""),
-        medium=MediumTemplate(air="AixLib.Media.Air", water="AixLib.Media.Water"),
-    )
+def test_template_buildings_free_float_three_zones_reduced_order() -> None:
     network = Network(
-        name="reduced_order_two_zones",
-        library=library,
+        name="reduced_order_three_zones",
+        library=Library.from_configuration("reduced_order"),
     )
-    network.add_boiler_plate_spaces(two_spaces())
-    model_ = network.model()
+    network.add_boiler_plate_spaces(three_spaces())
+    model_ = network.model(include_container=True)
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+@pytest.mark.run(order=33)
+def test_three_zones_hydronic_reduced_orders_reduced_order(schema: Path) -> None:
+    house = get_path("three_zones_hydronic_reduced_orders.yaml")
+    network = convert_network(
+        "three_zones_hydronic_reduced_orders_reduced_order",
+        house,
+        library=Library.from_configuration("reduced_order"),
+    )
+    model_ = network.model(include_container=True)
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+@pytest.mark.run(order=34)
+def test_template_buildings_free_float_three_zones_iso_13790() -> None:
+    network = Network(
+        name="iso_13790_three_zones",
+        library=Library.from_configuration("iso_13790"),
+    )
+    network.add_boiler_plate_spaces(three_spaces())
+    model_ = network.model(include_container=True)
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+@pytest.mark.run(order=35)
+def test_three_zones_hydronic_reduced_orders_iso_13790(schema: Path) -> None:
+    house = get_path("three_zones_hydronic_reduced_orders.yaml")
+    network = convert_network(
+        "three_zones_hydronic_reduced_orders_iso_13790",
+        house,
+        library=Library.from_configuration("iso_13790"),
+    )
+    model_ = network.model(include_container=True)
     assert clean_model(model_, network.name) == set(_read(network.name))

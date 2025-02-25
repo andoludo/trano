@@ -269,14 +269,13 @@ class WallParameters(BaseModel):
             external_walls = [
                 neighbor for neighbor in neighbors if isinstance(neighbor, ExternalWall)
             ]
-            window_area_by_orientation = [
-                (
-                    construction.surface
-                    if exterior_construction.azimuth == construction.azimuth
-                    else 0
-                )
-                for exterior_construction in external_walls
+            azimuth_surface = {
+                construction.azimuth: construction.surface
                 for construction in constructions
+            }
+            window_area_by_orientation = [
+                (azimuth_surface.get(exterior_construction.azimuth, 0))
+                for exterior_construction in external_walls
             ]
         return cls(
             number=number,

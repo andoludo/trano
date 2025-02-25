@@ -186,7 +186,7 @@ class BaseElement(BaseElementPort):
                     component
                 )
         package_name = network.name
-        library_name = network.library.name
+        library_name = network.library.base_library()
         parameters = self.processed_parameters(network.library)
         component_model: Dict[str, Any] = {"id": hash(self)}
         for model_type, annotation in {

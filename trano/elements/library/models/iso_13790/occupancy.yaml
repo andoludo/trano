@@ -1,0 +1,26 @@
+- classes:
+  - Occupancy
+  figures: []
+  library: iso_13790
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    expected_ports: ['intLatGai']
+    names:
+    - y
+    targets:
+    - Space
+  - flow: undirected
+    medium: data
+    expected_ports: ['intSenGai']
+    names:
+    - y1
+    targets:
+    - Space
+  template: |2-
+
+        {{package_name}}.Trano.Occupancy.ISO13790
+        {{ element.name }}
+  variant: default

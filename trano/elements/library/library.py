@@ -34,6 +34,7 @@ class Library(BaseModel):
     functions: Dict[str, Callable[[Any], Any]] = {
         "tilts_processing_ideas": tilts_processing_ideas
     }
+    core_library: Optional[str] = None
     medium: MediumTemplate
     constants: str = ""
     templates: Templates
@@ -41,6 +42,9 @@ class Library(BaseModel):
     default_parameters: Dict[str, Any] = Field(
         default_factory=dict
     )  # TODO: this should be baseparameters
+
+    def base_library(self) -> str:
+        return self.core_library or self.name
 
     @classmethod
     def from_configuration(cls, name: str) -> "Library":

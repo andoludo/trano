@@ -28,6 +28,7 @@ class Port(BaseModel):
 
     names: list[str]
     targets: List[Any] = Field(default_factory=list)
+    expected_ports: List[str] = Field(default_factory=list)
     connected: bool = False
     flow: Flow
     medium: Medium
@@ -43,35 +44,42 @@ class Port(BaseModel):
         self.connected = True
         self.connection_counter += 1
 
-    def get_compatible_port(self, port: "Port") -> bool:  # noqa: PLR0911
+    def get_compatible_port(self, port: "Port") -> bool:  # noqa: PLR0911, C901, PLR0912
         if self.medium == Medium.fluid:
-            if self.flow == Flow.inlet:
-                return (port.flow in [Flow.outlet]) or (
-                    port.flow in [Flow.inlet_or_outlet]
-                    and port.multi_connection
-                    and port.use_counter
-                )
-            if self.flow == Flow.outlet:
-                return port.flow in [Flow.inlet] or (
-                    port.flow in [Flow.inlet_or_outlet]
-                    and port.multi_connection
-                    and port.use_counter
-                )
-            if (
-                self.flow == Flow.inlet_or_outlet
-                and self.multi_connection
-                and self.use_counter
-            ):
-                return port.flow in [Flow.inlet, Flow.outlet]
-            if self.flow == Flow.inlet_or_outlet:
-                return port.flow in [Flow.inlet_or_outlet]
+            if self.expected_ports:
+                return bool(set(port.names).intersection(set(self.expected_ports)))
+            else:
+                if self.flow == Flow.inlet:
+                    return (port.flow in [Flow.outlet]) or (
+                        port.flow in [Flow.inlet_or_outlet]
+                        and port.multi_connection
+                        and port.use_counter
+                    )
+                if self.flow == Flow.outlet:
+                    return port.flow in [Flow.inlet] or (
+                        port.flow in [Flow.inlet_or_outlet]
+                        and port.multi_connection
+                        and port.use_counter
+                    )
+                if (
+                    self.flow == Flow.inlet_or_outlet
+                    and self.multi_connection
+                    and self.use_counter
+                ):
+                    return port.flow in [Flow.inlet, Flow.outlet]
+                if self.flow == Flow.inlet_or_outlet:
+                    return port.flow in [Flow.inlet_or_outlet]
+
         if self.medium == Medium.data:
-            if self.flow == Flow.inlet:
+            if self.expected_ports:
+                return bool(set(port.names).intersection(set(self.expected_ports)))
+            elif self.flow == Flow.inlet:
                 return port.flow in [Flow.outlet]
             elif self.flow == Flow.outlet:
                 return port.flow in [Flow.inlet]
             elif self.flow == Flow.undirected:
                 return port.flow in [Flow.undirected, Flow.interchangeable_port]
+
             else:
                 return True
         return self.flow == port.flow

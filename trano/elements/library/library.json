@@ -31,5 +31,27 @@
             "main": "package Data \"Data for transient thermal building simulation\"\nextends Modelica.Icons.MaterialPropertiesPackage;\n\npackage Glazing \"Library of building glazing systems\"\nextends Modelica.Icons.MaterialPropertiesPackage;\n{% for g in glazing %}\n    {{ g|safe }}\n{% endfor %}\nend Glazing;\n\npackage Materials \"Library of construction materials\"\nextends Modelica.Icons.MaterialPropertiesPackage;\n{%- for m in material -%}\n    {{ m|safe }}\n{%- endfor %}\nend Materials;\npackage Constructions \"Library of building envelope constructions\"\n{%- for c in construction -%}\n    {{ c|safe}}\n{%- endfor %}\n\nend Constructions;\nend Data;",
             "material": "\n    record {{ construction.name }} = IDEAS.Buildings.Data.Interfaces.Material (\n k={{construction.thermal_conductivity}},\n      c={{construction.specific_heat_capacity}},\n      rho={{construction.density}},\n      epsLw=0.88,\n      epsSw=0.55);"
         }
+    },
+        "iso_13790": {
+        "medium":{"air": "AixLib.Media.Air", "water": "AixLib.Media.Water"},
+        "name": "iso_13790",
+                    "core_library": "AixLib",
+        "templates": {
+            "construction": "",
+            "glazing": "",
+            "main": "",
+            "material": ""
+        }
+    },
+            "reduced_order": {
+        "medium":{"air": "AixLib.Media.Air", "water": "AixLib.Media.Water"},
+        "name": "reduced_order",
+        "core_library": "AixLib",
+        "templates": {
+            "construction": "",
+            "glazing": "",
+            "main": "",
+            "material": ""
+        }
     }
 }

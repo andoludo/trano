@@ -58,11 +58,15 @@ class BoundaryParameter(BaseModel):
 
     @classmethod
     def from_parameter(cls, parameter: WallParameters) -> "BoundaryParameter":
-        if not parameter.number:
+        if not parameter.number and parameter.type != "BaseWindow":
             return cls()
         return cls(
             number_orientations=parameter.number,
-            area_per_orientation=parameter.surfaces,
+            area_per_orientation=(
+                parameter.window_area_by_orientation
+                if parameter.type == "BaseWindow"
+                else parameter.surfaces
+            ),
             average_resistance_external=parameter.average_resistance_external,
             average_resistance_external_remaining=parameter.average_resistance_external_remaining,
             total_thermal_capacitance=parameter.total_thermal_capacitance,

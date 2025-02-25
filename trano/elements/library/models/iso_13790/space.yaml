@@ -7,62 +7,46 @@
       floor_area: AFlo
       volume: VRoo
   ports:
-  - flow: interchangeable_port
-    medium: heat
-    multi_connection: true
-    names:
-    - surf_surBou
-    targets:
-    - BaseInternalElement
-  - flow: undirected
-    medium: data
-    names:
-    - qGai_flow
-    targets:
-    - BaseOccupancy
   - flow: undirected
     medium: data
     names:
     - weaBus
     targets:
-    - BaseWeather
+    - Weather
+  - flow: outlet
+    medium: data
+    names:
+    - TAir
+    targets:
+    - DataBus
+  - flow: undirected
+    medium: data
+    expected_ports: ['y']
+    names:
+    - intLatGai
+    targets:
+    - BaseOccupancy
+  - flow: convective
+    medium: heat
+    names:
+    - heaPorAir
+    targets:
+    - Emission
   - flow: radiative
     medium: heat
     names:
-    - heaPorRad
+    - heaPorSur
     targets:
     - Emission
-  - flow: convective
-    medium: heat
-    multi_connection: true
+  - flow: undirected
+    medium: data
+    expected_ports: ['y1']
     names:
-    - heaPorAir
+    - intSenGai
     targets:
-    - Emission
-    use_counter: false
-  - flow: convective
-    medium: heat
-    names:
-    - heaPorAir
-    targets:
-    - DataBus
-  - flow: convective
-    medium: heat
-    names:
-    - heaPorAir
-    targets:
-    - VAVControl
-  - flow: inlet_or_outlet
-    medium: fluid
-    multi_connection: true
-    names:
-    - ports
-    targets:
-    - Ventilation
-    - Control
-    - DataBus
+    - BaseOccupancy
   template: |
-      Zone5R1C.Zone {{ element.name }}(
+      AixLib.ThermalZones.ISO13790.Zone5R1C.ZoneHVAC {{ element.name }}(
       {{ macros.render_parameters(parameters) | safe }},
       AWal={{ macros.join_list(element.boundary_parameters.vertical_walls.area_per_orientation) }},
       nOrientations={{ element.boundary_parameters.vertical_walls.number_orientations  }},
@@ -72,16 +56,11 @@
 
       AWin={{ macros.join_list(element.boundary_parameters.windows.area_per_orientation) }},
       UWin={{ element.boundary_parameters.windows.average_u_value }},
-
-      AFlo={{ element.boundary_parameters.floors.area_per_orientation[0] }},
       UFlo={{ element.boundary_parameters.floors.average_u_value }},
-
+      airRat=0.5,
       ARoo={{ element.boundary_parameters.roofs.area_per_orientation[0]  }},
       URoo={{ element.boundary_parameters.roofs.average_u_value }},
 
       redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Light buiMas,
       gFac=0.5) "Thermal zone"
-      {% raw %}
-      annotation (Placement(transformation(extent={{26,-12},{54,16}})));
-      {% endraw %}
   variant: default

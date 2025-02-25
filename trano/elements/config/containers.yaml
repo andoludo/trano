@@ -208,7 +208,7 @@ containers:
       multi_connection: true
       names:
       - y
-      use_counter: false
+      use_counter: true
     - flow: inlet
       ignore_direction: true
       medium: fluid
