@@ -1113,8 +1113,7 @@ constructed by the signals connected to this bus.
       allowFlowReversal=allowFlowReversal,
       transferHeat=true) "Mixed air temperature sensor"
     annotation (Placement(transformation(extent={{82,-82},{102,-62}})));
-        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium
-            =
+        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
           MediumA, m_flow_nominal=mAir_flow_nominal)
     "Outside air volume flow rate"
     annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
@@ -1639,8 +1638,8 @@ constructed by the signals connected to this bus.
           allowFlowReversal=allowFlowReversal,
           transferHeat=true) "Mixed air temperature sensor"
           annotation (Placement(transformation(extent={{82,-82},{102,-62}})));
-        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium
-            = MediumA, m_flow_nominal=mAir_flow_nominal)
+        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
+              MediumA, m_flow_nominal=mAir_flow_nominal)
           "Outside air volume flow rate"
           annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
         Buildings.Fluid.Actuators.Dampers.Exponential
@@ -2118,6 +2117,197 @@ constructed by the signals connected to this bus.
   end IdealHeatingSystem;
   end HeatTransfer;
 
+  package BaseClasses
+    package Containers
+      partial model envelope
+
+        annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-100,100},{100,-100}},
+            lineColor={238,46,47},
+            fillColor={235,235,235},
+            fillPattern=FillPattern.Solid),
+              Polygon(
+                points={{-56,14},{48,14},{32,42},{-44,42},{-56,14}},
+                fillColor={207,138,69},
+                fillPattern=FillPattern.Solid,
+                pattern=LinePattern.None),
+              Rectangle(
+                extent={{-52,14},{44,-44}},
+                fillColor={90,90,0},
+                fillPattern=FillPattern.Forward,
+                pattern=LinePattern.None),
+              Rectangle(
+                extent={{-40,-2},{-16,-20}},
+                lineColor={238,46,47},
+                fillColor={28,108,200},
+                fillPattern=FillPattern.HorizontalCylinder),
+              Rectangle(
+                extent={{8,-2},{30,-20}},
+                lineColor={238,46,47},
+                fillColor={28,108,200},
+                fillPattern=FillPattern.HorizontalCylinder)}));
+
+      end envelope;
+
+      partial model emission
+
+      annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-100,100},{100,-100}},
+            fillColor={215,215,215},
+            fillPattern=FillPattern.Forward,
+                pattern=LinePattern.None,
+                lineColor={215,215,215}),
+              Rectangle(
+                extent={{-76,60},{78,56}},
+                pattern=LinePattern.None,
+                fillColor={28,108,200},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{-74,-58},{74,-62}},
+                pattern=LinePattern.None,
+                fillColor={127,0,0},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{-54,70},{-36,-74}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{-26,70},{-8,-74}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{0,70},{18,-74}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{26,70},{44,-74}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Line(
+                points={{-76,54},{68,52},{70,54},{-190,72},{-178,18},{-238,48},{-198,10},
+                    {-182,44}},
+                color={0,0,0},
+                pattern=LinePattern.None),
+              Line(
+                points={{-52,88},{16,74}},
+                color={0,0,0},
+                pattern=LinePattern.None),
+              Line(
+                points={{-168,66},{-138,28},{-66,78},{0,84},{-6,68},{-4,76},{14,88}},
+                color={0,0,0},
+                pattern=LinePattern.None),
+              Ellipse(
+                extent={{48,-50},{66,-68}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward)}));
+
+      end emission;
+
+      model distribution
+      annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-100,100},{100,-100}},
+            fillColor={215,215,215},
+            fillPattern=FillPattern.Solid,
+                pattern=LinePattern.None),
+              Rectangle(
+                extent={{-6,22},{50,-22}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={28,108,200},
+                fillPattern=FillPattern.HorizontalCylinder),
+              Rectangle(
+                extent={{-36,70},{10,-76}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={28,108,200},
+                fillPattern=FillPattern.VerticalCylinder),
+              Rectangle(
+                extent={{-42,84},{16,68}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={117,117,117},
+                fillPattern=FillPattern.VerticalCylinder),
+              Rectangle(
+                extent={{-42,-70},{16,-86}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={117,117,117},
+                fillPattern=FillPattern.VerticalCylinder),
+              Rectangle(
+                extent={{46,28},{66,-28}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={117,117,117},
+                fillPattern=FillPattern.HorizontalCylinder)}));
+      end distribution;
+
+      model production
+        annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-100,100},{100,-100}},
+                fillColor={215,215,215},
+                fillPattern=FillPattern.Solid),
+              Ellipse(
+                extent={{-44,-36},{38,-66}},
+                lineColor={0,0,0},
+                fillColor={238,46,47},
+                fillPattern=FillPattern.Sphere),
+              Rectangle(
+                extent={{-44,44},{38,-52}},
+                lineColor={0,0,0},
+                fillColor={238,46,47},
+                fillPattern=FillPattern.VerticalCylinder),
+              Ellipse(
+                extent={{-44,60},{38,30}},
+                lineColor={0,0,0},
+                fillColor={238,46,47},
+                fillPattern=FillPattern.Sphere)}));
+      end production;
+
+      model bus
+        annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-102,100},{100,-100}},
+            lineColor={215,215,215},
+            fillColor={215,215,215},
+            fillPattern=FillPattern.Forward),
+              Line(points={{-4,56},{-10,60},{-52,0}}, color={215,215,215}),
+              Polygon(
+                points={{-4,66},{-64,-38},{62,-38},{-4,66}},
+                lineColor={255,255,0},
+                fillColor={255,255,0},
+                fillPattern=FillPattern.Forward),
+              Polygon(
+                points={{8,34},{-10,12},{4,-4},{-18,-32},{8,34}},
+                lineColor={0,0,0},
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward)}));
+      end bus;
+    end Containers;
+  end BaseClasses;
   annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0"),
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
@@ -2293,19 +2483,16 @@ Modelica.Blocks.Sources.RealExpression
             THeaSetVav_in_control
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
-            TSupSetVav_in_control
-            (y=293.15);
-Modelica.Blocks.Sources.RealExpression
             ppmCO2SetVav_in_control
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TCooSetVav_in_control
             (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TSupSetVav_in_control
+            (y=293.15);
 Modelica.Blocks.Sources.IntegerExpression
             oveDamPosVav_in_control
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
-            uAhuOpeModAhu_control
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_in_control
@@ -2313,9 +2500,9 @@ Modelica.Blocks.Sources.IntegerExpression
 Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_in_control
             (y=1);
-Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_in_control
-            (y=false);
+Modelica.Blocks.Sources.IntegerExpression
+            uAhuOpeModAhu_control
+            (y=0);
 Modelica.Blocks.Sources.BooleanExpression
             u1SupFanAhu_control
             (y=false);
@@ -2323,10 +2510,13 @@ Modelica.Blocks.Sources.BooleanExpression
             u1WinVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_in_control
+            u1FanVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1OccVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            uHeaOffVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1HotPlaVav_in_control
@@ -2338,30 +2528,30 @@ connect(dataBus.TZonSpace_1, TRoo[1].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.THeaSetSpace_1,
 THeaSetVav_in_control.y);
-connect(dataBus.TSupSetSpace_1,
-TSupSetVav_in_control.y);
 connect(dataBus.ppmCO2SetSpace_1,
 ppmCO2SetVav_in_control.y);
 connect(dataBus.TCooSetSpace_1,
 TCooSetVav_in_control.y);
+connect(dataBus.TSupSetSpace_1,
+TSupSetVav_in_control.y);
 connect(dataBus.oveDamPosSpace_1,
 oveDamPosVav_in_control.y);
-connect(dataBus.uAhuOpeModAhu_control,
-uAhuOpeModAhu_control.y);
 connect(dataBus.oveFloSetSpace_1,
 oveFloSetVav_in_control.y);
 connect(dataBus.uOpeModSpace_1,
 uOpeModVav_in_control.y);
-connect(dataBus.u1FanSpace_1,
-u1FanVav_in_control.y);
+connect(dataBus.uAhuOpeModAhu_control,
+uAhuOpeModAhu_control.y);
 connect(dataBus.u1SupFanAhu_control,
 u1SupFanAhu_control.y);
 connect(dataBus.u1WinSpace_1,
 u1WinVav_in_control.y);
-connect(dataBus.uHeaOffSpace_1,
-uHeaOffVav_in_control.y);
+connect(dataBus.u1FanSpace_1,
+u1FanVav_in_control.y);
 connect(dataBus.u1OccSpace_1,
 u1OccVav_in_control.y);
+connect(dataBus.uHeaOffSpace_1,
+uHeaOffVav_in_control.y);
 connect(dataBus.u1HotPlaSpace_1,
 u1HotPlaVav_in_control.y);
 end DataServer;

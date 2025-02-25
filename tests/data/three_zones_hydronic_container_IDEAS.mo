@@ -1113,8 +1113,7 @@ constructed by the signals connected to this bus.
       allowFlowReversal=allowFlowReversal,
       transferHeat=true) "Mixed air temperature sensor"
     annotation (Placement(transformation(extent={{82,-82},{102,-62}})));
-        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium
-            =
+        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
           MediumA, m_flow_nominal=mAir_flow_nominal)
     "Outside air volume flow rate"
     annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
@@ -1639,8 +1638,8 @@ constructed by the signals connected to this bus.
           allowFlowReversal=allowFlowReversal,
           transferHeat=true) "Mixed air temperature sensor"
           annotation (Placement(transformation(extent={{82,-82},{102,-62}})));
-        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium
-            = MediumA, m_flow_nominal=mAir_flow_nominal)
+        Buildings.Fluid.Sensors.VolumeFlowRate VOut1(redeclare package Medium =
+              MediumA, m_flow_nominal=mAir_flow_nominal)
           "Outside air volume flow rate"
           annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
         Buildings.Fluid.Actuators.Dampers.Exponential
@@ -2118,6 +2117,197 @@ constructed by the signals connected to this bus.
   end IdealHeatingSystem;
   end HeatTransfer;
 
+  package BaseClasses
+    package Containers
+      partial model envelope
+
+        annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-100,100},{100,-100}},
+            lineColor={238,46,47},
+            fillColor={235,235,235},
+            fillPattern=FillPattern.Solid),
+              Polygon(
+                points={{-56,14},{48,14},{32,42},{-44,42},{-56,14}},
+                fillColor={207,138,69},
+                fillPattern=FillPattern.Solid,
+                pattern=LinePattern.None),
+              Rectangle(
+                extent={{-52,14},{44,-44}},
+                fillColor={90,90,0},
+                fillPattern=FillPattern.Forward,
+                pattern=LinePattern.None),
+              Rectangle(
+                extent={{-40,-2},{-16,-20}},
+                lineColor={238,46,47},
+                fillColor={28,108,200},
+                fillPattern=FillPattern.HorizontalCylinder),
+              Rectangle(
+                extent={{8,-2},{30,-20}},
+                lineColor={238,46,47},
+                fillColor={28,108,200},
+                fillPattern=FillPattern.HorizontalCylinder)}));
+
+      end envelope;
+
+      partial model emission
+
+      annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-100,100},{100,-100}},
+            fillColor={215,215,215},
+            fillPattern=FillPattern.Forward,
+                pattern=LinePattern.None,
+                lineColor={215,215,215}),
+              Rectangle(
+                extent={{-76,60},{78,56}},
+                pattern=LinePattern.None,
+                fillColor={28,108,200},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{-74,-58},{74,-62}},
+                pattern=LinePattern.None,
+                fillColor={127,0,0},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{-54,70},{-36,-74}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{-26,70},{-8,-74}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{0,70},{18,-74}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Rectangle(
+                extent={{26,70},{44,-74}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Line(
+                points={{-76,54},{68,52},{70,54},{-190,72},{-178,18},{-238,48},{-198,10},
+                    {-182,44}},
+                color={0,0,0},
+                pattern=LinePattern.None),
+              Line(
+                points={{-52,88},{16,74}},
+                color={0,0,0},
+                pattern=LinePattern.None),
+              Line(
+                points={{-168,66},{-138,28},{-66,78},{0,84},{-6,68},{-4,76},{14,88}},
+                color={0,0,0},
+                pattern=LinePattern.None),
+              Ellipse(
+                extent={{48,-50},{66,-68}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward)}));
+
+      end emission;
+
+      model distribution
+      annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-100,100},{100,-100}},
+            fillColor={215,215,215},
+            fillPattern=FillPattern.Solid,
+                pattern=LinePattern.None),
+              Rectangle(
+                extent={{-6,22},{50,-22}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={28,108,200},
+                fillPattern=FillPattern.HorizontalCylinder),
+              Rectangle(
+                extent={{-36,70},{10,-76}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={28,108,200},
+                fillPattern=FillPattern.VerticalCylinder),
+              Rectangle(
+                extent={{-42,84},{16,68}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={117,117,117},
+                fillPattern=FillPattern.VerticalCylinder),
+              Rectangle(
+                extent={{-42,-70},{16,-86}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={117,117,117},
+                fillPattern=FillPattern.VerticalCylinder),
+              Rectangle(
+                extent={{46,28},{66,-28}},
+                lineColor={0,0,0},
+                pattern=LinePattern.None,
+                fillColor={117,117,117},
+                fillPattern=FillPattern.HorizontalCylinder)}));
+      end distribution;
+
+      model production
+        annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-100,100},{100,-100}},
+                fillColor={215,215,215},
+                fillPattern=FillPattern.Solid),
+              Ellipse(
+                extent={{-44,-36},{38,-66}},
+                lineColor={0,0,0},
+                fillColor={238,46,47},
+                fillPattern=FillPattern.Sphere),
+              Rectangle(
+                extent={{-44,44},{38,-52}},
+                lineColor={0,0,0},
+                fillColor={238,46,47},
+                fillPattern=FillPattern.VerticalCylinder),
+              Ellipse(
+                extent={{-44,60},{38,30}},
+                lineColor={0,0,0},
+                fillColor={238,46,47},
+                fillPattern=FillPattern.Sphere)}));
+      end production;
+
+      model bus
+        annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-102,100},{100,-100}},
+            lineColor={215,215,215},
+            fillColor={215,215,215},
+            fillPattern=FillPattern.Forward),
+              Line(points={{-4,56},{-10,60},{-52,0}}, color={215,215,215}),
+              Polygon(
+                points={{-4,66},{-64,-38},{62,-38},{-4,66}},
+                lineColor={255,255,0},
+                fillColor={255,255,0},
+                fillPattern=FillPattern.Forward),
+              Polygon(
+                points={{8,34},{-10,12},{4,-4},{-18,-32},{8,34}},
+                lineColor={0,0,0},
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward)}));
+      end bus;
+    end Containers;
+  end BaseClasses;
   annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0"),
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
@@ -2130,6 +2320,7 @@ package Components
     model distribution
 
 
+extends Trano.BaseClasses.Containers.distribution;
 parameter Real mRad_flow_nominal = 123;
 package MediumW = IDEAS.Media.Water;
 
@@ -2436,20 +2627,12 @@ equation
         connect(control_24.dataBus,dataBus)
             ;        
         connect(control_25.dataBus,dataBus)
-            ;
-  annotation (
-    Icon(
-      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
-        graphics={Rectangle(
-          extent={{-60,100},{60,-100}},
-          lineColor={238,46,47},
-          fillColor={215,215,215},
-          fillPattern=FillPattern.Forward)}));
-end distribution;
+            ;end distribution;
     model emission
 
 
 // Define Medium
+extends Trano.BaseClasses.Containers.emission ;
 package MediumW = IDEAS.Media.Water;
 // Define Fluid Ports
 Modelica.Fluid.Interfaces.FluidPort_a[3] port_a(
@@ -2776,16 +2959,7 @@ equation
         connect(control_20.dataBus,dataBus)
             ;        
         connect(control_21.dataBus,dataBus)
-            ;
-  annotation (
-    Icon(
-      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
-        graphics={Rectangle(
-          extent={{-60,100},{60,-100}},
-          lineColor={238,46,47},
-          fillColor={215,215,215},
-          fillPattern=FillPattern.Forward)}));
-end emission;
+            ;end emission;
     model envelope
 
 package Data "Data for transient thermal building simulation"
@@ -2862,25 +3036,45 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.035,
-      c=1000.0,
-      rho=2000.0,
+      c=800.0,
+      rho=100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=800.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
       c=840.0,
       rho=1120.0,
       epsLw=0.88,
+      epsSw=0.55);    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=1000.0,
+      rho=2000.0,
+      epsLw=0.88,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=900.0,
+      rho=2240.0,
+      epsLw=0.88,
+      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=1000.0,
+      rho=2000.0,
+      epsLw=0.88,
       epsSw=0.55);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0174,
       c=522.0,
       rho=1.66,
-      epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.035,
@@ -2892,33 +3086,20 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record material_001 = IDEAS
       c=880.0,
       rho=850.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=800.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=1000.0,
-      rho=2000.0,
-      epsLw=0.88,
       epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0256,
       c=1006.0,
       rho=1.2,
       epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=900.0,
-      rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record cavitywall_001
+package Constructions "Library of building envelope constructions"      record construction_001
+    "construction_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={three_zones_hydronic_container_IDEAS.Data.Materials.material_001
+        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.material_002
+        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.material_003
+        (d=0.1)    });
+    end construction_001;      record cavitywall_001
     "cavitywall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
@@ -2941,18 +3122,12 @@ package Constructions "Library of building envelope constructions"      record c
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.concrete_001
         (d=0.125),three_zones_hydronic_container_IDEAS.Data.Materials.concrete_001
         (d=0.125)    });
-    end concreteslab_001;      record construction_001
-    "construction_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={three_zones_hydronic_container_IDEAS.Data.Materials.material_001
-        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.material_002
-        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.material_003
-        (d=0.1)    });
-    end construction_001;
+    end concreteslab_001;
 end Constructions;
 end Data;
 
 // Define Medium Package
+extends Trano.BaseClasses.Containers.envelope ;
 replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
   constrainedby Modelica.Media.Interfaces.PartialMedium
 
@@ -3382,19 +3557,11 @@ equation
         connect(space_003.gainCon,heatPortCon1[3])
             ;        
         connect(space_003.ports[1],ports_b[3])
-            ;
-  annotation (
-    Icon(
-      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
-        graphics={Rectangle(
-          extent={{-60,100},{60,-100}},
-          lineColor={238,46,47},
-          fillColor={215,215,215},
-          fillPattern=FillPattern.Forward)}));
-end envelope;
+            ;end envelope;
     model production
 
 
+extends Trano.BaseClasses.Containers.production;
 // Define Parameter
 parameter Real mRad_flow_nominal = 123;
 
@@ -3479,19 +3646,11 @@ equation
         smooth=Smooth.None))
             ;        
         connect(control_22.dataBus,dataBus)
-            ;
-  annotation (
-    Icon(
-      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
-        graphics={Rectangle(
-          extent={{-60,100},{60,-100}},
-          lineColor={238,46,47},
-          fillColor={215,215,215},
-          fillPattern=FillPattern.Forward)}));
-end production;
+            ;end production;
     model bus
 
 
+extends Trano.BaseClasses.Containers.bus;
 // Define Medium Package
 package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"});
 
@@ -3578,16 +3737,7 @@ equation
         thickness=0.1,pattern =
         LinePattern.Solid,
         smooth=Smooth.None))
-            ;
-  annotation (
-    Icon(
-      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
-        graphics={Rectangle(
-          extent={{-60,100},{60,-100}},
-          lineColor={238,46,47},
-          fillColor={215,215,215},
-          fillPattern=FillPattern.Forward)}));
-end bus;
+            ;end bus;
   end Containers;
 
   package BaseClasses
@@ -3882,28 +4032,28 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_22
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
             TColSetControl_25
             (y=363.15);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_19
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_21
-            (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_24
             (y=363.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_20
             (y=298.15);
-Modelica.Blocks.Sources.BooleanExpression
-            triggerControl_25
-            (y=true);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_21
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TAirOutControl_22
+            (y=0.0);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_19
+            (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_24
+            (y=true);
+Modelica.Blocks.Sources.BooleanExpression
+            triggerControl_25
             (y=true);
 equation
 connect(port[1],TRoo[1]. port);
@@ -3918,22 +4068,22 @@ connect(dataBus.TZonSpace_003, TRoo[3].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_002, TRoo1[2].ppm);
 connect(dataBus.ppmCO2Space_003, TRoo1[3].ppm);
-connect(dataBus.TAirOutBoiler_001,
-TAirOutControl_22.y);
 connect(dataBus.TColSetControl_25,
 TColSetControl_25.y);
-connect(dataBus.TCooSetSpace_001,
-TCooSetControl_19.y);
-connect(dataBus.TCooSetSpace_003,
-TCooSetControl_21.y);
 connect(dataBus.TColSetControl_24,
 TColSetControl_24.y);
 connect(dataBus.TCooSetSpace_002,
 TCooSetControl_20.y);
-connect(dataBus.triggerControl_25,
-triggerControl_25.y);
+connect(dataBus.TCooSetSpace_003,
+TCooSetControl_21.y);
+connect(dataBus.TAirOutBoiler_001,
+TAirOutControl_22.y);
+connect(dataBus.TCooSetSpace_001,
+TCooSetControl_19.y);
 connect(dataBus.triggerControl_24,
 triggerControl_24.y);
+connect(dataBus.triggerControl_25,
+triggerControl_25.y);
 end DataServer;
       
             model BoilerWithStorageBoiler_001
@@ -4037,25 +4187,45 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.035,
-      c=1000.0,
-      rho=2000.0,
+      c=800.0,
+      rho=100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=800.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
       c=840.0,
       rho=1120.0,
       epsLw=0.88,
+      epsSw=0.55);    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=1000.0,
+      rho=2000.0,
+      epsLw=0.88,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=900.0,
+      rho=2240.0,
+      epsLw=0.88,
+      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=1000.0,
+      rho=2000.0,
+      epsLw=0.88,
       epsSw=0.55);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0174,
       c=522.0,
       rho=1.66,
-      epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.035,
@@ -4067,33 +4237,20 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record material_001 = IDEAS
       c=880.0,
       rho=850.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=800.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=1000.0,
-      rho=2000.0,
-      epsLw=0.88,
       epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0256,
       c=1006.0,
       rho=1.2,
       epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=900.0,
-      rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record cavitywall_001
+package Constructions "Library of building envelope constructions"      record construction_001
+    "construction_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={three_zones_hydronic_container_IDEAS.Data.Materials.material_001
+        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.material_002
+        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.material_003
+        (d=0.1)    });
+    end construction_001;      record cavitywall_001
     "cavitywall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
@@ -4116,14 +4273,7 @@ package Constructions "Library of building envelope constructions"      record c
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.concrete_001
         (d=0.125),three_zones_hydronic_container_IDEAS.Data.Materials.concrete_001
         (d=0.125)    });
-    end concreteslab_001;      record construction_001
-    "construction_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={three_zones_hydronic_container_IDEAS.Data.Materials.material_001
-        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.material_002
-        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.material_003
-        (d=0.1)    });
-    end construction_001;
+    end concreteslab_001;
 end Constructions;
 end Data;
 model building
