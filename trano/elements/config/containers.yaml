@@ -48,6 +48,7 @@ containers:
       - dataBus
       use_counter: false
   template: |
+    extends Trano.BaseClasses.Containers.distribution;
     parameter Real mRad_flow_nominal = 123;
     package MediumW = {{ medium.water | safe }};
     
@@ -138,6 +139,7 @@ containers:
       use_counter: false
   template: |
     // Define Medium
+    extends Trano.BaseClasses.Containers.emission ;
     package MediumW = {{ medium.water | safe }};
     // Define Fluid Ports
     Modelica.Fluid.Interfaces.FluidPort_a[{{ ports.port_a | safe }}] port_a(
@@ -229,6 +231,7 @@ containers:
       same_counter_per_name: true
   template: |
     // Define Medium Package
+    extends Trano.BaseClasses.Containers.envelope ;
     replaceable package Medium = {{ medium.air | safe }}
       constrainedby Modelica.Media.Interfaces.PartialMedium
     
@@ -309,6 +312,7 @@ containers:
       - dataBus
       use_counter: false
   template: |
+    extends Trano.BaseClasses.Containers.production;
     // Define Parameter
     parameter Real mRad_flow_nominal = 123;
     
@@ -375,6 +379,7 @@ containers:
       - dataBus
       use_counter: false
   template: |
+    extends Trano.BaseClasses.Containers.bus;
     // Define Medium Package
     package Medium = {{ medium.air | safe }};
     

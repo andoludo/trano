@@ -13,14 +13,4 @@ equation
 {%- for connection in container.connections -%}
     {{ connection.equation }}
 {%- endfor %}
-{% raw %}
-  annotation (
-    Icon(
-      coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
-        graphics={Rectangle(
-          extent={{-60,100},{60,-100}},
-          lineColor={238,46,47},
-          fillColor={215,215,215},
-          fillPattern=FillPattern.Forward)}));
-{% endraw %}
 end {{ container.name }};
