@@ -295,12 +295,8 @@ class Network:  # : PLR0904, #TODO: fix this
         if not self.get_node(DataBus):
             data_bus = data_bus or DataBus()
             data_bus.add_to_network(self)
-        data_bus = self.get_node(DataBus)
-        weather = self.get_node(Weather)
-        self.graph.add_edge(weather, data_bus)
         for node in self.graph.nodes:
             node.configure(self)
-        # data_bus.configure(self)
         self.connect()
         data = extract_properties(self.library, self.name, self.graph.nodes)
         component_models = []
@@ -336,6 +332,7 @@ class Network:  # : PLR0904, #TODO: fix this
             diagram_size=self.diagram_size,
             containers=container_model if include_container else [],
             main=self.containers.main if include_container else "",
+            include_container=include_container
         )
 
     def add_boiler_plate_spaces(

@@ -20,5 +20,5 @@
     - DataBus
     use_counter: false
   template: |
-    Buildings.Electrical.AC.OnePhase.Sources.PVSimpleOriented {{ element.name }}(A=123)
+    Buildings.Electrical.AC.OnePhase.Sources.PVSimpleOriented {{ element.name }}(A=123, til = 0.5235987755982988, azi = 1.5707963267948966)
   variant: default

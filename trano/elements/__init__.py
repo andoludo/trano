@@ -93,5 +93,5 @@ __all__ = [
     "NamedFigure",
     "Weather",
     "BaseParameter",
-    "Photovoltaic"
+    "Photovoltaic",
 ]

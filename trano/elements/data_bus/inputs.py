@@ -25,13 +25,16 @@ class Target(BaseModel):
             raise Exception("Target sub is None")
         return self.sub.split(".")
 
+
 LoadType = Literal["Resistive", "Inductive", "Capacitive"]
 PrimaryEnergyType = Literal["Electricity", "Gas"]
+
+
 class PowerInput(BaseModel):
     energy: PrimaryEnergyType
     load_type: Optional[LoadType] = None
 
-    def name(self):
+    def name(self) -> str:
         if self.load_type:
             return f"{self.energy.lower()}_{self.load_type}"
         return self.energy.lower()
@@ -68,7 +71,6 @@ class BaseInputOutput(BaseModel):
         if self.power is None:
             return self.name
         return self.power.name()
-
 
 
 class BaseInput(BaseInputOutput): ...

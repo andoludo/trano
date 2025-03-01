@@ -18,7 +18,7 @@ from trano.elements import (
     FloorOnGround,
     InternalElement,
     Window,
-    param_from_config, DataBus,
+    param_from_config,
 )
 from trano.elements.construction import (
     Construction,
@@ -336,14 +336,9 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
         network.connect_elements(boundary, ahus[0])
         weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
         network.connect_elements(boundary, weather)
-    # if "solar" in data and not network.get_node(DataBus):
-    #     data_bus = DataBus(name="data_bus")
-    #     data_bus.add_to_network(network)
-    # data_bus = network.get_node(DataBus)
     for solar in data.get("solar", []):
-        solar = _instantiate_component(solar)
-        solar.component_instance.add_to_network(network)
-        # network.graph.add_edge(solar.component_instance, data_bus)
+        solar_ = _instantiate_component(solar)
+        solar_.component_instance.add_to_network(network)
 
     return network
 

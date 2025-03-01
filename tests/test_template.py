@@ -1,12 +1,10 @@
 from pathlib import Path
 
 import pytest
-import yaml
 
 from tests.conftest import _read, clean_model
 from tests.fixtures.three_spaces import three_spaces
 from trano.data_models.conversion import convert_network
-from trano.elements import DataBus
 from trano.elements.space import Space
 from trano.elements.library.library import Library
 from trano.topology import Network
@@ -377,6 +375,7 @@ def test_three_zones_hydronic_reduced_orders_iso_13790(schema: Path) -> None:
     model_ = network.model(include_container=True)
     assert clean_model(model_, network.name) == set(_read(network.name))
 
+
 @pytest.mark.run(order=36)
 def test_three_zones_hydronic_reduced_orders_iso_13790_heat_pump(schema: Path) -> None:
     house = get_path("three_zones_hydronic_reduced_orders_heat_pump.yaml")
@@ -389,7 +388,6 @@ def test_three_zones_hydronic_reduced_orders_iso_13790_heat_pump(schema: Path) -
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-
 @pytest.mark.run(order=37)
 def test_three_zones_hydronic_reduced_orders_iso_13790_electric(schema: Path) -> None:
     house = get_path("three_zones_hydronic_reduced_orders.yaml")
@@ -399,9 +397,8 @@ def test_three_zones_hydronic_reduced_orders_iso_13790_electric(schema: Path) ->
         library=Library.from_configuration("iso_13790"),
     )
     model_ = network.model(include_container=True)
-
-    data_bus = [n for n in list(network.graph.nodes) if isinstance(n, DataBus)][0]
     assert clean_model(model_, network.name) == set(_read(network.name))
+
 
 @pytest.mark.run(order=38)
 def test_three_zones_hydronic_reduced_orders_pv(schema: Path) -> None:

@@ -11,7 +11,8 @@ from trano.elements import (
     Space,
     ExternalWall,
     FloorOnGround,
-    Window, CollectorControl,
+    Window,
+    CollectorControl,
 )
 from trano.elements.bus import get_non_connected_ports, get_power_ports
 from trano.elements.common_base import MediumTemplate
@@ -479,8 +480,13 @@ def simple_space_template() -> Space:
         ],
     )
 
+
 def test_dynamic_template_power_input() -> None:
-    pump_yaml = Path(__file__).parents[1].joinpath("trano", "elements", "library", "models", "default", "pump.yaml")
+    pump_yaml = (
+        Path(__file__)
+        .parents[1]
+        .joinpath("trano", "elements", "library", "models", "default", "pump.yaml")
+    )
     pump_library = LibraryData.model_validate(yaml.safe_load(pump_yaml.read_text())[0])
     pump_control = CollectorControl(name="test")
     pump = Pump(libraries_data=[pump_library], control=pump_control)
@@ -491,7 +497,8 @@ def test_dynamic_template_power_input() -> None:
     )
     power_port = get_power_ports([pump])
     assert power_port
-    assert rendered_template == ("""model PumpPump_0
+    assert rendered_template == (
+        """model PumpPump_0
 extends test.Trano.Fluid.Ventilation.PartialPump;
 Trano.Controls.BaseClasses.DataBus dataBus
     annotation (Placement(transformation(
@@ -499,11 +506,11 @@ Trano.Controls.BaseClasses.DataBus dataBus
 equation
 connect(dataBus.yPump_0, pumRad.y);
 connect(dataBus.y_gainPump_0, gain.y);
-connect(dataBus.electricityPump_0, pumRad.p);
+connect(dataBus.electricityPump_0, pumRad.P);
 connect(dataBus.TTest, temSup.T);
  end PumpPump_0;
- """)
-
+ """
+    )
 
 
 def test_iso_13790_single_zone(simple_space_template: Space) -> None:
@@ -539,9 +546,11 @@ def test_reduced_order_single_zone(simple_space_template: Space) -> None:
         for c in network.containers.get_container("envelope").connections
     } == {
         ("occupancy_0.y", "space_1.intGains"),
-        ("space_1.TAir", "y"),
+        ("space_1.TAir", "y[1]"),
         ("space_1.weaBus", "weather_1.weaBus"),
     }
     assert {
         c.equation_view() for c in network.containers.get_container("bus").connections
-    } == {("data_bus.u[1]", "u[1]")}
+    } == {('dataBus', 'data_bus.dataBus'),
+ ('data_bus.term_p', 'term_p'),
+ ('data_bus.u[1]', 'u[1]')}

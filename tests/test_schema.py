@@ -28,7 +28,7 @@ def test_validate_schema() -> None:
     report = validate_file(house, data_model_path, "Building")
     assert report.results == []
 
-
+@pytest.mark.skip(reason="Create the new schema")
 def test_create_new_schema(
     schema: Path, schema_original: Path, parameters_path: Path
 ) -> None:

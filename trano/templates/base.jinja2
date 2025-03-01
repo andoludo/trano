@@ -29,8 +29,21 @@ package Components
     {% endif %}
   end BaseClasses;
 end Components;
-
-
+{% if include_container %}
+{% raw %}
+model building
+  Components.Containers.building building
+    annotation (Placement(transformation(extent={{12,-24},{60,24}})));
+  Buildings.Electrical.AC.OnePhase.Sources.Grid gri
+    annotation (Placement(transformation(extent={{-46,28},{-26,48}})));
+equation
+  connect(gri.terminal, building.term_p)
+    annotation (Line(points={{-36,28},{-36,0},{12,0}}, color={0,120,120}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+        coordinateSystem(preserveAspectRatio=false)));
+end building;
+{% endraw %}
+{% else %}
 {% if data.is_package %}
 {{ data.data|safe }}
 model building
@@ -55,17 +68,5 @@ equation
 annotation (Diagram(coordinateSystem(extent={{diagram_size}})), Icon(
         coordinateSystem(extent={{diagram_size}})));
 end building;
-{% raw %}
-model building_with_grid
-  Components.Containers.building building
-    annotation (Placement(transformation(extent={{12,-24},{60,24}})));
-  Buildings.Electrical.AC.OnePhase.Sources.Grid gri
-    annotation (Placement(transformation(extent={{-46,28},{-26,48}})));
-equation
-  connect(gri.terminal, building.term_p)
-    annotation (Line(points={{-36,28},{-36,0},{12,0}}, color={0,120,120}));
-  annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
-        coordinateSystem(preserveAspectRatio=false)));
-end building_with_grid;
-{% endraw %}
+{% endif %}
 end {{ network.name }};

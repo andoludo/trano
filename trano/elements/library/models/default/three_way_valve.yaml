@@ -25,7 +25,7 @@
     - Control
   template: "    {{library_name}}.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear\n\
     \             {{ element.name }}(\n    redeclare package Medium = MediumW,\n \
-    \   use_inputFilter=false,\n    {{ macros.render_parameters(parameters) | safe}},\n\
+    \     {{ macros.render_parameters(parameters) | safe}},\n\
     \    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) \"Three-wayvalve\"\
     \ "
   variant: default

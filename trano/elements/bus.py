@@ -81,6 +81,7 @@ def get_power_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
             power_ports += [p for p in node_ports["RealOutput"] if p.power is not None]
     return power_ports
 
+
 def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
     port_types = ["Real", "Integer", "Boolean"]
     ports: Dict[str, List[BaseInputOutput]] = {

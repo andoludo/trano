@@ -89,7 +89,7 @@ class Container(BaseContainer):
     layout: ContainerLayout = Field(
         default_factory=lambda: ContainerLayout(global_origin=Point(x=0, y=0))
     )
-    prescribed_connection_equation: str =""
+    prescribed_connection_equation: str = ""
 
     @field_validator("template")
     @classmethod
@@ -262,7 +262,7 @@ class Containers(BaseModel):
         BusConnection(
             connection_type=("ventilation", "envelope"),
             location="{{-44.1,-32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}}",
-        )
+        ),
     ]
     connection_list: List[ConnectionList] = [
         ConnectionList(
@@ -325,7 +325,7 @@ class Containers(BaseModel):
             annotation="""annotation (Line(points={{-44.1,
           -32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}},
         color={0,127,255}));""",
-        )
+        ),
     ]
 
     def add_data(self, data: BaseProperties) -> None:
