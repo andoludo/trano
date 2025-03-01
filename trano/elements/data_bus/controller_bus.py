@@ -193,12 +193,12 @@ def _append_ports(  # noqa: PLR0913
     if getattr(input, case_1_condition):
 
         ports.append(
-            f"connect(dataBus.{input.name}{evaluated_target.capitalize()}, "
+            f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, "
             f"{input.component}{case_1});"
         )
     else:
         ports.append(
-            f"connect(dataBus.{input.name}{evaluated_target.capitalize()}, "
+            f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, "
             f"{input.component}{case_2});"
         )
     return ports

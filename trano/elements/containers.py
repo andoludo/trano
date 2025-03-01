@@ -89,6 +89,7 @@ class Container(BaseContainer):
     layout: ContainerLayout = Field(
         default_factory=lambda: ContainerLayout(global_origin=Point(x=0, y=0))
     )
+    prescribed_connection_equation: str =""
 
     @field_validator("template")
     @classmethod
@@ -244,7 +245,7 @@ class Containers(BaseModel):
     bus_connections: List[BusConnection] = [
         BusConnection(
             connection_type=("bus", "envelope"),
-            location="{{-95.8,46.8},{-95.8,16.8}}",
+            location="{{-83.8,48.8},{-83.8,56},{-60,56},{-60,26},{-74,26},{-74,20}}",
         ),
         BusConnection(
             connection_type=("emission", "envelope"),
@@ -261,39 +262,36 @@ class Containers(BaseModel):
         BusConnection(
             connection_type=("ventilation", "envelope"),
             location="{{-44.1,-32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}}",
-        ),
+        )
     ]
     connection_list: List[ConnectionList] = [
         ConnectionList(
             connection_type=["envelope1.heatPortCon", "emission1.heatPortCon"],
-            annotation="""annotation (Line(
-          points={{-43.8,15.2},{-52,15.2},{-52,20},{-60,20},{-60,15},{-64,15}},
-          color={191,0,0}));""",
+            annotation="""annotation (Line(points={{-64,15},{-62,15.2},{-43.8,15.2}}, color={191,0,0}));""",
         ),
         ConnectionList(
             connection_type=["emission1.heatPortRad", "envelope1.heatPortRad"],
-            annotation="""annotation (Line(
-          points={{-44,5},{-60,5},{-60,4.8},{-64,4.8}}, color={191,0,0}));""",
+            annotation="""annotation (Line(points
+        ={{-64,4.8},{-48,4.8},{-48,5},{-44,5}}, color={191,0,0}));""",
         ),
         ConnectionList(
             connection_type=["distribution1.port_a", "production1.port_b1"],
-            annotation="""annotation (Line(points={{16,
-          5},{30,5},{30,14.8},{36,14.8}}, color={0,127,255}));""",
+            annotation="""annotation (Line(points={{15.8,15},{30,15},{30,15},{36,15}},
+                                          color={0,127,255}));""",
         ),
         ConnectionList(
             connection_type=["production1.port_a1", "distribution1.port_b"],
-            annotation="""annotation (Line(points={{36,
-          5.2},{32,5.2},{32,15},{16,15}}, color={0,127,255}));""",
+            annotation="""annotation (Line(points={{16,5},{32,5},{32,5.2},{36,5.2}},
+                                          color={0,127,255}));""",
         ),
         ConnectionList(
             connection_type=["distribution1.port_a1", "emission1.port_b"],
-            annotation="""annotation (Line(points={{-4,
-          5.2},{-18,5.2},{-18,12},{-20,12},{-20,15},{-24,15}}, color={0,127,255}));""",
+            annotation="""annotation (Line(points={{-24,
+          4.6},{-8,4.6},{-8,5.2},{-4,5.2}}, color={0,127,255}));""",
         ),
         ConnectionList(
             connection_type=["emission1.port_a", "distribution1.port_b1"],
-            annotation="""annotation (Line(points={{-24,
-          5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
+            annotation="""annotation (Line(points={{-24,15.4},{-22,15},{-4,15}}, color={0,127,255}));""",
         ),
         ConnectionList(
             connection_type=["envelope1.ports_b", "bus1.port_b"],
@@ -302,8 +300,8 @@ class Containers(BaseModel):
         ),
         ConnectionList(
             connection_type=["envelope1.y", "bus1.u"],
-            annotation="""annotation (Line(points={{-24,
-    5},{-20,5},{-20,10},{-8,10},{-8,14.8},{-4,14.8}}, color={0,127,255}));""",
+            annotation="""annotation (Line(points={{-85.7,10.1},{-94,10.1},
+          {-94,40},{-85.8,40}}, color={0,0,127}));""",
         ),
         ConnectionList(
             connection_type=["envelope1.heatPortCon1", "bus1.heatPortCon"],
@@ -327,7 +325,7 @@ class Containers(BaseModel):
             annotation="""annotation (Line(points={{-44.1,
           -32.6},{-50,-32.6},{-50,-16},{-90,-16},{-90,15.8},{-83.9,15.8}},
         color={0,127,255}));""",
-        ),
+        )
     ]
 
     def add_data(self, data: BaseProperties) -> None:
@@ -511,28 +509,78 @@ class Containers(BaseModel):
 
     def _main_template(self) -> Template:
         template_ = """
-model building_container
+model building
 
 {% for container_ in container.in_use_containers() %}
 {{ container_.main_equation() | safe }}
 {% endfor %}
-
+{% raw %}
+Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p
+annotation (Placement(transformation(extent={{-126,-18},{-92,18}}),
+iconTransformation(
+extent={{-112,-12},{-88,12}})));
 equation
-
+connect(term_p, bus1.term_p) annotation (Line(points={{-109,0},{-88,0},
+        {-88,-10},{60,-10},{60,64},{-50,64},{-50,40},{-65,40}}, color={
+        0,120,120}));
+{% endraw %}
 {% for connection in container.connections %}
 connect({{ connection.left.container_type }}1.{{ connection.left.equation }},
 {{ connection.right.container_type }}1.{{ connection.right.equation }})
-{{ connection.annotation }};
+{{ connection.annotation }}
 {% endfor %}
 
 {% for bus_equation in container.bus_equations() %}
 {{ bus_equation | safe }}
 {% endfor %}
-
-annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+{% for container_ in container.in_use_containers() %}
+{{ container_.prescribed_connection_equation | safe }}
+{% endfor %}
+{% raw %}
+annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+          Rectangle(
+            extent={{-100,100},{100,-100}},
+            fillColor={215,215,215},
+            fillPattern=FillPattern.Solid,
+            pattern=LinePattern.None),
+        Rectangle(
+          extent={{-74,18},{22,-40}},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Forward,
+            pattern=LinePattern.None,
+            lineColor={238,46,47}),
+        Rectangle(
+          extent={{-62,2},{-38,-16}},
+          lineColor={238,46,47},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+        Rectangle(
+          extent={{-14,2},{8,-16}},
+          lineColor={238,46,47},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+        Polygon(
+          points={{-78,18},{26,18},{10,46},{-66,46},{-78,18}},
+            lineColor={238,46,47},
+            lineThickness=0.5,
+            fillColor={244,125,35},
+            fillPattern=FillPattern.Solid),
+          Polygon(
+            points={{-60,42},{-68,22},{4,22},{6,42},{-60,42}},
+            lineThickness=0.5,
+            fillColor={28,108,200},
+            fillPattern=FillPattern.Forward,
+            pattern=LinePattern.None),
+          Rectangle(
+            extent={{26,0},{40,-40}},
+            lineColor={0,0,0},
+            pattern=LinePattern.None,
+            lineThickness=0.5,
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid)}),                  Diagram(
 coordinateSystem(preserveAspectRatio=false)));
-
-end building_container;
+{% endraw %}
+end building;
 """
         template = ENVIRONMENT.from_string(template_)
         return template

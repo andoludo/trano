@@ -6,13 +6,14 @@
     function: default_parameters
   ports:
   - flow: undirected
-    medium: data
+    medium: weather_data
     multi_connection: true
     names:
     - weaBus
     targets:
     - Space
     use_counter: false
+
   template: |
     AixLib.BoundaryConditions.WeatherData.ReaderTMY3
     {{ element.name }} (

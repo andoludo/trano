@@ -61,6 +61,12 @@ class Network:  # : PLR0904, #TODO: fix this
     def diagram_size(self) -> str:
         return f"{{{{{-50},{-50}}},{{{self.diagram_scale},{self.diagram_scale}}}}}"
 
+    def get_node(self, element: Type[BaseElement]) -> Optional[BaseElement]:
+        element_node = [node for node in self.graph.nodes if isinstance(node, element)]
+        if element_node:
+            return element_node[0]
+        return None
+
     def get_edge(
         self, first_edge: Type[BaseElement], second_edge: Type[BaseElement]
     ) -> Connection:
@@ -280,17 +286,21 @@ class Network:  # : PLR0904, #TODO: fix this
                 node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
     def model(
-        self, include_container: bool = False, data_bus: Optional[DataBus] = None
+        self, include_container: bool = True, data_bus: Optional[DataBus] = None
     ) -> str:
         Space.counter = 0
         for node in self.graph.nodes:
             node.assign_container_type(self)
             node.processing(self)
-        data_bus = data_bus or DataBus()
-        data_bus.add_to_network(self)
+        if not self.get_node(DataBus):
+            data_bus = data_bus or DataBus()
+            data_bus.add_to_network(self)
+        data_bus = self.get_node(DataBus)
+        weather = self.get_node(Weather)
+        self.graph.add_edge(weather, data_bus)
         for node in self.graph.nodes:
             node.configure(self)
-        data_bus.configure(self)
+        # data_bus.configure(self)
         self.connect()
         data = extract_properties(self.library, self.name, self.graph.nodes)
         component_models = []

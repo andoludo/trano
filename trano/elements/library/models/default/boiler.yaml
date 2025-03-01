@@ -85,3 +85,33 @@
     \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())\
     \ \"Boiler\" "
   variant: default
+- classes:
+  - Boiler
+  component_template:
+    bus:
+      real_outputs: []
+    category: boiler
+    template: "\n    model HeatPump{{ element.name | capitalize}}\n    extends\
+      \ {{ package_name }}.Trano.Fluid.Boilers.PartialHeatPump;\n    {{bus_template}}\n\
+      \    equation\n    {{bus_ports | safe}}\n     end HeatPump{{ element.name\
+      \ | capitalize}};\n     "
+
+  library: default
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+
+  template: "\n{{package_name}}.Components.BaseClasses.\nHeatPump{{ element.name\
+    \ | capitalize}} {{ element.name }}(\nredeclare package MediumW = MediumW)\
+    \ \"Boiler\" "
+  variant: heat_pump

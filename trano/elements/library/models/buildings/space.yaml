@@ -72,7 +72,7 @@
     targets:
     - BaseOccupancy
   - flow: undirected
-    medium: data
+    medium: weather_data
     names:
     - weaBus
     targets:

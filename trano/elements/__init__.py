@@ -24,6 +24,7 @@ from trano.elements.envelope import (
 from trano.elements.figure import Figure, NamedFigure
 from trano.elements.library.parameters import param_from_config
 from trano.elements.common_base import BaseParameter
+from trano.elements.solar import Photovoltaic
 from trano.elements.space import Space
 from trano.elements.system import (
     VAV,
@@ -44,6 +45,7 @@ from trano.elements.system import (
     Weather,
 )
 from trano.elements.types import DynamicTemplateCategories
+
 
 __all__ = [
     "ThreeWayValveControl",
@@ -91,4 +93,5 @@ __all__ = [
     "NamedFigure",
     "Weather",
     "BaseParameter",
+    "Photovoltaic"
 ]

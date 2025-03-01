@@ -6,7 +6,7 @@
     function: default_parameters
   ports:
   - flow: undirected
-    medium: data
+    medium: weather_data
     multi_connection: true
     names:
     - weaBus

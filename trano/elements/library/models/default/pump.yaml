@@ -16,6 +16,14 @@
         target:
           main: |-
             element.name
+      - component: pumRad
+        name: power
+        port: P
+        power:
+          energy: "Electricity"
+        target:
+          main: |-
+            element.name
       - component: temSup
         name: T
         port: T

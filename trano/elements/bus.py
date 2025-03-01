@@ -23,6 +23,7 @@ class DataBus(BaseElement):
     name: str = "data_bus"
     spaces: List[str] = Field(default=[])
     non_connected_ports: List[BaseInputOutput] = Field(default=[])
+    power_ports: List[BaseInputOutput] = Field(default=[])
     external_data: Optional[Path] = None
     container_type: ContainerTypes = "bus"
 
@@ -64,7 +65,21 @@ class DataBus(BaseElement):
 
     def configure(self, network: "Network") -> None:
         self.non_connected_ports = get_non_connected_ports(network.graph.nodes)
+        self.power_ports = get_power_ports(network.graph.nodes)
 
+
+def get_power_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
+    power_ports = []
+    for node in nodes:
+        if not (
+            hasattr(node, "component_template")
+            and hasattr(node.component_template, "bus")
+        ):
+            continue
+        if node.component_template and node.component_template.bus:
+            node_ports = node.component_template.bus.list_ports(node)
+            power_ports += [p for p in node_ports["RealOutput"] if p.power is not None]
+    return power_ports
 
 def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
     port_types = ["Real", "Integer", "Boolean"]

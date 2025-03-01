@@ -1,6 +1,8 @@
+from pathlib import Path
 from typing import Dict, Any
 
 import pytest
+import yaml
 
 from tests.constructions.constructions import Constructions, Glasses
 from trano.elements import (
@@ -9,13 +11,13 @@ from trano.elements import (
     Space,
     ExternalWall,
     FloorOnGround,
-    Window,
+    Window, CollectorControl,
 )
-from trano.elements.bus import get_non_connected_ports
+from trano.elements.bus import get_non_connected_ports, get_power_ports
 from trano.elements.common_base import MediumTemplate
 from trano.elements.library.base import LibraryData
 from trano.elements.library.library import Library, Templates
-from trano.elements.system import Occupancy
+from trano.elements.system import Occupancy, Pump
 from trano.elements.types import Azimuth, Tilt
 from trano.topology import Network
 
@@ -476,6 +478,32 @@ def simple_space_template() -> Space:
             ),
         ],
     )
+
+def test_dynamic_template_power_input() -> None:
+    pump_yaml = Path(__file__).parents[1].joinpath("trano", "elements", "library", "models", "default", "pump.yaml")
+    pump_library = LibraryData.model_validate(yaml.safe_load(pump_yaml.read_text())[0])
+    pump_control = CollectorControl(name="test")
+    pump = Pump(libraries_data=[pump_library], control=pump_control)
+    library = Library.load_default()
+    pump.assign_library_property(library)
+    rendered_template = pump.component_template.render(
+        "test", pump, pump.processed_parameters(library)
+    )
+    power_port = get_power_ports([pump])
+    assert power_port
+    assert rendered_template == ("""model PumpPump_0
+extends test.Trano.Fluid.Ventilation.PartialPump;
+Trano.Controls.BaseClasses.DataBus dataBus
+    annotation (Placement(transformation(
+  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
+equation
+connect(dataBus.yPump_0, pumRad.y);
+connect(dataBus.y_gainPump_0, gain.y);
+connect(dataBus.electricityPump_0, pumRad.p);
+connect(dataBus.TTest, temSup.T);
+ end PumpPump_0;
+ """)
+
 
 
 def test_iso_13790_single_zone(simple_space_template: Space) -> None:

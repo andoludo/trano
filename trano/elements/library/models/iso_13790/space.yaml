@@ -8,7 +8,7 @@
       volume: VRoo
   ports:
   - flow: undirected
-    medium: data
+    medium: weather_data
     names:
     - weaBus
     targets:
@@ -47,6 +47,7 @@
     - BaseOccupancy
   template: |
       AixLib.ThermalZones.ISO13790.Zone5R1C.ZoneHVAC {{ element.name }}(
+      redeclare package Medium = Medium,
       {{ macros.render_parameters(parameters) | safe }},
       AWal={{ macros.join_list(element.boundary_parameters.vertical_walls.area_per_orientation) }},
       nOrientations={{ element.boundary_parameters.vertical_walls.number_orientations  }},

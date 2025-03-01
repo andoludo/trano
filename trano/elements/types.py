@@ -8,7 +8,7 @@ DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
 SystemContainerTypes = Literal[
     "envelope", "distribution", "emission", "production", "ventilation"
 ]
-ContainerTypes = Literal[SystemContainerTypes, "bus"]
+ContainerTypes = Literal[SystemContainerTypes, "bus", "solar"]
 Pattern = Literal["Solid", "Dot", "Dash", "DashDot"]
 
 TILT_MAPPING = {"wall": 90, "ceiling": 0, "floor": 180}
@@ -41,6 +41,8 @@ class Medium(str, Enum):
     fluid = "fluid"
     heat = "heat"
     data = "data"
+    current = "current"
+    weather_data = "weather_data"
 
 
 Boolean = Literal["true", "false"]

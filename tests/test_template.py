@@ -1,10 +1,12 @@
 from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.conftest import _read, clean_model
 from tests.fixtures.three_spaces import three_spaces
 from trano.data_models.conversion import convert_network
+from trano.elements import DataBus
 from trano.elements.space import Space
 from trano.elements.library.library import Library
 from trano.topology import Network
@@ -18,7 +20,7 @@ def get_path(file_name: str) -> Path:
 def test_template_buildings_free_float_single_zone(
     buildings_free_float_single_zone: Network,
 ) -> None:
-    model_ = buildings_free_float_single_zone.model()
+    model_ = buildings_free_float_single_zone.model(include_container=True)
     assert clean_model(model_, buildings_free_float_single_zone.name) == set(
         _read(buildings_free_float_single_zone.name)
     )
@@ -28,7 +30,7 @@ def test_template_buildings_free_float_single_zone(
 def test_template_buildings_free_float_two_zones(
     buildings_free_float_two_zones: Network,
 ) -> None:
-    model_ = buildings_free_float_two_zones.model()
+    model_ = buildings_free_float_two_zones.model(include_container=True)
     assert clean_model(model_, buildings_free_float_two_zones.name) == set(
         _read(buildings_free_float_two_zones.name)
     )
@@ -369,6 +371,43 @@ def test_three_zones_hydronic_reduced_orders_iso_13790(schema: Path) -> None:
     house = get_path("three_zones_hydronic_reduced_orders.yaml")
     network = convert_network(
         "three_zones_hydronic_reduced_orders_iso_13790",
+        house,
+        library=Library.from_configuration("iso_13790"),
+    )
+    model_ = network.model(include_container=True)
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+@pytest.mark.run(order=36)
+def test_three_zones_hydronic_reduced_orders_iso_13790_heat_pump(schema: Path) -> None:
+    house = get_path("three_zones_hydronic_reduced_orders_heat_pump.yaml")
+    network = convert_network(
+        "three_zones_hydronic_reduced_orders_iso_13790_heat_pump",
+        house,
+        library=Library.from_configuration("iso_13790"),
+    )
+    model_ = network.model(include_container=True)
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+
+@pytest.mark.run(order=37)
+def test_three_zones_hydronic_reduced_orders_iso_13790_electric(schema: Path) -> None:
+    house = get_path("three_zones_hydronic_reduced_orders.yaml")
+    network = convert_network(
+        "three_zones_hydronic_reduced_orders_iso_13790_electric",
+        house,
+        library=Library.from_configuration("iso_13790"),
+    )
+    model_ = network.model(include_container=True)
+
+    data_bus = [n for n in list(network.graph.nodes) if isinstance(n, DataBus)][0]
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+@pytest.mark.run(order=38)
+def test_three_zones_hydronic_reduced_orders_pv(schema: Path) -> None:
+    house = get_path("three_zones_hydronic_reduced_orders_pv.yaml")
+    network = convert_network(
+        "three_zones_hydronic_reduced_orders_pv",
         house,
         library=Library.from_configuration("iso_13790"),
     )
