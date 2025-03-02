@@ -529,14 +529,14 @@ containers:
         );
       
       // Define Fluid Ports
-      Modelica.Fluid.Interfaces.FluidPorts_b[3] ports_b(
+      Modelica.Fluid.Interfaces.FluidPorts_b[{{ ports.ports_b | safe }}] ports_b(
         redeclare package Medium = Medium)
         annotation (
             Placement(transformation(extent={{-108,0},{-92,54}})),  
             iconTransformation(extent={{-108,0},{-92,54}})
         );
       
-      Modelica.Fluid.Interfaces.FluidPorts_a[3] ports_a(
+      Modelica.Fluid.Interfaces.FluidPorts_a[{{ ports.ports_a | safe }}] ports_a(
         redeclare package Medium = Medium)
         annotation (
             Placement(transformation(extent={{-110,-76},{-90,-6}})),  
