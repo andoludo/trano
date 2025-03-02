@@ -37,7 +37,10 @@ classes:
     slot_usage:
       parameters:
         range: WeatherParameters
-
+  Photovoltaic:
+    slots:
+      - id
+      - name
   Space:
     description: >-
       Represents a Space
@@ -230,7 +233,10 @@ classes:
       - temperature_sensor
       - air_handling_unit
     class_uri: schema:Systems
-
+  Solar:
+    slots:
+      - photovoltaic
+    class_uri: schema:Solar
   Emission:
     slots:
       - radiator
@@ -440,6 +446,11 @@ classes:
         multivalued: true
       weather:
         range: Weather
+      solar:
+        range: Solar
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
 
 
 
@@ -483,7 +494,10 @@ slots:
     range: TemperatureSensor
     multivalued: false
     inlined: true
-
+  photovoltaic:
+    range: Photovoltaic
+    multivalued: false
+    inlined: true
   split_valve:
     range: SplitValve
     multivalued: false

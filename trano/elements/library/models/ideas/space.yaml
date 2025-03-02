@@ -1,0 +1,117 @@
+- classes:
+  - Space
+  figures:
+  - left_axis:
+      label: Zone air temperature [K]
+      lines:
+      - color: blue
+        label: Air temperature [K]
+        template: |-
+          {{ element.name }}.TSensor
+      - color: black
+        label: Measured Air temperature [K]
+        line_width: 2.0
+        template: |-
+          data_bus.dataBus.T{{ element.name | capitalize}}
+    right_axis:
+      label: Occupancy schedule [-]
+      lines:
+      - label: Occupied zone [-]
+        line_style: dashed
+        template: '{{ element.occupancy.name }}.occSch2.occupied'
+  - left_axis:
+      label: Heat flow rate [W]
+      lines:
+      - color: red
+        label: Radiative heat flow rate [W]
+        template: |-
+          {{ element.name }}.heaPorRad.Q_flow
+      - color: blue
+        label: Convective heat flow rate [W]
+        template: |-
+          {{ element.name }}.heaPorAir.Q_flow
+      - color: yellow
+        label: Latent heat gain [W]
+        template: |-
+          {{ element.name }}.air.QLat_flow
+      - label: Convective heat gain [W]
+        template: |-
+          {{ element.name }}.air.QCon_flow
+  - left_axis:
+      label: Control signal [-]
+      lines:
+      - label: Control signal [-]
+        line_style: dashed
+        template: '{{ element.emissions[0].control.name  }}.y'
+    right_axis:
+      label: Zone controller input [K]
+      lines:
+      - color: blue
+        label: Zone controller setpoint [K]
+        template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_s'
+      - color: red
+        label: Zone controller measured [K]
+        template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_m'
+  library: ideas
+  parameter_processing:
+    function: modify_alias
+    parameter:
+      average_room_height: hZone
+      volume: V
+  ports:
+  - bus_connection: true
+    flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - propsBus
+    targets:
+    - BaseWall
+  - flow: undirected
+    medium: data
+    names:
+    - yOcc
+    targets:
+    - BaseOccupancy
+  - flow: convective
+    medium: heat
+    names:
+    - gainCon
+    targets:
+    - Emission
+  - flow: radiative
+    medium: heat
+    names:
+    - gainRad
+    targets:
+    - Emission
+  - flow: convective
+    medium: heat
+    multi_connection: true
+    names:
+    - gainCon
+    targets:
+    - VAVControl
+    - DataBus
+    use_counter: false
+  - flow: inlet_or_outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - ports
+    targets:
+    - Ventilation
+    - Control
+    - DataBus
+  template: |-
+    IDEAS.Buildings.Components.Zone {{ element.name }}(
+        mSenFac=0.822,
+            {%- if element.number_ventilation_ports != 0 -%}
+        nPorts = {{ element.number_ventilation_ports }},
+        {%- endif %}
+        {{ macros.render_parameters(parameters) | safe}},
+        n50=0.822*0.5*{{ element.name }}.n50toAch,
+        redeclare package Medium = Medium,
+        nSurf={{ element.number_merged_external_boundaries }},
+        T_start=293.15)
+  variant: default

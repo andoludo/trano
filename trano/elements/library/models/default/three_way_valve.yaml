@@ -1,0 +1,31 @@
+- classes:
+  - ThreeWayValve
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_1
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_2
+  - flow: inlet_or_outlet
+    medium: fluid
+    names:
+    - port_3
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - Control
+  template: "    {{library_name}}.Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear\n\
+    \             {{ element.name }}(\n    redeclare package Medium = MediumW,\n \
+    \     {{ macros.render_parameters(parameters) | safe}},\n\
+    \    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) \"Three-wayvalve\"\
+    \ "
+  variant: default

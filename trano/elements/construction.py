@@ -3,11 +3,13 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 from jinja2 import Environment, FileSystemLoader
 from networkx.classes.reportviews import NodeView
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, computed_field
+
+from trano.elements.common_base import BaseProperties
+from trano.elements.types import ContainerTypes
 
 if TYPE_CHECKING:
-
-    from trano.library.library import Library
+    from trano.elements.library.library import Library
 
 
 class Material(BaseModel):
@@ -54,10 +56,51 @@ class Layer(BaseModel):
     material: Material
     thickness: float
 
+    @computed_field  # type: ignore
+    @property
+    def thermal_resistance(self) -> float:
+        return self.thickness / self.material.thermal_conductivity
 
-class Construction(BaseModel):
-    name: str
+    @computed_field  # type: ignore
+    @property
+    def thermal_capacitance(self) -> float:
+        return (
+            self.thickness
+            * self.material.specific_heat_capacity
+            * self.material.density
+        )
+
+
+# TODO: Add units
+class BaseConstruction(BaseModel):
     layers: list[Layer]
+
+    @computed_field  # type: ignore
+    @property
+    def total_thermal_resistance(self) -> float:
+        return sum([layer.thermal_resistance for layer in self.layers])
+
+    @computed_field
+    def total_thermal_capacitance(self) -> float:
+        return sum([layer.thermal_capacitance for layer in self.layers])
+
+    @computed_field
+    def u_value(self) -> float:
+        if not self.total_thermal_resistance:
+            return 0.0
+        return 1.0 / self.total_thermal_resistance
+
+    @computed_field
+    def resistance_external(self) -> float:
+        return self.total_thermal_resistance / 2.0
+
+    @computed_field
+    def resistance_external_remaining(self) -> float:
+        return self.total_thermal_resistance / 2.0
+
+
+class Construction(BaseConstruction):
+    name: str
 
     def __hash__(self) -> int:
         return hash(self.name)
@@ -70,22 +113,22 @@ class Construction(BaseModel):
         return value
 
 
-class GlassLayer(BaseModel):
+class GlassLayer(Layer):
     thickness: float
     material: GlassMaterial
     layer_type: str = "glass"
 
 
-class GasLayer(BaseModel):
+class GasLayer(Layer):
     model_config = ConfigDict(use_enum_values=True)
     thickness: float
     material: Gas
     layer_type: str = "gas"
 
 
-class Glass(BaseModel):
+class Glass(BaseConstruction):
     name: str
-    layers: list[GlassLayer | GasLayer]
+    layers: List[GlassLayer | GasLayer]  # type: ignore
     u_value_frame: float
 
     def __hash__(self) -> int:
@@ -148,9 +191,8 @@ class BaseConstructionData(BaseModel):
         return model
 
 
-class MaterialProperties(BaseModel):
-    data: str
-    is_package: bool
+class MaterialProperties(BaseProperties):
+    container_type: ContainerTypes = "envelope"
 
 
 class BaseTemplateData(BaseModel):

@@ -163,12 +163,12 @@ EmissionControlParameters:
     temperature_heating_setpoint:
       alias: THeaSet
       description: None
-      ifabsent: float(24)
+      ifabsent: float(297)
       range: float
     temperature_heating_setback:
       alias: THeaSetBack
       description: None
-      ifabsent: float(16)
+      ifabsent: float(289)
       range: float
   classes:
   - EmissionControl

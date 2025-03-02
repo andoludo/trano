@@ -1,0 +1,25 @@
+- classes:
+  - InternalElement
+  figures: []
+  library: ideas
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: interchangeable_port
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  - flow: interchangeable_port
+    medium: data
+    names:
+    - propsBus_b
+    targets:
+    - Space
+  template: "\n    IDEAS.Buildings.Components.InternalWall {{ element.name }}\n  \
+    \  (redeclare parameter {{ package_name }}.\n    Data.Constructions.{{ element.construction.name\
+    \ }} constructionType,\n    redeclare package Medium = Medium,\n    A = {{ element.surface\
+    \ }}, inc = IDEAS.Types.Tilt.\n    {{ element.tilt.value | capitalize }}, azi\
+    \ =\n    {{ element.azimuth }}) \"Partition wall between the two\n    rooms\" "
+  variant: default

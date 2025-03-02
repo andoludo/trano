@@ -1,17 +1,20 @@
+import math
 from math import sqrt
 from typing import TYPE_CHECKING, Dict, List, Optional, Type, Union
 
-from pydantic import BaseModel, model_validator
+import numpy as np
+from pydantic import BaseModel, model_validator, computed_field, Field
 
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
-from trano.elements.types import Azimuth, Tilt
+from trano.elements.types import Azimuth, Tilt, ContainerTypes, TILT_MAPPING
 
 if TYPE_CHECKING:
     pass
 
 
 class BaseWall(BaseElement):
+    container_type: ContainerTypes = "envelope"
 
     # @computed_field  # type: ignore
     @property
@@ -174,13 +177,35 @@ class Window(BaseWindow): ...
 class WindowedWall(BaseSimpleWall): ...
 
 
+def parallel_resistance(resistances: list[float]) -> float:
+    return 1 / sum([1 / resistance for resistance in resistances])
+
+
 class WallParameters(BaseModel):
     number: int
     surfaces: list[float]
     azimuths: list[float]
+    u_values: list[float]
     layers: list[str]
     tilts: list[Tilt]
+    window_area_by_orientation: list[float]
     type: str
+    average_resistance_external: float = Field(default=0)
+    average_resistance_external_remaining: float = Field(default=0)
+    total_thermal_capacitance: float = Field(default=0)
+    total_thermal_resistance: float = Field(default=0)
+
+    def azimuths_to_radians(self) -> list[float]:
+        return [math.radians(azimuth) for azimuth in self.azimuths]
+
+    def tilts_to_radians(self) -> list[float]:
+        return [math.radians(TILT_MAPPING[tilt.value]) for tilt in self.tilts]
+
+    @computed_field
+    def average_u_value(self) -> float:
+        if not self.u_values:
+            return 0
+        return sum(self.u_values) / len(self.u_values)
 
     @classmethod
     def from_neighbors(
@@ -188,6 +213,7 @@ class WallParameters(BaseModel):
         neighbors: list["BaseElement"],
         wall: Type["BaseSimpleWall"],
         filter: Optional[list[str]] = None,
+        suffix_type: Optional[str] = None,
     ) -> "WallParameters":
         constructions = [
             neighbor
@@ -195,10 +221,12 @@ class WallParameters(BaseModel):
             if isinstance(neighbor, wall)
             if neighbor.name not in (filter or [])
         ]
+        window_area_by_orientation = []
         number = len(constructions)
         surfaces = [
             exterior_construction.surface for exterior_construction in constructions
         ]
+        total_surface = sum(surfaces)
         azimuths = [
             exterior_construction.azimuth for exterior_construction in constructions
         ]
@@ -206,8 +234,49 @@ class WallParameters(BaseModel):
             exterior_construction.construction.name
             for exterior_construction in constructions
         ]
+        u_values = [
+            exterior_construction.construction.u_value
+            for exterior_construction in constructions
+        ]
+        average_resistance_external = np.mean(
+            [  # type: ignore
+                exterior_construction.construction.resistance_external
+                for exterior_construction in constructions
+            ]
+        )
+        average_resistance_external_remaining = np.mean(
+            [  # type: ignore
+                exterior_construction.construction.resistance_external_remaining
+                for exterior_construction in constructions
+            ]
+        )
+        total_thermal_capacitance = total_surface * np.mean(
+            [  # type: ignore
+                exterior_construction.construction.total_thermal_capacitance
+                for exterior_construction in constructions
+            ]
+        )
+        total_thermal_resistance = total_surface * np.mean(
+            [
+                exterior_construction.construction.total_thermal_resistance
+                for exterior_construction in constructions
+            ]
+        )
+
         tilt = [exterior_construction.tilt for exterior_construction in constructions]
-        type = wall.__name__
+        type = wall.__name__ if not suffix_type else f"{wall.__name__}{suffix_type}"
+        if issubclass(wall, BaseWindow):
+            external_walls = [
+                neighbor for neighbor in neighbors if isinstance(neighbor, ExternalWall)
+            ]
+            azimuth_surface = {
+                construction.azimuth: construction.surface
+                for construction in constructions
+            }
+            window_area_by_orientation = [
+                (azimuth_surface.get(exterior_construction.azimuth, 0))
+                for exterior_construction in external_walls
+            ]
         return cls(
             number=number,
             surfaces=surfaces,
@@ -215,7 +284,41 @@ class WallParameters(BaseModel):
             layers=layers,
             tilts=tilt,
             type=type,
+            u_values=u_values,
+            window_area_by_orientation=window_area_by_orientation,
+            average_resistance_external=average_resistance_external,
+            average_resistance_external_remaining=average_resistance_external_remaining,
+            total_thermal_capacitance=total_thermal_capacitance,
+            total_thermal_resistance=total_thermal_resistance,
         )
+
+
+class VerticalWallParameters(WallParameters):
+    @classmethod
+    def from_neighbors_(
+        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+    ) -> "VerticalWallParameters":
+        neighbors = [n for n in neighbors if hasattr(n, "tilt") and n.tilt == Tilt.wall]
+        return cls.from_neighbors(neighbors, wall, suffix_type="VerticalOnly")  # type: ignore
+
+
+class RoofWallParameters(WallParameters):
+    @classmethod
+    def from_neighbors_(
+        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+    ) -> "RoofWallParameters":
+        neighbors = [
+            n for n in neighbors if hasattr(n, "tilt") and n.tilt == Tilt.ceiling
+        ]
+        return cls.from_neighbors(neighbors, wall, suffix_type="Roof")  # type: ignore
+
+
+class ExternalWallParameters(WallParameters):
+    @classmethod
+    def from_neighbors_(
+        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+    ) -> "RoofWallParameters":
+        return cls.from_neighbors(neighbors, wall, suffix_type="External")  # type: ignore
 
 
 class WindowedWallParameters(WallParameters):
@@ -238,6 +341,8 @@ class WindowedWallParameters(WallParameters):
         window_width = []
         window_height = []
         included_external_walls = []
+        u_values = []
+        window_area_by_orientation: List[float] = []
         for window in windows:
             wall = get_common_wall_properties(neighbors, window)
             surfaces.append(wall.surface)
@@ -248,17 +353,20 @@ class WindowedWallParameters(WallParameters):
             window_width.append(window.width)
             window_height.append(window.height)
             included_external_walls.append(wall.name)
+            u_values.append(wall.construction.u_value)
         return cls(
             number=len(windows),
             surfaces=surfaces,
             azimuths=azimuths,
             layers=layers,
+            u_values=u_values,
             tilts=tilts,
             type="WindowedWall",
             window_layers=window_layers,
             window_width=window_width,
             window_height=window_height,
             included_external_walls=included_external_walls,
+            window_area_by_orientation=window_area_by_orientation,
         )
 
 

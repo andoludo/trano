@@ -1,0 +1,141 @@
+- classes:
+  - DataBus
+  component_template:
+    bus:
+      real_outputs:
+      - component: TRoo
+        name: TZon
+        port: T
+        target:
+          main: element.spaces
+      - component: TRoo1
+        name: ppmCO2
+        port: ppm
+        target:
+          main: element.spaces
+    category: control
+    template: |
+      
+      model DataServer
+      replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
+      Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor[{{ element.spaces | length}}]
+      TRoo {% raw %}annotation (
+      Placement(transformation(origin={-544,-226},
+      extent = {{480, 216}, {500, 236}})));{% endraw %}
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ element.spaces | length}}]
+      port {% raw %}annotation (
+      Placement(transformation(extent={{-112,-10},{-92,10}}),
+      iconTransformation(extent = {{-110, -10}, {-90, 10}})));{% endraw %}
+      Buildings.Fluid.Sensors.PPM[{{ element.spaces | length}}] TRoo1(redeclare
+      package Medium = Medium){% raw %}annotation (
+      Placement(transformation(origin={-542,-268},
+      extent = {{480, 216}, {500, 236}})));{% endraw %}
+      Modelica.Fluid.Interfaces.FluidPort_a[{{ element.spaces | length}}]
+      port_a(redeclare package Medium
+      = Medium){% raw %}annotation (Placement(transformation(extent={{-116,-58},{-82,-26}}),
+      iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  {% endraw %}
+      {{bus_template}}
+      {% for input in element.non_connected_ports %}
+      {{ input.input_model | safe}}
+      {% endfor %}
+      {% if element.validation_data.data %}
+        Modelica.Blocks.Sources.CombiTimeTable combiTimeTable(
+          tableOnFile=false,
+          table=[{{ element.validation_data.data | safe }}])
+          {% raw %}annotation (Placement(transformation(extent={{-4,-34},{40,10}}))){% endraw %};
+      {% endif %}
+            {% raw %}
+      Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
+      Placement(transformation(extent={{74,-20},{110,20}}), iconTransformation(
+          extent={{74,-20},{110,20}})));
+      Buildings.Electrical.AC.OnePhase.Loads.Resistive loa(linearized=true, mode=
+        Buildings.Electrical.Types.Load.VariableZ_P_input)
+      annotation (Placement(transformation(extent={{-32,-72},{16,-26}})));
+      {% endraw %}
+      Modelica.Blocks.Math.Sum sum1(nin= {{ 1 + element.power_ports | length }})
+      {% raw %}
+      annotation (Placement(transformation(extent={{-72,-36},{-52,-16}})));
+        Modelica.Blocks.Sources.Constant const(k=0)
+      annotation (Placement(transformation(extent={{-84,32},{-64,52}})));
+      {% endraw %}
+      equation
+      {% if element.validation_data.data %}
+      {% for index, column in element.validation_data.columns |enumerate %}
+      connect(dataBus.{{ column }}, combiTimeTable.y[{{index + 1}}]);
+      {% endfor %}
+      {% endif %}
+      {% for index, space in element.spaces|enumerate %}
+      connect(port[{{index + 1}}],TRoo[{{index + 1}}]. port);
+      connect(port_a[{{index + 1}}], TRoo1[{{index + 1}}].port);
+      {% endfor %}
+      {{bus_ports | safe}}
+      {% for input in element.non_connected_ports %}
+      connect(dataBus.{{ input.name }}{{ input.target.value }},
+      {{ input.name }}{{input.target.evaluated_element | capitalize}}.y);
+      {% endfor %}
+      
+      {% raw %}
+      connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},
+      { -28,-51 } }, color={0,120,120}));
+      {% endraw %}
+      {% for input in element.power_ports %}
+      connect(dataBus.{{ input.input_name }}{{ input.target.value }}, sum1.u[{{ loop.index +1}}]) 
+      {% raw %}
+
+      annotation (Line(
+      points={{-100,2},{-48,2},{-48,-40},{-84,-40},{-84,-26},{-74,-26}},
+      color={255,204,51},
+      thickness=0.5), Text(
+      string="%first",
+      index=-1,
+      extent={{-6,3},{-6,3}},
+      horizontalAlignment=TextAlignment.Right));
+        {% endraw %}
+      {% endfor %}
+      {% raw %}
+              connect(const.y, sum1.u[1]) annotation (Line(points={{-63,42},{-58,42},{-58,14},
+          {-76,14},{-76,-20},{-74,-20},{-74,-26}}, color={0,0,127}));
+      connect(sum1.y, loa.Pow) annotation (Line(points={{-51,-26},{-38,-26},{-38,-76},
+          {24,-76},{24,-49},{16,-49}}, color={0,0,127}));
+      {% endraw %}
+      end DataServer;
+
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: convective
+    medium: heat
+    multi_connection: true
+    names:
+    - port
+    targets:
+    - Space
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    targets:
+    - Space
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - System
+    - Control
+    use_counter: false
+  - flow: undirected
+    medium: current
+    multi_connection: true
+    names:
+    - term_p
+    use_counter: false
+  template: |2-
+        {{package_name}}.Components.BaseClasses.DataServer
+            {{ element.name }} (redeclare package
+              Medium = Medium)
+  variant: default

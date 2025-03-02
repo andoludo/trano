@@ -1,0 +1,269 @@
+- classes:
+  - VAVControl
+  component_template:
+    bus:
+      boolean_inputs:
+      - component: rehBoxCon
+        name: u1Win
+        port: u1Win
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: u1Occ
+        port: u1Occ
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: uHeaOff
+        port: uHeaOff
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: u1Fan
+        port: u1Fan
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: u1HotPla
+        port: u1HotPla
+        target:
+          main: element.space_name
+      integer_inputs:
+      - component: rehBoxCon
+        default: 1
+        name: uOpeMod
+        port: uOpeMod
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: oveFloSet
+        port: oveFloSet
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: oveDamPos
+        port: oveDamPos
+        target:
+          main: element.space_name
+      integer_outputs:
+      - component: rehBoxCon
+        name: yZonTemResReq
+        port: yZonTemResReq
+        target:
+          main: |-
+            element.name
+      - component: rehBoxCon
+        name: yZonPreResReq
+        port: yZonPreResReq
+        target:
+          main: |-
+            element.name
+      - component: rehBoxCon
+        name: yHeaValResReq
+        port: yHeaValResReq
+        target:
+          main: |-
+            element.name
+      - component: rehBoxCon
+        name: yHotWatPlaReq
+        port: yHotWatPlaReq
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: yLowFloAla
+        port: yLowFloAla
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: yFloSenAla
+        port: yFloSenAla
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: yLeaDamAla
+        port: yLeaDamAla
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: yLeaValAla
+        port: yLeaValAla
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: yLowTemAla
+        port: yLowTemAla
+        target:
+          main: |-
+            element.controllable_element.name
+      real_inputs:
+      - component: rehBoxCon
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        default: 298.15
+        name: TCooSet
+        port: TCooSet
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        default: 293.15
+        name: THeaSet
+        port: THeaSet
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: ppmCO2Set
+        port: ppmCO2Set
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: ppmCO2
+        port: ppmCO2
+        target:
+          main: element.space_name
+      - component: rehBoxCon
+        name: TDis
+        port: TDis
+        target:
+          main: |-
+            element.name
+      - component: rehBoxCon
+        name: VDis_flow
+        port: VDis_flow
+        target:
+          main: |-
+            element.name
+      - component: rehBoxCon
+        name: TAirSup
+        port: TSup
+        target:
+          main: element.ahu.control.name
+      - component: rehBoxCon
+        default: 293.15
+        name: TSupSet
+        port: TSupSet
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: rehBoxCon
+        name: VSet_flow
+        port: VSet_flow
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: yDam
+        port: yDam
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: yVal
+        port: yVal
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: VAdjPopBreZon_flow
+        port: VAdjPopBreZon_flow
+        target:
+          main: |-
+            element.name
+      - component: rehBoxCon
+        name: VAdjAreBreZon_flow
+        port: VAdjAreBreZon_flow
+        target:
+          main: |-
+            element.name
+      - component: rehBoxCon
+        name: VMinOA_flow
+        port: VMinOA_flow
+        target:
+          main: |-
+            element.name
+      - component: rehBoxCon
+        name: VZonAbsMin_flow
+        port: VZonAbsMin_flow
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: VZonDesMin_flow
+        port: VZonDesMin_flow
+        target:
+          main: |-
+            element.controllable_element.name
+      - component: rehBoxCon
+        name: yCO2
+        port: yCO2
+        target:
+          main: |-
+            element.controllable_element.name
+      template: |-
+        Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(transformation(
+          extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
+    category: control
+    template: |-
+      model VAVControl{{ element.name | capitalize}}
+      Buildings.Controls.OBC.ASHRAE.G36.TerminalUnits.Reheat.Controller rehBoxCon(
+      venStd=Buildings.Controls.OBC.ASHRAE.G36.Types.VentilationStandard.ASHRAE62_1,
+      have_winSen=true,
+      have_occSen=true,
+      have_CO2Sen=true,
+      have_hotWatCoi=true,
+      VOccMin_flow=0.003,
+      VAreMin_flow=0.003,
+      VAreBreZon_flow=0.003,
+      VPopBreZon_flow=0.003,
+      VMin_flow=0.003,
+      VCooMax_flow=0.003,
+      VHeaMin_flow=0.003,
+      VHeaMax_flow=0.003)
+      {% raw %}annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); {% endraw %}
+      {{bus_template}}
+      equation
+      {{bus_ports | safe}}
+      end VAVControl{{ element.name  | capitalize}};
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - System
+    - DataBus
+    use_counter: false
+  template: |2-
+
+        {{package_name}}.Components.BaseClasses.VAVControl{{ element.name | capitalize}}
+        {{ element.name }}
+  variant: default
+- classes:
+  - VAVControl
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - y
+    targets:
+    - System
+    use_counter: false
+  template: |2-
+        Modelica.Blocks.Sources.RealExpression {{ element.name }}(y=1)
+  variant: constant

@@ -1,0 +1,24 @@
+- classes:
+  - Photovoltaic
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: current
+    multi_connection: true
+    names:
+    - terminal
+    use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - weaBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |
+    Buildings.Electrical.AC.OnePhase.Sources.PVSimpleOriented {{ element.name }}(A=123, til = 0.5235987755982988, azi = 1.5707963267948966)
+  variant: default

@@ -6,7 +6,13 @@ from jinja2 import Template
 from trano.plot.plot import plot_element, plot_plot_ly
 
 if TYPE_CHECKING:
-    from trano.elements import BaseElement, BaseSimpleWall, BaseWall, Space, System
+    from trano.elements import (
+        BaseElement,
+        BaseSimpleWall,
+        BaseWall,
+        Space,
+        System,
+    )
     from trano.reporting.reporting import ModelDocumentation
 
 

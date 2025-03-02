@@ -1,0 +1,117 @@
+- classes:
+  - Boiler
+  component_template:
+    bus:
+      real_inputs:
+      - component: Boiy
+        name: yBoiCon
+        port: u
+        target:
+          main: |-
+            element.name
+      - component: pumBoi
+        name: yPumBoi
+        port: y
+        target:
+          main: |-
+            element.name
+      real_outputs:
+      - component: tanTemTop
+        name: TStoTop
+        port: T
+        target:
+          main: |-
+            element.name
+      - component: tanTemBot
+        name: TStoBot
+        port: T
+        target:
+          main: |-
+            element.name
+    category: boiler
+    template: "\n    model BoilerWithStorage{{ element.name | capitalize}}\n    extends\
+      \ {{ package_name }}.Trano.Fluid.Boilers.PartialBoilerWithStorage;\n    {{bus_template}}\n\
+      \    equation\n    {{bus_ports | safe}}\n     end BoilerWithStorage{{ element.name\
+      \ | capitalize}};\n     "
+  figures:
+  - left_axis:
+      label: Gas consumption [m3]
+      lines:
+      - color: red
+        label: Measured gas consumption [m3]
+        template: data_bus.dataBus.e_gas
+      - color: blue
+        label: Computed gas consumption [m3]
+        template: |-
+          {{ element.name }}.gain2.y
+    right_axis:
+      label: Boiler control input [-]
+      lines:
+      - label: Boiler control input [-]
+        line_style: dashed
+        template: |-
+          {{ element.name }}.Boiy.y
+  library: default
+  parameter_processing:
+    function: exclude_parameters
+    parameter:
+    - dt_boi_nominal
+    - dt_rad_nominal
+    - sca_fac_rad
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - Control
+    - DataBus
+    use_counter: false
+  template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithStorage{{ element.name\
+    \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())\
+    \ \"Boiler\" "
+  variant: default
+- classes:
+  - Boiler
+  component_template:
+    bus:
+      real_outputs: []
+    category: boiler
+    template: "\n    model HeatPump{{ element.name | capitalize}}\n    extends\
+      \ {{ package_name }}.Trano.Fluid.Boilers.PartialHeatPump;\n    {{bus_template}}\n\
+      \    equation\n    {{bus_ports | safe}}\n     end HeatPump{{ element.name\
+      \ | capitalize}};\n     "
+
+  library: default
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+
+  template: "\n{{package_name}}.Components.BaseClasses.\nHeatPump{{ element.name\
+    \ | capitalize}} {{ element.name }}(\nredeclare package MediumW = MediumW)\
+    \ \"Boiler\" "
+  variant: heat_pump

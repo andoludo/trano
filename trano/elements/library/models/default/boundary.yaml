@@ -1,0 +1,25 @@
+- classes:
+  - Boundary
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - weaBus
+    targets:
+    - BaseWeather
+  - flow: inlet_or_outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - ports
+    targets:
+    - AirHandlingUnit
+    use_counter: false
+  template: |2-
+      Buildings.Fluid.Sources.Boundary_pT {{ element.name }}
+        (nPorts=2,redeclare package Medium = Medium)
+  variant: default

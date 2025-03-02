@@ -1,0 +1,114 @@
+- classes:
+  - DataBus
+  component_template:
+    bus:
+      real_outputs:
+      - component: TRoo
+        name: TZon
+        port: y
+        target:
+          main: element.spaces
+    category: control
+    template: |
+      model DataServerReducedOrder
+      replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
+      Modelica.Blocks.Interfaces.RealInput[{{ element.spaces | length }}] u
+      {% raw %}annotation (Placement(transformation(extent={{-142,20},{-102,60}})));{% endraw %}
+      Modelica.Blocks.Routing.RealPassThrough[{{ element.spaces | length }}] TRoo
+      {% raw %}annotation (Placement(transformation(extent={{-46,30},{-26,50}})));{% endraw %}
+      {{ bus_template }}
+      {% for input in element.non_connected_ports %}
+      {{ input.input_model | safe }}
+      {% endfor %}
+      {% if element.validation_data.data %}
+      Modelica.Blocks.Sources.CombiTimeTable combiTimeTable(
+      tableOnFile = False,
+      table = [{{ element.validation_data.data | safe }}]
+      ) {% raw %}annotation (
+      Placement(transformation(extent={{-4,-34},{40,10}}))
+      );{% endraw %}
+      {% endif %}
+      {% raw %}
+      Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
+      Placement(transformation(extent={{74,-20},{110,20}}), iconTransformation(
+          extent={{74,-20},{110,20}})));
+      Buildings.Electrical.AC.OnePhase.Loads.Resistive loa(linearized=true, mode=
+        Buildings.Electrical.Types.Load.VariableZ_P_input)
+      annotation (Placement(transformation(extent={{-32,-72},{16,-26}})));
+      {% endraw %}
+      Modelica.Blocks.Math.Sum sum1(nin= {{ element.power_ports | length }})
+      {% raw %}
+      annotation (Placement(transformation(extent={{-72,-36},{-52,-16}})));
+      {% endraw %}
+      equation
+
+      {% if element.validation_data.data %}
+      {% for index, column in element.validation_data.columns | enumerate %}
+      connect(dataBus.{{ column }}, combiTimeTable.y[{{ index + 1 }}]);
+      {% endfor %}
+      {% endif %}
+      {% for index, space in element.spaces | enumerate %}
+      connect(u[{{ index + 1 }}], TRoo[{{ index + 1 }}].u);
+      {% endfor %}
+      {{ bus_ports | safe }}
+      {% for input in element.non_connected_ports %}
+      connect(dataBus.{{ input.name }}{{ input.target.value }}, 
+          {{ input.name }}{{ input.target.evaluated_element | capitalize }}.y);
+      {% endfor %}
+      
+      
+      {% raw %}
+      connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},
+      { -28,-51 } }, color={0,120,120}));
+      {% endraw %}
+      {% for input in element.power_ports %}
+      connect(dataBus.{{ input.input_name }}{{ input.target.value }}, sum1.u[{{ loop.index }}]) 
+      {% raw %}
+      annotation (Line(
+      points={{-100,2},{-48,2},{-48,-40},{-84,-40},{-84,-26},{-74,-26}},
+      color={255,204,51},
+      thickness=0.5), Text(
+      string="%first",
+      index=-1,
+      extent={{-6,3},{-6,3}},
+      horizontalAlignment=TextAlignment.Right));
+        {% endraw %}
+      {% endfor %}
+      {% raw %}
+      connect(sum1.y, loa.Pow) annotation (Line(points={{-51,-26},{-38,-26},{-38,-76},
+          {24,-76},{24,-49},{16,-49}}, color={0,0,127}));
+      {% endraw %}
+      end DataServerReducedOrder;
+
+  figures: []
+  library: reduced_order
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: data
+    multi_connection: true
+    names:
+    - u
+    targets:
+    - Space
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - System
+    - Control
+    use_counter: false
+  - flow: undirected
+    medium: current
+    multi_connection: true
+    names:
+    - term_p
+    use_counter: false
+  template: |2-
+        {{package_name}}.Components.BaseClasses.DataServerReducedOrder
+            {{ element.name }} (redeclare package
+              Medium = Medium)
+  variant: default

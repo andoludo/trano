@@ -1,0 +1,65 @@
+- classes:
+  - Radiator
+  figures: []
+  library: default
+  parameter_processing:
+    function: exclude_parameters
+  ports:
+  - flow: convective
+    medium: heat
+    names:
+    - heatPortCon
+    targets:
+    - Space
+  - flow: radiative
+    medium: heat
+    names:
+    - heatPortRad
+    targets:
+    - Space
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_a
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_b
+  template: "    {{library_name}}.Fluid.HeatExchangers.Radiators.\n            RadiatorEN442_2\
+    \ {{ element.name }}(\n            {{ macros.render_parameters(parameters) | safe}},\n\
+    \    redeclare package Medium = MediumW,\n    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)\
+    \ \"Radiator\" "
+  variant: default
+- classes:
+  - Radiator
+  figures: []
+  library: default
+  parameter_processing:
+    function: modify_alias
+    parameter:
+      fraction_radiant_heat_transfer: frad
+      nominal_heating_power_positive_for_heating: power
+  ports:
+  - flow: radiative
+    medium: heat
+    names:
+    - heatPortRad
+    targets:
+    - Space
+  - flow: convective
+    medium: heat
+    names:
+    - heatPortCon
+    targets:
+    - Space
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - Control
+  template: |2-
+
+        {{package_name}}.Trano.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
+        {{ element.name }}
+  variant: ideal

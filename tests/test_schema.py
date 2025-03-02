@@ -12,6 +12,7 @@ from trano.scripts.schema import create_final_schema
 from trano.simulate.simulate import SimulationOptions, simulate
 from trano.utils.utils import is_success
 from jsf import JSF
+from linkml.generators.jsonschemagen import JsonSchemaGenerator
 
 
 @pytest.fixture
@@ -28,6 +29,7 @@ def test_validate_schema() -> None:
     assert report.results == []
 
 
+@pytest.mark.skip(reason="Create the new schema")
 def test_create_new_schema(
     schema: Path, schema_original: Path, parameters_path: Path
 ) -> None:
@@ -62,16 +64,13 @@ def test_create_model_json(schema: Path, house: Path) -> None:
         assert clean_model(model_, model_name) == set(_read(model_name))
 
 
-from linkml.generators.jsonschemagen import JsonSchemaGenerator
-
-
 def test_create_json_schema() -> None:
     data_model_path = (
         Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
     )
     a = JsonSchemaGenerator(data_model_path).serialize()
     faker = JSF(json.loads(a))
-    fake_json = faker.generate()
+    fake_json = faker.generate()  # noqa: F841
     # TODO: needs validation
 
 

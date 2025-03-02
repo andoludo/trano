@@ -1,0 +1,67 @@
+- classes:
+  - Space
+  library: iso_13790
+  parameter_processing:
+    function: modify_alias
+    parameter:
+      floor_area: AFlo
+      volume: VRoo
+  ports:
+  - flow: undirected
+    medium: weather_data
+    names:
+    - weaBus
+    targets:
+    - Weather
+  - flow: outlet
+    medium: data
+    names:
+    - TAir
+    targets:
+    - DataBus
+  - flow: undirected
+    medium: data
+    expected_ports: ['y']
+    names:
+    - intLatGai
+    targets:
+    - BaseOccupancy
+  - flow: convective
+    medium: heat
+    names:
+    - heaPorAir
+    targets:
+    - Emission
+  - flow: radiative
+    medium: heat
+    names:
+    - heaPorSur
+    targets:
+    - Emission
+  - flow: undirected
+    medium: data
+    expected_ports: ['y1']
+    names:
+    - intSenGai
+    targets:
+    - BaseOccupancy
+  template: |
+      AixLib.ThermalZones.ISO13790.Zone5R1C.ZoneHVAC {{ element.name }}(
+      redeclare package Medium = Medium,
+      {{ macros.render_parameters(parameters) | safe }},
+      AWal={{ macros.join_list(element.boundary_parameters.vertical_walls.area_per_orientation) }},
+      nOrientations={{ element.boundary_parameters.vertical_walls.number_orientations  }},
+      surAzi={{ macros.join_list(element.boundary_parameters.vertical_walls.azimuths) }},
+      surTil={{ macros.join_list(element.boundary_parameters.vertical_walls.tilts) }},
+      UWal = {{element.boundary_parameters.vertical_walls.average_u_value}},
+
+      AWin={{ macros.join_list(element.boundary_parameters.windows.area_per_orientation) }},
+      UWin={{ element.boundary_parameters.windows.average_u_value }},
+      UFlo={{ element.boundary_parameters.floors.average_u_value }},
+      airRat=0.5,
+      ARoo={{ element.boundary_parameters.roofs.area_per_orientation[0]  }},
+      URoo={{ element.boundary_parameters.roofs.average_u_value }},
+
+      redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Light buiMas,
+      gFac=0.5) "Thermal zone"
+  variant: default

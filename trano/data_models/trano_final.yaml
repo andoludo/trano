@@ -139,6 +139,11 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Material
+      solar:
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: Solar
       spaces:
         inlined: true
         inlined_as_list: true
@@ -445,6 +450,10 @@ classes:
     description: Represents Parameters
     slots:
     - name
+  Photovoltaic:
+    slots:
+    - id
+    - name
   Pump:
     attributes:
       control:
@@ -533,6 +542,10 @@ classes:
         description: None
         ifabsent: float(353.15)
         range: float
+  Solar:
+    class_uri: schema:Solar
+    slots:
+    - photovoltaic
   Space:
     class_uri: schema:Space
     description: Represents a Space
@@ -895,6 +908,10 @@ slots:
     multivalued: false
     range: Parameter
     slot_uri: schema:parameters
+  photovoltaic:
+    inlined: true
+    multivalued: false
+    range: Photovoltaic
   pump:
     inlined: true
     multivalued: false

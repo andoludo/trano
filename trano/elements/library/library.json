@@ -1,0 +1,57 @@
+{
+    "Buildings": {
+        "constants": "\npackage Medium = Buildings.Media.Air(extraPropertiesNames={\"CO2\"}) \"Medium model\";\npackage MediumW = Buildings.Media.Water \"Medium model\";\nparameter Integer nRoo = 2 \"Number of rooms\";\n  parameter Modelica.Units.SI.Volume VRoo=4*6*3 \"Volume of one room\";\n  parameter Modelica.Units.SI.Power Q_flow_nominal=2200\n    \"Nominal power of heating plant\";\n // Due to the night setback, in which the radiator do not provide heat input into the room,\n // we scale the design power of the radiator loop\n parameter Real scaFacRad = 1.5\n    \"Scaling factor to scale the power (and mass flow rate) of the radiator loop\";\n  parameter Modelica.Units.SI.Temperature TSup_nominal=273.15 + 50 + 5\n    \"Nominal supply temperature for radiators\";\n  parameter Modelica.Units.SI.Temperature TRet_nominal=273.15 + 40 + 5\n    \"Nominal return temperature for radiators\";\n  parameter Modelica.Units.SI.Temperature dTRad_nominal=TSup_nominal -\n      TRet_nominal \"Nominal temperature difference for radiator loop\";\n  parameter Modelica.Units.SI.Temperature dTBoi_nominal=20\n    \"Nominal temperature difference for boiler loop\";\n  parameter Modelica.Units.SI.MassFlowRate mRad_flow_nominal=scaFacRad*\n      Q_flow_nominal/dTRad_nominal/4200\n    \"Nominal mass flow rate of radiator loop\";\n  parameter Modelica.Units.SI.MassFlowRate mBoi_flow_nominal=scaFacRad*\n      Q_flow_nominal/dTBoi_nominal/4200 \"Nominal mass flow rate of boiler loop\";\n  parameter Modelica.Units.SI.PressureDifference dpPip_nominal=10000\n    \"Pressure difference of pipe (without valve)\";\n  parameter Modelica.Units.SI.PressureDifference dpVal_nominal=6000\n    \"Pressure difference of valve\";\n  parameter Modelica.Units.SI.PressureDifference dpRoo_nominal=6000\n    \"Pressure difference of flow leg that serves a room\";\n  parameter Modelica.Units.SI.PressureDifference dpThrWayVal_nominal=6000\n    \"Pressure difference of three-way valve\";\n  parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +\n      dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal\n    \"Pressure difference of loop\";\n",
+        "default": true,
+        "merged_external_boundaries": false,
+        "name": "Buildings",
+                "medium":{"air": "Buildings.Media.Air(extraPropertiesNames={\"CO2\"})", "water": "Buildings.Media.Water"},
+        "default_parameters": {
+            "occupancy": {
+                "occupancy": "3600*{9, 17}",
+                "gain": "[40; 75; 40]",
+                "heat_gain_if_occupied": "1/7/3"
+            }
+        },
+        "templates": {
+            "construction": "    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic\n        {{ construction.name }}(\n    final nLay={{ construction.layers|length }},\n    absIR_a=0.9,\n    absIR_b=0.9,\n    absSol_a=0.6,\n    absSol_b=0.6,\n    material={\n    {%- for layer in construction.layers -%}\n        Buildings.HeatTransfer.Data.Solids.Generic(\n        x={{ layer.thickness }},\n        k={{ layer.material.thermal_conductivity }},\n        c={{ layer.material.specific_heat_capacity }},\n        d={{ layer.material.density }}){{ \",\" if not loop.last }}\n    {%- endfor %}\n    },\n    roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)\n    annotation (Placement(transformation(extent={% raw %}{{20,84},{34,98}}{% endraw %})));",
+            "glazing": "    {% set glass_layers =    construction.layers |\n        selectattr('layer_type', 'eq', \"glass\") | list %}\n    {% set gas_layers =    construction.layers | selectattr('layer_type', 'eq', \"gas\") | list %}\n    parameter Buildings.HeatTransfer.Data.GlazingSystems.Generic {{ construction.name }}(\n    final glass={\n    {% for layer in glass_layers %}\n        Buildings.HeatTransfer.Data.Glasses.Generic(\n        x={{ layer.thickness }},\n        k={{ layer.material.thermal_conductivity }},\n        tauSol={{ macros.join_list(layer.material.solar_transmittance ) }},\n        rhoSol_a={{ macros.join_list(layer.material.solar_reflectance_outside_facing ) }},\n        rhoSol_b={{ macros.join_list(layer.material.solar_reflectance_room_facing ) }},\n        tauIR={{ layer.material.infrared_transmissivity }},\n        absIR_a={{ layer.material.infrared_absorptivity_outside_facing }},\n        absIR_b={{ layer.material.infrared_absorptivity_room_facing }})\n        {{ \",\" if not loop.last }}\n    {% endfor %}\n    },\n    {% if gas_layers | length > 0 %}\n    final gas={\n    {% for layer in gas_layers %}\n        {% if layer.layer_type == 'gas' %}\n            Buildings.HeatTransfer.Data.Gases.Air(x={{ layer.thickness }})\n            {{ \",\" if not loop.last }}\n        {% endif %}\n    {% endfor %}\n    },\n    {% endif %}\n    UFra={{ construction.u_value_frame }})\n    annotation (\n    defaultComponentPrefixes=\"parameter\",\n    defaultComponentName=\"datGlaSys\");",
+            "main": "\n{% for g in glazing %}\n    {{ g|safe }}\n{% endfor %}\n{%- for c in construction -%}\n    {{ c|safe}}\n{%- endfor %}\n",
+            "material": null
+        }
+    },
+    "IDEAS": {
+        "constants": "\nreplaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={\"CO2\"})\nconstrainedby Modelica.Media.Interfaces.PartialMedium\n\"Medium in the component\"\nannotation (choicesAllMatching = true);\npackage MediumW = IDEAS.Media.Water \"Medium model\";\n parameter Integer nRoo = 2 \"Number of rooms\";\n  parameter Modelica.Units.SI.Volume VRoo=4*6*3 \"Volume of one room\";\n  parameter Modelica.Units.SI.Power Q_flow_nominal=2200\n    \"Nominal power of heating plant\";\n // Due to the night setback, in which the radiator do not provide heat input into the room,\n // we scale the design power of the radiator loop\n parameter Real scaFacRad = 1.5\n    \"Scaling factor to scale the power (and mass flow rate) of the radiator loop\";\n  parameter Modelica.Units.SI.Temperature TSup_nominal=273.15 + 50 + 5\n    \"Nominal supply temperature for radiators\";\n  parameter Modelica.Units.SI.Temperature TRet_nominal=273.15 + 40 + 5\n    \"Nominal return temperature for radiators\";\n  parameter Modelica.Units.SI.Temperature dTRad_nominal=TSup_nominal -\n      TRet_nominal \"Nominal temperature difference for radiator loop\";\n  parameter Modelica.Units.SI.Temperature dTBoi_nominal=20\n    \"Nominal temperature difference for boiler loop\";\n  parameter Modelica.Units.SI.MassFlowRate mRad_flow_nominal=scaFacRad*\n      Q_flow_nominal/dTRad_nominal/4200\n    \"Nominal mass flow rate of radiator loop\";\n  parameter Modelica.Units.SI.MassFlowRate mBoi_flow_nominal=scaFacRad*\n      Q_flow_nominal/dTBoi_nominal/4200 \"Nominal mass flow rate of boiler loop\";\n  parameter Modelica.Units.SI.PressureDifference dpPip_nominal=10000\n    \"Pressure difference of pipe (without valve)\";\n  parameter Modelica.Units.SI.PressureDifference dpVal_nominal=6000\n    \"Pressure difference of valve\";\n  parameter Modelica.Units.SI.PressureDifference dpRoo_nominal=6000\n    \"Pressure difference of flow leg that serves a room\";\n  parameter Modelica.Units.SI.PressureDifference dpThrWayVal_nominal=6000\n    \"Pressure difference of three-way valve\";\n  parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +\n      dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal\n    \"Pressure difference of loop\";\n\n",
+        "merged_external_boundaries": true,
+        "medium":{"air": "IDEAS.Media.Air(extraPropertiesNames={\"CO2\"})", "water": "IDEAS.Media.Water"},
+        "name": "IDEAS",
+        "templates": {
+            "construction": "      record {{ construction.name }}\n    \"{{ construction.name }}\"\n   extends IDEAS.Buildings.Data.Interfaces.Construction(\n{#      incLastLay = IDEAS.Types.Tilt.Wall,#}\n      mats={\n        {%- for layer in construction.layers -%}\n        {{ package_name }}.Data.Materials.{{ layer.material.name }}\n        (d={{ layer.thickness }}){{ \",\" if not loop.last }}\n        {%- endfor %}\n    });\n    end {{ construction.name }};",
+            "glazing": "record  {{ construction.name }} = IDEAS.Buildings.Data.Interfaces.Glazing (\n          final nLay={{ construction.layers|length }},\n      final checkLowPerformanceGlazing=false,\n          mats={\n        {%- for layer in construction.layers -%}\n        {{ package_name }}.Data.Materials.{{ layer.material.name }}\n        (d={{ layer.thickness }}){{ \",\" if not loop.last }}\n        {%- endfor %}\n    },\n    final SwTrans=[0, 0.721;\n                    10, 0.720;\n                    20, 0.718;\n                    30, 0.711;\n                    40, 0.697;\n                    50, 0.665;\n                    60, 0.596;\n                    70, 0.454;\n                    80, 0.218;\n                    90, 0.000],\n      final SwAbs=[0, 0.082, 0, 0.062;\n                  10, 0.082, 0, 0.062;\n                  20, 0.084, 0, 0.063;\n                  30, 0.086, 0, 0.065;\n                  40, 0.090, 0, 0.067;\n                  50, 0.094, 0, 0.068;\n                  60, 0.101, 0, 0.067;\n                  70, 0.108, 0, 0.061;\n                  80, 0.112, 0, 0.045;\n                  90, 0.000, 0, 0.000],\n      final SwTransDif=0.619,\n      final SwAbsDif={0.093, 0,  0.063},\n      final U_value=2.9,\n      final g_value=0.78\n\n    ) \"{{ package_name }}\";",
+            "is_package": true,
+            "main": "package Data \"Data for transient thermal building simulation\"\nextends Modelica.Icons.MaterialPropertiesPackage;\n\npackage Glazing \"Library of building glazing systems\"\nextends Modelica.Icons.MaterialPropertiesPackage;\n{% for g in glazing %}\n    {{ g|safe }}\n{% endfor %}\nend Glazing;\n\npackage Materials \"Library of construction materials\"\nextends Modelica.Icons.MaterialPropertiesPackage;\n{%- for m in material -%}\n    {{ m|safe }}\n{%- endfor %}\nend Materials;\npackage Constructions \"Library of building envelope constructions\"\n{%- for c in construction -%}\n    {{ c|safe}}\n{%- endfor %}\n\nend Constructions;\nend Data;",
+            "material": "\n    record {{ construction.name }} = IDEAS.Buildings.Data.Interfaces.Material (\n k={{construction.thermal_conductivity}},\n      c={{construction.specific_heat_capacity}},\n      rho={{construction.density}},\n      epsLw=0.88,\n      epsSw=0.55);"
+        }
+    },
+        "iso_13790": {
+        "medium":{"air": "AixLib.Media.Air", "water": "AixLib.Media.Water"},
+        "name": "iso_13790",
+                    "core_library": "AixLib",
+        "templates": {
+            "construction": "",
+            "glazing": "",
+            "main": "",
+            "material": ""
+        }
+    },
+            "reduced_order": {
+        "medium":{"air": "AixLib.Media.Air", "water": "AixLib.Media.Water"},
+        "name": "reduced_order",
+        "core_library": "AixLib",
+        "templates": {
+            "construction": "",
+            "glazing": "",
+            "main": "",
+            "material": ""
+        }
+    }
+}

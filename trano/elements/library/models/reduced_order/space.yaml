@@ -1,0 +1,143 @@
+- classes:
+  - Space
+  library: reduced_order
+  parameter_processing:
+    function: modify_alias
+    parameter:
+      volume: "VAir"
+      floor_area: "AZone"
+  ports:
+  - flow: convective
+    medium: heat
+    names:
+    - intGainsConv
+    targets:
+    - Emission
+  - flow: radiative
+    medium: heat
+    names:
+    - intGainsRad
+    targets:
+    - Emission
+  - flow: undirected
+    medium: data
+    names:
+    - weaBus
+    targets:
+    - Weather
+  - flow: outlet
+    medium: data
+    names:
+    - TAir
+    targets:
+    - DataBus
+  - flow: undirected
+    medium: data
+    names:
+    - intGains
+    targets:
+    - BaseOccupancy
+  template: |
+    AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone {{ element.name }}(
+        use_moisture_balance=true,
+        ROM(extWallRC(thermCapExt(each der_T(fixed=true))), intWallRC(thermCapInt(
+                each der_T(fixed=true)))),
+        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+        redeclare package Medium = Medium,
+        internalGainsMode=1,
+        nPorts=2,  
+        zoneParam=AixLib.DataBase.ThermalZones.ZoneBaseRecord(
+      T_start=293.15,
+    {{ macros.render_parameters(parameters) | safe }},
+        hRad=5,
+        lat=0.87266462599716,
+        nOrientations={{ element.boundary_parameters.external_boundaries.number_orientations }},
+        AWin={{ macros.join_list(element.boundary_parameters.windows.area_per_orientation) }},
+        ATransparent={{ macros.join_list(element.boundary_parameters.windows.area_per_orientation) }},
+        RWin={{ element.boundary_parameters.windows.total_thermal_resistance}},
+        hConWin=2.7,
+        gWin=1,
+        UWin=2.1,
+        ratioWinConRad=0.09,
+    
+        AExt={{ macros.join_list(element.boundary_parameters.external_boundaries.area_per_orientation) }},
+        hConExt=2.7,
+        nExt=1,
+        RExt={{ macros.join_list([element.boundary_parameters.external_boundaries.average_resistance_external]) }},
+        RExtRem={{ element.boundary_parameters.external_boundaries.average_resistance_external_remaining }},
+        CExt={{ macros.join_list([element.boundary_parameters.external_boundaries.total_thermal_capacitance]) }},
+
+        AInt=0,
+        hConInt=2.27,
+        nInt=1,
+        RInt={1.13047235829e-05},
+        CInt={1402628013.98},
+
+        AFloor={{ element.boundary_parameters.floors.area_per_orientation[0] }},
+        hConFloor=2.7,
+        nFloor=1,
+        RFloor={{ macros.join_list([element.boundary_parameters.floors.average_resistance_external]) }},
+        RFloorRem={{ element.boundary_parameters.floors.average_resistance_external_remaining }},
+        CFloor={{ macros.join_list([element.boundary_parameters.floors.total_thermal_capacitance]) }},
+
+        ARoof={{ element.boundary_parameters.roofs.area_per_orientation[0] }},
+        hConRoof=2.7,
+        nRoof=1,
+        RRoof={{ macros.join_list([element.boundary_parameters.roofs.average_resistance_external]) }},
+        RRoofRem={{ element.boundary_parameters.roofs.average_resistance_external_remaining }},
+        CRoof={{ macros.join_list([element.boundary_parameters.roofs.total_thermal_capacitance]) }},
+        nOrientationsRoof=1,
+        tiltRoof={0},
+        aziRoof={0},
+        wfRoof={1},
+        aRoof=0.7,
+    
+        aExt=0.7,
+        TSoil=283.15,
+        hConWallOut=20.0,
+        hRadWall=5,
+        hConWinOut=20.0,
+        hConRoofOut=20,
+        hRadRoof=5,
+        tiltExtWalls={{ macros.join_list(element.boundary_parameters.external_boundaries.tilts)}},
+        aziExtWalls={{ macros.join_list(element.boundary_parameters.external_boundaries.azimuths) }},
+        wfWall={{ macros.join_list([0.2]*element.boundary_parameters.external_boundaries.number_orientations) }},
+        wfWin={{ macros.join_list([0.25]*element.boundary_parameters.external_boundaries.number_orientations) }},
+        wfGro=0.1,
+        specificPeople=1/14,
+        activityDegree=1.2,
+        fixedHeatFlowRatePersons=70,
+        ratioConvectiveHeatPeople=0.5,
+        internalGainsMoistureNoPeople=0.5,
+        internalGainsMachinesSpecific=7.0,
+        ratioConvectiveHeatMachines=0.6,
+        lightingPowerSpecific=12.5,
+        ratioConvectiveHeatLighting=0.6,
+        useConstantACHrate=false,
+        baseACH=0.2,
+        maxUserACH=1,
+        maxOverheatingACH={3.0,2.0},
+    maxSummerACH={1.0,273.15 + 10,273.15 + 17},
+    winterReduction={0.2,273.15,273.15 + 10},
+        withAHU=false,
+        minAHU=0,
+        maxAHU=12,
+        maxIrr = {{ macros.join_list([100]*element.boundary_parameters.external_boundaries.number_orientations) }},
+        shadingFactor = {{ macros.join_list([0.7]*element.boundary_parameters.external_boundaries.number_orientations) }},
+        hHeat=167500,
+        lHeat=0,
+        KRHeat=1000,
+        TNHeat=1,
+        HeaterOn=false,
+        hCool=0,
+        lCool=-1,
+        heaLoadFacOut=0,
+        heaLoadFacGrd=0,
+        KRCool=1000,
+        TNCool=1,
+        CoolerOn=false,
+    TThresholdHeater=273.15 + 15,
+    TThresholdCooler=273.15 + 22,
+        withIdealThresholds=false))
+
+  variant: default

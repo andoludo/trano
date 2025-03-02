@@ -19,6 +19,26 @@ thickness={{ edge.connection_view.thickness }},
 smooth=Smooth.None));
 {%- endmacro %}
 
+{%- macro connect_container(edge) -%}
+connect({{ edge.left.equation }},{{ edge.right.equation }})
+    {% if not edge.connection_view.disabled %}
+annotation (Line(
+points={{ connect_path(edge.container_path) }},
+    {% if edge.connection_view.color %}
+color={{ edge.connection_view.color }},
+    {% endif %}
+thickness={{ edge.connection_view.thickness }},pattern = LinePattern.{{ edge.connection_view.pattern }},
+smooth=Smooth.None))
+    {% endif %}
+    ;
+{%- endmacro %}
+
+{%- macro connect_main_container(connection) -%}
+connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ connection.right.container_type }}1.{{ connection.right.equation }})
+{{ connection.annotation }};
+{%- endmacro %}
+
+
 {%- macro render_parameters(parameters)  %}
 {% for key, value in parameters.items() %}
     {{ key | safe}}={{ value | safe}}{{ "," if not loop.last }}

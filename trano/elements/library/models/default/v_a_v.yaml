@@ -1,0 +1,94 @@
+- classes:
+  - VAV
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_a
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_b
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - Control
+  template: "  {{ library_name }}.Fluid.Actuators.Dampers.PressureIndependent\n  \
+    \  {{ element.name }}(\n    redeclare package Medium = Medium,\n    m_flow_nominal=100*1.2/3600,\n\
+    \    dpDamper_nominal=50,\n    allowFlowReversal=false,\n    dpFixed_nominal=50)\
+    \ \"VAV box for room\" "
+  variant: default
+- classes:
+  - VAV
+  component_template:
+    bus:
+      real_inputs:
+      - component: vav
+        name: yDam
+        port: y
+        target:
+          main: |-
+            element.name
+      real_outputs:
+      - component: vav
+        name: y_actual
+        port: y_actual
+        target:
+          main: |-
+            element.name
+      - component: senVolFlo
+        name: VDis_flow
+        port: V_flow
+        target:
+          main: element.control.name
+      - component: senTem
+        name: TDis
+        port: T
+        target:
+          main: element.control.name
+    category: ventilation
+    template: "\nmodel VAVBox{{ element.name | capitalize}}\nextends {{ package_name\
+      \ }}.Trano.Fluid.Ventilation.PartialVAVBox;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ | safe}}\n end VAVBox{{ element.name | capitalize}};\n "
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_aAir
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_bAir
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - Control
+    - DataBus
+    use_counter: false
+  template: |2-
+      {{ package_name }}.Components.BaseClasses.VAVBox{{ element.name | capitalize }}
+         {{ element.name }}(
+        redeclare package MediumA = Medium,
+        mCooAir_flow_nominal=100*1.2/3600,
+        mHeaAir_flow_nominal=100*1.2/3600,
+        VRoo=100,
+        allowFlowReversal=false,
+        THeaWatInl_nominal=90,
+        THeaWatOut_nominal=60,
+        THeaAirInl_nominal=30,
+        THeaAirDis_nominal=25
+        )
+  variant: complex

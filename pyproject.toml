@@ -2,17 +2,17 @@
 name = "trano"
 version = "0.1.43"
 description = ""
-authors = ["aan <andoludovic.andriamamonjy@gmail.com>"]
+authors = ["aan <anlura.an01@gmail.com>"]
 readme = "README.md"
-repository = "https://github.com/andoludo/trano"
-homepage = "https://andoludo.github.io/trano/"
+repository = "https://github.com/anluraan/trano"
+homepage = "https://anluraan.github.io/trano/"
 keywords = ["energy simulation", "modelica", "interoperability", "building energy simulation", "buildings", "ideas"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python",
     "Typing :: Typed",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -24,7 +24,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.10,<4.0"
 anytree = "^2.12.1"
 lxml = "^4.9.3"
 pydantic = "^2.8.0"
@@ -45,6 +45,8 @@ cruft = "^2.15.0"
 rdflib = "^7.0.0"
 pyyaml-include = "^2.1"
 typer = "^0.12.5"
+pydot = "^3.0.4"
+
 
 [tool.poetry.scripts]
 trano = "trano.main:app"
@@ -131,8 +133,6 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
-    "test_*",
-    "conftest.py"
 ]
 
 [tool.isort]
@@ -141,7 +141,7 @@ skip = ["models"]
 [tool.ruff.lint]
 select = ["E", "W", "F", "B006","RUF","UP","SIM","FURB","PIE","PERF","C4","B","PL","S","C901","N","ANN", "ERA001", "PD"]
 ignore = []
-extend-ignore = ["ANN101","ANN102"]
+extend-ignore = ["ANN101","ANN102","S101","PLR2004"]
 
 fixable = ["ALL"]
 unfixable = []

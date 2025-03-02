@@ -1,0 +1,548 @@
+containers:
+- layout:
+    global_origin:
+      x: -4
+      y: 0
+  left_boundary: emission
+  name: distribution
+  port_groups:
+  - connected_container_names:
+    - emission
+    ports:
+    - flow: outlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - port_a1
+    - flow: inlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - port_b1
+  - connected_container_names:
+    - production
+    ports:
+    - flow: outlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - port_a
+      use_counter: false
+    - flow: inlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - port_b
+      use_counter: false
+  - connected_container_names:
+    - bus
+    ports:
+    - flow: undirected
+      medium: data
+      multi_connection: true
+      names:
+      - dataBus
+      use_counter: false
+  template: |
+    extends Trano.BaseClasses.Containers.distribution;
+    parameter Real mRad_flow_nominal = 123;
+    package MediumW = {{ medium.water | safe }};
+    
+    replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
+    
+    // Define Fluid Ports
+    Modelica.Fluid.Interfaces.FluidPort_a port_a(
+        redeclare package Medium = MediumW)
+        annotation (
+    Placement(transformation(extent={{88,40},{108,60}}), iconTransformation(
+          extent={{88,40},{108,60}})),
+    iconTransformation(extent= {{90,-60},{110,-40}}));
+    
+    Modelica.Fluid.Interfaces.FluidPort_b port_b(
+        redeclare package Medium = MediumW)
+    annotation (
+    Placement(transformation(extent={{90,-60},{110,-40}}), iconTransformation(
+          extent={{90,-60},{110,-40}})),
+    iconTransformation(extent= {{90,40},{110,60}}));
+    
+    Modelica.Fluid.Interfaces.FluidPort_a[{{ ports.port_a1 | safe }}] port_a1(
+        redeclare package Medium = MediumW)
+        annotation (
+            Placement(transformation(extent={{-110,-58},{-90,-38}})),
+            iconTransformation(extent={{-110,-58},{-90,-38}})
+        );
+    
+    Modelica.Fluid.Interfaces.FluidPort_b[{{ ports.port_b1 | safe }}] port_b1(
+        redeclare package Medium = MediumW)
+        annotation (
+            Placement(transformation(extent={{-110,40},{-90,60}})),
+            iconTransformation(extent={{-110,38},{-90,58}})
+        );
+    
+    // Data Bus Connection
+    Trano.Controls.BaseClasses.DataBus dataBus 
+        annotation (
+            Placement(transformation(extent={{-118,68},{-78,108}})), 
+            iconTransformation(extent={{-228,58},{-208,78}})
+        );
+
+
+- layout:
+    global_origin:
+      x: -44
+      y: 0
+  left_boundary: envelope
+  name: emission
+  port_groups:
+  - connected_container_names:
+    - distribution
+    ports:
+    - flow: outlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - port_a
+    - flow: inlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - port_b
+  - connected_container_names:
+    - envelope
+    ports:
+    - flow: radiative
+      medium: heat
+      multi_connection: true
+      names:
+      - heatPortRad
+      same_counter_per_name: true
+    - flow: convective
+      medium: heat
+      multi_connection: true
+      names:
+      - heatPortCon
+      same_counter_per_name: true
+  - connected_container_names:
+    - bus
+    ports:
+    - flow: undirected
+      medium: data
+      multi_connection: true
+      names:
+      - dataBus
+      use_counter: false
+  template: |
+    // Define Medium
+    extends Trano.BaseClasses.Containers.emission ;
+    package MediumW = {{ medium.water | safe }};
+    // Define Fluid Ports
+    Modelica.Fluid.Interfaces.FluidPort_a[{{ ports.port_a | safe }}] port_a(
+      redeclare package Medium = MediumW)
+     annotation (Placement(transformation(extent={{90,44},{110,64}}), iconTransformation(
+          extent={{90,44},{110,64}})),iconTransformation(extent= {{90,-60},{110,-40}}));
+    Modelica.Fluid.Interfaces.FluidPort_b[{{ ports.port_b | safe }}] port_b(
+      redeclare package Medium = MediumW) annotation (Placement(transformation(extent={{90,-64},{110,-44}}), 
+    iconTransformation(extent={{90,-64},{110,-44}})),iconTransformation(extent= {{90,40},{110,60}}));
+    // Define Heat Transfer Ports
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ ports.heatPortCon | safe }}] heatPortCon
+      annotation (
+          Placement(transformation(extent={{-108,42},{-88,62}})),
+          iconTransformation(extent={{-108,42},{-88,62}})
+      );
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ ports.heatPortRad | safe }}] heatPortRad
+      annotation (
+          Placement(transformation(extent={{-110,-60},{-90,-40}})),
+          iconTransformation(extent={{-110,-60},{-90,-40}})
+      );
+    
+    // Define Data Bus
+    Trano.Controls.BaseClasses.DataBus dataBus 
+      annotation (
+          Placement(transformation(extent={{-118,68},{-78,108}})), 
+          iconTransformation(extent={{-228,58},{-208,78}})
+      );
+
+
+- layout:
+    global_origin:
+      x: -84
+      y: 0
+  name: envelope
+  port_groups_per_medium:
+  - medium: weather_data
+    port:
+      flow: undirected
+      medium: weather_data
+      multi_connection: true
+      names:
+      - dataBus
+      use_counter: false
+  port_groups:
+  - connected_container_names:
+    - emission
+    ports:
+    - flow: radiative
+      medium: heat
+      multi_connection: true
+      names:
+      - heatPortRad
+      same_counter_per_name: true
+    - flow: convective
+      medium: heat
+      multi_connection: true
+      names:
+      - heatPortCon
+      same_counter_per_name: true
+  - connected_container_names:
+    - bus
+    - ventilation
+    ports:
+    - flow: undirected
+      medium: data
+      multi_connection: true
+      names:
+      - dataBus
+      use_counter: false
+    - flow: inlet
+      medium: data
+      multi_connection: true
+      names:
+      - y
+      use_counter: true
+    - flow: inlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - ports_b
+    - flow: outlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - ports_a
+    - flow: convective
+      medium: heat
+      multi_connection: true
+      names:
+      - heatPortCon1
+      same_counter_per_name: true
+  template: |
+    // Define Medium Package
+    extends Trano.BaseClasses.Containers.envelope ;
+    replaceable package Medium = {{ medium.air | safe }}
+      constrainedby Modelica.Media.Interfaces.PartialMedium
+    
+      annotation (choicesAllMatching = true);
+    
+    // Define Heat Transfer Ports
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ ports.heatPortCon | safe }}] heatPortCon
+      annotation (
+          Placement(transformation(extent={{90,40},{110,60}})),
+          iconTransformation(extent={{90,40},{110,60}})
+      );
+    
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ ports.heatPortCon1 | safe }}] heatPortCon1
+      annotation (
+          Placement(transformation(extent={{90,40},{110,60}})),
+          iconTransformation(extent={{-4,98},{6,108}})
+      );
+    
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ ports.heatPortRad | safe }}] heatPortRad
+    
+      annotation (
+          Placement(transformation(extent={{90,-62},{110,-42}})),
+          iconTransformation(extent={{90,-62},{110,-42}})
+      );
+      Modelica.Blocks.Interfaces.RealOutput y[{{ ports.y | safe }}] annotation (Placement(transformation(
+          extent={{-100,-16},{-134,18}}), iconTransformation(extent={{-100,-16},{-134,18}})));
+    // Define Data Bus
+    Trano.Controls.BaseClasses.DataBus dataBus 
+      annotation (Placement(transformation(extent={{-20,80},{20,120}})),iconTransformation(extent= {{-228,58},{-208,78}}));
+    
+    // Define Fluid Ports
+    Modelica.Fluid.Interfaces.FluidPorts_b[{{ ports.ports_b | safe }}] ports_b(
+      redeclare package Medium = Medium)
+      annotation (Placement(transformation(extent={{-106,34},{-96,78}}), iconTransformation(
+          extent={{-106,34},{-96,78}})), iconTransformation(extent= {{-106,30},{-92,86}}));
+    
+    Modelica.Fluid.Interfaces.FluidPorts_a[{{ ports.ports_a | safe }}] ports_a(
+      redeclare package Medium = Medium)
+      annotation ( Placement(transformation(extent={{-104,-80},{-94,-34}}), iconTransformation(
+          extent={{-104,-80},{-94,-34}})),iconTransformation(extent= {{-108,-92},{-94,-40}}));
+    
+
+
+- layout:
+    global_origin:
+      x: 36
+      y: 0
+  left_boundary: distribution
+  name: production
+  port_groups:
+  - connected_container_names:
+    - distribution
+    ports:
+    - flow: outlet
+      ignore_direction: true
+      medium: fluid
+      names:
+      - port_a1
+    - flow: inlet
+      ignore_direction: true
+      medium: fluid
+      names:
+      - port_b1
+  - connected_container_names:
+    - bus
+    ports:
+    - flow: undirected
+      medium: data
+      multi_connection: true
+      names:
+      - dataBus
+      use_counter: false
+  template: |
+    extends Trano.BaseClasses.Containers.production;
+    // Define Parameter
+    parameter Real mRad_flow_nominal = 123;
+    
+    // Define Medium Package
+    package MediumW = {{ medium.water | safe }};
+    
+    // Define Fluid Ports
+    Modelica.Fluid.Interfaces.FluidPort_a port_a1(
+        redeclare package Medium = MediumW)
+        annotation (
+            Placement(transformation(extent={{-110,-58},{-90,-38}})),
+            iconTransformation(extent={{-110,-58},{-90,-38}})
+        );
+    
+    Modelica.Fluid.Interfaces.FluidPort_b port_b1(
+        redeclare package Medium = MediumW)
+        annotation (
+            Placement(transformation(extent={{-110,40},{-90,60}})),
+            iconTransformation(extent={{-110,38},{-90,58}})
+        );
+    
+    // Define Data Bus
+    Trano.Controls.BaseClasses.DataBus dataBus 
+        annotation (
+            Placement(transformation(extent={{-120,52},{-80,92}})),  
+            iconTransformation(extent={{-228,58},{-208,78}})
+        );
+    
+
+
+- layout:
+    global_origin:
+      x: -84
+      y: 30
+  name: bus
+  port_groups:
+  - connected_container_names:
+    - solar
+    ports:
+    - flow: undirected
+      medium: current
+      multi_connection: true
+      use_counter: false
+      names:
+      - term_p
+  - connected_container_names:
+    - envelope
+    ports:
+    - flow: outlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - port_b
+    - flow: convective
+      medium: heat
+      multi_connection: true
+      names:
+      - heatPortCon
+      same_counter_per_name: true
+    - flow: outlet
+      medium: data
+      multi_connection: true
+      names:
+      - u
+  port_groups_per_medium:
+  - medium: data
+    port:
+      flow: undirected
+      medium: data
+      multi_connection: true
+      names:
+      - dataBus
+      use_counter: false
+  - medium: current
+    port:
+      flow: undirected
+      medium: current
+      multi_connection: true
+
+      names:
+        - term_p
+      use_counter: false
+  template: |
+    extends Trano.BaseClasses.Containers.bus;
+    // Define Medium Package
+    package Medium = {{ medium.air | safe }};
+    
+    // Define Fluid Ports
+    {% if ports.port_b | int > 0  %}
+    Modelica.Fluid.Interfaces.FluidPort_b[{{ ports.port_b | safe }}] port_b(
+      redeclare package Medium = Medium)
+      annotation (
+          Placement(transformation(extent={{90,40},{110,60}})),
+          iconTransformation(extent={{90,40},{110,60}})
+      );
+    {% endif %}
+    
+    // Define Heat Transfer Ports
+    {% if ports.heatPortCon | int > 0  %}
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a[{{ ports.heatPortCon | safe }}] heatPortCon
+    
+      annotation (
+          Placement(transformation(extent={{-108,42},{-88,62}})),
+          iconTransformation(extent={{-108,42},{-88,62}})
+      );
+    {% endif %}
+    {% if ports.u | int> 0  %}
+    Modelica.Blocks.Interfaces.RealInput[{{ ports.u | safe }}] u
+      annotation (Placement(transformation(extent={{-138,-20},{-98,20}})));
+    {% endif %}
+    // Define Data Bus
+    Trano.Controls.BaseClasses.DataBus dataBus 
+      annotation (
+          Placement(transformation(extent={{-118,68},{-78,108}})), 
+          iconTransformation(extent={{-228,58},{-208,78}})
+      );
+      Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
+      Placement(transformation(extent={{66,-24},{114,24}}), iconTransformation(
+          extent={{66,-24},{114,24}})));
+    
+
+- layout:
+    global_origin:
+      x: -24
+      y: 32
+  name: solar
+  port_groups:
+  - connected_container_names:
+    - bus
+    ports:
+    - flow: undirected
+      medium: current
+      multi_connection: true
+      use_counter: false
+      names:
+      - term_p
+  port_groups_per_medium:
+  - medium: data
+    port:
+      flow: undirected
+      medium: data
+      multi_connection: true
+      names:
+      - dataBus
+      use_counter: false
+  - medium: current
+    port:
+      flow: undirected
+      medium: current
+      multi_connection: true
+
+      names:
+        - term_p
+      use_counter: false
+  prescribed_connection_equation: |
+    connect(solar1.term_p, bus1.term_p) annotation (Line(points={{-5,42},{2,42},{2,
+            28},{-58,28},{-58,40},{-65,40}}, color={0,120,120}));
+    connect(solar1.dataBus, bus1.dataBus) annotation (Line(
+        points={{-23.8,50.8},{-60,50.8},{-60,56},{-83.8,56},{-83.8,48.8}},
+        color={255,204,51},
+        thickness=0.5));
+  template: |
+    extends Trano.BaseClasses.Containers.solar;
+    // Define Data Bus
+    Trano.Controls.BaseClasses.DataBus dataBus 
+      annotation (
+          Placement(transformation(extent={{-118,68},{-78,108}})), 
+          iconTransformation(extent={{-228,58},{-208,78}})
+      );
+      Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
+      Placement(transformation(extent={{66,-24},{114,24}}), iconTransformation(
+          extent={{66,-24},{114,24}})));
+ 
+
+- layout:
+    global_origin:
+      x: -44
+      y: -30
+  name: ventilation
+  port_groups:
+  - connected_container_names:
+    - envelope
+    ports:
+    - flow: inlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - ports_b
+    - flow: outlet
+      ignore_direction: true
+      medium: fluid
+      multi_connection: true
+      names:
+      - ports_a
+  - connected_container_names:
+    - bus
+    ports:
+    - flow: undirected
+      medium: data
+      multi_connection: true
+      names:
+      - dataBus
+      use_counter: false
+  template: |
+      extends Trano.BaseClasses.Containers.ventilation;
+      // Define Medium Package
+      replaceable package Medium = {{ medium.air | safe }}
+        constrainedby Modelica.Media.Interfaces.PartialMedium
+        annotation (choicesAllMatching = true);
+      
+      // Define Data Bus
+      Trano.Controls.BaseClasses.DataBus dataBus 
+        annotation (
+            Placement(transformation(extent={{-120,52},{-80,92}})),  
+            iconTransformation(extent={{-228,58},{-208,78}})
+        );
+      
+      // Define Fluid Ports
+      Modelica.Fluid.Interfaces.FluidPorts_b[{{ ports.ports_b | safe }}] ports_b(
+        redeclare package Medium = Medium)
+        annotation (
+        Placement(transformation(extent={{-102,18},{-92,58}}), iconTransformation(
+                extent={{-102,18},{-92,58}})),
+        iconTransformation(extent= {{-108,0},{-92,54}}));
+      
+      Modelica.Fluid.Interfaces.FluidPorts_a[{{ ports.ports_a | safe }}] ports_a(
+        redeclare package Medium = Medium)
+        annotation (
+        Placement(transformation(extent={{-102,-74},{-92,-32}}), iconTransformation(
+                extent={{-102,-74},{-92,-32}})),
+        iconTransformation(extent= {{-110,-70},{-94,-22}}));
+      
+
+

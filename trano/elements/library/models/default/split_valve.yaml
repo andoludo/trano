@@ -1,0 +1,26 @@
+- classes:
+  - SplitValve
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_1
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_2
+  - flow: inlet_or_outlet
+    medium: fluid
+    names:
+    - port_3
+  template: "    {{library_name}}.Fluid.FixedResistances.Junction {{ element.name\
+    \ }} (\n    {{ macros.render_parameters(parameters) | safe}},\n    redeclare package\
+    \ Medium = MediumW,\n    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)\n\
+    \    \"Flow splitter\" "
+  variant: default

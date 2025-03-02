@@ -1,0 +1,147 @@
+- classes:
+  - AirHandlingUnit
+  component_template:
+    bus:
+      integer_outputs:
+      - component: fanSup
+        name: u1SupFan
+        port: y_actual
+        target:
+          main: |-
+            element.name
+      real_inputs:
+      - component: fanSup1
+        name: ySupFan
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: fanSup
+        name: ySupFan
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: damRet
+        name: yRetDam
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: damOut
+        name: yOutDam
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: damExh
+        name: yOutDam
+        port: y
+        target:
+          main: |-
+            element.name
+      real_outputs:
+      - component: TOut
+        name: TOut
+        port: T
+        target:
+          main: element.control.name
+      - component: VOut1
+        name: VAirOut_flow
+        port: V_flow
+        target:
+          main: element.control.name
+      - component: TSup
+        name: TAirSup
+        port: T
+        target:
+          main: element.control.name
+      - component: TMix
+        name: TAirMix
+        port: T
+        target:
+          main: element.control.name
+      - component: dpDisSupFan
+        name: dpDuc
+        port: p_rel
+        target:
+          main: element.control.name
+    category: ventilation
+    template: "\n    model Ahu{{ element.name | capitalize}}\n    extends {{ package_name\
+      \ }}.Trano.Fluid.Ventilation.PartialAhu;\n    {{bus_template}}\n    equation\n\
+      \    {{bus_ports | safe}}\n     end Ahu{{ element.name | capitalize}};\n   \
+      \  "
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    targets:
+    - System
+    - Space
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    targets:
+    - System
+    - Space
+    use_counter: false
+  - flow: inlet_or_outlet
+    medium: fluid
+    names:
+    - ports
+    targets:
+    - BaseBoundary
+  - flow: undirected
+    medium: data
+    names:
+    - dataBus
+    targets:
+    - AhuControl
+  template: |-
+    {{package_name}}.Components.BaseClasses.Ahu{{ element.name | capitalize}}
+        {{ element.name }}
+        (redeclare package MediumA = Medium,
+        {% raw %}
+        VRoo={100,100},
+        AFlo={20,20},
+        mCooVAV_flow_nominal={0.01,0.01}{% endraw %})
+  variant: default
+- classes:
+  - AirHandlingUnit
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    targets:
+    - System
+    - Space
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    targets:
+    - System
+    - Space
+    use_counter: false
+  template: |-
+    {{package_name}}.Trano.Fluid.
+        Ventilation.SimpleHVACBuildings
+        {{ element.name }}
+        (redeclare package Medium = Medium)
+  variant: test

@@ -1,0 +1,69 @@
+- classes:
+  - Pump
+  component_template:
+    bus:
+      real_inputs:
+      - component: pumRad
+        name: y
+        port: y
+        target:
+          main: |-
+            element.name
+      real_outputs:
+      - component: gain
+        name: y_gain
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: pumRad
+        name: power
+        port: P
+        power:
+          energy: "Electricity"
+        target:
+          main: |-
+            element.name
+      - component: temSup
+        name: T
+        port: T
+        target:
+          main: element.control.name
+    category: ventilation
+    template: "\nmodel Pump{{ element.name | capitalize}}\nextends {{ package_name\
+      \ }}.Trano.Fluid.Ventilation.PartialPump;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ | safe}}\n end Pump{{ element.name | capitalize}};\n "
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - Control
+    - DataBus
+    use_counter: false
+  template: |2-
+      {{ package_name }}.Components.BaseClasses.Pump{{ element.name | capitalize }}
+         {{ element.name }}(
+         {{ macros.render_parameters(parameters) | safe}},
+        redeclare package Medium = MediumW
+
+        )
+  variant: default

@@ -1,0 +1,55 @@
+default: !include_default
+spaces:
+  - occupancy:
+      parameters:
+        occupancy: 3600*{9, 17}
+        gain: "[40; 75; 40]"
+        heat_gain_if_occupied: 1/7/3
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    id: SPACE:001
+    external_boundaries:
+      external_walls:
+        - surface: 20
+          azimuth: 0
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 30
+          azimuth: 90
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 50
+          azimuth: 180.0
+          tilt: wall
+          construction: CAVITYWALL:001
+      floor_on_grounds:
+        - surface: 50.0
+          construction: CONCRETESLAB:001
+    ventilation_inlets:
+      - duct:
+          id: DUCT:001
+      - vav:
+          id: VAV:001
+          variant: complex
+          control:
+            vav_control:
+              id: VAV_CONTROL:001
+
+    ventilation_outlets:
+      - duct:
+          id: DUCT:002
+
+systems:
+  - air_handling_unit:
+      id: AHU:001
+      control:
+        ahu_control:
+          id: AHU_CONTROL:001
+      inlets:
+        - DUCT:002
+      outlets:
+        - DUCT:001
+
+
+#TODO: flow direction matters in defing the systems. Otherwise this will not work.

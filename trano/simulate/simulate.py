@@ -88,7 +88,7 @@ def container(
     container_name = "openmodelica"
     stop_container(client, container_name)
     container = client.containers.run(
-        "openmodelica/openmodelica:v1.22.4-ompython",
+        "openmodelica/openmodelica:v1.24.4-ompython",
         command="tail -f /dev/null",
         volumes=[
             f"{project_path}:/simulation",
