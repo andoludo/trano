@@ -34,3 +34,4 @@ Trano is **Modelica library agnostic** but is natively designed to work with:
 
 ---
 
+📖 **Full Documentation:** 👉 [Trano Docs](https://anluraan.github.io/trano/) 
