@@ -108,7 +108,17 @@ class ConstructionDocumentation(BaseDocumentation):
         cls, elements: List[BaseElement], content_documentation: ContentDocumentation
     ) -> "ConstructionDocumentation":
         constructions = [
-            c.model_dump(by_alias=True, exclude_none=True)
+            c.model_dump(
+                by_alias=True,
+                exclude_none=True,
+                exclude={
+                    "total_thermal_resistance",
+                    "total_thermal_capacitance",
+                    "u_value",
+                    "resistance_external",
+                    "resistance_external_remaining",
+                },
+            )
             for c in {
                 construction
                 for w in _get_elements(elements, BaseWall)

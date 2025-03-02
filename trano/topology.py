@@ -9,6 +9,7 @@ from jinja2 import Environment, FileSystemLoader
 from networkx import DiGraph
 
 from tests.constructions.constructions import Constructions
+
 from trano.elements import (
     BaseElement,
     Connection,
@@ -32,7 +33,22 @@ from trano.elements.types import Tilt
 from trano.elements.utils import generate_normalized_layout
 from trano.elements.library.library import Library
 
+
 logger = logging.getLogger(__name__)
+
+
+def all_subclasses(cls: Type[BaseElement]) -> List[Type[BaseElement]]:
+    return cls.__subclasses__() + [
+        g for s in cls.__subclasses__() for g in all_subclasses(s)
+    ]
+
+
+def reset_element_names() -> None:
+    from trano.data_models.conversion import COUNTER
+
+    COUNTER.clear()
+    for subclass in all_subclasses(BaseElement):
+        subclass.name_counter = 0
 
 
 class Network:  # : PLR0904, #TODO: fix this
@@ -43,6 +59,7 @@ class Network:  # : PLR0904, #TODO: fix this
         external_data: Optional[Path] = None,
         diagram_scale: Optional[int] = None,
     ) -> None:
+        reset_element_names()
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: List[Connection] = []
         self.name: str = name
@@ -332,7 +349,7 @@ class Network:  # : PLR0904, #TODO: fix this
             diagram_size=self.diagram_size,
             containers=container_model if include_container else [],
             main=self.containers.main if include_container else "",
-            include_container=include_container
+            include_container=include_container,
         )
 
     def add_boiler_plate_spaces(

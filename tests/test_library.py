@@ -547,10 +547,12 @@ def test_reduced_order_single_zone(simple_space_template: Space) -> None:
     } == {
         ("occupancy_0.y", "space_1.intGains"),
         ("space_1.TAir", "y[1]"),
-        ("space_1.weaBus", "weather_1.weaBus"),
+        ("space_1.weaBus", "weather_0.weaBus"),
     }
     assert {
         c.equation_view() for c in network.containers.get_container("bus").connections
-    } == {('dataBus', 'data_bus.dataBus'),
- ('data_bus.term_p', 'term_p'),
- ('data_bus.u[1]', 'u[1]')}
+    } == {
+        ("dataBus", "data_bus.dataBus"),
+        ("data_bus.term_p", "term_p"),
+        ("data_bus.u[1]", "u[1]"),
+    }

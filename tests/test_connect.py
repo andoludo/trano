@@ -99,11 +99,13 @@ def test_connect_space_merged_external_wall(house_ideas: Network) -> None:
     edge = house_ideas.get_edge(Space, MergedExternalWall)
     e1 = ElementPort.from_element_without_ports(edge[0])
     e2 = ElementPort.from_element_without_ports(edge[1])
+    e1.reset_port_counters()
+    e2.reset_port_counters()
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {
         (
-            "merged_externalwall_17_externalwall_18_externalwall_19[1:3].propsBus_a",
+            "merged_externalwall_0_externalwall_1_externalwall_2[1:3].propsBus_a",
             "space_001.propsBus[1:3]",
         )
     }
@@ -117,7 +119,7 @@ def test_connect_space_merged_windows(house_ideas: Network) -> None:
     connections = connect(e1, e2)
     assert len(connections) == 1
     assert {c.equation_view() for c in connections} == {
-        ("merged_window_7_window_8[1:2].propsBus_a", "space_001.propsBus[1:2]")
+        ("merged_window_0_window_1[1:2].propsBus_a", "space_001.propsBus[1:2]")
     }
 
 
@@ -132,7 +134,7 @@ def test_connect_space_floor_on_ground(house_ideas: Network) -> None:
         connections = connect(*edge)
         assert len(connections) == 1
         assert {c.equation_view() for c in connections} == {
-            ("flooronground_8.propsBus_a", "space_001.propsBus[1]")
+            ("flooronground_0.propsBus_a", "space_001.propsBus[1]")
         }
 
 

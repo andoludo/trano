@@ -36,6 +36,10 @@ class BaseElementPort(BaseElementPosition):
     def available_ports(self) -> List[Port]:
         return [port for port in self.ports if not port.connected]
 
+    def reset_port_counters(self) -> None:
+        for port in self.ports:
+            port.reset_counter()
+
 
 def default_environment() -> Environment:
     environment = Environment(

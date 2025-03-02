@@ -12,7 +12,6 @@ if TYPE_CHECKING:
         BaseWall,
         Space,
         System,
-        BaseParameter,
     )
     from trano.reporting.reporting import ModelDocumentation
 
@@ -280,6 +279,8 @@ def get_figures(element_name: str, documentation: "ModelDocumentation") -> list:
 
 
 def get_description() -> Dict[str, Any]:
+    from trano.elements import BaseParameter
+
     return {
         field.alias: (field.description or field.title)
         for cls in BaseParameter.__subclasses__()

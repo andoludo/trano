@@ -29,6 +29,9 @@ package Components
     {% endif %}
   end BaseClasses;
 end Components;
+{% if data.is_package %}
+{{ data.data|safe }}
+{% endif %}
 {% if include_container %}
 {% raw %}
 model building
@@ -44,11 +47,9 @@ equation
 end building;
 {% endraw %}
 {% else %}
-{% if data.is_package %}
-{{ data.data|safe }}
+
 model building
-{% else %}
-model building
+{% if not data.is_package %}
 {{ data.data|safe }}
 {% endif %}
 

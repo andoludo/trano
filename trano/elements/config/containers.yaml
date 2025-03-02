@@ -516,6 +516,7 @@ containers:
       - dataBus
       use_counter: false
   template: |
+      extends Trano.BaseClasses.Containers.ventilation;
       // Define Medium Package
       replaceable package Medium = {{ medium.air | safe }}
         constrainedby Modelica.Media.Interfaces.PartialMedium
@@ -532,16 +533,16 @@ containers:
       Modelica.Fluid.Interfaces.FluidPorts_b[{{ ports.ports_b | safe }}] ports_b(
         redeclare package Medium = Medium)
         annotation (
-            Placement(transformation(extent={{-108,0},{-92,54}})),  
-            iconTransformation(extent={{-108,0},{-92,54}})
-        );
+        Placement(transformation(extent={{-102,18},{-92,58}}), iconTransformation(
+                extent={{-102,18},{-92,58}})),
+        iconTransformation(extent= {{-108,0},{-92,54}}));
       
       Modelica.Fluid.Interfaces.FluidPorts_a[{{ ports.ports_a | safe }}] ports_a(
         redeclare package Medium = Medium)
         annotation (
-            Placement(transformation(extent={{-110,-76},{-90,-6}})),  
-            iconTransformation(extent={{-110,-70},{-94,-22}})
-        );
+        Placement(transformation(extent={{-102,-74},{-92,-32}}), iconTransformation(
+                extent={{-102,-74},{-92,-32}})),
+        iconTransformation(extent= {{-110,-70},{-94,-22}}));
       
 
 

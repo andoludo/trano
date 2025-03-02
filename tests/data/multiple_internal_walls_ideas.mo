@@ -267,8 +267,8 @@ constructed by the signals connected to this bus.
                 index=1,
                 extent={{-6,3},{-6,3}},
                 horizontalAlignment=TextAlignment.Right));
-            connect(mulAHUCon.y1SupFan, dataBus.y1SupFan) annotation (Line(points
-                  ={{30,30},{38,30},{38,-22},{-76,-22},{-76,0},{-100,0}}, color={
+            connect(mulAHUCon.y1SupFan, dataBus.y1SupFan) annotation (Line(points=
+                   {{30,30},{38,30},{38,-22},{-76,-22},{-76,0},{-100,0}}, color={
                     255,0,255}), Text(
                 string="%second",
                 index=1,
@@ -1071,7 +1071,7 @@ constructed by the signals connected to this bus.
         constant Real conv=1.2/3600
           "Conversion factor for nominal mass flow rate";
 
-        parameter Modelica.Units.SI.HeatFlowRate QHeaAHU_flow_nominal(min=0) =
+        parameter Modelica.Units.SI.HeatFlowRate QHeaAHU_flow_nominal(min=0)=
           mHeaAir_flow_nominal*Buildings.Utilities.Psychrometrics.Constants.cpAir
           *(THeaAirSup_nominal - THeaAirMix_nominal)
     "Nominal heating heat flow rate of air handler unit coil";
@@ -1153,28 +1153,28 @@ constructed by the signals connected to this bus.
     "Building static pressure";
         parameter Real yFanMin=0.1 "Minimum fan speed";
 
-        parameter Modelica.Units.SI.Temperature TCooAirMix_nominal(displayUnit="degC")
-           = 303.15
+        parameter Modelica.Units.SI.Temperature TCooAirMix_nominal(displayUnit="degC")=
+             303.15
     "Mixed air temperature during cooling nominal conditions (used to size cooling coil)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-        parameter Modelica.Units.SI.Temperature TCooAirSup_nominal(displayUnit="degC")
-           = 285.15
+        parameter Modelica.Units.SI.Temperature TCooAirSup_nominal(displayUnit="degC")=
+             285.15
     "Supply air temperature during cooling nominal conditions (used to size cooling coil)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
         parameter Modelica.Units.SI.MassFraction wCooAirMix_nominal=0.017
     "Humidity ratio of mixed air at a nominal conditions used to size cooling coil (in kg/kg dry total)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-        parameter Modelica.Units.SI.Temperature TCooWatInl_nominal(displayUnit="degC")
-           = 279.15
+        parameter Modelica.Units.SI.Temperature TCooWatInl_nominal(displayUnit="degC")=
+             279.15
     "Cooling coil nominal inlet water temperature"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
 
-        parameter Modelica.Units.SI.Temperature THeaAirMix_nominal(displayUnit="degC")
-           = 277.15
+        parameter Modelica.Units.SI.Temperature THeaAirMix_nominal(displayUnit="degC")=
+             277.15
     "Mixed air temperature during heating nominal conditions (used to size heating coil)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-        parameter Modelica.Units.SI.Temperature THeaAirSup_nominal(displayUnit="degC")
-           = 285.15
+        parameter Modelica.Units.SI.Temperature THeaAirSup_nominal(displayUnit="degC")=
+             285.15
     "Supply air temperature during heating nominal conditions (used to size heating coil)"
     annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
         parameter Modelica.Units.SI.Temperature THeaWatInl_nominal(displayUnit="degC")
@@ -1598,7 +1598,7 @@ constructed by the signals connected to this bus.
         constant Real conv=1.2/3600
           "Conversion factor for nominal mass flow rate";
 
-        parameter Modelica.Units.SI.HeatFlowRate QHeaAHU_flow_nominal(min=0) =
+        parameter Modelica.Units.SI.HeatFlowRate QHeaAHU_flow_nominal(min=0)=
           mHeaAir_flow_nominal*Buildings.Utilities.Psychrometrics.Constants.cpAir
           *                                                                 (
           THeaAirSup_nominal - THeaAirMix_nominal)
@@ -1676,27 +1676,27 @@ constructed by the signals connected to this bus.
           "Building static pressure";
         parameter Real yFanMin=0.1 "Minimum fan speed";
 
-        parameter Modelica.Units.SI.Temperature TCooAirMix_nominal(displayUnit="degC")
-           = 303.15
+        parameter Modelica.Units.SI.Temperature TCooAirMix_nominal(displayUnit="degC")=
+             303.15
           "Mixed air temperature during cooling nominal conditions (used to size cooling coil)"
           annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-        parameter Modelica.Units.SI.Temperature TCooAirSup_nominal(displayUnit="degC")
-           = 285.15
+        parameter Modelica.Units.SI.Temperature TCooAirSup_nominal(displayUnit="degC")=
+             285.15
           "Supply air temperature during cooling nominal conditions (used to size cooling coil)"
           annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
         parameter Modelica.Units.SI.MassFraction wCooAirMix_nominal=0.017
           "Humidity ratio of mixed air at a nominal conditions used to size cooling coil (in kg/kg dry total)"
           annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-        parameter Modelica.Units.SI.Temperature TCooWatInl_nominal(displayUnit="degC")
-           = 279.15 "Cooling coil nominal inlet water temperature" annotation (
+        parameter Modelica.Units.SI.Temperature TCooWatInl_nominal(displayUnit="degC")=
+             279.15 "Cooling coil nominal inlet water temperature" annotation (
             Dialog(group="Air handler unit nominal temperatures and humidity"));
 
-        parameter Modelica.Units.SI.Temperature THeaAirMix_nominal(displayUnit="degC")
-           = 277.15
+        parameter Modelica.Units.SI.Temperature THeaAirMix_nominal(displayUnit="degC")=
+             277.15
           "Mixed air temperature during heating nominal conditions (used to size heating coil)"
           annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
-        parameter Modelica.Units.SI.Temperature THeaAirSup_nominal(displayUnit="degC")
-           = 285.15
+        parameter Modelica.Units.SI.Temperature THeaAirSup_nominal(displayUnit="degC")=
+             285.15
           "Supply air temperature during heating nominal conditions (used to size heating coil)"
           annotation (Dialog(group="Air handler unit nominal temperatures and humidity"));
         parameter Modelica.Units.SI.Temperature THeaWatInl_nominal(displayUnit="degC")
@@ -2466,6 +2466,40 @@ constructed by the signals connected to this bus.
                 fillPattern=FillPattern.Solid,
                 pattern=LinePattern.None)}));
       end solar;
+
+      model ventilation
+        annotation (
+      Icon(
+        coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}),
+          graphics={Rectangle(
+            extent={{-102,100},{100,-100}},
+            lineColor={215,215,215},
+            fillColor={215,215,215},
+            fillPattern=FillPattern.Forward),
+              Line(points={{-4,56},{-10,60},{-52,0}}, color={215,215,215}),
+              Ellipse(
+                extent={{-62,66},{68,-66}},
+                lineColor={28,108,200},
+                fillColor={244,125,35},
+                fillPattern=FillPattern.Solid),
+              Ellipse(
+                extent={{-50,54},{56,-54}},
+                lineColor={28,108,200},
+                fillColor={215,215,215},
+                fillPattern=FillPattern.Solid),
+              Polygon(
+                points={{38,34},{2,12},{4,-16},{-32,-36},{38,34}},
+                lineColor={28,108,200},
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward),
+              Polygon(
+                points={{35,35},{-1,13},{1,-15},{-35,-35},{35,35}},
+                lineColor={28,108,200},
+                fillColor={0,0,0},
+                fillPattern=FillPattern.Forward,
+                origin={3,-1},
+                rotation=-90)}));
+      end ventilation;
     end Containers;
   end BaseClasses;
   annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0"),
@@ -2492,10 +2526,10 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record insulation_board = I
       c=1200.0,
       rho=40.0,
       epsLw=0.88,
-      epsSw=0.55);    record wood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.131,
-      c=1000.0,
-      rho=600.0,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.12,
@@ -2507,30 +2541,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record insulation_board = I
       c=840.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
+      epsSw=0.55);    record wood = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.131,
+      c=1000.0,
+      rho=600.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record external_wall
+package Constructions "Library of building envelope constructions"      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={multiple_internal_walls_ideas.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;      record Door
+    "Door"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={multiple_internal_walls_ideas.Data.Materials.wood
+        (d=0.04)    });
+    end Door;      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={multiple_internal_walls_ideas.Data.Materials.concrete
         (d=0.2),multiple_internal_walls_ideas.Data.Materials.insulation_board
         (d=0.02),multiple_internal_walls_ideas.Data.Materials.plywood
         (d=0.1)    });
-    end external_wall;      record Door
-    "Door"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={multiple_internal_walls_ideas.Data.Materials.wood
-        (d=0.04)    });
-    end Door;      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={multiple_internal_walls_ideas.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;
+    end external_wall;
 end Constructions;
 end Data;
 
@@ -2584,7 +2618,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     redeclare package Medium = Medium,
     nSurf=3,
     T_start=293.15) annotation (
-    Placement(transformation(origin = { 50.172809262612134, -0.07600188977670541 },
+    Placement(transformation(origin = { 50.172981826368755, -0.0744047619047592 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -2596,7 +2630,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     final azi={ 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 99.94651247997561, 87.51514902532713 },
+    Placement(transformation(origin = { 99.94618143851633, 87.5165343915344 },
     extent = {{10, -10}, {-10, 10}}
 )));
         multiple_internal_walls_ideas.Components.BaseClasses.OccupancyOccupancy_0
@@ -2604,7 +2638,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     k=1/6/4,
     occupancy=3600*{7, 19}
 ) annotation (
-    Placement(transformation(origin = { 100.0, -87.52747365610172 },
+    Placement(transformation(origin = { 100.0, -87.5276951058201 },
     extent = {{10, -10}, {-10, 10}}
 )));
     IDEAS.Buildings.Components.Zone space_2(
@@ -2615,7 +2649,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     redeclare package Medium = Medium,
     nSurf=3,
     T_start=293.15) annotation (
-    Placement(transformation(origin = { -50.12342245245628, -0.014378735903690654 },
+    Placement(transformation(origin = { -50.123289354598846, -0.0165343915343783 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -2627,7 +2661,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     final azi={ 90 },
     redeclare package Medium = Medium,
     final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { -100.0, -87.44777437709261 },
+    Placement(transformation(origin = { -100.0, -87.44791666666667 },
     extent = {{10, -10}, {-10, 10}}
 )));
         multiple_internal_walls_ideas.Components.BaseClasses.OccupancyOccupancy_1
@@ -2635,7 +2669,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     k=1/6/4,
     occupancy=3600*{7, 19}
 ) annotation (
-    Placement(transformation(origin = { -99.88856766661586, 87.50282439455253 },
+    Placement(transformation(origin = { -99.88859557772881, 87.50000000000003 },
     extent = {{10, -10}, {-10, 10}}
 )));
             inner IDEAS.BoundaryConditions.SimInfoManager
@@ -2643,7 +2677,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
   IDEAS.BoundaryConditions.Types.
   InterZonalAirFlow.OnePort) "Data reader"
 annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotation (
-    Placement(transformation(origin = { -0.00918202427085646, -100.0 },
+    Placement(transformation(origin = { -0.009238853054711171, -100.0 },
     extent = {{10, -10}, {-10, 10}}
 )));
         IDEAS.Buildings.Components.InternalWall internal_space_1_space_2_1
@@ -2671,7 +2705,7 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
 equation        
         connect(space_1.propsBus[1],merged_bw[1].propsBus_a)
         annotation (Line(
-        points={{ 50.172809262612134, -0.07600188977670541 }    ,{ 75.05966087129387, -0.07600188977670541 }    ,{ 75.05966087129387, 87.51514902532713 }    ,{ 99.94651247997561, 87.51514902532713 }    },
+        points={{ 50.172981826368755, -0.0744047619047592 }    ,{ 75.05958163244254, -0.0744047619047592 }    ,{ 75.05958163244254, 87.5165343915344 }    ,{ 99.94618143851633, 87.5165343915344 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -2679,7 +2713,7 @@ equation
             ;        
         connect(space_1.yOcc,occupancy_0.y)
         annotation (Line(
-        points={{ 50.172809262612134, -0.07600188977670541 }    ,{ 75.08640463130607, -0.07600188977670541 }    ,{ 75.08640463130607, -87.52747365610172 }    ,{ 100.0, -87.52747365610172 }    },
+        points={{ 50.172981826368755, -0.0744047619047592 }    ,{ 75.08649091318438, -0.0744047619047592 }    ,{ 75.08649091318438, -87.5276951058201 }    ,{ 100.0, -87.5276951058201 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -2687,7 +2721,7 @@ equation
             ;        
         connect(space_1.propsBus[2],internal_space_1_space_2_1.propsBus_a)
         annotation (Line(
-        points={{ 50.172809262612134, -0.07600188977670541 }    ,{ -37.41359536869393, -0.07600188977670541 }    ,{ -37.41359536869393, 75.0 }    ,{ -125.0, 75.0 }    },
+        points={{ 50.172981826368755, -0.0744047619047592 }    ,{ -37.41350908681562, -0.0744047619047592 }    ,{ -37.41350908681562, 75.0 }    ,{ -125.0, 75.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -2695,7 +2729,7 @@ equation
             ;        
         connect(space_1.propsBus[3],internal_space_1_space_2_2.propsBus_a)
         annotation (Line(
-        points={{ 50.172809262612134, -0.07600188977670541 }    ,{ -37.41359536869393, -0.07600188977670541 }    ,{ -37.41359536869393, 75.0 }    ,{ -125.0, 75.0 }    },
+        points={{ 50.172981826368755, -0.0744047619047592 }    ,{ -37.41350908681562, -0.0744047619047592 }    ,{ -37.41350908681562, 75.0 }    ,{ -125.0, 75.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -2703,7 +2737,7 @@ equation
             ;        
         connect(space_2.propsBus[1],merged_bw_1[1].propsBus_a)
         annotation (Line(
-        points={{ -50.12342245245628, -0.014378735903690654 }    ,{ -75.06171122622814, -0.014378735903690654 }    ,{ -75.06171122622814, -87.44777437709261 }    ,{ -100.0, -87.44777437709261 }    },
+        points={{ -50.123289354598846, -0.0165343915343783 }    ,{ -75.06164467729943, -0.0165343915343783 }    ,{ -75.06164467729943, -87.44791666666667 }    ,{ -100.0, -87.44791666666667 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -2711,7 +2745,7 @@ equation
             ;        
         connect(space_2.yOcc,occupancy_1.y)
         annotation (Line(
-        points={{ -50.12342245245628, -0.014378735903690654 }    ,{ -75.00599505953608, -0.014378735903690654 }    ,{ -75.00599505953608, 87.50282439455253 }    ,{ -99.88856766661586, 87.50282439455253 }    },
+        points={{ -50.123289354598846, -0.0165343915343783 }    ,{ -75.00594246616383, -0.0165343915343783 }    ,{ -75.00594246616383, 87.50000000000003 }    ,{ -99.88859557772881, 87.50000000000003 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -2719,7 +2753,7 @@ equation
             ;        
         connect(space_2.propsBus[2],internal_space_1_space_2_1.propsBus_b)
         annotation (Line(
-        points={{ -50.12342245245628, -0.014378735903690654 }    ,{ -87.56171122622814, -0.014378735903690654 }    ,{ -87.56171122622814, 75.0 }    ,{ -125.0, 75.0 }    },
+        points={{ -50.123289354598846, -0.0165343915343783 }    ,{ -87.56164467729943, -0.0165343915343783 }    ,{ -87.56164467729943, 75.0 }    ,{ -125.0, 75.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -2727,7 +2761,7 @@ equation
             ;        
         connect(space_2.propsBus[3],internal_space_1_space_2_2.propsBus_b)
         annotation (Line(
-        points={{ -50.12342245245628, -0.014378735903690654 }    ,{ -87.56171122622814, -0.014378735903690654 }    ,{ -87.56171122622814, 75.0 }    ,{ -125.0, 75.0 }    },
+        points={{ -50.123289354598846, -0.0165343915343783 }    ,{ -87.56164467729943, -0.0165343915343783 }    ,{ -87.56164467729943, 75.0 }    ,{ -125.0, 75.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -2980,8 +3014,6 @@ connect(sum1.y, loa.Pow) annotation (Line(points={{-51,-26},{-38,-26},{-38,-76},
 end DataServer;
   end BaseClasses;
 end Components;
-
-
 package Data "Data for transient thermal building simulation"
 extends Modelica.Icons.MaterialPropertiesPackage;
 
@@ -2995,10 +3027,10 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record insulation_board = I
       c=1200.0,
       rho=40.0,
       epsLw=0.88,
-      epsSw=0.55);    record wood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.131,
-      c=1000.0,
-      rho=600.0,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.12,
@@ -3010,293 +3042,34 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record insulation_board = I
       c=840.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
+      epsSw=0.55);    record wood = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.131,
+      c=1000.0,
+      rho=600.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record external_wall
+package Constructions "Library of building envelope constructions"      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={multiple_internal_walls_ideas.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;      record Door
+    "Door"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={multiple_internal_walls_ideas.Data.Materials.wood
+        (d=0.04)    });
+    end Door;      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={multiple_internal_walls_ideas.Data.Materials.concrete
         (d=0.2),multiple_internal_walls_ideas.Data.Materials.insulation_board
         (d=0.02),multiple_internal_walls_ideas.Data.Materials.plywood
         (d=0.1)    });
-    end external_wall;      record Door
-    "Door"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={multiple_internal_walls_ideas.Data.Materials.wood
-        (d=0.04)    });
-    end Door;      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={multiple_internal_walls_ideas.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;
+    end external_wall;
 end Constructions;
 end Data;
+
 model building
-
-
-
-replaceable package Medium = IDEAS.Media.Air(extraPropertiesNames={"CO2"})
-constrainedby Modelica.Media.Interfaces.PartialMedium
-"Medium in the component"
-annotation (choicesAllMatching = true);
-package MediumW = IDEAS.Media.Water "Medium model";
- parameter Integer nRoo = 2 "Number of rooms";
-  parameter Modelica.Units.SI.Volume VRoo=4*6*3 "Volume of one room";
-  parameter Modelica.Units.SI.Power Q_flow_nominal=2200
-    "Nominal power of heating plant";
- // Due to the night setback, in which the radiator do not provide heat input into the room,
- // we scale the design power of the radiator loop
- parameter Real scaFacRad = 1.5
-    "Scaling factor to scale the power (and mass flow rate) of the radiator loop";
-  parameter Modelica.Units.SI.Temperature TSup_nominal=273.15 + 50 + 5
-    "Nominal supply temperature for radiators";
-  parameter Modelica.Units.SI.Temperature TRet_nominal=273.15 + 40 + 5
-    "Nominal return temperature for radiators";
-  parameter Modelica.Units.SI.Temperature dTRad_nominal=TSup_nominal -
-      TRet_nominal "Nominal temperature difference for radiator loop";
-  parameter Modelica.Units.SI.Temperature dTBoi_nominal=20
-    "Nominal temperature difference for boiler loop";
-  parameter Modelica.Units.SI.MassFlowRate mRad_flow_nominal=scaFacRad*
-      Q_flow_nominal/dTRad_nominal/4200
-    "Nominal mass flow rate of radiator loop";
-  parameter Modelica.Units.SI.MassFlowRate mBoi_flow_nominal=scaFacRad*
-      Q_flow_nominal/dTBoi_nominal/4200 "Nominal mass flow rate of boiler loop";
-  parameter Modelica.Units.SI.PressureDifference dpPip_nominal=10000
-    "Pressure difference of pipe (without valve)";
-  parameter Modelica.Units.SI.PressureDifference dpVal_nominal=6000
-    "Pressure difference of valve";
-  parameter Modelica.Units.SI.PressureDifference dpRoo_nominal=6000
-    "Pressure difference of flow leg that serves a room";
-  parameter Modelica.Units.SI.PressureDifference dpThrWayVal_nominal=6000
-    "Pressure difference of three-way valve";
-  parameter Modelica.Units.SI.PressureDifference dp_nominal=dpPip_nominal +
-      dpVal_nominal + dpRoo_nominal + dpThrWayVal_nominal
-    "Pressure difference of loop";
-
-
-
-    IDEAS.Buildings.Components.Zone space_1(
-    mSenFac=0.822,nPorts = 3,        hZone=3.75,
-    V=42.375
-,
-    n50=0.822*0.5*space_1.n50toAch,
-    redeclare package Medium = Medium,
-    nSurf=3,
-    T_start=293.15) annotation (
-    Placement(transformation(origin = { 0.0, 0.0 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-        IDEAS.Buildings.Components.OuterWall[1]
-    merged_bw(
-    redeclare parameter multiple_internal_walls_ideas.Data.Constructions.
-    external_wall
-    constructionType,
-    A={ 13 },
-    final azi={ 90 },
-    redeclare package Medium = Medium,
-    final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 0.0, 469.90705042829705 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-        multiple_internal_walls_ideas.Components.BaseClasses.OccupancyOccupancy_0
-    occupancy_0(    gain=[35; 70; 30],
-    k=1/6/4,
-    occupancy=3600*{7, 19}
-) annotation (
-    Placement(transformation(origin = { -50.0, 0.0 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-    IDEAS.Buildings.Components.Zone space_2(
-    mSenFac=0.822,nPorts = 3,        hZone=3.75,
-    V=42.375
-,
-    n50=0.822*0.5*space_2.n50toAch,
-    redeclare package Medium = Medium,
-    nSurf=3,
-    T_start=293.15) annotation (
-    Placement(transformation(origin = { 250.0, 150.0 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-        IDEAS.Buildings.Components.OuterWall[1]
-    merged_bw_1(
-    redeclare parameter multiple_internal_walls_ideas.Data.Constructions.
-    external_wall
-    constructionType,
-    A={ 13 },
-    final azi={ 90 },
-    redeclare package Medium = Medium,
-    final inc={ IDEAS.Types.Tilt.Wall }) annotation (
-    Placement(transformation(origin = { 1000.0, 522.1719076392492 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-        multiple_internal_walls_ideas.Components.BaseClasses.OccupancyOccupancy_1
-    occupancy_1(    gain=[35; 70; 30],
-    k=1/6/4,
-    occupancy=3600*{7, 19}
-) annotation (
-    Placement(transformation(origin = { 200.0, 150.0 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-            inner IDEAS.BoundaryConditions.SimInfoManager
-    sim(interZonalAirFlowType=
-  IDEAS.BoundaryConditions.Types.
-  InterZonalAirFlow.OnePort) "Data reader"
-annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotation (
-    Placement(transformation(origin = { -100.0, 200.0 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-        IDEAS.Buildings.Components.InternalWall internal_space_1_space_2_1
-    (redeclare parameter multiple_internal_walls_ideas.
-    Data.Constructions.internal_wall constructionType,
-    redeclare package Medium = Medium,
-    A = 10, inc = IDEAS.Types.Tilt.
-    Wall, azi =
-    45) "Partition wall between the two
-    rooms"  annotation (
-    Placement(transformation(origin = { -125.0, 75.0 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-        IDEAS.Buildings.Components.InternalWall internal_space_1_space_2_2
-    (redeclare parameter multiple_internal_walls_ideas.
-    Data.Constructions.Door constructionType,
-    redeclare package Medium = Medium,
-    A = 10, inc = IDEAS.Types.Tilt.
-    Wall, azi =
-    10) "Partition wall between the two
-    rooms"  annotation (
-    Placement(transformation(origin = { -125.0, 75.0 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-        multiple_internal_walls_ideas.Components.BaseClasses.DataServer
-        data_bus (redeclare package
-          Medium = Medium) annotation (
-    Placement(transformation(origin = { 459.48520559746413, 218.38242510059024 },
-    extent = {{10, -10}, {-10, 10}}
-)));
-
-
-equation            
-        connect(space_1.propsBus[1],merged_bw[1].propsBus_a)
-        annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 469.90705042829705 }    ,{ 0.0, 469.90705042829705 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_1.yOcc,occupancy_0.y)
-        annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -25.0, 0.0 }    ,{ -50.0, 0.0 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_1.propsBus[2],internal_space_1_space_2_1.propsBus_a)
-        annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ -62.5, 0.0 }    ,{ -62.5, 75.0 }    ,{ -125.0, 75.0 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_1.propsBus[3],internal_space_1_space_2_2.propsBus_a)
-        annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ -62.5, 0.0 }    ,{ -62.5, 75.0 }    ,{ -125.0, 75.0 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_2.propsBus[1],merged_bw_1[1].propsBus_a)
-        annotation (Line(
-        points={{ 250.0, 150.0 }    ,{ 625.0, 150.0 }    ,{ 625.0, 522.1719076392492 }    ,{ 1000.0, 522.1719076392492 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_2.yOcc,occupancy_1.y)
-        annotation (Line(
-        points={{ 250.0, 150.0 }    ,{ 225.0, 150.0 }    ,{ 225.0, 150.0 }    ,{ 200.0, 150.0 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_2.propsBus[2],internal_space_1_space_2_1.propsBus_b)
-        annotation (Line(
-        points={{ 250.0, 150.0 }    ,{ 62.5, 150.0 }    ,{ 62.5, 75.0 }    ,{ -125.0, 75.0 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_2.propsBus[3],internal_space_1_space_2_2.propsBus_b)
-        annotation (Line(
-        points={{ 250.0, 150.0 }    ,{ 62.5, 150.0 }    ,{ 62.5, 75.0 }    ,{ -125.0, 75.0 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(occupancy_0.dataBus,data_bus.dataBus)
-        annotation (Line(
-        points={{ -50.0, 0.0 }    ,{ 204.74260279873207, 0.0 }    ,{ 204.74260279873207, 218.38242510059024 }    ,{ 459.48520559746413, 218.38242510059024 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(occupancy_1.dataBus,data_bus.dataBus)
-        annotation (Line(
-        points={{ 200.0, 150.0 }    ,{ 329.74260279873204, 150.0 }    ,{ 329.74260279873204, 218.38242510059024 }    ,{ 459.48520559746413, 218.38242510059024 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_1.gainCon,data_bus.port[1])
-        annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 229.74260279873207, 0.0 }    ,{ 229.74260279873207, 218.38242510059024 }    ,{ 459.48520559746413, 218.38242510059024 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_1.ports[1],data_bus.port_a[1])
-        annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 229.74260279873207, 0.0 }    ,{ 229.74260279873207, 218.38242510059024 }    ,{ 459.48520559746413, 218.38242510059024 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_2.gainCon,data_bus.port[2])
-        annotation (Line(
-        points={{ 250.0, 150.0 }    ,{ 354.74260279873204, 150.0 }    ,{ 354.74260279873204, 218.38242510059024 }    ,{ 459.48520559746413, 218.38242510059024 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;            
-        connect(space_2.ports[1],data_bus.port_a[2])
-        annotation (Line(
-        points={{ 250.0, 150.0 }    ,{ 354.74260279873204, 150.0 }    ,{ 354.74260279873204, 218.38242510059024 }    ,{ 459.48520559746413, 218.38242510059024 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
-        smooth=Smooth.None))
-            ;annotation (Diagram(coordinateSystem(extent={{-50,-50},{1000,1000}})), Icon(
-        coordinateSystem(extent={{-50,-50},{1000,1000}})));
-end building;
-
-model building_with_grid
   Components.Containers.building building
     annotation (Placement(transformation(extent={{12,-24},{60,24}})));
   Buildings.Electrical.AC.OnePhase.Sources.Grid gri
@@ -3306,5 +3079,5 @@ equation
     annotation (Line(points={{-36,28},{-36,0},{12,0}}, color={0,120,120}));
   annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
         coordinateSystem(preserveAspectRatio=false)));
-end building_with_grid;
+end building;
 end multiple_internal_walls_ideas;

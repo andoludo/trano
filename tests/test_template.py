@@ -14,7 +14,6 @@ def get_path(file_name: str) -> Path:
     return Path(__file__).parent.joinpath("models", file_name)
 
 
-@pytest.mark.run(order=1)  # TODO: code smell!
 def test_template_buildings_free_float_single_zone(
     buildings_free_float_single_zone: Network,
 ) -> None:
@@ -24,7 +23,6 @@ def test_template_buildings_free_float_single_zone(
     )
 
 
-@pytest.mark.run(order=2)
 def test_template_buildings_free_float_two_zones(
     buildings_free_float_two_zones: Network,
 ) -> None:
@@ -34,7 +32,6 @@ def test_template_buildings_free_float_two_zones(
     )
 
 
-@pytest.mark.run(order=3)
 def test_template_buildings_free_float_three_zones(
     buildings_free_float_three_zones: Network,
 ) -> None:
@@ -44,7 +41,6 @@ def test_template_buildings_free_float_three_zones(
     )
 
 
-@pytest.mark.run(order=4)
 def test_buildings_two_rooms_with_storage(
     buildings_two_rooms_with_storage: Network,
 ) -> None:
@@ -54,7 +50,6 @@ def test_buildings_two_rooms_with_storage(
     )
 
 
-@pytest.mark.run(order=5)
 def test_template_buildings_simple_hydronic(
     buildings_simple_hydronic: Network,
 ) -> None:
@@ -64,7 +59,6 @@ def test_template_buildings_simple_hydronic(
     )
 
 
-@pytest.mark.run(order=6)
 def test_template_buildings_simple_hydronic_three_zones(
     buildings_simple_hydronic_three_zones: Network,
 ) -> None:
@@ -74,7 +68,6 @@ def test_template_buildings_simple_hydronic_three_zones(
     )
 
 
-@pytest.mark.run(order=7)
 def test_template_ideas_free_float_single_zone(
     ideas_free_float_single_zone: Network,
 ) -> None:
@@ -84,7 +77,6 @@ def test_template_ideas_free_float_single_zone(
     )
 
 
-@pytest.mark.run(order=8)
 def test_template_ideas_free_float_three_zones(
     ideas_free_float_three_zones: Network,
 ) -> None:
@@ -94,7 +86,6 @@ def test_template_ideas_free_float_three_zones(
     )
 
 
-@pytest.mark.run(order=9)
 def test_ideas_simple_hydronic_three_zones(
     ideas_simple_hydronic_three_zones: Network,
 ) -> None:
@@ -104,7 +95,6 @@ def test_ideas_simple_hydronic_three_zones(
     )
 
 
-@pytest.mark.run(order=10)
 def test_ideas_simple_hydronic_no_occupancy(
     ideas_simple_hydronic_no_occupancy: Network,
 ) -> None:
@@ -114,7 +104,6 @@ def test_ideas_simple_hydronic_no_occupancy(
     )
 
 
-@pytest.mark.run(order=11)
 def test_space_1_ideal_heating(
     space_1_ideal_heating_network: Network,
 ) -> None:
@@ -125,7 +114,6 @@ def test_space_1_ideal_heating(
     )
 
 
-@pytest.mark.run(order=12)
 def test_space_1_different_construction_types(
     space_1_different_construction_types_network: Network,
 ) -> None:
@@ -136,7 +124,6 @@ def test_space_1_different_construction_types(
     ) == set(_read(space_1_different_construction_types_network.name))
 
 
-@pytest.mark.run(order=13)
 def test_one_spaces_air_handling_unit(one_spaces_air_handling_unit: Network) -> None:
 
     model_ = one_spaces_air_handling_unit.model()
@@ -145,7 +132,6 @@ def test_one_spaces_air_handling_unit(one_spaces_air_handling_unit: Network) -> 
     )
 
 
-@pytest.mark.run(order=14)
 def test_two_spaces_air_handling_unit(two_spaces_air_handling_unit: Network) -> None:
     model_ = two_spaces_air_handling_unit.model()
     assert clean_model(model_, two_spaces_air_handling_unit.name) == set(
@@ -153,7 +139,6 @@ def test_two_spaces_air_handling_unit(two_spaces_air_handling_unit: Network) -> 
     )
 
 
-@pytest.mark.run(order=15)
 def test_space_with_same_properties(space_with_same_properties: Space) -> None:
     network = Network(
         name="space_with_same_properties",
@@ -163,7 +148,6 @@ def test_space_with_same_properties(space_with_same_properties: Space) -> None:
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=16)
 def test_space_with_same_properties_ideas(space_with_same_properties: Space) -> None:
     network = Network(
         name="space_with_same_properties_ideas",
@@ -174,13 +158,11 @@ def test_space_with_same_properties_ideas(space_with_same_properties: Space) -> 
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=17)
 def test_space_with_door(space_with_door: Network) -> None:
     model_ = space_with_door.model()
     assert clean_model(model_, space_with_door.name) == set(_read(space_with_door.name))
 
 
-@pytest.mark.run(order=18)
 def test_building_multiple_internal_walls(
     building_multiple_internal_walls: Network,
 ) -> None:
@@ -190,7 +172,6 @@ def test_building_multiple_internal_walls(
     )
 
 
-@pytest.mark.run(order=19)
 def test_building_multiple_internal_walls_ideas(
     building_multiple_internal_walls_ideas: Network,
 ) -> None:
@@ -200,13 +181,11 @@ def test_building_multiple_internal_walls_ideas(
     )
 
 
-@pytest.mark.run(order=20)
 def test_house_model(house_model: Network) -> None:
     model_ = house_model.model()
     assert clean_model(model_, house_model.name) == set(_read(house_model.name))
 
 
-@pytest.mark.run(order=21)
 def test_template_buildings_free_float_single_zone_with_data(
     simple_space_1_with_occupancy: Space, buildings_library: Library
 ) -> None:
@@ -221,7 +200,6 @@ def test_template_buildings_free_float_single_zone_with_data(
 
 
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
-@pytest.mark.run(order=22)
 def test_three_zones_hydronic_template(library_name: str) -> None:
     house = get_path("three_zones_hydronic.yaml")
     network = convert_network(
@@ -232,7 +210,6 @@ def test_three_zones_hydronic_template(library_name: str) -> None:
     )
 
 
-@pytest.mark.run(order=23)
 def test_single_zone_hydronic_template(schema: Path) -> None:
     house = get_path("single_zone_hydronic.yaml")
     network = convert_network("single_zone_hydronic", house)
@@ -241,7 +218,6 @@ def test_single_zone_hydronic_template(schema: Path) -> None:
     )
 
 
-@pytest.mark.run(order=24)
 def test_single_zone_hydronic_weather_template(schema: Path) -> None:
     house = get_path("single_zone_hydronic_weather.yaml")
     network = convert_network("single_zone_hydronic_weather", house)
@@ -250,7 +226,6 @@ def test_single_zone_hydronic_weather_template(schema: Path) -> None:
     )
 
 
-@pytest.mark.run(order=25)
 def test_single_zone_air_handling_unit_simple_vav_control_template(
     schema: Path,
 ) -> None:
@@ -261,7 +236,6 @@ def test_single_zone_air_handling_unit_simple_vav_control_template(
     )
 
 
-@pytest.mark.run(order=26)
 def test_single_zone_air_handling_unit_complex_vav_template(schema: Path) -> None:
     house = get_path("single_zone_air_handling_unit_complex_vav.yaml")
     network = convert_network("single_zone_air_handling_unit_complex_vav", house)
@@ -270,7 +244,6 @@ def test_single_zone_air_handling_unit_complex_vav_template(schema: Path) -> Non
     )
 
 
-@pytest.mark.run(order=27)
 def test_two_zones_template(schema: Path) -> None:
     house = get_path("two_zones.yaml")
     network = convert_network("two_zones", house)
@@ -279,7 +252,6 @@ def test_two_zones_template(schema: Path) -> None:
     )
 
 
-@pytest.mark.run(order=28)
 def test_two_zones_ideas_template(schema: Path) -> None:
     house = get_path("two_zones_ideas.yaml")
     network = convert_network("two_zones_ideas", house)
@@ -288,7 +260,6 @@ def test_two_zones_ideas_template(schema: Path) -> None:
     )
 
 
-@pytest.mark.run(order=29)
 def test_single_zone_air_handling_unit_without_vav_with_duct_template(
     schema: Path,
 ) -> None:
@@ -302,7 +273,6 @@ def test_single_zone_air_handling_unit_without_vav_with_duct_template(
     )
 
 
-@pytest.mark.run(order=30)
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
 def test_three_zones_hydronic_with_containers(schema: Path, library_name: str) -> None:
     house = get_path("three_zones_hydronic_containers.yaml")
@@ -315,7 +285,6 @@ def test_three_zones_hydronic_with_containers(schema: Path, library_name: str) -
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=31)
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
 def test_single_zone_air_handling_unit_complex_vav_containers(
     schema: Path, library_name: str
@@ -330,7 +299,6 @@ def test_single_zone_air_handling_unit_complex_vav_containers(
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=32)
 def test_template_buildings_free_float_three_zones_reduced_order() -> None:
     network = Network(
         name="reduced_order_three_zones",
@@ -341,7 +309,6 @@ def test_template_buildings_free_float_three_zones_reduced_order() -> None:
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=33)
 def test_three_zones_hydronic_reduced_orders_reduced_order(schema: Path) -> None:
     house = get_path("three_zones_hydronic_reduced_orders.yaml")
     network = convert_network(
@@ -353,7 +320,6 @@ def test_three_zones_hydronic_reduced_orders_reduced_order(schema: Path) -> None
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=34)
 def test_template_buildings_free_float_three_zones_iso_13790() -> None:
     network = Network(
         name="iso_13790_three_zones",
@@ -364,7 +330,6 @@ def test_template_buildings_free_float_three_zones_iso_13790() -> None:
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=35)
 def test_three_zones_hydronic_reduced_orders_iso_13790(schema: Path) -> None:
     house = get_path("three_zones_hydronic_reduced_orders.yaml")
     network = convert_network(
@@ -376,7 +341,6 @@ def test_three_zones_hydronic_reduced_orders_iso_13790(schema: Path) -> None:
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=36)
 def test_three_zones_hydronic_reduced_orders_iso_13790_heat_pump(schema: Path) -> None:
     house = get_path("three_zones_hydronic_reduced_orders_heat_pump.yaml")
     network = convert_network(
@@ -388,7 +352,6 @@ def test_three_zones_hydronic_reduced_orders_iso_13790_heat_pump(schema: Path) -
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=37)
 def test_three_zones_hydronic_reduced_orders_iso_13790_electric(schema: Path) -> None:
     house = get_path("three_zones_hydronic_reduced_orders.yaml")
     network = convert_network(
@@ -400,7 +363,6 @@ def test_three_zones_hydronic_reduced_orders_iso_13790_electric(schema: Path) ->
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
-@pytest.mark.run(order=38)
 def test_three_zones_hydronic_reduced_orders_pv(schema: Path) -> None:
     house = get_path("three_zones_hydronic_reduced_orders_pv.yaml")
     network = convert_network(
