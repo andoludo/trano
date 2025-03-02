@@ -3,8 +3,8 @@
 **Trano** is an innovative Python package that automates the creation of complex **Building Energy Simulation (BES)** Modelica models from simplified information contained in widely used data formats like **YAML, JSON, or RDF**. Unlike traditional tools that directly convert **BIM** to **BES**, Trano introduces an intermediate step, paving the way for seamless integration with **IFC translators**.  
 
 Trano is **Modelica library agnostic** but is natively designed to work with:  
-✅ **Validated detailed Modelica libraries** (e.g., **Buildings**, **IDEAS**,...)  
-✅ **Reduced-order models** (e.g., **AIXLIB**, **ISO13790**,...)  
+✅ **Validated detailed Modelica libraries** (e.g., **[Buildings](https://github.com/lbl-srg/modelica-buildings)**, **[IDEAS](https://github.com/open-ideas/IDEAS)**,...)  
+✅ **Reduced-order models** (e.g., **[AIXLIB](https://github.com/RWTH-EBC/AixLib)**, **ISO13790**,...)  
 ✅ **your library...**  
 
 ## ✨ Key Features
