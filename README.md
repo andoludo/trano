@@ -1,7 +1,36 @@
-# TRANO
+# 🔥 Trano: Automated Building Energy Simulation (BES) Model Generation 🚀
 
-<div style="padding: 10px; border: 1px solid #f0ad4e; border-radius: 5px; background-color: #fef7e6;">
-  <strong>⚠️ Documentation:</strong> <a href="https://andoludo.github.io/trano/" target="_blank">trano</a>
-</div>
+**Trano** is an innovative Python package that automates the creation of complex **Building Energy Simulation (BES)** Modelica models from simplified information contained in widely used data formats like **YAML, JSON, or RDF**. Unlike traditional tools that directly convert **BIM** to **BES**, Trano introduces an intermediate step, paving the way for seamless integration with **IFC translators**.  
 
-Trano is a package designed to automate the implementation of building energy simulation models using a simplified YAML input format. It leverages existing validated Modelica libraries, including the [Buildings library](https://simulationresearch.lbl.gov/modelica/) and the [IDEAS library](https://github.com/open-ideas/IDEAS), as well as other Modelica libraries.
+Trano is **Modelica library agnostic** but is natively designed to work with:  
+✅ **Validated detailed Modelica libraries** (e.g., **Buildings**, **IDEAS**,...)  
+✅ **Reduced-order models** (e.g., **AIXLIB**, **ISO13790**,...)  
+✅ **your library...**  
+
+## ✨ Key Features
+
+### 🛠️ **Built for Open-Source BES**
+- Designed with **widespread adoption** in mind.
+- **Optimized for OpenModelica**, but also compatible with **Dymola**.
+
+### 🔥 **Full Thermal & Electrical Modeling**
+- Generates both **thermal** and **electrical** models.
+- Supports **building envelope, systems, and electricity**.
+- Models:
+  - **Envelope** (geometry & materials) 🏢  
+  - **HVAC systems** (emission, hydronic distribution, boilers) ❄️🔥  
+  - **Electrical components** (PV systems, electrical loads) ⚡  
+
+### 🎨 **Easy to Use & Modify**
+- Generates **graphical representations** of components & connections 🎭.
+![building.jpg](docs/img/building.jpg)
+- Fully **modular design** for seamless modifications:
+  - **Envelope** 🏠
+  - **Emission** 💨
+  - **Hydronic Distribution** 🚰
+  - **Production & Electricity** ⚡  
+
+🚀 **With Trano, creating and modifying detailed BES models has never been easier!**  
+
+---
+
