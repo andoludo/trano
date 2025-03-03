@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, cast
 from pydantic import BaseModel, Field
 
 from trano.elements.common_base import MediumTemplate
+from trano.exceptions import UnknownLibraryError
 
 if TYPE_CHECKING:
     from trano.elements import WallParameters
@@ -51,7 +52,7 @@ class Library(BaseModel):
         libraries = read_libraries()
 
         if name not in libraries:
-            raise ValueError(
+            raise UnknownLibraryError(
                 f"Library {name} not found. Available libraries: {list(libraries)}"
             )
         library_data = libraries[name]

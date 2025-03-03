@@ -1,5 +1,7 @@
 # 🔥 Trano: Automated Building Energy Simulation (BES) Model Generation 🚀
+📖 **Full Documentation:** 👉 [Trano Docs](https://andoludo.github.io/trano/) 
 
+---
 **Trano** is an innovative Python package that automates the creation of complex **Building Energy Simulation (BES)** Modelica models from simplified information contained in widely used data formats like **YAML, JSON, or RDF**. Unlike traditional tools that directly convert **BIM** to **BES**, Trano introduces an intermediate step, paving the way for seamless integration with **IFC translators**.  
 
 Trano is **Modelica library agnostic** but is natively designed to work with:  
@@ -34,4 +36,4 @@ Trano is **Modelica library agnostic** but is natively designed to work with:
 
 ---
 
-📖 **Full Documentation:** 👉 [Trano Docs](https://anluraan.github.io/trano/) 
+📖 **Full Documentation:** 👉 [Trano Docs](https://andoludo.github.io/trano/) 

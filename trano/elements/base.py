@@ -22,6 +22,7 @@ from trano.elements.figure import NamedFigure
 from trano.elements.library.base import DynamicComponentTemplate, LibraryData
 from trano.elements.library.parameters import param_from_config
 from trano.elements.types import BaseVariant, ContainerTypes
+from trano.exceptions import UnknownComponentVariantError
 
 if TYPE_CHECKING:
     from trano.topology import Network
@@ -107,7 +108,7 @@ class BaseElement(BaseElementPort):
             if library_.variant == self.variant
         ]
         if not libraries_data_variants:
-            raise ValueError(
+            raise UnknownComponentVariantError(
                 f"Library data not found for {self.name} in {library.name} for variant {self.variant}"
             )
         libraries_data = [
@@ -226,6 +227,16 @@ class BaseElement(BaseElementPort):
     def processing(self, network: "Network") -> None: ...
 
     def configure(self, network: "Network") -> None: ...
+    def system_ports_connected(self) -> bool:
+        return True
+
+    def non_connected_ports_name(self) -> List[str]:
+        return [
+            f"{self.name}.{n}"
+            for port in self.ports
+            if not port.connected
+            for n in port.names
+        ]
 
     def assign_container_type(self, network: "Network") -> None:
         if self.container_type is None:

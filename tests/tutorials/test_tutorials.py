@@ -15,7 +15,7 @@ def test_first_simulation() -> None:
     from trano.main import simulate_model
 
     simulate_model(
-        path_to_yaml_configuration_folder / "first_simulation.yaml",
+        path_to_yaml_configuration_folder / "first_model.yaml",
         library="Buildings",
         start=0,
         end=2 * 3600 * 24 * 7,
@@ -70,7 +70,6 @@ def test_ventilation() -> None:
 
     create_model(
         path_to_yaml_configuration_folder / "zone_with_ventilation.yaml",
-        library="iso_13790",
     )
 
 
