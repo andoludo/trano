@@ -22,6 +22,9 @@ class System(BaseElement):
             self.control.container_type = self.container_type
         return self
 
+    def system_ports_connected(self) -> bool:
+        return all(port.connected for port in self.ports)
+
 
 class Sensor(System): ...
 

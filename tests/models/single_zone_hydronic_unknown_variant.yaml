@@ -52,6 +52,7 @@ spaces:
 systems:
   - boiler:
       id: BOILER:001
+      variant: unknown
       parameters:
         nominal_heating_power: 2579
         dp_nominal: 5580
@@ -85,8 +86,8 @@ systems:
   - split_valve:
       id: SPLIT_VALVE:002
       inlets:
-        - BOILER:001
-      outlets:
         - VALVE:003
+      outlets:
+        - BOILER:001
 
 #TODO: Make sure to mention that split valvel is required here!!

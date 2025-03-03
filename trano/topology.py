@@ -32,7 +32,7 @@ from trano.elements.system import (
 from trano.elements.types import Tilt
 from trano.elements.utils import generate_normalized_layout
 from trano.elements.library.library import Library
-
+from trano.exceptions import SystemsNotConnectedError
 
 logger = logging.getLogger(__name__)
 
@@ -339,6 +339,12 @@ class Network:  # : PLR0904, #TODO: fix this
         environment.filters["frozenset"] = frozenset
         environment.filters["enumerate"] = enumerate
         template = environment.get_template("base.jinja2")
+        if not all(n.system_ports_connected() for n in self.graph.nodes):
+            raise SystemsNotConnectedError(
+                f"""Not all system ports are connected. 
+            The following are not connected: {[nm for n in self.graph.nodes for nm in n.non_connected_ports_name() 
+                                               if not n.system_ports_connected() and nm]}"""
+            )
         return template.render(
             network=self,
             data=data,
