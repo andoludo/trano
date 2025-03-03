@@ -1,11 +1,42 @@
-#
+# 
 <div style="display: flex; align-items: center;">
   <img src="img/trano.webp" alt="Image" style="width: 120px; height: 140px; margin-right: 10px;">
   <span style="color: #FFBF00; font-size: 96px; font-weight: bold;">Trano</span>
 </div>
 
-Trano is a package designed to streamline the implementation of building energy simulation models using a simplified YAML input format. It leverages existing validated Modelica libraries, including the [Buildings library](https://simulationresearch.lbl.gov/modelica/) and the [IDEAS library](https://github.com/open-ideas/IDEAS), as well as other Modelica libraries.
 
-Trano is designed to minimize the learning curve associated with developing building energy simulation models using Modelica. It streamlines the process by abstracting the complexities of building energy simulation, allowing users to input only the specific information relevant to their buildings. Trano automates the construction of the energy simulation models, aiming to enhance and scale the adoption of building energy simulations with Modelica efficiently.
+**Trano** is an innovative Python package that automates the creation of complex **Building Energy Simulation (BES)** Modelica models from simplified information contained in widely used data formats like **YAML, JSON, or RDF**. Unlike traditional tools that directly convert **BIM** to **BES**, Trano introduces an intermediate step, paving the way for seamless integration with **IFC translators**.  
 
-It is library-agnostic and can generate models using virtually any library. Currently, it is compatible with the Buildings library and the IDeas library. While Trano can execute simulations, models generated with it can also be opened and simulated in Modelica editors such as [OpenModelica](https://openmodelica.org) and [Dymola](https://www.3ds.com/products-services/dymola/), provided that the required libraries are preloaded. Models generated with Trano include valid graphical representations, allowing users to modify them through the graphical interface of Modelica editors. A set of [tutorials](tutorials/first_simulation.md) is available to help users get started.
+Trano is **Modelica library agnostic** but is natively designed to work with:  
+✅ **Validated detailed Modelica libraries** (e.g., **[Buildings](https://github.com/lbl-srg/modelica-buildings)**, **[IDEAS](https://github.com/open-ideas/IDEAS)**,...)  
+✅ **Reduced-order models** (e.g., **[AIXLIB](https://github.com/RWTH-EBC/AixLib)**, **ISO13790**,...)  
+✅ **your library...**  
+
+## ✨ Key Features
+
+### 🛠️ **Built for Open-Source BES**
+- Designed with **widespread adoption** in mind.
+- **Optimized for OpenModelica**, but also compatible with **Dymola**.
+
+### 🔥 **Full Thermal & Electrical Modeling**
+- Generates both **thermal** and **electrical** models.
+- Supports **building envelope, systems, and electricity**.
+- Models:
+  - **Envelope** (geometry & materials) 🏢  
+  - **HVAC systems** (emission, hydronic distribution, boilers) ❄️🔥  
+  - **Electrical components** (PV systems, electrical loads) ⚡  
+
+### 🎨 **Easy to Use & Modify**
+- Generates **graphical representations** of components & connections 🎭.
+![building.jpg](docs/img/building.jpg)
+- Fully **modular design** for seamless modifications:
+  - **Envelope** 🏠
+  - **Emission** 💨
+  - **Hydronic Distribution** 🚰
+  - **Production & Electricity** ⚡  
+
+🚀 **With Trano, creating and modifying detailed BES models has never been easier!**  
+
+---
+           
+

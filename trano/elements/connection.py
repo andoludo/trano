@@ -410,7 +410,7 @@ class Connection(BaseModel):
         LinePattern.{{ connection.connection_view.pattern }},
         smooth=Smooth.None))
             {% endif %}
-            ;"""  # noqa: W291
+            ;"""
         )
 
         return annotation_template.render(
