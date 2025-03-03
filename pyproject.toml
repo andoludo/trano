@@ -2,10 +2,10 @@
 name = "trano"
 version = "0.1.46"
 description = ""
-authors = ["aan <anlura.an01@gmail.com>"]
+authors = ["Ando Andriamamonjy <andoludovic.andriamamonjy@gmail.com>"]
 readme = "README.md"
-repository = "https://github.com/anluraan/trano"
-homepage = "https://anluraan.github.io/trano/"
+repository = "https://github.com/andoludo/trano"
+homepage = "https://andoludo.github.io/trano/"
 keywords = ["energy simulation", "modelica", "interoperability", "building energy simulation", "buildings", "ideas"]
 classifiers = [
     "Programming Language :: Python :: 3",
