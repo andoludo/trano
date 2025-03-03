@@ -68,7 +68,7 @@ def simulate_model(
         typer.Argument(help="Local path to the '.yaml' model configuration file."),
     ],
     library: Annotated[
-        Optional[LibraryChoice],
+        Optional[str],
         typer.Argument(help="Library to be used for simulation."),
     ] = LibraryChoice.buildings,
     start: Annotated[Optional[int], typer.Argument(help="Start simulation time.")] = 0,

@@ -59,11 +59,13 @@ nav:
   - Getting-started:
     - Installation: getting-started/installation.md
   - Tutorials:
-    - First simulation: tutorials/first_simulation.md
-    - First model: tutorials/first_model.md
-    - Two zones: tutorials/two_zones.md
-    - Three zones with ideal heating: tutorials/three_zones_ideal_heating.md
-    - Three zones hydronic heating: tutorials/three_zones_hydronic_heating.md
+    - First model and simulation: tutorials/first_model_and_simulation.md
+    - Model with another library: tutorials/model_with_another_library.md
+    - Multi-zones: tutorials/multizone_model.md
+    - Multi-zone with ideal heating: tutorials/multi-zone_with_ideal_heating.md
+    - Multi-zone with hydronic heating: tutorials/multi-zone_with_hydronic_heating.md
+    - Zone with ventilation: tutorials/zone_with_ventilation.md
+    - Model with photovoltaics: tutorials/zone_with_photovoltaics.md
   - How-to Guides: how-to guides/index.md
   - Explanation: explanation/index.md
   - Reference:

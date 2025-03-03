@@ -46,6 +46,14 @@ class DisplayObject(BaseModel):
         return object
 
 
+class DisplayImage(BaseModel):
+    title: str
+    path: Union[Path, str]
+
+    def write(self) -> str:
+        return f"""![{self.title}]({self.path})"""
+
+
 class CommentObject(BaseModel):
     question: str
     object: Path
@@ -61,6 +69,7 @@ class CommentCodeObject(CommentObject):
 Give a general explanation of the code snippet and a general description and parameters
 description (as bullet points). Don't be verbose.
 Be to the point and do not repeat or rewrite the code snippet. Format as markdown.
+And if have to use title tags, use tags "###" or "####".
 """
 
     def write(self) -> str:
@@ -83,6 +92,7 @@ class Tutorial(BaseModel):
             CommentObject,
             CommentCodeObject,
             DisplayObject,
+            DisplayImage,
         ]
     ]
 
@@ -132,7 +142,8 @@ def _clean_text(text: str) -> str:
     question = f"""
     fix spelling, improve flow, to the point, reduce redundancy and add software development tone.
     Format it into markdown
-    . If there is a link please embed it as a markdown link. DO not add title. Just give the answer:
+    . If there is a link please embed it as a markdown link. DO not add title. Do not add extra information. 
+    Just give the answer:
     {text}
     """
     return _ai_assistant(question)
