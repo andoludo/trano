@@ -8,8 +8,6 @@ import networkx as nx
 from jinja2 import Environment, FileSystemLoader
 from networkx import DiGraph
 
-from tests.constructions.constructions import Constructions
-
 from trano.elements import (
     BaseElement,
     Connection,
@@ -20,8 +18,9 @@ from trano.elements import (
 )
 from trano.elements.base import ElementPort
 from trano.elements.bus import DataBus
-from trano.elements.construction import extract_properties
+from trano.elements.construction import extract_properties, Construction, Layer, Material
 from trano.elements.containers import containers_factory, ContainerInput
+from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.elements.system import (
     System,
@@ -31,7 +30,6 @@ from trano.elements.system import (
 )
 from trano.elements.types import Tilt
 from trano.elements.utils import generate_normalized_layout
-from trano.elements.library.library import Library
 from trano.exceptions import SystemsNotConnectedError
 
 logger = logging.getLogger(__name__)
@@ -50,6 +48,18 @@ def reset_element_names() -> None:
     for subclass in all_subclasses(BaseElement):
         subclass.name_counter = 0
 
+def default_internal_wall_construction() -> Construction:
+    return Construction(
+        name="internal_wall",
+        layers=[
+            Layer(material=Material(
+        name="brick",
+        thermal_conductivity=0.89,
+        density=1920,
+        specific_heat_capacity=790,
+    ), thickness=0.2),
+        ],
+    )
 
 class Network:  # : PLR0904, #TODO: fix this
     def __init__(
@@ -152,7 +162,7 @@ class Network:  # : PLR0904, #TODO: fix this
             name=f"internal_{space_1.name}_{space_2.name}",
             surface=10,
             azimuth=10,
-            construction=Constructions.internal_wall,
+            construction=default_internal_wall_construction(),
             tilt=Tilt.wall,
         )
         if space_1.position.is_global_empty() or space_2.position.is_global_empty():
