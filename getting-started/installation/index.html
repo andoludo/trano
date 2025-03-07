@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../img/trano.webp">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.7">
     
     
       
@@ -509,6 +509,39 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#optional-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optional dependencies
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Optional dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graphviz" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphviz
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#python-package" class="md-nav__link">
     <span class="md-ellipsis">
       Python package
@@ -518,9 +551,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
+  <a href="#check-installation" class="md-nav__link">
     <span class="md-ellipsis">
-      Docker
+      Check installation
     </span>
   </a>
   
@@ -923,6 +956,39 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#optional-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optional dependencies
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Optional dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graphviz" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphviz
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#python-package" class="md-nav__link">
     <span class="md-ellipsis">
       Python package
@@ -932,9 +998,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
+  <a href="#check-installation" class="md-nav__link">
     <span class="md-ellipsis">
-      Docker
+      Check installation
     </span>
   </a>
   
@@ -960,20 +1026,35 @@
 
 
 <h1 id="installation">Installation</h1>
+<h2 id="optional-dependencies">Optional dependencies</h2>
+<h3 id="graphviz">Graphviz</h3>
+<p>Trano employs Graphviz to arrange various Modelica components within the model. While installation is not mandatory, it is advisable for enhanced model visualization. You can install Graphviz by following the instructions on the <a href="https://graphviz.org/download/">official website</a>. For Windows installations, ensure the Graphviz <code>bin</code> folder is added to the system PATH.</p>
+<p>To install Graphviz on Linux, use the following command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>graphviz
+</span></code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>update
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>graphviz
+</span></code></pre></div>
+<h3 id="docker">Docker</h3>
+<p>Trano utilizes the official OpenModelica Docker image to execute simulations. It is recommended to install Docker on your system so that Trano can pull the required images and run simulations. You can install Docker by following the instructions on the <a href="https://docs.docker.com/engine/install/">official website</a>.</p>
 <h2 id="python-package">Python package</h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Trano requires python 3.9 or higher and docker to be installed on the system.</p>
 </div>
-<p>Trano is a Python package that can be installed via pip.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>trano
+<p>Trano is a Python package that you can install via pip.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>trano
 </span></code></pre></div>
 <p>Trano can also be utilized with Poetry.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>poetry<span class="w"> </span>add<span class="w"> </span>trano
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>poetry<span class="w"> </span>add<span class="w"> </span>trano
 </span></code></pre></div>
-<p>The Python package enables the generation of a Modelica model from YAML configuration input. To simulate the model, Docker must be installed on the system.</p>
-<h2 id="docker">Docker</h2>
-<p>To simulate the Modelica model, you must install Docker on your system. You can find installation instructions on the <a href="https://docs.docker.com/engine/install/">official Docker website</a>.</p>
+<p>The Python package enables the generation of a Modelica model from the YAML configuration input. However, to simulate the model, Docker must be installed on the system.</p>
+<p>On Windows systems, you may need to enable long path support. Refer to the <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry">Microsoft documentation</a> for guidance.</p>
+<h2 id="check-installation">Check installation</h2>
+<p>To verify the installation, execute the following command in the terminal.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>trano<span class="w"> </span>verify
+</span></code></pre></div>
+<p>This command checks your system's compatibility for model generation and simulation. Compatibility is optional if you only intend to generate the Modelica model.</p>
 
 
 
