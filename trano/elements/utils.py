@@ -1,3 +1,4 @@
+import logging
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Tuple, Dict, Optional
@@ -12,6 +13,8 @@ if TYPE_CHECKING:
 
     from trano.elements import Port
     from trano.topology import Network
+
+logger = logging.getLogger(__name__)
 
 
 class BlockStyleDumper(yaml.Dumper):
@@ -111,7 +114,13 @@ def generate_normalized_layout(
         return {}
     new_graph.add_nodes_from(nodes)
     new_graph.add_edges_from(edges)
-    pos = nx.nx_pydot.pydot_layout(new_graph, prog="sfdp")
+    try:
+        pos = nx.nx_pydot.pydot_layout(new_graph, prog="sfdp")
+    except Exception as e:
+        logger.warning(
+            f"Error generating layout using graphviz. {e}. Graphviz is probably not installed."
+        )
+        pos = nx.planar_layout(new_graph)
     x_values, y_values = zip(*pos.values())
     x_min, x_max = min(x_values), max(x_values)
     y_min, y_max = min(y_values), max(y_values)

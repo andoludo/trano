@@ -18,7 +18,12 @@ from trano.elements import (
 )
 from trano.elements.base import ElementPort
 from trano.elements.bus import DataBus
-from trano.elements.construction import extract_properties, Construction, Layer, Material
+from trano.elements.construction import (
+    extract_properties,
+    Construction,
+    Layer,
+    Material,
+)
 from trano.elements.containers import containers_factory, ContainerInput
 from trano.elements.library.library import Library
 from trano.elements.space import Space
@@ -48,18 +53,23 @@ def reset_element_names() -> None:
     for subclass in all_subclasses(BaseElement):
         subclass.name_counter = 0
 
+
 def default_internal_wall_construction() -> Construction:
     return Construction(
         name="internal_wall",
         layers=[
-            Layer(material=Material(
-        name="brick",
-        thermal_conductivity=0.89,
-        density=1920,
-        specific_heat_capacity=790,
-    ), thickness=0.2),
+            Layer(
+                material=Material(
+                    name="brick",
+                    thermal_conductivity=0.89,
+                    density=1920,
+                    specific_heat_capacity=790,
+                ),
+                thickness=0.2,
+            ),
         ],
     )
+
 
 class Network:  # : PLR0904, #TODO: fix this
     def __init__(
