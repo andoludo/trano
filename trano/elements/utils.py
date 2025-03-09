@@ -117,10 +117,10 @@ def generate_normalized_layout(
     try:
         pos = nx.nx_pydot.pydot_layout(new_graph, prog="sfdp")
     except Exception as e:
-        logger.warning(
+        logger.error(
             f"Error generating layout using graphviz. {e}. Graphviz is probably not installed."
         )
-        pos = nx.planar_layout(new_graph)
+        pos = nx.random_layout(new_graph)
     x_values, y_values = zip(*pos.values())
     x_min, x_max = min(x_values), max(x_values)
     y_min, y_max = min(y_values), max(y_values)
