@@ -372,3 +372,15 @@ def test_three_zones_hydronic_reduced_orders_pv(schema: Path) -> None:
     )
     model_ = network.model(include_container=True)
     assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_single_zone_hydronic_tilt_as_value(schema: Path) -> None:
+    house = get_path("single_zone_hydronic_tilt_as_value.yaml")
+    network = convert_network(
+        "single_zone_hydronic_tilt_as_value",
+        house,
+        library=Library.from_configuration("IDEAS"),
+    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(
+        _read(f"{network.name}_yaml")
+    )

@@ -68,6 +68,8 @@ class BaseElement(BaseElementPort):
     figures: List[NamedFigure] = Field(default=[])
     _environment: Environment = PrivateAttr(default_factory=default_environment)
     component_model: Optional[ComponentModel] = None
+    include_in_layout: bool = True
+    component_size: float = 5
 
     @model_validator(mode="before")
     @classmethod
@@ -89,6 +91,7 @@ class BaseElement(BaseElementPort):
 
     @model_validator(mode="after")
     def assign_default_name(self) -> "BaseElement":
+        self.position.set_contaienr_annotation(self.component_size)
         if self.name is None:
             self.name = f"{type(self).__name__.lower()}_{type(self).name_counter}"
             type(self).name_counter += 1
@@ -158,17 +161,16 @@ class BaseElement(BaseElementPort):
         return {}
 
     def set_position(self, layout: Dict[str, Any], global_: bool = True) -> None:
-        if (
-            self.position.is_global_empty()
-            if global_
-            else self.position.is_container_empty()
-        ):
+
+        if layout.get(self.name):  # type: ignore
             x, y = list(layout.get(self.name))  # type: ignore
             (
                 self.position.set_global(x, y)
                 if global_
                 else self.position.set_container(x, y)
             )
+
+    def set_child_position(self) -> None: ...
 
     def get_controllable_ports(self) -> List[Port]:
         return [port for port in self.ports if port.is_controllable()]

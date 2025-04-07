@@ -273,7 +273,7 @@ class Network:  # : PLR0904, #TODO: fix this
                 )
 
     def connect(self) -> None:
-        self.assign_nodes_position()
+
         data_buses = [bus for bus in list(self.graph.nodes) if isinstance(bus, DataBus)]
 
         data_bus = data_buses[0] if data_buses else None
@@ -334,6 +334,10 @@ class Network:  # : PLR0904, #TODO: fix this
             data_bus.add_to_network(self)
         for node in self.graph.nodes:
             node.configure(self)
+
+        self.assign_nodes_position()
+        for node in self.graph.nodes:
+            node.set_child_position()
         self.connect()
         data = extract_properties(self.library, self.name, self.graph.nodes)
         component_models = []

@@ -32,8 +32,16 @@ class ElementPosition(BaseModel):
     location: Point = Field(default_factory=Point)
     annotation: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position.global_.coordinate()) }},
-    extent = {% raw %}{{10, -10}, {-10, 10}}
+    extent = {% raw %}{{ 5, -5}, {-5, 5}}
     {% endraw %})));"""
+
+    def set_container_annotation(self, size: float) -> None:
+        self.annotation = """annotation (
+    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
+    extent = {% raw %}{{ #size#, -#size#}, {-#size#, #size#}}
+    {% endraw %})));""".replace(
+            "#size#", str(size)
+        )  # TODO: lazy hack..
 
     def is_empty(self) -> bool:
         return not self.location.is_valid()
@@ -46,12 +54,16 @@ class BasePosition(BaseModel):
     container: ElementPosition = Field(
         default_factory=lambda: ElementPosition(
             annotation="""annotation (
-    Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
-    extent = {% raw %}{{10, -10}, {-10, 10}}
-    {% endraw %})));"""
+        Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
+        extent = {% raw %}{{5, -5}, {-5, 5}}
+        {% endraw %})));"""
         )
     )
     global_: ElementPosition = Field(default_factory=ElementPosition)
+
+    def set_contaienr_annotation(self, size: float) -> None:
+        self.global_.set_container_annotation(size)
+        self.container.set_container_annotation(size)
 
     def set_global(self, x: float, y: float) -> None:
         self.global_.location.x = x
@@ -68,6 +80,20 @@ class BasePosition(BaseModel):
     @property
     def y_container(self) -> float:
         return self.container.location.c_.y
+
+    @property
+    def x_global(self) -> float:
+        x = self.global_.location.x
+        if x is None:
+            raise ValueError("x_global is None")
+        return x
+
+    @property
+    def y_global(self) -> float:
+        y = self.global_.location.y
+        if y is None:
+            raise ValueError("x_global is None")
+        return y
 
     def is_global_empty(self) -> bool:
         return self.global_.is_empty()

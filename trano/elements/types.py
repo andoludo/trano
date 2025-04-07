@@ -11,13 +11,29 @@ SystemContainerTypes = Literal[
 ContainerTypes = Literal[SystemContainerTypes, "bus", "solar"]
 Pattern = Literal["Solid", "Dot", "Dash", "DashDot"]
 
-TILT_MAPPING = {"wall": 90, "ceiling": 0, "floor": 180}
+TILT_MAPPING = {
+    "wall": 90,
+    "ceiling": 0,
+    "floor": 180,
+    "pitched_roof_45": 45,
+    "pitched_roof_30": 30,
+    "pitched_roof_35": 35,
+    "pitched_roof_40": 40,
+    "pitched_roof_20": 20,
+}
+
+DEFAULT_TILT = ["wall", "ceiling", "floor"]
 
 
-class Tilt(Enum):
+class Tilt(str, Enum):
     wall = "wall"
     ceiling = "ceiling"
     floor = "floor"
+    pitched_roof_45 = "pitched_roof_45"
+    pitched_roof_40 = "pitched_roof_40"
+    pitched_roof_35 = "pitched_roof_35"
+    pitched_roof_30 = "pitched_roof_30"
+    pitched_roof_20 = "pitched_roof_20"
 
 
 class Azimuth:

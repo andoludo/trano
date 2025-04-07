@@ -2,7 +2,7 @@ from math import ceil
 from typing import ClassVar, List, Optional, Union, TYPE_CHECKING
 
 from networkx import Graph
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, model_validator
 
 
 from trano.elements.base import BaseElement
@@ -115,6 +115,9 @@ class BaseSpace(BaseElement):
     occupancy: Optional[BaseOccupancy] = None
     container_type: ContainerTypes = "envelope"
     boundary_parameters: Optional[BoundaryParameters] = None
+    merged_external_boundaries: List[
+        Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]
+    ] = Field(default_factory=list)
 
     def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
         self._assign_space()
@@ -141,12 +144,12 @@ class BaseSpace(BaseElement):
     def number_ventilation_ports(self) -> int:
         return 2 + 1  # databus
 
-    @property
-    def merged_external_boundaries(
+    @model_validator(mode="after")
+    def _merged_external_boundaries_validator(
         self,
-    ) -> List[
-        Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]
-    ]:
+    ) -> "BaseSpace":
+        if self.merged_external_boundaries:
+            return self
 
         external_walls = [
             boundary
@@ -171,7 +174,8 @@ class BaseSpace(BaseElement):
                 if boundary.type not in ["ExternalWall", "Window", "ExternalDoor"]
             ]
         )
-        return external_boundaries
+        self.merged_external_boundaries = external_boundaries
+        return self
 
     def get_controllable_emission(self) -> Optional["System"]:
         return _get_controllable_element(self.emissions)
@@ -188,6 +192,22 @@ class BaseSpace(BaseElement):
             emission.position.set_global(x + i * 30, y - 75)
         if self.occupancy:
             self.occupancy.position.set_global(x - 50, y)
+
+    def set_child_position(self) -> None:
+        if self.occupancy:
+            self.occupancy.position.set_global(
+                self.position.x_global - 15, self.position.y_global
+            )
+            self.occupancy.position.set_container(
+                self.position.x_container - 15, self.position.y_container
+            )
+        for i, ext in enumerate(self.merged_external_boundaries):
+            ext.position.set_global(
+                self.position.x_global + 15, self.position.y_global + 10 * i
+            )
+            ext.position.set_container(
+                self.position.x_container + 15, self.position.y_container + 10 * i
+            )
 
     def find_emission(self) -> Optional["Emission"]:
         emissions = [
@@ -308,7 +328,7 @@ class Space(BaseSpace):
         # The rest is connected to each other
         network._add_subsequent_systems(self.ventilation_outlets)
         network._add_subsequent_systems(self.ventilation_inlets)
-        self.assign_position()
+        self.assign_position()  # TODO: this is not relevant anymore?
 
     def processing(self, network: "Network") -> None:
         from trano.elements import VAVControl

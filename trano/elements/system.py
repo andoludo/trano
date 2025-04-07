@@ -54,6 +54,8 @@ class BaseWeather(System): ...
 
 class BaseOccupancy(System):
     space_name: Optional[str] = None
+    include_in_layout: bool = False
+    component_size: float = 3
 
 
 class DistributionSystem(System):

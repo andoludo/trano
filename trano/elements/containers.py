@@ -426,6 +426,7 @@ class Containers(BaseModel):
                         }
                     )
                 ]
+
                 continue
 
             for edge_1, edge_2 in [(edge_left, edge_right), (edge_right, edge_left)]:

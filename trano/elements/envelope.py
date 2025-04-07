@@ -75,6 +75,8 @@ class MergedBaseWall(BaseWall):
     azimuths: List[float | int]
     tilts: List[Tilt]
     constructions: List[Construction | Glass]
+    include_in_layout: bool = False
+    component_size: float = 3
 
     @classmethod
     def from_base_elements(
@@ -123,6 +125,8 @@ class ExternalWall(ExternalDoor): ...
 class FloorOnGround(BaseFloorOnGround):
     azimuth: float | int = Azimuth.south
     tilt: Tilt = Tilt.floor
+    include_in_layout: bool = False
+    component_size: float = 3
 
 
 class InternalElement(BaseInternalElement): ...
@@ -239,19 +243,19 @@ class WallParameters(BaseModel):
             for exterior_construction in constructions
         ]
         average_resistance_external = np.mean(
-            [  # type: ignore
+            [
                 exterior_construction.construction.resistance_external
                 for exterior_construction in constructions
             ]
         )
         average_resistance_external_remaining = np.mean(
-            [  # type: ignore
+            [
                 exterior_construction.construction.resistance_external_remaining
                 for exterior_construction in constructions
             ]
         )
         total_thermal_capacitance = total_surface * np.mean(
-            [  # type: ignore
+            [
                 exterior_construction.construction.total_thermal_capacitance
                 for exterior_construction in constructions
             ]

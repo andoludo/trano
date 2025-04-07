@@ -100,15 +100,19 @@ def generate_normalized_layout(
         (e[0].name, e[1].name)
         for e in network.graph.edges
         if (
-            e[0].container_type == container_type
-            and e[1].container_type == container_type
+            (
+                e[0].container_type == container_type
+                and e[1].container_type == container_type
+            )
+            or (container_type is None)
         )
-        or (container_type is None)
+        and (e[0].include_in_layout and e[1].include_in_layout)
     ]
     nodes = [
         n.name
         for n in network.graph.nodes
-        if (n.container_type == container_type) or (container_type is None)
+        if ((n.container_type == container_type) or (container_type is None))
+        and n.include_in_layout
     ]
     if not nodes:
         return {}
