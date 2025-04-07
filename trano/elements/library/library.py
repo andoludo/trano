@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, cast
 from pydantic import BaseModel, Field
 
 from trano.elements.common_base import MediumTemplate
+from trano.elements.types import TILT_MAPPING, DEFAULT_TILT
 from trano.exceptions import UnknownLibraryError
 
 if TYPE_CHECKING:
@@ -12,8 +13,16 @@ if TYPE_CHECKING:
 
 
 # TODO: this must go!!!
-def tilts_processing_ideas(element: "WallParameters") -> List[str]:
-    return [f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" for tilt in element.tilts]
+def tilts_processing_ideas(element: "WallParameters") -> List[str | int]:
+
+    return [
+        (
+            f"IDEAS.Types.Tilt.{tilt.value.capitalize()}"
+            if tilt.value in DEFAULT_TILT
+            else TILT_MAPPING[tilt.value]
+        )
+        for tilt in element.tilts
+    ]
 
 
 class Templates(BaseModel):
