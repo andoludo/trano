@@ -64,8 +64,9 @@ def plot_plot_ly_many(
         for axis, figure_axis in enumerate([figure.left_axis, figure.right_axis]):
             for line in figure_axis.lines:
                 try:
-                    line_data = pd.DataFrame(data.values(line.key))
-                except KeyError:
+                    variable = data.varNames(f"{line.key}$")[0]
+                    line_data = pd.DataFrame(data.values(variable))
+                except (KeyError, IndexError):
                     logger.warning(f"Key {line.key} not found in data")
                     continue
 
