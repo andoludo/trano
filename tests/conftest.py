@@ -78,6 +78,13 @@ def result_data_path() -> Path:
 
 
 @pytest.fixture
+def result_data_container_path() -> Path:
+    return Path(__file__).parent.joinpath(
+        "resources", "multiple_internal_walls_buildings.building_res.mat"
+    )
+
+
+@pytest.fixture
 def simple_space_1() -> Space:
     return simple_space_1_fixture()
 

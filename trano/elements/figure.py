@@ -4,7 +4,7 @@ import jinja2.exceptions
 from jinja2 import Environment
 from pydantic import BaseModel, Field
 
-from trano.elements.types import Axis
+from trano.elements.types import Axis, ContainerTypes
 
 if TYPE_CHECKING:
     from trano.elements.base import BaseElement
@@ -23,6 +23,16 @@ class Figure(BaseModel):
             except jinja2.exceptions.UndefinedError:
                 continue
 
+        return self
+
+    def modify_key_based_on_container(
+        self, container: ContainerTypes, include_container: bool = True
+    ) -> "Figure":
+        if not include_container:
+            return self
+        for axis in self.right_axis.lines + self.left_axis.lines:
+            if axis.key is not None:
+                axis.key = f"building.{container}1.{axis.key}"
         return self
 
 
