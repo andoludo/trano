@@ -28,8 +28,9 @@ def plot(data: Reader, figure: NamedFigure, show: bool = True) -> pyFigure:
     for axis, figure_axis in [(ax, figure.left_axis), (twin1, figure.right_axis)]:
         for line in figure_axis.lines:
             try:
-                line_data = pd.DataFrame(data.values(line.key))
-            except KeyError:
+                variable = data.varNames(f"{line.key}$")[0]
+                line_data = pd.DataFrame(data.values(variable))
+            except (KeyError, IndexError):
                 logger.warning(f"Key {line.key} not found in data")
                 continue
             (p,) = axis.plot(
@@ -109,8 +110,9 @@ def plot_plot_ly(data: Reader, figure: NamedFigure, show: bool = False) -> plotl
     for axis, figure_axis in enumerate([figure.left_axis, figure.right_axis]):
         for line in figure_axis.lines:
             try:
-                line_data = pd.DataFrame(data.values(line.key))
-            except KeyError:
+                variable = data.varNames(f"{line.key}$")[0]
+                line_data = pd.DataFrame(data.values(variable))
+            except (KeyError, IndexError):
                 logger.warning(f"Key {line.key} not found in data")
                 continue
 

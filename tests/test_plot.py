@@ -16,6 +16,14 @@ def data_reader(result_data_path: Path) -> Reader:
     )
 
 
+@pytest.fixture
+def data_reader_container(result_data_container_path: Path) -> Reader:
+    return Reader(
+        result_data_container_path,
+        "openmodelica",
+    )
+
+
 def test_plot_one_figure(
     buildings_two_rooms_with_storage: Network, data_reader: Reader
 ) -> None:
@@ -24,6 +32,19 @@ def test_plot_one_figure(
     ]
     figure = plot(data_reader, space[0].figures[0])
     figure_plotly = plot_plot_ly(data_reader, space[0].figures[0])
+    assert figure
+    assert figure_plotly
+
+
+def test_plot_one_figure_container(
+    building_multiple_internal_walls: Network, data_reader_container: Reader
+) -> None:
+    building_multiple_internal_walls.model()
+    space = [
+        s for s in building_multiple_internal_walls.graph.nodes if isinstance(s, Space)
+    ]
+    figure = plot(data_reader_container, space[0].figures[0])
+    figure_plotly = plot_plot_ly(data_reader_container, space[0].figures[0])
     assert figure
     assert figure_plotly
 

@@ -330,7 +330,7 @@ class Space(BaseSpace):
         network._add_subsequent_systems(self.ventilation_inlets)
         self.assign_position()  # TODO: this is not relevant anymore?
 
-    def processing(self, network: "Network") -> None:
+    def processing(self, network: "Network", include_container: bool = False) -> None:
         from trano.elements import VAVControl
 
         _neighbors = []
@@ -361,3 +361,4 @@ class Space(BaseSpace):
                 )
 
         self.get_neighhors(network.graph)
+        self.process_figures(include_container=include_container)

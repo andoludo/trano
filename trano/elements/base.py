@@ -226,7 +226,16 @@ class BaseElement(BaseElementPort):
     def add_to_network(self, network: "Network") -> None:
         network.add_node(self)
 
-    def processing(self, network: "Network") -> None: ...
+    def processing(self, network: "Network", include_container: bool = False) -> None:
+        self.process_figures(include_container=include_container)
+
+    def process_figures(self, include_container: bool = False) -> None:
+        if self.container_type is not None:
+            for figure in self.figures:
+
+                figure.modify_key_based_on_container(
+                    self.container_type, include_container
+                )
 
     def configure(self, network: "Network") -> None: ...
     def system_ports_connected(self) -> bool:
