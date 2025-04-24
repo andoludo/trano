@@ -1,3 +1,4 @@
+import logging
 import math
 from math import sqrt
 from typing import TYPE_CHECKING, Dict, List, Optional, Type, Union
@@ -8,10 +9,12 @@ from pydantic import BaseModel, model_validator, computed_field, Field
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
 from trano.elements.types import Azimuth, Tilt, ContainerTypes, TILT_MAPPING
+from trano.exceptions import InvalidBuildingStructureError
 
 if TYPE_CHECKING:
     pass
 
+logger = logging.getLogger(__name__)
 
 class BaseWall(BaseElement):
     container_type: ContainerTypes = "envelope"
@@ -391,7 +394,13 @@ def get_common_wall_properties(
     )
 
     if not similar_properties:
-        raise NotImplementedError
+        logger.warning("The walls have different properties for the same azimuth. Using the one with the marges area.")
+        walls = sorted([w for w in walls], key=lambda w: w.surface,reverse=True)[:1]
+    if not walls:
+        raise InvalidBuildingStructureError(
+            "No walls found with the same azimuth and tilt as the window."
+        )
+
     return BaseSimpleWall(
         surface=sum([w.surface for w in walls]),
         name=walls[0].name,

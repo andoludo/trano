@@ -384,3 +384,14 @@ def test_single_zone_hydronic_tilt_as_value(schema: Path) -> None:
     assert clean_model(network.model(), f"{network.name}_yaml") == set(
         _read(f"{network.name}_yaml")
     )
+
+
+def test_single_zone_window_different_construction(schema: Path) -> None:
+    house = get_path("house_multiple_construction_one_azimuth.yaml")
+    network = convert_network(
+        "house_multiple_construction_one_azimuth",
+        house,
+    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(
+        _read(f"{network.name}_yaml")
+    )
