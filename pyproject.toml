@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trano"
-version = "0.4.0"
+version = "0.5.0"
 description = ""
 authors = ["Ando Andriamamonjy <andoludovic.andriamamonjy@gmail.com>"]
 readme = "README.md"
