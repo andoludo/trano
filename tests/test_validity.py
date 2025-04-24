@@ -37,7 +37,7 @@ def test_single_zone_air_handling_unit_wrong_flow(schema: Path) -> None:
 )
 def test_unexpected_configuration(schema: Path, file_name: str) -> None:
     house = get_path(f"{file_name}.yaml")
-    with pytest.raises((ValueError, KeyError, IncompatiblePortsError,TypeError)):
+    with pytest.raises((ValueError, KeyError, IncompatiblePortsError, TypeError)):
         network = convert_network(file_name, house)
         network.model()
 

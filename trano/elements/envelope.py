@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+
 class BaseWall(BaseElement):
     container_type: ContainerTypes = "envelope"
 
@@ -394,8 +395,10 @@ def get_common_wall_properties(
     )
 
     if not similar_properties:
-        logger.warning("The walls have different properties for the same azimuth. Using the one with the marges area.")
-        walls = sorted([w for w in walls], key=lambda w: w.surface,reverse=True)[:1]
+        logger.warning(
+            "The walls have different properties for the same azimuth. Using the one with the marges area."
+        )
+        walls = sorted(walls, key=lambda w: w.surface, reverse=True)[:1]
     if not walls:
         raise InvalidBuildingStructureError(
             "No walls found with the same azimuth and tilt as the window."
