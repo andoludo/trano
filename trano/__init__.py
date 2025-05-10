@@ -1,4 +1,5 @@
 import logging.config
+import warnings
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -35,3 +36,8 @@ LOGGING_CONFIG = {
 logging.config.dictConfig(LOGGING_CONFIG)
 logging.getLogger("docker").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+)
