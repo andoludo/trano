@@ -57,6 +57,7 @@ classes:
       - ventilation_inlets
       - ventilation_outlets
     class_uri: schema:Space
+
   ExternalWall:
     attributes:
       construction:
@@ -79,8 +80,12 @@ classes:
         range: Construction
       space_1:
         range: Space
+      space_1_tilt:
+        range: string
       space_2:
         range: Space
+      space_2_tilt:
+        range: string
     slots:
       - surface
   Window:

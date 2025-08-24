@@ -1,16 +1,20 @@
 from pathlib import Path
+from typing import Optional
 
 import pytest
 
 from tests.conftest import _read, clean_model
 from tests.fixtures.three_spaces import three_spaces
 from trano.data_models.conversion import convert_network
+from trano.elements import DataBus
 from trano.elements.space import Space
 from trano.elements.library.library import Library
 from trano.topology import Network
 
 
-def get_path(file_name: str) -> Path:
+def get_path(file_name: str, directory: Optional[str] = None) -> Path:
+    if directory:
+        return Path(__file__).parent.joinpath("models", directory, file_name)
     return Path(__file__).parent.joinpath("models", file_name)
 
 
@@ -395,3 +399,24 @@ def test_single_zone_window_different_construction(schema: Path) -> None:
     assert clean_model(network.model(), f"{network.name}_yaml") == set(
         _read(f"{network.name}_yaml")
     )
+
+
+def test_bestest_case600ff(schema: Path) -> None:
+    house = get_path("case600FF.yaml", "bestest")
+    network = convert_network(
+        "case600FF",
+        house,
+    )
+    data_bus = DataBus(external_data=get_path("case600FF.csv", "bestest"))
+    model_ = network.model(data_bus=data_bus)
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_house_complex(schema: Path) -> None:
+    house = get_path("house_complex.yaml")
+    network = convert_network(
+        "house_complex",
+        house,
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))

@@ -34,6 +34,9 @@ class BaseSimpleWall(BaseWall):
     tilt: Tilt
     construction: Construction | Glass
 
+    def get_tilt(self, space_name: str) -> Tilt:
+        return self.tilt
+
 
 class BaseInternalElement(BaseSimpleWall): ...
 
@@ -133,7 +136,19 @@ class FloorOnGround(BaseFloorOnGround):
     component_size: float = 3
 
 
-class InternalElement(BaseInternalElement): ...
+class SpaceTilt(BaseModel):
+    space_name: str
+    tilt: Optional[Tilt] = None
+
+
+class InternalElement(BaseInternalElement):
+    space_tilts: List[SpaceTilt] = Field(default_factory=list)
+
+    def get_tilt(self, space_name: str) -> Tilt:
+        for space_tilt in self.space_tilts:
+            if space_tilt.tilt and space_tilt.space_name == space_name:
+                return space_tilt.tilt
+        return self.tilt
 
 
 class MergedFloor(MergedBaseWall): ...
@@ -216,8 +231,9 @@ class WallParameters(BaseModel):
         return sum(self.u_values) / len(self.u_values)
 
     @classmethod
-    def from_neighbors(
+    def from_neighbors(  # noqa: PLR0913
         cls,
+        space_name: str,
         neighbors: list["BaseElement"],
         wall: Type["BaseSimpleWall"],
         filter: Optional[list[str]] = None,
@@ -271,7 +287,10 @@ class WallParameters(BaseModel):
             ]
         )
 
-        tilt = [exterior_construction.tilt for exterior_construction in constructions]
+        tilt = [
+            exterior_construction.get_tilt(space_name)
+            for exterior_construction in constructions
+        ]
         type = wall.__name__ if not suffix_type else f"{wall.__name__}{suffix_type}"
         if issubclass(wall, BaseWindow):
             external_walls = [
@@ -304,29 +323,38 @@ class WallParameters(BaseModel):
 class VerticalWallParameters(WallParameters):
     @classmethod
     def from_neighbors_(
-        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+        cls,
+        space_name: str,
+        neighbors: list["BaseElement"],
+        wall: Type["BaseSimpleWall"],
     ) -> "VerticalWallParameters":
         neighbors = [n for n in neighbors if hasattr(n, "tilt") and n.tilt == Tilt.wall]
-        return cls.from_neighbors(neighbors, wall, suffix_type="VerticalOnly")  # type: ignore
+        return cls.from_neighbors(space_name, neighbors, wall, suffix_type="VerticalOnly")  # type: ignore
 
 
 class RoofWallParameters(WallParameters):
     @classmethod
     def from_neighbors_(
-        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+        cls,
+        space_name: str,
+        neighbors: list["BaseElement"],
+        wall: Type["BaseSimpleWall"],
     ) -> "RoofWallParameters":
         neighbors = [
             n for n in neighbors if hasattr(n, "tilt") and n.tilt == Tilt.ceiling
         ]
-        return cls.from_neighbors(neighbors, wall, suffix_type="Roof")  # type: ignore
+        return cls.from_neighbors(space_name, neighbors, wall, suffix_type="Roof")  # type: ignore
 
 
 class ExternalWallParameters(WallParameters):
     @classmethod
     def from_neighbors_(
-        cls, neighbors: list["BaseElement"], wall: Type["BaseSimpleWall"]
+        cls,
+        space_name: str,
+        neighbors: list["BaseElement"],
+        wall: Type["BaseSimpleWall"],
     ) -> "RoofWallParameters":
-        return cls.from_neighbors(neighbors, wall, suffix_type="External")  # type: ignore
+        return cls.from_neighbors(space_name, neighbors, wall, suffix_type="External")  # type: ignore
 
 
 class WindowedWallParameters(WallParameters):

@@ -107,7 +107,7 @@ BoilerParameters:
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearizeFlowResistance
       description: None
-      ifabsent: string(false)
+      ifabsent: string(true)
       range: string
     v_flow:
       alias: V_flow
@@ -319,7 +319,7 @@ RadiatorParameter:
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: None
-      ifabsent: string(false)
+      ifabsent: string(true)
       range: string
     use_m_flow_f_dp_else_dp_f_m_flow:
       alias: from_dp
@@ -408,7 +408,7 @@ SplitValveParameters:
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: None
-      ifabsent: string(false)
+      ifabsent: string(true)
       range: string
   classes:
   - SplitValve
@@ -469,7 +469,7 @@ ThreeWayValveParameters:
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: None
-      ifabsent: string({false, false})
+      ifabsent: string({true, true})
       range: string
     valve_leakage:
       alias: l
@@ -528,7 +528,7 @@ ValveParameters:
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: None
-      ifabsent: string(false)
+      ifabsent: string(true)
       range: string
     use_m_flow_f_dp_else_dp_f_m_flow:
       alias: from_dp

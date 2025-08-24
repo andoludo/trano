@@ -281,6 +281,210 @@ constructed by the signals connected to this bus.
 
   package Fluid
   package Boilers
+partial model PartialBoilerWithoutStorage
+  replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
+      "Medium model" annotation (choicesAllMatching=true);
+  extends Buildings.Fluid.Interfaces.PartialTwoPort(
+                                            redeclare package Medium = MediumW);
+
+  parameter Real a[:]={0.9} "Coefficients for efficiency curve";
+  parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
+    "Curve used to compute the efficiency";
+  parameter Modelica.Units.SI.Temperature T_nominal=353.15
+    "Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)"
+    annotation (Dialog(enable=(effCur == Buildings.Fluid.Types.EfficiencyCurves.QuadraticLinear)));
+
+  parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
+    annotation (choicesAllMatching=true);
+
+  parameter Modelica.Units.SI.Power Q_flow_nominal "Nominal heating power";
+  parameter Boolean linearizeFlowResistance=false
+    "= true, use linear relation between m_flow and dp for any flow rate"
+    annotation (Dialog(enable=computeFlowResistance,
+       tab="Flow resistance"));
+  parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit=
+"Pa") "Pressure difference" annotation (Dialog(group="Nominal condition"));
+parameter Modelica.Units.SI.Pressure dp[:]=(3000 + 2000)*{2,1} "Pressure";
+parameter Real V_flow[:] = 0.001/1000*{0.5,1};
+  parameter Real deltaM=0.1
+    "Fraction of nominal flow rate where flow transitions to laminar";
+parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_rate_boiler;
+parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
+  parameter Boolean show_T=false;
+
+  parameter Modelica.Units.SI.Volume VTan "Tank volume";
+  parameter Modelica.Units.SI.Length hTan "Height of tank (without insulation)";
+  parameter Modelica.Units.SI.Length dIns "Thickness of insulation";
+  parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
+    "Specific heat conductivity of insulation";
+  parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+
+  Buildings.Fluid.Movers.SpeedControlled_y pumBoi(
+    redeclare package Medium = MediumW,
+per(pressure(V_flow=V_flow, dp=dp)),
+    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
+    "Pump for boiler circuit" annotation (Placement(transformation(extent={{-10,
+    -10},{10,10}}, origin={-8,10})));
+
+  Buildings.Fluid.Boilers.BoilerPolynomial boi(
+    a=a,
+    effCur=effCur,
+    redeclare package Medium = MediumW,
+    Q_flow_nominal=Q_flow_nominal,
+    m_flow_nominal=nominal_mass_flow_rate_boiler,
+    fue=fue,
+    dp_nominal=dp_nominal,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    T_start=293.15) "Boiler"
+    annotation (Placement(transformation(extent={{-74,0},{-54,20}})));
+  Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=288.15)
+    "Ambient temperature in boiler room"
+    annotation (Placement(transformation(extent={{-14,74},{6,94}})));
+  Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor tanTemBot
+    "Tank temperature"
+    annotation (Placement(transformation(extent={{68,-66},{88,-46}})));
+  Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor tanTemTop
+    "Tank temperature"
+    annotation (Placement(transformation(extent={{68,-34},{88,-14}})));
+  Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package
+          Medium =
+MediumW) "Fixed boundary condition, needed to provide a pressure in the system"
+    annotation (Placement(transformation(extent={{-74,68},{-54,88}})));
+        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor1(
+      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+                                      "Radiator"  annotation (
+    Placement(transformation(origin={-36,11},
+    extent = {{-10, -10}, {10, 10}},
+        rotation=0)));
+        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor2(
+      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+                                      "Radiator"  annotation (
+    Placement(transformation(origin={66,-85},
+    extent = {{-10, -10}, {10, 10}},
+        rotation=0)));
+        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor4(
+      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+                                      "Radiator"  annotation (
+    Placement(transformation(origin={-34,-97},
+    extent = {{-10, -10}, {10, 10}},
+        rotation=0)));
+  Buildings.Fluid.Sensors.MassFlowRate senMasFlo1(redeclare package
+          Medium =
+        MediumW)
+    annotation (Placement(transformation(extent={{10,-10},{-10,10}},
+        rotation=90,
+        origin={46,30})));
+  Buildings.Fluid.Sensors.MassFlowRate senMasFlo2(redeclare package
+          Medium =
+        MediumW)
+    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+        rotation=90,
+        origin={-78,-46})));
+  Buildings.Fluid.Sensors.MassFlowRate senMasFlo3(redeclare package
+          Medium =
+        MediumW)
+    annotation (Placement(transformation(extent={{-6,-7},{6,7}},
+        rotation=0,
+        origin={13,10})));
+  Buildings.Fluid.Sensors.MassFlowRate senMasFlo4(redeclare package
+          Medium =
+        MediumW)
+    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
+        rotation=0,
+        origin={94,-86})));
+  Modelica.Blocks.Math.Gain gain(k=Q_flow_nominal)
+    annotation (Placement(transformation(extent={{-70,-22},{-58,-10}})));
+  Modelica.Blocks.Continuous.Integrator integrator
+    annotation (Placement(transformation(extent={{-46,-26},{-30,-10}})));
+  Modelica.Blocks.Math.Gain gain1(k=2.77778e-7)
+    annotation (Placement(transformation(extent={{-46,-52},{-26,-32}})));
+  Modelica.Blocks.Math.Gain gain2(k=0.9*(1/11))
+    annotation (Placement(transformation(extent={{-26,-80},{-6,-60}})));
+  Modelica.Blocks.Routing.RealPassThrough Boiy
+    annotation (Placement(transformation(extent={{-122,36},{-104,54}})));
+      Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
+        prescribedTemperature annotation (Placement(transformation(extent
+              ={{20,-42},{40,-22}})));
+      IDEAS.Controls.Continuous.LimPID conPID annotation (Placement(
+            transformation(extent={{-42,46},{-22,66}})));
+      Modelica.Blocks.Sources.RealExpression realExpression(y=373)
+        annotation (Placement(transformation(extent={{54,50},{74,70}})));
+equation
+  connect(
+  TAmb.port, boi.heatPort)
+           annotation (Line(
+      points={{6,84},{20,84},{20,30},{-64,30},{-64,17.2}},
+      color={191,0,0},
+      smooth=Smooth.None));
+  connect(
+  bou.ports[1], boi.port_a)
+            annotation (Line(
+      points={{-54,78},{-48,78},{-48,32},{-80,32},{-80,10},{-74,10}},
+      color={0,127,255},
+      smooth=Smooth.None));
+  connect(boi.port_b, temperature_sensor1.port_a) annotation (Line(points={{-54,
+          10},{-50,10},{-50,11},{-46,11}}, color={0,127,255}));
+  connect(temperature_sensor1.port_b, pumBoi.port_a) annotation (Line(points={{-26,11},
+          {-23,11},{-23,10},{-18,10}},     color={0,127,255}));
+  connect(boi.port_a, senMasFlo2.port_b)
+    annotation (Line(points={{-74,10},{-78,10},{-78,-36}}, color={0,127,255}));
+  connect(temperature_sensor4.port_a, senMasFlo2.port_a) annotation (Line(
+        points={{-44,-97},{-44,-98},{-78,-98},{-78,-56}}, color={0,127,255}));
+  connect(senMasFlo3.port_a, pumBoi.port_b)
+    annotation (Line(points={{7,10},{2,10}}, color={0,127,255}));
+  connect(temperature_sensor2.port_b, senMasFlo4.port_a) annotation (Line(
+        points={{76,-85},{80,-85},{80,-86},{84,-86}}, color={0,127,255}));
+  connect(senMasFlo1.port_a, port_b) annotation (Line(points={{46,40},{46,44},{86,
+          44},{86,0},{100,0}}, color={0,127,255}));
+  connect(port_a, senMasFlo4.port_b) annotation (Line(points={{-100,0},{-84,0},{
+          -84,-32},{-96,-32},{-96,-114},{110,-114},{110,-86},{104,-86}}, color={
+          0,127,255}));
+  connect(gain.y, integrator.u) annotation (Line(points={{-57.4,-16},{-54,-16},{
+          -54,-18},{-47.6,-18}}, color={0,0,127}));
+  connect(integrator.y, gain1.u) annotation (Line(points={{-29.2,-18},{-30,-18},
+          {-30,-4},{-74,-4},{-74,-12},{-76,-12},{-76,-32},{-48,-32},{-48,-42}},
+        color={0,0,127}));
+  connect(gain1.y, gain2.u) annotation (Line(points={{-25,-42},{-34,-42},{-34,-60},
+          {-60,-60},{-60,-70},{-28,-70}}, color={0,0,127}));
+      connect(temperature_sensor4.port_b, temperature_sensor2.port_a)
+        annotation (Line(points={{-24,-97},{-24,-98},{50,-98},{50,-85},{
+              56,-85}}, color={0,127,255}));
+      connect(senMasFlo1.port_b, senMasFlo3.port_b) annotation (Line(
+            points={{46,20},{46,10},{19,10}}, color={0,127,255}));
+      connect(prescribedTemperature.port, tanTemTop.port) annotation (
+          Line(points={{40,-32},{62,-32},{62,-24},{68,-24}}, color={191,0,
+              0}));
+      connect(prescribedTemperature.port, tanTemBot.port) annotation (
+          Line(points={{40,-32},{62,-32},{62,-56},{68,-56}}, color={191,0,
+              0}));
+      connect(temperature_sensor1.T, prescribedTemperature.T) annotation (
+         Line(points={{-36,22},{-36,26},{-22,26},{-22,-30},{10,-30},{10,
+              -32},{18,-32}}, color={0,0,127}));
+      connect(boi.T, conPID.u_m) annotation (Line(points={{-53,18},{-50,
+              18},{-50,28},{-32,28},{-32,44}}, color={0,0,127}));
+      connect(conPID.y, boi.y) annotation (Line(points={{-21,56},{-18,56},
+              {-18,94},{-84,94},{-84,18},{-76,18}}, color={0,0,127}));
+      connect(conPID.y, gain.u) annotation (Line(points={{-21,56},{-18,56},
+              {-18,94},{-84,94},{-84,2},{-82,2},{-82,-16},{-71.2,-16}},
+            color={0,0,127}));
+      connect(realExpression.y, conPID.u_s) annotation (Line(points={{75,
+              60},{78,60},{78,46},{-18,46},{-18,34},{-54,34},{-54,56},{
+              -44,56}}, color={0,0,127}));
+  annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
+Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
+Rectangle(
+  fillColor={255,255,255},
+          fillPattern=FillPattern.Solid,
+          extent={{-68,70},{70,-70}}),
+        Polygon(
+          lineColor={0,0,255},
+          fillColor={0,0,255},
+          fillPattern=FillPattern.Solid,
+          points={{-68,18},{-68,18},{-54,32},{-28,16},{0,30},{26,16},{46,32},{70,
+              18},{70,18},{70,-70},{70,-70},{-68,-70},{-68,-70},{-68,18}},
+          smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
+            {100,100}})));
+end PartialBoilerWithoutStorage;
 
     partial model PartialBoilerWithStorage
       replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
@@ -1772,7 +1976,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
         dp_nominal={10000,-1,-1},
     deltaM=0.3,
     m_flow_nominal=0.008*{1,-1,-1},
-    linearized=false
+    linearized=true
 ,
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
@@ -1806,7 +2010,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
     m_flow_nominal=0.0078,
     delta0=0.01,
     R=50.0,
-    linearized={false, false},
+    linearized={true, true},
     l={0.01,0.01}
 ,
     energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState) "Three-wayvalve"  annotation (
@@ -1952,7 +2156,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
     Q_flow_nominal=2500.0,
     nEle=1,
     TRad_nominal=293.15,
-    linearized=false,
+    linearized=true,
     from_dp=false,
     T_a_nominal=363.15,
     T_b_nominal=353.15,
@@ -1972,7 +2176,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
     m_flow_nominal=0.01,
     delta0=0.01,
     R=50.0,
-    linearized=false,
+    linearized=true,
     from_dp=true,
     l=0.0001
 ,
@@ -2051,15 +2255,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=800.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=900.0,
       rho=2240.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
       epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
@@ -2071,13 +2275,19 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Bu
       c=800.0,
       rho=100.0,
       epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=800.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record cavitywall_001
+package Constructions "Library of building envelope constructions"      record concreteslab_001
+    "concreteslab_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={single_zone_hydronic_tilt_as_value.Data.Materials.concrete_001
+        (d=0.125),single_zone_hydronic_tilt_as_value.Data.Materials.concrete_001
+        (d=0.125)    });
+    end concreteslab_001;      record cavitywall_001
     "cavitywall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={single_zone_hydronic_tilt_as_value.Data.Materials.brick_001
@@ -2085,13 +2295,7 @@ package Constructions "Library of building envelope constructions"      record c
         (d=0.1),single_zone_hydronic_tilt_as_value.Data.Materials.brickhollow_001
         (d=0.14),single_zone_hydronic_tilt_as_value.Data.Materials.gypsum_001
         (d=0.015)    });
-    end cavitywall_001;      record concreteslab_001
-    "concreteslab_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={single_zone_hydronic_tilt_as_value.Data.Materials.concrete_001
-        (d=0.125),single_zone_hydronic_tilt_as_value.Data.Materials.concrete_001
-        (d=0.125)    });
-    end concreteslab_001;
+    end cavitywall_001;
 end Constructions;
 end Data;
 
@@ -2276,7 +2480,7 @@ BoilerWithStorageBoiler_001 boiler_001(
     VTan=0.2,
     T_nominal=353.15,
     dIns=0.002,
-    linearizeFlowResistance=false,
+    linearizeFlowResistance=true,
     nominal_mass_flow_radiator_loop=0.09210714285714286,
     nominal_mass_flow_rate_boiler=0.09210714285714286,
     V_flow=0.09210714285714286/1000*{0.5,1}
@@ -2644,14 +2848,14 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
+            TCooSetEmission_control_001
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
             TColSetControl_2
             (y=363.15);
 Modelica.Blocks.Sources.RealExpression
             TAirOutBoiler_control_001
             (y=0.0);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control_001
-            (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_2
             (y=true);
@@ -2672,12 +2876,12 @@ connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_001, TRoo[1].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
+connect(dataBus.TCooSetSpace_001,
+TCooSetEmission_control_001.y);
 connect(dataBus.TColSetControl_2,
 TColSetControl_2.y);
 connect(dataBus.TAirOutBoiler_001,
 TAirOutBoiler_control_001.y);
-connect(dataBus.TCooSetSpace_001,
-TCooSetEmission_control_001.y);
 connect(dataBus.triggerControl_2,
 triggerControl_2.y);
 
@@ -2735,15 +2939,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=800.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=900.0,
       rho=2240.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
       epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
@@ -2755,13 +2959,19 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Bu
       c=800.0,
       rho=100.0,
       epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=800.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record cavitywall_001
+package Constructions "Library of building envelope constructions"      record concreteslab_001
+    "concreteslab_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={single_zone_hydronic_tilt_as_value.Data.Materials.concrete_001
+        (d=0.125),single_zone_hydronic_tilt_as_value.Data.Materials.concrete_001
+        (d=0.125)    });
+    end concreteslab_001;      record cavitywall_001
     "cavitywall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={single_zone_hydronic_tilt_as_value.Data.Materials.brick_001
@@ -2769,13 +2979,7 @@ package Constructions "Library of building envelope constructions"      record c
         (d=0.1),single_zone_hydronic_tilt_as_value.Data.Materials.brickhollow_001
         (d=0.14),single_zone_hydronic_tilt_as_value.Data.Materials.gypsum_001
         (d=0.015)    });
-    end cavitywall_001;      record concreteslab_001
-    "concreteslab_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={single_zone_hydronic_tilt_as_value.Data.Materials.concrete_001
-        (d=0.125),single_zone_hydronic_tilt_as_value.Data.Materials.concrete_001
-        (d=0.125)    });
-    end concreteslab_001;
+    end cavitywall_001;
 end Constructions;
 end Data;
 

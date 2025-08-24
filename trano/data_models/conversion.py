@@ -31,6 +31,7 @@ from trano.elements.construction import (
     Material,
 )
 from trano.elements.control import BoilerControl  # noqa: F401
+from trano.elements.envelope import SpaceTilt
 from trano.elements.space import Space
 
 # TODO: fix these imports
@@ -310,6 +311,16 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
             azimuth=10,
             construction=constructions[internal_wall["construction"]],
             tilt=Tilt.wall,
+            space_tilts=[
+                SpaceTilt(
+                    space_name=space_1.name,
+                    tilt=internal_wall.get("space_1_tilt", None),
+                ),
+                SpaceTilt(
+                    space_name=space_2.name,
+                    tilt=internal_wall.get("space_2_tilt", None),
+                ),
+            ],
         )
         network.connect_spaces(space_1, space_2, internal_element=internal_element)
 

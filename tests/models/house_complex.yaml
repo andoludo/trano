@@ -1,0 +1,643 @@
+constructions:
+- id: CAVITY_WALL:001
+  layers:
+  - material: MINERAL_WOOL:001
+    thickness: 0.18
+  - material: BRICK_HOLLOW:001
+    thickness: 0.09
+  - material: AIR:001
+    thickness: 0.02
+  - material: MINERAL_WOOL:001
+    thickness: 0.05
+  - material: BRICK:001
+    thickness: 0.14
+  - material: GYPSUM:001
+    thickness: 0.01
+- id: ROOF:001
+  layers:
+  - material: CERAMIC_TILE:001
+    thickness: 0.025
+  - material: MINERAL_WOOL:001
+    thickness: 0.029
+  - material: GYPSUM_PLASTER:001
+    thickness: 0.02
+- id: DOOR:001
+  layers:
+  - material: WOOD:001
+    thickness: 0.04
+- id: FLOOR:001
+  layers:
+  - material: CONCRETE:001
+    thickness: 0.2
+  - material: EPS:001
+    thickness: 0.04
+  - material: SCREED:001
+    thickness: 0.05
+  - material: TIMBER:001
+    thickness: 0.1
+- id: INNERWALL:001
+  layers:
+  - material: GYPSUM_PLASTER:001
+    thickness: 0.02
+  - material: MASONRY:001
+    thickness: 0.14
+  - material: GYPSUM_PLASTER:001
+    thickness: 0.02
+
+gas:
+- density: 1.2
+  id: AIR:001
+  longwave_emissivity: 0.0
+  shortwave_emissivity: 0.0
+  specific_heat_capacity: 1006.0
+  thermal_conductivity: 0.0256
+
+glass_material:
+- density: 2500.0
+  id: GLASS:001
+  longwave_emissivity: 0.84
+  shortwave_emissivity: 0.67
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 1.0
+glazings:
+- id: SIMPLE:001
+  layers:
+  - glass: GLASS:001
+    thickness: 0.003
+  - gas: AIR:001
+    thickness: 0.016
+  - glass: GLASS:001
+    thickness: 0.003
+
+material:
+- density: 80.0
+  id: MINERAL_WOOL:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840
+  thermal_conductivity: 0.036
+- density: 850.0
+  id: BRICK_HOLLOW:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 880
+  thermal_conductivity: 0.3
+- density: 975.0
+  id: BRICK:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840
+  thermal_conductivity: 0.6
+- density: 2100
+  id: CERAMIC_TILE:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840
+  thermal_conductivity: 1.4
+- density: 975
+  id: GYPSUM_PLASTER:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840
+  thermal_conductivity: 1.4
+- density: 975
+  id: GYPSUM:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840
+  thermal_conductivity: 0.6
+- density: 600
+  id: WOOD:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 1000
+  thermal_conductivity: 0.131
+- density: 2100
+  id: CONCRETE:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840
+  thermal_conductivity: 1.4
+- density: 26
+  id: EPS:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 1470
+  thermal_conductivity: 0.036
+- density: 1100
+  id: SCREED:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840
+  thermal_conductivity: 0.6
+- density: 550
+  id: TIMBER:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 1880
+  thermal_conductivity: 0.11
+- density: 1400
+  id: MASONRY:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840
+  thermal_conductivity: 0.54
+
+spaces:
+  - id: ROOM_1:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 11.3
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 9.024
+          azimuth: 3.14
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 11.3
+          construction: FLOOR:001
+      windows:
+        - surface: 1.248
+          azimuth: 3.14
+          tilt: wall
+          construction: SIMPLE:001
+          width: 1.0
+          height: 1.0
+    emissions:
+      - radiator:
+          id: RADIATOR:001
+          parameters:
+            nominal_heating_power_positive_for_heating: 5000
+      - valve:
+          id: VALVE:001
+          parameters:
+            dp_fixed_nominal: 100
+            dp_valve_nominal: 100
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:001
+              parameters:
+                schedule: 3600*{10, 20}
+                temperature_heating_setpoint: 295.15
+                temperature_heating_setback: 291.15
+  - id: WC:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 1.23
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 2.337
+          azimuth: 3.14
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 1.23
+          construction: FLOOR:001
+      windows:
+        - surface: 0.153
+          azimuth: 3.14
+          tilt: wall
+          construction: SIMPLE:001
+          width: 1.0
+          height: 1.0
+  - id: HALL:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 13
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 6.144
+          azimuth: 3.14
+          tilt: wall
+          construction: CAVITY_WALL:001
+        - surface: 7.2
+          azimuth: 1.57
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 13
+          construction: FLOOR:001
+      windows:
+        - surface: 1.8
+          azimuth: 3.14
+          tilt: wall
+          construction: SIMPLE:001
+          width: 1.0
+          height: 1.0
+        - surface: 2.4
+          azimuth: 1.57
+          tilt: wall
+          construction: SIMPLE:001
+          width: 1.0
+          height: 1.0
+  - id: LIVING:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 27.11
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 8.66
+          azimuth: 0
+          tilt: wall
+          construction: CAVITY_WALL:001
+        - surface: 18
+          azimuth: 1.57
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 27.11
+          construction: FLOOR:001
+      windows:
+        - surface: 4
+          azimuth: 0
+          tilt: wall
+          construction: SIMPLE:001
+          width: 1.0
+          height: 1.0
+        - surface: 3.2
+          azimuth: 1.57
+          tilt: wall
+          construction: SIMPLE:001
+          width: 1.0
+          height: 1.0
+    emissions:
+      - radiator:
+          id: RADIATOR:002
+          parameters:
+            nominal_heating_power_positive_for_heating: 5000
+      - valve:
+          id: VALVE:002
+          parameters:
+            dp_fixed_nominal: 100
+            dp_valve_nominal: 100
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:002
+              parameters:
+                schedule: 3600*{10, 20}
+                temperature_heating_setpoint: 295.15
+                temperature_heating_setback: 291.15
+  - id: KITCHEN:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 11.28
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 9.04
+          azimuth: 0
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 11.28
+          construction: FLOOR:001
+      windows:
+        - surface: 2
+          azimuth: 0
+          tilt: wall
+          construction: SIMPLE:001
+          width: 1.0
+          height: 1.0
+    emissions:
+      - radiator:
+          id: RADIATOR:003
+          parameters:
+            nominal_heating_power_positive_for_heating: 5000
+      - valve:
+          id: VALVE:003
+          parameters:
+            dp_fixed_nominal: 100
+            dp_valve_nominal: 100
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:003
+              parameters:
+                schedule: 3600*{10, 20}
+                temperature_heating_setpoint: 295.15
+                temperature_heating_setback: 291.15
+  - id: ROOF_ROOM:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 5.71
+      average_room_height: 2.4
+    external_boundaries:
+      floor_on_grounds:
+        - surface: 5.71
+          construction: FLOOR:001
+  - id: BATHROOM:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 5.71
+      average_room_height: 2.4
+    external_boundaries:
+      floor_on_grounds:
+        - surface: 5.71
+          construction: FLOOR:001
+  - id: HALL_2:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 4
+      average_room_height: 4.8
+    external_boundaries:
+      floor_on_grounds:
+        - surface: 4
+          construction: FLOOR:001
+      external_walls:
+        - surface: 2
+          azimuth: 0
+          tilt: pitched_roof_35
+          construction: ROOF:001
+        - surface: 2
+          azimuth: 3.14
+          tilt: pitched_roof_35
+          construction: ROOF:001
+# second floor
+
+  - id: ROOM_2:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 15.7
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 12.5
+          azimuth: 1.57
+          tilt: wall
+          construction: CAVITY_WALL:001
+        - surface: 8
+          azimuth: 0
+          tilt: pitched_roof_35
+          construction: ROOF:001
+        - surface: 8
+          azimuth: 3.14
+          tilt: pitched_roof_35
+          construction: ROOF:001
+      windows:
+        - surface: 1.536
+          azimuth: 1.57
+          tilt: wall
+          construction: SIMPLE:001
+          width: 1.0
+          height: 1.0
+    emissions:
+      - radiator:
+          id: RADIATOR:004
+          parameters:
+            nominal_heating_power_positive_for_heating: 5000
+      - valve:
+          id: VALVE:004
+          parameters:
+            dp_fixed_nominal: 100
+            dp_valve_nominal: 100
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:004
+              parameters:
+                schedule: 3600*{10, 20}
+                temperature_heating_setpoint: 295.15
+                temperature_heating_setback: 291.15
+  - id: ROOM_3:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 17
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 9
+          azimuth: 0
+          tilt: pitched_roof_35
+          construction: ROOF:001
+        - surface: 9
+          azimuth: 3.14
+          tilt: pitched_roof_35
+          construction: ROOF:001
+    emissions:
+      - radiator:
+          id: RADIATOR:005
+          parameters:
+            nominal_heating_power_positive_for_heating: 5000
+      - valve:
+          id: VALVE:005
+          parameters:
+            dp_fixed_nominal: 100
+            dp_valve_nominal: 100
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:005
+              parameters:
+                schedule: 3600*{10, 20}
+                temperature_heating_setpoint: 295.15
+                temperature_heating_setback: 291.15
+  - id: ATTIC:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 11
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 12
+          azimuth: 0
+          tilt: pitched_roof_35
+          construction: ROOF:001
+  - id: WC:002
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+    parameters:
+      floor_area: 1.23
+      average_room_height: 2.4
+    external_boundaries:
+      external_walls:
+        - surface: 1
+          azimuth: 0
+          tilt: pitched_roof_35
+          construction: ROOF:001
+
+systems:
+  - boiler:
+      id: BOILER:001
+      variant: without_storage
+      parameters:
+        nominal_heating_power: 10000
+        dp_nominal: 100
+      control:
+        boiler_control:
+          id: BOILER_CONTROL:001
+          parameters:
+            tsup_nominal: 363.15
+      inlets:
+        - SPLIT_VALVE:002
+  - pump:
+      id: PUMP:001
+      control:
+        collector_control:
+      inlets:
+        - BOILER:001
+
+  - three_way_valve:
+      id: THREE_WAY_VALVE:001
+      control:
+        three_way_valve_control:
+      inlets:
+        - SPLIT_VALVE:002
+        - PUMP:001
+      outlets:
+        - TEMPERATURE_SENSOR:001
+
+  - temperature_sensor:
+      id: TEMPERATURE_SENSOR:001
+      outlets:
+        - RADIATOR:001
+        - RADIATOR:002
+        - RADIATOR:003
+        - RADIATOR:004
+        - RADIATOR:005
+  - split_valve:
+      id: SPLIT_VALVE:002
+      inlets:
+        - VALVE:001
+        - VALVE:002
+        - VALVE:003
+        - VALVE:004
+        - VALVE:005
+      outlets:
+        - BOILER:001
+internal_walls:
+  - space_1: ROOM_2:001
+    space_2: LIVING:001
+    construction: INNERWALL:001
+    surface: 22
+    space_2_tilt: ceiling
+    space_1_tilt: floor
+
+  - space_1: ROOM_2:001
+    space_2: HALL:001
+    construction: INNERWALL:001
+    surface: 7
+  - space_1: ROOM_3:001
+    space_2: HALL_2:001
+    construction: INNERWALL:001
+    surface: 12
+  - space_1: ROOM_2:001
+    space_2: HALL_2:001
+    construction: INNERWALL:001
+    surface: 12
+  - space_1: ROOM_3:001
+    space_2: ATTIC:001
+    construction: INNERWALL:001
+    surface: 6
+  - space_1: ROOM_3:001
+    space_2: WC:002
+    construction: INNERWALL:001
+    surface: 2
+  - space_1: HALL:001
+    space_2: WC:002
+    construction: INNERWALL:001
+    surface: 2
+
+  - space_1: ROOM_1:001
+    space_2: WC:001
+    construction: INNERWALL:001
+    surface: 3.2
+  - space_1: ROOM_1:001
+    space_2: HALL_2:001
+    construction: INNERWALL:001
+    surface: 2.184
+  - space_1: ROOM_1:001
+    space_2: BATHROOM:001
+    construction: INNERWALL:001
+    surface: 6.48
+  - space_1: ROOM_1:001
+    space_2: HALL:001
+    construction: INNERWALL:001
+    surface: 3.6
+  - space_1: WC:001
+    space_2: HALL:001
+    construction: INNERWALL:001
+    surface: 5.44
+  - space_1: HALL:001
+    space_2: LIVING:001
+    construction: INNERWALL:001
+    surface: 8.66
+  - space_1: LIVING:001
+    space_2: HALL_2:001
+    construction: INNERWALL:001
+    surface: 13.344
+  - space_1: LIVING:001
+    space_2: KITCHEN:001
+    construction: INNERWALL:001
+    surface: 7.22
+  - space_1: KITCHEN:001
+    space_2: ROOF_ROOM:001
+    construction: INNERWALL:001
+    surface: 6.48
+  - space_1: KITCHEN:001
+    space_2: HALL_2:001
+    construction: INNERWALL:001
+    surface: 2.184
+  - space_1: ROOF_ROOM:001
+    space_2: BATHROOM:001
+    construction: INNERWALL:001
+    surface: 6.48
+  - space_1: BATHROOM:001
+    space_2: HALL_2:001
+    construction: INNERWALL:001
+    surface: 5
+  - space_1: ROOF_ROOM:001
+    space_2: HALL_2:001
+    construction: INNERWALL:001
+    surface: 5
+
+  # floor
+
+  - space_1: ROOM_3:001
+    space_2: ROOF_ROOM:001
+    construction: INNERWALL:001
+    surface: 5.71
+    space_2_tilt: ceiling
+    space_1_tilt: floor
+  - space_1: ROOM_3:001
+    space_2: BATHROOM:001
+    construction: INNERWALL:001
+    surface: 5.72
+    space_2_tilt: ceiling
+    space_1_tilt: floor
+  - space_1: ROOM_3:001
+    space_2: ROOM_1:001
+    construction: INNERWALL:001
+    surface: 3
+    space_2_tilt: ceiling
+    space_1_tilt: floor
+
+  - space_1: ATTIC:001
+    space_2: KITCHEN:001
+    construction: INNERWALL:001
+    surface: 11
+

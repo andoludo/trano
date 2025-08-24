@@ -258,18 +258,21 @@ class BaseSpace(BaseElement):
             if wall == ExternalWall:
                 self.boundaries.append(
                     VerticalWallParameters.from_neighbors_(
+                        self.name,
                         neighbors,
                         wall,  # type: ignore
                     )
                 )
                 self.boundaries.append(
                     RoofWallParameters.from_neighbors_(
+                        self.name,
                         neighbors,
                         wall,  # type: ignore
                     )
                 )
                 self.boundaries.append(
                     ExternalWallParameters.from_neighbors_(
+                        self.name,
                         neighbors,
                         wall,  # type: ignore
                     )
@@ -277,6 +280,7 @@ class BaseSpace(BaseElement):
 
             self.boundaries.append(
                 WallParameters.from_neighbors(
+                    self.name,
                     neighbors,
                     wall,  # type: ignore
                     filter=windowed_wall_parameters.included_external_walls,

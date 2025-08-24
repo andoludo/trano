@@ -1,0 +1,131 @@
+material:
+- id: MATERIAL:001
+  thermal_conductivity: 0.140
+  specific_heat_capacity: 900
+  density: 530
+
+- id: MATERIAL:002
+  thermal_conductivity: 0.040
+  specific_heat_capacity: 840
+  density: 12
+
+- id: MATERIAL:003
+  thermal_conductivity: 0.160
+  specific_heat_capacity: 840
+  density: 950
+- id: MATERIAL:004
+  thermal_conductivity: 0.040
+  specific_heat_capacity: 0
+  density: 0
+- id: MATERIAL:005
+  thermal_conductivity: 0.140
+  specific_heat_capacity: 1200
+  density: 650
+- id: MATERIAL:006
+  thermal_conductivity: 0.140
+  specific_heat_capacity: 900
+  density: 530
+
+- id: MATERIAL:007
+  thermal_conductivity: 0.040
+  specific_heat_capacity: 840
+  density: 12
+
+- id: MATERIAL:008
+  thermal_conductivity: 0.160
+  specific_heat_capacity: 840
+  density: 950
+constructions:
+  - id: EXTERIOR_WALL:001
+    layers:
+      - material: MATERIAL:001
+        thickness: 0.009
+      - material: MATERIAL:002
+        thickness: 0.066
+      - material: MATERIAL:003
+        thickness: 0.012
+  - id: FLOOR:001
+    layers:
+      - material: MATERIAL:004
+        thickness: 1.003
+      - material: MATERIAL:005
+        thickness: 0.025
+  - id: ROOF:001
+    layers:
+      - material: MATERIAL:006
+        thickness: 0.019
+      - material: MATERIAL:007
+        thickness: 0.1118
+      - material: MATERIAL:008
+        thickness: 0.010
+gas:
+- density: 1.2
+  id: AIR:001
+  longwave_emissivity: 0.0
+  shortwave_emissivity: 0.0
+  specific_heat_capacity: 1006.0
+  thermal_conductivity: 0.0256
+glass_material:
+- density: 2500.0
+  id: GLASS:001
+  solar_transmittance: [0.834]
+  longwave_emissivity: 0.84
+  shortwave_emissivity: 0.67
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 1.0
+glazings:
+    - id: WIN:01
+      layers:
+        - glass: GLASS:001
+          thickness: 0.003048
+        - gas: AIR:001
+          thickness: 0.012
+        - glass: GLASS:001
+          thickness: 0.003048
+
+weather:
+  parameters:
+    path: 'Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_CO_Denver.Intl.AP.725650_TMY3.mos")'
+spaces:
+  - id: Space:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{0, 24}
+        gain: "[80/48; 120/48; 0]"
+        heat_gain_if_occupied: 1/1/1
+    parameters:
+      floor_area: 48
+      average_room_height: 2.7
+    external_boundaries:
+      external_walls:
+        - surface: 21.6
+          azimuth: 180.0
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 21.6
+          azimuth: 0
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 16.2
+          azimuth: 270
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 16.2
+          azimuth: 90
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 48.0
+          azimuth: 0.0
+          tilt: ceiling
+          construction: ROOF:001
+      floor_on_grounds:
+        - surface: 48.0
+          construction: FLOOR:001
+      windows:
+        - surface: 12
+          azimuth: 0
+          tilt: wall
+          construction: WIN:01
+          width: 6
+          height: 2
+

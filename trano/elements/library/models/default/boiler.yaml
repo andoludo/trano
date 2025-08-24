@@ -115,3 +115,73 @@
     \ | capitalize}} {{ element.name }}(\nredeclare package MediumW = MediumW)\
     \ \"Boiler\" "
   variant: heat_pump
+
+- classes:
+  - Boiler
+  component_template:
+    bus:
+      real_inputs:
+      - component: Boiy
+        name: yBoiCon
+        port: u
+        target:
+          main: |-
+            element.name
+      - component: pumBoi
+        name: yPumBoi
+        port: y
+        target:
+          main: |-
+            element.name
+      real_outputs:
+      - component: tanTemTop
+        name: TStoTop
+        port: T
+        target:
+          main: |-
+            element.name
+      - component: tanTemBot
+        name: TStoBot
+        port: T
+        target:
+          main: |-
+            element.name
+    category: boiler
+    template: "\n    model BoilerWithoutStorage{{ element.name | capitalize}}\n    extends\
+      \ {{ package_name }}.Trano.Fluid.Boilers.PartialBoilerWithoutStorage;\n    {{bus_template}}\n\
+      \    equation\n    {{bus_ports | safe}}\n     end BoilerWithoutStorage{{ element.name\
+      \ | capitalize}};\n     "
+  library: default
+  parameter_processing:
+    function: exclude_parameters
+    parameter:
+    - dt_boi_nominal
+    - dt_rad_nominal
+    - sca_fac_rad
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - Control
+    - DataBus
+    use_counter: false
+  template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithoutStorage{{ element.name\
+    \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())\
+    \ \"Boiler\" "
+  variant: without_storage

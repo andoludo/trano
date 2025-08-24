@@ -11,6 +11,7 @@ from pydantic import (
     PrivateAttr,
 )
 
+
 from trano.elements.common_base import (
     BaseElementPosition,
     ComponentModel,
@@ -218,6 +219,7 @@ class BaseElement(BaseElementPort):
             )
         component_model_ = ComponentModel.model_validate(component_model)
         self.component_model = component_model_
+
         return component_model_
 
     def __hash__(self) -> int:

@@ -103,7 +103,7 @@ classes:
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: None
-        ifabsent: string(false)
+        ifabsent: string(true)
         range: string
   Building:
     attributes:
@@ -261,11 +261,11 @@ classes:
         range: string
       temperature_heating_setback:
         description: None
-        ifabsent: float(16)
+        ifabsent: float(289)
         range: float
       temperature_heating_setpoint:
         description: None
-        ifabsent: float(24)
+        ifabsent: float(297)
         range: float
   ExternalBoundaries:
     attributes:
@@ -352,8 +352,12 @@ classes:
         range: Construction
       space_1:
         range: Space
+      space_1_tilt:
+        range: string
       space_2:
         range: Space
+      space_2_tilt:
+        range: string
     slots:
     - surface
   Layer:
@@ -528,7 +532,7 @@ classes:
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: None
-        ifabsent: string(false)
+        ifabsent: string(true)
         range: string
       use_m_flow_f_dp_else_dp_f_m_flow:
         description: None
@@ -615,7 +619,7 @@ classes:
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: None
-        ifabsent: string(false)
+        ifabsent: string(true)
         range: string
   System:
     attributes:
@@ -694,7 +698,7 @@ classes:
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: None
-        ifabsent: string({false, false})
+        ifabsent: string({true, true})
         range: string
       valve_leakage:
         description: None
@@ -754,7 +758,7 @@ classes:
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: None
-        ifabsent: string(false)
+        ifabsent: string(true)
         range: string
       use_m_flow_f_dp_else_dp_f_m_flow:
         description: None
