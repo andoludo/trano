@@ -415,7 +415,7 @@ classes:
     attributes:
       controller_type:
         description: None
-        ifabsent: string(Buildings.Controls.OBC.CDL.Types.SimpleController.PI)
+        ifabsent: string(Buildings.Controls.OBC.CDL.Types.SimpleController.P)
         range: string
       k:
         description: None

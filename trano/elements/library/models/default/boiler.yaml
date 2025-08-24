@@ -120,32 +120,7 @@
   - Boiler
   component_template:
     bus:
-      real_inputs:
-      - component: Boiy
-        name: yBoiCon
-        port: u
-        target:
-          main: |-
-            element.name
-      - component: pumBoi
-        name: yPumBoi
-        port: y
-        target:
-          main: |-
-            element.name
-      real_outputs:
-      - component: tanTemTop
-        name: TStoTop
-        port: T
-        target:
-          main: |-
-            element.name
-      - component: tanTemBot
-        name: TStoBot
-        port: T
-        target:
-          main: |-
-            element.name
+      real_outputs: []
     category: boiler
     template: "\n    model BoilerWithoutStorage{{ element.name | capitalize}}\n    extends\
       \ {{ package_name }}.Trano.Fluid.Boilers.PartialBoilerWithoutStorage;\n    {{bus_template}}\n\
@@ -170,15 +145,6 @@
     multi_connection: true
     names:
     - port_b
-    use_counter: false
-  - flow: undirected
-    medium: data
-    multi_connection: true
-    names:
-    - dataBus
-    targets:
-    - Control
-    - DataBus
     use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithoutStorage{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\

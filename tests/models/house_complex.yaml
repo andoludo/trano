@@ -487,11 +487,6 @@ systems:
       parameters:
         nominal_heating_power: 10000
         dp_nominal: 100
-      control:
-        boiler_control:
-          id: BOILER_CONTROL:001
-          parameters:
-            tsup_nominal: 363.15
       inlets:
         - SPLIT_VALVE:002
   - pump:

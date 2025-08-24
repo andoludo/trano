@@ -293,6 +293,7 @@ partial model PartialBoilerWithoutStorage
   parameter Modelica.Units.SI.Temperature T_nominal=353.15
     "Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)"
     annotation (Dialog(enable=(effCur == Buildings.Fluid.Types.EfficiencyCurves.QuadraticLinear)));
+  parameter Modelica.Units.SI.Temperature TempSet=353.15;
 
   parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
     annotation (choicesAllMatching=true);
@@ -319,13 +320,6 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
     "Specific heat conductivity of insulation";
   parameter Integer nSeg(min=2) = 2 "Number of volume segments";
 
-  Buildings.Fluid.Movers.SpeedControlled_y pumBoi(
-    redeclare package Medium = MediumW,
-per(pressure(V_flow=V_flow, dp=dp)),
-    energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
-    "Pump for boiler circuit" annotation (Placement(transformation(extent={{-10,
-    -10},{10,10}}, origin={-8,10})));
-
   Buildings.Fluid.Boilers.BoilerPolynomial boi(
     a=a,
     effCur=effCur,
@@ -336,140 +330,49 @@ per(pressure(V_flow=V_flow, dp=dp)),
     dp_nominal=dp_nominal,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     T_start=293.15) "Boiler"
-    annotation (Placement(transformation(extent={{-74,0},{-54,20}})));
+    annotation (Placement(transformation(extent={{-58,-2},{-38,18}})));
   Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=288.15)
     "Ambient temperature in boiler room"
-    annotation (Placement(transformation(extent={{-14,74},{6,94}})));
-  Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor tanTemBot
-    "Tank temperature"
-    annotation (Placement(transformation(extent={{68,-66},{88,-46}})));
-  Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor tanTemTop
-    "Tank temperature"
-    annotation (Placement(transformation(extent={{68,-34},{88,-14}})));
-  Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package
-          Medium =
+    annotation (Placement(transformation(extent={{20,80},{40,100}})));
+  Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium =
 MediumW) "Fixed boundary condition, needed to provide a pressure in the system"
     annotation (Placement(transformation(extent={{-74,68},{-54,88}})));
         Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor1(
       redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
                                       "Radiator"  annotation (
-    Placement(transformation(origin={-36,11},
+    Placement(transformation(origin={-8,5},
     extent = {{-10, -10}, {10, 10}},
         rotation=0)));
-        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor2(
-      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
-                                      "Radiator"  annotation (
-    Placement(transformation(origin={66,-85},
-    extent = {{-10, -10}, {10, 10}},
-        rotation=0)));
-        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor4(
-      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
-                                      "Radiator"  annotation (
-    Placement(transformation(origin={-34,-97},
-    extent = {{-10, -10}, {10, 10}},
-        rotation=0)));
-  Buildings.Fluid.Sensors.MassFlowRate senMasFlo1(redeclare package
-          Medium =
-        MediumW)
-    annotation (Placement(transformation(extent={{10,-10},{-10,10}},
-        rotation=90,
-        origin={46,30})));
-  Buildings.Fluid.Sensors.MassFlowRate senMasFlo2(redeclare package
-          Medium =
-        MediumW)
-    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
-        rotation=90,
-        origin={-78,-46})));
-  Buildings.Fluid.Sensors.MassFlowRate senMasFlo3(redeclare package
-          Medium =
-        MediumW)
-    annotation (Placement(transformation(extent={{-6,-7},{6,7}},
-        rotation=0,
-        origin={13,10})));
-  Buildings.Fluid.Sensors.MassFlowRate senMasFlo4(redeclare package
-          Medium =
-        MediumW)
-    annotation (Placement(transformation(extent={{-10,-10},{10,10}},
-        rotation=0,
-        origin={94,-86})));
-  Modelica.Blocks.Math.Gain gain(k=Q_flow_nominal)
-    annotation (Placement(transformation(extent={{-70,-22},{-58,-10}})));
-  Modelica.Blocks.Continuous.Integrator integrator
-    annotation (Placement(transformation(extent={{-46,-26},{-30,-10}})));
-  Modelica.Blocks.Math.Gain gain1(k=2.77778e-7)
-    annotation (Placement(transformation(extent={{-46,-52},{-26,-32}})));
-  Modelica.Blocks.Math.Gain gain2(k=0.9*(1/11))
-    annotation (Placement(transformation(extent={{-26,-80},{-6,-60}})));
-  Modelica.Blocks.Routing.RealPassThrough Boiy
-    annotation (Placement(transformation(extent={{-122,36},{-104,54}})));
-      Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
-        prescribedTemperature annotation (Placement(transformation(extent
-              ={{20,-42},{40,-22}})));
-      IDEAS.Controls.Continuous.LimPID conPID annotation (Placement(
-            transformation(extent={{-42,46},{-22,66}})));
-      Modelica.Blocks.Sources.RealExpression realExpression(y=373)
-        annotation (Placement(transformation(extent={{54,50},{74,70}})));
+      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+                                              annotation (Placement(
+            transformation(extent={{-24,42},{-4,62}})));
+  Modelica.Blocks.Sources.RealExpression realExpression(y=TempSet)
+    annotation (Placement(transformation(extent={{-90,40},{-70,60}})));
 equation
   connect(
   TAmb.port, boi.heatPort)
            annotation (Line(
-      points={{6,84},{20,84},{20,30},{-64,30},{-64,17.2}},
+      points={{40,90},{44,90},{44,34},{-48,34},{-48,15.2}},
       color={191,0,0},
       smooth=Smooth.None));
   connect(
   bou.ports[1], boi.port_a)
             annotation (Line(
-      points={{-54,78},{-48,78},{-48,32},{-80,32},{-80,10},{-74,10}},
+      points={{-54,78},{-50,78},{-50,92},{-78,92},{-78,8},{-58,8}},
       color={0,127,255},
       smooth=Smooth.None));
-  connect(boi.port_b, temperature_sensor1.port_a) annotation (Line(points={{-54,
-          10},{-50,10},{-50,11},{-46,11}}, color={0,127,255}));
-  connect(temperature_sensor1.port_b, pumBoi.port_a) annotation (Line(points={{-26,11},
-          {-23,11},{-23,10},{-18,10}},     color={0,127,255}));
-  connect(boi.port_a, senMasFlo2.port_b)
-    annotation (Line(points={{-74,10},{-78,10},{-78,-36}}, color={0,127,255}));
-  connect(temperature_sensor4.port_a, senMasFlo2.port_a) annotation (Line(
-        points={{-44,-97},{-44,-98},{-78,-98},{-78,-56}}, color={0,127,255}));
-  connect(senMasFlo3.port_a, pumBoi.port_b)
-    annotation (Line(points={{7,10},{2,10}}, color={0,127,255}));
-  connect(temperature_sensor2.port_b, senMasFlo4.port_a) annotation (Line(
-        points={{76,-85},{80,-85},{80,-86},{84,-86}}, color={0,127,255}));
-  connect(senMasFlo1.port_a, port_b) annotation (Line(points={{46,40},{46,44},{86,
-          44},{86,0},{100,0}}, color={0,127,255}));
-  connect(port_a, senMasFlo4.port_b) annotation (Line(points={{-100,0},{-84,0},{
-          -84,-32},{-96,-32},{-96,-114},{110,-114},{110,-86},{104,-86}}, color={
-          0,127,255}));
-  connect(gain.y, integrator.u) annotation (Line(points={{-57.4,-16},{-54,-16},{
-          -54,-18},{-47.6,-18}}, color={0,0,127}));
-  connect(integrator.y, gain1.u) annotation (Line(points={{-29.2,-18},{-30,-18},
-          {-30,-4},{-74,-4},{-74,-12},{-76,-12},{-76,-32},{-48,-32},{-48,-42}},
-        color={0,0,127}));
-  connect(gain1.y, gain2.u) annotation (Line(points={{-25,-42},{-34,-42},{-34,-60},
-          {-60,-60},{-60,-70},{-28,-70}}, color={0,0,127}));
-      connect(temperature_sensor4.port_b, temperature_sensor2.port_a)
-        annotation (Line(points={{-24,-97},{-24,-98},{50,-98},{50,-85},{
-              56,-85}}, color={0,127,255}));
-      connect(senMasFlo1.port_b, senMasFlo3.port_b) annotation (Line(
-            points={{46,20},{46,10},{19,10}}, color={0,127,255}));
-      connect(prescribedTemperature.port, tanTemTop.port) annotation (
-          Line(points={{40,-32},{62,-32},{62,-24},{68,-24}}, color={191,0,
-              0}));
-      connect(prescribedTemperature.port, tanTemBot.port) annotation (
-          Line(points={{40,-32},{62,-32},{62,-56},{68,-56}}, color={191,0,
-              0}));
-      connect(temperature_sensor1.T, prescribedTemperature.T) annotation (
-         Line(points={{-36,22},{-36,26},{-22,26},{-22,-30},{10,-30},{10,
-              -32},{18,-32}}, color={0,0,127}));
-      connect(boi.T, conPID.u_m) annotation (Line(points={{-53,18},{-50,
-              18},{-50,28},{-32,28},{-32,44}}, color={0,0,127}));
-      connect(conPID.y, boi.y) annotation (Line(points={{-21,56},{-18,56},
-              {-18,94},{-84,94},{-84,18},{-76,18}}, color={0,0,127}));
-      connect(conPID.y, gain.u) annotation (Line(points={{-21,56},{-18,56},
-              {-18,94},{-84,94},{-84,2},{-82,2},{-82,-16},{-71.2,-16}},
-            color={0,0,127}));
-      connect(realExpression.y, conPID.u_s) annotation (Line(points={{75,
-              60},{78,60},{78,46},{-18,46},{-18,34},{-54,34},{-54,56},{
-              -44,56}}, color={0,0,127}));
+  connect(boi.port_b, temperature_sensor1.port_a) annotation (Line(points={{-38,8},
+          {-22,8},{-22,5},{-18,5}},        color={0,127,255}));
+      connect(boi.T, conPID.u_m) annotation (Line(points={{-37,16},{-22,16},{-22,
+          32},{-14,32},{-14,40}},              color={0,0,127}));
+      connect(conPID.y, boi.y) annotation (Line(points={{-3,52},{0,52},{0,66},{-50,
+          66},{-50,24},{-60,24},{-60,16}},          color={0,0,127}));
+  connect(temperature_sensor1.port_b, port_b)
+    annotation (Line(points={{2,5},{84,5},{84,0},{100,0}}, color={0,127,255}));
+  connect(port_a, boi.port_a) annotation (Line(points={{-100,0},{-68,0},{-68,8},
+          {-58,8}}, color={0,127,255}));
+  connect(realExpression.y, conPID.u_s) annotation (Line(points={{-69,50},{-34,50},
+          {-34,52},{-26,52}}, color={0,0,127}));
   annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
 Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
 Rectangle(
@@ -485,6 +388,7 @@ Rectangle(
           smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
             {100,100}})));
 end PartialBoilerWithoutStorage;
+
 
     partial model PartialBoilerWithStorage
       replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
@@ -4353,43 +4257,25 @@ BoilerWithoutStorageBoiler_001 boiler_001(
     V_flow=0.35714285714285715/1000*{0.5,1}
 ,
 redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue()) "Boiler"  annotation (
-    Placement(transformation(origin = { 100.0, 0.0 },
-    extent = {{ 5, -5}, {-5, 5}}
-)));
-        house_complex.Components.BaseClasses.BoilerControlBoiler_control_001
-    boiler_control_001(    threshold_outdoor_air_cutoff=288.15,
-    threshold_to_switch_off_boiler=288.15,
-    TSup_nominal=363.15
-) annotation (
-    Placement(transformation(origin = { -100.0, 0.0 },
+    Placement(transformation(origin = { 0.0, 0.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(boiler_001.port_a,port_a1)
         annotation (Line(
-        points={{ 100.0, 0.0 }    ,{ 50.0, 0.0 }    ,{ 50.0, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
-        smooth=Smooth.None))
-            ;        
-        connect(boiler_001.dataBus,boiler_control_001.dataBus)
-        annotation (Line(
-        points={{ 100.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ -100.0, 0.0 }    },
-        color={255,204,51},
-        thickness=0.1,pattern =
-        LinePattern.Solid,
         smooth=Smooth.None))
             ;        
         connect(boiler_001.port_b,port_b1)
         annotation (Line(
-        points={{ 100.0, 0.0 }    ,{ 50.0, 0.0 }    ,{ 50.0, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
         smooth=Smooth.None))
-            ;        
-        connect(boiler_control_001.dataBus,dataBus)
             ;end production;
     model bus
 
@@ -5233,22 +5119,9 @@ equation
 connect(dataBus.OccupiedWc_002, occSch2.occupied);
  end OccupancyOccupancy_12;
  
-            model BoilerControlBoiler_control_001
-    extends house_complex.Trano.Controls.ventilation.PartialBoilerControl;
-    Trano.Controls.BaseClasses.DataBus dataBus
-    annotation (Placement(transformation(
-  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
-    equation
-    connect(dataBus.TStoTopBoiler_001, sub1.u1);
-connect(dataBus.TStoBotBoiler_001, greThr.u);
-connect(dataBus.TAirOutBoiler_001, lesThrTOut.u);
-connect(dataBus.yBoiConBoiler_001, booToReaBoi.y);
-connect(dataBus.yPumBoiBoiler_001, booToReaPum.y);
-     end BoilerControlBoiler_control_001;
-     
         model CollectorControlControl_1
 Buildings.Controls.OBC.CDL.Reals.PIDWithReset
-conPum(    controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.PI,
+conPum(    controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.P,
     k=1.0,
     Nd=10.0,
     Ni=0.9,
@@ -5290,7 +5163,7 @@ end CollectorControlControl_1;
         model ThreeWayValveControlControl_2
   Buildings.Controls.OBC.CDL.Reals.PIDWithReset
                                       conVal(
-        controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.PI,
+        controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.P,
     k=1.0,
     Nd=10.0,
     Ni=0.9,
@@ -5330,13 +5203,7 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control_003
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
             TCooSetEmission_control_004
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control_001
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetEmission_control_005
@@ -5345,11 +5212,14 @@ Modelica.Blocks.Sources.RealExpression
             TColSetControl_2
             (y=363.15);
 Modelica.Blocks.Sources.RealExpression
+            TCooSetEmission_control_003
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
             TCooSetEmission_control_002
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TAirOutBoiler_control_001
-            (y=0.0);
+            TCooSetEmission_control_001
+            (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_2
             (y=true);
@@ -5414,20 +5284,18 @@ connect(dataBus.ppmCO2Room_2_001, TRoo1[9].ppm);
 connect(dataBus.ppmCO2Room_3_001, TRoo1[10].ppm);
 connect(dataBus.ppmCO2Wc_001, TRoo1[11].ppm);
 connect(dataBus.ppmCO2Wc_002, TRoo1[12].ppm);
-connect(dataBus.TCooSetKitchen_001,
-TCooSetEmission_control_003.y);
 connect(dataBus.TCooSetRoom_2_001,
 TCooSetEmission_control_004.y);
-connect(dataBus.TCooSetRoom_1_001,
-TCooSetEmission_control_001.y);
 connect(dataBus.TCooSetRoom_3_001,
 TCooSetEmission_control_005.y);
 connect(dataBus.TColSetControl_2,
 TColSetControl_2.y);
+connect(dataBus.TCooSetKitchen_001,
+TCooSetEmission_control_003.y);
 connect(dataBus.TCooSetLiving_001,
 TCooSetEmission_control_002.y);
-connect(dataBus.TAirOutBoiler_001,
-TAirOutBoiler_control_001.y);
+connect(dataBus.TCooSetRoom_1_001,
+TCooSetEmission_control_001.y);
 connect(dataBus.triggerControl_2,
 triggerControl_2.y);
 
@@ -5457,10 +5325,7 @@ end DataServer;
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
     equation
-    connect(dataBus.yBoiConBoiler_001, Boiy.u);
-connect(dataBus.yPumBoiBoiler_001, pumBoi.y);
-connect(dataBus.TStoTopBoiler_001, tanTemTop.T);
-connect(dataBus.TStoBotBoiler_001, tanTemBot.T);
+    
      end BoilerWithoutStorageBoiler_001;
      
         model PumpPump_001

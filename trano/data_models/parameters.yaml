@@ -196,7 +196,7 @@ PIDParameters:
     controller_type:
       alias: controllerType
       description: None
-      ifabsent: string(Buildings.Controls.OBC.CDL.Types.SimpleController.PI)
+      ifabsent: string(Buildings.Controls.OBC.CDL.Types.SimpleController.P)
       range: string
     k:
       alias: k
