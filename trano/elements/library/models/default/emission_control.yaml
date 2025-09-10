@@ -118,3 +118,187 @@
         {{package_name}}.Components.BaseClasses.EmissionControl{{ element.name | capitalize}}
         {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
   variant: default
+
+- classes:
+  - EmissionControl
+  component_template:
+    bus:
+      real_inputs:
+      - component: onOffController
+        name: TZon
+        port: u
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: booleanToReal
+        name: yHea
+        port: y
+        target:
+          main: |-
+            element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionControlOnOff{{ element.name | capitalize}}
+        parameter Real schedule[:]=3600*{7,19};
+
+      parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
+      parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
+      Modelica.Blocks.Interfaces.RealOutput y
+        {% raw %}annotation (Placement(transformation(extent={{100,-8},{120,12}})));{% endraw %}
+      
+      Buildings.Controls.SetPoints.OccupancySchedule
+                                 occSch2(firstEntryOccupied=true, occupancy=
+      schedule)
+        {% raw %}annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));{% endraw %}
+      
+      Buildings.Controls.OBC.CDL.Reals.Switch switch2
+        {% raw %}annotation (Placement(transformation(extent={{-22,-10},{-2,10}})));{% endraw %}
+      Buildings.Controls.OBC.CDL.Reals.Sources.Constant setpoint(k=THeaSet)
+        "Heat gain if occupied in room 2"
+        {% raw %}annotation (Placement(transformation(extent={{-80,32},{-60,52}})));{% endraw %}
+      Buildings.Controls.OBC.CDL.Reals.Sources.Constant setback(k=THeaSetBack)
+        "Heat gain if occupied in room 2"
+        {% raw %}annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));{% endraw %}
+      Trano.Controls.BaseClasses.DataBus dataBus {% raw %}annotation (Placement(
+            transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
+              extent={{-120,62},{-78,98}})));{% endraw %}
+        Modelica.Blocks.Logical.OnOffController onOffController
+          {% raw %}annotation (Placement(transformation(extent={{22,-16},{42,4}})));{% endraw %}
+        Modelica.Blocks.Math.BooleanToReal booleanToReal
+          {% raw %}annotation (Placement(transformation(extent={{54,-16},{74,4}})));{% endraw %}
+      equation 
+      connect(
+        occSch2.
+            occupied, switch2.u2) {% raw %}annotation (Line(
+          points={{-59,-6},{-34,-6},{-34,0},{-24,0}},
+          color={255,0,255},
+          smooth=Smooth.None));{% endraw %}
+      connect(
+        setpoint.y, switch2.u1) {% raw %}annotation (Line(points={{-58,42},{-32,42},{-32,8},{-24,
+                8}},   color={0,0,127}));{% endraw %}
+      connect(
+        setback.y, switch2.u3) {% raw %}annotation (Line(points={{-58,-50},{-32,-50},{-32,-8},{
+                -24,-8}},color={0,0,127}));{% endraw %}
+        connect(switch2.y, onOffController.reference)
+          {% raw %}annotation (Line(points={{0,0},{20,0}}, color={0,0,127}));{% endraw %}
+        connect(onOffController.y, booleanToReal.u)
+          {% raw %}annotation (Line(points={{43,-6},{52,-6}}, color={255,0,255}));{% endraw %}
+        connect(booleanToReal.y, y) {% raw %}annotation (Line(points={{75,-6},{94,-6},{94,2},{110,
+                2}}, color={0,0,127}));{% endraw %}
+      {{bus_ports | safe}}
+      end EmissionControlOnOff{{ element.name  | capitalize}};
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - y
+    targets:
+    - System
+    use_counter: false
+  template: |2-
+
+        {{package_name}}.Components.BaseClasses.EmissionControlOnOff{{ element.name | capitalize}}
+        {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
+  variant: onoff
+
+
+
+- classes:
+  - EmissionControl
+  component_template:
+    bus:
+      real_inputs:
+      - component: conPID
+        name: TZon
+        port: u_m
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: conPID
+        name: yHea
+        port: y
+        target:
+          main: |-
+            element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionControlPController{{ element.name | capitalize}}
+       parameter Real schedule[:]=3600*{7,19};
+
+        parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
+        parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
+        Modelica.Blocks.Interfaces.RealOutput y
+          {% raw %}annotation (Placement(transformation(extent={{100,-8},{120,12}})));{% endraw %}
+        Buildings.Controls.SetPoints.OccupancySchedule
+                         occSch2(firstEntryOccupied=true, occupancy=schedule)
+          {% raw %}annotation (Placement(transformation(extent={{-80,-10},{-60,10}})));{% endraw %}
+        Buildings.Controls.OBC.CDL.Reals.Switch switch2
+          {% raw %}annotation (Placement(transformation(extent={{-22,-10},{-2,10}})));{% endraw %}
+        Buildings.Controls.OBC.CDL.Reals.Sources.Constant setpoint(k=THeaSet) 
+          "Heat gain if occupied in room 2"
+          {% raw %}annotation (Placement(transformation(extent={{-80,32},{-60,52}})));{% endraw %}
+        Buildings.Controls.OBC.CDL.Reals.Sources.Constant setback(k=THeaSetBack) 
+          "Heat gain if occupied in room 2"
+          {% raw %}annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));{% endraw %}
+        Trano.Controls.BaseClasses.DataBus dataBus {% raw %}annotation (Placement(
+              transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
+      extent={{-120,62},{-78,98}})));{% endraw %}
+            IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+                                                    {% raw %}annotation (Placement(
+                  transformation(extent={{26,-10},{46,10}})));{% endraw %}
+      equation 
+        connect(occSch2.occupied, switch2.u2)
+                          {% raw %}annotation (Line(
+            points={{-59,-6},{-34,-6},{-34,0},{-24,0}},
+            color={255,0,255},
+            smooth=Smooth.None));{% endraw %}
+                       connect(setpoint.y,switch2.u1)
+                        {% raw %}annotation (Line(points={{-58,42},{-32,42},{-32,8},{-24,
+        8}},   color={0,0,127})){% endraw %};connect(setback.y,switch2.u3)
+                       {% raw %}annotation (Line(points={{-58,-50},{-32,-50},{-32,-8},{
+        -24,-8}},color={0,0,127}));{% endraw %}
+        connect(switch2.y, conPID.u_s)
+          {% raw %}annotation (Line(points={{0,0},{24,0}}, color={0,0,127}));{% endraw %}
+        connect(conPID.y, y)
+          {% raw %}annotation (Line(points={{47,0},{96,0},{96,2},{110,2}}, color={0,0,127})){% endraw %};
+      {{bus_ports | safe}}
+      end EmissionControlPController{{ element.name  | capitalize}};
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - y
+    targets:
+    - System
+    use_counter: false
+  template: |2-
+
+        {{package_name}}.Components.BaseClasses.EmissionControlPController{{ element.name | capitalize}}
+        {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
+  variant: PController

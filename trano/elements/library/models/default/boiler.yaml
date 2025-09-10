@@ -120,7 +120,31 @@
   - Boiler
   component_template:
     bus:
-      real_outputs: []
+      real_outputs:
+        - component: GasUsage
+          name: gas_usage
+          port: y
+          target:
+            main: |-
+              element.name
+        - component: TSupply
+          name: supply_temperature
+          port: T
+          target:
+            main: |-
+              element.name
+        - component: TReturn
+          name: return_temperature
+          port: T
+          target:
+            main: |-
+              element.name
+        - component: senVolFlo
+          name: m_flow
+          port: V_flow
+          target:
+            main: |-
+              element.name
     category: boiler
     template: "\n    model BoilerWithoutStorage{{ element.name | capitalize}}\n    extends\
       \ {{ package_name }}.Trano.Fluid.Boilers.PartialBoilerWithoutStorage;\n    {{bus_template}}\n\

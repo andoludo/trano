@@ -60,8 +60,12 @@ class BaseWindow(BaseSimpleWall):
             self.height = self.surface / self.width
         elif self.width is None and self.height is not None:
             self.width = self.surface / self.height
+        elif self.width is not None and self.height is not None and int(self.width * self.height) != int(self.surface):
+            raise InvalidBuildingStructureError(f"The surface does not match width * height for {self.name}.")
         else:
             ...
+
+
         return self
 
 

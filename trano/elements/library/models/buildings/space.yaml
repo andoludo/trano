@@ -167,3 +167,122 @@
             nConPar=0,
             energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
   variant: default
+- classes:
+  - Space
+  figures: []
+
+  library: buildings
+  parameter_processing:
+    function: exclude_parameters
+    parameter:
+    - volume
+  ports:
+  - flow: interchangeable_port
+    medium: heat
+    multi_connection: true
+    names:
+    - surf_surBou
+    targets:
+    - BaseInternalElement
+  - flow: undirected
+    medium: data
+    names:
+    - qGai_flow
+    targets:
+    - BaseOccupancy
+  - flow: undirected
+    medium: weather_data
+    names:
+    - weaBus
+    targets:
+    - BaseWeather
+  - flow: radiative
+    medium: heat
+    names:
+    - heaPorRad
+    targets:
+    - Emission
+  - flow: convective
+    medium: heat
+    multi_connection: true
+    names:
+    - heaPorAir
+    targets:
+    - Emission
+    use_counter: false
+  - flow: convective
+    medium: heat
+    names:
+    - heaPorAir
+    targets:
+    - DataBus
+  - flow: convective
+    medium: heat
+    names:
+    - heaPorAir
+    targets:
+    - VAVControl
+  - flow: inlet_or_outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - ports
+    targets:
+    - Ventilation
+    - Control
+    - DataBus
+  template: |-
+    Trano.ThermalZones.MixedAirInf {{ element.name }}(
+            redeclare package Medium = Medium,
+            {{ macros.render_parameters(parameters) | safe}},
+            {%- if element.number_ventilation_ports != 0 -%}
+            nPorts = {{ element.number_ventilation_ports }},
+            {%- endif %}
+            {%- for boundary in element.boundaries -%}
+                {%- if boundary.type == 'ExternalWall' -%}
+                    {%- if boundary.number %}
+                        nConExt={{ boundary.number }},
+                        datConExt(
+                        {{ macros.element_parameters(boundary) }},
+                        azi={{ macros.join_list(boundary.azimuths) }}),
+                    {% else %}
+                        nConExt=0,
+                    {%- endif %}
+                {%- endif %}
+                {%- if boundary.type == "InternalElement"-%}
+                    {%- if boundary.number %}
+                        nSurBou={{ boundary.number }},
+                        surBou(
+                        A={{ macros.join_list(boundary.surfaces) }},
+                        til={{ macros.convert_tilts(boundary.tilts) }}),
+                    {% else %}
+                        nSurBou=0,
+                    {%- endif %}
+                {%- endif %}
+                {%- if boundary.type == "WindowedWall" -%}
+                    {%- if boundary.number %}
+                        nConExtWin={{ boundary.number }},
+                        datConExtWin(
+                        {{ macros.element_parameters(boundary) }},
+                        glaSys={{ macros.join_list(boundary.window_layers) }},
+                        wWin={{ macros.join_list(boundary.window_width) }},
+                        hWin={{ macros.join_list(boundary.window_height) }},
+                        azi={{ macros.join_list(boundary.azimuths) }}),
+                    {% else %}
+                        nConExtWin=0,
+                    {%- endif %}
+                {%- endif %}
+                {%- if boundary.type == "FloorOnGround" -%}
+                    {%- if boundary.number %}
+                        nConBou={{ boundary.number }},
+                        datConBou(
+                        {{ macros.element_parameters(boundary) }},
+                        azi={{ macros.join_list(boundary.azimuths) }}),
+                    {% else %}
+                        nConBou=0,
+                    {%- endif %}
+                {%- endif %}
+            {%- endfor %}
+            nConPar=0,
+            energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial)
+  variant: infiltration

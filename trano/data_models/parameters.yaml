@@ -67,7 +67,7 @@ BoilerParameters:
     nominal_heating_power:
       alias: Q_flow_nominal
       description: None
-      ifabsent: float(2000)
+      ifabsent: float(20000)
       range: float
     nominal_mass_flow_radiator_loop:
       alias: null
@@ -255,12 +255,12 @@ PumpParameters:
     dp_nominal:
       alias: dp_nominal
       description: None
-      ifabsent: float(10000)
+      ifabsent: float(30000)
       range: float
     m_flow_nominal:
       alias: m_flow_nominal
       description: None
-      ifabsent: float(0.008)
+      ifabsent: float(0.15)
       range: float
     per:
       alias: per
@@ -280,7 +280,7 @@ RadiatorParameter:
     dp_nominal:
       alias: dp_nominal
       description: None
-      ifabsent: float(0)
+      ifabsent: float(2000)
       range: float
     dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity:
       alias: mDry
@@ -304,7 +304,7 @@ RadiatorParameter:
     nominal_heating_power_positive_for_heating:
       alias: Q_flow_nominal
       description: None
-      ifabsent: float(2000)
+      ifabsent: float(5000)
       range: float
     number_of_elements_used_in_the_discretization:
       alias: nEle
@@ -329,12 +329,12 @@ RadiatorParameter:
     water_inlet_temperature_at_nominal_condition:
       alias: T_a_nominal
       description: None
-      ifabsent: float(363.15)
+      ifabsent: float(353.15)
       range: float
     water_outlet_temperature_at_nominal_condition:
       alias: T_b_nominal
       description: None
-      ifabsent: float(353.15)
+      ifabsent: float(333.15)
       range: float
     water_volume_of_radiator:
       alias: VWat
@@ -385,7 +385,7 @@ SplitValveParameters:
     dp_nominal:
       alias: dp_nominal
       description: None
-      ifabsent: string({10000,-1,-1})
+      ifabsent: string({5000,-1,-1})
       range: string
     fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
       alias: deltaM
@@ -395,7 +395,7 @@ SplitValveParameters:
     m_flow_nominal:
       alias: None
       description: None
-      ifabsent: string(0.008*{1,-1,-1})
+      ifabsent: string(0.1*{1,-1,-1})
       range: string
     nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
       alias: mDyn_flow_nominal
@@ -430,7 +430,7 @@ ThreeWayValveParameters:
     dp_fixed_nominal:
       alias: dpFixed_nominal
       description: None
-      ifabsent: string({100,0})
+      ifabsent: string({2000,0})
       range: string
     dp_valve_nominal:
       alias: dpValve_nominal
@@ -450,7 +450,7 @@ ThreeWayValveParameters:
     m_flow_nominal:
       alias: m_flow_nominal
       description: None
-      ifabsent: float(0.0078)
+      ifabsent: float(0.05)
       range: float
     range_of_significant_deviation_from_equal_percentage_law:
       alias: delta0
@@ -491,12 +491,12 @@ ValveParameters:
     dp_fixed_nominal:
       alias: dpFixed_nominal
       description: None
-      ifabsent: float(6000)
+      ifabsent: float(5000)
       range: float
     dp_valve_nominal:
       alias: dpValve_nominal
       description: None
-      ifabsent: float(6000)
+      ifabsent: float(10000)
       range: float
     fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
       alias: deltaM
@@ -513,7 +513,7 @@ ValveParameters:
     m_flow_nominal:
       alias: m_flow_nominal
       description: None
-      ifabsent: float(0.01)
+      ifabsent: float(0.02)
       range: float
     range_of_significant_deviation_from_equal_percentage_law:
       alias: delta0

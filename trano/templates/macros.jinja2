@@ -50,7 +50,11 @@ connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ 
 "ceiling":"Buildings.Types.Tilt.Ceiling",
 "roof":"Buildings.Types.Tilt.Roof",
 "floor":"Buildings.Types.Tilt.Floor",
-"pitched_roof_45": 45, "pitched_roof_30": 30, "pitched_roof_35": 35, "pitched_roof_40": 40, "pitched_roof_20": 20}) %}
+ "pitched_roof_45": 0.785,
+  "pitched_roof_30": 0.524,
+  "pitched_roof_35": 0.611,
+  "pitched_roof_40": 0.698,
+  "pitched_roof_20": 0.349}) %}
     {% raw %}{{% endraw %} {%- for tilt in boundary_tilts -%}
     {{ tilts[tilt.value] }}{{ "," if not loop.last }} {%- endfor %}{% raw %}}{% endraw %}
 {%- endmacro %}

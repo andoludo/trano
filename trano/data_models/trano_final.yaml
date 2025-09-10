@@ -79,7 +79,7 @@ classes:
         range: string
       nominal_heating_power:
         description: None
-        ifabsent: float(2000)
+        ifabsent: float(20000)
         range: float
       number_of_volume_segments:
         description: None
@@ -251,6 +251,9 @@ classes:
       parameters:
         multivalued: false
         range: EmissionControlParameters
+      variant:
+        ifabsent: string('default')
+        range: string
     class_uri: schema:EmissionControl
     slots:
     - id
@@ -476,11 +479,11 @@ classes:
         range: string
       dp_nominal:
         description: None
-        ifabsent: float(10000)
+        ifabsent: float(30000)
         range: float
       m_flow_nominal:
         description: None
-        ifabsent: float(0.008)
+        ifabsent: float(0.15)
         range: float
       per:
         description: None
@@ -504,7 +507,7 @@ classes:
         range: float
       dp_nominal:
         description: None
-        ifabsent: float(0)
+        ifabsent: float(2000)
         range: float
       exponent_for_heat_transfer:
         description: None
@@ -520,7 +523,7 @@ classes:
         range: float
       nominal_heating_power_positive_for_heating:
         description: None
-        ifabsent: float(2000)
+        ifabsent: float(5000)
         range: float
       number_of_elements_used_in_the_discretization:
         description: None
@@ -540,17 +543,21 @@ classes:
         range: string
       water_inlet_temperature_at_nominal_condition:
         description: None
-        ifabsent: float(363.15)
+        ifabsent: float(353.15)
         range: float
       water_outlet_temperature_at_nominal_condition:
         description: None
-        ifabsent: float(353.15)
+        ifabsent: float(333.15)
         range: float
   Solar:
     class_uri: schema:Solar
     slots:
     - photovoltaic
   Space:
+    attributes:
+      variant:
+        ifabsent: string('default')
+        range: string
     class_uri: schema:Space
     description: Represents a Space
     slot_usage:
@@ -601,7 +608,7 @@ classes:
     attributes:
       dp_nominal:
         description: None
-        ifabsent: string({10000,-1,-1})
+        ifabsent: string({5000,-1,-1})
         range: string
       fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
         description: None
@@ -609,7 +616,7 @@ classes:
         range: float
       m_flow_nominal:
         description: None
-        ifabsent: string(0.008*{1,-1,-1})
+        ifabsent: string(0.1*{1,-1,-1})
         range: string
       nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
         description: None
@@ -667,7 +674,7 @@ classes:
         range: float
       dp_fixed_nominal:
         description: None
-        ifabsent: string({100,0})
+        ifabsent: string({2000,0})
         range: string
       dp_valve_nominal:
         description: None
@@ -683,7 +690,7 @@ classes:
         range: float
       m_flow_nominal:
         description: None
-        ifabsent: float(0.0078)
+        ifabsent: float(0.05)
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
         description: None
@@ -729,11 +736,11 @@ classes:
         range: float
       dp_fixed_nominal:
         description: None
-        ifabsent: float(6000)
+        ifabsent: float(5000)
         range: float
       dp_valve_nominal:
         description: None
-        ifabsent: float(6000)
+        ifabsent: float(10000)
         range: float
       fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
         description: None
@@ -746,7 +753,7 @@ classes:
         range: float
       m_flow_nominal:
         description: None
-        ifabsent: float(0.01)
+        ifabsent: float(0.02)
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
         description: None

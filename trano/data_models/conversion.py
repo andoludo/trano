@@ -277,6 +277,7 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
             raise Exception("SpaceParameter is not defined")
         space_ = Space(
             name=space["id"],
+            variant=space["variant"],
             external_boundaries=external_walls,
             occupancy=occupancy,
             parameters=SpaceParameter(**space["parameters"]),

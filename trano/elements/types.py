@@ -37,10 +37,10 @@ class Tilt(str, Enum):
 
 
 class Azimuth:
-    north = 0
-    south = 90
-    east = 45
-    west = 135
+    north = 3.14
+    south = 0
+    east = -1.57
+    west = 1.57
 
 
 class Flow(str, Enum):
