@@ -289,7 +289,15 @@ partial model PartialBoilerWithoutStorage
       "Medium model" annotation (choicesAllMatching=true);
   extends Buildings.Fluid.Interfaces.PartialTwoPort(
                                             redeclare package Medium = MediumW);
+parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab="Storage tank", group="Properties"));
+      parameter Modelica.Units.SI.Temperature TSet=323.15;
+   parameter Modelica.Units.SI.Temperature TSouSet=278.15;
+   parameter Integer modusValue=1;
 
+  parameter Buildings.Fluid.HeatPumps.Data.EquationFitReversible.EnergyPlus
+                                                          per
+   "Reverse heat pump performance data"
+   annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
   parameter Real a[:]={0.9} "Coefficients for efficiency curve";
   parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
     "Curve used to compute the efficiency";
@@ -417,7 +425,15 @@ end PartialBoilerWithoutStorage;
           "Medium model" annotation (choicesAllMatching=true);
       extends Buildings.Fluid.Interfaces.PartialTwoPort(
                                                 redeclare package Medium = MediumW);
+parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab="Storage tank", group="Properties"));
+      parameter Modelica.Units.SI.Temperature TSet=323.15;
+   parameter Modelica.Units.SI.Temperature TSouSet=278.15;
+   parameter Integer modusValue=1;
 
+  parameter Buildings.Fluid.HeatPumps.Data.EquationFitReversible.EnergyPlus
+                                                          per
+   "Reverse heat pump performance data"
+   annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
       parameter Real a[:]={0.9} "Coefficients for efficiency curve";
       parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
         "Curve used to compute the efficiency";
@@ -666,119 +682,337 @@ end PartialBoilerWithoutStorage;
                 {100,100}})));
     end PartialBoilerWithStorage;
 
-    partial model PartialHeatPump
-      replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
-          "Medium model" annotation (choicesAllMatching=true);
-      extends Buildings.Fluid.Interfaces.PartialTwoPort(
-                                                redeclare package Medium = MediumW);
-    final parameter Modelica.Units.SI.SpecificHeatCapacity cp1_default=
-          MediumW.specificHeatCapacityCp(MediumW.setState_pTX(
-          MediumW.p_default,
-          MediumW.T_default,
-          MediumW.X_default))
-        "Specific heat capacity of medium 2 at default medium state";
+    partial model PartialWaterWaterHeatPump
+        replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
+      "Medium model" annotation (choicesAllMatching=true);
+  extends Buildings.Fluid.Interfaces.PartialTwoPort(
+                                            redeclare package Medium = MediumW);
 
-      final parameter Modelica.Units.SI.SpecificHeatCapacity cp2_default=
-          MediumW.specificHeatCapacityCp(MediumW.setState_pTX(
-          MediumW.p_default,
-          MediumW.T_default,
-          MediumW.X_default))
-        "Specific heat capacity of medium 2 at default medium state";
 
-      parameter Real COP_nominal = 6 "Nominal COP";
 
-      parameter Modelica.Units.SI.Power P_nominal=10E3
-        "Nominal compressor power (at y=1)";
-      parameter Modelica.Units.SI.TemperatureDifference dTEva_nominal=-10
-        "Temperature difference evaporator outlet-inlet";
-      parameter Modelica.Units.SI.TemperatureDifference dTCon_nominal=10
-        "Temperature difference condenser outlet-inlet";
-      parameter Modelica.Units.SI.MassFlowRate m2_flow_nominal=-P_nominal*(
-          COP_nominal - 1)/cp2_default/dTEva_nominal
-        "Nominal mass flow rate at chilled water side";
-      parameter Modelica.Units.SI.MassFlowRate m1_flow_nominal=P_nominal*
-          COP_nominal/cp1_default/dTCon_nominal
-        "Nominal mass flow rate at condenser water wide";
-      Buildings.Fluid.HeatPumps.Carnot_y heaPum(
-        redeclare package Medium1 = MediumW,
-        redeclare package Medium2 = MediumW,
-        P_nominal=P_nominal,
-        dTEva_nominal=dTEva_nominal,
-        dTCon_nominal=dTCon_nominal,
-        dp1_nominal=6000,
-        dp2_nominal=6000,
-        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-        show_T=true,
-        use_eta_Carnot_nominal=false,
-        COP_nominal=COP_nominal,
-        TCon_nominal=303.15,
-        TEva_nominal=278.15) "Heat pump model"
-        annotation (Placement(transformation(extent={{-8,-16},{12,4}})));
-      Buildings.Fluid.Sources.MassFlowSource_T sou2(
-        nPorts=1,
-        redeclare package Medium = MediumW,
-        use_T_in=true,
-        m_flow=m2_flow_nominal,
-        T=291.15)
-        annotation (Placement(transformation(extent={{48,-68},{28,-48}})));
-      Buildings.Fluid.Sources.Boundary_pT sin2(nPorts=1, redeclare package
-            Medium =
-            MediumW)
-        annotation (Placement(transformation(extent={{-10,-10},{10,10}}, origin={-76,-60})));
-      Modelica.Blocks.Sources.Constant const(k=1)
-        annotation (Placement(transformation(extent={{-86,44},{-66,64}})));
-      Modelica.Blocks.Sources.Constant const2(k=273.15 + 15)
-        annotation (Placement(transformation(extent={{14,-100},{34,-80}})));
-      Buildings.Fluid.Sensors.TemperatureTwoPort
-                                 senTem(redeclare package Medium = MediumW,
-          m_flow_nominal=m1_flow_nominal)
-        annotation (Placement(transformation(extent={{-78,-10},{-58,10}})));
-      Buildings.Fluid.Sensors.TemperatureTwoPort
-                                 senTem1(redeclare package Medium = MediumW,
-          m_flow_nominal=m1_flow_nominal)
-        annotation (Placement(transformation(extent={{46,-10},{66,10}})));
-      Buildings.Fluid.Sources.Boundary_pT sin1(nPorts=2, redeclare package
-            Medium = MediumW)
-        annotation (Placement(transformation(extent={{-10,-10},{10,10}}, origin={-48,-24})));
-    equation
-      connect(sou2.ports[1],heaPum. port_a2) annotation (Line(
-          points={{28,-58},{18,-58},{18,-12},{12,-12}},
-          color={0,127,255},
-          smooth=Smooth.None));
-      connect(sin2.ports[1],heaPum. port_b2) annotation (Line(
-          points={{-66,-60},{-14,-60},{-14,-12},{-8,-12}},
-          color={0,127,255},
-          smooth=Smooth.None));
-      connect(const.y,heaPum. y) annotation (Line(points={{-65,54},{-18,54},{-18,3},
-              {-10,3}}, color={0,0,127}));
-      connect(const2.y,sou2. T_in) annotation (Line(points={{35,-90},{60,-90},{60,-54},
-              {50,-54}},
-                       color={0,0,127}));
-      connect(heaPum.port_b1,senTem1. port_a) annotation (Line(points={{12,0},{46,0}},
-                                color={0,127,255}));
-      connect(port_a,senTem. port_a) annotation (Line(points={{-100,0},{-78,0}},
-                               color={0,127,255}));
-      connect(senTem1.port_b, port_b)
-        annotation (Line(points={{66,0},{100,0}}, color={0,127,255}));
-        connect(senTem.port_b, sin1.ports[1]) annotation (Line(points={{-58,0},{
-                -32,0},{-32,-22},{-38,-22}}, color={0,127,255}));
-        connect(heaPum.port_a1, sin1.ports[2]) annotation (Line(points={{-8,0},{
-                -32,0},{-32,-26},{-38,-26},{-38,-26}}, color={0,127,255}));
-      annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
+parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab="Storage tank", group="Properties"));
+      parameter Modelica.Units.SI.Temperature TSet=323.15;
+   parameter Modelica.Units.SI.Temperature TSouSet=278.15;
+   parameter Integer modusValue=1;
+
+  parameter Buildings.Fluid.HeatPumps.Data.EquationFitReversible.EnergyPlus
+                                                          per
+   "Reverse heat pump performance data"
+   annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
+
+  parameter Real a[:]={0.9} "Coefficients for efficiency curve";
+  parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
+    "Curve used to compute the efficiency";
+  parameter Modelica.Units.SI.Temperature T_nominal=353.15
+    "Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)"
+    annotation (Dialog(enable=(effCur == Buildings.Fluid.Types.EfficiencyCurves.QuadraticLinear)));
+
+  parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
+    annotation (choicesAllMatching=true);
+
+  parameter Modelica.Units.SI.Power Q_flow_nominal "Nominal heating power";
+  parameter Boolean linearizeFlowResistance=false
+    "= true, use linear relation between m_flow and dp for any flow rate"
+    annotation (Dialog(enable=computeFlowResistance,
+       tab="Flow resistance"));
+  parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit=
+"Pa") "Pressure difference" annotation (Dialog(group="Nominal condition"));
+parameter Modelica.Units.SI.Pressure dp[:]=(3000 + 2000)*{2,1} "Pressure";
+parameter Real V_flow[:] = 0.001/1000*{0.5,1};
+  parameter Real deltaM=0.1
+    "Fraction of nominal flow rate where flow transitions to laminar";
+parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_rate_boiler;
+parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
+  parameter Boolean show_T=false;
+
+  parameter Modelica.Units.SI.Volume VTan "Tank volume";
+  parameter Modelica.Units.SI.Length hTan "Height of tank (without insulation)";
+  parameter Modelica.Units.SI.Length dIns "Thickness of insulation";
+  parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
+    "Specific heat conductivity of insulation";
+  parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+
+
+
+  parameter Modelica.Units.SI.MassFlowRate mSou_flow_nominal=per.hea.mSou_flow
+    "Source heat exchanger nominal mass flow rate";
+  parameter Modelica.Units.SI.MassFlowRate mLoa_flow_nominal=per.hea.mLoa_flow
+    "Load heat exchanger nominal mass flow rate";
+  Buildings.Fluid.HeatPumps.EquationFitReversible heaPum(
+    redeclare package Medium1 = MediumW,
+    redeclare package Medium2 = MediumW,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    T1_start=281.4,
+    per=per)
+   "Water to Water heat pump"
+   annotation (Placement(transformation(extent={{6,-8},{26,12}})));
+  Buildings.Fluid.Sources.MassFlowSource_T
+                           souPum(
+    redeclare package Medium = MediumW,
+    m_flow=mSou_flow_nominal,
+    nPorts=1,
+    use_T_in=true)
+   "Source side water pump"
+   annotation (Placement(transformation(
+      extent={{-10,-10},{10,10}},
+      rotation=180,
+      origin={52,-62})));
+  Modelica.Fluid.Sources.FixedBoundary loaVol(redeclare package Medium =
+        MediumW, nPorts=1)
+   "Volume for the load side"
+   annotation (Placement(transformation(extent={{-30,-46},{-50,-26}})));
+  Modelica.Fluid.Sources.FixedBoundary souVol(redeclare package Medium =
+        MediumW, nPorts=1)
+   "Volume for source side"
+   annotation (Placement(transformation(extent={{-50,-74},{-30,-54}})));
+  Modelica.Blocks.Sources.IntegerExpression modus(y=modusValue)
+    annotation (Placement(transformation(extent={{-8,58},{12,78}})));
+  Modelica.Blocks.Sources.RealExpression SupSetTemp(y=TSet)
+    annotation (Placement(transformation(extent={{-8,76},{12,96}})));
+  Modelica.Blocks.Sources.RealExpression souSetTemp(y=TSouSet)
+    annotation (Placement(transformation(extent={{-60,-106},{-40,-86}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort retTemp(redeclare package Medium =
+        MediumW, m_flow_nominal=0.3)
+    annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort supTemp(redeclare package Medium =
+        MediumW, m_flow_nominal=0.3)
+    annotation (Placement(transformation(extent={{52,-2},{72,18}})));
+  Buildings.Fluid.Storage.StratifiedEnhanced storage(
+    redeclare package Medium = MediumW,
+    m_flow_nominal=nominal_mass_flow_radiator_loop,
+    VTan=VTan,
+    hTan=hTan,
+    dIns=dIns,
+    nSeg=nSeg) if useStorageTank
+    annotation (Placement(transformation(extent={{-90,20},{-50,60}})));
+equation
+  connect(souPum.ports[1],heaPum. port_a2)
+    annotation (Line(points={{42,-62},{32,-62},{32,-4},{26,-4}},
+                                             color={0,127,255}));
+  connect(heaPum.port_b2,souVol. ports[1])
+    annotation (Line(points={{6,-4},{-24,-4},{-24,-64},{-30,-64}},
+                                                               color={0,127,255}));
+  connect(modus.y, heaPum.uMod) annotation (Line(points={{13,68},{14,68},{14,46},
+          {-2,46},{-2,2},{5,2}},
+                     color={255,127,0}));
+  connect(SupSetTemp.y, heaPum.TSet) annotation (Line(points={{13,86},{18,86},{18,
+          16},{0,16},{0,11},{4.6,11}},
+                         color={0,0,127}));
+  connect(souSetTemp.y, souPum.T_in) annotation (Line(points={{-39,-96},{74,-96},
+          {74,-66},{64,-66}}, color={0,0,127}));
+
+  connect(retTemp.port_b, heaPum.port_a1)
+    annotation (Line(points={{-40,0},{0,0},{0,8},{6,8}}, color={0,127,255}));
+  connect(heaPum.port_b1,supTemp. port_a) annotation (Line(points={{26,8},{52,8}},
+                            color={0,127,255}));
+  connect(supTemp.port_b, port_b)
+    annotation (Line(points={{72,8},{86,8},{86,0},{100,0}},
+                                                        color={0,127,255}));
+  connect(loaVol.ports[1], retTemp.port_b) annotation (Line(points={{-50,-36},{-54,
+          -36},{-54,-18},{-36,-18},{-36,0},{-40,0}}, color={0,127,255}));
+
+
+          if useStorageTank then
+  connect(port_a, storage.port_a) annotation (Line(points={{-100,0},{-86,0},{-86,
+          14},{-94,14},{-94,66},{-70,66},{-70,60}}, color={0,127,255}));
+  connect(storage.port_b, retTemp.port_a)
+    annotation (Line(points={{-70,20},{-70,0},{-60,0}}, color={0,127,255}));
+
+          else
+  connect(port_a, retTemp.port_a)
+    annotation (Line(points={{-100,0},{-60,0}}, color={0,127,255}));
+ end if;
+  annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
+Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
+Rectangle(
+  fillColor={255,255,255},
+          fillPattern=FillPattern.Solid,
+          extent={{-68,70},{70,-70}}),
+        Polygon(
+          lineColor={0,0,255},
+          fillColor={0,0,255},
+          fillPattern=FillPattern.Solid,
+          points={{-68,18},{-68,18},{-54,32},{-28,16},{0,30},{26,16},{46,32},{70,
+              18},{70,18},{70,-70},{70,-70},{-68,-70},{-68,-70},{-68,18}},
+          smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
+            {100,100}}), graphics={
+                              Line(points={{-18,-52}},color={28,108,200})}));
+    end PartialWaterWaterHeatPump;
+    partial model PartialAirWaterHeatPump
+replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
+"Medium model" annotation (choicesAllMatching=true);
+  extends
+      Buildings.Fluid.Interfaces.PartialTwoPort(
+                                    redeclare package Medium = MediumW);
+
+  parameter Boolean useStorageTank=false "Use storage tank"
+annotation (Dialog(tab="Storage tank", group="Properties"));
+  parameter Real a[:]={0.9} "Coefficients for efficiency curve";
+  parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
+    "Curve used to compute the efficiency";
+  parameter Modelica.Units.SI.Temperature T_nominal=353.15
+    "Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)"
+    annotation (Dialog(enable=(effCur == Buildings.Fluid.Types.EfficiencyCurves.QuadraticLinear)))
+    ;
+
+  parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
+    annotation (choicesAllMatching=true);
+
+  parameter Modelica.Units.SI.Power Q_flow_nominal "Nominal heating power";
+  parameter Boolean linearizeFlowResistance=false
+    "= true, use linear relation between m_flow and dp for any flow rate"
+    annotation (Dialog(enable=computeFlowResistance, tab="Flow resistance"));
+  parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit="Pa")
+"Pressure difference" annotation (Dialog(group="Nominal condition"));
+  parameter Modelica.Units.SI.Pressure dp[:]=(3000 + 2000)*{2,1} "Pressure";
+  parameter Real V_flow[:]=0.001/1000*{0.5,1};
+  parameter Real deltaM=0.1
+    "Fraction of nominal flow rate where flow transitions to laminar";
+  parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_rate_boiler;
+  parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
+  parameter Boolean show_T=false;
+
+  parameter Modelica.Units.SI.Volume VTan "Tank volume";
+  parameter Modelica.Units.SI.Length hTan "Height of tank (without insulation)";
+  parameter Modelica.Units.SI.Length dIns "Thickness of insulation";
+  parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
+    "Specific heat conductivity of insulation";
+  parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+
+  parameter Modelica.Units.SI.Temperature TSet=323.15;
+  parameter Modelica.Units.SI.Temperature TSouSet=278.15;
+  parameter Integer modusValue=1;
+
+  parameter Buildings.Fluid.HeatPumps.Data.EquationFitReversible.EnergyPlus
+                                                  per
+"Reverse heat pump performance data"
+annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
+  parameter Modelica.Units.SI.MassFlowRate mSou_flow_nominal=per.hea.mSou_flow
+    "Source heat exchanger nominal mass flow rate";
+  parameter Modelica.Units.SI.MassFlowRate mLoa_flow_nominal=per.hea.mLoa_flow
+    "Load heat exchanger nominal mass flow rate";
+  Buildings.Fluid.Sources.MassFlowSource_T
+                   souPum(
+redeclare package Medium = Buildings.Media.Air,
+m_flow=1.7,
+    use_T_in=true,
+nPorts=1) "Source side water pump" annotation (Placement(transformation(
+        extent={{-10,-10},{10,10}},
+        rotation=180,
+        origin={52,-62})));
+  Modelica.Fluid.Sources.FixedBoundary loaVol(redeclare package Medium =
+MediumW, nPorts=1) "Volume for the load side"
+annotation (Placement(transformation(extent={{-30,-46},{-50,-26}})));
+  Modelica.Fluid.Sources.FixedBoundary souVol(redeclare package Medium =
+    Buildings.Media.Air, nPorts=1) "Volume for source side"
+annotation (Placement(transformation(extent={{-50,-74},{-30,-54}})));
+  Modelica.Blocks.Sources.BooleanExpression modus(y=true)
+    annotation (Placement(transformation(extent={{-8,58},{12,78}})));
+  Modelica.Blocks.Sources.RealExpression SupSetTemp(y=TSet)
+    annotation (Placement(transformation(extent={{-8,76},{12,96}})));
+  Modelica.Blocks.Sources.RealExpression souSetTemp(y=TSouSet)
+    annotation (Placement(transformation(extent={{-60,-106},{-40,-86}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort retTemp(redeclare package Medium
+      =
+MediumW, m_flow_nominal=0.3)
+    annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort supTemp(redeclare package Medium
+      =
+MediumW, m_flow_nominal=0.3)
+    annotation (Placement(transformation(extent={{52,-2},{72,18}})));
+  Buildings.Fluid.Storage.StratifiedEnhanced storage(
+    redeclare package Medium = MediumW,
+    m_flow_nominal=nominal_mass_flow_radiator_loop,
+    VTan=VTan,
+    hTan=hTan,
+    dIns=dIns,
+    nSeg=nSeg) if useStorageTank
+    annotation (Placement(transformation(extent={{-90,20},{-50,60}})));
+  Buildings.Fluid.HeatPumps.ModularReversible.AirToWaterTableData2D
+airToWaterTableData2D(
+    redeclare package MediumCon = MediumW,
+use_intSafCtr=false,
+QHea_flow_nominal=Q_flow_nominal,
+TConHea_nominal=TSet,
+    TEvaHea_nominal=293.15,
+    TConCoo_nominal=303.15,
+    TEvaCoo_nominal=283.15,
+redeclare
+  Buildings.Fluid.HeatPumps.ModularReversible.Data.TableData2D.EN14511.Vitocal251A08
+  datTabHea,
+redeclare
+  Buildings.Fluid.Chillers.ModularReversible.Data.TableData2D.EN14511.Vitocal251A08
+  datTabCoo)
+annotation (Placement(transformation(extent={{-14,-12},{24,26}})));
+  IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P,
+  k=5) annotation (Placement(
+transformation(extent={{50,50},{70,70}})));
+equation
+  connect(
+  souSetTemp.y, souPum.T_in) annotation (Line(points={{-39,-96},{74,-96},
+  {74,-66},{64,-66}}, color={0,0,127}));
+
+  connect(
+  supTemp.port_b, port_b) annotation (Line(points={{72,8},{86,8},{86,0},{100,0}},
+                                                color={0,127,255}));
+  connect(
+  loaVol.ports[1], retTemp.port_b) annotation (Line(points={{-50,-36},{-54,
+  -36},{-54,-18},{-36,-18},{-36,0},{-40,0}}, color={0,127,255}));
+
+  if useStorageTank then
+connect(
+  port_a, storage.port_a) annotation (Line(points={{-100,0},{-86,0},{-86,
+  14},{-94,14},{-94,66},{-70,66},{-70,60}}, color={0,127,255}));
+connect(
+  storage.port_b, retTemp.port_a)
+      annotation (Line(points={{-70,20},{-70,0},{-60,0}}, color={0,127,255}));
+
+  else
+connect(
+  port_a, retTemp.port_a)
+      annotation (Line(points={{-100,0},{-60,0}}, color={0,127,255}));
+  end if;
+  connect(
+      retTemp.port_b, airToWaterTableData2D.port_a1) annotation (Line(
+    points={{-40,0},{-20,0},{-20,18.4},{-14,18.4}}, color={0,127,255}));
+  connect(
+      airToWaterTableData2D.port_b1, supTemp.port_a) annotation (Line(
+    points={{24,18.4},{46,18.4},{46,8},{52,8}}, color={0,127,255}));
+  connect(
+      souPum.ports[1], airToWaterTableData2D.port_a2) annotation (Line(
+    points={{42,-62},{30,-62},{30,-4.4},{24,-4.4}}, color={0,127,255}));
+  connect(
+      airToWaterTableData2D.port_b2, souVol.ports[1]) annotation (Line(
+    points={{-14,-4.4},{-24,-4.4},{-24,-64},{-30,-64}}, color={0,127,255}));
+  connect(
+      modus.y, airToWaterTableData2D.hea) annotation (Line(points={{13,68},{
+      10,68},{10,44},{-28,44},{-28,3.01},{-16.09,3.01}}, color={255,0,255}));
+  connect(
+      supTemp.T, conPID.u_m)
+annotation (Line(points={{62,19},{62,48},{60,48}}, color={0,0,127}));
+  connect(
+      conPID.y, airToWaterTableData2D.ySet) annotation (Line(points={{71,60},
+      {76,60},{76,38},{-18,38},{-18,10.61},{-16.09,10.61}}, color={0,0,127}));
+  connect(
+      SupSetTemp.y, conPID.u_s) annotation (Line(points={{13,86},{40,86},{40,
+      60},{48,60}}, color={0,0,127}));
+  annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
     Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
     Rectangle(
       fillColor={255,255,255},
-              fillPattern=FillPattern.Solid,
-              extent={{-68,70},{70,-70}}),
-            Polygon(
-              lineColor={0,0,255},
-              fillColor={0,0,255},
-              fillPattern=FillPattern.Solid,
-              points={{-68,18},{-68,18},{-54,32},{-28,16},{0,30},{26,16},{46,32},{70,
-                  18},{70,18},{70,-70},{70,-70},{-68,-70},{-68,-70},{-68,18}},
-              smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
-                {100,100}})));
-    end PartialHeatPump;
+  fillPattern=FillPattern.Solid,
+  extent={{-68,70},{70,-70}}),
+Polygon(
+  lineColor={0,0,255},
+  fillColor={0,0,255},
+  fillPattern=FillPattern.Solid,
+  points={{-68,18},{-68,18},{-54,32},{-28,16},{0,30},{26,16},{46,32},{70,
+      18},{70,18},{70,-70},{70,-70},{-68,-70},{-68,-70},{-68,18}},
+  smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
+    {100,100}}), graphics={
+                      Line(points={{-18,-52}},color={28,108,200})}));
+end PartialAirWaterHeatPump;
+
   end Boilers;
 
     package Ventilation

@@ -93,6 +93,14 @@ classes:
         description: None
         ifabsent: float(0.2)
         range: float
+      temperature_heatpump_source:
+        description: None
+        ifabsent: float(286.15)
+        range: string
+      temperature_supply_setpoint_heat_pump:
+        description: None
+        ifabsent: float(323.15)
+        range: string
       temperature_used_to_compute_nominal_efficiency:
         description: None
         ifabsent: float(353.15)
@@ -104,6 +112,10 @@ classes:
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: None
         ifabsent: string(true)
+        range: string
+      use_storage_tank:
+        description: None
+        ifabsent: string(false)
         range: string
   Building:
     attributes:
@@ -259,6 +271,10 @@ classes:
     - id
   EmissionControlParameters:
     attributes:
+      controller_gain:
+        description: None
+        ifabsent: float(5)
+        range: float
       schedule:
         ifabsent: string(3600*{7, 19})
         range: string
@@ -473,10 +489,6 @@ classes:
       constant_input_set_point:
         description: None
         range: float
-      control_input_type:
-        description: None
-        ifabsent: string(None)
-        range: string
       dp_nominal:
         description: None
         ifabsent: float(30000)
@@ -485,10 +497,6 @@ classes:
         description: None
         ifabsent: float(0.15)
         range: float
-      per:
-        description: None
-        ifabsent: string(None)
-        range: string
   Radiator:
     attributes:
       control:
@@ -664,8 +672,7 @@ classes:
     attributes:
       Av:
         description: None
-        ifabsent: string(None)
-        range: string
+        range: float
       Cv:
         description: None
         range: float
@@ -690,7 +697,7 @@ classes:
         range: float
       m_flow_nominal:
         description: None
-        ifabsent: float(0.05)
+        ifabsent: float(0.3)
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
         description: None

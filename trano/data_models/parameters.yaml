@@ -113,6 +113,21 @@ BoilerParameters:
       alias: V_flow
       func: 'lambda self: f''{self.nominal_mass_flow_rate_boiler}'' ''/1000*{0.5,1}'''
       type: str
+    use_storage_tank:
+      alias: useStorageTank
+      description: None
+      ifabsent: string(false)
+      range: string
+    temperature_heatpump_source:
+      alias: TSouSet
+      description: None
+      ifabsent: float(286.15)
+      range: string
+    temperature_supply_setpoint_heat_pump:
+      alias: TSet
+      description: None
+      ifabsent: float(323.15)
+      range: string
   classes:
   - Boiler
 ControlLoopsParameters:
@@ -169,6 +184,11 @@ EmissionControlParameters:
       alias: THeaSetBack
       description: None
       ifabsent: float(289)
+      range: float
+    controller_gain:
+      alias: k
+      description: None
+      ifabsent: float(5)
       range: float
   classes:
   - EmissionControl
@@ -247,11 +267,6 @@ PumpParameters:
       alias: constInput
       description: None
       range: float
-    control_input_type:
-      alias: inputType
-      description: None
-      ifabsent: string(None)
-      range: string
     dp_nominal:
       alias: dp_nominal
       description: None
@@ -262,11 +277,6 @@ PumpParameters:
       description: None
       ifabsent: float(0.15)
       range: float
-    per:
-      alias: per
-      description: None
-      ifabsent: string(None)
-      range: string
 
   classes:
   - Pump
@@ -417,8 +427,7 @@ ThreeWayValveParameters:
     Av:
       alias: Av
       description: None
-      ifabsent: string(None)
-      range: string
+      range: float
     Cv:
       alias: Cv
       description: None
@@ -450,7 +459,7 @@ ThreeWayValveParameters:
     m_flow_nominal:
       alias: m_flow_nominal
       description: None
-      ifabsent: float(0.05)
+      ifabsent: float(0.3)
       range: float
     range_of_significant_deviation_from_equal_percentage_law:
       alias: delta0

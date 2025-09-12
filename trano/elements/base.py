@@ -196,6 +196,11 @@ class BaseElement(BaseElementPort):
         package_name = network.name
         library_name = network.library.base_library()
         parameters = self.processed_parameters(network.library)
+        # TODO: temporary fix for boolean parameters
+        parameters = {
+            key: value.lower() if value in ["True", "False"] else value
+            for key, value in parameters.items()
+        }
         component_model: Dict[str, Any] = {"id": hash(self)}
         for model_type, annotation in {
             "model": self.position.global_.annotation,

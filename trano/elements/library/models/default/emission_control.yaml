@@ -34,6 +34,7 @@
 
         parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
           parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
+      parameter Real k(min=0) = 1 "Gain of controller";
       Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
       emissionControl
       {% raw %}annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); {% endraw %}
@@ -143,6 +144,7 @@
 
       parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
       parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
+      parameter Real k(min=0) = 1 "Gain of controller";
       Modelica.Blocks.Interfaces.RealOutput y
         {% raw %}annotation (Placement(transformation(extent={{100,-8},{120,12}})));{% endraw %}
       
@@ -240,6 +242,7 @@
 
         parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
         parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
+      parameter Real k(min=0) = 1 "Gain of controller";
         Modelica.Blocks.Interfaces.RealOutput y
           {% raw %}annotation (Placement(transformation(extent={{100,-8},{120,12}})));{% endraw %}
         Buildings.Controls.SetPoints.OccupancySchedule

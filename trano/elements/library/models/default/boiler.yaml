@@ -82,7 +82,7 @@
     use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithStorage{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
     \ \"Boiler\" "
   variant: default
 - classes:
@@ -91,12 +91,18 @@
     bus:
       real_outputs: []
     category: boiler
-    template: "\n    model HeatPump{{ element.name | capitalize}}\n    extends\
-      \ {{ package_name }}.Trano.Fluid.Boilers.PartialHeatPump;\n    {{bus_template}}\n\
-      \    equation\n    {{bus_ports | safe}}\n     end HeatPump{{ element.name\
+    template: "\n    model WaterWaterHeatPump{{ element.name | capitalize}}\n    extends\
+      \ {{ package_name }}.Trano.Fluid.Boilers.PartialWaterWaterHeatPump;\n    {{bus_template}}\n\
+      \    equation\n    {{bus_ports | safe}}\n     end WaterWaterHeatPump{{ element.name\
       \ | capitalize}};\n     "
 
   library: default
+  parameter_processing:
+    function: exclude_parameters
+    parameter:
+    - dt_boi_nominal
+    - dt_rad_nominal
+    - sca_fac_rad
   ports:
   - flow: inlet
     medium: fluid
@@ -111,10 +117,11 @@
     - port_b
     use_counter: false
 
-  template: "\n{{package_name}}.Components.BaseClasses.\nHeatPump{{ element.name\
-    \ | capitalize}} {{ element.name }}(\nredeclare package MediumW = MediumW)\
+  template: "\n{{package_name}}.Components.BaseClasses.\nWaterWaterHeatPump{{ element.name\
+    \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
     \ \"Boiler\" "
-  variant: heat_pump
+  variant: water_water_heat_pump
 
 - classes:
   - Boiler
@@ -172,6 +179,44 @@
     use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithoutStorage{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.HeatingOilLowerHeatingValue())\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
     \ \"Boiler\" "
   variant: without_storage
+
+- classes:
+  - Boiler
+  component_template:
+    bus:
+      real_outputs: []
+    category: boiler
+    template: "\n    model AirWaterHeatPump{{ element.name | capitalize}}\n    extends\
+      \ {{ package_name }}.Trano.Fluid.Boilers.PartialAirWaterHeatPump;\n    {{bus_template}}\n\
+      \    equation\n    {{bus_ports | safe}}\n     end AirWaterHeatPump{{ element.name\
+      \ | capitalize}};\n     "
+
+  library: default
+  parameter_processing:
+    function: exclude_parameters
+    parameter:
+    - dt_boi_nominal
+    - dt_rad_nominal
+    - sca_fac_rad
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+
+  template: "\n{{package_name}}.Components.BaseClasses.\nAirWaterHeatPump{{ element.name\
+    \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
+    \ \"Boiler\" "
+  variant: air_water_heat_pump
