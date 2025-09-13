@@ -414,9 +414,64 @@ def test_bestest_case600ff(schema: Path) -> None:
 
 def test_house_complex(schema: Path) -> None:
     house = get_path("house_complex.yaml")
+
     network = convert_network(
         "house_complex",
         house,
     )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_house_infiltration_boiler(schema: Path) -> None:
+    house = get_path("house_infiltration_boiler.yaml")
+
+    network = convert_network(
+        "house_infiltration_boiler",
+        house,
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_house_infiltration_boiler_ideas(schema: Path) -> None:
+    house = get_path("house_infiltration_boiler.yaml")
+
+    network = convert_network(
+        "house_infiltration_boiler_ideas",
+        house,
+        library=Library.from_configuration("IDEAS"),
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_house_infiltration_air_water_heat_pump(schema: Path) -> None:
+    house = get_path("house_infiltration_air_water_heat_pump.yaml")
+
+    network = convert_network(
+        "house_infiltration_air_water_heat_pump",
+        house,
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_house_infiltration_air_water_heat_pump_ideas(schema: Path) -> None:
+    house = get_path("house_infiltration_air_water_heat_pump.yaml")
+
+    network = convert_network(
+        "house_infiltration_air_water_heat_pump_ideas",
+        house,
+        library=Library.from_configuration("IDEAS"),
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_house_complex_dedicated_pumps(schema: Path) -> None:
+    house = get_path("house_complex_dedicated_pumps.yaml")
+
+    network = convert_network("house_complex_dedicated_pumps", house)
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))

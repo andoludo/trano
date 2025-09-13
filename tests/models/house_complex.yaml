@@ -142,9 +142,7 @@ material:
   shortwave_emissivity: 0.65
   specific_heat_capacity: 840
   thermal_conductivity: 0.54
-weather:
-  parameters:
-    path: 'weather.mos'
+
 spaces:
   - id: ROOM_1:001
     occupancy:

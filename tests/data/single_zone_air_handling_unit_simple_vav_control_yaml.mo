@@ -3740,28 +3740,28 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TAirSupAhu_control_001
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
-            VMinOA_flowAhu_control_001
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
-            dpDucAhu_control_001
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
             TOutAhu_control_001
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TAirMixAhu_control_001
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
-            VAirOut_flowAhu_control_001
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
             VAdjAreBreZon_flowAhu_control_001
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
+            VMinOA_flowAhu_control_001
+            (y=0.0);
+Modelica.Blocks.Sources.RealExpression
+            VAirOut_flowAhu_control_001
+            (y=0.0);
+Modelica.Blocks.Sources.RealExpression
             VAdjPopBreZon_flowAhu_control_001
+            (y=0.0);
+Modelica.Blocks.Sources.RealExpression
+            dpDucAhu_control_001
+            (y=0.0);
+Modelica.Blocks.Sources.RealExpression
+            TAirSupAhu_control_001
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             VDis_flowAhu_control_001
@@ -3770,10 +3770,10 @@ Modelica.Blocks.Sources.IntegerExpression
             uAhuOpeModAhu_control_001
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            yZonTemResReqAhu_control_001
+            yZonPreResReqAhu_control_001
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            yZonPreResReqAhu_control_001
+            yZonTemResReqAhu_control_001
             (y=0);
 Modelica.Blocks.Sources.BooleanExpression
             u1SupFanAhu_control_001
@@ -3795,30 +3795,30 @@ connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_001, TRoo[1].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
-connect(dataBus.TAirSupAhu_control_001,
-TAirSupAhu_control_001.y);
-connect(dataBus.VMinOA_flowVav_control_001,
-VMinOA_flowAhu_control_001.y);
-connect(dataBus.dpDucAhu_control_001,
-dpDucAhu_control_001.y);
 connect(dataBus.TOutAhu_control_001,
 TOutAhu_control_001.y);
 connect(dataBus.TAirMixAhu_control_001,
 TAirMixAhu_control_001.y);
-connect(dataBus.VAirOut_flowAhu_control_001,
-VAirOut_flowAhu_control_001.y);
 connect(dataBus.VAdjAreBreZon_flowVav_control_001,
 VAdjAreBreZon_flowAhu_control_001.y);
+connect(dataBus.VMinOA_flowVav_control_001,
+VMinOA_flowAhu_control_001.y);
+connect(dataBus.VAirOut_flowAhu_control_001,
+VAirOut_flowAhu_control_001.y);
 connect(dataBus.VAdjPopBreZon_flowVav_control_001,
 VAdjPopBreZon_flowAhu_control_001.y);
+connect(dataBus.dpDucAhu_control_001,
+dpDucAhu_control_001.y);
+connect(dataBus.TAirSupAhu_control_001,
+TAirSupAhu_control_001.y);
 connect(dataBus.VDis_flowVav_control_001,
 VDis_flowAhu_control_001.y);
 connect(dataBus.uAhuOpeModAhu_control_001,
 uAhuOpeModAhu_control_001.y);
-connect(dataBus.yZonTemResReqVav_control_001,
-yZonTemResReqAhu_control_001.y);
 connect(dataBus.yZonPreResReqVav_control_001,
 yZonPreResReqAhu_control_001.y);
+connect(dataBus.yZonTemResReqVav_control_001,
+yZonTemResReqAhu_control_001.y);
 connect(dataBus.u1SupFanAhu_control_001,
 u1SupFanAhu_control_001.y);
 

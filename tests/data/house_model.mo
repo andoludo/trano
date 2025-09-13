@@ -6829,11 +6829,17 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmissioncontrol_5
+            TCooSetEmissioncontrol_7
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetEmissioncontrol_1
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetThreewayvalvecontrol_0
             (y=363.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetEmissioncontrol_0
+            (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetEmissioncontrol_2
             (y=298.15);
@@ -6841,16 +6847,10 @@ Modelica.Blocks.Sources.RealExpression
             TCooSetEmissioncontrol_6
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmissioncontrol_0
+            TCooSetEmissioncontrol_5
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetEmissioncontrol_4
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetEmissioncontrol_1
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetEmissioncontrol_7
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetEmissioncontrol_3
@@ -6915,22 +6915,22 @@ connect(dataBus.ppmCO2Space_6, TRoo1[8].ppm);
 connect(dataBus.ppmCO2Space_7, TRoo1[9].ppm);
 connect(dataBus.ppmCO2Space_8, TRoo1[10].ppm);
 connect(dataBus.ppmCO2Space_9, TRoo1[11].ppm);
-connect(dataBus.TCooSetSpace_6,
-TCooSetEmissioncontrol_5.y);
+connect(dataBus.TCooSetSpace_10,
+TCooSetEmissioncontrol_7.y);
+connect(dataBus.TCooSetSpace_2,
+TCooSetEmissioncontrol_1.y);
 connect(dataBus.TColSetThreewayvalvecontrol_0,
 TColSetThreewayvalvecontrol_0.y);
+connect(dataBus.TCooSetSpace_1,
+TCooSetEmissioncontrol_0.y);
 connect(dataBus.TCooSetSpace_3,
 TCooSetEmissioncontrol_2.y);
 connect(dataBus.TCooSetSpace_9,
 TCooSetEmissioncontrol_6.y);
-connect(dataBus.TCooSetSpace_1,
-TCooSetEmissioncontrol_0.y);
+connect(dataBus.TCooSetSpace_6,
+TCooSetEmissioncontrol_5.y);
 connect(dataBus.TCooSetSpace_5,
 TCooSetEmissioncontrol_4.y);
-connect(dataBus.TCooSetSpace_2,
-TCooSetEmissioncontrol_1.y);
-connect(dataBus.TCooSetSpace_10,
-TCooSetEmissioncontrol_7.y);
 connect(dataBus.TCooSetSpace_4,
 TCooSetEmissioncontrol_3.y);
 connect(dataBus.triggerThreewayvalvecontrol_0,

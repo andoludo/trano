@@ -3125,30 +3125,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=800.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
+extends Modelica.Icons.MaterialPropertiesPackage;    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.38,
+      c=840.0,
+      rho=1120.0,
       epsLw=0.88,
       epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=900.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.38,
-      c=840.0,
-      rho=1120.0,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=800.0,
+      rho=100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=800.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record concreteslab_001
@@ -3778,22 +3778,19 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            THeaSetVav_control_001
-            (y=293.15);
-Modelica.Blocks.Sources.RealExpression
             TCooSetVav_control_001
             (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            ppmCO2SetVav_control_001
+            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TSupSetVav_control_001
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_control_001
-            (y=0.0);
+            THeaSetVav_control_001
+            (y=293.15);
 Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_control_001
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
-            uAhuOpeModAhu_control_001
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_control_001
@@ -3801,14 +3798,14 @@ Modelica.Blocks.Sources.IntegerExpression
 Modelica.Blocks.Sources.IntegerExpression
             oveDamPosVav_control_001
             (y=0);
+Modelica.Blocks.Sources.IntegerExpression
+            uAhuOpeModAhu_control_001
+            (y=0);
 Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_control_001
+            uHeaOffVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1HotPlaVav_control_001
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1SupFanAhu_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1OccVav_control_001
@@ -3817,7 +3814,10 @@ Modelica.Blocks.Sources.BooleanExpression
             u1WinVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_control_001
+            u1FanVav_control_001
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1SupFanAhu_control_001
             (y=false);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -3836,34 +3836,34 @@ connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_001, TRoo[1].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
-connect(dataBus.THeaSetSpace_001,
-THeaSetVav_control_001.y);
 connect(dataBus.TCooSetSpace_001,
 TCooSetVav_control_001.y);
-connect(dataBus.TSupSetSpace_001,
-TSupSetVav_control_001.y);
 connect(dataBus.ppmCO2SetSpace_001,
 ppmCO2SetVav_control_001.y);
+connect(dataBus.TSupSetSpace_001,
+TSupSetVav_control_001.y);
+connect(dataBus.THeaSetSpace_001,
+THeaSetVav_control_001.y);
 connect(dataBus.oveFloSetSpace_001,
 oveFloSetVav_control_001.y);
-connect(dataBus.uAhuOpeModAhu_control_001,
-uAhuOpeModAhu_control_001.y);
 connect(dataBus.uOpeModSpace_001,
 uOpeModVav_control_001.y);
 connect(dataBus.oveDamPosSpace_001,
 oveDamPosVav_control_001.y);
-connect(dataBus.u1FanSpace_001,
-u1FanVav_control_001.y);
+connect(dataBus.uAhuOpeModAhu_control_001,
+uAhuOpeModAhu_control_001.y);
+connect(dataBus.uHeaOffSpace_001,
+uHeaOffVav_control_001.y);
 connect(dataBus.u1HotPlaSpace_001,
 u1HotPlaVav_control_001.y);
-connect(dataBus.u1SupFanAhu_control_001,
-u1SupFanAhu_control_001.y);
 connect(dataBus.u1OccSpace_001,
 u1OccVav_control_001.y);
 connect(dataBus.u1WinSpace_001,
 u1WinVav_control_001.y);
-connect(dataBus.uHeaOffSpace_001,
-uHeaOffVav_control_001.y);
+connect(dataBus.u1FanSpace_001,
+u1FanVav_control_001.y);
+connect(dataBus.u1SupFanAhu_control_001,
+u1SupFanAhu_control_001.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},
@@ -3915,30 +3915,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=800.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
+extends Modelica.Icons.MaterialPropertiesPackage;    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.38,
+      c=840.0,
+      rho=1120.0,
       epsLw=0.88,
       epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=900.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.38,
-      c=840.0,
-      rho=1120.0,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=800.0,
+      rho=100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=800.0,
+      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record concreteslab_001

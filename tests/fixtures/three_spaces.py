@@ -41,14 +41,14 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
             ),
             Window(
                 name="win1_1",
-                surface=10,
+                surface=5,
                 azimuth=Azimuth.east,
                 tilt=Tilt.wall,
                 construction=Glasses.double_glazing,
             ),
             Window(
                 name="win2_1",
-                surface=10,
+                surface=5,
                 azimuth=Azimuth.south,
                 tilt=Tilt.wall,
                 construction=Glasses.double_glazing,
@@ -84,14 +84,14 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
             ),
             Window(
                 name="win1_2",
-                surface=10,
+                surface=5,
                 azimuth=Azimuth.north,
                 construction=Glasses.double_glazing,
                 tilt=Tilt.wall,
             ),
             Window(
                 name="win2_2",
-                surface=10,
+                surface=5,
                 azimuth=Azimuth.south,
                 construction=Glasses.double_glazing,
                 tilt=Tilt.wall,
@@ -127,7 +127,7 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
             ),
             Window(
                 name="w4_3",
-                surface=10,
+                surface=5,
                 azimuth=Azimuth.east,
                 construction=Glasses.double_glazing,
                 tilt=Tilt.wall,

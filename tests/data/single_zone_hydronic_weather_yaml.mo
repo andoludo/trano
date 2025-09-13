@@ -4083,11 +4083,11 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control_001
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
             TColSetControl_2
             (y=363.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetEmission_control_001
+            (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TAirOutBoiler_control_001
             (y=0.0);
@@ -4111,10 +4111,10 @@ connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_001, TRoo[1].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
-connect(dataBus.TCooSetSpace_001,
-TCooSetEmission_control_001.y);
 connect(dataBus.TColSetControl_2,
 TColSetControl_2.y);
+connect(dataBus.TCooSetSpace_001,
+TCooSetEmission_control_001.y);
 connect(dataBus.TAirOutBoiler_001,
 TAirOutBoiler_control_001.y);
 connect(dataBus.triggerControl_2,

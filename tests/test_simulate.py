@@ -34,7 +34,7 @@ def test_simulate_buildings_simple_hydronic_two_zones_new(
         results = simulate(
             Path(project_path),
             buildings_two_rooms_with_storage,
-            options=SimulationOptions(end_time=3600),
+            options=SimulationOptions(end_time=24 * 3600 * 14),
         )
         assert is_success(results)
 
@@ -292,3 +292,18 @@ def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> No
             options=options,  # TODO: investigate why simulation fails
         )
         assert is_success(results, options=options)
+
+
+@pytest.mark.simulate
+def test_simulate_house_complex() -> None:
+    house = get_path("house_complex.yaml")
+    # TODO: remove ducts here
+    network = convert_network("house_complex", house)
+    project_path = Path(__file__).parent.joinpath("simulation")
+    project_path.mkdir(parents=True, exist_ok=True)
+    results = simulate(
+        Path(project_path),
+        network,
+        options=SimulationOptions(end_time=24 * 3600 * 30 * 3),
+    )
+    assert is_success(results)

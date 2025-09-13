@@ -3256,8 +3256,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     A={ 10.0, 10.0 },
     til={Buildings.Types.Tilt.Wall,Buildings.Types.Tilt.Wall},
                     glaSys={ double_glazing, double_glazing },
-                    wWin={ 3.1622776601683795, 3.1622776601683795 },
-                    hWin={ 3.1622776601683795, 3.1622776601683795 },
+                    wWin={ 2.23606797749979, 2.23606797749979 },
+                    hWin={ 2.23606797749979, 2.23606797749979 },
                     azi={ -1.57, 0.0 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
@@ -3309,8 +3309,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     A={ 10.0, 10.0 },
     til={Buildings.Types.Tilt.Wall,Buildings.Types.Tilt.Wall},
                     glaSys={ double_glazing, double_glazing },
-                    wWin={ 3.1622776601683795, 3.1622776601683795 },
-                    hWin={ 3.1622776601683795, 3.1622776601683795 },
+                    wWin={ 2.23606797749979, 2.23606797749979 },
+                    hWin={ 2.23606797749979, 2.23606797749979 },
                     azi={ 3.14, 0.0 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
@@ -3361,8 +3361,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     A={ 10.0 },
     til={Buildings.Types.Tilt.Wall},
                     glaSys={ double_glazing },
-                    wWin={ 3.1622776601683795 },
-                    hWin={ 3.1622776601683795 },
+                    wWin={ 2.23606797749979 },
+                    hWin={ 2.23606797749979 },
                     azi={ -1.57 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
