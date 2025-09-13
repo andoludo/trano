@@ -372,6 +372,8 @@ Placement(transformation(extent={{-32,-50},{-12,-30}})));
   Buildings.Fluid.Sensors.VolumeFlowRate senVolFlo(redeclare package Medium =
         MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
     annotation (Placement(transformation(extent={{50,-12},{70,8}})));
+      Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
 equation
   connect(
   TAmb.port, boi.heatPort)
@@ -785,6 +787,8 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
     dIns=dIns,
     nSeg=nSeg) if useStorageTank
     annotation (Placement(transformation(extent={{-90,20},{-50,60}})));
+          Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
 equation
   connect(souPum.ports[1],heaPum. port_a2)
     annotation (Line(points={{42,-62},{32,-62},{32,-4},{26,-4}},
@@ -947,6 +951,8 @@ annotation (Placement(transformation(extent={{-14,-12},{24,26}})));
   IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P,
   k=5) annotation (Placement(
 transformation(extent={{50,50},{70,70}})));
+          Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
 equation
   connect(
   souSetTemp.y, souPum.T_in) annotation (Line(points={{-39,-96},{74,-96},
@@ -3930,25 +3936,35 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
+extends Modelica.Icons.MaterialPropertiesPackage;    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.11,
+      c=1880.0,
+      rho=550.0,
       epsLw=0.88,
       epsSw=0.55);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.6,
       c=840.0,
       rho=1100.0,
       epsLw=0.88,
+      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.6,
+      c=840.0,
+      rho=975.0,
+      epsLw=0.88,
       epsSw=0.55);    record gypsum_plaster_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=975.0,
+      epsLw=0.88,
+      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.54,
+      c=840.0,
+      rho=1400.0,
       epsLw=0.88,
       epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0256,
@@ -3960,12 +3976,17 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_hollow_001 = I
       c=840.0,
       rho=80.0,
       epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2100.0,
+      epsSw=0.55);    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
       epsLw=0.88,
-      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.55);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.036,
+      c=1470.0,
+      rho=26.0,
+      epsLw=0.88,
+      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2100.0,
@@ -3975,25 +3996,10 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_hollow_001 = I
       c=840.0,
       rho=975.0,
       epsLw=0.88,
-      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.54,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
       c=840.0,
-      rho=1400.0,
-      epsLw=0.88,
-      epsSw=0.55);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.11,
-      c=1880.0,
-      rho=550.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.6,
-      c=840.0,
-      rho=975.0,
-      epsLw=0.88,
-      epsSw=0.55);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.036,
-      c=1470.0,
-      rho=26.0,
+      rho=2500.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record cavity_wall_001
@@ -4006,7 +4012,14 @@ package Constructions "Library of building envelope constructions"      record c
         (d=0.05),house_infiltration_boiler_ideas.Data.Materials.brick_001
         (d=0.14),house_infiltration_boiler_ideas.Data.Materials.gypsum_001
         (d=0.01)    });
-    end cavity_wall_001;      record roof_001
+    end cavity_wall_001;      record innerwall_001
+    "innerwall_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
+        (d=0.02),house_infiltration_boiler_ideas.Data.Materials.masonry_001
+        (d=0.14),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
+        (d=0.02)    });
+    end innerwall_001;      record roof_001
     "roof_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={house_infiltration_boiler_ideas.Data.Materials.ceramic_tile_001
@@ -4021,14 +4034,7 @@ package Constructions "Library of building envelope constructions"      record c
         (d=0.04),house_infiltration_boiler_ideas.Data.Materials.screed_001
         (d=0.05),house_infiltration_boiler_ideas.Data.Materials.timber_001
         (d=0.1)    });
-    end floor_001;      record innerwall_001
-    "innerwall_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
-        (d=0.02),house_infiltration_boiler_ideas.Data.Materials.masonry_001
-        (d=0.14),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
-        (d=0.02)    });
-    end innerwall_001;
+    end floor_001;
 end Constructions;
 end Data;
 
@@ -4810,25 +4816,40 @@ BoilerWithoutStorageBoiler_001 boiler_001(
     V_flow=0.7142857142857143/1000*{0.5,1}
 ,
 redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue()) "Boiler"  annotation (
-    Placement(transformation(origin = { 0.0, 0.0 },
+    Placement(transformation(origin = { 100.0, 0.0 },
+    extent = {{ 5, -5}, {-5, 5}}
+)));
+        house_infiltration_boiler_ideas.Components.BaseClasses.BoilerControlBoiler_control_001
+    boiler_control_001 annotation (
+    Placement(transformation(origin = { -100.0, 0.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(boiler_001.port_a,port_a1)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 100.0, 0.0 }    ,{ 50.0, 0.0 }    ,{ 50.0, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
         smooth=Smooth.None))
             ;        
+        connect(boiler_001.dataBus,boiler_control_001.dataBus)
+        annotation (Line(
+        points={{ 100.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ -100.0, 0.0 }    },
+        color={255,204,51},
+        thickness=0.1,pattern =
+        LinePattern.Solid,
+        smooth=Smooth.None))
+            ;        
         connect(boiler_001.port_b,port_b1)
         annotation (Line(
-        points={{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 100.0, 0.0 }    ,{ 50.0, 0.0 }    ,{ 50.0, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
         smooth=Smooth.None))
+            ;        
+        connect(boiler_control_001.dataBus,dataBus)
             ;end production;
     model bus
 
@@ -5399,6 +5420,27 @@ equation
 connect(dataBus.OccupiedBedroom_3_001, occSch2.occupied);
  end OccupancyOccupancy_6;
  
+        model BoilerControlBoiler_control_001
+Buildings.Controls.OBC.CDL.Reals.MultiMax
+mulMax(nin=1)
+"Maximum radiator valve position"
+annotation (Placement(transformation(extent={{-76,-10},{-56,10}})));Buildings.Controls.OBC.CDL.Reals.Hysteresis
+hysPum(uLow=0.01, uHigh=0.5)
+"Hysteresis for pump"
+annotation (Placement(transformation(extent={{-26,-10},{-6,10}})));Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToRea
+"Conversion from boolean to real signal"
+annotation (Placement(transformation(extent={{14,-10},{34,10}})));Trano.Controls.BaseClasses.DataBus dataBus
+    annotation (Placement(transformation(
+  extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
+equation
+connect(mulMax.y,hysPum. u) annotation (Line(
+points={{-54,0},{-28,0}},
+color={0,0,127},
+smooth=Smooth.None));connect(hysPum.y,booToRea. u)
+annotation (Line(points={{-4,0},{12,0}},   color={255,0,255}));annotation (Icon(coordinateSystem(preserveAspectRatio=false)), Diagram(
+coordinateSystem(preserveAspectRatio=false)));connect(dataBus.yPumBoiPump_001, mulMax.u[1]);
+connect(dataBus.yBoiler_001, booToRea.y);
+end BoilerControlBoiler_control_001;
         model CollectorControlControl_1
 Buildings.Controls.OBC.CDL.Reals.PIDWithReset
 conPum(    controllerType=Buildings.Controls.OBC.CDL.Types.SimpleController.P,
@@ -5556,7 +5598,8 @@ end DataServer;
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
     equation
-    connect(dataBus.gas_usageBoiler_001, GasUsage.y);
+    connect(dataBus.yBoiler_001, pumpDemandSignal.u);
+connect(dataBus.gas_usageBoiler_001, GasUsage.y);
 connect(dataBus.supply_temperatureBoiler_001, TSupply.T);
 connect(dataBus.return_temperatureBoiler_001, TReturn.T);
 connect(dataBus.m_flowBoiler_001, senVolFlo.V_flow);
@@ -5617,25 +5660,35 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
+extends Modelica.Icons.MaterialPropertiesPackage;    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.11,
+      c=1880.0,
+      rho=550.0,
       epsLw=0.88,
       epsSw=0.55);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.6,
       c=840.0,
       rho=1100.0,
       epsLw=0.88,
+      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.6,
+      c=840.0,
+      rho=975.0,
+      epsLw=0.88,
       epsSw=0.55);    record gypsum_plaster_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=975.0,
+      epsLw=0.88,
+      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.54,
+      c=840.0,
+      rho=1400.0,
       epsLw=0.88,
       epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0256,
@@ -5647,12 +5700,17 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_hollow_001 = I
       c=840.0,
       rho=80.0,
       epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2100.0,
+      epsSw=0.55);    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
       epsLw=0.88,
-      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.55);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.036,
+      c=1470.0,
+      rho=26.0,
+      epsLw=0.88,
+      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2100.0,
@@ -5662,25 +5720,10 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_hollow_001 = I
       c=840.0,
       rho=975.0,
       epsLw=0.88,
-      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.54,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
       c=840.0,
-      rho=1400.0,
-      epsLw=0.88,
-      epsSw=0.55);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.11,
-      c=1880.0,
-      rho=550.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.6,
-      c=840.0,
-      rho=975.0,
-      epsLw=0.88,
-      epsSw=0.55);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.036,
-      c=1470.0,
-      rho=26.0,
+      rho=2500.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record cavity_wall_001
@@ -5693,7 +5736,14 @@ package Constructions "Library of building envelope constructions"      record c
         (d=0.05),house_infiltration_boiler_ideas.Data.Materials.brick_001
         (d=0.14),house_infiltration_boiler_ideas.Data.Materials.gypsum_001
         (d=0.01)    });
-    end cavity_wall_001;      record roof_001
+    end cavity_wall_001;      record innerwall_001
+    "innerwall_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
+        (d=0.02),house_infiltration_boiler_ideas.Data.Materials.masonry_001
+        (d=0.14),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
+        (d=0.02)    });
+    end innerwall_001;      record roof_001
     "roof_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={house_infiltration_boiler_ideas.Data.Materials.ceramic_tile_001
@@ -5708,14 +5758,7 @@ package Constructions "Library of building envelope constructions"      record c
         (d=0.04),house_infiltration_boiler_ideas.Data.Materials.screed_001
         (d=0.05),house_infiltration_boiler_ideas.Data.Materials.timber_001
         (d=0.1)    });
-    end floor_001;      record innerwall_001
-    "innerwall_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
-        (d=0.02),house_infiltration_boiler_ideas.Data.Materials.masonry_001
-        (d=0.14),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
-        (d=0.02)    });
-    end innerwall_001;
+    end floor_001;
 end Constructions;
 end Data;
 

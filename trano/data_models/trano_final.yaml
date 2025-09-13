@@ -22,6 +22,9 @@ classes:
       parameters:
         multivalued: false
         range: BoilerControlParameters
+      variant:
+        ifabsent: string('default')
+        range: string
     class_uri: schema:BoilerControl
     slots:
     - id

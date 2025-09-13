@@ -149,7 +149,11 @@ internal_walls:
 systems:
   - boiler:
       id: BOILER:001
-      variant: heat_pump
+      control:
+        boiler_control:
+          id: BOILER_CONTROL:001
+          variant: simple
+      variant: water_water_heat_pump
   - pump:
       id: PUMP:001
       control:

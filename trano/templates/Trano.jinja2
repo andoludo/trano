@@ -372,6 +372,8 @@ Placement(transformation(extent={{-32,-50},{-12,-30}})));
   Buildings.Fluid.Sensors.VolumeFlowRate senVolFlo(redeclare package Medium =
         MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
     annotation (Placement(transformation(extent={{50,-12},{70,8}})));
+      Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
 equation
   connect(
   TAmb.port, boi.heatPort)
@@ -785,6 +787,8 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
     dIns=dIns,
     nSeg=nSeg) if useStorageTank
     annotation (Placement(transformation(extent={{-90,20},{-50,60}})));
+          Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
 equation
   connect(souPum.ports[1],heaPum. port_a2)
     annotation (Line(points={{42,-62},{32,-62},{32,-4},{26,-4}},
@@ -947,6 +951,8 @@ annotation (Placement(transformation(extent={{-14,-12},{24,26}})));
   IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P,
   k=5) annotation (Placement(
 transformation(extent={{50,50},{70,70}})));
+          Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
 equation
   connect(
   souSetTemp.y, souPum.T_in) annotation (Line(points={{-39,-96},{74,-96},

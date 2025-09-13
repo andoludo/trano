@@ -167,8 +167,6 @@ spaces:
           azimuth: 3.14
           tilt: wall
           construction: SIMPLE:001
-          width: 1.0
-          height: 1.0
     emissions:
       - radiator:
           id: RADIATOR:001
@@ -207,8 +205,6 @@ spaces:
           azimuth: 3.14
           tilt: wall
           construction: SIMPLE:001
-          width: 1.0
-          height: 1.0
   - id: HALL:001
     occupancy:
       parameters:
@@ -234,14 +230,10 @@ spaces:
           azimuth: 3.14
           tilt: wall
           construction: SIMPLE:001
-          width: 1.0
-          height: 1.0
         - surface: 2.4
           azimuth: 1.57
           tilt: wall
           construction: SIMPLE:001
-          width: 1.0
-          height: 1.0
   - id: LIVING:001
     occupancy:
       parameters:
@@ -267,14 +259,10 @@ spaces:
           azimuth: 0
           tilt: wall
           construction: SIMPLE:001
-          width: 1.0
-          height: 1.0
         - surface: 3.2
           azimuth: 1.57
           tilt: wall
           construction: SIMPLE:001
-          width: 1.0
-          height: 1.0
     emissions:
       - radiator:
           id: RADIATOR:002
@@ -313,8 +301,6 @@ spaces:
           azimuth: 0
           tilt: wall
           construction: SIMPLE:001
-          width: 1.0
-          height: 1.0
     emissions:
       - radiator:
           id: RADIATOR:003
@@ -402,8 +388,6 @@ spaces:
           azimuth: 1.57
           tilt: wall
           construction: SIMPLE:001
-          width: 1.0
-          height: 1.0
     emissions:
       - radiator:
           id: RADIATOR:004
@@ -486,6 +470,10 @@ systems:
   - boiler:
       id: BOILER:001
       variant: without_storage
+      control:
+        boiler_control:
+          id: BOILER_CONTROL:001
+          variant: simple
       parameters:
         nominal_heating_power: 10000
         dp_nominal: 100

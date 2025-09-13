@@ -44,8 +44,6 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
                 surface=10,
                 azimuth=Azimuth.east,
                 tilt=Tilt.wall,
-                width=1,
-                height=1,
                 construction=Glasses.double_glazing,
             ),
             Window(
@@ -53,8 +51,6 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
                 surface=10,
                 azimuth=Azimuth.south,
                 tilt=Tilt.wall,
-                width=1,
-                height=1,
                 construction=Glasses.double_glazing,
             ),
             FloorOnGround(
@@ -92,8 +88,6 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
                 azimuth=Azimuth.north,
                 construction=Glasses.double_glazing,
                 tilt=Tilt.wall,
-                width=1,
-                height=1,
             ),
             Window(
                 name="win2_2",
@@ -101,8 +95,6 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
                 azimuth=Azimuth.south,
                 construction=Glasses.double_glazing,
                 tilt=Tilt.wall,
-                width=1,
-                height=1,
             ),
             FloorOnGround(
                 name="floor_2", surface=10, construction=Constructions.external_wall
@@ -139,8 +131,6 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
                 azimuth=Azimuth.east,
                 construction=Glasses.double_glazing,
                 tilt=Tilt.wall,
-                width=1,
-                height=1,
             ),
             FloorOnGround(
                 name="floor_3", surface=10, construction=Constructions.external_wall

@@ -170,7 +170,10 @@ spaces:
       - radiator:
           id: RADIATOR:001
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 985
+            air_temperature_at_nominal_condition: 293.15
+            water_inlet_temperature_at_nominal_condition: 323.15
+            water_outlet_temperature_at_nominal_condition: 318.15
       - valve:
           id: VALVE:001
           control:
@@ -252,7 +255,10 @@ spaces:
       - radiator:
           id: RADIATOR:003
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 985
+            air_temperature_at_nominal_condition: 293.15
+            water_inlet_temperature_at_nominal_condition: 323.15
+            water_outlet_temperature_at_nominal_condition: 318.15
       - valve:
           id: VALVE:003
           control:
@@ -343,7 +349,10 @@ spaces:
       - radiator:
           id: RADIATOR:005
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 985
+            air_temperature_at_nominal_condition: 293.15
+            water_inlet_temperature_at_nominal_condition: 323.15
+            water_outlet_temperature_at_nominal_condition: 318.15
       - valve:
           id: VALVE:005
           control:
@@ -363,11 +372,18 @@ systems:
         boiler_control:
           id: BOILER_CONTROL:001
           variant: simple
-      variant: without_storage
+      parameters:
+        nominal_heating_power: 7000
+        use_storage_tank: true
+        temperature_heatpump_source: 283.15
+        tank_volume: 0.8
+      variant: air_water_heat_pump
       inlets:
         - SPLIT_VALVE:002
   - pump:
       id: PUMP:001
+      parameters:
+        m_flow_nominal: 0.3
       control:
         collector_control:
       inlets:
@@ -375,6 +391,8 @@ systems:
 
   - three_way_valve:
       id: THREE_WAY_VALVE:001
+      parameters:
+        m_flow_nominal: 0.3
       control:
         three_way_valve_control:
       inlets:

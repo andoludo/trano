@@ -5,7 +5,7 @@ from pydantic import computed_field
 from trano.elements.common_base import BaseParameter
 from trano.elements.base import BaseElement, Control
 from trano.elements.space import Space
-from trano.elements.system import VAV, Valve
+from trano.elements.system import VAV, Valve, Pump
 
 
 class ControlParameters(BaseParameter): ...
@@ -25,7 +25,8 @@ class CollectorControl(Control):
     valves: Optional[List[Valve]] = None
 
 
-class BoilerControl(Control): ...
+class BoilerControl(Control):
+    pumps: Optional[List[Pump]] = None
 
 
 class AhuControl(Control):

@@ -349,6 +349,9 @@ classes:
     slots:
       - id
     attributes:
+      variant:
+        ifabsent: string('default')
+        range: string
       parameters:
         range: BoilerControlParameters
         multivalued: false

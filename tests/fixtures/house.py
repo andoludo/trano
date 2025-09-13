@@ -14,6 +14,7 @@ from trano.elements.control import (
     CollectorControl,
     EmissionControl,
     ThreeWayValveControl,
+    BoilerControl,
 )
 from trano.elements.space import Space
 from trano.elements.system import (
@@ -704,8 +705,9 @@ def house_model_fixture() -> Network:
         parameters=PumpParameters(),
     )
     boiler = Boiler(
-        control=CollectorControl(),
+        control=BoilerControl(variant="simple"),
         parameters=BoilerParameters(nominal_heating_power=6000),
+        variant="without_storage",
     )
     split_valve = SplitValve(
         parameters=SplitValveParameters(),

@@ -14,11 +14,14 @@ package Trano
           parameter Real k=1/6/4
     "Heat gain if occupied";
 
-      Buildings.Controls.SetPoints.OccupancySchedule
-                                       occSch2(firstEntryOccupied=true,
-      occupancy=occupancy)
-    "Occupancy schedule"
-    annotation (Placement(transformation(extent={{-66,-22},{-46,-2}})));
+  parameter Boolean firstEntryOccupied = true
+    "Set to true if first entry in occupancy denotes a changed from unoccupied to occupied";
+
+  Buildings.Controls.SetPoints.OccupancySchedule
+                                   occSch2(firstEntryOccupied=firstEntryOccupied,
+  occupancy=occupancy)
+"Occupancy schedule"
+annotation (Placement(transformation(extent={{-66,-22},{-46,-2}})));
       Buildings.Controls.OBC.CDL.Reals.Switch switch2
     annotation (Placement(transformation(extent={{-20,-12},{0,8}})));
       Modelica.Blocks.Math.MatrixGain gai2(K=gain)
@@ -286,7 +289,15 @@ partial model PartialBoilerWithoutStorage
       "Medium model" annotation (choicesAllMatching=true);
   extends Buildings.Fluid.Interfaces.PartialTwoPort(
                                             redeclare package Medium = MediumW);
+parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab="Storage tank", group="Properties"));
+      parameter Modelica.Units.SI.Temperature TSet=323.15;
+   parameter Modelica.Units.SI.Temperature TSouSet=278.15;
+   parameter Integer modusValue=1;
 
+  parameter Buildings.Fluid.HeatPumps.Data.EquationFitReversible.EnergyPlus
+                                                          per
+   "Reverse heat pump performance data"
+   annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
   parameter Real a[:]={0.9} "Coefficients for efficiency curve";
   parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
     "Curve used to compute the efficiency";
@@ -305,7 +316,7 @@ partial model PartialBoilerWithoutStorage
        tab="Flow resistance"));
   parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit=
 "Pa") "Pressure difference" annotation (Dialog(group="Nominal condition"));
-parameter Modelica.Units.SI.Pressure dp[:]=(3000 + 2000)*{2,1} "Pressure";
+parameter Modelica.Units.SI.Pressure dp[:](each displayUnit="Pa")=(3000 + 2000)*{2,1} "Pressure";
 parameter Real V_flow[:] = 0.001/1000*{0.5,1};
   parameter Real deltaM=0.1
     "Fraction of nominal flow rate where flow transitions to laminar";
@@ -326,53 +337,74 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
     redeclare package Medium = MediumW,
     Q_flow_nominal=Q_flow_nominal,
     m_flow_nominal=nominal_mass_flow_rate_boiler,
-    fue=fue,
+    fue=Buildings.Fluid.Data.Fuels.NaturalGasHigherHeatingValue(),
     dp_nominal=dp_nominal,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     T_start=293.15) "Boiler"
-    annotation (Placement(transformation(extent={{-58,-2},{-38,18}})));
+    annotation (Placement(transformation(extent={{-24,-10},{-4,10}})));
   Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=288.15)
     "Ambient temperature in boiler room"
-    annotation (Placement(transformation(extent={{20,80},{40,100}})));
+    annotation (Placement(transformation(extent={{20,60},{40,80}})));
   Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium =
 MediumW) "Fixed boundary condition, needed to provide a pressure in the system"
     annotation (Placement(transformation(extent={{-74,68},{-54,88}})));
-        Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor1(
-      redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
-                                      "Radiator"  annotation (
-    Placement(transformation(origin={-8,5},
-    extent = {{-10, -10}, {10, 10}},
+        Buildings.Fluid.Sensors.TemperatureTwoPort TSupply(redeclare package
+      Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+    "Radiator" annotation (Placement(transformation(
+        origin={26,-1},
+        extent={{-10,-10},{10,10}},
         rotation=0)));
       IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
                                               annotation (Placement(
-            transformation(extent={{-24,42},{-4,62}})));
+            transformation(extent={{-20,60},{0,80}})));
   Modelica.Blocks.Sources.RealExpression realExpression(y=TempSet)
     annotation (Placement(transformation(extent={{-90,40},{-70,60}})));
+Modelica.Blocks.Sources.RealExpression realExpression1(y=boi.VFue_flow)
+annotation (Placement(transformation(extent={{-80,-50},{-60,-30}})));
+Modelica.Blocks.Continuous.Integrator GasUsage annotation (
+Placement(transformation(extent={{-32,-50},{-12,-30}})));
+        Buildings.Fluid.Sensors.TemperatureTwoPort TReturn(redeclare package
+      Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+    "Radiator" annotation (Placement(transformation(
+        origin={-76,1},
+        extent={{-10,-10},{10,10}},
+        rotation=0)));
+  Buildings.Fluid.Sensors.VolumeFlowRate senVolFlo(redeclare package Medium =
+        MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
+    annotation (Placement(transformation(extent={{50,-12},{70,8}})));
+      Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
 equation
   connect(
   TAmb.port, boi.heatPort)
            annotation (Line(
-      points={{40,90},{44,90},{44,34},{-48,34},{-48,15.2}},
+      points={{40,70},{44,70},{44,28},{-14,28},{-14,7.2}},
       color={191,0,0},
       smooth=Smooth.None));
   connect(
   bou.ports[1], boi.port_a)
             annotation (Line(
-      points={{-54,78},{-50,78},{-50,92},{-78,92},{-78,8},{-58,8}},
+      points={{-54,78},{-50,78},{-50,0},{-24,0}},
       color={0,127,255},
       smooth=Smooth.None));
-  connect(boi.port_b, temperature_sensor1.port_a) annotation (Line(points={{-38,8},
-          {-22,8},{-22,5},{-18,5}},        color={0,127,255}));
-      connect(boi.T, conPID.u_m) annotation (Line(points={{-37,16},{-22,16},{-22,
-          32},{-14,32},{-14,40}},              color={0,0,127}));
-      connect(conPID.y, boi.y) annotation (Line(points={{-3,52},{0,52},{0,66},{-50,
-          66},{-50,24},{-60,24},{-60,16}},          color={0,0,127}));
-  connect(temperature_sensor1.port_b, port_b)
-    annotation (Line(points={{2,5},{84,5},{84,0},{100,0}}, color={0,127,255}));
-  connect(port_a, boi.port_a) annotation (Line(points={{-100,0},{-68,0},{-68,8},
-          {-58,8}}, color={0,127,255}));
-  connect(realExpression.y, conPID.u_s) annotation (Line(points={{-69,50},{-34,50},
-          {-34,52},{-26,52}}, color={0,0,127}));
+  connect(boi.port_b, TSupply.port_a) annotation (Line(points={{-4,0},{14,0},{14,
+          -1},{16,-1}}, color={0,127,255}));
+      connect(boi.T, conPID.u_m) annotation (Line(points={{-3,8},{-2,8},{-2,42},
+          {-10,42},{-10,58}},                  color={0,0,127}));
+      connect(conPID.y, boi.y) annotation (Line(points={{1,70},{6,70},{6,24},{-26,
+          24},{-26,8}},                             color={0,0,127}));
+  connect(realExpression.y, conPID.u_s) annotation (Line(points={{-69,50},{-32,50},
+          {-32,70},{-22,70}}, color={0,0,127}));
+  connect(realExpression1.y, GasUsage.u)
+    annotation (Line(points={{-59,-40},{-34,-40}}, color={0,0,127}));
+  connect(port_a, TReturn.port_a) annotation (Line(points={{-100,0},{-93,0},{-93,
+          1},{-86,1}}, color={0,127,255}));
+  connect(TReturn.port_b, boi.port_a) annotation (Line(points={{-66,1},{-45,1},{
+          -45,0},{-24,0}}, color={0,127,255}));
+  connect(TSupply.port_b, senVolFlo.port_a) annotation (Line(points={{36,-1},{43,
+          -1},{43,-2},{50,-2}}, color={0,127,255}));
+  connect(senVolFlo.port_b, port_b) annotation (Line(points={{70,-2},{86,-1},{86,
+          0},{100,0}}, color={0,127,255}));
   annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
 Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
 Rectangle(
@@ -395,7 +427,15 @@ end PartialBoilerWithoutStorage;
           "Medium model" annotation (choicesAllMatching=true);
       extends Buildings.Fluid.Interfaces.PartialTwoPort(
                                                 redeclare package Medium = MediumW);
+parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab="Storage tank", group="Properties"));
+      parameter Modelica.Units.SI.Temperature TSet=323.15;
+   parameter Modelica.Units.SI.Temperature TSouSet=278.15;
+   parameter Integer modusValue=1;
 
+  parameter Buildings.Fluid.HeatPumps.Data.EquationFitReversible.EnergyPlus
+                                                          per
+   "Reverse heat pump performance data"
+   annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
       parameter Real a[:]={0.9} "Coefficients for efficiency curve";
       parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
         "Curve used to compute the efficiency";
@@ -644,119 +684,341 @@ end PartialBoilerWithoutStorage;
                 {100,100}})));
     end PartialBoilerWithStorage;
 
-    partial model PartialHeatPump
-      replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
-          "Medium model" annotation (choicesAllMatching=true);
-      extends Buildings.Fluid.Interfaces.PartialTwoPort(
-                                                redeclare package Medium = MediumW);
-    final parameter Modelica.Units.SI.SpecificHeatCapacity cp1_default=
-          MediumW.specificHeatCapacityCp(MediumW.setState_pTX(
-          MediumW.p_default,
-          MediumW.T_default,
-          MediumW.X_default))
-        "Specific heat capacity of medium 2 at default medium state";
+    partial model PartialWaterWaterHeatPump
+        replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
+      "Medium model" annotation (choicesAllMatching=true);
+  extends Buildings.Fluid.Interfaces.PartialTwoPort(
+                                            redeclare package Medium = MediumW);
 
-      final parameter Modelica.Units.SI.SpecificHeatCapacity cp2_default=
-          MediumW.specificHeatCapacityCp(MediumW.setState_pTX(
-          MediumW.p_default,
-          MediumW.T_default,
-          MediumW.X_default))
-        "Specific heat capacity of medium 2 at default medium state";
 
-      parameter Real COP_nominal = 6 "Nominal COP";
 
-      parameter Modelica.Units.SI.Power P_nominal=10E3
-        "Nominal compressor power (at y=1)";
-      parameter Modelica.Units.SI.TemperatureDifference dTEva_nominal=-10
-        "Temperature difference evaporator outlet-inlet";
-      parameter Modelica.Units.SI.TemperatureDifference dTCon_nominal=10
-        "Temperature difference condenser outlet-inlet";
-      parameter Modelica.Units.SI.MassFlowRate m2_flow_nominal=-P_nominal*(
-          COP_nominal - 1)/cp2_default/dTEva_nominal
-        "Nominal mass flow rate at chilled water side";
-      parameter Modelica.Units.SI.MassFlowRate m1_flow_nominal=P_nominal*
-          COP_nominal/cp1_default/dTCon_nominal
-        "Nominal mass flow rate at condenser water wide";
-      Buildings.Fluid.HeatPumps.Carnot_y heaPum(
-        redeclare package Medium1 = MediumW,
-        redeclare package Medium2 = MediumW,
-        P_nominal=P_nominal,
-        dTEva_nominal=dTEva_nominal,
-        dTCon_nominal=dTCon_nominal,
-        dp1_nominal=6000,
-        dp2_nominal=6000,
-        energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-        show_T=true,
-        use_eta_Carnot_nominal=false,
-        COP_nominal=COP_nominal,
-        TCon_nominal=303.15,
-        TEva_nominal=278.15) "Heat pump model"
-        annotation (Placement(transformation(extent={{-8,-16},{12,4}})));
-      Buildings.Fluid.Sources.MassFlowSource_T sou2(
-        nPorts=1,
-        redeclare package Medium = MediumW,
-        use_T_in=true,
-        m_flow=m2_flow_nominal,
-        T=291.15)
-        annotation (Placement(transformation(extent={{48,-68},{28,-48}})));
-      Buildings.Fluid.Sources.Boundary_pT sin2(nPorts=1, redeclare package
-            Medium =
-            MediumW)
-        annotation (Placement(transformation(extent={{-10,-10},{10,10}}, origin={-76,-60})));
-      Modelica.Blocks.Sources.Constant const(k=1)
-        annotation (Placement(transformation(extent={{-86,44},{-66,64}})));
-      Modelica.Blocks.Sources.Constant const2(k=273.15 + 15)
-        annotation (Placement(transformation(extent={{14,-100},{34,-80}})));
-      Buildings.Fluid.Sensors.TemperatureTwoPort
-                                 senTem(redeclare package Medium = MediumW,
-          m_flow_nominal=m1_flow_nominal)
-        annotation (Placement(transformation(extent={{-78,-10},{-58,10}})));
-      Buildings.Fluid.Sensors.TemperatureTwoPort
-                                 senTem1(redeclare package Medium = MediumW,
-          m_flow_nominal=m1_flow_nominal)
-        annotation (Placement(transformation(extent={{46,-10},{66,10}})));
-      Buildings.Fluid.Sources.Boundary_pT sin1(nPorts=2, redeclare package
-            Medium = MediumW)
-        annotation (Placement(transformation(extent={{-10,-10},{10,10}}, origin={-48,-24})));
-    equation
-      connect(sou2.ports[1],heaPum. port_a2) annotation (Line(
-          points={{28,-58},{18,-58},{18,-12},{12,-12}},
-          color={0,127,255},
-          smooth=Smooth.None));
-      connect(sin2.ports[1],heaPum. port_b2) annotation (Line(
-          points={{-66,-60},{-14,-60},{-14,-12},{-8,-12}},
-          color={0,127,255},
-          smooth=Smooth.None));
-      connect(const.y,heaPum. y) annotation (Line(points={{-65,54},{-18,54},{-18,3},
-              {-10,3}}, color={0,0,127}));
-      connect(const2.y,sou2. T_in) annotation (Line(points={{35,-90},{60,-90},{60,-54},
-              {50,-54}},
-                       color={0,0,127}));
-      connect(heaPum.port_b1,senTem1. port_a) annotation (Line(points={{12,0},{46,0}},
-                                color={0,127,255}));
-      connect(port_a,senTem. port_a) annotation (Line(points={{-100,0},{-78,0}},
-                               color={0,127,255}));
-      connect(senTem1.port_b, port_b)
-        annotation (Line(points={{66,0},{100,0}}, color={0,127,255}));
-        connect(senTem.port_b, sin1.ports[1]) annotation (Line(points={{-58,0},{
-                -32,0},{-32,-22},{-38,-22}}, color={0,127,255}));
-        connect(heaPum.port_a1, sin1.ports[2]) annotation (Line(points={{-8,0},{
-                -32,0},{-32,-26},{-38,-26},{-38,-26}}, color={0,127,255}));
-      annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
+parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab="Storage tank", group="Properties"));
+      parameter Modelica.Units.SI.Temperature TSet=323.15;
+   parameter Modelica.Units.SI.Temperature TSouSet=278.15;
+   parameter Integer modusValue=1;
+
+  parameter Buildings.Fluid.HeatPumps.Data.EquationFitReversible.EnergyPlus
+                                                          per
+   "Reverse heat pump performance data"
+   annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
+
+  parameter Real a[:]={0.9} "Coefficients for efficiency curve";
+  parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
+    "Curve used to compute the efficiency";
+  parameter Modelica.Units.SI.Temperature T_nominal=353.15
+    "Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)"
+    annotation (Dialog(enable=(effCur == Buildings.Fluid.Types.EfficiencyCurves.QuadraticLinear)));
+
+  parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
+    annotation (choicesAllMatching=true);
+
+  parameter Modelica.Units.SI.Power Q_flow_nominal "Nominal heating power";
+  parameter Boolean linearizeFlowResistance=false
+    "= true, use linear relation between m_flow and dp for any flow rate"
+    annotation (Dialog(enable=computeFlowResistance,
+       tab="Flow resistance"));
+  parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit=
+"Pa") "Pressure difference" annotation (Dialog(group="Nominal condition"));
+parameter Modelica.Units.SI.Pressure dp[:]=(3000 + 2000)*{2,1} "Pressure";
+parameter Real V_flow[:] = 0.001/1000*{0.5,1};
+  parameter Real deltaM=0.1
+    "Fraction of nominal flow rate where flow transitions to laminar";
+parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_rate_boiler;
+parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
+  parameter Boolean show_T=false;
+
+  parameter Modelica.Units.SI.Volume VTan "Tank volume";
+  parameter Modelica.Units.SI.Length hTan "Height of tank (without insulation)";
+  parameter Modelica.Units.SI.Length dIns "Thickness of insulation";
+  parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
+    "Specific heat conductivity of insulation";
+  parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+
+
+
+  parameter Modelica.Units.SI.MassFlowRate mSou_flow_nominal=per.hea.mSou_flow
+    "Source heat exchanger nominal mass flow rate";
+  parameter Modelica.Units.SI.MassFlowRate mLoa_flow_nominal=per.hea.mLoa_flow
+    "Load heat exchanger nominal mass flow rate";
+  Buildings.Fluid.HeatPumps.EquationFitReversible heaPum(
+    redeclare package Medium1 = MediumW,
+    redeclare package Medium2 = MediumW,
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    T1_start=281.4,
+    per=per)
+   "Water to Water heat pump"
+   annotation (Placement(transformation(extent={{6,-8},{26,12}})));
+  Buildings.Fluid.Sources.MassFlowSource_T
+                           souPum(
+    redeclare package Medium = MediumW,
+    m_flow=mSou_flow_nominal,
+    nPorts=1,
+    use_T_in=true)
+   "Source side water pump"
+   annotation (Placement(transformation(
+      extent={{-10,-10},{10,10}},
+      rotation=180,
+      origin={52,-62})));
+  Modelica.Fluid.Sources.FixedBoundary loaVol(redeclare package Medium =
+        MediumW, nPorts=1)
+   "Volume for the load side"
+   annotation (Placement(transformation(extent={{-30,-46},{-50,-26}})));
+  Modelica.Fluid.Sources.FixedBoundary souVol(redeclare package Medium =
+        MediumW, nPorts=1)
+   "Volume for source side"
+   annotation (Placement(transformation(extent={{-50,-74},{-30,-54}})));
+  Modelica.Blocks.Sources.IntegerExpression modus(y=modusValue)
+    annotation (Placement(transformation(extent={{-8,58},{12,78}})));
+  Modelica.Blocks.Sources.RealExpression SupSetTemp(y=TSet)
+    annotation (Placement(transformation(extent={{-8,76},{12,96}})));
+  Modelica.Blocks.Sources.RealExpression souSetTemp(y=TSouSet)
+    annotation (Placement(transformation(extent={{-60,-106},{-40,-86}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort retTemp(redeclare package Medium =
+        MediumW, m_flow_nominal=0.3)
+    annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort supTemp(redeclare package Medium =
+        MediumW, m_flow_nominal=0.3)
+    annotation (Placement(transformation(extent={{52,-2},{72,18}})));
+  Buildings.Fluid.Storage.StratifiedEnhanced storage(
+    redeclare package Medium = MediumW,
+    m_flow_nominal=nominal_mass_flow_radiator_loop,
+    VTan=VTan,
+    hTan=hTan,
+    dIns=dIns,
+    nSeg=nSeg) if useStorageTank
+    annotation (Placement(transformation(extent={{-90,20},{-50,60}})));
+          Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
+equation
+  connect(souPum.ports[1],heaPum. port_a2)
+    annotation (Line(points={{42,-62},{32,-62},{32,-4},{26,-4}},
+                                             color={0,127,255}));
+  connect(heaPum.port_b2,souVol. ports[1])
+    annotation (Line(points={{6,-4},{-24,-4},{-24,-64},{-30,-64}},
+                                                               color={0,127,255}));
+  connect(modus.y, heaPum.uMod) annotation (Line(points={{13,68},{14,68},{14,46},
+          {-2,46},{-2,2},{5,2}},
+                     color={255,127,0}));
+  connect(SupSetTemp.y, heaPum.TSet) annotation (Line(points={{13,86},{18,86},{18,
+          16},{0,16},{0,11},{4.6,11}},
+                         color={0,0,127}));
+  connect(souSetTemp.y, souPum.T_in) annotation (Line(points={{-39,-96},{74,-96},
+          {74,-66},{64,-66}}, color={0,0,127}));
+
+  connect(retTemp.port_b, heaPum.port_a1)
+    annotation (Line(points={{-40,0},{0,0},{0,8},{6,8}}, color={0,127,255}));
+  connect(heaPum.port_b1,supTemp. port_a) annotation (Line(points={{26,8},{52,8}},
+                            color={0,127,255}));
+  connect(supTemp.port_b, port_b)
+    annotation (Line(points={{72,8},{86,8},{86,0},{100,0}},
+                                                        color={0,127,255}));
+  connect(loaVol.ports[1], retTemp.port_b) annotation (Line(points={{-50,-36},{-54,
+          -36},{-54,-18},{-36,-18},{-36,0},{-40,0}}, color={0,127,255}));
+
+
+          if useStorageTank then
+  connect(port_a, storage.port_a) annotation (Line(points={{-100,0},{-86,0},{-86,
+          14},{-94,14},{-94,66},{-70,66},{-70,60}}, color={0,127,255}));
+  connect(storage.port_b, retTemp.port_a)
+    annotation (Line(points={{-70,20},{-70,0},{-60,0}}, color={0,127,255}));
+
+          else
+  connect(port_a, retTemp.port_a)
+    annotation (Line(points={{-100,0},{-60,0}}, color={0,127,255}));
+ end if;
+  annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
+Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
+Rectangle(
+  fillColor={255,255,255},
+          fillPattern=FillPattern.Solid,
+          extent={{-68,70},{70,-70}}),
+        Polygon(
+          lineColor={0,0,255},
+          fillColor={0,0,255},
+          fillPattern=FillPattern.Solid,
+          points={{-68,18},{-68,18},{-54,32},{-28,16},{0,30},{26,16},{46,32},{70,
+              18},{70,18},{70,-70},{70,-70},{-68,-70},{-68,-70},{-68,18}},
+          smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
+            {100,100}}), graphics={
+                              Line(points={{-18,-52}},color={28,108,200})}));
+    end PartialWaterWaterHeatPump;
+    partial model PartialAirWaterHeatPump
+replaceable package MediumW = Modelica.Media.Interfaces.PartialMedium
+"Medium model" annotation (choicesAllMatching=true);
+  extends
+      Buildings.Fluid.Interfaces.PartialTwoPort(
+                                    redeclare package Medium = MediumW);
+
+  parameter Boolean useStorageTank=false "Use storage tank"
+annotation (Dialog(tab="Storage tank", group="Properties"));
+  parameter Real a[:]={0.9} "Coefficients for efficiency curve";
+  parameter Buildings.Fluid.Types.EfficiencyCurves effCur=Buildings.Fluid.Types.EfficiencyCurves.Constant
+    "Curve used to compute the efficiency";
+  parameter Modelica.Units.SI.Temperature T_nominal=353.15
+    "Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature)"
+    annotation (Dialog(enable=(effCur == Buildings.Fluid.Types.EfficiencyCurves.QuadraticLinear)))
+    ;
+
+  parameter Buildings.Fluid.Data.Fuels.Generic fue "Fuel type"
+    annotation (choicesAllMatching=true);
+
+  parameter Modelica.Units.SI.Power Q_flow_nominal "Nominal heating power";
+  parameter Boolean linearizeFlowResistance=false
+    "= true, use linear relation between m_flow and dp for any flow rate"
+    annotation (Dialog(enable=computeFlowResistance, tab="Flow resistance"));
+  parameter Modelica.Units.SI.PressureDifference dp_nominal(min=0, displayUnit="Pa")
+"Pressure difference" annotation (Dialog(group="Nominal condition"));
+  parameter Modelica.Units.SI.Pressure dp[:]=(3000 + 2000)*{2,1} "Pressure";
+  parameter Real V_flow[:]=0.001/1000*{0.5,1};
+  parameter Real deltaM=0.1
+    "Fraction of nominal flow rate where flow transitions to laminar";
+  parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_rate_boiler;
+  parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
+  parameter Boolean show_T=false;
+
+  parameter Modelica.Units.SI.Volume VTan "Tank volume";
+  parameter Modelica.Units.SI.Length hTan "Height of tank (without insulation)";
+  parameter Modelica.Units.SI.Length dIns "Thickness of insulation";
+  parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
+    "Specific heat conductivity of insulation";
+  parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+
+  parameter Modelica.Units.SI.Temperature TSet=323.15;
+  parameter Modelica.Units.SI.Temperature TSouSet=278.15;
+  parameter Integer modusValue=1;
+
+  parameter Buildings.Fluid.HeatPumps.Data.EquationFitReversible.EnergyPlus
+                                                  per
+"Reverse heat pump performance data"
+annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
+  parameter Modelica.Units.SI.MassFlowRate mSou_flow_nominal=per.hea.mSou_flow
+    "Source heat exchanger nominal mass flow rate";
+  parameter Modelica.Units.SI.MassFlowRate mLoa_flow_nominal=per.hea.mLoa_flow
+    "Load heat exchanger nominal mass flow rate";
+  Buildings.Fluid.Sources.MassFlowSource_T
+                   souPum(
+redeclare package Medium = Buildings.Media.Air,
+m_flow=1.7,
+    use_T_in=true,
+nPorts=1) "Source side water pump" annotation (Placement(transformation(
+        extent={{-10,-10},{10,10}},
+        rotation=180,
+        origin={52,-62})));
+  Modelica.Fluid.Sources.FixedBoundary loaVol(redeclare package Medium =
+MediumW, nPorts=1) "Volume for the load side"
+annotation (Placement(transformation(extent={{-30,-46},{-50,-26}})));
+  Modelica.Fluid.Sources.FixedBoundary souVol(redeclare package Medium =
+    Buildings.Media.Air, nPorts=1) "Volume for source side"
+annotation (Placement(transformation(extent={{-50,-74},{-30,-54}})));
+  Modelica.Blocks.Sources.BooleanExpression modus(y=true)
+    annotation (Placement(transformation(extent={{-8,58},{12,78}})));
+  Modelica.Blocks.Sources.RealExpression SupSetTemp(y=TSet)
+    annotation (Placement(transformation(extent={{-8,76},{12,96}})));
+  Modelica.Blocks.Sources.RealExpression souSetTemp(y=TSouSet)
+    annotation (Placement(transformation(extent={{-60,-106},{-40,-86}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort retTemp(redeclare package Medium
+      =
+MediumW, m_flow_nominal=0.3)
+    annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort supTemp(redeclare package Medium
+      =
+MediumW, m_flow_nominal=0.3)
+    annotation (Placement(transformation(extent={{52,-2},{72,18}})));
+  Buildings.Fluid.Storage.StratifiedEnhanced storage(
+    redeclare package Medium = MediumW,
+    m_flow_nominal=nominal_mass_flow_radiator_loop,
+    VTan=VTan,
+    hTan=hTan,
+    dIns=dIns,
+    nSeg=nSeg) if useStorageTank
+    annotation (Placement(transformation(extent={{-90,20},{-50,60}})));
+  Buildings.Fluid.HeatPumps.ModularReversible.AirToWaterTableData2D
+airToWaterTableData2D(
+    redeclare package MediumCon = MediumW,
+use_intSafCtr=false,
+QHea_flow_nominal=Q_flow_nominal,
+TConHea_nominal=TSet,
+    TEvaHea_nominal=293.15,
+    TConCoo_nominal=303.15,
+    TEvaCoo_nominal=283.15,
+redeclare
+  Buildings.Fluid.HeatPumps.ModularReversible.Data.TableData2D.EN14511.Vitocal251A08
+  datTabHea,
+redeclare
+  Buildings.Fluid.Chillers.ModularReversible.Data.TableData2D.EN14511.Vitocal251A08
+  datTabCoo)
+annotation (Placement(transformation(extent={{-14,-12},{24,26}})));
+  IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P,
+  k=5) annotation (Placement(
+transformation(extent={{50,50},{70,70}})));
+          Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
+    annotation (Placement(transformation(extent={{-86,-120},{-60,-94}})));
+equation
+  connect(
+  souSetTemp.y, souPum.T_in) annotation (Line(points={{-39,-96},{74,-96},
+  {74,-66},{64,-66}}, color={0,0,127}));
+
+  connect(
+  supTemp.port_b, port_b) annotation (Line(points={{72,8},{86,8},{86,0},{100,0}},
+                                                color={0,127,255}));
+  connect(
+  loaVol.ports[1], retTemp.port_b) annotation (Line(points={{-50,-36},{-54,
+  -36},{-54,-18},{-36,-18},{-36,0},{-40,0}}, color={0,127,255}));
+
+  if useStorageTank then
+connect(
+  port_a, storage.port_a) annotation (Line(points={{-100,0},{-86,0},{-86,
+  14},{-94,14},{-94,66},{-70,66},{-70,60}}, color={0,127,255}));
+connect(
+  storage.port_b, retTemp.port_a)
+      annotation (Line(points={{-70,20},{-70,0},{-60,0}}, color={0,127,255}));
+
+  else
+connect(
+  port_a, retTemp.port_a)
+      annotation (Line(points={{-100,0},{-60,0}}, color={0,127,255}));
+  end if;
+  connect(
+      retTemp.port_b, airToWaterTableData2D.port_a1) annotation (Line(
+    points={{-40,0},{-20,0},{-20,18.4},{-14,18.4}}, color={0,127,255}));
+  connect(
+      airToWaterTableData2D.port_b1, supTemp.port_a) annotation (Line(
+    points={{24,18.4},{46,18.4},{46,8},{52,8}}, color={0,127,255}));
+  connect(
+      souPum.ports[1], airToWaterTableData2D.port_a2) annotation (Line(
+    points={{42,-62},{30,-62},{30,-4.4},{24,-4.4}}, color={0,127,255}));
+  connect(
+      airToWaterTableData2D.port_b2, souVol.ports[1]) annotation (Line(
+    points={{-14,-4.4},{-24,-4.4},{-24,-64},{-30,-64}}, color={0,127,255}));
+  connect(
+      modus.y, airToWaterTableData2D.hea) annotation (Line(points={{13,68},{
+      10,68},{10,44},{-28,44},{-28,3.01},{-16.09,3.01}}, color={255,0,255}));
+  connect(
+      supTemp.T, conPID.u_m)
+annotation (Line(points={{62,19},{62,48},{60,48}}, color={0,0,127}));
+  connect(
+      conPID.y, airToWaterTableData2D.ySet) annotation (Line(points={{71,60},
+      {76,60},{76,38},{-18,38},{-18,10.61},{-16.09,10.61}}, color={0,0,127}));
+  connect(
+      SupSetTemp.y, conPID.u_s) annotation (Line(points={{13,86},{40,86},{40,
+      60},{48,60}}, color={0,0,127}));
+  annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
     Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
     Rectangle(
       fillColor={255,255,255},
-              fillPattern=FillPattern.Solid,
-              extent={{-68,70},{70,-70}}),
-            Polygon(
-              lineColor={0,0,255},
-              fillColor={0,0,255},
-              fillPattern=FillPattern.Solid,
-              points={{-68,18},{-68,18},{-54,32},{-28,16},{0,30},{26,16},{46,32},{70,
-                  18},{70,18},{70,-70},{70,-70},{-68,-70},{-68,-70},{-68,18}},
-              smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
-                {100,100}})));
-    end PartialHeatPump;
+  fillPattern=FillPattern.Solid,
+  extent={{-68,70},{70,-70}}),
+Polygon(
+  lineColor={0,0,255},
+  fillColor={0,0,255},
+  fillPattern=FillPattern.Solid,
+  points={{-68,18},{-68,18},{-54,32},{-28,16},{0,30},{26,16},{46,32},{70,
+      18},{70,18},{70,-70},{70,-70},{-68,-70},{-68,-70},{-68,18}},
+  smooth=Smooth.Bezier)}), Diagram(coordinateSystem(extent={{-100,-120},
+    {100,100}}), graphics={
+                      Line(points={{-18,-52}},color={28,108,200})}));
+end PartialAirWaterHeatPump;
+
   end Boilers;
 
     package Ventilation
@@ -1240,7 +1502,7 @@ end PartialBoilerWithoutStorage;
 
        parameter Modelica.Units.SI.MassFlowRate m_flow_nominal
          "Nominal mass flow rate of radiator loop";
-       parameter Modelica.Units.SI.PressureDifference dp_nominal
+       parameter Modelica.Units.SI.PressureDifference dp_nominal(displayUnit="Pa")
          "Pressure difference of loop";
 
        Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y pumRad(
@@ -1822,6 +2084,1027 @@ end PartialBoilerWithoutStorage;
       end ventilation;
     end Containers;
   end BaseClasses;
+    package ThermalZones
+  package BaseClasses
+    partial model RoomHeatMassBalanceInf "Base model for a room"
+      extends Buildings.ThermalZones.Detailed.BaseClasses.ConstructionRecords;
+
+      replaceable package Medium =
+        Modelica.Media.Interfaces.PartialMedium "Medium in the component"
+          annotation (choicesAllMatching = true);
+
+      constant Boolean homotopyInitialization = true "= true, use homotopy method"
+        annotation(HideResult=true);
+
+      parameter Integer nPorts=0 "Number of ports" annotation (Evaluate=true,
+          Dialog(
+          connectorSizing=true,
+          tab="General",
+          group="Ports"));
+      Modelica.Fluid.Vessels.BaseClasses.VesselFluidPorts_b ports[nPorts](
+          redeclare each package Medium = Medium) "Fluid inlets and outlets"
+        annotation (Placement(transformation(
+            extent={{-40,-10},{40,10}},
+            origin={-260,-60},
+            rotation=90), iconTransformation(
+            extent={{-40,-10},{40,10}},
+            rotation=90,
+            origin={-150,-100})));
+      final parameter Modelica.Units.SI.Volume V=AFlo*hRoo "Volume";
+      parameter Modelica.Units.SI.Area AFlo "Floor area";
+      parameter Modelica.Units.SI.Length hRoo "Average room height";
+      parameter Real ACH(unit="1/h") = 0.5
+      "Air change rate (1/h)"annotation(Dialog(group="Air Infiltration"));
+
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heaPorAir
+        "Heat port to air volume" annotation (Placement(transformation(extent={{-270,30},
+                {-250,50}}),   iconTransformation(extent={{-20,-10},{0,10}})));
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heaPorRad
+        "Heat port for radiative heat gain and radiative temperature" annotation (
+          Placement(transformation(extent={{-270,-10},{-250,10}}),
+                    iconTransformation(extent={{-20,-48},{0,-28}})));
+      ////////////////////////////////////////////////////////////////////////
+      // Constructions
+      Buildings.ThermalZones.Detailed.Constructions.Construction conExt[NConExt](
+        final A=datConExt.A,
+        final til=datConExt.til,
+        final layers=datConExt.layers,
+        final steadyStateInitial=datConExt.steadyStateInitial,
+        final T_a_start=datConExt.T_a_start,
+        final T_b_start=datConExt.T_b_start,
+        final stateAtSurface_a=datConExt.stateAtSurface_a,
+        final stateAtSurface_b=datConExt.stateAtSurface_b) if haveConExt
+        "Heat conduction through exterior construction that have no window"
+        annotation (Placement(transformation(extent={{288,100},{242,146}})));
+      Buildings.ThermalZones.Detailed.Constructions.ConstructionWithWindow conExtWin[
+        NConExtWin](
+        final A=datConExtWin.A,
+        final til=datConExtWin.til,
+        final layers=datConExtWin.layers,
+        final steadyStateInitial=datConExtWin.steadyStateInitial,
+        final T_a_start=datConExtWin.T_a_start,
+        final T_b_start=datConExtWin.T_b_start,
+        final AWin=datConExtWin.AWin,
+        final fFra=datConExtWin.fFra,
+        final glaSys=datConExtWin.glaSys,
+        each final homotopyInitialization=homotopyInitialization,
+        each final linearizeRadiation=linearizeRadiation,
+        each final steadyStateWindow=steadyStateWindow,
+        final stateAtSurface_a=datConExtWin.stateAtSurface_a,
+        final stateAtSurface_b=datConExtWin.stateAtSurface_b) if haveConExtWin
+        "Heat conduction through exterior construction that have a window"
+        annotation (Placement(transformation(extent={{280,44},{250,74}})));
+
+      Buildings.ThermalZones.Detailed.Constructions.Construction conPar[NConPar](
+        A=datConPar.A,
+        til=datConPar.til,
+        final layers=datConPar.layers,
+        steadyStateInitial=datConPar.steadyStateInitial,
+        T_a_start=datConPar.T_a_start,
+        T_b_start=datConPar.T_b_start,
+        final stateAtSurface_a=datConPar.stateAtSurface_a,
+        final stateAtSurface_b=datConPar.stateAtSurface_b) if haveConPar
+        "Heat conduction through partitions that have both sides inside the thermal zone"
+        annotation (Placement(transformation(extent={{282,-122},{244,-84}})));
+
+      Buildings.ThermalZones.Detailed.Constructions.Construction conBou[NConBou](
+        A=datConBou.A,
+        til=datConBou.til,
+        final layers=datConBou.layers,
+        steadyStateInitial=datConBou.steadyStateInitial,
+        T_a_start=datConBou.T_a_start,
+        T_b_start=datConBou.T_b_start,
+        final stateAtSurface_a=datConBou.stateAtSurface_a,
+        final stateAtSurface_b=datConBou.stateAtSurface_b) if haveConBou
+        "Heat conduction through opaque constructions that have the boundary conditions of the other side exposed"
+        annotation (Placement(transformation(extent={{282,-156},{242,-116}})));
+      parameter Boolean linearizeRadiation=true
+        "Set to true to linearize emissive power";
+
+      parameter Boolean steadyStateWindow = false
+        "Set to false to add thermal capacity at window, which generally leads to faster simulation"
+        annotation (Dialog(tab="Dynamics", group="Glazing system"));
+      ////////////////////////////////////////////////////////////////////////
+      // Convection
+      parameter Buildings.HeatTransfer.Types.InteriorConvection intConMod=Buildings.HeatTransfer.Types.InteriorConvection.Temperature
+        "Convective heat transfer model for room-facing surfaces of opaque constructions"
+        annotation (Dialog(group="Convective heat transfer"));
+      parameter Modelica.Units.SI.CoefficientOfHeatTransfer hIntFixed=3.0
+        "Constant convection coefficient for room-facing surfaces of opaque constructions"
+        annotation (Dialog(group="Convective heat transfer", enable=(intConMod ==
+              Buildings.HeatTransfer.Types.InteriorConvection.Fixed)));
+      parameter Buildings.HeatTransfer.Types.ExteriorConvection extConMod=Buildings.HeatTransfer.Types.ExteriorConvection.TemperatureWind
+        "Convective heat transfer model for exterior facing surfaces of opaque constructions"
+        annotation (Dialog(group="Convective heat transfer"));
+      parameter Modelica.Units.SI.CoefficientOfHeatTransfer hExtFixed=10.0
+        "Constant convection coefficient for exterior facing surfaces of opaque constructions"
+        annotation (Dialog(group="Convective heat transfer", enable=(extConMod ==
+              Buildings.HeatTransfer.Types.ExteriorConvection.Fixed)));
+      parameter Modelica.Units.SI.MassFlowRate m_flow_nominal(min=0) = V*1.2/3600
+        "Nominal mass flow rate" annotation (Dialog(group="Nominal condition"));
+      parameter Boolean sampleModel = false
+        "Set to true to time-sample the model, which can give shorter simulation time if there is already time sampling in the system model"
+        annotation (Evaluate=true, Dialog(tab="Experimental (may be changed in future releases)"));
+      ////////////////////////////////////////////////////////////////////////
+      // Control signals
+      Modelica.Blocks.Interfaces.RealInput uWin[nConExtWin](
+        each min=0, each max=1, each unit="1") if haveControllableWindow
+        "Control signal for window state (used for electrochromic windows, removed otherwise)"
+         annotation (Placement(
+            transformation(extent={{-20,-20},{20,20}},   origin={-280,140}),
+            iconTransformation(
+            extent={{-16,-16},{16,16}},
+            origin={-216,130})));
+
+      ////////////////////////////////////////////////////////////////////////
+      // Models for boundary conditions
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a surf_conBou[nConBou]
+     if haveConBou "Heat port at surface b of construction conBou" annotation (
+          Placement(transformation(extent={{-270,-190},{-250,-170}}),
+            iconTransformation(extent={{50,-170},{70,-150}})));
+      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a surf_surBou[nSurBou]
+     if haveSurBou "Heat port of surface that is connected to the room air"
+        annotation (Placement(transformation(extent={{-270,-150},{-250,-130}}),
+            iconTransformation(extent={{-48,-150},{-28,-130}})));
+      Modelica.Blocks.Interfaces.RealInput qGai_flow[3](each unit="W/m2")
+        "Radiant, convective and latent heat input into room (positive if heat gain)"
+        annotation (Placement(transformation(extent={{-300,60},{-260,100}}),
+            iconTransformation(extent={{-232,64},{-200,96}})));
+      // Reassign the tilt since a construction that is declared as a ceiling of the
+      // room model has an exterior-facing surface that is a floor
+      Buildings.ThermalZones.Detailed.BaseClasses.ExteriorBoundaryConditions bouConExt(
+        final nCon=nConExt,
+        linearizeRadiation=linearizeRadiation,
+        final conMod=extConMod,
+        final conPar=datConExt,
+        final hFixed=hExtFixed) if haveConExt
+        "Exterior boundary conditions for constructions without a window"
+        annotation (Placement(transformation(extent={{352,114},{382,144}})));
+      // Reassign the tilt since a construction that is declared as a ceiling of the
+      // room model has an exterior-facing surface that is a floor
+      Buildings.ThermalZones.Detailed.BaseClasses.ExteriorBoundaryConditionsWithWindow
+        bouConExtWin(
+        final nCon=nConExtWin,
+        final conPar=datConExtWin,
+        linearizeRadiation=linearizeRadiation,
+        final conMod=extConMod,
+        final hFixed=hExtFixed) if haveConExtWin
+        "Exterior boundary conditions for constructions with a window"
+        annotation (Placement(transformation(extent={{352,44},{382,74}})));
+
+      Buildings.HeatTransfer.Windows.BaseClasses.WindowRadiation conExtWinRad[
+        NConExtWin](
+        final AWin=(1 .- datConExtWin.fFra) .* datConExtWin.AWin,
+        final N={size(datConExtWin[i].glaSys.glass, 1) for i in 1:NConExtWin},
+        final tauGlaSol=datConExtWin.glaSys.glass.tauSol,
+        final rhoGlaSol_a=datConExtWin.glaSys.glass.rhoSol_a,
+        final rhoGlaSol_b=datConExtWin.glaSys.glass.rhoSol_b,
+        final xGla=datConExtWin.glaSys.glass.x,
+        final tauShaSol_a=datConExtWin.glaSys.shade.tauSol_a,
+        final tauShaSol_b=datConExtWin.glaSys.shade.tauSol_b,
+        final rhoShaSol_a=datConExtWin.glaSys.shade.rhoSol_a,
+        final rhoShaSol_b=datConExtWin.glaSys.shade.rhoSol_b,
+        final haveExteriorShade=datConExtWin.glaSys.haveExteriorShade,
+        final haveInteriorShade=datConExtWin.glaSys.haveInteriorShade)
+        if haveConExtWin "Model for solar radiation through shades and window"
+        annotation (Placement(transformation(extent={{320,-24},{300,-4}})));
+
+      Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather data"
+        annotation (Placement(transformation(extent={{170,150},{190,170}}),
+            iconTransformation(extent={{166,166},{192,192}})));
+
+      replaceable
+        Buildings.ThermalZones.Detailed.BaseClasses.PartialAirHeatMassBalance air
+        constrainedby
+        Buildings.ThermalZones.Detailed.BaseClasses.PartialAirHeatMassBalance(
+        redeclare final package Medium = Medium,
+        nPorts=nPorts + 2,
+        final nConExt=nConExt,
+        final nConExtWin=nConExtWin,
+        final nConPar=nConPar,
+        final nConBou=nConBou,
+        final nSurBou=nSurBou,
+        final datConExt=datConExt,
+        final datConExtWin=datConExtWin,
+        final datConPar=datConPar,
+        final datConBou=datConBou,
+        final surBou=surBou,
+        final haveShade=haveShade,
+        final V=V) "Convective heat and mass balance of air"
+        annotation (Placement(transformation(extent={{40,-142},{64,-118}})));
+
+      Buildings.ThermalZones.Detailed.BaseClasses.SolarRadiationExchange solRadExc(
+        final nConExt=nConExt,
+        final nConExtWin=nConExtWin,
+        final nConPar=nConPar,
+        final nConBou=nConBou,
+        final nSurBou=nSurBou,
+        final datConExt = datConExt,
+        final datConExtWin = datConExtWin,
+        final datConPar = datConPar,
+        final datConBou = datConBou,
+        final surBou = surBou,
+        final is_floorConExt=is_floorConExt,
+        final is_floorConExtWin=is_floorConExtWin,
+        final is_floorConPar_a=is_floorConPar_a,
+        final is_floorConPar_b=is_floorConPar_b,
+        final is_floorConBou=is_floorConBou,
+        final is_floorSurBou=is_floorSurBou,
+        final tauGla={datConExtWin[i].glaSys.glass[size(datConExtWin[i].glaSys.glass, 1)].tauSol[1] for i in 1:NConExtWin})
+        if haveConExtWin "Solar radiative heat exchange"
+        annotation (Placement(transformation(extent={{-100,40},{-80,60}})));
+
+      Buildings.ThermalZones.Detailed.BaseClasses.InfraredRadiationGainDistribution irRadGai(
+        final nConExt=nConExt,
+        final nConExtWin=nConExtWin,
+        final nConPar=nConPar,
+        final nConBou=nConBou,
+        final nSurBou=nSurBou,
+        final datConExt = datConExt,
+        final datConExtWin = datConExtWin,
+        final datConPar = datConPar,
+        final datConBou = datConBou,
+        final surBou = surBou,
+        final haveShade=haveShade)
+        "Distribution for infrared radiative heat gains (e.g., due to equipment and people)"
+        annotation (Placement(transformation(extent={{-100,-40},{-80,-20}})));
+
+      Buildings.ThermalZones.Detailed.BaseClasses.InfraredRadiationExchange irRadExc(
+        final nConExt=nConExt,
+        final nConExtWin=nConExtWin,
+        final nConPar=nConPar,
+        final nConBou=nConBou,
+        final nSurBou=nSurBou,
+        final datConExt = datConExt,
+        final datConExtWin = datConExtWin,
+        final datConPar = datConPar,
+        final datConBou = datConBou,
+        final surBou = surBou,
+        final linearizeRadiation = linearizeRadiation,
+        final homotopyInitialization = homotopyInitialization,
+        final sampleModel = sampleModel)
+        "Infrared radiative heat exchange"
+        annotation (Placement(transformation(extent={{-100,0},{-80,20}})));
+
+      Buildings.ThermalZones.Detailed.BaseClasses.RadiationTemperature radTem(
+        final nConExt=nConExt,
+        final nConExtWin=nConExtWin,
+        final nConPar=nConPar,
+        final nConBou=nConBou,
+        final nSurBou=nSurBou,
+        final datConExt=datConExt,
+        final datConExtWin=datConExtWin,
+        final datConPar=datConPar,
+        final datConBou=datConBou,
+        final surBou=surBou,
+        final haveShade=haveShade) "Radiative temperature of the room"
+        annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
+
+      Buildings.HeatTransfer.Windows.BaseClasses.ShadeRadiation shaRad[NConExtWin](
+        final A=(1 .- datConExtWin.fFra) .* datConExtWin.AWin,
+        final thisSideHasShade=haveInteriorShade,
+        final absIR_air=datConExtWin.glaSys.shade.absIR_a,
+        final absIR_glass={(datConExtWin[i].glaSys.glass[size(datConExtWin[i].glaSys.glass,
+            1)].absIR_b) for i in 1:NConExtWin},
+        final tauIR_air=tauIRSha_air,
+        final tauIR_glass=tauIRSha_glass,
+        each final linearize=linearizeRadiation,
+        each final homotopyInitialization=homotopyInitialization) if haveShade
+        "Radiation model for room-side window shade"
+        annotation (Placement(transformation(extent={{-60,90},{-40,110}})));
+
+      Buildings.Fluid.Sources.Boundary_pT souInf(
+        redeclare package Medium = Medium,
+        use_T_in=true,
+        nPorts=1) "Source model for air infiltration"
+        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
+      Buildings.Fluid.Sources.MassFlowSource_T sinInf(
+        redeclare package Medium = Medium,
+        use_m_flow_in=true,
+        nPorts=1) "Sink model for air infiltration"
+        annotation (Placement(transformation(extent={{2,-194},{20,-176}})));
+      Modelica.Blocks.Sources.RealExpression airInfiltration(y=ACH*V*1.2/3600)
+        annotation (Placement(transformation(extent={{-60,-188},{-40,-168}})));
+    protected
+      final parameter Modelica.Units.SI.TransmissionCoefficient tauIRSha_air[
+        NConExtWin]=datConExtWin.glaSys.shade.tauIR_a
+        "Infrared transmissivity of shade for radiation coming from the exterior or the room"
+        annotation (Dialog(group="Shading"));
+      final parameter Modelica.Units.SI.TransmissionCoefficient tauIRSha_glass[
+        NConExtWin]=datConExtWin.glaSys.shade.tauIR_b
+        "Infrared transmissivity of shade for radiation coming from the glass"
+        annotation (Dialog(group="Shading"));
+
+      // If at least one glass layer in the room has mutiple states, then
+      // set haveControllableWindow=true. In this case, the input connector for
+      // the control signal will be enabled. Otherwise, it is removed.
+      final parameter Boolean haveControllableWindow=
+      Modelica.Math.BooleanVectors.anyTrue(
+        {datConExtWin[i].glaSys.haveControllableWindow for i in 1:NConExtWin})
+        "Flag, true if the windows allow multiple states, such as for electrochromic windows"
+        annotation(Evaluate=true);
+
+      final parameter Boolean haveExteriorShade[NConExtWin]=
+        {datConExtWin[i].glaSys.haveExteriorShade for i in 1:NConExtWin}
+        "Set to true if window has exterior shade (at surface a)"
+        annotation (Dialog(group="Shading"));
+      final parameter Boolean haveInteriorShade[NConExtWin]=
+        {datConExtWin[i].glaSys.haveInteriorShade for i in 1:NConExtWin}
+        "Set to true if window has interior shade (at surface b)"
+        annotation (Dialog(group="Shading"));
+
+      final parameter Boolean haveShade=
+        Modelica.Math.BooleanVectors.anyTrue(haveExteriorShade[:]) or
+        Modelica.Math.BooleanVectors.anyTrue(haveInteriorShade[:])
+        "Set to true if the windows have a shade";
+
+      final parameter Boolean is_floorConExt[NConExt]=
+        datConExt.is_floor "Flag to indicate if floor for exterior constructions";
+      final parameter Boolean is_floorConExtWin[NConExtWin]=
+        datConExtWin.is_floor "Flag to indicate if floor for constructions";
+      final parameter Boolean is_floorConPar_a[NConPar]=
+        datConPar.is_floor "Flag to indicate if floor for constructions";
+      final parameter Boolean is_floorConPar_b[NConPar]=
+        datConPar.is_ceiling "Flag to indicate if floor for constructions";
+      final parameter Boolean is_floorConBou[NConBou]=
+        datConBou.is_floor
+        "Flag to indicate if floor for constructions with exterior boundary conditions exposed to outside of room model";
+      parameter Boolean is_floorSurBou[NSurBou]=
+        surBou.is_floor
+        "Flag to indicate if floor for constructions that are modeled outside of this room";
+
+      Buildings.HeatTransfer.Windows.BaseClasses.ShadingSignal shaSig[NConExtWin](
+          each final haveShade=haveShade) if haveConExtWin "Shading signal"
+        annotation (Placement(transformation(extent={{-220,150},{-200,170}})));
+
+      Buildings.ThermalZones.Detailed.BaseClasses.HeatGain heaGai(final AFlo=AFlo)
+        "Model to convert internal heat gains"
+        annotation (Placement(transformation(extent={{-220,70},{-200,90}})));
+
+      Buildings.ThermalZones.Detailed.BaseClasses.RadiationAdapter radiationAdapter
+        annotation (Placement(transformation(extent={{-180,120},{-160,140}})));
+      Modelica.Blocks.Math.Add add
+        annotation (Placement(transformation(extent={{-140,110},{-120,130}})));
+
+      Modelica.Blocks.Math.Add sumJToWin[NConExtWin](
+        each final k1=1,
+        each final k2=1)
+        if haveConExtWin
+        "Sum of radiosity flows from room surfaces toward the window"
+        annotation (Placement(transformation(extent={{-40,-30},{-20,-10}})));
+
+      Buildings.HeatTransfer.Radiosity.RadiositySplitter radShaOut[NConExtWin]
+        if haveConExtWin
+        "Splitter for radiosity that strikes shading device or unshaded part of window"
+        annotation (Placement(transformation(extent={{-100,120},{-80,140}})));
+
+      Modelica.Blocks.Math.Sum sumJFroWin[NConExtWin](each nin=if haveShade then 2
+             else 1)
+        if haveConExtWin "Sum of radiosity fom window to room surfaces"
+        annotation (Placement(transformation(extent={{-20,4},{-40,24}})));
+
+      Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature TSha[NConExtWin]
+        if haveShade "Temperature of shading device"
+        annotation (Placement(transformation(extent={{-20,-78},{-40,-58}})));
+
+    initial equation
+      assert(homotopyInitialization, "In " + getInstanceName() +
+        ": The constant homotopyInitialization has been modified from its default value. This constant will be removed in future releases.",
+        level = AssertionLevel.warning);
+
+    equation
+      connect(conBou.opa_a, surf_conBou) annotation (Line(
+          points={{282,-122.667},{282,-122},{288,-122},{288,-216},{-240,-216},{-240,
+              -180},{-260,-180}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(bouConExtWin.opa_a, conExtWin.opa_a) annotation (Line(
+          points={{352,69},{280,69}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.JInUns_a, bouConExtWin.JOutUns) annotation (Line(
+          points={{280.5,60},{304,60},{304,58},{351.5,58}},
+          color={0,0,0},
+          smooth=Smooth.None));
+      connect(bouConExtWin.JInUns, conExtWin.JOutUns_a) annotation (Line(
+          points={{351.5,60},{316,60},{316,58},{280.5,58}},
+          color={0,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.glaUns_a, bouConExtWin.glaUns) annotation (Line(
+          points={{280,55},{352,55}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(bouConExtWin.glaSha, conExtWin.glaSha_a) annotation (Line(
+          points={{352,53},{280,53}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.JInSha_a, bouConExtWin.JOutSha) annotation (Line(
+          points={{280.5,51},{286,51},{286,52},{292,52},{292,49},{351.5,49}},
+          color={0,0,0},
+          smooth=Smooth.None));
+      connect(bouConExtWin.JInSha, conExtWin.JOutSha_a) annotation (Line(
+          points={{351.5,51},{290,51},{290,49},{280.5,49}},
+          color={0,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.fra_a, bouConExtWin.fra) annotation (Line(
+          points={{280,46},{352,46}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conExt.opa_a, bouConExt.opa_a) annotation (Line(
+          points={{288,138.333},{334,138.333},{334,139},{352,139}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(weaBus, bouConExtWin.weaBus) annotation (Line(
+          points={{180,160},{400,160},{400,60.05},{378.15,60.05}},
+          color={255,204,51},
+          thickness=0.5,
+          smooth=Smooth.None));
+      connect(weaBus, bouConExt.weaBus) annotation (Line(
+          points={{180,160},{400,160},{400,130},{378.15,130},{378.15,130.05}},
+          color={255,204,51},
+          thickness=0.5,
+          smooth=Smooth.None));
+      connect(bouConExtWin.QAbsSolSha_flow, conExtWinRad.QAbsExtSha_flow)
+        annotation (Line(
+          points={{351,62},{312,62},{312,46},{290,46},{290,-5},{299,-5}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(bouConExtWin.inc, conExtWinRad.incAng) annotation (Line(
+          points={{382.5,68},{390,68},{390,-15},{321.5,-15}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(bouConExtWin.HDir, conExtWinRad.HDir) annotation (Line(
+          points={{382.5,65},{388,65},{388,-10},{321.5,-10}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(bouConExtWin.HDif, conExtWinRad.HDif) annotation (Line(
+          points={{382.5,62},{392,62},{392,-6},{321.5,-6}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(conExtWin.QAbsSha_flow, conExtWinRad.QAbsGlaSha_flow) annotation (
+          Line(
+          points={{261,43},{261,38},{260,38},{260,-12},{280,-12},{280,-13},{299,-13}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(conExtWinRad.QAbsGlaUns_flow, conExtWin.QAbsUns_flow) annotation (
+          Line(
+          points={{299,-9},{284,-9},{284,-10},{268,-10},{268,36},{269,36},{269,43}},
+          color={0,0,127},
+          smooth=Smooth.None));
+     // Connect statements from the model BaseClasses.MixedAir
+      connect(conExt.opa_b, irRadExc.conExt) annotation (Line(
+          points={{241.847,138.333},{160,138.333},{160,60},{-60,60},{-60,20},{-80,
+              20},{-80,19.1667}},
+          color={190,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.fra_b, irRadExc.conExtWinFra) annotation (Line(
+          points={{249.9,46},{160,46},{160,60},{-60,60},{-60,10},{-79.9167,10}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conPar.opa_a, irRadExc.conPar_a) annotation (Line(
+          points={{282,-90.3333},{288,-90.3333},{288,-106},{160,-106},{160,60},{
+              -60,60},{-60,8},{-80,8},{-80,7.5},{-79.9167,7.5}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conPar.opa_b, irRadExc.conPar_b) annotation (Line(
+          points={{243.873,-90.3333},{160,-90.3333},{160,60},{-60,60},{-60,5.83333},
+              {-79.9167,5.83333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(conBou.opa_b, irRadExc.conBou) annotation (Line(
+          points={{241.867,-122.667},{160,-122.667},{160,60},{-60,60},{-60,3.33333},
+              {-79.9167,3.33333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(surf_surBou, irRadExc.conSurBou) annotation (Line(
+          points={{-260,-140},{-232,-140},{-232,-210},{160,-210},{160,60},{-60,60},
+              {-60,0.833333},{-79.9583,0.833333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(irRadGai.conExt, conExt.opa_b) annotation (Line(
+          points={{-80,-20.8333},{-80,-20},{-60,-20},{-60,60},{160,60},{160,138.333},
+              {241.847,138.333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(irRadGai.conExtWinFra, conExtWin.fra_b) annotation (Line(
+          points={{-79.9167,-30},{-60,-30},{-60,60},{160,60},{160,46},{249.9,46}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(irRadGai.conPar_a, conPar.opa_a) annotation (Line(
+          points={{-79.9167,-32.5},{-60,-32.5},{-60,60},{160,60},{160,-106},{288,
+              -106},{288,-90.3333},{282,-90.3333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(irRadGai.conPar_b, conPar.opa_b) annotation (Line(
+          points={{-79.9167,-34.1667},{-60,-34.1667},{-60,60},{160,60},{160,-90.3333},
+              {243.873,-90.3333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(irRadGai.conBou, conBou.opa_b) annotation (Line(
+          points={{-79.9167,-36.6667},{-60,-36.6667},{-60,60},{160,60},{160,-122.667},
+              {241.867,-122.667}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(irRadGai.conSurBou, surf_surBou) annotation (Line(
+          points={{-79.9583,-39.1667},{-60,-39.1667},{-60,60},{160,60},{160,-210},
+              {-232,-210},{-232,-140},{-260,-140}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(conExtWin.opa_b, irRadExc.conExtWin) annotation (Line(
+          points={{249.9,69},{160,69},{160,60},{-60,60},{-60,16},{-80,16},{-80,17.5}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.opa_b, irRadGai.conExtWin) annotation (Line(
+          points={{249.9,69},{160,69},{160,60},{-60,60},{-60,-22},{-70,-22},{-70,-22.5},
+              {-80,-22.5}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(conExt.opa_b, solRadExc.conExt) annotation (Line(
+          points={{241.847,138.333},{160,138.333},{160,60},{-80,60},{-80,59.1667}},
+          color={190,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.fra_b, solRadExc.conExtWinFra) annotation (Line(
+          points={{249.9,46},{160,46},{160,60},{-60,60},{-60,50},{-79.9167,50}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conPar.opa_a, solRadExc.conPar_a) annotation (Line(
+          points={{282,-90.3333},{288,-90.3333},{288,-106},{160,-106},{160,60},{
+              -60,60},{-60,48},{-79.9167,48},{-79.9167,47.5}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conPar.opa_b, solRadExc.conPar_b) annotation (Line(
+          points={{243.873,-90.3333},{160,-90.3333},{160,60},{-60,60},{-60,46},{
+              -70,46},{-70,45.8333},{-79.9167,45.8333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conBou.opa_b, solRadExc.conBou) annotation (Line(
+          points={{241.867,-122.667},{160,-122.667},{160,60},{-60,60},{-60,43.3333},
+              {-79.9167,43.3333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(surf_surBou, solRadExc.conSurBou) annotation (Line(
+          points={{-260,-140},{-232,-140},{-232,-210},{160,-210},{160,60},{-60,60},
+              {-60,40},{-70,40},{-70,40.8333},{-79.9583,40.8333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.opa_b, solRadExc.conExtWin) annotation (Line(
+          points={{249.9,69},{160,69},{160,60},{-60,60},{-60,57.5},{-80,57.5}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(solRadExc.JInDifConExtWin, conExtWinRad.QTraDif_flow) annotation (
+          Line(
+          points={{-79.5833,53.3333},{20,53.3333},{20,-20},{299,-20}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(solRadExc.HOutConExtWin,conExtWinRad.HRoo)  annotation (Line(
+          points={{-79.5833,55},{10,55},{10,-34},{328,-34},{328,-21.6},{321.5,-21.6}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(conExt.opa_b, radTem.conExt) annotation (Line(
+          points={{241.847,138.333},{160,138.333},{160,60},{-60,60},{-60,-60.8333},
+              {-80,-60.8333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.opa_b, radTem.conExtWin) annotation (Line(
+          points={{249.9,69},{160,69},{160,60},{-60,60},{-60,-62.5},{-80,-62.5}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conExtWin.fra_b, radTem.conExtWinFra) annotation (Line(
+          points={{249.9,46},{160,46},{160,60},{-60,60},{-60,-70},{-79.9167,-70}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conPar.opa_a, radTem.conPar_a) annotation (Line(
+          points={{282,-90.3333},{288,-90.3333},{288,-106},{160,-106},{160,60},{
+              -60,60},{-60,-72.5},{-79.9167,-72.5}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(conPar.opa_b, radTem.conPar_b) annotation (Line(
+          points={{243.873,-90.3333},{160,-90.3333},{160,60},{-60,60},{-60,-74.1667},
+              {-79.9167,-74.1667}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(conBou.opa_b, radTem.conBou) annotation (Line(
+          points={{241.867,-122.667},{160,-122.667},{160,60},{-60,60},{-60,-76.6667},
+              {-79.9167,-76.6667}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(surf_surBou, radTem.conSurBou) annotation (Line(
+          points={{-260,-140},{-232,-140},{-232,-210},{160,-210},{160,60},{-60,60},
+              {-60,-79.1667},{-79.9583,-79.1667}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(radTem.glaUns, conExtWin.glaUns_b) annotation (Line(
+          points={{-80,-65},{-60,-65},{-60,60},{160,60},{160,55},{250,55}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(radTem.glaSha, conExtWin.glaSha_b) annotation (Line(
+          points={{-80,-66.6667},{-60,-66.6667},{-60,60},{160,60},{160,53},{250,
+              53}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(radTem.TRad, radiationAdapter.TRad) annotation (Line(
+          points={{-100.417,-77.6667},{-144,-77.6667},{-144,-78},{-186,-78},{-186,
+              130},{-182,130}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(radiationAdapter.rad, heaPorRad)
+                                         annotation (Line(
+          points={{-170.2,120},{-170,120},{-170,114},{-226,114},{-226,4.44089e-16},
+              {-260,4.44089e-16}},
+          color={191,0,0},
+          smooth=Smooth.None));
+
+      connect(radiationAdapter.QRad_flow, add.u1) annotation (Line(
+          points={{-159,130},{-150,130},{-150,126},{-142,126}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(add.y, irRadGai.Q_flow) annotation (Line(
+          points={{-119,120},{-116,120},{-116,-30},{-100.833,-30}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(irRadExc.JOutConExtWin, sumJToWin.u1)
+                                               annotation (Line(
+          points={{-79.5833,15},{-50,15},{-50,-14},{-42,-14}},
+          color={0,127,0},
+          smooth=Smooth.None));
+      connect(irRadGai.JOutConExtWin, sumJToWin.u2)
+                                               annotation (Line(
+          points={{-79.5833,-25},{-46,-25},{-46,-26},{-42,-26}},
+          color={0,127,0},
+          smooth=Smooth.None));
+      connect(shaSig.y, radShaOut.u) annotation (Line(
+          points={{-199,160},{-110,160},{-110,124},{-102,124}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(shaSig.y, shaRad.u) annotation (Line(
+          points={{-199,160},{-64,160},{-64,108},{-61,108}},
+          color={0,0,127},
+          smooth=Smooth.None));
+
+      connect(sumJToWin.y, radShaOut.JIn)
+                                     annotation (Line(
+          points={{-19,-20},{0,-20},{0,148},{-106,148},{-106,136},{-101,136}},
+          color={0,127,0},
+          smooth=Smooth.None));
+      connect(radShaOut.JOut_1, shaRad.JIn_air) annotation (Line(
+          points={{-79,136},{-70,136},{-70,96},{-61,96}},
+          color={0,127,0},
+          smooth=Smooth.None));
+      connect(radShaOut.JOut_2, conExtWin.JInUns_b) annotation (Line(
+          points={{-79,124},{-20,124},{-20,58},{249.5,58}},
+          color={0,127,0},
+          smooth=Smooth.None));
+      connect(shaRad.JOut_glass, conExtWin.JInSha_b) annotation (Line(
+          points={{-39,96},{20,96},{20,72},{220,72},{220,49},{249.5,49}},
+          color={0,127,0},
+          smooth=Smooth.None));
+      connect(conExtWin.JOutSha_b, shaRad.JIn_glass) annotation (Line(
+          points={{249.5,51},{222,51},{222,70},{16,70},{16,92},{-39,92}},
+          color={0,127,0},
+          smooth=Smooth.None));
+
+      connect(irRadExc.JInConExtWin, sumJFroWin.y) annotation (Line(
+          points={{-79.5833,13.3333},{-46,13.3333},{-46,14},{-41,14}},
+          color={0,127,0},
+          smooth=Smooth.None));
+
+      connect(shaRad.QSolAbs_flow, conExtWinRad.QAbsIntSha_flow) annotation (Line(
+          points={{-50,89},{-50,86},{148,86},{148,-17},{299,-17}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(sumJFroWin.u[1], conExtWin.JOutUns_b) annotation (Line(
+          points={{-18,14},{164,14},{164,60},{249.5,60}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(sumJFroWin.u[2], shaRad.JOut_air) annotation (Line(
+          points={{-18,14},{-10,14},{-10,40},{-40,40},{-40,64},{-66,64},{-66,92},{
+              -61,92}},
+          color={0,127,0},
+          smooth=Smooth.None));
+      connect(radTem.sha, TSha.port) annotation (Line(
+          points={{-80,-68.4167},{-64,-68.4167},{-64,-68},{-40,-68}},
+          color={191,0,0},
+          smooth=Smooth.None));
+          connect(souInf.ports[1], air.ports[1]);
+    connect(sinInf.ports[1], air.ports[2]);
+      for i in 1:nPorts loop
+        connect(ports[i],air. ports[i+2])
+                                      annotation (Line(
+          points={{-260,-60},{-218,-60},{-218,-206},{52,-206},{52,-141.9}},
+          color={0,127,255},
+          smooth=Smooth.None));
+      end for;
+
+      connect(air.conExt, conExt.opa_b) annotation (Line(
+          points={{64,-119},{160,-119},{160,138.333},{241.847,138.333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.conExtWin, conExtWin.opa_b) annotation (Line(
+          points={{64,-121},{160,-121},{160,69},{249.9,69}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.glaUns, conExtWin.glaUns_b) annotation (Line(
+          points={{64,-124},{160,-124},{160,55},{250,55}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.glaSha, conExtWin.glaSha_b) annotation (Line(
+          points={{64,-126},{160,-126},{160,53},{250,53}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.conExtWinFra, conExtWin.fra_b) annotation (Line(
+          points={{64.1,-130},{160,-130},{160,46},{249.9,46}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.conPar_a, conPar.opa_a) annotation (Line(
+          points={{64.1,-133},{160,-133},{160,-106},{288,-106},{288,-90.3333},{282,
+              -90.3333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.conPar_b, conPar.opa_b) annotation (Line(
+          points={{64.1,-135},{160,-135},{160,-90},{243.873,-90},{243.873,-90.3333}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.conBou, conBou.opa_b) annotation (Line(
+          points={{64.1,-138},{160,-138},{160,-122.667},{241.867,-122.667}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.conSurBou, surf_surBou) annotation (Line(
+          points={{64.05,-141},{160,-141},{160,-210},{-232,-210},{-232,-140},{-260,-140}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(shaRad.QRadAbs_flow,air. QRadAbs_flow) annotation (Line(
+          points={{-55,89},{-55,72},{4,72},{4,-125},{39.5,-125}},
+          color={0,0,127},
+          smooth=Smooth.None));
+
+      connect(air.TSha, shaRad.TSha) annotation (Line(
+          points={{39.5,-127},{2,-127},{2,70},{-45,70},{-45,89}},
+          color={0,0,127},
+          smooth=Smooth.None));
+
+      connect(air.heaPorAir, heaPorAir) annotation (Line(
+          points={{40,-130},{-10,-130},{-10,-88},{-200,-88},{-200,40},{-260,40}},
+          color={191,0,0},
+          smooth=Smooth.None));
+      connect(air.TSha, TSha.T) annotation (Line(
+          points={{39.5,-127},{2,-127},{2,-68},{-18,-68}},
+          color={0,0,127},
+          smooth=Smooth.None));
+
+      connect(uWin, conExtWinRad.uSta) annotation (Line(points={{-280,140},{-240,
+              140},{-240,180},{420,180},{420,-40},{305.2,-40},{305.2,-25.6}}, color=
+             {0,0,127}));
+      connect(qGai_flow,heaGai. qGai_flow) annotation (Line(
+          points={{-280,80},{-222,80}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(air.QCon_flow,heaGai. QCon_flow) annotation (Line(
+          points={{39,-135},{-14,-135},{-14,-92},{-190,-92},{-190,80},{-198,80}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(air.QLat_flow,heaGai. QLat_flow) annotation (Line(
+          points={{39,-138},{-18,-138},{-18,-96},{-194,-96},{-194,74},{-198,74}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(heaGai.QRad_flow, add.u2) annotation (Line(
+          points={{-198,86},{-152,86},{-152,114},{-142,114}},
+          color={0,0,127},
+          smooth=Smooth.None));
+      connect(conExtWinRad.QTraDir_flow, solRadExc.JInDirConExtWin) annotation (
+          Line(points={{299,-23},{18,-23},{18,51.6667},{-79.5833,51.6667}}, color={
+              0,0,127}));
+      connect(weaBus.TDryBul, souInf.T_in) annotation (Line(
+          points={{180.05,160.05},{100,160.05},{100,-146},{2.6,-146},{2.6,-160.2}},
+          color={255,204,51},
+          thickness=0.5), Text(
+          string="%first",
+          index=-1,
+          extent={{-3,6},{-3,6}},
+          horizontalAlignment=TextAlignment.Right));
+
+      connect(airInfiltration.y, sinInf.m_flow_in) annotation (Line(points={{-39,-178},
+              {-8,-178},{-8,-177.8},{0.2,-177.8}}, color={0,0,127}));
+      annotation (
+        Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-260,-220},{460,
+                200}})),
+            Icon(coordinateSystem(preserveAspectRatio=false,extent={{-200,-200},{200,
+                200}}), graphics={
+            Text(
+              extent={{-104,210},{84,242}},
+              textColor={0,0,255},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid,
+              textString="%name"),
+            Text(
+              extent={{-220,100},{-144,68}},
+              textColor={0,0,127},
+              textString="q"),
+            Text(
+              extent={{-14,-160},{44,-186}},
+              textColor={0,0,0},
+              fillColor={61,61,61},
+              fillPattern=FillPattern.Solid,
+              textString="boundary"),
+            Rectangle(
+              extent={{-160,-160},{160,160}},
+              lineColor={95,95,95},
+              fillColor={95,95,95},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{-140,140},{140,-140}},
+              pattern=LinePattern.None,
+              lineColor={117,148,176},
+              fillColor={170,213,255},
+              fillPattern=FillPattern.Sphere),
+            Rectangle(
+              extent={{140,70},{160,-70}},
+              lineColor={95,95,95},
+              fillColor={255,255,255},
+              fillPattern=FillPattern.Solid),
+            Rectangle(
+              extent={{146,70},{154,-70}},
+              lineColor={95,95,95},
+              fillColor={170,213,255},
+              fillPattern=FillPattern.Solid),
+            Text(
+              extent={{-60,12},{-22,-10}},
+              textColor={0,0,0},
+              fillColor={61,61,61},
+              fillPattern=FillPattern.Solid,
+              textString="air"),
+            Text(
+              extent={{-72,-22},{-22,-50}},
+              textColor={0,0,0},
+              fillColor={61,61,61},
+              fillPattern=FillPattern.Solid,
+              textString="radiation"),
+            Text(
+              extent={{-104,-124},{-54,-152}},
+              textColor={0,0,0},
+              fillColor={61,61,61},
+              fillPattern=FillPattern.Solid,
+              textString="surface"),
+            Text(
+              extent={{-198,144},{-122,112}},
+              textColor={0,0,127},
+              textString="uWin"),
+            Rectangle(
+              extent={{-140,140},{140,-140}},
+              lineColor={117,148,176},
+              fillPattern=FillPattern.Solid,
+              fillColor=DynamicSelect({170,213,255},
+                min(1, max(0, (1-(heaPorAir.T-295.15)/10)))*{28,108,200}+
+                min(1, max(0, (heaPorAir.T-295.15)/10))*{255,0,0})),
+            Text(
+              extent={{134,-84},{14,-134}},
+              textColor={255,255,255},
+              textString=DynamicSelect("", String(heaPorAir.T-273.15, format=".1f")))}),
+        preferredView="info",
+        defaultComponentName="roo");
+    end RoomHeatMassBalanceInf;
+  end BaseClasses;
+
+  model MixedAirInf
+    "Model of a room in which the air is completely mixed"
+    extends Trano.ThermalZones.BaseClasses.RoomHeatMassBalanceInf(
+    redeclare Buildings.ThermalZones.Detailed.BaseClasses.MixedAirHeatMassBalance air(
+      final energyDynamics=energyDynamics,
+      final massDynamics = energyDynamics,
+      final p_start=p_start,
+      final T_start=T_start,
+      final X_start=X_start,
+      final C_start=C_start,
+      final C_nominal=C_nominal,
+      final mSenFac=mSenFac,
+      final m_flow_nominal=m_flow_nominal,
+      final homotopyInitialization=homotopyInitialization,
+      final conMod=intConMod,
+      final hFixed=hIntFixed,
+      final use_C_flow = use_C_flow),
+      datConExt(
+        each T_a_start = T_start,
+        each T_b_start = T_start),
+      datConExtWin(
+        each T_a_start = T_start,
+        each T_b_start = T_start),
+      datConBou(
+        each T_a_start = T_start,
+        each T_b_start = T_start),
+      datConPar(
+        each T_a_start = T_start,
+        each T_b_start = T_start));
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Media declaration. This is identical to
+    // Buildings.Fluid.Interfaces.LumpedVolumeDeclarations, except
+    // that the comments have been changed to avoid a confusion about
+    // what energyDynamics refers to.
+    replaceable package Medium =
+      Modelica.Media.Interfaces.PartialMedium "Medium in the component"
+        annotation (choicesAllMatching = true);
+
+    // Ports
+    parameter Boolean use_C_flow=false
+      "Set to true to enable input connector for trace substance that is connected to room air"
+      annotation (Dialog(group="Ports"));
+
+    // Assumptions
+    parameter Modelica.Fluid.Types.Dynamics energyDynamics=Modelica.Fluid.Types.Dynamics.DynamicFreeInitial
+      "Type of energy balance for zone air: dynamic (3 initialization options) or steady state"
+      annotation(Evaluate=true, Dialog(tab = "Dynamics", group="Zone air"));
+
+    parameter Real mSenFac(min=1)=1
+      "Factor for scaling the sensible thermal mass of the zone air volume"
+      annotation(Dialog(tab="Dynamics", group="Zone air"));
+
+    // Initialization
+    parameter Medium.AbsolutePressure p_start = Medium.p_default
+      "Start value of zone air pressure"
+      annotation(Dialog(tab = "Initialization"));
+    parameter Medium.Temperature T_start=Medium.T_default
+      "Start value of zone air temperature"
+      annotation(Dialog(tab = "Initialization"));
+    parameter Medium.MassFraction X_start[Medium.nX](
+         quantity=Medium.substanceNames) = Medium.X_default
+      "Start value of zone air mass fractions m_i/m"
+      annotation (Dialog(tab="Initialization", enable=Medium.nXi > 0));
+    parameter Medium.ExtraProperty C_start[Medium.nC](
+         quantity=Medium.extraPropertiesNames)=fill(0, Medium.nC)
+      "Start value of zone air trace substances"
+      annotation (Dialog(tab="Initialization", enable=Medium.nC > 0));
+    parameter Medium.ExtraProperty C_nominal[Medium.nC](
+         quantity=Medium.extraPropertiesNames) = fill(1E-2, Medium.nC)
+      "Nominal value of zone air trace substances. (Set to typical order of magnitude.)"
+     annotation (Dialog(tab="Initialization", enable=Medium.nC > 0));
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Input connectors
+    Modelica.Blocks.Interfaces.RealInput uSha[nConExtWin](each min=0, each max=1)
+      if haveShade
+      "Control signal for the shading device (removed if no shade is present)"
+      annotation (Placement(transformation(extent={{-300,160},{-260,200}}),
+          iconTransformation(extent={{-232,164},{-200,196}})));
+
+    Modelica.Blocks.Interfaces.RealInput C_flow[Medium.nC] if use_C_flow
+      "Trace substance mass flow rate added to the room air. Enable if use_C_flow = true"
+      annotation (Placement(transformation(extent={{-300,-130},{-260,-90}}),
+          iconTransformation(extent={{-232,12},{-200,44}})));
+
+  equation
+    connect(uSha, conExtWin.uSha) annotation (Line(
+        points={{-280,180},{308,180},{308,62},{281,62}},
+        color={0,0,127},
+        smooth=Smooth.None));
+    connect(uSha, bouConExtWin.uSha) annotation (Line(
+        points={{-280,180},{308,180},{308,64},{351,64}},
+        color={0,0,127},
+        smooth=Smooth.None));
+    connect(uSha, conExtWinRad.uSha) annotation (Line(
+        points={{-280,180},{422,180},{422,-40},{310.2,-40},{310.2,-25.6}},
+        color={0,0,127},
+        smooth=Smooth.None));
+    connect(irRadGai.uSha,uSha)
+      annotation (Line(
+        points={{-100.833,-22.5},{-110,-22.5},{-110,180},{-280,180}},
+        color={0,0,127},
+        smooth=Smooth.None));
+    connect(uSha, radTem.uSha) annotation (Line(
+        points={{-280,180},{-110,180},{-110,-62},{-100.833,-62},{-100.833,-62.5}},
+        color={0,0,127},
+        smooth=Smooth.None));
+    connect(uSha, shaSig.u) annotation (Line(
+        points={{-280,180},{-248,180},{-248,160},{-222,160}},
+        color={0,0,127},
+        smooth=Smooth.None));
+    connect(air.uSha,uSha)  annotation (Line(
+        points={{39.6,-120},{8,-120},{8,180},{-280,180}},
+        color={0,0,127},
+        smooth=Smooth.None));
+    connect(C_flow, air.C_flow) annotation (Line(points={{-280,-110},{-200,-110},{
+            -200,-114},{-200,-114},{-200,-202},{-18,-202},{-18,-141},{39,-141}},
+          color={0,0,127}));
+    annotation (
+     Icon(coordinateSystem(preserveAspectRatio=false, extent={{-200,-200},
+              {200,200}}), graphics={
+          Text(
+            extent={{-198,198},{-122,166}},
+            textColor={0,0,127},
+            textString="uSha"),
+          Text(
+            extent={{-190,44},{-128,14}},
+            textColor={0,0,127},
+            textString="C_flow",
+            visible=use_C_flow)}));
+  end MixedAirInf;
+end ThermalZones;
   annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0"),
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
@@ -1956,7 +3239,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     layers={ external_wall },
     A={ 10.0 },
     til={Buildings.Types.Tilt.Wall},
-                    azi={ 135.0 }),
+                    azi={ 1.57 }),
                     nSurBou=1,
                     surBou(
                     A={ 10.0 },
@@ -1966,7 +3249,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     layers={ external_wall },
     A={ 10.0 },
     til={Buildings.Types.Tilt.Floor},
-                    azi={ 90.0 }),
+                    azi={ 0.0 }),
                     nConExtWin=1,
                     datConExtWin(
                     layers={ external_wall },
@@ -1975,7 +3258,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     glaSys={ double_glazing },
                     wWin={ 1.0 },
                     hWin={ 1.0 },
-                    azi={ 45.0 }),
+                    azi={ -1.57 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
     Placement(transformation(origin = { 43.993366593531476, 0.04828363184878981 },
@@ -2010,7 +3293,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     layers={ external_wall },
     A={ 10.0 },
     til={Buildings.Types.Tilt.Floor},
-                    azi={ 90.0 }),
+                    azi={ 0.0 }),
                     nConExtWin=1,
                     datConExtWin(
                     layers={ external_wall },
@@ -2019,7 +3302,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     glaSys={ double_glazing },
                     wWin={ 1.0 },
                     hWin={ 1.0 },
-                    azi={ 45.0 }),
+                    azi={ -1.57 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
     Placement(transformation(origin = { -59.10393113182498, 0.04828363184878981 },
@@ -2820,26 +4103,32 @@ Modelica.Blocks.Sources.RealExpression
             TSupSetVav_in_control
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
-            THeaSetVav_in_control
-            (y=293.15);
-Modelica.Blocks.Sources.RealExpression
-            THeaSetVav_in_control_2
-            (y=293.15);
+            ppmCO2SetVav_in_control
+            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TSupSetVav_in_control_2
+            (y=293.15);
+Modelica.Blocks.Sources.RealExpression
+            THeaSetVav_in_control
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetVav_in_control
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_in_control
+            ppmCO2SetVav_in_control_2
             (y=0.0);
+Modelica.Blocks.Sources.RealExpression
+            THeaSetVav_in_control_2
+            (y=293.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetVav_in_control_2
             (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_in_control_2
-            (y=0.0);
+Modelica.Blocks.Sources.IntegerExpression
+            uAhuOpeModAhu_control
+            (y=0);
+Modelica.Blocks.Sources.IntegerExpression
+            oveDamPosVav_in_control
+            (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             oveDamPosVav_in_control_2
             (y=0);
@@ -2847,26 +4136,14 @@ Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_in_control
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            oveFloSetVav_in_control_2
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_in_control
             (y=1);
 Modelica.Blocks.Sources.IntegerExpression
-            oveDamPosVav_in_control
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
-            uAhuOpeModAhu_control
+            oveFloSetVav_in_control_2
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_in_control_2
             (y=1);
-Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_in_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_in_control_2
-            (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1HotPlaVav_in_control
             (y=false);
@@ -2874,25 +4151,31 @@ Modelica.Blocks.Sources.BooleanExpression
             u1OccVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1WinVav_in_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1HotPlaVav_in_control_2
+            u1FanVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             uHeaOffVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1SupFanAhu_control
+            u1HotPlaVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1OccVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1FanVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            uHeaOffVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1WinVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1WinVav_in_control_2
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_in_control_2
+            u1SupFanAhu_control
             (y=false);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -2917,56 +4200,56 @@ connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_2, TRoo1[2].ppm);
 connect(dataBus.TSupSetSpace_1,
 TSupSetVav_in_control.y);
-connect(dataBus.THeaSetSpace_1,
-THeaSetVav_in_control.y);
-connect(dataBus.THeaSetSpace_2,
-THeaSetVav_in_control_2.y);
-connect(dataBus.TSupSetSpace_2,
-TSupSetVav_in_control_2.y);
-connect(dataBus.TCooSetSpace_1,
-TCooSetVav_in_control.y);
 connect(dataBus.ppmCO2SetSpace_1,
 ppmCO2SetVav_in_control.y);
-connect(dataBus.TCooSetSpace_2,
-TCooSetVav_in_control_2.y);
+connect(dataBus.TSupSetSpace_2,
+TSupSetVav_in_control_2.y);
+connect(dataBus.THeaSetSpace_1,
+THeaSetVav_in_control.y);
+connect(dataBus.TCooSetSpace_1,
+TCooSetVav_in_control.y);
 connect(dataBus.ppmCO2SetSpace_2,
 ppmCO2SetVav_in_control_2.y);
+connect(dataBus.THeaSetSpace_2,
+THeaSetVav_in_control_2.y);
+connect(dataBus.TCooSetSpace_2,
+TCooSetVav_in_control_2.y);
+connect(dataBus.uAhuOpeModAhu_control,
+uAhuOpeModAhu_control.y);
+connect(dataBus.oveDamPosSpace_1,
+oveDamPosVav_in_control.y);
 connect(dataBus.oveDamPosSpace_2,
 oveDamPosVav_in_control_2.y);
 connect(dataBus.oveFloSetSpace_1,
 oveFloSetVav_in_control.y);
-connect(dataBus.oveFloSetSpace_2,
-oveFloSetVav_in_control_2.y);
 connect(dataBus.uOpeModSpace_1,
 uOpeModVav_in_control.y);
-connect(dataBus.oveDamPosSpace_1,
-oveDamPosVav_in_control.y);
-connect(dataBus.uAhuOpeModAhu_control,
-uAhuOpeModAhu_control.y);
+connect(dataBus.oveFloSetSpace_2,
+oveFloSetVav_in_control_2.y);
 connect(dataBus.uOpeModSpace_2,
 uOpeModVav_in_control_2.y);
-connect(dataBus.u1FanSpace_1,
-u1FanVav_in_control.y);
-connect(dataBus.u1FanSpace_2,
-u1FanVav_in_control_2.y);
 connect(dataBus.u1HotPlaSpace_1,
 u1HotPlaVav_in_control.y);
 connect(dataBus.u1OccSpace_1,
 u1OccVav_in_control.y);
-connect(dataBus.u1OccSpace_2,
-u1OccVav_in_control_2.y);
-connect(dataBus.u1WinSpace_1,
-u1WinVav_in_control.y);
-connect(dataBus.u1HotPlaSpace_2,
-u1HotPlaVav_in_control_2.y);
+connect(dataBus.u1FanSpace_1,
+u1FanVav_in_control.y);
 connect(dataBus.uHeaOffSpace_1,
 uHeaOffVav_in_control.y);
-connect(dataBus.u1SupFanAhu_control,
-u1SupFanAhu_control.y);
-connect(dataBus.u1WinSpace_2,
-u1WinVav_in_control_2.y);
+connect(dataBus.u1HotPlaSpace_2,
+u1HotPlaVav_in_control_2.y);
+connect(dataBus.u1OccSpace_2,
+u1OccVav_in_control_2.y);
+connect(dataBus.u1FanSpace_2,
+u1FanVav_in_control_2.y);
 connect(dataBus.uHeaOffSpace_2,
 uHeaOffVav_in_control_2.y);
+connect(dataBus.u1WinSpace_1,
+u1WinVav_in_control.y);
+connect(dataBus.u1WinSpace_2,
+u1WinVav_in_control_2.y);
+connect(dataBus.u1SupFanAhu_control,
+u1SupFanAhu_control.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},

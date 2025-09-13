@@ -91,12 +91,14 @@ class HydronicSystemControl(BaseModel):
         valves_: List[Valve] = []
         valves = [node for node in network.graph.nodes if isinstance(node, Valve)]
         for valve in valves:
-            paths = list(nx.all_simple_paths(network.graph, self, valve))
-            for path in paths:
-                p = path[1:-1]
-                if p and all(isinstance(p_, System) for p_ in p):
-                    valves_.append(valve)
-                    break
+            path = list(nx.shortest_path(network.graph, self, valve))
+            p = path[1:-1]
+            if (
+                p
+                and all(isinstance(p_, System) for p_ in p)
+                and not any(isinstance(p_, Valve) for p_ in p)
+            ):
+                valves_.append(valve)
         return valves_
 
 
@@ -124,7 +126,26 @@ class ProductionSystem(System):
     container_type: ContainerTypes = "production"
 
 
-class Boiler(HydronicSystemControl, ProductionSystem): ...
+class Boiler(HydronicSystemControl, ProductionSystem):
+    def configure(self, network: "Network") -> None:
+        from trano.elements import BoilerControl
+
+        if hasattr(self, "control") and isinstance(self.control, BoilerControl):
+            self.control.pumps = self._get_linked_pumps(network)
+
+    def _get_linked_pumps(self, network: "Network") -> List[Pump]:
+        pumps_: List[Pump] = []
+        pumps = [node for node in network.graph.nodes if isinstance(node, Pump)]
+        for pump in pumps:
+            path = list(nx.shortest_path(network.graph, self, pump))
+            p = path[1:-1]
+            if (
+                p
+                and all(isinstance(p_, System) for p_ in p)
+                and not any(isinstance(p_, Pump) for p_ in p)
+            ) or not bool(p):
+                pumps_.append(pump)
+        return pumps_
 
 
 class AirHandlingUnit(Ventilation):

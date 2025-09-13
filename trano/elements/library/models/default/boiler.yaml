@@ -89,6 +89,13 @@
   - Boiler
   component_template:
     bus:
+      real_inputs:
+      - component: pumpDemandSignal
+        name: y
+        port: u
+        target:
+          main: |-
+            element.name
       real_outputs: []
     category: boiler
     template: "\n    model WaterWaterHeatPump{{ element.name | capitalize}}\n    extends\
@@ -116,7 +123,15 @@
     names:
     - port_b
     use_counter: false
-
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - Control
+    - DataBus
+    use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nWaterWaterHeatPump{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
     \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
@@ -127,6 +142,13 @@
   - Boiler
   component_template:
     bus:
+      real_inputs:
+      - component: pumpDemandSignal
+        name: y
+        port: u
+        target:
+          main: |-
+            element.name
       real_outputs:
         - component: GasUsage
           name: gas_usage
@@ -177,16 +199,35 @@
     names:
     - port_b
     use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - Control
+    - DataBus
+    use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithoutStorage{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
     \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
     \ \"Boiler\" "
   variant: without_storage
 
+
+
+
 - classes:
   - Boiler
   component_template:
     bus:
+      real_inputs:
+      - component: pumpDemandSignal
+        name: y
+        port: u
+        target:
+          main: |-
+            element.name
       real_outputs: []
     category: boiler
     template: "\n    model AirWaterHeatPump{{ element.name | capitalize}}\n    extends\
@@ -214,7 +255,15 @@
     names:
     - port_b
     use_counter: false
-
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - Control
+    - DataBus
+    use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nAirWaterHeatPump{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
     \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
