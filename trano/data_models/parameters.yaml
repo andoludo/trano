@@ -122,12 +122,12 @@ BoilerParameters:
       alias: TSouSet
       description: None
       ifabsent: float(286.15)
-      range: string
+      range: float
     temperature_supply_setpoint_heat_pump:
       alias: TSet
       description: None
       ifabsent: float(323.15)
-      range: string
+      range: float
   classes:
   - Boiler
 ControlLoopsParameters:

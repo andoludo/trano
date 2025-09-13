@@ -301,6 +301,8 @@ class BaseSpace(BaseElement):
 class Space(BaseSpace):
     def add_to_network(self, network: "Network") -> None:
         network.add_node(self)
+        if not self.template:
+            raise ValueError("No valid Space component template found for Space.")
         if network.library.merged_external_boundaries:
             external_boundaries = self.merged_external_boundaries
         else:

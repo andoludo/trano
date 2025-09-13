@@ -96,11 +96,11 @@ classes:
       temperature_heatpump_source:
         description: None
         ifabsent: float(286.15)
-        range: string
+        range: float
       temperature_supply_setpoint_heat_pump:
         description: None
         ifabsent: float(323.15)
-        range: string
+        range: float
       temperature_used_to_compute_nominal_efficiency:
         description: None
         ifabsent: float(353.15)

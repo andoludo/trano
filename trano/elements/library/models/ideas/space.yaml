@@ -115,3 +115,70 @@
         nSurf={{ element.number_merged_external_boundaries }},
         T_start=293.15)
   variant: default
+
+- classes:
+  - Space
+  figures: []
+  library: ideas
+  parameter_processing:
+    function: modify_alias
+    parameter:
+      average_room_height: hZone
+      volume: V
+  ports:
+  - bus_connection: true
+    flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - propsBus
+    targets:
+    - BaseWall
+  - flow: undirected
+    medium: data
+    names:
+    - yOcc
+    targets:
+    - BaseOccupancy
+  - flow: convective
+    medium: heat
+    names:
+    - gainCon
+    targets:
+    - Emission
+  - flow: radiative
+    medium: heat
+    names:
+    - gainRad
+    targets:
+    - Emission
+  - flow: convective
+    medium: heat
+    multi_connection: true
+    names:
+    - gainCon
+    targets:
+    - VAVControl
+    - DataBus
+    use_counter: false
+  - flow: inlet_or_outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - ports
+    targets:
+    - Ventilation
+    - Control
+    - DataBus
+  template: |-
+    IDEAS.Buildings.Components.Zone {{ element.name }}(
+        mSenFac=0.822,
+            {%- if element.number_ventilation_ports != 0 -%}
+        nPorts = {{ element.number_ventilation_ports }},
+        {%- endif %}
+        {{ macros.render_parameters(parameters) | safe}},
+        n50=0.822*0.5*{{ element.name }}.n50toAch,
+        redeclare package Medium = Medium,
+        nSurf={{ element.number_merged_external_boundaries }},
+        T_start=293.15)
+  variant: infiltration
