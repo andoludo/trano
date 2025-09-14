@@ -475,3 +475,23 @@ def test_house_complex_dedicated_pumps(schema: Path) -> None:
     network = convert_network("house_complex_dedicated_pumps", house)
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_multizone_air_handling_unit_space_connected(schema: Path) -> None:
+    house = get_path("multizone_air_handling_unit_space_connected.yaml")
+
+    network = convert_network("multizone_air_handling_unit_space_connected", house)
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_multizone_air_handling_unit_space_connected_ideas(schema: Path) -> None:
+    house = get_path("multizone_air_handling_unit_space_connected.yaml")
+
+    network = convert_network(
+        "multizone_air_handling_unit_space_connected_ideas",
+        house,
+        library=Library.from_configuration("IDEAS"),
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))

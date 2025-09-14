@@ -230,6 +230,11 @@ class BaseElement(BaseElementPort):
     def __hash__(self) -> int:
         return hash(f"{self.name}-{type(self).__name__}")
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, BaseElement):
+            return NotImplemented
+        return hash(self) == hash(other)
+
     def add_to_network(self, network: "Network") -> None:
         network.add_node(self)
 

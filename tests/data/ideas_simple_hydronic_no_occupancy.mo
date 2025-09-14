@@ -1022,6 +1022,117 @@ end PartialAirWaterHeatPump;
   end Boilers;
 
     package Ventilation
+model PartialSystemD
+
+  replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+      "Medium model" annotation (choicesAllMatching=true);
+  Buildings.Fluid.Movers.FlowControlled_dp
+                           fanSup(
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    inputType=Buildings.Fluid.Types.InputType.Constant,
+    nominalValuesDefineDefaultPressureCurve=true,
+    redeclare package Medium = Medium,
+    dp_nominal=200,
+    m_flow_nominal=2*100*1.2/3600) "Supply fan"
+    annotation (Placement(transformation(extent={{4,6},{24,26}})));
+  Buildings.Fluid.Movers.FlowControlled_dp
+                           fanRet(
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    inputType=Buildings.Fluid.Types.InputType.Constant,
+    nominalValuesDefineDefaultPressureCurve=true,
+    redeclare package Medium = Medium,
+    dp_nominal=200,
+    m_flow_nominal=2*100*1.2/3600) "Return fan"
+    annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
+  Buildings.Fluid.HeatExchangers.ConstantEffectiveness
+                                       hex(
+    redeclare package Medium1 = Medium,
+    redeclare package Medium2 = Medium,
+    m1_flow_nominal=2*100*1.2/3600,
+    m2_flow_nominal=2*100*1.2/3600,
+    dp1_nominal=100,
+    dp2_nominal=100)
+    "Heat exchanger with constant heat recovery effectivity"
+    annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
+               Medium)
+    "Fluid connector b (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{118,1},{86,31}}),
+  iconTransformation(extent={{110,31},{94,48}})));
+
+  Modelica.Fluid.Interfaces.FluidPort_a port_a(redeclare final package Medium =
+               Medium)
+    "Fluid connector a (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
+  iconTransformation(extent={{94,-48},{110,-31}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+    redeclare package Medium = Medium,
+    m_flow_nominal=2*100*1.2/3600,
+    allowFlowReversal=false)
+    annotation (Placement(transformation(extent={{48,6},{68,26}})));
+Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
+        Medium, each m_flow(max=if flowDirection == Modelica.Fluid.Types.PortFlowDirection.Leaving
+           then 0 else +Modelica.Constants.inf, min=if flowDirection ==
+          Modelica.Fluid.Types.PortFlowDirection.Entering then 0 else -Modelica.Constants.inf))
+                                               "Fluid ports"
+  annotation (Placement(transformation(extent={{-110,38},{-90,-36}}),
+      iconTransformation(extent={{-112,32},{-98,-28}})));
+protected
+parameter Modelica.Fluid.Types.PortFlowDirection flowDirection=Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+  "Allowed flow direction"
+  annotation (Evaluate=true, Dialog(tab="Advanced"));
+equation
+  connect(
+    hex.port_b1, fanSup.port_a)
+    annotation (Line(points={{-6,2},{-6,16},{4,16}}, color={0,127,255}));
+  connect(
+    hex.port_a2, fanRet.port_b) annotation (Line(points={{-6,-10},{-6,-24},
+          {4,-24}}, color={0,127,255}));
+  connect(
+    fanRet.port_a, port_a)
+    annotation (Line(points={{24,-24},{101,-24}}, color={0,127,255}));
+  connect(
+    fanSup.port_b, TSup.port_a)
+    annotation (Line(points={{24,16},{48,16}}, color={0,127,255}));
+  connect(
+    TSup.port_b, port_b)
+    annotation (Line(points={{68,16},{102,16}}, color={0,127,255}));
+  connect(hex.port_a1, ports[1]) annotation (Line(points={{-26,2},{-84,2},{-84,-8.25},
+          {-100,-8.25}}, color={0,127,255}));
+  connect(hex.port_b2, ports[2]) annotation (Line(points={{-26,-10},{-84,-10},{-84,
+          10.25},{-100,10.25}}, color={0,127,255}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,
+            -60},
+      {100,60}}), graphics={Rectangle(
+    extent={{-102,80},{102,-82}},
+    lineColor={215,215,215},
+    fillColor={215,215,215},
+    fillPattern=FillPattern.Forward),
+        Ellipse(
+          extent={{-58,66},{72,-66}},
+          lineColor={28,108,200},
+          fillColor={244,125,35},
+          fillPattern=FillPattern.Solid),
+        Ellipse(
+          extent={{-46,54},{60,-54}},
+          lineColor={28,108,200},
+          fillColor={215,215,215},
+          fillPattern=FillPattern.Solid),
+        Polygon(
+          points={{35,35},{-1,13},{1,-15},{-35,-35},{35,35}},
+          lineColor={28,108,200},
+          fillColor={0,0,0},
+          fillPattern=FillPattern.Forward,
+          origin={7,-1},
+          rotation=-90),
+        Polygon(
+          points={{42,34},{6,12},{8,-16},{-28,-36},{42,34}},
+          lineColor={28,108,200},
+          fillColor={0,0,0},
+          fillPattern=FillPattern.Forward)}),
+                                        Diagram(coordinateSystem(
+    preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
+end PartialSystemD;
 
       model SimpleHVACBuildings
 
@@ -3476,15 +3587,10 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2240.0,
+extends Modelica.Icons.MaterialPropertiesPackage;    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.12,
+      c=1210.0,
+      rho=540.0,
       epsLw=0.88,
       epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
@@ -3496,10 +3602,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Building
       c=1200.0,
       rho=40.0,
       epsLw=0.88,
-      epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.12,
-      c=1210.0,
-      rho=540.0,
+      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2240.0,
+      epsLw=0.88,
+      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.025,
+      c=1005.0,
+      rho=1.2,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record external_wall
@@ -3598,7 +3709,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     extent = {{ 3, -3}, {-3, 3}}
 )));
             inner IDEAS.BoundaryConditions.SimInfoManager
-    sim(interZonalAirFlowType=
+    weather_0(interZonalAirFlowType=
   IDEAS.BoundaryConditions.Types.
   InterZonalAirFlow.OnePort) "Data reader"
 annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotation (
@@ -3649,6 +3760,14 @@ equation
         connect(space_1.gainCon,heatPortCon1[1])
             ;        
         connect(space_1.ports[1],ports_b[1])
+            ;        
+        connect(weather_0.weaDatBus,dataBus)
+        annotation (Line(
+        points={{ -100.0, 0.0 }    ,{ -100.0, 0.0 }    ,{ -100.0, 0.0 }    ,{ -100.0, 0.0 }    },
+        color={255,204,51},
+        thickness=0.1,pattern =
+        LinePattern.Solid,
+        smooth=Smooth.None))
             ;end envelope;
     model production
 
@@ -4058,14 +4177,14 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
             TAirOutBoiler_control
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TColSetThree_way_valve_control
             (y=363.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetEmission_control
+            (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerThree_way_valve_control
             (y=true);
@@ -4086,12 +4205,12 @@ connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_1, TRoo[1].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
-connect(dataBus.TCooSetSpace_1,
-TCooSetEmission_control.y);
 connect(dataBus.TAirOutBoiler,
 TAirOutBoiler_control.y);
 connect(dataBus.TColSetThree_way_valve_control,
 TColSetThree_way_valve_control.y);
+connect(dataBus.TCooSetSpace_1,
+TCooSetEmission_control.y);
 connect(dataBus.triggerThree_way_valve_control,
 triggerThree_way_valve_control.y);
 
@@ -4182,15 +4301,10 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2240.0,
+extends Modelica.Icons.MaterialPropertiesPackage;    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.12,
+      c=1210.0,
+      rho=540.0,
       epsLw=0.88,
       epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
@@ -4202,10 +4316,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Building
       c=1200.0,
       rho=40.0,
       epsLw=0.88,
-      epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.12,
-      c=1210.0,
-      rho=540.0,
+      epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2240.0,
+      epsLw=0.88,
+      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.025,
+      c=1005.0,
+      rho=1.2,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record external_wall

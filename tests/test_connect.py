@@ -17,11 +17,12 @@ from trano.elements import (
     ThreeWayValve,
     TemperatureSensor,
     CollectorControl,
+    Boundary,
 )
 from trano.elements.base import ElementPort
-from trano.elements.containers import containers_factory
+from trano.elements.containers import containers_factory, Containers
 from trano.elements.envelope import MergedExternalWall, MergedWindows, FloorOnGround
-from trano.elements.system import Occupancy, Valve, Duct, Pump, VAV, Boiler
+from trano.elements.system import Occupancy, Valve, Duct, Pump, VAV, Boiler, Weather
 from trano.elements.types import Flow, Medium
 from trano.elements.library.library import Library
 from trano.topology import Network
@@ -55,6 +56,40 @@ def house_ventilation() -> Network:
         house,
         library=Library.from_configuration("IDEAS"),
     )
+
+
+@pytest.fixture(scope="module")
+def ventilation_boundary() -> Network:
+    house = get_path("multizone_air_handling_unit_space_connected.yaml")
+    return convert_network(
+        "multizone_air_handling_unit_space_connected",
+        house,
+    )
+
+
+def test_ventilation_boundary(ventilation_boundary: Network) -> None:
+    edge = ventilation_boundary.get_edge(Boundary, Weather)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+    connections = connect(e1, e2)
+    assert len(connections) == 1
+    assert {c.equation_view() for c in connections} == {
+        ("boundary.weaBus", "weather.weaBus")
+    }
+
+
+def test_ventilation_boundary_container(ventilation_boundary: Network) -> None:
+    ventilation_boundary.model()
+    edge_attributes = ventilation_boundary.edge_attributes
+    connection = next(
+        c
+        for c in edge_attributes
+        if {c.left.name, c.right.name} == {"boundary", "weather"}
+    )
+    containers = Containers.load_from_config()
+    containers.connect([connection])
+    ventilation = next(c for c in containers.containers if c.name == "ventilation")
+    assert ventilation.connections[0].source == ("boundary.weaBus", "weather.weaBus")
 
 
 def test_connect_space_radiator(house_ideas: Network) -> None:

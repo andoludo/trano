@@ -506,6 +506,11 @@ containers:
       multi_connection: true
       names:
       - ports_a
+    - flow: undirected
+      medium: weather_data
+      names:
+      - dataBus
+
   - connected_container_names:
     - bus
     ports:

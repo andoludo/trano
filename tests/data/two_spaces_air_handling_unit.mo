@@ -1022,6 +1022,117 @@ end PartialAirWaterHeatPump;
   end Boilers;
 
     package Ventilation
+model PartialSystemD
+
+  replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+      "Medium model" annotation (choicesAllMatching=true);
+  Buildings.Fluid.Movers.FlowControlled_dp
+                           fanSup(
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    inputType=Buildings.Fluid.Types.InputType.Constant,
+    nominalValuesDefineDefaultPressureCurve=true,
+    redeclare package Medium = Medium,
+    dp_nominal=200,
+    m_flow_nominal=2*100*1.2/3600) "Supply fan"
+    annotation (Placement(transformation(extent={{4,6},{24,26}})));
+  Buildings.Fluid.Movers.FlowControlled_dp
+                           fanRet(
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    inputType=Buildings.Fluid.Types.InputType.Constant,
+    nominalValuesDefineDefaultPressureCurve=true,
+    redeclare package Medium = Medium,
+    dp_nominal=200,
+    m_flow_nominal=2*100*1.2/3600) "Return fan"
+    annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
+  Buildings.Fluid.HeatExchangers.ConstantEffectiveness
+                                       hex(
+    redeclare package Medium1 = Medium,
+    redeclare package Medium2 = Medium,
+    m1_flow_nominal=2*100*1.2/3600,
+    m2_flow_nominal=2*100*1.2/3600,
+    dp1_nominal=100,
+    dp2_nominal=100)
+    "Heat exchanger with constant heat recovery effectivity"
+    annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
+               Medium)
+    "Fluid connector b (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{118,1},{86,31}}),
+  iconTransformation(extent={{110,31},{94,48}})));
+
+  Modelica.Fluid.Interfaces.FluidPort_a port_a(redeclare final package Medium =
+               Medium)
+    "Fluid connector a (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
+  iconTransformation(extent={{94,-48},{110,-31}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+    redeclare package Medium = Medium,
+    m_flow_nominal=2*100*1.2/3600,
+    allowFlowReversal=false)
+    annotation (Placement(transformation(extent={{48,6},{68,26}})));
+Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
+        Medium, each m_flow(max=if flowDirection == Modelica.Fluid.Types.PortFlowDirection.Leaving
+           then 0 else +Modelica.Constants.inf, min=if flowDirection ==
+          Modelica.Fluid.Types.PortFlowDirection.Entering then 0 else -Modelica.Constants.inf))
+                                               "Fluid ports"
+  annotation (Placement(transformation(extent={{-110,38},{-90,-36}}),
+      iconTransformation(extent={{-112,32},{-98,-28}})));
+protected
+parameter Modelica.Fluid.Types.PortFlowDirection flowDirection=Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+  "Allowed flow direction"
+  annotation (Evaluate=true, Dialog(tab="Advanced"));
+equation
+  connect(
+    hex.port_b1, fanSup.port_a)
+    annotation (Line(points={{-6,2},{-6,16},{4,16}}, color={0,127,255}));
+  connect(
+    hex.port_a2, fanRet.port_b) annotation (Line(points={{-6,-10},{-6,-24},
+          {4,-24}}, color={0,127,255}));
+  connect(
+    fanRet.port_a, port_a)
+    annotation (Line(points={{24,-24},{101,-24}}, color={0,127,255}));
+  connect(
+    fanSup.port_b, TSup.port_a)
+    annotation (Line(points={{24,16},{48,16}}, color={0,127,255}));
+  connect(
+    TSup.port_b, port_b)
+    annotation (Line(points={{68,16},{102,16}}, color={0,127,255}));
+  connect(hex.port_a1, ports[1]) annotation (Line(points={{-26,2},{-84,2},{-84,-8.25},
+          {-100,-8.25}}, color={0,127,255}));
+  connect(hex.port_b2, ports[2]) annotation (Line(points={{-26,-10},{-84,-10},{-84,
+          10.25},{-100,10.25}}, color={0,127,255}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,
+            -60},
+      {100,60}}), graphics={Rectangle(
+    extent={{-102,80},{102,-82}},
+    lineColor={215,215,215},
+    fillColor={215,215,215},
+    fillPattern=FillPattern.Forward),
+        Ellipse(
+          extent={{-58,66},{72,-66}},
+          lineColor={28,108,200},
+          fillColor={244,125,35},
+          fillPattern=FillPattern.Solid),
+        Ellipse(
+          extent={{-46,54},{60,-54}},
+          lineColor={28,108,200},
+          fillColor={215,215,215},
+          fillPattern=FillPattern.Solid),
+        Polygon(
+          points={{35,35},{-1,13},{1,-15},{-35,-35},{35,35}},
+          lineColor={28,108,200},
+          fillColor={0,0,0},
+          fillPattern=FillPattern.Forward,
+          origin={7,-1},
+          rotation=-90),
+        Polygon(
+          points={{42,34},{6,12},{8,-16},{-28,-36},{42,34}},
+          lineColor={28,108,200},
+          fillColor={0,0,0},
+          fillPattern=FillPattern.Forward)}),
+                                        Diagram(coordinateSystem(
+    preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
+end PartialSystemD;
 
       model SimpleHVACBuildings
 
@@ -3643,7 +3754,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     Placement(transformation(origin = { 4.66948377552248, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
-      Buildings.Fluid.Sources.Boundary_pT boundary
+      Buildings.Fluid.Sources.Outside boundary
     (nPorts=2,redeclare package Medium = Medium) annotation (
     Placement(transformation(origin = { 30.882019816710823, 54.46304379106911 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -3759,6 +3870,14 @@ equation
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
+        smooth=Smooth.None))
+            ;        
+        connect(boundary.weaBus,dataBus)
+        annotation (Line(
+        points={{ 30.882019816710823, 54.46304379106911 }    ,{ 15.441009908355412, 54.46304379106911 }    ,{ 15.441009908355412, 0.0 }    ,{ 0.0, 0.0 }    },
+        color={0, 0, 139},
+        thickness=0.1,pattern =
+        LinePattern.Dash,
         smooth=Smooth.None))
             ;        
         connect(vav_in_control.dataBus,dataBus)
@@ -4100,32 +4219,32 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
+            ppmCO2SetVav_in_control_2
+            (y=0.0);
+Modelica.Blocks.Sources.RealExpression
             TCooSetVav_in_control_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TSupSetVav_in_control
+            THeaSetVav_in_control_2
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
-            THeaSetVav_in_control_2
+            TSupSetVav_in_control
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
             TSupSetVav_in_control_2
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetVav_in_control
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
             ppmCO2SetVav_in_control
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
+            TCooSetVav_in_control
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
             THeaSetVav_in_control
             (y=293.15);
-Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_in_control_2
-            (y=0.0);
 Modelica.Blocks.Sources.IntegerExpression
-            oveFloSetVav_in_control
-            (y=0);
+            uOpeModVav_in_control
+            (y=1);
 Modelica.Blocks.Sources.IntegerExpression
             oveDamPosVav_in_control
             (y=0);
@@ -4133,49 +4252,49 @@ Modelica.Blocks.Sources.IntegerExpression
             uAhuOpeModAhu_control
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            uOpeModVav_in_control
+            uOpeModVav_in_control_2
             (y=1);
 Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_in_control_2
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            uOpeModVav_in_control_2
-            (y=1);
+            oveFloSetVav_in_control
+            (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             oveDamPosVav_in_control_2
             (y=0);
 Modelica.Blocks.Sources.BooleanExpression
+            u1WinVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
             uHeaOffVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1OccVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1WinVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1HotPlaVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1FanVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1OccVav_in_control_2
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            uHeaOffVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1SupFanAhu_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1FanVav_in_control_2
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1HotPlaVav_in_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_in_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1WinVav_in_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1SupFanAhu_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_in_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1HotPlaVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1WinVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_in_control
             (y=false);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -4198,58 +4317,58 @@ connect(dataBus.TZonSpace_1, TRoo[1].T);
 connect(dataBus.TZonSpace_2, TRoo[2].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_2, TRoo1[2].ppm);
-connect(dataBus.TCooSetSpace_2,
-TCooSetVav_in_control_2.y);
-connect(dataBus.TSupSetSpace_1,
-TSupSetVav_in_control.y);
-connect(dataBus.THeaSetSpace_2,
-THeaSetVav_in_control_2.y);
-connect(dataBus.TSupSetSpace_2,
-TSupSetVav_in_control_2.y);
-connect(dataBus.TCooSetSpace_1,
-TCooSetVav_in_control.y);
-connect(dataBus.ppmCO2SetSpace_1,
-ppmCO2SetVav_in_control.y);
-connect(dataBus.THeaSetSpace_1,
-THeaSetVav_in_control.y);
 connect(dataBus.ppmCO2SetSpace_2,
 ppmCO2SetVav_in_control_2.y);
-connect(dataBus.oveFloSetSpace_1,
-oveFloSetVav_in_control.y);
+connect(dataBus.TCooSetSpace_2,
+TCooSetVav_in_control_2.y);
+connect(dataBus.THeaSetSpace_2,
+THeaSetVav_in_control_2.y);
+connect(dataBus.TSupSetSpace_1,
+TSupSetVav_in_control.y);
+connect(dataBus.TSupSetSpace_2,
+TSupSetVav_in_control_2.y);
+connect(dataBus.ppmCO2SetSpace_1,
+ppmCO2SetVav_in_control.y);
+connect(dataBus.TCooSetSpace_1,
+TCooSetVav_in_control.y);
+connect(dataBus.THeaSetSpace_1,
+THeaSetVav_in_control.y);
+connect(dataBus.uOpeModSpace_1,
+uOpeModVav_in_control.y);
 connect(dataBus.oveDamPosSpace_1,
 oveDamPosVav_in_control.y);
 connect(dataBus.uAhuOpeModAhu_control,
 uAhuOpeModAhu_control.y);
-connect(dataBus.uOpeModSpace_1,
-uOpeModVav_in_control.y);
-connect(dataBus.oveFloSetSpace_2,
-oveFloSetVav_in_control_2.y);
 connect(dataBus.uOpeModSpace_2,
 uOpeModVav_in_control_2.y);
+connect(dataBus.oveFloSetSpace_2,
+oveFloSetVav_in_control_2.y);
+connect(dataBus.oveFloSetSpace_1,
+oveFloSetVav_in_control.y);
 connect(dataBus.oveDamPosSpace_2,
 oveDamPosVav_in_control_2.y);
+connect(dataBus.u1WinSpace_1,
+u1WinVav_in_control.y);
 connect(dataBus.uHeaOffSpace_2,
 uHeaOffVav_in_control_2.y);
+connect(dataBus.u1OccSpace_1,
+u1OccVav_in_control.y);
+connect(dataBus.u1WinSpace_2,
+u1WinVav_in_control_2.y);
+connect(dataBus.u1HotPlaSpace_2,
+u1HotPlaVav_in_control_2.y);
+connect(dataBus.u1FanSpace_1,
+u1FanVav_in_control.y);
+connect(dataBus.u1OccSpace_2,
+u1OccVav_in_control_2.y);
+connect(dataBus.uHeaOffSpace_1,
+uHeaOffVav_in_control.y);
+connect(dataBus.u1SupFanAhu_control,
+u1SupFanAhu_control.y);
 connect(dataBus.u1FanSpace_2,
 u1FanVav_in_control_2.y);
 connect(dataBus.u1HotPlaSpace_1,
 u1HotPlaVav_in_control.y);
-connect(dataBus.u1OccSpace_1,
-u1OccVav_in_control.y);
-connect(dataBus.u1WinSpace_1,
-u1WinVav_in_control.y);
-connect(dataBus.u1SupFanAhu_control,
-u1SupFanAhu_control.y);
-connect(dataBus.uHeaOffSpace_1,
-uHeaOffVav_in_control.y);
-connect(dataBus.u1HotPlaSpace_2,
-u1HotPlaVav_in_control_2.y);
-connect(dataBus.u1OccSpace_2,
-u1OccVav_in_control_2.y);
-connect(dataBus.u1WinSpace_2,
-u1WinVav_in_control_2.y);
-connect(dataBus.u1FanSpace_1,
-u1FanVav_in_control.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},

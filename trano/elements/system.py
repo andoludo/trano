@@ -23,7 +23,7 @@ class System(BaseElement):
         return self
 
     def system_ports_connected(self) -> bool:
-        return all(port.connected for port in self.ports)
+        return all(port.connected for port in self.ports if not port.no_check)
 
 
 class Sensor(System): ...

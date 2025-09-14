@@ -4,13 +4,23 @@
   library: ideas
   parameter_processing:
     function: default_parameters
-  ports: []
+  ports:
+    - flow: undirected
+      medium: weather_data
+      multi_connection: true
+      no_check: true
+      names:
+        - weaDatBus
+      targets:
+        - Space
+        - Boundary
+      use_counter: false
   template: "\n    {% if macros.render_parameters(parameters) | safe %}\n    inner\
     \ IDEAS.BoundaryConditions.SimInfoManager\n    sim(interZonalAirFlowType=\n  IDEAS.BoundaryConditions.Types.\n\
     \  InterZonalAirFlow.OnePort, {{ macros.render_parameters(parameters) | safe}})\
     \ \"Data reader\"\n    {% raw %}annotation (Placement(transformation(extent={{-96,76},{-76,96}})));{%\
     \ endraw %}\n    {% else %}\n        inner IDEAS.BoundaryConditions.SimInfoManager\n\
-    \    sim(interZonalAirFlowType=\n  IDEAS.BoundaryConditions.Types.\n  InterZonalAirFlow.OnePort)\
+    \    {{element.name}}(interZonalAirFlowType=\n  IDEAS.BoundaryConditions.Types.\n  InterZonalAirFlow.OnePort)\
     \ \"Data reader\"\n    {% raw %}annotation (Placement(transformation(extent={{-96,76},{-76,96}})));{%\
     \ endraw %}\n    {% endif %}\n    "
   variant: default

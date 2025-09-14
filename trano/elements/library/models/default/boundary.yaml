@@ -6,11 +6,11 @@
     function: default_parameters
   ports:
   - flow: undirected
-    medium: data
+    medium: weather_data
     names:
     - weaBus
     targets:
-    - BaseWeather
+    - Weather
   - flow: inlet_or_outlet
     medium: fluid
     multi_connection: true
@@ -20,6 +20,6 @@
     - AirHandlingUnit
     use_counter: false
   template: |2-
-      Buildings.Fluid.Sources.Boundary_pT {{ element.name }}
+      Buildings.Fluid.Sources.Outside {{ element.name }}
         (nPorts=2,redeclare package Medium = Medium)
   variant: default

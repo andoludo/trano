@@ -139,9 +139,69 @@
     - System
     - Space
     use_counter: false
+  - flow: undirected
+    medium: data
+    names:
+    - dataBus
+    targets:
+    - DataBus
   template: |-
     {{package_name}}.Trano.Fluid.
         Ventilation.SimpleHVACBuildings
         {{ element.name }}
         (redeclare package Medium = Medium)
   variant: test
+
+
+
+- classes:
+  - AirHandlingUnit
+  component_template:
+    bus:
+      real_inputs: []
+    category: ventilation
+    template: "\n    model SystemD{{ element.name | capitalize}}\n    extends {{ package_name\
+      \ }}.Trano.Fluid.Ventilation.PartialSystemD;\n    {{bus_template}}\n    equation\n\
+      \    {{bus_ports | safe}}\n     end SystemD{{ element.name | capitalize}};\n   \
+      \  "
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    targets:
+    - System
+    - Space
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    targets:
+    - System
+    - Space
+    use_counter: false
+  - flow: undirected
+    medium: data
+    names:
+    - dataBus
+    targets:
+    - DataBus
+  - flow: inlet_or_outlet
+    medium: fluid
+    names:
+    - ports
+    targets:
+    - BaseBoundary
+  template: |-
+    {{package_name}}.Components.BaseClasses.SystemD{{ element.name | capitalize}}
+        {{ element.name }}
+        (redeclare package Medium = Medium)
+  variant: system_d
+
+

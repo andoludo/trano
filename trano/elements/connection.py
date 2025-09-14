@@ -39,6 +39,7 @@ class Port(BaseModel):
     ignore_direction: bool = False
     counter: int = Field(default=1)
     connection_counter: int = Field(default=0)
+    no_check: bool = False
 
     def set_connected(self) -> None:
         self.connected = True
