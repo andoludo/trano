@@ -16,6 +16,7 @@ from trano.elements import (
     DataBus,
     ThreeWayValve,
     TemperatureSensor,
+HeatMeterSensor,
     CollectorControl,
     Boundary,
 )
@@ -37,6 +38,14 @@ def house_ideas() -> Network:
         library=Library.from_configuration("IDEAS"),
     )
 
+
+@pytest.fixture(scope="module")
+def house_complex_heat_meter() -> Network:
+    house = get_path("house_complex_heat_meter.yaml")
+    return convert_network(
+        "house_complex_heat_meter",
+        house,
+    )
 
 @pytest.fixture(scope="module")
 def house_buildings() -> Network:
@@ -219,6 +228,15 @@ def test_connect_radiator_valve(house_ideas: Network) -> None:
         ("radiator_003.port_b", "valve_003.port_a")
     }
 
+def test_connect_heat_meter(house_complex_heat_meter: Network) -> None:
+
+    edge = house_complex_heat_meter.get_edge(TemperatureSensor, HeatMeterSensor)
+    e1 = ElementPort.from_element_without_ports(edge[0])
+    e2 = ElementPort.from_element_without_ports(edge[1])
+
+    connections = connect(e1, e2)
+    assert len(connections) == 1
+    assert {c.equation_view() for c in connections} == {('heat_meter_sensor_001.TExt', 'temperature_sensor_002.T')}
 
 def test_connect_valve_emission_control(house_ideas: Network) -> None:
 

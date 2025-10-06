@@ -495,3 +495,14 @@ def test_multizone_air_handling_unit_space_connected_ideas(schema: Path) -> None
     )
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_house_complex_heat_meter(schema: Path) -> None:
+    house = get_path("house_complex_heat_meter.yaml")
+
+    network = convert_network(
+        "house_complex_heat_meter",
+        house,
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))

@@ -368,6 +368,8 @@ classes:
       thickness:
         description: Thickness [m]
         range: float
+  HeatMeterSensor:
+    is_a: System
   InternalWall:
     attributes:
       construction:
@@ -657,6 +659,7 @@ classes:
     - boiler
     - pump
     - temperature_sensor
+    - heat_meter_sensor
     - air_handling_unit
   TemperatureSensor:
     is_a: System
@@ -906,6 +909,10 @@ slots:
     multivalued: false
     range: ExternalBoundaries
     slot_uri: schema:external_boundaries
+  heat_meter_sensor:
+    inlined: true
+    multivalued: false
+    range: HeatMeterSensor
   id:
     description: A unique identifier for a thing
     identifier: true

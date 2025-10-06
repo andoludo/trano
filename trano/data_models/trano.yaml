@@ -240,6 +240,7 @@ classes:
       - boiler
       - pump
       - temperature_sensor
+      - heat_meter_sensor
       - air_handling_unit
     class_uri: schema:Systems
   Solar:
@@ -332,6 +333,8 @@ classes:
   TemperatureSensor:
     is_a: System
 
+  HeatMeterSensor:
+    is_a: System
 
   EmissionControl:
 
@@ -508,6 +511,10 @@ slots:
     inlined: true
   temperature_sensor:
     range: TemperatureSensor
+    multivalued: false
+    inlined: true
+  heat_meter_sensor:
+    range: HeatMeterSensor
     multivalued: false
     inlined: true
   photovoltaic:
