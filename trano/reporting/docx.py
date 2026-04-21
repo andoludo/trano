@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any
 
 import docx
 from buildingspy.io.outputfile import Reader  # type: ignore
@@ -29,20 +29,14 @@ def _round(value: float | str | None) -> str:
 
 def _set_color(cell: _Cell, key: str) -> None:
     if key == "type":
-        cell._tc.get_or_add_tcPr().append(
-            parse_xml(rf'<w:shd {nsdecls("w")} w:fill="#D3D3D3"/>')
-        )
+        cell._tc.get_or_add_tcPr().append(parse_xml(rf'<w:shd {nsdecls("w")} w:fill="#D3D3D3"/>'))
     if key == "name":
-        cell._tc.get_or_add_tcPr().append(
-            parse_xml(rf'<w:shd {nsdecls("w")} w:fill="#FF7F7F"/>')
-        )
+        cell._tc.get_or_add_tcPr().append(parse_xml(rf'<w:shd {nsdecls("w")} w:fill="#FF7F7F"/>'))
     if key == "thickness":
-        cell._tc.get_or_add_tcPr().append(
-            parse_xml(rf'<w:shd {nsdecls("w")} w:fill="#FFFFE0"/>')
-        )
+        cell._tc.get_or_add_tcPr().append(parse_xml(rf'<w:shd {nsdecls("w")} w:fill="#FFFFE0"/>'))
 
 
-def create_table(doc: Document, data: Dict[str, Any]) -> None:  # type: ignore
+def create_table(doc: Document, data: dict[str, Any]) -> None:  # type: ignore
     size = 2
     description = get_description()
     if any(key in description for key in data):
@@ -73,7 +67,7 @@ def add_table_caption(doc: Document, caption_text: str) -> None:  # type: ignore
 
 def create_tables_and_figures(
     doc: Document,  # type: ignore
-    data: Union[List[BaseNestedTable], BaseNestedTable],
+    data: list[BaseNestedTable] | BaseNestedTable,
     topic: Topic,
     documentation: ModelDocumentation,
 ) -> None:

@@ -1,4 +1,4 @@
-from typing import List, Optional, TYPE_CHECKING, Type, Union
+from typing import TYPE_CHECKING, Union
 
 from trano.elements import Control
 from trano.elements.base import BaseElement
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class System(BaseElement):
-    control: Optional[Control] = None
+    control: Control | None = None
 
     @model_validator(mode="after")
     def _validator(self) -> "System":
@@ -35,7 +35,7 @@ class EmissionVariant(BaseVariant):
 
 
 class SpaceSystem(System):
-    linked_space: Optional[str] = None
+    linked_space: str | None = None
 
 
 class SpaceHeatingSystem(SpaceSystem):
@@ -53,7 +53,7 @@ class BaseWeather(System): ...
 
 
 class BaseOccupancy(System):
-    space_name: Optional[str] = None
+    space_name: str | None = None
     include_in_layout: bool = False
     component_size: float = 3
 
@@ -72,6 +72,8 @@ class ThreeWayValve(DistributionSystem): ...
 
 
 class TemperatureSensor(Sensor): ...
+
+
 class HeatMeterSensor(Sensor): ...
 
 
@@ -88,17 +90,13 @@ class HydronicSystemControl(BaseModel):
         if hasattr(self, "control") and isinstance(self.control, CollectorControl):
             self.control.valves = self._get_linked_valves(network)
 
-    def _get_linked_valves(self, network: "Network") -> List[Valve]:
-        valves_: List[Valve] = []
+    def _get_linked_valves(self, network: "Network") -> list[Valve]:
+        valves_: list[Valve] = []
         valves = [node for node in network.graph.nodes if isinstance(node, Valve)]
         for valve in valves:
             path = list(nx.shortest_path(network.graph, self, valve))
             p = path[1:-1]
-            if (
-                p
-                and all(isinstance(p_, System) for p_ in p)
-                and not any(isinstance(p_, Valve) for p_ in p)
-            ):
+            if p and all(isinstance(p_, System) for p_ in p) and not any(isinstance(p_, Valve) for p_ in p):
                 valves_.append(valve)
         return valves_
 
@@ -134,16 +132,14 @@ class Boiler(HydronicSystemControl, ProductionSystem):
         if hasattr(self, "control") and isinstance(self.control, BoilerControl):
             self.control.pumps = self._get_linked_pumps(network)
 
-    def _get_linked_pumps(self, network: "Network") -> List[Pump]:
-        pumps_: List[Pump] = []
+    def _get_linked_pumps(self, network: "Network") -> list[Pump]:
+        pumps_: list[Pump] = []
         pumps = [node for node in network.graph.nodes if isinstance(node, Pump)]
         for pump in pumps:
             path = list(nx.shortest_path(network.graph, self, pump))
             p = path[1:-1]
             if (
-                p
-                and all(isinstance(p_, System) for p_ in p)
-                and not any(isinstance(p_, Pump) for p_ in p)
+                p and all(isinstance(p_, System) for p_ in p) and not any(isinstance(p_, Pump) for p_ in p)
             ) or not bool(p):
                 pumps_.append(pump)
         return pumps_
@@ -157,30 +153,24 @@ class AirHandlingUnit(Ventilation):
             self.control.spaces = self._get_ahu_space_elements(network)
             self.control.vavs = self._get_ahu_vav_elements(network)
 
-    def _get_ahu_space_elements(self, network: "Network") -> List["Space"]:
+    def _get_ahu_space_elements(self, network: "Network") -> list["Space"]:
         from trano.elements import Space
 
-        return [
-            x for x in self._get_ahu_elements(Space, network) if isinstance(x, Space)
-        ]
+        return [x for x in self._get_ahu_elements(Space, network) if isinstance(x, Space)]
 
-    def _get_ahu_vav_elements(self, network: "Network") -> List[VAV]:
+    def _get_ahu_vav_elements(self, network: "Network") -> list[VAV]:
         return [x for x in self._get_ahu_elements(VAV, network) if isinstance(x, VAV)]
 
     def _get_ahu_elements(
-        self, element_type: Type[Union[VAV, "Space"]], network: "Network"
-    ) -> List[Union[VAV, "Space"]]:
-        elements_: List[Union[VAV, "Space"]] = []
-        elements = [
-            node for node in network.graph.nodes if isinstance(node, element_type)
-        ]
+        self, element_type: type[Union[VAV, "Space"]], network: "Network"
+    ) -> list[Union[VAV, "Space"]]:
+        elements_: list[VAV | "Space"] = []
+        elements = [node for node in network.graph.nodes if isinstance(node, element_type)]
         for element in elements:
             try:
                 paths = nx.shortest_path(network.graph, self, element)
             except Exception as e:
-                raise WrongSystemFlowError(
-                    "Wrong AHU system configuration flow."
-                ) from e
+                raise WrongSystemFlowError("Wrong AHU system configuration flow.") from e
             p = paths[1:-1]
             if p and all(isinstance(p_, Ventilation) for p_ in p):
                 elements_.append(element)

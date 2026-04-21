@@ -1,7 +1,8 @@
 import logging
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Tuple, Dict, Optional
+from typing import TYPE_CHECKING, Any
+from collections.abc import Callable
 
 import networkx as nx
 import yaml
@@ -10,7 +11,6 @@ from trano import elements
 from trano.elements.common_base import Point
 
 if TYPE_CHECKING:
-
     from trano.elements import Port
     from trano.topology import Network
 
@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 class BlockStyleDumper(yaml.Dumper):
     def represent_scalar(
-        self, tag: Any, value: Any, style: Optional[str] = None  # noqa: ANN401
+        self,
+        tag: Any,  # noqa: ANN401
+        value: Any,  # noqa: ANN401
+        style: str | None = None,
     ) -> Any:  # noqa: ANN401
         if isinstance(value, str) and ("\n" in value):
             style = "|"
@@ -31,7 +34,7 @@ def to_snake_case(name: str) -> str:
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
-def compose_func(ports_: List["Port"]) -> Callable[[], List["Port"]]:
+def compose_func(ports_: list["Port"]) -> Callable[[], list["Port"]]:
     return lambda: ports_
 
 
@@ -61,17 +64,12 @@ def _get_default(v: Any) -> Any:  # noqa: ANN401
     try:
         return _get_type(v["range"])(value)
     except Exception as e:
-
         raise e
 
 
 # TODO: class names should be standardized!!
 def import_element_function(function_name: str) -> Any:  # noqa: ANN401
-    attribute = [
-        attribute
-        for attribute in elements.__all__
-        if attribute.lower() == function_name.lower()
-    ]
+    attribute = [attribute for attribute in elements.__all__ if attribute.lower() == function_name.lower()]
     if len(attribute) > 1:
         raise Exception(f"Element {function_name} has more than one match")
     if len(attribute) == 0:
@@ -82,17 +80,11 @@ def import_element_function(function_name: str) -> Any:  # noqa: ANN401
 def generate_normalized_layout(
     network: "Network",
     scale: int = 200,
-    origin: Optional[Point] = None,
-    container_type: Optional[str] = None,
-) -> Dict[str, Tuple[float, float]]:
-    def normalize(
-        value: float, min_val: float, max_val: float, scale: int = 200
-    ) -> float:
-        return (
-            ((value - min_val) / (max_val - min_val)) * scale
-            if max_val != min_val
-            else scale / 2
-        )
+    origin: Point | None = None,
+    container_type: str | None = None,
+) -> dict[str, tuple[float, float]]:
+    def normalize(value: float, min_val: float, max_val: float, scale: int = 200) -> float:
+        return ((value - min_val) / (max_val - min_val)) * scale if max_val != min_val else scale / 2
 
     origin = origin or Point(x=0, y=0)
     new_graph = nx.DiGraph()
@@ -100,10 +92,7 @@ def generate_normalized_layout(
         (e[0].name, e[1].name)
         for e in network.graph.edges
         if (
-            (
-                e[0].container_type == container_type
-                and e[1].container_type == container_type
-            )
+            (e[0].container_type == container_type and e[1].container_type == container_type)
             or (container_type is None)
         )
         and (e[0].include_in_layout and e[1].include_in_layout)
@@ -111,8 +100,7 @@ def generate_normalized_layout(
     nodes = [
         n.name
         for n in network.graph.nodes
-        if ((n.container_type == container_type) or (container_type is None))
-        and n.include_in_layout
+        if ((n.container_type == container_type) or (container_type is None)) and n.include_in_layout
     ]
     if not nodes:
         return {}
@@ -121,11 +109,9 @@ def generate_normalized_layout(
     try:
         pos = nx.nx_pydot.pydot_layout(new_graph, prog="sfdp")
     except Exception as e:
-        logger.warning(
-            f"Error generating layout using graphviz. {e}. Graphviz is probably not installed."
-        )
+        logger.warning(f"Error generating layout using graphviz. {e}. Graphviz is probably not installed.")
         pos = nx.random_layout(new_graph)
-    x_values, y_values = zip(*pos.values())
+    x_values, y_values = zip(*pos.values(), strict=False)
     x_min, x_max = min(x_values), max(x_values)
     y_min, y_max = min(y_values), max(y_values)
     return {
@@ -142,9 +128,7 @@ def wrap_with_raw(template: str) -> str:
         r"(\{\s*-?\d+\s*,\s*-?\d+\s*(?:,\s*-?\d+\s*)?\})|"
         r"(\{\{\s*-?\d+\s*,\s*-?\d+\s*\},\{\s*-?\d+\s*,\s*-?\d+\s*\}\})"
     )
-    return re.sub(
-        pattern, lambda m: f"{{% raw %}} {m.group(0)} {{% endraw %}}", template
-    )
+    return re.sub(pattern, lambda m: f"{{% raw %}} {m.group(0)} {{% endraw %}}", template)
 
 
 def camel_to_snake(camel_str: str) -> str:
@@ -152,28 +136,21 @@ def camel_to_snake(camel_str: str) -> str:
     return snake_str
 
 
-def json_component_name(classes: List[str]) -> str:
+def json_component_name(classes: list[str]) -> str:
     return "_".join([camel_to_snake(c_) for c_ in sorted(c for c in classes)])
 
 
-def dump_components(
-    library_path: Path, library_components: List[Dict[str, Any]]
-) -> None:
+def dump_components(library_path: Path, library_components: list[dict[str, Any]]) -> None:
     library_path.mkdir(exist_ok=True)
     components_final = {
         json_component_name(component["classes"]): [
             cp
             for cp in library_components
-            if json_component_name(component["classes"])
-            == json_component_name(cp["classes"])
+            if json_component_name(component["classes"]) == json_component_name(cp["classes"])
         ]
         for component in library_components
     }
     for file_name, components_ in components_final.items():
         file = library_path / f"{file_name}.yaml"
         with file.open("w") as file_:
-            file_.write(
-                yaml.dump(
-                    components_, Dumper=BlockStyleDumper, default_flow_style=False
-                )
-            )
+            file_.write(yaml.dump(components_, Dumper=BlockStyleDumper, default_flow_style=False))

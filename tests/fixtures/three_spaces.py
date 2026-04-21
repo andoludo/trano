@@ -1,5 +1,3 @@
-from typing import List
-
 from tests.constructions.constructions import Constructions, Glasses
 from trano.elements import ExternalWall, FloorOnGround, Window
 from trano.elements.space import Space
@@ -7,7 +5,7 @@ from trano.elements.system import Occupancy
 from trano.elements.types import Azimuth, Tilt
 
 
-def three_spaces(occupancy: bool = True) -> List[Space]:
+def three_spaces(occupancy: bool = True) -> list[Space]:
     space_1 = Space(
         name="space_1",
         external_boundaries=[
@@ -53,9 +51,7 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
                 tilt=Tilt.wall,
                 construction=Glasses.double_glazing,
             ),
-            FloorOnGround(
-                name="floor_1", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_1", surface=10, construction=Constructions.external_wall),
         ],
     )
     space_2 = Space(
@@ -96,9 +92,7 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
                 construction=Glasses.double_glazing,
                 tilt=Tilt.wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
         ],
     )
     space_3 = Space(
@@ -132,9 +126,7 @@ def three_spaces(occupancy: bool = True) -> List[Space]:
                 construction=Glasses.double_glazing,
                 tilt=Tilt.wall,
             ),
-            FloorOnGround(
-                name="floor_3", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_3", surface=10, construction=Constructions.external_wall),
         ],
     )
     if occupancy:

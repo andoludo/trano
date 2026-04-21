@@ -39,7 +39,7 @@ from trano.elements.system import (
     SplitValve,
     System,
     TemperatureSensor,
-HeatMeterSensor,
+    HeatMeterSensor,
     ThreeWayValve,
     Valve,
     Ventilation,

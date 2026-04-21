@@ -1,13 +1,11 @@
 from enum import Enum
 
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
-SystemContainerTypes = Literal[
-    "envelope", "distribution", "emission", "production", "ventilation"
-]
+SystemContainerTypes = Literal["envelope", "distribution", "emission", "production", "ventilation"]
 ContainerTypes = Literal[SystemContainerTypes, "bus", "solar"]
 Pattern = Literal["Solid", "Dot", "Dash", "DashDot"]
 
@@ -66,7 +64,7 @@ Boolean = Literal["true", "false"]
 
 class Line(BaseModel):
     template: str
-    key: Optional[str] = None
+    key: str | None = None
     color: str = "grey"
     label: str
     line_style: str = "solid"
@@ -74,12 +72,12 @@ class Line(BaseModel):
 
 
 class Axis(BaseModel):
-    lines: List[Line] = Field(default=[])
+    lines: list[Line] = Field(default=[])
     label: str
 
 
 class ConnectionView(BaseModel):
-    color: Optional[str] = "{255,204,51}"
+    color: str | None = "{255,204,51}"
     thickness: float = 0.1
     disabled: bool = False
     pattern: Pattern = "Solid"

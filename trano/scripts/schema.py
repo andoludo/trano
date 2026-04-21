@@ -3,9 +3,7 @@ from pathlib import Path
 import yaml
 
 
-def create_final_schema(
-    parameters_path: Path, trano_final_path: Path, trano_path: Path
-) -> None:
+def create_final_schema(parameters_path: Path, trano_final_path: Path, trano_path: Path) -> None:
     trano = yaml.safe_load(trano_path.read_text())
     parameters = yaml.safe_load(parameters_path.read_text())
     for name, parameter in parameters.items():

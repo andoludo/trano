@@ -1,6 +1,6 @@
 import logging
 import tempfile
-from typing import Callable, List
+from collections.abc import Callable
 
 import pandas as pd
 import plotly.graph_objects as go  # type: ignore
@@ -55,10 +55,7 @@ def plot(data: Reader, figure: NamedFigure, show: bool = True) -> pyFigure:
     return fig
 
 
-def plot_plot_ly_many(
-    data: Reader, figures: List[NamedFigure], show: bool = False
-) -> plotlyFigure:
-
+def plot_plot_ly_many(data: Reader, figures: list[NamedFigure], show: bool = False) -> plotlyFigure:
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     for figure in figures:
         for axis, figure_axis in enumerate([figure.left_axis, figure.right_axis]):
@@ -105,7 +102,6 @@ def plot_plot_ly_many(
 
 
 def plot_plot_ly(data: Reader, figure: NamedFigure, show: bool = False) -> plotlyFigure:
-
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     for axis, figure_axis in enumerate([figure.left_axis, figure.right_axis]):
@@ -153,7 +149,7 @@ def plot_element(
     data: Reader,
     element: BaseElement,
     plot_function: Callable[[Reader, NamedFigure], plotlyFigure | pyFigure] = plot,
-) -> List[pyFigure]:
+) -> list[pyFigure]:
     figures = []
     subsystems = ["control", "emissions", "ventilation_inlets", "ventilation_outlets"]
     for figure in element.figures:
@@ -194,9 +190,7 @@ def add_figure(document: Document, fig: pyFigure, size: int = 6) -> None:
         run = paragraph.add_run()
         run.add_picture(f.name, width=Inches(size))
         paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER  # Center the image
-        caption = document.add_paragraph(
-            f"Figure {FIGURE_COUNT}: test", style="Caption"
-        )
+        caption = document.add_paragraph(f"Figure {FIGURE_COUNT}: test", style="Caption")
         FIGURE_COUNT += 1
         caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
     paragraph = document.add_paragraph()

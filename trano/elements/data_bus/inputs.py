@@ -1,11 +1,11 @@
-from typing import List, Optional, Literal
+from typing import Literal
 
 from pydantic import BaseModel, computed_field, field_validator
 
 
 class Target(BaseModel):
     main: str
-    sub: Optional[str] = None
+    sub: str | None = None
     evaluated_element: str = ""
     value: str = ""
 
@@ -20,7 +20,7 @@ class Target(BaseModel):
     def commands(self) -> list[str]:
         return self.main.split(".")[1:]
 
-    def sub_commands(self) -> List[str]:
+    def sub_commands(self) -> list[str]:
         if self.sub is None:
             raise Exception("Target sub is None")
         return self.sub.split(".")
@@ -32,7 +32,7 @@ PrimaryEnergyType = Literal["Electricity", "Gas"]
 
 class PowerInput(BaseModel):
     energy: PrimaryEnergyType
-    load_type: Optional[LoadType] = None
+    load_type: LoadType | None = None
 
     def name(self) -> str:
         if self.load_type:
@@ -48,7 +48,7 @@ class BaseInputOutput(BaseModel):
     target: Target
     input_template: str
     default: float | str | int
-    power: Optional[PowerInput] = None
+    power: PowerInput | None = None
 
     def __hash__(self) -> int:
         return hash((self.name, self.target.value))

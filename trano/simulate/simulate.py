@@ -4,7 +4,7 @@ import subprocess
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, Optional
+from collections.abc import Generator
 
 import docker  # type: ignore
 from jinja2 import Environment
@@ -21,9 +21,7 @@ def check_docker_installed() -> None:
             check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        raise DockerNotInstalledError(
-            "Docker is not installed on the system. Simulation cannot be run."
-        ) from e
+        raise DockerNotInstalledError("Docker is not installed on the system. Simulation cannot be run.") from e
 
 
 def client() -> docker.DockerClient:
@@ -60,13 +58,14 @@ class SimulationLibraryOptions(SimulationOptions):
 def simulate(
     project_path: Path,
     model_network: Network,
-    options: Optional[SimulationOptions] = None,
+    options: SimulationOptions | None = None,
 ) -> docker.models.containers.ExecResult:
     client_ = client()
     options = options or SimulationOptions()
-    with container(client_, project_path) as container_, create_mos_file(
-        model_network, options, project_path
-    ) as mos_file_name:
+    with (
+        container(client_, project_path) as container_,
+        create_mos_file(model_network, options, project_path) as mos_file_name,
+    ):
         results = container_.exec_run(cmd=f"omc /simulation/{mos_file_name}")
     return results
 
@@ -111,17 +110,14 @@ def container(
 
 
 @contextmanager
-def create_mos_file(
-    network: Network, options: SimulationOptions, project_path: Path
-) -> Generator[str, None, None]:
+def create_mos_file(network: Network, options: SimulationOptions, project_path: Path) -> Generator[str, None, None]:
     # TODO: do we want this here?
     network.set_weather_path_to_container_path(project_path)
     model = network.model()
-    with tempfile.NamedTemporaryFile(
-        mode="w", dir=project_path, suffix=".mo"
-    ) as temp_model_file, tempfile.NamedTemporaryFile(
-        mode="w", dir=project_path, suffix=".mos"
-    ) as temp_mos_file:
+    with (
+        tempfile.NamedTemporaryFile(mode="w", dir=project_path, suffix=".mo") as temp_model_file,
+        tempfile.NamedTemporaryFile(mode="w", dir=project_path, suffix=".mos") as temp_mos_file,
+    ):
         Path(temp_model_file.name).write_text(model)
         environment = Environment(autoescape=True)
         if options.check_only:
@@ -143,8 +139,6 @@ def create_mos_file(
     tolerance = {options.tolerance});
     """
             )
-        mos_file = template.render(
-            model_file=Path(temp_model_file.name).name, model_name=network.name
-        )
+        mos_file = template.render(model_file=Path(temp_model_file.name).name, model_name=network.name)
         Path(temp_mos_file.name).write_text(mos_file)
         yield Path(temp_mos_file.name).name

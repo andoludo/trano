@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 import pytest
 
@@ -12,7 +11,7 @@ from trano.elements.library.library import Library
 from trano.topology import Network
 
 
-def get_path(file_name: str, directory: Optional[str] = None) -> Path:
+def get_path(file_name: str, directory: str | None = None) -> Path:
     if directory:
         return Path(__file__).parent.joinpath("models", directory, file_name)
     return Path(__file__).parent.joinpath("models", file_name)
@@ -31,9 +30,7 @@ def test_template_buildings_free_float_two_zones(
     buildings_free_float_two_zones: Network,
 ) -> None:
     model_ = buildings_free_float_two_zones.model(include_container=True)
-    assert clean_model(model_, buildings_free_float_two_zones.name) == set(
-        _read(buildings_free_float_two_zones.name)
-    )
+    assert clean_model(model_, buildings_free_float_two_zones.name) == set(_read(buildings_free_float_two_zones.name))
 
 
 def test_template_buildings_free_float_three_zones(
@@ -58,9 +55,7 @@ def test_template_buildings_simple_hydronic(
     buildings_simple_hydronic: Network,
 ) -> None:
     model_ = buildings_simple_hydronic.model()
-    assert clean_model(model_, buildings_simple_hydronic.name) == set(
-        _read(buildings_simple_hydronic.name)
-    )
+    assert clean_model(model_, buildings_simple_hydronic.name) == set(_read(buildings_simple_hydronic.name))
 
 
 def test_template_buildings_simple_hydronic_three_zones(
@@ -76,18 +71,14 @@ def test_template_ideas_free_float_single_zone(
     ideas_free_float_single_zone: Network,
 ) -> None:
     model_ = ideas_free_float_single_zone.model()
-    assert clean_model(model_, ideas_free_float_single_zone.name) == set(
-        _read(ideas_free_float_single_zone.name)
-    )
+    assert clean_model(model_, ideas_free_float_single_zone.name) == set(_read(ideas_free_float_single_zone.name))
 
 
 def test_template_ideas_free_float_three_zones(
     ideas_free_float_three_zones: Network,
 ) -> None:
     model_ = ideas_free_float_three_zones.model()
-    assert clean_model(model_, ideas_free_float_three_zones.name) == set(
-        _read(ideas_free_float_three_zones.name)
-    )
+    assert clean_model(model_, ideas_free_float_three_zones.name) == set(_read(ideas_free_float_three_zones.name))
 
 
 def test_ideas_simple_hydronic_three_zones(
@@ -111,36 +102,27 @@ def test_ideas_simple_hydronic_no_occupancy(
 def test_space_1_ideal_heating(
     space_1_ideal_heating_network: Network,
 ) -> None:
-
     model_ = space_1_ideal_heating_network.model()
-    assert clean_model(model_, space_1_ideal_heating_network.name) == set(
-        _read(space_1_ideal_heating_network.name)
-    )
+    assert clean_model(model_, space_1_ideal_heating_network.name) == set(_read(space_1_ideal_heating_network.name))
 
 
 def test_space_1_different_construction_types(
     space_1_different_construction_types_network: Network,
 ) -> None:
-
     model_ = space_1_different_construction_types_network.model()
-    assert clean_model(
-        model_, space_1_different_construction_types_network.name
-    ) == set(_read(space_1_different_construction_types_network.name))
+    assert clean_model(model_, space_1_different_construction_types_network.name) == set(
+        _read(space_1_different_construction_types_network.name)
+    )
 
 
 def test_one_spaces_air_handling_unit(one_spaces_air_handling_unit: Network) -> None:
-
     model_ = one_spaces_air_handling_unit.model()
-    assert clean_model(model_, one_spaces_air_handling_unit.name) == set(
-        _read(one_spaces_air_handling_unit.name)
-    )
+    assert clean_model(model_, one_spaces_air_handling_unit.name) == set(_read(one_spaces_air_handling_unit.name))
 
 
 def test_two_spaces_air_handling_unit(two_spaces_air_handling_unit: Network) -> None:
     model_ = two_spaces_air_handling_unit.model()
-    assert clean_model(model_, two_spaces_air_handling_unit.name) == set(
-        _read(two_spaces_air_handling_unit.name)
-    )
+    assert clean_model(model_, two_spaces_air_handling_unit.name) == set(_read(two_spaces_air_handling_unit.name))
 
 
 def test_space_with_same_properties(space_with_same_properties: Space) -> None:
@@ -206,9 +188,7 @@ def test_template_buildings_free_float_single_zone_with_data(
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
 def test_three_zones_hydronic_template(library_name: str) -> None:
     house = get_path("three_zones_hydronic.yaml")
-    network = convert_network(
-        "three_zones_hydronic", house, library=Library.from_configuration(library_name)
-    )
+    network = convert_network("three_zones_hydronic", house, library=Library.from_configuration(library_name))
     assert clean_model(network.model(), f"{network.name}_{library_name}_yaml") == set(
         _read(f"{network.name}_{library_name}_yaml")
     )
@@ -217,17 +197,13 @@ def test_three_zones_hydronic_template(library_name: str) -> None:
 def test_single_zone_hydronic_template(schema: Path) -> None:
     house = get_path("single_zone_hydronic.yaml")
     network = convert_network("single_zone_hydronic", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 def test_single_zone_hydronic_weather_template(schema: Path) -> None:
     house = get_path("single_zone_hydronic_weather.yaml")
     network = convert_network("single_zone_hydronic_weather", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 def test_single_zone_air_handling_unit_simple_vav_control_template(
@@ -235,33 +211,25 @@ def test_single_zone_air_handling_unit_simple_vav_control_template(
 ) -> None:
     house = get_path("single_zone_air_handling_unit_simple_vav_control.yaml")
     network = convert_network("single_zone_air_handling_unit_simple_vav_control", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 def test_single_zone_air_handling_unit_complex_vav_template(schema: Path) -> None:
     house = get_path("single_zone_air_handling_unit_complex_vav.yaml")
     network = convert_network("single_zone_air_handling_unit_complex_vav", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 def test_two_zones_template(schema: Path) -> None:
     house = get_path("two_zones.yaml")
     network = convert_network("two_zones", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 def test_two_zones_ideas_template(schema: Path) -> None:
     house = get_path("two_zones_ideas.yaml")
     network = convert_network("two_zones_ideas", house)
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 def test_single_zone_air_handling_unit_without_vav_with_duct_template(
@@ -269,12 +237,8 @@ def test_single_zone_air_handling_unit_without_vav_with_duct_template(
 ) -> None:
     house = get_path("single_zone_air_handling_unit_without_vav_with_duct.yaml")
     # TODO: remove ducts here
-    network = convert_network(
-        "single_zone_air_handling_unit_without_vav_with_duct", house
-    )
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    network = convert_network("single_zone_air_handling_unit_without_vav_with_duct", house)
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
@@ -290,9 +254,7 @@ def test_three_zones_hydronic_with_containers(schema: Path, library_name: str) -
 
 
 @pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
-def test_single_zone_air_handling_unit_complex_vav_containers(
-    schema: Path, library_name: str
-) -> None:
+def test_single_zone_air_handling_unit_complex_vav_containers(schema: Path, library_name: str) -> None:
     house = get_path("single_zone_air_handling_unit_complex_vav_containers.yaml")
     network = convert_network(
         f"single_zone_air_handling_unit_complex_vav_containers_{library_name}",
@@ -385,9 +347,7 @@ def test_single_zone_hydronic_tilt_as_value(schema: Path) -> None:
         house,
         library=Library.from_configuration("IDEAS"),
     )
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 def test_single_zone_window_different_construction(schema: Path) -> None:
@@ -396,9 +356,7 @@ def test_single_zone_window_different_construction(schema: Path) -> None:
         "house_multiple_construction_one_azimuth",
         house,
     )
-    assert clean_model(network.model(), f"{network.name}_yaml") == set(
-        _read(f"{network.name}_yaml")
-    )
+    assert clean_model(network.model(), f"{network.name}_yaml") == set(_read(f"{network.name}_yaml"))
 
 
 def test_bestest_case600ff(schema: Path) -> None:

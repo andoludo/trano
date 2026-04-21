@@ -1,5 +1,3 @@
-from typing import List
-
 from tests.constructions.constructions import Constructions, Glasses
 from trano.elements import ExternalWall, FloorOnGround, Window
 from trano.elements.space import Space
@@ -7,7 +5,7 @@ from trano.elements.system import Occupancy
 from trano.elements.types import Azimuth, Tilt
 
 
-def two_spaces() -> List[Space]:
+def two_spaces() -> list[Space]:
     space_1 = Space(
         name="space_1",
         occupancy=Occupancy(name="occupancy_0"),
@@ -40,9 +38,7 @@ def two_spaces() -> List[Space]:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,
@@ -79,9 +75,7 @@ def two_spaces() -> List[Space]:
                 construction=Constructions.external_wall,
                 tilt=Tilt.wall,
             ),
-            FloorOnGround(
-                name="floor_1", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_1", surface=10, construction=Constructions.external_wall),
         ],
     )
     return [space_1, space_2]

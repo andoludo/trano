@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from pydantic import BaseModel, Field
 
@@ -23,8 +23,8 @@ if TYPE_CHECKING:
 
 
 def _evaluate(
-    element: "BaseElement", commands: List[str]
-) -> Optional[Union[str, "BaseElement", List["BaseElement"], List[str]]]:
+    element: "BaseElement", commands: list[str]
+) -> Union[str, "BaseElement", list["BaseElement"], list[str]] | None:
     for command in commands:
         if hasattr(element, command):
             element = getattr(element, command)
@@ -33,7 +33,7 @@ def _evaluate(
     return element
 
 
-def _evaluate_target(target: Target, element: "BaseElement") -> str | List[str]:
+def _evaluate_target(target: Target, element: "BaseElement") -> str | list[str]:
     from trano.elements import BaseElement
 
     target_ = _evaluate(element, target.commands())
@@ -56,11 +56,11 @@ def _evaluate_target(target: Target, element: "BaseElement") -> str | List[str]:
 
 def _append_to_port(
     input_: BaseInputOutput,
-    ports: Dict[str, List[BaseInputOutput]],
+    ports: dict[str, list[BaseInputOutput]],
     target: Target,
     evaluated_element: str,
     element: "BaseElement",
-) -> Dict[str, List[BaseInputOutput]]:
+) -> dict[str, list[BaseInputOutput]]:
     ports[type(input_).__name__].append(
         type(input_)(
             **(
@@ -97,19 +97,12 @@ class ControllerBus(BaseModel):
     def from_configuration(cls, file_path: Path) -> "ControllerBus":
         return cls(**json.loads(file_path.read_text()))
 
-    def main_targets(self) -> List[str]:
+    def main_targets(self) -> list[str]:
         return list({input.target.main for input in self.inputs()})
 
     def inputs(
         self,
-    ) -> List[
-        BooleanInput
-        | IntegerOutput
-        | IntegerInput
-        | RealOutput
-        | RealInput
-        | BooleanOutput
-    ]:
+    ) -> list[BooleanInput | IntegerOutput | IntegerInput | RealOutput | RealInput | BooleanOutput]:
         return (
             self.real_inputs
             + self.real_outputs
@@ -119,18 +112,18 @@ class ControllerBus(BaseModel):
             + self.boolean_outputs
         )
 
-    def _get_targets(self) -> Dict[Target, List[BaseInputOutput]]:
+    def _get_targets(self) -> dict[Target, list[BaseInputOutput]]:
         return {
-            input.target: [
-                input_ for input_ in self.inputs() if input_.target == input.target
-            ]
+            input.target: [input_ for input_ in self.inputs() if input_.target == input.target]
             for input in self.inputs()
         }
 
     def list_ports(
-        self, element: "BaseElement", **kwargs: Any  # noqa: ANN401
-    ) -> Dict[str, List[BaseInputOutput]]:
-        ports: Dict[str, List[BaseInputOutput]] = {
+        self,
+        element: "BaseElement",
+        **kwargs: Any,  # noqa: ANN401
+    ) -> dict[str, list[BaseInputOutput]]:
+        ports: dict[str, list[BaseInputOutput]] = {
             "RealOutput": [],
             "RealInput": [],
             "IntegerOutput": [],
@@ -144,19 +137,17 @@ class ControllerBus(BaseModel):
             for input in inputs:
                 if isinstance(evaluated_element, list):
                     for evaluated_element_ in evaluated_element:
-                        ports = _append_to_port(
-                            input, ports, target, evaluated_element_, element
-                        )
+                        ports = _append_to_port(input, ports, target, evaluated_element_, element)
                 else:
-                    ports = _append_to_port(
-                        input, ports, target, evaluated_element, element
-                    )
+                    ports = _append_to_port(input, ports, target, evaluated_element, element)
         return ports
 
     def bus_ports(
-        self, element: "BaseElement", **kwargs: Any  # noqa: ANN401
-    ) -> List[str]:
-        ports: List[str] = []
+        self,
+        element: "BaseElement",
+        **kwargs: Any,  # noqa: ANN401
+    ) -> list[str]:
+        ports: list[str] = []
         for target, inputs in self._get_targets().items():
             target_value = _evaluate_target(target, element)
             for input in inputs:
@@ -183,22 +174,19 @@ class ControllerBus(BaseModel):
 
 
 def _append_ports(  # noqa: PLR0913
-    ports: List[str],
+    ports: list[str],
     input: BaseInputOutput,
     evaluated_target: str,
     case_1_condition: str,
     case_1: str,
     case_2: str,
-) -> List[str]:
+) -> list[str]:
     if getattr(input, case_1_condition):
-
         ports.append(
-            f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, "
-            f"{input.component}{case_1});"
+            f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, " f"{input.component}{case_1});"
         )
     else:
         ports.append(
-            f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, "
-            f"{input.component}{case_2});"
+            f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, " f"{input.component}{case_2});"
         )
     return ports

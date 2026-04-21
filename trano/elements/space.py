@@ -1,5 +1,5 @@
 from math import ceil
-from typing import ClassVar, List, Optional, Union, TYPE_CHECKING
+from typing import ClassVar, Optional, Union, TYPE_CHECKING
 
 from networkx import Graph
 from pydantic import Field, BaseModel, model_validator
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 MAX_X_SPACES = 3
 
 
-def _get_controllable_element(elements: List[System]) -> Optional["System"]:
+def _get_controllable_element(elements: list[System]) -> Optional["System"]:
     controllable_elements = []
     for element in elements:
         controllable_ports = element.get_controllable_ports()
@@ -47,12 +47,12 @@ def _get_controllable_element(elements: List[System]) -> Optional["System"]:
 
 class BoundaryParameter(BaseModel):
     number_orientations: int = 0
-    area_per_orientation: List[float] = Field(default_factory=lambda: [0.0])
+    area_per_orientation: list[float] = Field(default_factory=lambda: [0.0])
     average_resistance_external: float = Field(0.001)
     average_resistance_external_remaining: float = Field(0.001)
     total_thermal_capacitance: float = Field(10000)
-    tilts: List[float] = Field(default_factory=lambda: [0.0])
-    azimuths: List[float] = Field(default_factory=lambda: [0.0])
+    tilts: list[float] = Field(default_factory=lambda: [0.0])
+    azimuths: list[float] = Field(default_factory=lambda: [0.0])
     average_u_value: float = 0.001
     total_thermal_resistance: float = 0.001
 
@@ -63,9 +63,7 @@ class BoundaryParameter(BaseModel):
         return cls(
             number_orientations=parameter.number,
             area_per_orientation=(
-                parameter.window_area_by_orientation
-                if parameter.type == "BaseWindow"
-                else parameter.surfaces
+                parameter.window_area_by_orientation if parameter.type == "BaseWindow" else parameter.surfaces
             ),
             average_resistance_external=parameter.average_resistance_external,
             average_resistance_external_remaining=parameter.average_resistance_external_remaining,
@@ -85,7 +83,7 @@ class BoundaryParameters(BaseModel):
     floors: BoundaryParameter = Field(default_factory=BoundaryParameter)
 
     @classmethod
-    def from_boundaries(cls, parameters: List[WallParameters]) -> "BoundaryParameters":
+    def from_boundaries(cls, parameters: list[WallParameters]) -> "BoundaryParameters":
         data = {}
         for p in parameters:
             if p.type == "ExternalWallRoof":
@@ -104,28 +102,24 @@ class BoundaryParameters(BaseModel):
 class BaseSpace(BaseElement):
     counter: ClassVar[int] = 0
     name: str
-    external_boundaries: list[
-        Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]
-    ]
-    internal_elements: List["BaseInternalElement"] = Field(default=[])
-    boundaries: Optional[List[WallParameters]] = None
-    emissions: List[System] = Field(default=[])
-    ventilation_inlets: List[System] = Field(default=[])
-    ventilation_outlets: List[System] = Field(default=[])
-    occupancy: Optional[BaseOccupancy] = None
+    external_boundaries: list[Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]]
+    internal_elements: list["BaseInternalElement"] = Field(default=[])
+    boundaries: list[WallParameters] | None = None
+    emissions: list[System] = Field(default=[])
+    ventilation_inlets: list[System] = Field(default=[])
+    ventilation_outlets: list[System] = Field(default=[])
+    occupancy: BaseOccupancy | None = None
     container_type: ContainerTypes = "envelope"
-    boundary_parameters: Optional[BoundaryParameters] = None
-    merged_external_boundaries: List[
-        Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]
-    ] = Field(default_factory=list)
+    boundary_parameters: BoundaryParameters | None = None
+    merged_external_boundaries: list[Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]] = (
+        Field(default_factory=list)
+    )
 
     def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
         self._assign_space()
 
     def _assign_space(self) -> None:
-        for emission in (
-            self.emissions + self.ventilation_inlets + self.ventilation_outlets
-        ):
+        for emission in self.emissions + self.ventilation_inlets + self.ventilation_outlets:
             if emission.control:
                 emission.control.space_name = self.name
         if self.occupancy:
@@ -133,12 +127,7 @@ class BaseSpace(BaseElement):
 
     @property
     def number_merged_external_boundaries(self) -> int:
-        return sum(
-            [
-                boundary.length
-                for boundary in self.merged_external_boundaries + self.internal_elements
-            ]
-        )
+        return sum([boundary.length for boundary in self.merged_external_boundaries + self.internal_elements])
 
     @property
     def number_ventilation_ports(self) -> int:
@@ -152,20 +141,12 @@ class BaseSpace(BaseElement):
             return self
 
         external_walls = [
-            boundary
-            for boundary in self.external_boundaries
-            if boundary.type in ["ExternalWall", "ExternalDoor"]
+            boundary for boundary in self.external_boundaries if boundary.type in ["ExternalWall", "ExternalDoor"]
         ]
-        windows = [
-            boundary
-            for boundary in self.external_boundaries
-            if boundary.type == "Window"
-        ]
+        windows = [boundary for boundary in self.external_boundaries if boundary.type == "Window"]
         merged_external_walls = MergedExternalWall.from_base_elements(external_walls)
         merged_windows = MergedWindows.from_base_windows(windows)  # type: ignore
-        external_boundaries: list[
-            BaseExternalWall | BaseWindow | BaseFloorOnGround | MergedBaseWall
-        ] = (
+        external_boundaries: list[BaseExternalWall | BaseWindow | BaseFloorOnGround | MergedBaseWall] = (
             merged_external_walls
             + merged_windows
             + [
@@ -195,24 +176,14 @@ class BaseSpace(BaseElement):
 
     def set_child_position(self) -> None:
         if self.occupancy:
-            self.occupancy.position.set_global(
-                self.position.x_global - 15, self.position.y_global
-            )
-            self.occupancy.position.set_container(
-                self.position.x_container - 15, self.position.y_container
-            )
+            self.occupancy.position.set_global(self.position.x_global - 15, self.position.y_global)
+            self.occupancy.position.set_container(self.position.x_container - 15, self.position.y_container)
         for i, ext in enumerate(self.merged_external_boundaries):
-            ext.position.set_global(
-                self.position.x_global + 15, self.position.y_global + 10 * i
-            )
-            ext.position.set_container(
-                self.position.x_container + 15, self.position.y_container + 10 * i
-            )
+            ext.position.set_global(self.position.x_global + 15, self.position.y_global + 10 * i)
+            ext.position.set_container(self.position.x_container + 15, self.position.y_container + 10 * i)
 
     def find_emission(self) -> Optional["Emission"]:
-        emissions = [
-            emission for emission in self.emissions if isinstance(emission, Emission)
-        ]
+        emissions = [emission for emission in self.emissions if isinstance(emission, Emission)]
         if not emissions:
             return None
         if len(emissions) != 1:
@@ -250,7 +221,6 @@ class BaseSpace(BaseElement):
         return None
 
     def get_neighhors(self, graph: Graph) -> None:
-
         neighbors = list(graph.neighbors(self))  # type: ignore
         self.boundaries = []
         windowed_wall_parameters = WindowedWallParameters.from_neighbors(neighbors)
@@ -290,9 +260,7 @@ class BaseSpace(BaseElement):
         self.boundary_parameters = BoundaryParameters.from_boundaries(self.boundaries)
 
     def __add__(self, other: "BaseSpace") -> "BaseSpace":
-        self.name = (
-            f"merge_{self.name.replace('merge', '')}_{other.name.replace('merge', '')}"
-        )
+        self.name = f"merge_{self.name.replace('merge', '')}_{other.name.replace('merge', '')}"
         self.volume: float = self.volume + other.volume
         self.external_boundaries += other.external_boundaries
         return self
@@ -359,12 +327,8 @@ class Space(BaseSpace):
             )
         )
         for controllable_element in controllable_ventilation_elements:
-            if controllable_element.control and isinstance(
-                controllable_element.control, VAVControl
-            ):
-                controllable_element.control.ahu = next(
-                    (n for n in neighbors if isinstance(n, AirHandlingUnit)), None
-                )
+            if controllable_element.control and isinstance(controllable_element.control, VAVControl):
+                controllable_element.control.ahu = next((n for n in neighbors if isinstance(n, AirHandlingUnit)), None)
 
         self.get_neighhors(network.graph)
         self.process_figures(include_container=include_container)

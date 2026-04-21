@@ -1,6 +1,6 @@
 from functools import cache
 from pathlib import Path
-from typing import Any, ClassVar, Dict, List, Optional, Type, TYPE_CHECKING, get_args
+from typing import Any, ClassVar, TYPE_CHECKING, get_args
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import (
@@ -31,11 +31,11 @@ if TYPE_CHECKING:
 
 
 class BaseElementPort(BaseElementPosition):
-    name: Optional[str] = Field(default=None)
+    name: str | None = Field(default=None)
     ports: list[Port] = Field(default=[], validate_default=True)
-    container_type: Optional[ContainerTypes] = None
+    container_type: ContainerTypes | None = None
 
-    def available_ports(self) -> List[Port]:
+    def available_ports(self) -> list[Port]:
         return [port for port in self.ports if not port.connected]
 
     def reset_port_counters(self) -> None:
@@ -55,37 +55,31 @@ def default_environment() -> Environment:
 
 
 class BaseElement(BaseElementPort):
-    name_counter: ClassVar[int] = (
-        0  # TODO: this needs to be removed and replaced with a proper solution.
-    )
+    name_counter: ClassVar[int] = 0  # TODO: this needs to be removed and replaced with a proper solution.
 
     model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
     medium: MediumTemplate = Field(default_factory=MediumTemplate)
-    parameters: Optional[BaseParameter] = None
-    template: Optional[str] = None
-    component_template: Optional[DynamicComponentTemplate] = None
+    parameters: BaseParameter | None = None
+    template: str | None = None
+    component_template: DynamicComponentTemplate | None = None
     variant: str = BaseVariant.default
-    libraries_data: List[LibraryData] = Field(default=[])
-    figures: List[NamedFigure] = Field(default=[])
+    libraries_data: list[LibraryData] = Field(default=[])
+    figures: list[NamedFigure] = Field(default=[])
     _environment: Environment = PrivateAttr(default_factory=default_environment)
-    component_model: Optional[ComponentModel] = None
+    component_model: ComponentModel | None = None
     include_in_layout: bool = True
     component_size: float = 5
 
     @model_validator(mode="before")
     @classmethod
-    def validate_libraries_data(cls, value: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_libraries_data(cls, value: dict[str, Any]) -> dict[str, Any]:
         if isinstance(value, dict):
             if "libraries_data" not in value:
                 from trano.elements.library.components import COMPONENTS
 
                 value["libraries_data"] = COMPONENTS.get_components(cls.__name__)
             parameter_class = param_from_config(cls.__name__)
-            if (
-                parameter_class
-                and isinstance(value, dict)
-                and not value.get("parameters")
-            ):
+            if parameter_class and isinstance(value, dict) and not value.get("parameters"):
                 value["parameters"] = parameter_class()
 
         return value
@@ -105,27 +99,17 @@ class BaseElement(BaseElementPort):
             return value.lower().replace(":", "_")
         return value
 
-    def get_library_data(self, library: "Library") -> Optional[LibraryData]:
-        libraries_data_variants = [
-            library_
-            for library_ in self.libraries_data
-            if library_.variant == self.variant
-        ]
+    def get_library_data(self, library: "Library") -> LibraryData | None:
+        libraries_data_variants = [library_ for library_ in self.libraries_data if library_.variant == self.variant]
         if not libraries_data_variants:
             raise UnknownComponentVariantError(
                 f"Library data not found for {self.name} in {library.name} for variant {self.variant}"
             )
         libraries_data = [
-            library_
-            for library_ in libraries_data_variants
-            if (library_.library == library.name.lower())
+            library_ for library_ in libraries_data_variants if (library_.library == library.name.lower())
         ]
         if not libraries_data:
-            libraries_data = [
-                library_
-                for library_ in libraries_data_variants
-                if (library_.library == "default")
-            ]
+            libraries_data = [library_ for library_ in libraries_data_variants if (library_.library == "default")]
         if libraries_data:
             return libraries_data[0]
         return None
@@ -148,8 +132,7 @@ class BaseElement(BaseElementPort):
             self.component_template = library_data.component_template
         if not self.figures and library_data.figures:
             self.figures = [
-                NamedFigure(**(fig.render_key(self).model_dump() | {"name": self.name}))
-                for fig in library_data.figures
+                NamedFigure(**(fig.render_key(self).model_dump() | {"name": self.name})) for fig in library_data.figures
             ]
 
         return True
@@ -161,19 +144,14 @@ class BaseElement(BaseElementPort):
                 return library_data.parameter_processing(self.parameters)
         return {}
 
-    def set_position(self, layout: Dict[str, Any], global_: bool = True) -> None:
-
+    def set_position(self, layout: dict[str, Any], global_: bool = True) -> None:
         if layout.get(self.name):  # type: ignore
             x, y = list(layout.get(self.name))  # type: ignore
-            (
-                self.position.set_global(x, y)
-                if global_
-                else self.position.set_container(x, y)
-            )
+            (self.position.set_global(x, y) if global_ else self.position.set_container(x, y))
 
     def set_child_position(self) -> None: ...
 
-    def get_controllable_ports(self) -> List[Port]:
+    def get_controllable_ports(self) -> list[Port]:
         return [port for port in self.ports if port.is_controllable()]
 
     @property
@@ -181,36 +159,26 @@ class BaseElement(BaseElementPort):
         return type(self).__name__
 
     @cache  # noqa: B019
-    def model(self, network: "Network") -> Optional[ComponentModel]:
+    def model(self, network: "Network") -> ComponentModel | None:
         if not self.template:
             return None
         self._environment.globals.update(network.library.functions)
         if self.component_template:
-            component = self.component_template.render(
-                network.name, self, self.processed_parameters(network.library)
-            )
+            component = self.component_template.render(network.name, self, self.processed_parameters(network.library))
             if self.component_template.category:
-                network.dynamic_components[self.component_template.category].append(
-                    component
-                )
+                network.dynamic_components[self.component_template.category].append(component)
         package_name = network.name
         library_name = network.library.base_library()
         parameters = self.processed_parameters(network.library)
         # TODO: temporary fix for boolean parameters
-        parameters = {
-            key: value.lower() if value in ["True", "False"] else value
-            for key, value in parameters.items()
-        }
-        component_model: Dict[str, Any] = {"id": hash(self)}
+        parameters = {key: value.lower() if value in ["True", "False"] else value for key, value in parameters.items()}
+        component_model: dict[str, Any] = {"id": hash(self)}
         for model_type, annotation in {
             "model": self.position.global_.annotation,
             "container": self.position.container.annotation,
         }.items():
             template = self._environment.from_string(
-                "{% import 'macros.jinja2' as macros %}"
-                + self.template
-                + " "
-                + annotation
+                "{% import 'macros.jinja2' as macros %}" + self.template + " " + annotation
             )
             component_model.update(
                 {
@@ -244,22 +212,14 @@ class BaseElement(BaseElementPort):
     def process_figures(self, include_container: bool = False) -> None:
         if self.container_type is not None:
             for figure in self.figures:
-
-                figure.modify_key_based_on_container(
-                    self.container_type, include_container
-                )
+                figure.modify_key_based_on_container(self.container_type, include_container)
 
     def configure(self, network: "Network") -> None: ...
     def system_ports_connected(self) -> bool:
         return True
 
-    def non_connected_ports_name(self) -> List[str]:
-        return [
-            f"{self.name}.{n}"
-            for port in self.ports
-            if not port.connected
-            for n in port.names
-        ]
+    def non_connected_ports_name(self) -> list[str]:
+        return [f"{self.name}.{n}" for port in self.ports if not port.connected for n in port.names]
 
     def assign_container_type(self, network: "Network") -> None:
         if self.container_type is None:
@@ -281,38 +241,25 @@ class BaseElement(BaseElementPort):
 
 
 class ElementPort(BaseElementPort):
-    element_type: Optional[Type[BaseElement]] = None
+    element_type: type[BaseElement] | None = None
     merged_number: int = 1
 
-    def has_target(self, targets: List[Type[BaseElement]]) -> bool:
+    def has_target(self, targets: list[type[BaseElement]]) -> bool:
         return (not targets) or bool(
-            self.element_type is not None
-            and targets
-            and any(issubclass(self.element_type, t) for t in targets)
+            self.element_type is not None and targets and any(issubclass(self.element_type, t) for t in targets)
         )
 
-    def get_connection_per_target(
-        self, target: Optional[Type[BaseElement]] = None
-    ) -> int:
+    def get_connection_per_target(self, target: type[BaseElement] | None = None) -> int:
         if target is None:
             return 0
-        return len(
-            [
-                target_
-                for port in self.ports
-                for target_ in port.targets
-                if issubclass(target, target_)
-            ]
-        )
+        return len([target_ for port in self.ports for target_ in port.targets if issubclass(target, target_)])
 
     @classmethod
     def from_element_without_ports(cls, element: BaseElement) -> "ElementPort":
         return cls.from_element(element, use_original_ports=False)
 
     @classmethod
-    def from_element(
-        cls, element: BaseElement, use_original_ports: bool = True
-    ) -> "ElementPort":
+    def from_element(cls, element: BaseElement, use_original_ports: bool = True) -> "ElementPort":
         from trano.elements.envelope import MergedBaseWall
 
         merged_number = 1
@@ -320,10 +267,7 @@ class ElementPort(BaseElementPort):
             merged_number = len(element.surfaces)
         if element.position is not None:
             element_port = cls(
-                **(
-                    element.model_dump()
-                    | {"element_type": type(element), "merged_number": merged_number}
-                )
+                **(element.model_dump() | {"element_type": type(element), "merged_number": merged_number})
             )
         else:
             element_port = cls(
@@ -339,8 +283,8 @@ class ElementPort(BaseElementPort):
 
 # This has to be here for now!!!
 class Control(BaseElement):
-    controllable_element: Optional[BaseElement] = None
-    space_name: Optional[str] = None
+    controllable_element: BaseElement | None = None
+    space_name: str | None = None
     container_annotation_template: str = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.container_position) }},
     extent = {% raw %}{{5, -5}, {-5, 5}}

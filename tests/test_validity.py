@@ -48,9 +48,7 @@ def test_unexpected_configuration(schema: Path, file_name: str) -> None:
         "single_zone_hydronic_random_id",
     ],
 )
-def test_unexpected_configuration_should_fail_but_pass_(
-    schema: Path, file_name: str
-) -> None:
+def test_unexpected_configuration_should_fail_but_pass_(schema: Path, file_name: str) -> None:
     # TODO: this is to be checked
     house = get_path(f"{file_name}.yaml")
     network = convert_network(file_name, house)

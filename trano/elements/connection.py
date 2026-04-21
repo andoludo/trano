@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
@@ -25,10 +25,9 @@ logger = logging.getLogger(__name__)
 
 
 class Port(BaseModel):
-
     names: list[str]
-    targets: List[Any] = Field(default_factory=list)
-    expected_ports: List[str] = Field(default_factory=list)
+    targets: list[Any] = Field(default_factory=list)
+    expected_ports: list[str] = Field(default_factory=list)
     connected: bool = False
     flow: Flow
     medium: Medium
@@ -52,21 +51,13 @@ class Port(BaseModel):
             else:
                 if self.flow == Flow.inlet:
                     return (port.flow in [Flow.outlet]) or (
-                        port.flow in [Flow.inlet_or_outlet]
-                        and port.multi_connection
-                        and port.use_counter
+                        port.flow in [Flow.inlet_or_outlet] and port.multi_connection and port.use_counter
                     )
                 if self.flow == Flow.outlet:
                     return port.flow in [Flow.inlet] or (
-                        port.flow in [Flow.inlet_or_outlet]
-                        and port.multi_connection
-                        and port.use_counter
+                        port.flow in [Flow.inlet_or_outlet] and port.multi_connection and port.use_counter
                     )
-                if (
-                    self.flow == Flow.inlet_or_outlet
-                    and self.multi_connection
-                    and self.use_counter
-                ):
+                if self.flow == Flow.inlet_or_outlet and self.multi_connection and self.use_counter:
                     return port.flow in [Flow.inlet, Flow.outlet]
                 if self.flow == Flow.inlet_or_outlet:
                     return port.flow in [Flow.inlet_or_outlet]
@@ -136,17 +127,15 @@ class Port(BaseModel):
 
     def substract_counter(self) -> "Port":
         if self.counter != 1:
-            return Port.model_validate(
-                self.model_dump(exclude={"counter"}) | {"counter": self.counter - 1}
-            )
+            return Port.model_validate(self.model_dump(exclude={"counter"}) | {"counter": self.counter - 1})
         return self
 
     @field_validator("targets")
     @classmethod
-    def validate_targets(cls, values: List[str]) -> List[Type["BaseElement"]]:
+    def validate_targets(cls, values: list[str]) -> list[type["BaseElement"]]:
         from trano.elements.base import BaseElement
 
-        targets: List[Type[BaseElement]] = []
+        targets: list[type[BaseElement]] = []
         for value in values:
             if isinstance(value, str):
                 if hasattr(elements, value):
@@ -157,13 +146,10 @@ class Port(BaseModel):
                 targets.append(value)
         return targets
 
-    def is_available(self, available_ports: List["Port"]) -> bool:
+    def is_available(self, available_ports: list["Port"]) -> bool:
         if self.multi_connection and self.connected:
             if self.medium == Medium.fluid:
-                return not any(
-                    (p.medium == self.medium and self.similar_flow(p))
-                    for p in available_ports
-                )
+                return not any((p.medium == self.medium and self.similar_flow(p)) for p in available_ports)
             else:
                 return True
         else:
@@ -172,27 +158,21 @@ class Port(BaseModel):
     def is_controllable(self) -> bool:
         from trano.elements.base import Control
 
-        return self.targets is not None and any(
-            target == Control for target in self.targets
-        )
+        return self.targets is not None and any(target == Control for target in self.targets)
 
     def base_equation(
         self,
         merged_number: int,
-        element_name: Optional[str] = None,
-        element_position: Optional[BasePosition] = None,
-    ) -> List["BasePartialConnection"]:
+        element_name: str | None = None,
+        element_position: BasePosition | None = None,
+    ) -> list["BasePartialConnection"]:
         element_position = element_position or BasePosition()
         partial_connections = []
         for sub_port_number, name in enumerate(self.names):
             if self.multi_connection and self.bus_connection:
                 first_counter = self.counter
                 last_counter = self.counter + merged_number - 1
-                counter = (
-                    f"{first_counter}"
-                    if first_counter == last_counter
-                    else f"{first_counter}:{last_counter}"
-                )
+                counter = f"{first_counter}" if first_counter == last_counter else f"{first_counter}:{last_counter}"
                 if element_name:
                     equation = (
                         f"{element_name}[{counter}].{name}"
@@ -203,11 +183,7 @@ class Port(BaseModel):
                     equation = f"{name}[{counter}]" if self.multi_object else f"{name}"
                 self.counter = last_counter + 1
             elif self.multi_connection and self.use_counter:
-                equation = (
-                    f"{element_name}.{name}[{self.counter}]"
-                    if element_name
-                    else f"{name}[{self.counter}]"
-                )
+                equation = f"{element_name}.{name}[{self.counter}]" if element_name else f"{name}[{self.counter}]"
                 self.counter += 1
             elif element_name:
                 equation = f"{element_name}.{name}"
@@ -233,9 +209,7 @@ class Port(BaseModel):
         container_type: ContainerTypes | None,
         connected_container_type: ContainerTypes | None,
     ) -> list["PartialConnection"]:
-        base_equations = self.base_equation(
-            merged_number, element_name, element_position
-        )
+        base_equations = self.base_equation(merged_number, element_name, element_position)
 
         return [
             PartialConnection(
@@ -251,7 +225,7 @@ class Port(BaseModel):
         ]
 
 
-def connection_color(edge: Tuple["ElementPort", "ElementPort"]) -> ConnectionView:
+def connection_color(edge: tuple["ElementPort", "ElementPort"]) -> ConnectionView:
     from trano.elements.bus import DataBus
     from trano.elements.envelope import BaseSimpleWall
     from trano.elements.system import Weather, System
@@ -289,25 +263,19 @@ def check_flow_direction(first_port: Port, second_port: Port) -> bool:
         return True
 
 
-def connect(
-    edge_first: "ElementPort", edge_second: "ElementPort"
-) -> list["Connection"]:
+def connect(edge_first: "ElementPort", edge_second: "ElementPort") -> list["Connection"]:
     connections = []
     try:
         for first_port in edge_first.ports:
             for second_port in edge_second.ports:
-                available = first_port.is_available(
-                    edge_first.available_ports()
-                ) and second_port.is_available(edge_second.available_ports())
-                has_targets = edge_second.has_target(
-                    first_port.targets
-                ) and edge_first.has_target(second_port.targets)
+                available = first_port.is_available(edge_first.available_ports()) and second_port.is_available(
+                    edge_second.available_ports()
+                )
+                has_targets = edge_second.has_target(first_port.targets) and edge_first.has_target(second_port.targets)
                 complementarity = first_port.is_complementary(second_port)
                 flow_direction = check_flow_direction(first_port, second_port)
                 if available and has_targets and complementarity and flow_direction:
-                    merged_number = max(
-                        edge_first.merged_number, edge_second.merged_number
-                    )
+                    merged_number = max(edge_first.merged_number, edge_second.merged_number)
                     left_right = list(
                         zip(
                             first_port.link(
@@ -337,9 +305,7 @@ def connect(
                     first_port.set_connected()
                     second_port.set_connected()
                     current_connection_numbers = len(connections)
-                    allowed_connections = edge_first.get_connection_per_target(
-                        edge_second.element_type
-                    )
+                    allowed_connections = edge_first.get_connection_per_target(edge_second.element_type)
                     if current_connection_numbers >= allowed_connections:
                         raise ConnectionLimitReached
     except ConnectionLimitReached:
@@ -349,18 +315,18 @@ def connect(
 
 
 class BasePartialConnection(BaseElementPosition):
-    name: Optional[str] = None
+    name: str | None = None
     equation: str
     port: Port
     sub_port: int
 
 
 class BasePartialConnectionWithContainerType(BasePartialConnection):
-    container_type: Optional[ContainerTypes] = None
+    container_type: ContainerTypes | None = None
 
 
 class PartialConnection(BasePartialConnectionWithContainerType):
-    connected_container_type: Optional[ContainerTypes] = None
+    connected_container_type: ContainerTypes | None = None
 
     def reset_port_counter(self) -> "PartialConnection":
         self.port.reset_counter()
@@ -385,7 +351,7 @@ class Connection(BaseModel):
         self.right.reset_port_counter()
         return self
 
-    def equation_view(self) -> Tuple[str, ...]:
+    def equation_view(self) -> tuple[str, ...]:
         return tuple(sorted([self.left.equation, self.right.equation]))
 
     @computed_field
@@ -393,9 +359,7 @@ class Connection(BaseModel):
         environment = Environment(
             trim_blocks=True,
             lstrip_blocks=True,
-            loader=FileSystemLoader(
-                str(Path(__file__).parents[1].joinpath("templates"))
-            ),
+            loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
             autoescape=True,
         )
         annotation_template = environment.from_string(
@@ -420,37 +384,16 @@ class Connection(BaseModel):
 
     @model_validator(mode="after")
     def _connection_validator(self) -> "Connection":
-        if (
-            self.right.position.container.is_empty()
-            or self.left.position.container.is_empty()
-        ):
-            logger.debug(
-                f"Connection position still empty for {self.right.name} and {self.left.name}."
-            )
-        if (
-            sorted(
-                [
-                    part.split(".")[-1]
-                    for part in [self.right.equation, self.left.equation]
-                ]
-            )
-            in INCOMPATIBLE_PORTS
-        ):
-            raise IncompatiblePortsError(
-                f"Incompatible ports {self.right.equation} and {self.left.equation}."
-            )
+        if self.right.position.container.is_empty() or self.left.position.container.is_empty():
+            logger.debug(f"Connection position still empty for {self.right.name} and {self.left.name}.")
+        if sorted([part.split(".")[-1] for part in [self.right.equation, self.left.equation]]) in INCOMPATIBLE_PORTS:
+            raise IncompatiblePortsError(f"Incompatible ports {self.right.equation} and {self.left.equation}.")
         return self
 
     @property
-    def path(self) -> List[List[float] | Tuple[float, float]]:
-        if (
-            self.left.position.global_.location.c_.x
-            < self.right.position.global_.location.c_.x
-        ):
-            mid_path = (
-                self.right.position.global_.location.c_.x
-                - self.left.position.global_.location.c_.x
-            ) / 2
+    def path(self) -> list[list[float] | tuple[float, float]]:
+        if self.left.position.global_.location.c_.x < self.right.position.global_.location.c_.x:
+            mid_path = (self.right.position.global_.location.c_.x - self.left.position.global_.location.c_.x) / 2
             return [
                 self.left.position.global_.coordinate(),
                 (
@@ -465,10 +408,7 @@ class Connection(BaseModel):
             ]
 
         else:
-            mid_path = (
-                self.left.position.global_.location.c_.x
-                - self.right.position.global_.location.c_.x
-            ) / 2
+            mid_path = (self.left.position.global_.location.c_.x - self.right.position.global_.location.c_.x) / 2
             return [
                 self.left.position.global_.coordinate(),
                 (
@@ -484,11 +424,11 @@ class Connection(BaseModel):
 
 
 class ContainerConnection(Connection):
-    source: Tuple[str, str]
+    source: tuple[str, str]
 
     def get_container_equation(
         self,
-    ) -> Optional[BasePartialConnectionWithContainerType]:
+    ) -> BasePartialConnectionWithContainerType | None:
         if self.right.name is None:
             return self.right
         if self.left.name is None:
@@ -496,15 +436,9 @@ class ContainerConnection(Connection):
         return None
 
     @property
-    def path(self) -> List[List[float] | Tuple[float, float]]:
-        if (
-            self.left.position.container.location.c_.x
-            < self.right.position.container.location.c_.x
-        ):
-            mid_path = (
-                self.right.position.container.location.c_.x
-                - self.left.position.container.location.c_.x
-            ) / 2
+    def path(self) -> list[list[float] | tuple[float, float]]:
+        if self.left.position.container.location.c_.x < self.right.position.container.location.c_.x:
+            mid_path = (self.right.position.container.location.c_.x - self.left.position.container.location.c_.x) / 2
             return [
                 self.left.position.container.coordinate(),
                 (
@@ -519,10 +453,7 @@ class ContainerConnection(Connection):
             ]
 
         else:
-            mid_path = (
-                self.left.position.container.location.c_.x
-                - self.right.position.container.location.c_.x
-            ) / 2
+            mid_path = (self.left.position.container.location.c_.x - self.right.position.container.location.c_.x) / 2
             return [
                 self.left.position.container.coordinate(),
                 (

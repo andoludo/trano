@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import docker  # type: ignore
 
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def is_success(
     results: docker.models.containers.ExecResult,
-    options: Optional[SimulationOptions] = None,
+    options: SimulationOptions | None = None,
 ) -> bool:
     logger.debug(f"Simulation results: {results.output.decode()}")
     if options and options.check_only:

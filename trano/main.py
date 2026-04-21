@@ -2,7 +2,7 @@ import tempfile
 import webbrowser
 from enum import Enum
 from pathlib import Path
-from typing import Optional, Annotated
+from typing import Annotated
 from rich import print
 import typer
 from trano.data_models.conversion import convert_network
@@ -68,17 +68,12 @@ def simulate_model(
         typer.Argument(help="Local path to the '.yaml' model configuration file."),
     ],
     library: Annotated[
-        Optional[str],
+        str | None,
         typer.Argument(help="Library to be used for simulation."),
     ] = LibraryChoice.buildings,
-    start: Annotated[Optional[int], typer.Argument(help="Start simulation time.")] = 0,
-    end: Annotated[Optional[int], typer.Argument(help="End simulation time.")] = 2
-    * 3600
-    * 24
-    * 7,
-    tolerance: Annotated[
-        Optional[float], typer.Argument(help="Simulation tolerance.")
-    ] = 1e-4,
+    start: Annotated[int | None, typer.Argument(help="Start simulation time.")] = 0,
+    end: Annotated[int | None, typer.Argument(help="End simulation time.")] = 2 * 3600 * 24 * 7,
+    tolerance: Annotated[float | None, typer.Argument(help="Simulation tolerance.")] = 1e-4,
 ) -> None:
     options = SimulationLibraryOptions(
         start_time=start,
@@ -113,13 +108,9 @@ def simulate_model(
             print(f"{CROSS_MARK} Simulation failed. See logs for more information.")
             return
 
-        result_path = (
-            Path(model_.parent) / "results" / f"{model_.stem}.building_res.mat"
-        )
+        result_path = Path(model_.parent) / "results" / f"{model_.stem}.building_res.mat"
         if not result_path.exists():
-            print(
-                f"{CROSS_MARK} Simulation failed. Result file not found in {result_path}."
-            )
+            print(f"{CROSS_MARK} Simulation failed. Result file not found in {result_path}.")
             return
         progress.remove_task(task)
         print(f"{CHECKMARK} Simulation results available at {result_path}")
@@ -158,9 +149,7 @@ def verify() -> None:
         progress.remove_task(
             task,
         )
-        print(
-            f"{CHECKMARK} Model generated successfully. Your system is compatible for model generation."
-        )
+        print(f"{CHECKMARK} Model generated successfully. Your system is compatible for model generation.")
         task_ = progress.add_task(
             description="Verify simulation...",
             total=None,
@@ -178,21 +167,15 @@ def verify() -> None:
         progress.remove_task(
             task_,
         )
-        print(
-            f"{CHECKMARK} Model simulated successfully. Your system is compatible for simulation."
-        )
+        print(f"{CHECKMARK} Model simulated successfully. Your system is compatible for simulation.")
 
 
 def report(model: Path | str, options: SimulationLibraryOptions) -> None:
     model = Path(model).resolve()
-    network = convert_network(
-        model.stem, model, library=Library.from_configuration(options.library_name)
-    )
+    network = convert_network(model.stem, model, library=Library.from_configuration(options.library_name))
     reporting = ModelDocumentation.from_network(
         network,
-        result=ResultFile(
-            path=Path(model.parent) / "results" / f"{model.stem}.building_res.mat"
-        ),
+        result=ResultFile(path=Path(model.parent) / "results" / f"{model.stem}.building_res.mat"),
     )
     html = to_html_reporting(reporting)
     report_path = Path(model.parent / f"{model.stem}.html")
