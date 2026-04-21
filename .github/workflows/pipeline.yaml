@@ -13,20 +13,17 @@ jobs:
         with:
           lfs: true
           ref: ${{ github.ref_name }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-      - name: Install dependencies
-        run: poetry install
 
-      - name: Install nox dependencies
-        run: poetry run nox -s install
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group dev --group docs
 
       - name: Run linting
-        run: poetry run nox -s linting
+        run: make linting
 
   tests:
     needs: [linting]
@@ -37,23 +34,22 @@ jobs:
         with:
           lfs: true
           ref: ${{ github.ref_name }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Install graphviz
         run: |
-            sudo apt update
-            sudo apt install graphviz
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-      - name: Install dependencies
-        run: poetry install
+          sudo apt update
+          sudo apt install graphviz
 
-      - name: Install nox dependencies
-        run: poetry run nox -s install
+      - name: Install dependencies
+        run: uv sync --group dev --group docs
+
       - name: Run tests
-        run: poetry run nox -s tests
+        run: make tests
 
   create-revision-and-tag:
     if: startsWith(github.ref, 'refs/heads/master')
@@ -66,23 +62,24 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ github.ref_name }}
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
-      - name: Determine Versioning Strategy
+      - name: Bump minor version
         run: |
-          echo "Bumping minor version"
-          poetry version minor
-          echo "NEW_VERSION=$(poetry version -s)" >> $GITHUB_ENV
+          uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version \
+            $(uvx hatch version minor)
+          echo "NEW_VERSION=$(uvx hatch version)" >> $GITHUB_ENV
+
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: ${{ github.ref == 'refs/heads/master' && 'Auto-increment release version' || 'Auto-increment prerelease version' }}
+
       - name: Create and Push Git Tag
         run: |
-          NEW_TAG="${{ env.NEW_VERSION }}"
-          git tag $NEW_TAG
-          git push origin $NEW_TAG
+          git tag ${{ env.NEW_VERSION }}
+          git push origin ${{ env.NEW_VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
@@ -96,18 +93,16 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ github.ref_name }}
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
-      - name: Determine Current Version
-        run: |
-          echo "NEW_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Set version from tag
+        run: echo "NEW_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Build source and wheel archives
-        id: build
-        run: poetry build
+        run: uv build
+
       - name: Get Commit Messages Since Last Tag
-        id: commit_messages
         run: |
           RELEASE_NOTES=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s")
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
@@ -127,14 +122,12 @@ jobs:
             - Automatically generated release for version **${{ env.NEW_VERSION }}**
             - Commit: ${{ github.sha }}
             - Triggered by push to branch `${{ github.ref_name }}`
-
           files: dist/*.whl
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
-      - name: Publish distribution 📦 to PyPI
-        if: "contains(github.event.head_commit.message, 'Auto-increment release version')"
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          repository_url: https://upload.pypi.org/legacy/
+      - name: Publish to PyPI
+        if: contains(github.event.head_commit.message, 'Auto-increment release version')
+        run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
