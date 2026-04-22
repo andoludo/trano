@@ -3918,12 +3918,12 @@ redeclare package Medium = Medium,
 ,
 AWal={ 20.0, 30.0, 50.0 },
 nOrientations=3,
-surAzi={ 0.0, 1.5707963267948966, 3.141592653589793 },
-surTil={ 1.5707963267948966, 1.5707963267948966, 1.5707963267948966 },
-UWal = 0.28958891519752616,
+surAzi={ 0.0, 1.5708, 3.14159 },
+surTil={ 1.5708, 1.5708, 1.5708 },
+UWal = 0.28959,
 
 AWin={ 5.0, 0.0, 2.0 },
-UWin=2.099296735593576,
+UWin=2.0993,
 UFlo=5.6,
 airRat=0.5,
 ARoo=0.0,
@@ -3953,12 +3953,12 @@ redeclare package Medium = Medium,
 ,
 AWal={ 25.0, 25.0, 34.0 },
 nOrientations=3,
-surAzi={ 0.0, 1.5707963267948966, 3.141592653589793 },
-surTil={ 1.5707963267948966, 1.5707963267948966, 1.5707963267948966 },
-UWal = 0.2162140728466331,
+surAzi={ 0.0, 1.5708, 3.14159 },
+surTil={ 1.5708, 1.5708, 1.5708 },
+UWal = 0.21621,
 
 AWin={ 5.0, 0.0, 2.0 },
-UWin=1.0734909431913526,
+UWin=1.07349,
 UFlo=5.6,
 airRat=0.5,
 ARoo=0.0,
@@ -3988,12 +3988,12 @@ redeclare package Medium = Medium,
 ,
 AWal={ 22.0, 17.0, 36.0 },
 nOrientations=3,
-surAzi={ 3.141592653589793, 3.141592653589793, 3.141592653589793 },
-surTil={ 1.5707963267948966, 1.5707963267948966, 1.5707963267948966 },
-UWal = 0.11666666666666665,
+surAzi={ 3.14159, 3.14159, 3.14159 },
+surTil={ 1.5708, 1.5708, 1.5708 },
+UWal = 0.11667,
 
 AWin={ 5.0, 5.0, 5.0 },
-UWin=2.099296735593576,
+UWin=2.0993,
 UFlo=5.6,
 airRat=0.5,
 ARoo=0.0,
@@ -4719,25 +4719,25 @@ Modelica.Blocks.Sources.RealExpression
             TCooSetControl_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_1
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_4
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_3
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
             TColSetControl_7
             (y=363.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_6
             (y=363.15);
-Modelica.Blocks.Sources.BooleanExpression
-            triggerControl_7
-            (y=true);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_1
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_3
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TAirOutControl_4
+            (y=0.0);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_6
+            (y=true);
+Modelica.Blocks.Sources.BooleanExpression
+            triggerControl_7
             (y=true);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -4759,20 +4759,20 @@ connect(dataBus.TZonSpace_002, TRoo[2].y);
 connect(dataBus.TZonSpace_003, TRoo[3].y);
 connect(dataBus.TCooSetSpace_002, 
     TCooSetControl_2.y);
-connect(dataBus.TCooSetSpace_001, 
-    TCooSetControl_1.y);
-connect(dataBus.TAirOutBoiler_001, 
-    TAirOutControl_4.y);
-connect(dataBus.TCooSetSpace_003, 
-    TCooSetControl_3.y);
 connect(dataBus.TColSetControl_7, 
     TColSetControl_7.y);
 connect(dataBus.TColSetControl_6, 
     TColSetControl_6.y);
-connect(dataBus.triggerControl_7, 
-    triggerControl_7.y);
+connect(dataBus.TCooSetSpace_001, 
+    TCooSetControl_1.y);
+connect(dataBus.TCooSetSpace_003, 
+    TCooSetControl_3.y);
+connect(dataBus.TAirOutBoiler_001, 
+    TAirOutControl_4.y);
 connect(dataBus.triggerControl_6, 
     triggerControl_6.y);
+connect(dataBus.triggerControl_7, 
+    triggerControl_7.y);
 
 
 

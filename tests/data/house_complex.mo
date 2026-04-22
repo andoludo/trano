@@ -6646,22 +6646,22 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control_002
+            TColSetControl_2
+            (y=363.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetEmission_control_004
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetEmission_control_001
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TColSetControl_2
-            (y=363.15);
-Modelica.Blocks.Sources.RealExpression
             TCooSetEmission_control_003
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control_004
+            TCooSetEmission_control_005
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetEmission_control_005
+            TCooSetEmission_control_002
             (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_2
@@ -6727,18 +6727,18 @@ connect(dataBus.ppmCO2Room_2_001, TRoo1[9].ppm);
 connect(dataBus.ppmCO2Room_3_001, TRoo1[10].ppm);
 connect(dataBus.ppmCO2Wc_001, TRoo1[11].ppm);
 connect(dataBus.ppmCO2Wc_002, TRoo1[12].ppm);
-connect(dataBus.TCooSetLiving_001,
-TCooSetEmission_control_002.y);
-connect(dataBus.TCooSetRoom_1_001,
-TCooSetEmission_control_001.y);
 connect(dataBus.TColSetControl_2,
 TColSetControl_2.y);
-connect(dataBus.TCooSetKitchen_001,
-TCooSetEmission_control_003.y);
 connect(dataBus.TCooSetRoom_2_001,
 TCooSetEmission_control_004.y);
+connect(dataBus.TCooSetRoom_1_001,
+TCooSetEmission_control_001.y);
+connect(dataBus.TCooSetKitchen_001,
+TCooSetEmission_control_003.y);
 connect(dataBus.TCooSetRoom_3_001,
 TCooSetEmission_control_005.y);
+connect(dataBus.TCooSetLiving_001,
+TCooSetEmission_control_002.y);
 connect(dataBus.triggerControl_2,
 triggerControl_2.y);
 

@@ -1,9 +1,8 @@
 from math import ceil
-from typing import ClassVar, Optional, Union, TYPE_CHECKING
+from typing import ClassVar, Optional, Union, TYPE_CHECKING, Annotated, Callable
 
 from networkx import Graph
-from pydantic import Field, BaseModel, model_validator
-
+from pydantic import Field, BaseModel, model_validator, AfterValidator
 
 from trano.elements.base import BaseElement
 from trano.elements.envelope import (
@@ -45,16 +44,25 @@ def _get_controllable_element(elements: list[System]) -> Optional["System"]:
     return controllable_elements[0]
 
 
+def _round_to(ndigits: int) -> Callable[[float], float]:
+    return lambda v: round(v, ndigits)
+
+
+Precision = Annotated[float, AfterValidator(_round_to(5))]
+
+
 class BoundaryParameter(BaseModel):
     number_orientations: int = 0
-    area_per_orientation: list[float] = Field(default_factory=lambda: [0.0])
-    average_resistance_external: float = Field(0.001)
-    average_resistance_external_remaining: float = Field(0.001)
-    total_thermal_capacitance: float = Field(10000)
-    tilts: list[float] = Field(default_factory=lambda: [0.0])
-    azimuths: list[float] = Field(default_factory=lambda: [0.0])
-    average_u_value: float = 0.001
-    total_thermal_resistance: float = 0.001
+    area_per_orientation: list[Precision] = Field(default_factory=lambda: [0.0])
+    average_resistance_external: Precision = Field(0.001)
+    average_resistance_external_remaining: Precision = Field(0.001)
+    total_thermal_capacitance: Precision = Field(10000)
+    tilts: list[Precision] = Field(default_factory=lambda: [0.0])
+    azimuths: list[Precision] = Field(default_factory=lambda: [0.0])
+    average_u_value: Precision = 0.001
+    total_thermal_resistance: Precision = 0.001
+
+    model_config = {"validate_assignment": True}  # round on attribute updates too
 
     @classmethod
     def from_parameter(cls, parameter: WallParameters) -> "BoundaryParameter":
