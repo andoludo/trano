@@ -25,9 +25,7 @@ class Figure(BaseModel):
 
         return self
 
-    def modify_key_based_on_container(
-        self, container: ContainerTypes, include_container: bool = True
-    ) -> "Figure":
+    def modify_key_based_on_container(self, container: ContainerTypes, include_container: bool = True) -> "Figure":
         if not include_container:
             return self
         for axis in self.right_axis.lines + self.left_axis.lines:

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Type, Union
+from typing import TYPE_CHECKING, Any, Union
 
 from buildingspy.io.outputfile import Reader  # type: ignore
 from jinja2 import Template
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from trano.reporting.reporting import ModelDocumentation
 
 
-def to_html_space(data: Dict[str, Any]) -> str:
+def to_html_space(data: dict[str, Any]) -> str:
     template = Template(
         """
     <!DOCTYPE html>
@@ -122,7 +122,7 @@ def to_html_space(data: Dict[str, Any]) -> str:
     return template.render(data=data)
 
 
-def to_html_system(data: Dict[str, Any]) -> str:
+def to_html_system(data: dict[str, Any]) -> str:
     template = Template(
         """
     <!DOCTYPE html>
@@ -188,7 +188,7 @@ def to_html_system(data: Dict[str, Any]) -> str:
     return template.render(data=data)
 
 
-def to_html_construction(data: Dict[str, Any]) -> str:
+def to_html_construction(data: dict[str, Any]) -> str:
     template = Template(
         """
     <!DOCTYPE html>
@@ -278,7 +278,7 @@ def get_figures(element_name: str, documentation: "ModelDocumentation") -> list:
         return plot_element(mat, element, plot_plot_ly)
 
 
-def get_description() -> Dict[str, Any]:
+def get_description() -> dict[str, Any]:
     from trano.elements import BaseParameter
 
     return {
@@ -290,15 +290,13 @@ def get_description() -> Dict[str, Any]:
 
 
 def _get_elements(
-    elements: List["BaseElement"],
-    element_type: Type[Union["Space", "System", "BaseSimpleWall", "BaseWall"]],
-) -> List["BaseElement"]:
+    elements: list["BaseElement"],
+    element_type: type[Union["Space", "System", "BaseSimpleWall", "BaseWall"]],
+) -> list["BaseElement"]:
     return [element for element in elements if isinstance(element, element_type)]
 
 
-def _dump_list_attributes(
-    element: "BaseElement", attribute_name: str, include_mapping: object
-) -> List[Dict[int, Any]]:
+def _dump_list_attributes(element: "BaseElement", attribute_name: str, include_mapping: object) -> list[dict[int, Any]]:
     datas = []
     for el in getattr(element, attribute_name):
         data = el.model_dump(
@@ -308,8 +306,6 @@ def _dump_list_attributes(
             include=include_mapping,
         )
         if el.parameters:
-            data["parameters"] = el.parameters.model_dump(
-                by_alias=True, exclude_none=True
-            )
+            data["parameters"] = el.parameters.model_dump(by_alias=True, exclude_none=True)
         datas.append(data)
     return datas

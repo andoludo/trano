@@ -1,6 +1,5 @@
 import re
 from pathlib import Path
-from typing import Set
 
 import pytest
 
@@ -79,9 +78,7 @@ def result_data_path() -> Path:
 
 @pytest.fixture
 def result_data_container_path() -> Path:
-    return Path(__file__).parent.joinpath(
-        "resources", "multiple_internal_walls_buildings.building_res.mat"
-    )
+    return Path(__file__).parent.joinpath("resources", "multiple_internal_walls_buildings.building_res.mat")
 
 
 @pytest.fixture
@@ -103,9 +100,7 @@ package MediumW = Buildings.Media.Water "Medium model";"""
 
 
 @pytest.fixture
-def buildings_free_float_single_zone(
-    simple_space_1_with_occupancy: Space, buildings_library: Library
-) -> Network:
+def buildings_free_float_single_zone(simple_space_1_with_occupancy: Space, buildings_library: Library) -> Network:
     network = Network(
         name="buildings_free_float_single_zone",
         library=buildings_library,
@@ -129,7 +124,6 @@ annotation (choicesAllMatching = true);"""
 
 @pytest.fixture
 def buildings_free_float_two_zones(buildings_library: Library) -> Network:
-
     network = Network(
         name="buildings_free_float_two_zones",
         library=buildings_library,
@@ -145,7 +139,6 @@ def buildings_free_float_three_zones_spaces() -> list:
 
 @pytest.fixture
 def ideas_free_float_three_zones_spaces() -> list:
-
     return three_spaces(occupancy=False)
 
 
@@ -214,9 +207,7 @@ def buildings_two_rooms_with_storage(space_1: Space, space_2: Space) -> Network:
     pump = Pump(
         name="pump",
         control=CollectorControl(name="pump_control"),
-        parameters=PumpParameters(
-            dp_nominal=dp_nominal, m_flow_nominal=mRad_flow_nominal
-        ),
+        parameters=PumpParameters(dp_nominal=dp_nominal, m_flow_nominal=mRad_flow_nominal),
     )
     boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
     split_valve = SplitValve(name="split_valve")
@@ -224,9 +215,7 @@ def buildings_two_rooms_with_storage(space_1: Space, space_2: Space) -> Network:
     three_way_valve = ThreeWayValve(
         name="three_way_valve",
         control=three_way_valve_control,
-        parameters=ThreeWayValveParameters(
-            m_flow_nominal=mRad_flow_nominal, dp_valve_nominal=dpThrWayVal_nominal
-        ),
+        parameters=ThreeWayValveParameters(m_flow_nominal=mRad_flow_nominal, dp_valve_nominal=dpThrWayVal_nominal),
     )
     temperature_sensor = TemperatureSensor(name="temperature_sensor")
     network.connect_systems(temperature_sensor, space_1.first_emission())
@@ -267,9 +256,7 @@ def buildings_simple_hydronic(space_1: Space) -> Network:
 
 
 @pytest.fixture
-def buildings_simple_hydronic_three_zones(
-    space_1: Space, space_2: Space, space_3: Space
-) -> Network:
+def buildings_simple_hydronic_three_zones(space_1: Space, space_2: Space, space_3: Space) -> Network:
     network = Network(name="buildings_simple_hydronic_three_zones")
     network.add_boiler_plate_spaces([space_1, space_2, space_3])
 
@@ -278,13 +265,9 @@ def buildings_simple_hydronic_three_zones(
     split_valve = SplitValve(name="split_valve")
     three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
     three_way_valve_control_2 = ThreeWayValveControl(name="three_way_valve_control_2")
-    three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=three_way_valve_control
-    )
+    three_way_valve = ThreeWayValve(name="three_way_valve", control=three_way_valve_control)
     split_valve_2 = SplitValve(name="split_valve_2")
-    three_way_valve_2 = ThreeWayValve(
-        name="three_way_valve_2", control=three_way_valve_control_2
-    )
+    three_way_valve_2 = ThreeWayValve(name="three_way_valve_2", control=three_way_valve_control_2)
     temperature_sensor = TemperatureSensor(name="temperature_sensor")
     temperature_sensor_2 = TemperatureSensor(name="temperature_sensor_2")
     network.connect_systems(temperature_sensor, space_1.first_emission())
@@ -320,9 +303,7 @@ def buildings_simple_hydronic_three_zones(
 
 
 @pytest.fixture
-def ideas_simple_hydronic_three_zones(
-    space_1: Space, space_2: Space, space_3: Space
-) -> Network:
+def ideas_simple_hydronic_three_zones(space_1: Space, space_2: Space, space_3: Space) -> Network:
     network = Network(
         name="ideas_simple_hydronic_three_zones",
         library=Library.from_configuration("IDEAS"),
@@ -334,13 +315,9 @@ def ideas_simple_hydronic_three_zones(
     split_valve = SplitValve(name="split_valve")
     three_way_valve_control_2 = ThreeWayValveControl(name="three_way_valve_control_2")
     three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
-    three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=three_way_valve_control
-    )
+    three_way_valve = ThreeWayValve(name="three_way_valve", control=three_way_valve_control)
     split_valve_2 = SplitValve(name="split_valve_2")
-    three_way_valve_2 = ThreeWayValve(
-        name="three_way_valve_2", control=three_way_valve_control_2
-    )
+    three_way_valve_2 = ThreeWayValve(name="three_way_valve_2", control=three_way_valve_control_2)
     temperature_sensor = TemperatureSensor(name="temperature_sensor")
     temperature_sensor_2 = TemperatureSensor(name="temperature_sensor_2")
     network.connect_systems(temperature_sensor, space_1.first_emission())
@@ -377,7 +354,6 @@ def ideas_simple_hydronic_three_zones(
 
 @pytest.fixture
 def space_1_no_occupancy() -> Space:
-
     return space_1_no_occupancy_fixture()
 
 
@@ -393,9 +369,7 @@ def ideas_simple_hydronic_no_occupancy(space_1_no_occupancy: Space) -> Network:
     boiler = Boiler(name="boiler", control=BoilerControl(name="boiler_control"))
     split_valve = SplitValve(name="split_valve")
     three_way_valve_control = ThreeWayValveControl(name="three_way_valve_control")
-    three_way_valve = ThreeWayValve(
-        name="three_way_valve", control=three_way_valve_control
-    )
+    three_way_valve = ThreeWayValve(name="three_way_valve", control=three_way_valve_control)
     temperature_sensor = TemperatureSensor(name="temperature_sensor")
     network.connect_systems(temperature_sensor, space_1_no_occupancy.first_emission())
     network.connect_systems(three_way_valve, temperature_sensor)
@@ -448,9 +422,7 @@ def space_1_different_construction_types() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.test_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,
@@ -488,7 +460,6 @@ def space_1_simple_ventilation() -> Space:
 
 @pytest.fixture
 def space_2_simple_ventilation() -> Space:
-
     return space_2_simple_ventilation_fixture()
 
 
@@ -506,23 +477,13 @@ def ideas_many_spaces_simple_ventilation(
         name="ideas_many_spaces_simple_ventilation",
         library=ideas,
     )
-    network.add_boiler_plate_spaces(
-        [space_1_simple_ventilation, space_2_simple_ventilation]
-    )
+    network.add_boiler_plate_spaces([space_1_simple_ventilation, space_2_simple_ventilation])
     ahu = AirHandlingUnit(name="ahu")
-    network.connect_systems(
-        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
+    network.connect_systems(ahu, space_1_simple_ventilation.get_last_ventilation_inlet())
+    network.connect_systems(space_1_simple_ventilation.get_last_ventilation_outlet(), ahu)
 
-    network.connect_systems(
-        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
+    network.connect_systems(ahu, space_2_simple_ventilation.get_last_ventilation_inlet())
+    network.connect_systems(space_2_simple_ventilation.get_last_ventilation_outlet(), ahu)
     return network
 
 
@@ -536,23 +497,13 @@ def many_spaces_simple_ventilation(
         name="many_spaces_simple_ventilation",
         library=buildings_library,
     )
-    network.add_boiler_plate_spaces(
-        [space_1_simple_ventilation, space_2_simple_ventilation]
-    )
+    network.add_boiler_plate_spaces([space_1_simple_ventilation, space_2_simple_ventilation])
     ahu = AirHandlingUnit(name="ahu")
-    network.connect_systems(
-        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
+    network.connect_systems(ahu, space_1_simple_ventilation.get_last_ventilation_inlet())
+    network.connect_systems(space_1_simple_ventilation.get_last_ventilation_outlet(), ahu)
 
-    network.connect_systems(
-        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
+    network.connect_systems(ahu, space_2_simple_ventilation.get_last_ventilation_inlet())
+    network.connect_systems(space_2_simple_ventilation.get_last_ventilation_outlet(), ahu)
     return network
 
 
@@ -629,12 +580,8 @@ def buildings_free_float_single_zone_ahu_complex(
             ],
         ),
     )
-    network.connect_systems(
-        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
+    network.connect_systems(ahu, space_1_simple_ventilation.get_last_ventilation_inlet())
+    network.connect_systems(space_1_simple_ventilation.get_last_ventilation_outlet(), ahu)
     network.connect_elements(boundary, ahu)
     weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
     network.connect_elements(boundary, weather)
@@ -654,9 +601,7 @@ def space_1_simple_ventilation_vav_control() -> Space:
 
 
 @pytest.fixture
-def vav_ventilation_control(
-    space_1_simple_ventilation_vav_control: Space, buildings_library: Library
-) -> Network:
+def vav_ventilation_control(space_1_simple_ventilation_vav_control: Space, buildings_library: Library) -> Network:
     network = Network(
         name="vav_ventilation_control",
         library=buildings_library,
@@ -664,9 +609,7 @@ def vav_ventilation_control(
     boundary = Boundary(name="boundary")
     network.add_boiler_plate_spaces([space_1_simple_ventilation_vav_control])
     ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
-    network.connect_systems(
-        ahu, space_1_simple_ventilation_vav_control.get_last_ventilation_inlet()
-    )
+    network.connect_systems(ahu, space_1_simple_ventilation_vav_control.get_last_ventilation_inlet())
     network.connect_systems(space_1_simple_ventilation_vav_control, ahu)
     network.connect_elements(boundary, ahu)
     weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
@@ -675,22 +618,15 @@ def vav_ventilation_control(
 
 
 @pytest.fixture
-def one_spaces_air_handling_unit(
-    space_1_simple_ventilation: Space, buildings_library: Library
-) -> Network:
-
+def one_spaces_air_handling_unit(space_1_simple_ventilation: Space, buildings_library: Library) -> Network:
     network = Network(
         name="one_spaces_air_handling_unit",
         library=buildings_library,
     )
     network.add_boiler_plate_spaces([space_1_simple_ventilation])
     ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
-    network.connect_systems(
-        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
+    network.connect_systems(ahu, space_1_simple_ventilation.get_last_ventilation_inlet())
+    network.connect_systems(space_1_simple_ventilation.get_last_ventilation_outlet(), ahu)
     boundary = Boundary(name="boundary")
     network.connect_elements(boundary, ahu)
     weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
@@ -704,27 +640,16 @@ def two_spaces_air_handling_unit(
     space_2_simple_ventilation: Space,
     buildings_library: Library,
 ) -> Network:
-
     network = Network(
         name="two_spaces_air_handling_unit",
         library=buildings_library,
     )
-    network.add_boiler_plate_spaces(
-        [space_1_simple_ventilation, space_2_simple_ventilation]
-    )
+    network.add_boiler_plate_spaces([space_1_simple_ventilation, space_2_simple_ventilation])
     ahu = AirHandlingUnit(name="ahu", control=AhuControl(name="ahu_control"))
-    network.connect_systems(
-        ahu, space_1_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        ahu, space_2_simple_ventilation.get_last_ventilation_inlet()
-    )
-    network.connect_systems(
-        space_1_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
-    network.connect_systems(
-        space_2_simple_ventilation.get_last_ventilation_outlet(), ahu
-    )
+    network.connect_systems(ahu, space_1_simple_ventilation.get_last_ventilation_inlet())
+    network.connect_systems(ahu, space_2_simple_ventilation.get_last_ventilation_inlet())
+    network.connect_systems(space_1_simple_ventilation.get_last_ventilation_outlet(), ahu)
+    network.connect_systems(space_2_simple_ventilation.get_last_ventilation_outlet(), ahu)
     boundary = Boundary(name="boundary")
     network.connect_elements(boundary, ahu)
     weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
@@ -747,9 +672,7 @@ def space_with_door() -> Network:
     return network
 
 
-def building_with_multiple_internal_walls(
-    network_name: str, library: Library = None
-) -> Network:
+def building_with_multiple_internal_walls(network_name: str, library: Library = None) -> Network:
     space_1 = Space(
         name="space_1",
         parameters=SpaceParameter(floor_area=11.3, average_room_height=3.75),
@@ -829,11 +752,7 @@ def remove_annotation(model: str) -> str:
 
 def remove_trano_package(model: str) -> str:
     for annotation in re.findall(r"package Trano(.*?)end Trano;", model, re.DOTALL):
-        model = (
-            model.replace(annotation, "")
-            .replace("package Trano", "")
-            .replace("end Trano;", "")
-        )
+        model = model.replace(annotation, "").replace("package Trano", "").replace("end Trano;", "")
     return model
 
 
@@ -846,23 +765,17 @@ def clean_model(model: str, model_name: str) -> set:
     model_ = remove_annotation(model)
     return {
         line
-        for line in set(
-            model_.replace("record", ";").replace(f"model{model_name}", "").split(";")
-        )
+        for line in set(model_.replace("record", ";").replace(f"model{model_name}", "").split(";"))
         if "ReaderTMY3weather" not in line
     }
 
 
-def _read(file_name: str) -> Set:
+def _read(file_name: str) -> set:
     return {
         line
         for line in set(
             remove_annotation(
-                remove_trano_package(
-                    Path(__file__)
-                    .parent.joinpath("data", f"{file_name}.mo")
-                    .read_text()
-                )
+                remove_trano_package(Path(__file__).parent.joinpath("data", f"{file_name}.mo").read_text())
             )
             .replace("record", ";")
             .replace(f"model{file_name}", "")
@@ -874,9 +787,7 @@ def _read(file_name: str) -> Set:
 
 @pytest.fixture
 def schema() -> Path:
-    return (
-        Path(__file__).parents[1].joinpath("trano", "data_models", "trano_final.yaml")
-    )
+    return Path(__file__).parents[1].joinpath("trano", "data_models", "trano_final.yaml")
 
 
 @pytest.fixture

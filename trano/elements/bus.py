@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import List, Optional, TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 import pandas as pd
 from pydantic import BaseModel, Field, computed_field
@@ -15,16 +15,16 @@ if TYPE_CHECKING:
 
 
 class ValidationData(BaseModel):
-    data: Optional[str] = None
-    columns: List[str] = Field([])
+    data: str | None = None
+    columns: list[str] = Field([])
 
 
 class DataBus(BaseElement):
     name: str = "data_bus"
-    spaces: List[str] = Field(default=[])
-    non_connected_ports: List[BaseInputOutput] = Field(default=[])
-    power_ports: List[BaseInputOutput] = Field(default=[])
-    external_data: Optional[Path] = None
+    spaces: list[str] = Field(default=[])
+    non_connected_ports: list[BaseInputOutput] = Field(default=[])
+    power_ports: list[BaseInputOutput] = Field(default=[])
+    external_data: Path | None = None
     container_type: ContainerTypes = "bus"
 
     @computed_field
@@ -68,13 +68,10 @@ class DataBus(BaseElement):
         self.power_ports = get_power_ports(network.graph.nodes)
 
 
-def get_power_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
+def get_power_ports(nodes: list[NodeView]) -> list[BaseInputOutput]:
     power_ports = []
     for node in nodes:
-        if not (
-            hasattr(node, "component_template")
-            and hasattr(node.component_template, "bus")
-        ):
+        if not (hasattr(node, "component_template") and hasattr(node.component_template, "bus")):
             continue
         if node.component_template and node.component_template.bus:
             node_ports = node.component_template.bus.list_ports(node)
@@ -82,19 +79,14 @@ def get_power_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
     return power_ports
 
 
-def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
+def get_non_connected_ports(nodes: list[NodeView]) -> list[BaseInputOutput]:
     port_types = ["Real", "Integer", "Boolean"]
-    ports: Dict[str, List[BaseInputOutput]] = {
-        f"{port_type}{direction}": []
-        for port_type in port_types
-        for direction in ["Output", "Input"]
+    ports: dict[str, list[BaseInputOutput]] = {
+        f"{port_type}{direction}": [] for port_type in port_types for direction in ["Output", "Input"]
     }
 
     for node in nodes:
-        if not (
-            hasattr(node, "component_template")
-            and hasattr(node.component_template, "bus")
-        ):
+        if not (hasattr(node, "component_template") and hasattr(node.component_template, "bus")):
             continue
         if node.component_template and node.component_template.bus:
             node_ports = node.component_template.bus.list_ports(node)
@@ -109,9 +101,7 @@ def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
     return list(
         itertools.chain(
             *[
-                _get_non_connected_ports_intersection(
-                    ports[f"{port_type}Input"], ports[f"{port_type}Output"]
-                )
+                _get_non_connected_ports_intersection(ports[f"{port_type}Input"], ports[f"{port_type}Output"])
                 for port_type in port_types
             ]
         )
@@ -119,14 +109,12 @@ def get_non_connected_ports(nodes: List[NodeView]) -> List[BaseInputOutput]:
 
 
 def _get_non_connected_ports_intersection(
-    input_ports: List[BaseInputOutput], output_ports: List[BaseInputOutput]
-) -> List[BaseInputOutput]:
+    input_ports: list[BaseInputOutput], output_ports: list[BaseInputOutput]
+) -> list[BaseInputOutput]:
     return list(set(input_ports) - set(output_ports).intersection(set(input_ports)))
 
 
-def transform_csv_to_table(
-    file_path: Path, total_second: bool = True
-) -> ValidationData:
+def transform_csv_to_table(file_path: Path, total_second: bool = True) -> ValidationData:
     data = pd.read_csv(file_path, index_col=0, infer_datetime_format=True)  # type: ignore
     data = data.ffill().bfill()
     data = data.dropna(axis=1)

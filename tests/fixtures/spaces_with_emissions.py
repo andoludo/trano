@@ -39,9 +39,7 @@ def space_1_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,
@@ -93,9 +91,7 @@ def space_2_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_3", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_3", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_2",
                 surface=1,
@@ -107,9 +103,7 @@ def space_2_fixture() -> Space:
             ),
         ],
         emissions=[
-            Valve(
-                name="valve_2", control=EmissionControl(name="emission_valve_control_2")
-            ),
+            Valve(name="valve_2", control=EmissionControl(name="emission_valve_control_2")),
             Radiator(name="emission_2"),
         ],
     )
@@ -149,9 +143,7 @@ def space_3_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_4", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_4", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_3",
                 surface=1,
@@ -163,9 +155,7 @@ def space_3_fixture() -> Space:
             ),
         ],
         emissions=[
-            Valve(
-                name="valve_3", control=EmissionControl(name="emission_valve_control_3")
-            ),
+            Valve(name="valve_3", control=EmissionControl(name="emission_valve_control_3")),
             Radiator(name="emission_3"),
         ],
     )
@@ -204,9 +194,7 @@ def space_1_no_occupancy_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,
@@ -258,9 +246,7 @@ def space_1_ideal_heating_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,

@@ -159,9 +159,7 @@ def test_simulate_two_spaces_air_handling_unit(
 @pytest.mark.simulate
 def test_simulate_house_model(house_model: Network) -> None:
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path), house_model, options=SimulationOptions(end_time=3600)
-        )
+        results = simulate(Path(project_path), house_model, options=SimulationOptions(end_time=3600))
         assert is_success(results)
 
 
@@ -208,9 +206,7 @@ def test_simulate_space_1_ideal_heating_network(
 @pytest.mark.simulate
 def test_three_zones_hydronic(schema: Path, library_name: str) -> None:
     house = get_path("three_zones_hydronic.yaml")
-    network = convert_network(
-        "three_zones_hydronic", house, library=Library.from_configuration(library_name)
-    )
+    network = convert_network("three_zones_hydronic", house, library=Library.from_configuration(library_name))
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         results = simulate(
             Path(project_path),
@@ -252,9 +248,7 @@ def test_single_zone_air_handling_unit_simple_vav_control(schema: Path) -> None:
     network = convert_network("single_zone_air_handling_unit_simple_vav_control", house)
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        options = SimulationOptions(
-            end_time=3600, check_only=True
-        )  # TODO: why simulation fails
+        options = SimulationOptions(end_time=3600, check_only=True)  # TODO: why simulation fails
         results = simulate(
             Path(project_path),
             network,
@@ -280,9 +274,7 @@ def test_single_zone_air_handling_unit_complex_vav(schema: Path) -> None:
 def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> None:
     house = get_path("single_zone_air_handling_unit_without_vav_with_duct.yaml")
     # TODO: remove ducts here
-    network = convert_network(
-        "single_zone_air_handling_unit_without_vav_with_duct", house
-    )
+    network = convert_network("single_zone_air_handling_unit_without_vav_with_duct", house)
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         options = SimulationOptions(end_time=3600, check_only=True)

@@ -3938,8 +3938,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     AExt={ 20.0, 30.0, 50.0 },
     hConExt=2.7,
     nExt=1,
-    RExt={ 1.726585424234744 },
-    RExtRem=1.726585424234744,
+    RExt={ 1.72659 },
+    RExtRem=1.72659,
     CExt={ 24971200.0 },
 
     AInt=0,
@@ -3951,8 +3951,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     AFloor=120.0,
     hConFloor=2.7,
     nFloor=1,
-    RFloor={ 0.08928571428571429 },
-    RFloorRem=0.08928571428571429,
+    RFloor={ 0.08929 },
+    RFloorRem=0.08929,
     CFloor={ 60480000.0 },
 
     ARoof=0.0,
@@ -3974,8 +3974,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     hConWinOut=20.0,
     hConRoofOut=20,
     hRadRoof=5,
-    tiltExtWalls={ 1.5707963267948966, 1.5707963267948966, 1.5707963267948966 },
-    aziExtWalls={ 0.0, 1.5707963267948966, 3.141592653589793 },
+    tiltExtWalls={ 1.5708, 1.5708, 1.5708 },
+    aziExtWalls={ 0.0, 1.5708, 3.14159 },
     wfWall={ 0.2, 0.2, 0.2 },
     wfWin={ 0.25, 0.25, 0.25 },
     wfGro=0.1,
@@ -4142,8 +4142,8 @@ TThresholdCooler=273.15 + 22,
     AExt={ 25.0, 25.0, 34.0 },
     hConExt=2.7,
     nExt=1,
-    RExt={ 2.3125229242347443 },
-    RExtRem=2.3125229242347443,
+    RExt={ 2.31252 },
+    RExtRem=2.31252,
     CExt={ 20978850.144 },
 
     AInt=0,
@@ -4155,8 +4155,8 @@ TThresholdCooler=273.15 + 22,
     AFloor=60.0,
     hConFloor=2.7,
     nFloor=1,
-    RFloor={ 0.08928571428571429 },
-    RFloorRem=0.08928571428571429,
+    RFloor={ 0.08929 },
+    RFloorRem=0.08929,
     CFloor={ 30240000.0 },
 
     ARoof=0.0,
@@ -4178,8 +4178,8 @@ TThresholdCooler=273.15 + 22,
     hConWinOut=20.0,
     hConRoofOut=20,
     hRadRoof=5,
-    tiltExtWalls={ 1.5707963267948966, 1.5707963267948966, 1.5707963267948966 },
-    aziExtWalls={ 0.0, 1.5707963267948966, 3.141592653589793 },
+    tiltExtWalls={ 1.5708, 1.5708, 1.5708 },
+    aziExtWalls={ 0.0, 1.5708, 3.14159 },
     wfWall={ 0.2, 0.2, 0.2 },
     wfWin={ 0.25, 0.25, 0.25 },
     wfGro=0.1,
@@ -4346,8 +4346,8 @@ TThresholdCooler=273.15 + 22,
     AExt={ 22.0, 17.0, 36.0 },
     hConExt=2.7,
     nExt=1,
-    RExt={ 4.285714285714286 },
-    RExtRem=4.285714285714286,
+    RExt={ 4.28571 },
+    RExtRem=4.28571,
     CExt={ 45000000.0 },
 
     AInt=0,
@@ -4359,8 +4359,8 @@ TThresholdCooler=273.15 + 22,
     AFloor=60.0,
     hConFloor=2.7,
     nFloor=1,
-    RFloor={ 0.08928571428571429 },
-    RFloorRem=0.08928571428571429,
+    RFloor={ 0.08929 },
+    RFloorRem=0.08929,
     CFloor={ 30240000.0 },
 
     ARoof=0.0,
@@ -4382,8 +4382,8 @@ TThresholdCooler=273.15 + 22,
     hConWinOut=20.0,
     hConRoofOut=20,
     hRadRoof=5,
-    tiltExtWalls={ 1.5707963267948966, 1.5707963267948966, 1.5707963267948966 },
-    aziExtWalls={ 3.141592653589793, 3.141592653589793, 3.141592653589793 },
+    tiltExtWalls={ 1.5708, 1.5708, 1.5708 },
+    aziExtWalls={ 3.14159, 3.14159, 3.14159 },
     wfWall={ 0.2, 0.2, 0.2 },
     wfWin={ 0.25, 0.25, 0.25 },
     wfGro=0.1,
@@ -5194,25 +5194,25 @@ Modelica.Blocks.Sources.RealExpression
             TCooSetControl_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_1
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_4
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_3
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
             TColSetControl_7
             (y=363.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_6
             (y=363.15);
-Modelica.Blocks.Sources.BooleanExpression
-            triggerControl_7
-            (y=true);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_1
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_3
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TAirOutControl_4
+            (y=0.0);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_6
+            (y=true);
+Modelica.Blocks.Sources.BooleanExpression
+            triggerControl_7
             (y=true);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -5234,20 +5234,20 @@ connect(dataBus.TZonSpace_002, TRoo[2].y);
 connect(dataBus.TZonSpace_003, TRoo[3].y);
 connect(dataBus.TCooSetSpace_002, 
     TCooSetControl_2.y);
-connect(dataBus.TCooSetSpace_001, 
-    TCooSetControl_1.y);
-connect(dataBus.TAirOutBoiler_001, 
-    TAirOutControl_4.y);
-connect(dataBus.TCooSetSpace_003, 
-    TCooSetControl_3.y);
 connect(dataBus.TColSetControl_7, 
     TColSetControl_7.y);
 connect(dataBus.TColSetControl_6, 
     TColSetControl_6.y);
-connect(dataBus.triggerControl_7, 
-    triggerControl_7.y);
+connect(dataBus.TCooSetSpace_001, 
+    TCooSetControl_1.y);
+connect(dataBus.TCooSetSpace_003, 
+    TCooSetControl_3.y);
+connect(dataBus.TAirOutBoiler_001, 
+    TAirOutControl_4.y);
 connect(dataBus.triggerControl_6, 
     triggerControl_6.y);
+connect(dataBus.triggerControl_7, 
+    triggerControl_7.y);
 
 
 

@@ -3269,10 +3269,25 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.0174,
-      c=522.0,
-      rho=1.66,
+extends Modelica.Icons.MaterialPropertiesPackage;    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
+      epsLw=0.88,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=800.0,
+      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
@@ -3284,38 +3299,18 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Bu
       c=800.0,
       rho=1920.0,
       epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
-      epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
-      epsLw=0.88,
       epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=900.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
+      epsSw=0.55);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.0174,
+      c=522.0,
+      rho=1.66,
       epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;      record concreteslab_001
+package Constructions "Library of building envelope constructions"      record concreteslab_001
     "concreteslab_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.concrete_001
@@ -3329,7 +3324,12 @@ package Constructions "Library of building envelope constructions"      record i
         (d=0.1),multizone_air_handling_unit_space_connected_ideas.Data.Materials.brickhollow_001
         (d=0.14),multizone_air_handling_unit_space_connected_ideas.Data.Materials.gypsum_001
         (d=0.015)    });
-    end cavitywall_001;
+    end cavitywall_001;      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;
 end Constructions;
 end Data;
 
@@ -4070,10 +4070,25 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.0174,
-      c=522.0,
-      rho=1.66,
+extends Modelica.Icons.MaterialPropertiesPackage;    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
+      epsLw=0.88,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=800.0,
+      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
@@ -4085,38 +4100,18 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Bu
       c=800.0,
       rho=1920.0,
       epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
-      epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
-      epsLw=0.88,
       epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=900.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
+      epsSw=0.55);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.0174,
+      c=522.0,
+      rho=1.66,
       epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;      record concreteslab_001
+package Constructions "Library of building envelope constructions"      record concreteslab_001
     "concreteslab_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.concrete_001
@@ -4130,7 +4125,12 @@ package Constructions "Library of building envelope constructions"      record i
         (d=0.1),multizone_air_handling_unit_space_connected_ideas.Data.Materials.brickhollow_001
         (d=0.14),multizone_air_handling_unit_space_connected_ideas.Data.Materials.gypsum_001
         (d=0.015)    });
-    end cavitywall_001;
+    end cavitywall_001;      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;
 end Constructions;
 end Data;
 

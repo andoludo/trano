@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 import pytest
 import yaml
@@ -24,7 +24,7 @@ from trano.topology import Network
 
 
 @pytest.fixture
-def vav_library_data() -> Dict[str, Any]:
+def vav_library_data() -> dict[str, Any]:
     libraries_data = {
         "components": [
             {
@@ -336,7 +336,7 @@ def vav_library_data() -> Dict[str, Any]:
     return libraries_data
 
 
-def test_dynamic_template_vav(vav_library_data: Dict[str, Any]) -> None:
+def test_dynamic_template_vav(vav_library_data: dict[str, Any]) -> None:
     vav_library = LibraryData.model_validate(vav_library_data["components"][1])
     vav_control_library = LibraryData.model_validate(vav_library_data["components"][0])
     vav = VAV(variant="complex", libraries_data=[vav_library])
@@ -347,9 +347,7 @@ def test_dynamic_template_vav(vav_library_data: Dict[str, Any]) -> None:
     library = Library.load_default()
     vav.assign_library_property(library)
     vav_control.assign_library_property(library)
-    rendered_template = vav.component_template.render(
-        "test", vav, vav.processed_parameters(library)
-    )
+    rendered_template = vav.component_template.render("test", vav, vav.processed_parameters(library))
     vav_control_template = vav_control.component_template.render(
         "test", vav_control, vav_control.processed_parameters(library)
     )
@@ -465,9 +463,7 @@ def simple_space_template() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,
@@ -482,19 +478,13 @@ def simple_space_template() -> Space:
 
 
 def test_dynamic_template_power_input() -> None:
-    pump_yaml = (
-        Path(__file__)
-        .parents[1]
-        .joinpath("trano", "elements", "library", "models", "default", "pump.yaml")
-    )
+    pump_yaml = Path(__file__).parents[1].joinpath("trano", "elements", "library", "models", "default", "pump.yaml")
     pump_library = LibraryData.model_validate(yaml.safe_load(pump_yaml.read_text())[0])
     pump_control = CollectorControl(name="test")
     pump = Pump(libraries_data=[pump_library], control=pump_control)
     library = Library.load_default()
     pump.assign_library_property(library)
-    rendered_template = pump.component_template.render(
-        "test", pump, pump.processed_parameters(library)
-    )
+    rendered_template = pump.component_template.render("test", pump, pump.processed_parameters(library))
     power_port = get_power_ports([pump])
     assert power_port
     assert rendered_template == (
@@ -541,17 +531,12 @@ def test_reduced_order_single_zone(simple_space_template: Space) -> None:
         include_container=True,
     )
     assert model
-    assert {
-        c.equation_view()
-        for c in network.containers.get_container("envelope").connections
-    } == {
+    assert {c.equation_view() for c in network.containers.get_container("envelope").connections} == {
         ("occupancy_0.y", "space_1.intGains"),
         ("space_1.TAir", "y[1]"),
         ("space_1.weaBus", "weather_0.weaBus"),
     }
-    assert {
-        c.equation_view() for c in network.containers.get_container("bus").connections
-    } == {
+    assert {c.equation_view() for c in network.containers.get_container("bus").connections} == {
         ("dataBus", "data_bus.dataBus"),
         ("data_bus.term_p", "term_p"),
         ("data_bus.u[1]", "u[1]"),

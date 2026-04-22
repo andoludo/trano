@@ -106,15 +106,9 @@ material_9 = Material(
     epsLw=0.85,
     epsSw=0.65,
 )
-material_10 = Material(
-    name="material_10", k=0.3, c=880, rho=850, epsLw=0.88, epsSw=0.55
-)
-material_11 = Material(
-    name="material_11", k=0.89, c=800, rho=1920, epsLw=0.88, epsSw=0.55
-)
-material_12 = Material(
-    name="material_12", k=1.4, c=840, rho=2100, epsLw=0.88, epsSw=0.55
-)
+material_10 = Material(name="material_10", k=0.3, c=880, rho=850, epsLw=0.88, epsSw=0.55)
+material_11 = Material(name="material_11", k=0.89, c=800, rho=1920, epsLw=0.88, epsSw=0.55)
+material_12 = Material(name="material_12", k=1.4, c=840, rho=2100, epsLw=0.88, epsSw=0.55)
 Construction_1 = Construction(
     name="Construction_1",
     layers=[
@@ -252,18 +246,10 @@ space_2 = Space(
 space_3 = Space(
     emissions=[
         Valve(control=EmissionControl()),
-        Radiator(
-            parameters=RadiatorParameter(
-                nominal_heating_power_positive_for_heating=4000
-            )
-        ),
+        Radiator(parameters=RadiatorParameter(nominal_heating_power_positive_for_heating=4000)),
     ],
     name="space_3",
-    occupancy=Occupancy(
-        parameters=OccupancyParameters(
-            occupancy="3600*{0.1,2,15,24}", heat_gain_if_occupied="0.15"
-        )
-    ),
+    occupancy=Occupancy(parameters=OccupancyParameters(occupancy="3600*{0.1,2,15,24}", heat_gain_if_occupied="0.15")),
     parameters=SpaceParameter(floor_area=11.3, average_room_height=2.4),
     external_boundaries=[
         FloorOnGround(
@@ -291,19 +277,11 @@ space_3 = Space(
 space_4 = Space(
     emissions=[
         Valve(control=EmissionControl()),
-        Radiator(
-            parameters=RadiatorParameter(
-                nominal_heating_power_positive_for_heating=4000
-            )
-        ),
+        Radiator(parameters=RadiatorParameter(nominal_heating_power_positive_for_heating=4000)),
     ],
     name="space_4",
-    occupancy=Occupancy(
-        parameters=OccupancyParameters(occupancy="3600*{9, 12, 17,22}")
-    ),
-    parameters=SpaceParameter(
-        floor_area=27.11, average_room_height=3.7, temperature_initial=273.15 + 26
-    ),
+    occupancy=Occupancy(parameters=OccupancyParameters(occupancy="3600*{9, 12, 17,22}")),
+    parameters=SpaceParameter(floor_area=27.11, average_room_height=3.7, temperature_initial=273.15 + 26),
     external_boundaries=[
         FloorOnGround(
             surface=27.11,
@@ -346,11 +324,7 @@ space_4 = Space(
 space_5 = Space(
     emissions=[
         Valve(control=EmissionControl()),
-        Radiator(
-            parameters=RadiatorParameter(
-                nominal_heating_power_positive_for_heating=4000
-            )
-        ),
+        Radiator(parameters=RadiatorParameter(nominal_heating_power_positive_for_heating=4000)),
     ],
     name="space_5",
     occupancy=Occupancy(),
@@ -387,11 +361,7 @@ space_5 = Space(
 space_6 = Space(
     emissions=[
         Valve(control=EmissionControl()),
-        Radiator(
-            parameters=RadiatorParameter(
-                nominal_heating_power_positive_for_heating=4000
-            )
-        ),
+        Radiator(parameters=RadiatorParameter(nominal_heating_power_positive_for_heating=4000)),
     ],
     name="space_6",
     occupancy=Occupancy(),
@@ -541,11 +511,7 @@ def house_model_fixture() -> Network:
         create_internal=False,
         weather=Weather(
             parameters=param_from_config("Weather")(
-                path=str(
-                    Path(__file__).parents[1]
-                    / "resources"
-                    / "BEL_VLG_Uccle.064470_TMYx.2007-2021.mos"
-                )
+                path=str(Path(__file__).parents[1] / "resources" / "BEL_VLG_Uccle.064470_TMYx.2007-2021.mos")
             )
         ),
     )

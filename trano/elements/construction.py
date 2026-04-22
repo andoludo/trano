@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader
 from networkx.classes.reportviews import NodeView
@@ -15,19 +15,11 @@ if TYPE_CHECKING:
 class Material(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     name: str
-    thermal_conductivity: float = Field(
-        ..., title="Thermal conductivity [W/(m.K)]", alias="k"
-    )
-    specific_heat_capacity: float = Field(
-        ..., title="Specific thermal capacity [J/(kg.K)]", alias="c"
-    )
+    thermal_conductivity: float = Field(..., title="Thermal conductivity [W/(m.K)]", alias="k")
+    specific_heat_capacity: float = Field(..., title="Specific thermal capacity [J/(kg.K)]", alias="c")
     density: float = Field(..., title="Density [kg/m3]", alias="rho")
-    longwave_emissivity: float = Field(
-        0.85, title="Longwave emissivity [1]", alias="epsLw"
-    )
-    shortwave_emissivity: float = Field(
-        0.65, title="Shortwave emissivity [1]", alias="epsSw"
-    )
+    longwave_emissivity: float = Field(0.85, title="Longwave emissivity [1]", alias="epsLw")
+    shortwave_emissivity: float = Field(0.65, title="Shortwave emissivity [1]", alias="epsSw")
 
     def __hash__(self) -> int:
         return hash(self.name)
@@ -64,11 +56,7 @@ class Layer(BaseModel):
     @computed_field  # type: ignore
     @property
     def thermal_capacitance(self) -> float:
-        return (
-            self.thickness
-            * self.material.specific_heat_capacity
-            * self.material.density
-        )
+        return self.thickness * self.material.specific_heat_capacity * self.material.density
 
 
 # TODO: Add units
@@ -128,7 +116,7 @@ class GasLayer(Layer):
 
 class Glass(BaseConstruction):
     name: str
-    layers: List[GlassLayer | GasLayer]  # type: ignore
+    layers: list[GlassLayer | GasLayer]  # type: ignore
     u_value_frame: float
 
     def __hash__(self) -> int:
@@ -143,14 +131,14 @@ class Glass(BaseConstruction):
 
 
 class BaseData(BaseModel):
-    template: Optional[str] = None
-    constructions: List[Union[Construction, Material, Glass]]
+    template: str | None = None
+    constructions: list[Construction | Material | Glass]
 
 
 class ConstructionData(BaseModel):
-    constructions: List[Construction]
-    materials: List[Material]
-    glazing: List[Glass]
+    constructions: list[Construction]
+    materials: list[Material]
+    glazing: list[Glass]
 
 
 class BaseConstructionData(BaseModel):
@@ -163,12 +151,10 @@ class BaseConstructionData(BaseModel):
         environment = Environment(
             trim_blocks=True,
             lstrip_blocks=True,
-            loader=FileSystemLoader(
-                str(Path(__file__).parents[1].joinpath("templates"))
-            ),
+            loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
             autoescape=True,
         )
-        models: Dict[str, List[str]] = {
+        models: dict[str, list[str]] = {
             "material": [],
             "construction": [],
             "glazing": [],
@@ -177,16 +163,11 @@ class BaseConstructionData(BaseModel):
             construction_type = getattr(self, construction_type_name)
             for construction in construction_type.constructions:
                 template = environment.from_string(
-                    "{% import 'macros.jinja2' as macros %}"
-                    + construction_type.template
+                    "{% import 'macros.jinja2' as macros %}" + construction_type.template
                 )
-                model = template.render(
-                    construction=construction, package_name=package_name
-                )
+                model = template.render(construction=construction, package_name=package_name)
                 models[construction_type_name].append(model)
-        template = environment.from_string(
-            "{% import 'macros.jinja2' as macros %}" + self.template
-        )
+        template = environment.from_string("{% import 'macros.jinja2' as macros %}" + self.template)
         model = template.render(**models, package_name=package_name)
         return model
 
@@ -196,26 +177,17 @@ class MaterialProperties(BaseProperties):
 
 
 class BaseTemplateData(BaseModel):
-    template: Optional[str] = None
-    constructions: List[Union[Construction, Material, Glass]]
+    template: str | None = None
+    constructions: list[Construction | Material | Glass]
 
 
 def default_construction(nodes: NodeView) -> ConstructionData:
     from trano.elements.envelope import BaseSimpleWall
 
-    constructions = {
-        node.construction
-        for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]
-    }
-    wall_constructions = sorted(
-        [c for c in constructions if isinstance(c, Construction)], key=lambda x: x.name
-    )
-    glazing = sorted(
-        [c for c in constructions if isinstance(c, Glass)], key=lambda x: x.name
-    )
-    return ConstructionData(
-        constructions=wall_constructions, materials=[], glazing=glazing
-    )
+    constructions = {node.construction for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]}
+    wall_constructions = sorted([c for c in constructions if isinstance(c, Construction)], key=lambda x: x.name)
+    glazing = sorted([c for c in constructions if isinstance(c, Glass)], key=lambda x: x.name)
+    return ConstructionData(constructions=wall_constructions, materials=[], glazing=glazing)
 
 
 def merged_construction(nodes: NodeView) -> ConstructionData:
@@ -227,52 +199,24 @@ def merged_construction(nodes: NodeView) -> ConstructionData:
         for node in [node_ for node_ in nodes if isinstance(node_, MergedBaseWall)]
         for construction in node.constructions
     }
-    constructions = {
-        node.construction
-        for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]
-    }
+    constructions = {node.construction for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]}
     merged_constructions.update(constructions)
-    wall_constructions = [
-        c for c in merged_constructions if isinstance(c, Construction)
-    ]
+    wall_constructions = [c for c in merged_constructions if isinstance(c, Construction)]
     glazing = [c for c in merged_constructions if isinstance(c, Glass)]
-    materials = {
-        layer.material
-        for construction in merged_constructions
-        for layer in construction.layers
-    }
-    return ConstructionData(
-        constructions=wall_constructions, materials=list(materials), glazing=glazing
-    )
+    materials = {layer.material for construction in merged_constructions for layer in construction.layers}
+    return ConstructionData(constructions=wall_constructions, materials=list(materials), glazing=glazing)
 
 
-def extract_data(
-    package_name: str, nodes: NodeView, library: "Library"
-) -> MaterialProperties:
-
-    data = (
-        merged_construction(nodes)
-        if library.merged_external_boundaries
-        else default_construction(nodes)
-    )
+def extract_data(package_name: str, nodes: NodeView, library: "Library") -> MaterialProperties:
+    data = merged_construction(nodes) if library.merged_external_boundaries else default_construction(nodes)
     data_ = BaseConstructionData(
         template=library.templates.main,
-        construction=BaseData(
-            constructions=data.constructions, template=library.templates.construction
-        ),
-        glazing=BaseData(
-            constructions=data.glazing, template=library.templates.glazing
-        ),
-        material=BaseData(
-            constructions=data.materials, template=library.templates.material
-        ),
+        construction=BaseData(constructions=data.constructions, template=library.templates.construction),
+        glazing=BaseData(constructions=data.glazing, template=library.templates.glazing),
+        material=BaseData(constructions=data.materials, template=library.templates.material),
     )
-    return MaterialProperties(
-        data=data_.generate_data(package_name), is_package=library.templates.is_package
-    )
+    return MaterialProperties(data=data_.generate_data(package_name), is_package=library.templates.is_package)
 
 
-def extract_properties(
-    library: "Library", package_name: str, nodes: NodeView
-) -> MaterialProperties:
+def extract_properties(library: "Library", package_name: str, nodes: NodeView) -> MaterialProperties:
     return extract_data(package_name, nodes, library)

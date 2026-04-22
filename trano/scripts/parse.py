@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import yaml
 
@@ -17,7 +17,7 @@ import yaml
 # parser(material_folders, glazing_folder, construction_folder) # noqa : ERA001
 
 
-def parse_materials(input_str: str) -> List[Dict[str, Any]]:
+def parse_materials(input_str: str) -> list[dict[str, Any]]:
     pattern = re.compile(
         r"(IDEAS\.Buildings\.Data\.Materials\.\w+|Materials\.\w+)"
         r"\(d=([\d.]+)(?:,epsLw_a=([\d.]+))?(?:,epsLw_b=([\d.]+))?\)"
@@ -41,7 +41,7 @@ def parse_materials(input_str: str) -> List[Dict[str, Any]]:
     return materials
 
 
-def parse_gas_and_material(input_str: str) -> Dict[str, Any]:
+def parse_gas_and_material(input_str: str) -> dict[str, Any]:
     pattern = r"record\s+(.*?)\s*\""
     match = re.search(pattern, input_str, re.DOTALL)
 
@@ -98,9 +98,9 @@ def parse_gas_and_material(input_str: str) -> Dict[str, Any]:
     return materials[0]
 
 
-def material_parser(folders: List[Path]) -> Dict[str, Any]:
+def material_parser(folders: list[Path]) -> dict[str, Any]:
     mo_files = [file for folder in folders for file in list(folder.glob("**/*.mo"))]
-    materials: Dict[str, List[Dict[str, Any]]] = {
+    materials: dict[str, list[dict[str, Any]]] = {
         "gas": [],
         "material": [],
         "glass_material": [],
@@ -114,12 +114,12 @@ def material_parser(folders: List[Path]) -> Dict[str, Any]:
                 materials["gas"].append(results)
             else:
                 materials["material"].append(results)
-        except Exception as e:  # noqa: PERF203
+        except Exception as e:
             print(f"Material {file.stem} cannot be generated. Reason {e}")
     return materials
 
 
-def parse_glazing(input_str: str) -> Dict[str, Any]:
+def parse_glazing(input_str: str) -> dict[str, Any]:
     pattern = re.compile(
         r"record\s+(\w+)\s*=\s*IDEAS\.Buildings\.Data\.Interfaces\.Glazing\s*\(\s*"
         r"final\s+nLay\s*=\s*(\d+),\s*"
@@ -164,21 +164,19 @@ def parse_glazing(input_str: str) -> Dict[str, Any]:
     return glazing_dict
 
 
-def glazing_parser(folder: Path) -> List[Dict[str, Any]]:
+def glazing_parser(folder: Path) -> list[dict[str, Any]]:
     mo_files = list(folder.glob("*.mo"))
     glazing = []
     for f in mo_files:
         try:
             record = parse_glazing(f.read_text())
-            glazing.append(
-                {"layers": record["mats"], "id": record["id"].upper() + ":001"}
-            )
-        except Exception as e:  # noqa: PERF203
+            glazing.append({"layers": record["mats"], "id": record["id"].upper() + ":001"})
+        except Exception as e:
             print(f"Glazing {f.stem} cannot be generated. Reason {e}")
     return glazing
 
 
-def parse_constructions(input_str: str) -> List[Dict[str, Any]]:
+def parse_constructions(input_str: str) -> list[dict[str, Any]]:
     pattern = re.compile(
         r'record\s+(\w+)\s*"([^"]*)"\s*'
         r"extends\s+IDEAS\.Buildings\.Data\.Interfaces\.Construction\s*\(\s*"
@@ -187,9 +185,7 @@ def parse_constructions(input_str: str) -> List[Dict[str, Any]]:
         r"mats\s*=\s*\{([^}]*)\}\s*\)\s*;"
     )
 
-    material_pattern = re.compile(
-        r"IDEAS\.Buildings\.Data\.(Materials|Insulation)\.(\w+)\(d=([\d.]+)\)"
-    )
+    material_pattern = re.compile(r"IDEAS\.Buildings\.Data\.(Materials|Insulation)\.(\w+)\(d=([\d.]+)\)")
 
     matches = pattern.findall(input_str)
     if not matches:
@@ -205,9 +201,7 @@ def parse_constructions(input_str: str) -> List[Dict[str, Any]]:
         for material_match in material_matches:
             material_name = material_match[1]
             thickness = float(material_match[2])
-            materials.append(
-                {"material": material_name.upper() + ":001", "thickness": thickness}
-            )
+            materials.append({"material": material_name.upper() + ":001", "thickness": thickness})
 
         construction_dict = {
             "id": record_name.upper() + ":001",
@@ -218,21 +212,19 @@ def parse_constructions(input_str: str) -> List[Dict[str, Any]]:
     return constructions
 
 
-def construction_parser(folder: Path) -> List[Dict[str, Any]]:
+def construction_parser(folder: Path) -> list[dict[str, Any]]:
     mo_files = list(folder.glob("*.mo"))
     constructions = []
     for f in mo_files:
         try:
             record = parse_constructions(f.read_text())
             constructions.extend(record)
-        except Exception as e:  # noqa: PERF203
+        except Exception as e:
             print(f"Construction cannot be generated. Reason {e}")
     return constructions
 
 
-def parser(
-    material_folders: List[Path], glazing_folder: Path, construction_folder: Path
-) -> None:
+def parser(material_folders: list[Path], glazing_folder: Path, construction_folder: Path) -> None:
     materials = material_parser(material_folders)
     constructions = construction_parser(construction_folder)
     glazing = glazing_parser(glazing_folder)

@@ -1,5 +1,3 @@
-from typing import Optional, Tuple
-
 from pydantic import BaseModel, Field, ConfigDict
 
 from trano.elements.types import ContainerTypes
@@ -17,8 +15,8 @@ class MandatoryPoint(BaseModel):
 
 
 class Point(BaseModel):
-    x: Optional[float] = None
-    y: Optional[float] = None
+    x: float | None = None
+    y: float | None = None
 
     def is_valid(self) -> bool:
         return self.x is not None and self.y is not None
@@ -39,14 +37,12 @@ class ElementPosition(BaseModel):
         self.annotation = """annotation (
     Placement(transformation(origin = {{ macros.join_list(element.position.container.coordinate()) }},
     extent = {% raw %}{{ #size#, -#size#}, {-#size#, #size#}}
-    {% endraw %})));""".replace(
-            "#size#", str(size)
-        )  # TODO: lazy hack..
+    {% endraw %})));""".replace("#size#", str(size))  # TODO: lazy hack..
 
     def is_empty(self) -> bool:
         return not self.location.is_valid()
 
-    def coordinate(self) -> Tuple[float, float]:
+    def coordinate(self) -> tuple[float, float]:
         return self.location.c_.x, self.location.c_.y
 
 
@@ -105,9 +101,7 @@ class BasePosition(BaseModel):
         self.set_global(x, y)
         self.set_container(x, y)
 
-    def between_two_objects(
-        self, position_1: ElementPosition, position_2: ElementPosition
-    ) -> None:
+    def between_two_objects(self, position_1: ElementPosition, position_2: ElementPosition) -> None:
         self.set(
             (position_1.location.c_.x - position_2.location.c_.x) / 2,
             (position_1.location.c_.y + position_2.location.c_.y) / 2,
@@ -130,8 +124,8 @@ class BaseParameter(BaseModel):
 
 
 class MediumTemplate(BaseModel):
-    air: Optional[str] = None
-    water: Optional[str] = None
+    air: str | None = None
+    water: str | None = None
 
     def is_empty(self) -> bool:
         return self.air is None or self.water is None

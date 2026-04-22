@@ -36,9 +36,7 @@ def simple_space_1_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,

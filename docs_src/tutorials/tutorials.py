@@ -78,18 +78,14 @@ key parameters."""
                 as shown below. As the configuration file contains only the building envelope information, only the
                 envelope sub-component is generated"""
             ),
-            DisplayImage(
-                title="Building components", path="./img/first_simulation_2.jpg"
-            ),
+            DisplayImage(title="Building components", path="./img/first_simulation_2.jpg"),
             CleanedText(
                 content="""Opening the envelope subcomponents, one can see the different base components and 
                 information
                 constituting the building envelope model. From this point on, the user can modify the model 
                 as needed."""
             ),
-            DisplayImage(
-                title="Envelope components", path="./img/first_simulation_3.jpg"
-            ),
+            DisplayImage(title="Envelope components", path="./img/first_simulation_3.jpg"),
             TitleText(content="Simulate"),
             CleanedText(
                 content="""The following code snippet can be used to directly simulate the model after generation.
@@ -144,9 +140,7 @@ key parameters."""
                 adding few lines in the
                 configuration file. This tutorial shows how to generate a model for a three-zone building."""
             ),
-            CleanedText(
-                content="""The configuration below shows the yaml file describing a three-zone building."""
-            ),
+            CleanedText(content="""The configuration below shows the yaml file describing a three-zone building."""),
             DisplayObject(
                 language="yaml",
                 object=tutorial_path.joinpath("multi_zones.yaml"),
@@ -164,9 +158,7 @@ key parameters."""
                 order building component
                 from the AIXLIB library."""
             ),
-            DisplayImage(
-                title="Envelope components using IDEAS", path="./img/multi_zones.jpg"
-            ),
+            DisplayImage(title="Envelope components using IDEAS", path="./img/multi_zones.jpg"),
         ],
     ),
     Tutorial(
@@ -519,16 +511,12 @@ key parameters."""
     Tutorial(
         title="Zone with ventilation",
         contents=[
-            CleanedText(
-                content="""The following tutorial shows how to add a ventilation to the building model."""
-            ),
+            CleanedText(content="""The following tutorial shows how to add a ventilation to the building model."""),
             DisplayObject(
                 language="yaml",
                 object=tutorial_path.joinpath("zone_with_ventilation.yaml"),
             ),
-            CleanedText(
-                content="""This time we are going to use zone models based on the ISO 13790."""
-            ),
+            CleanedText(content="""This time we are going to use zone models based on the ISO 13790."""),
             CommentCodeObject(
                 language="python",
                 function_name="test_ventilation",
@@ -539,24 +527,18 @@ key parameters."""
                 ventilation is 
                 displayed."""
             ),
-            DisplayImage(
-                title="Envelope components using IDEAS", path="./img/ventilation_1.jpg"
-            ),
+            DisplayImage(title="Envelope components using IDEAS", path="./img/ventilation_1.jpg"),
             CleanedText(
                 content="""Opening the ventilation component, one can find the different components related to 
                 the ventilation system."""
             ),
-            DisplayImage(
-                title="Envelope components using IDEAS", path="./img/ventilation_2.jpg"
-            ),
+            DisplayImage(title="Envelope components using IDEAS", path="./img/ventilation_2.jpg"),
         ],
     ),
     Tutorial(
         title="Zone with photovoltaics",
         contents=[
-            CleanedText(
-                content="""The following tutorial shows how to add PVs to buildings."""
-            ),
+            CleanedText(content="""The following tutorial shows how to add PVs to buildings."""),
             DisplayObject(
                 language="yaml",
                 object=tutorial_path.joinpath("multizones_with_pv.yaml"),
@@ -570,15 +552,9 @@ key parameters."""
                 content="""The figure below shows the model generated in which the subcomponent related to PV is 
                 added to the already seen components."""
             ),
-            DisplayImage(
-                title="Envelope components using IDEAS", path="./img/pv_1.jpg"
-            ),
-            CleanedText(
-                content="""Opening the solar component, one can find the defined PVs assigned on the model."""
-            ),
-            DisplayImage(
-                title="Envelope components using IDEAS", path="./img/pv_2.jpg"
-            ),
+            DisplayImage(title="Envelope components using IDEAS", path="./img/pv_1.jpg"),
+            CleanedText(content="""Opening the solar component, one can find the defined PVs assigned on the model."""),
+            DisplayImage(title="Envelope components using IDEAS", path="./img/pv_2.jpg"),
         ],
     ),
 ]
@@ -586,11 +562,7 @@ key parameters."""
 
 def gen_docs() -> None:
     for tutorial in TUTORIALS:
-        tutorial.write(
-            Path(__file__)
-            .parents[2]
-            .joinpath("docs", "tutorials", f"{tutorial.name()}.md")
-        )
+        tutorial.write(Path(__file__).parents[2].joinpath("docs", "tutorials", f"{tutorial.name()}.md"))
 
 
 if __name__ == "__main__":

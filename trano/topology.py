@@ -2,7 +2,7 @@ import itertools
 import logging
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Type, cast
+from typing import Optional, cast
 
 import networkx as nx
 from jinja2 import Environment, FileSystemLoader
@@ -40,10 +40,8 @@ from trano.exceptions import SystemsNotConnectedError
 logger = logging.getLogger(__name__)
 
 
-def all_subclasses(cls: Type[BaseElement]) -> List[Type[BaseElement]]:
-    return cls.__subclasses__() + [
-        g for s in cls.__subclasses__() for g in all_subclasses(s)
-    ]
+def all_subclasses(cls: type[BaseElement]) -> list[type[BaseElement]]:
+    return cls.__subclasses__() + [g for s in cls.__subclasses__() for g in all_subclasses(s)]
 
 
 def reset_element_names() -> None:
@@ -75,20 +73,20 @@ class Network:  # : PLR0904, #TODO: fix this
     def __init__(
         self,
         name: str,
-        library: Optional[Library] = None,
-        external_data: Optional[Path] = None,
-        diagram_scale: Optional[int] = None,
+        library: Library | None = None,
+        external_data: Path | None = None,
+        diagram_scale: int | None = None,
     ) -> None:
         reset_element_names()
         self.graph: DiGraph = DiGraph()
-        self.edge_attributes: List[Connection] = []
+        self.edge_attributes: list[Connection] = []
         self.name: str = name
-        self._system_controls: List[Control] = []
+        self._system_controls: list[Control] = []
         self.library = library or Library.load_default()
         self.external_data = external_data
         self.containers = containers_factory()
         self.diagram_scale = diagram_scale or 1000
-        self.dynamic_components: Dict[DynamicTemplateCategories, List[str]] = {
+        self.dynamic_components: dict[DynamicTemplateCategories, list[str]] = {
             "ventilation": [],
             "control": [],
             "boiler": [],
@@ -98,35 +96,26 @@ class Network:  # : PLR0904, #TODO: fix this
     def diagram_size(self) -> str:
         return f"{{{{{-50},{-50}}},{{{self.diagram_scale},{self.diagram_scale}}}}}"
 
-    def get_node(self, element: Type[BaseElement]) -> Optional[BaseElement]:
+    def get_node(self, element: type[BaseElement]) -> BaseElement | None:
         element_node = [node for node in self.graph.nodes if isinstance(node, element)]
         if element_node:
             return element_node[0]
         return None
 
-    def get_edge(
-        self, first_edge: Type[BaseElement], second_edge: Type[BaseElement]
-    ) -> Connection:
+    def get_edge(self, first_edge: type[BaseElement], second_edge: type[BaseElement]) -> Connection:
         return cast(
             Connection,
             next(
                 edge
                 for edge in self.graph.edges
                 if (
-                    (
-                        isinstance(edge[0], first_edge)
-                        and isinstance(edge[1], second_edge)
-                    )
-                    or (
-                        isinstance(edge[1], first_edge)
-                        and isinstance(edge[0], second_edge)
-                    )
+                    (isinstance(edge[0], first_edge) and isinstance(edge[1], second_edge))
+                    or (isinstance(edge[1], first_edge) and isinstance(edge[0], second_edge))
                 )
             ),
         )
 
     def add_node(self, node: BaseElement) -> None:
-
         if not node.libraries_data:
             return
             # TODO: check better option here!!
@@ -136,21 +125,17 @@ class Network:  # : PLR0904, #TODO: fix this
 
         if node not in self.graph.nodes:
             self.graph.add_node(node)
-        if (isinstance(node, System) and node.control) and (
-            node.control not in self.graph.nodes
-        ):
+        if (isinstance(node, System) and node.control) and (node.control not in self.graph.nodes):
             node_control = node.control
             if not node_control.libraries_data:
-                raise Exception(
-                    f"No library data defined for NOde of type {type(node).__name__}"
-                )
+                raise Exception(f"No library data defined for NOde of type {type(node).__name__}")
             node_control.assign_library_property(self.library)
             self.graph.add_node(node_control)
             self.graph.add_edge(node, node_control)
             node_control.controllable_element = node
 
-    def _add_subsequent_systems(self, systems: List[System]) -> None:
-        for system1, system2 in zip(systems[:-1], systems[1:]):
+    def _add_subsequent_systems(self, systems: list[System]) -> None:
+        for system1, system2 in zip(systems[:-1], systems[1:], strict=False):  # noqa: RUF007
             if not self.graph.has_node(system1):  # type: ignore
                 self.add_node(system1)
             if not self.graph.has_node(system2):  # type: ignore
@@ -164,9 +149,7 @@ class Network:  # : PLR0904, #TODO: fix this
         self,
         space_1: "Space",
         space_2: "Space",
-        internal_element: Optional[
-            "InternalElement"
-        ] = None,  # TODO: this should not be optional
+        internal_element: Optional["InternalElement"] = None,  # TODO: this should not be optional
     ) -> None:
         internal_element = internal_element or InternalElement(
             name=f"internal_{space_1.name}_{space_2.name}",
@@ -177,9 +160,7 @@ class Network:  # : PLR0904, #TODO: fix this
         )
         if space_1.position.is_global_empty() or space_2.position.is_global_empty():
             raise Exception("Position not assigned to spaces")
-        internal_element.position.between_two_objects(
-            space_1.position.global_, space_2.position.global_
-        )
+        internal_element.position.between_two_objects(space_1.position.global_, space_2.position.global_)
 
         self.add_node(internal_element)
         self.graph.add_edge(
@@ -206,7 +187,6 @@ class Network:  # : PLR0904, #TODO: fix this
         self.graph.add_edge(element_1, element_2)
 
     def connect_systems(self, system_1: System, system_2: System) -> None:
-
         if system_1 not in self.graph.nodes:
             self.add_node(system_1)
             if system_1.control:
@@ -223,12 +203,8 @@ class Network:  # : PLR0904, #TODO: fix this
                     self.add_node(system_2.control)
                     self._system_controls.append(system_2.control)
                 self.graph.add_edge(system_2, system_2.control)
-        if (
-            isinstance(system_2, ThreeWayValve)
-            and isinstance(system_1, TemperatureSensor)
-        ) or (
-            isinstance(system_1, ThreeWayValve)
-            and isinstance(system_2, TemperatureSensor)
+        if (isinstance(system_2, ThreeWayValve) and isinstance(system_1, TemperatureSensor)) or (
+            isinstance(system_1, ThreeWayValve) and isinstance(system_2, TemperatureSensor)
         ):
             if system_2.control:
                 self.graph.add_edge(system_2.control, system_1)
@@ -237,15 +213,12 @@ class Network:  # : PLR0904, #TODO: fix this
         self.graph.add_edge(system_1, system_2)
 
     def connect_edges(
-        self, edge: Tuple[BaseElement, BaseElement]  # :  PLR6301
+        self,
+        edge: tuple[BaseElement, BaseElement],  # :  PLR6301
     ) -> list[Connection]:
-        connection = connect(
-            ElementPort.from_element(edge[0]), ElementPort.from_element(edge[1])
-        )
+        connection = connect(ElementPort.from_element(edge[0]), ElementPort.from_element(edge[1]))
         if not connection:
-            logger.warning(
-                f"Connection not possible between {edge[0].name} and {edge[1].name}"
-            )
+            logger.warning(f"Connection not possible between {edge[0].name} and {edge[1].name}")
         return connection
 
     def merge_spaces(self, space_1: "Space", space_2: "Space") -> None:
@@ -268,44 +241,31 @@ class Network:  # : PLR0904, #TODO: fix this
         for node in self.graph.nodes:
             node.set_position(global_position)
             if node.container_type and container_positions[node.container_type]:
-                node.set_position(
-                    container_positions[node.container_type], global_=False
-                )
+                node.set_position(container_positions[node.container_type], global_=False)
 
     def connect(self) -> None:
-
         data_buses = [bus for bus in list(self.graph.nodes) if isinstance(bus, DataBus)]
 
         data_bus = data_buses[0] if data_buses else None
         new_edges = [edge for edge in self.graph.edges if data_bus not in edge]
         edge_with_databus = [edge for edge in self.graph.edges if data_bus in edge]
         edges_with_bus_without_space = [
-            edge
-            for edge in edge_with_databus
-            if not any(isinstance(e, Space) for e in edge)
+            edge for edge in edge_with_databus if not any(isinstance(e, Space) for e in edge)
         ]
         edges_with_bus_with_space = sorted(
-            [
-                edge
-                for edge in edge_with_databus
-                if any(isinstance(e, Space) for e in edge)
-            ],
+            [edge for edge in edge_with_databus if any(isinstance(e, Space) for e in edge)],
             key=lambda e_: next(e for e in e_ if isinstance(e, Space)).name,
         )
         # Sorting is necessary here since we need to keep the
         # same index for the same space indatabus
         # TODO: not sure where to put this!!!!
-        for edge in (
-            new_edges + edges_with_bus_without_space + edges_with_bus_with_space
-        ):
+        for edge in new_edges + edges_with_bus_without_space + edges_with_bus_with_space:
             self.edge_attributes += self.connect_edges(edge)
 
     def set_weather_path_to_container_path(self, project_path: Path) -> None:
         for node in self.graph.nodes:
             if (
-                isinstance(node, Weather)
-                and hasattr(node.parameters, "path")
-                and node.parameters.path is not None  # type: ignore
+                isinstance(node, Weather) and hasattr(node.parameters, "path") and node.parameters.path is not None  # type: ignore
             ):
                 # TODO: type ognore needs to be fixed
                 old_path = Path(node.parameters.path).resolve()  # type: ignore
@@ -322,9 +282,7 @@ class Network:  # : PLR0904, #TODO: fix this
                 # TODO: this is not correct
                 node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
-    def model(
-        self, include_container: bool = True, data_bus: Optional[DataBus] = None
-    ) -> str:
+    def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
         Space.counter = 0
         for node in self.graph.nodes:
             node.assign_container_type(self)
@@ -386,7 +344,7 @@ class Network:  # : PLR0904, #TODO: fix this
         self,
         spaces: list[Space],
         create_internal: bool = True,
-        weather: Optional[Weather] = None,
+        weather: Weather | None = None,
     ) -> None:
         for space in spaces:
             space.add_to_network(self)

@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from pydantic import computed_field
 
 from trano.elements.common_base import BaseParameter
@@ -12,7 +10,7 @@ class ControlParameters(BaseParameter): ...
 
 
 class VAVControl(Control):
-    ahu: Optional[BaseElement] = None
+    ahu: BaseElement | None = None
 
 
 class ThreeWayValveControl(Control): ...
@@ -22,16 +20,16 @@ class EmissionControl(Control): ...
 
 
 class CollectorControl(Control):
-    valves: Optional[List[Valve]] = None
+    valves: list[Valve] | None = None
 
 
 class BoilerControl(Control):
-    pumps: Optional[List[Pump]] = None
+    pumps: list[Pump] | None = None
 
 
 class AhuControl(Control):
-    spaces: Optional[List[Space]] = None
-    vavs: Optional[List[VAV]] = None
+    spaces: list[Space] | None = None
+    vavs: list[VAV] | None = None
 
     @computed_field
     def zon_gro_mat(self) -> str:

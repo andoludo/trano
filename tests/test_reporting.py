@@ -39,9 +39,7 @@ def test_reporting_generate_html(
             conclusions="results",
         ),
     )
-    reporting = ModelDocumentation.from_network(
-        buildings_two_rooms_with_storage, content
-    )
+    reporting = ModelDocumentation.from_network(buildings_two_rooms_with_storage, content)
     html = to_html_reporting(reporting)
     assert html
 

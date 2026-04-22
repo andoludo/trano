@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from buildingspy.io.outputfile import Reader  # type: ignore
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -24,9 +24,7 @@ class HtmlDoc(BaseModel):
         return self
 
 
-def to_html(
-    documentation: BaseDocumentation, html_doc: Optional[HtmlDoc] = None
-) -> str:
+def to_html(documentation: BaseDocumentation, html_doc: HtmlDoc | None = None) -> str:
     html_doc = html_doc or HtmlDoc()
     if not documentation.table:
         return ""
@@ -61,7 +59,7 @@ def to_html_reporting(documentation: ModelDocumentation) -> str:
         space = [s for s in documentation.elements if isinstance(s, Space)]
         if documentation.result:
             mat = Reader(documentation.result.path, documentation.result.type)
-            for figures in list(zip(*[s.figures for s in space])):
+            for figures in list(zip(*[s.figures for s in space], strict=False)):
                 figures_plotly = plot_plot_ly_many(mat, list(figures), show=False)
                 if figures_plotly:
                     html_doc.doc.asis(figures_plotly.to_html())

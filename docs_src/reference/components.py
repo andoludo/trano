@@ -5,9 +5,7 @@ import yaml
 
 def write_components() -> None:
     components_text = ""
-    components = (
-        Path(__file__).parents[2].joinpath("trano", "elements", "models").glob("*.yaml")
-    )
+    components = Path(__file__).parents[2].joinpath("trano", "elements", "models").glob("*.yaml")
     classes = {}
     for component in components:
         components_ = yaml.safe_load(component.read_text())["components"]
@@ -39,9 +37,7 @@ The following template is used for this component:
 ```
 \n
 """
-    Path(__file__).parents[2].joinpath("docs/reference/components.md").write_text(
-        components_text
-    )
+    Path(__file__).parents[2].joinpath("docs/reference/components.md").write_text(components_text)
 
 
 if __name__ == "__main__":

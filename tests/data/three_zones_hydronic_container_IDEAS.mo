@@ -3872,39 +3872,6 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 
 package Glazing "Library of building glazing systems"
 extends Modelica.Icons.MaterialPropertiesPackage;
-    record  ins2ar2020_001 = IDEAS.Buildings.Data.Interfaces.Glazing (
-          final nLay=3,
-      final checkLowPerformanceGlazing=false,
-          mats={three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
-        (d=0.006),three_zones_hydronic_container_IDEAS.Data.Materials.argon_001
-        (d=0.016),three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
-        (d=0.006)    },
-    final SwTrans=[0, 0.721;
-                    10, 0.720;
-                    20, 0.718;
-                    30, 0.711;
-                    40, 0.697;
-                    50, 0.665;
-                    60, 0.596;
-                    70, 0.454;
-                    80, 0.218;
-                    90, 0.000],
-      final SwAbs=[0, 0.082, 0, 0.062;
-                  10, 0.082, 0, 0.062;
-                  20, 0.084, 0, 0.063;
-                  30, 0.086, 0, 0.065;
-                  40, 0.090, 0, 0.067;
-                  50, 0.094, 0, 0.068;
-                  60, 0.101, 0, 0.067;
-                  70, 0.108, 0, 0.061;
-                  80, 0.112, 0, 0.045;
-                  90, 0.000, 0, 0.000],
-      final SwTransDif=0.619,
-      final SwAbsDif={0.093, 0,  0.063},
-      final U_value=2.9,
-      final g_value=0.78
-
-    ) "three_zones_hydronic_container_IDEAS";
     record  epcdouble_001 = IDEAS.Buildings.Data.Interfaces.Glazing (
           final nLay=3,
       final checkLowPerformanceGlazing=false,
@@ -3938,28 +3905,81 @@ extends Modelica.Icons.MaterialPropertiesPackage;
       final g_value=0.78
 
     ) "three_zones_hydronic_container_IDEAS";
+    record  ins2ar2020_001 = IDEAS.Buildings.Data.Interfaces.Glazing (
+          final nLay=3,
+      final checkLowPerformanceGlazing=false,
+          mats={three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
+        (d=0.006),three_zones_hydronic_container_IDEAS.Data.Materials.argon_001
+        (d=0.016),three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
+        (d=0.006)    },
+    final SwTrans=[0, 0.721;
+                    10, 0.720;
+                    20, 0.718;
+                    30, 0.711;
+                    40, 0.697;
+                    50, 0.665;
+                    60, 0.596;
+                    70, 0.454;
+                    80, 0.218;
+                    90, 0.000],
+      final SwAbs=[0, 0.082, 0, 0.062;
+                  10, 0.082, 0, 0.062;
+                  20, 0.084, 0, 0.063;
+                  30, 0.086, 0, 0.065;
+                  40, 0.090, 0, 0.067;
+                  50, 0.094, 0, 0.068;
+                  60, 0.101, 0, 0.067;
+                  70, 0.108, 0, 0.061;
+                  80, 0.112, 0, 0.045;
+                  90, 0.000, 0, 0.000],
+      final SwTransDif=0.619,
+      final SwAbsDif={0.093, 0,  0.063},
+      final U_value=2.9,
+      final g_value=0.78
+
+    ) "three_zones_hydronic_container_IDEAS";
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.0256,
+      c=1006.0,
+      rho=1.2,
+      epsLw=0.88,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
+      epsLw=0.88,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.035,
       c=800.0,
       rho=100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.38,
+      c=840.0,
+      rho=1120.0,
       epsLw=0.88,
       epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.89,
       c=800.0,
       rho=1920.0,
       epsLw=0.88,
+      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=1000.0,
+      rho=2000.0,
+      epsLw=0.88,
       epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=900.0,
       rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=1000.0,
-      rho=2000.0,
       epsLw=0.88,
       epsSw=0.55);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0174,
@@ -3971,33 +3991,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record rockwool_001 = IDEAS
       c=1000.0,
       rho=2000.0,
       epsLw=0.88,
-      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.0256,
-      c=1006.0,
-      rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
-      epsLw=0.88,
-      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.38,
-      c=840.0,
-      rho=1120.0,
-      epsLw=0.88,
-      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.55);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.035,
       c=1000.0,
       rho=2000.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record construction_001
+package Constructions "Library of building envelope constructions"      record cavitywallpartialfill_001
+    "cavitywallpartialfill_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
+        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.air_001
+        (d=0.03),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
+        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
+        (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
+        (d=0.015)    });
+    end cavitywallpartialfill_001;      record cavitywall_001
+    "cavitywall_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
+        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
+        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
+        (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
+        (d=0.015)    });
+    end cavitywall_001;      record construction_001
     "construction_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.material_001
@@ -4010,24 +4027,7 @@ package Constructions "Library of building envelope constructions"      record c
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.concrete_001
         (d=0.125),three_zones_hydronic_container_IDEAS.Data.Materials.concrete_001
         (d=0.125)    });
-    end concreteslab_001;      record cavitywall_001
-    "cavitywall_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
-        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
-        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
-        (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
-        (d=0.015)    });
-    end cavitywall_001;      record cavitywallpartialfill_001
-    "cavitywallpartialfill_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
-        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.air_001
-        (d=0.03),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
-        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
-        (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
-        (d=0.015)    });
-    end cavitywallpartialfill_001;
+    end concreteslab_001;
 end Constructions;
 end Data;
 
@@ -5103,25 +5103,25 @@ Modelica.Blocks.Sources.RealExpression
             TCooSetControl_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_1
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_4
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_3
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
             TColSetControl_7
             (y=363.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_6
             (y=363.15);
-Modelica.Blocks.Sources.BooleanExpression
-            triggerControl_7
-            (y=true);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_1
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_3
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TAirOutControl_4
+            (y=0.0);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_6
+            (y=true);
+Modelica.Blocks.Sources.BooleanExpression
+            triggerControl_7
             (y=true);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -5150,20 +5150,20 @@ connect(dataBus.ppmCO2Space_002, TRoo1[2].ppm);
 connect(dataBus.ppmCO2Space_003, TRoo1[3].ppm);
 connect(dataBus.TCooSetSpace_002,
 TCooSetControl_2.y);
-connect(dataBus.TCooSetSpace_001,
-TCooSetControl_1.y);
-connect(dataBus.TAirOutBoiler_001,
-TAirOutControl_4.y);
-connect(dataBus.TCooSetSpace_003,
-TCooSetControl_3.y);
 connect(dataBus.TColSetControl_7,
 TColSetControl_7.y);
 connect(dataBus.TColSetControl_6,
 TColSetControl_6.y);
-connect(dataBus.triggerControl_7,
-triggerControl_7.y);
+connect(dataBus.TCooSetSpace_001,
+TCooSetControl_1.y);
+connect(dataBus.TCooSetSpace_003,
+TCooSetControl_3.y);
+connect(dataBus.TAirOutBoiler_001,
+TAirOutControl_4.y);
 connect(dataBus.triggerControl_6,
 triggerControl_6.y);
+connect(dataBus.triggerControl_7,
+triggerControl_7.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},
@@ -5216,39 +5216,6 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 
 package Glazing "Library of building glazing systems"
 extends Modelica.Icons.MaterialPropertiesPackage;
-    record  ins2ar2020_001 = IDEAS.Buildings.Data.Interfaces.Glazing (
-          final nLay=3,
-      final checkLowPerformanceGlazing=false,
-          mats={three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
-        (d=0.006),three_zones_hydronic_container_IDEAS.Data.Materials.argon_001
-        (d=0.016),three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
-        (d=0.006)    },
-    final SwTrans=[0, 0.721;
-                    10, 0.720;
-                    20, 0.718;
-                    30, 0.711;
-                    40, 0.697;
-                    50, 0.665;
-                    60, 0.596;
-                    70, 0.454;
-                    80, 0.218;
-                    90, 0.000],
-      final SwAbs=[0, 0.082, 0, 0.062;
-                  10, 0.082, 0, 0.062;
-                  20, 0.084, 0, 0.063;
-                  30, 0.086, 0, 0.065;
-                  40, 0.090, 0, 0.067;
-                  50, 0.094, 0, 0.068;
-                  60, 0.101, 0, 0.067;
-                  70, 0.108, 0, 0.061;
-                  80, 0.112, 0, 0.045;
-                  90, 0.000, 0, 0.000],
-      final SwTransDif=0.619,
-      final SwAbsDif={0.093, 0,  0.063},
-      final U_value=2.9,
-      final g_value=0.78
-
-    ) "three_zones_hydronic_container_IDEAS";
     record  epcdouble_001 = IDEAS.Buildings.Data.Interfaces.Glazing (
           final nLay=3,
       final checkLowPerformanceGlazing=false,
@@ -5282,28 +5249,81 @@ extends Modelica.Icons.MaterialPropertiesPackage;
       final g_value=0.78
 
     ) "three_zones_hydronic_container_IDEAS";
+    record  ins2ar2020_001 = IDEAS.Buildings.Data.Interfaces.Glazing (
+          final nLay=3,
+      final checkLowPerformanceGlazing=false,
+          mats={three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
+        (d=0.006),three_zones_hydronic_container_IDEAS.Data.Materials.argon_001
+        (d=0.016),three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
+        (d=0.006)    },
+    final SwTrans=[0, 0.721;
+                    10, 0.720;
+                    20, 0.718;
+                    30, 0.711;
+                    40, 0.697;
+                    50, 0.665;
+                    60, 0.596;
+                    70, 0.454;
+                    80, 0.218;
+                    90, 0.000],
+      final SwAbs=[0, 0.082, 0, 0.062;
+                  10, 0.082, 0, 0.062;
+                  20, 0.084, 0, 0.063;
+                  30, 0.086, 0, 0.065;
+                  40, 0.090, 0, 0.067;
+                  50, 0.094, 0, 0.068;
+                  60, 0.101, 0, 0.067;
+                  70, 0.108, 0, 0.061;
+                  80, 0.112, 0, 0.045;
+                  90, 0.000, 0, 0.000],
+      final SwTransDif=0.619,
+      final SwAbsDif={0.093, 0,  0.063},
+      final U_value=2.9,
+      final g_value=0.78
+
+    ) "three_zones_hydronic_container_IDEAS";
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.0256,
+      c=1006.0,
+      rho=1.2,
+      epsLw=0.88,
+      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.3,
+      c=880.0,
+      rho=850.0,
+      epsLw=0.88,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.035,
       c=800.0,
       rho=100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.38,
+      c=840.0,
+      rho=1120.0,
       epsLw=0.88,
       epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.89,
       c=800.0,
       rho=1920.0,
       epsLw=0.88,
+      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=1000.0,
+      rho=2000.0,
+      epsLw=0.88,
       epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=900.0,
       rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=1000.0,
-      rho=2000.0,
       epsLw=0.88,
       epsSw=0.55);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0174,
@@ -5315,33 +5335,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record rockwool_001 = IDEAS
       c=1000.0,
       rho=2000.0,
       epsLw=0.88,
-      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.0256,
-      c=1006.0,
-      rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.3,
-      c=880.0,
-      rho=850.0,
-      epsLw=0.88,
-      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.38,
-      c=840.0,
-      rho=1120.0,
-      epsLw=0.88,
-      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.55);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.035,
       c=1000.0,
       rho=2000.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record construction_001
+package Constructions "Library of building envelope constructions"      record cavitywallpartialfill_001
+    "cavitywallpartialfill_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
+        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.air_001
+        (d=0.03),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
+        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
+        (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
+        (d=0.015)    });
+    end cavitywallpartialfill_001;      record cavitywall_001
+    "cavitywall_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
+        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
+        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
+        (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
+        (d=0.015)    });
+    end cavitywall_001;      record construction_001
     "construction_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.material_001
@@ -5354,24 +5371,7 @@ package Constructions "Library of building envelope constructions"      record c
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.concrete_001
         (d=0.125),three_zones_hydronic_container_IDEAS.Data.Materials.concrete_001
         (d=0.125)    });
-    end concreteslab_001;      record cavitywall_001
-    "cavitywall_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
-        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
-        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
-        (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
-        (d=0.015)    });
-    end cavitywall_001;      record cavitywallpartialfill_001
-    "cavitywallpartialfill_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
-        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.air_001
-        (d=0.03),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
-        (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
-        (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
-        (d=0.015)    });
-    end cavitywallpartialfill_001;
+    end concreteslab_001;
 end Constructions;
 end Data;
 

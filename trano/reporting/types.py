@@ -1,7 +1,7 @@
 import abc
 from abc import abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer
 
@@ -20,20 +20,20 @@ class BaseTable(abc.ABC, BaseReporting):
 
 
 class BaseNestedTable(BaseReporting):
-    name: Optional[str] = None
-    parameters: Dict[str, Any] = Field(default_factory=dict)
+    name: str | None = None
+    parameters: dict[str, Any] = Field(default_factory=dict)
 
     @model_serializer
-    def serializer(self) -> Dict[str, Any]:
+    def serializer(self) -> dict[str, Any]:
         if not self.parameters:
             return {}
         return self.parameters | {"name": self.name}
 
 
 class ContentDocumentation(BaseModel):
-    title: Optional[str] = None
-    introduction: Optional[str] = None
-    conclusions: Optional[str] = None
+    title: str | None = None
+    introduction: str | None = None
+    conclusions: str | None = None
 
 
 class BoundaryTable(BaseReporting):
@@ -41,11 +41,11 @@ class BoundaryTable(BaseReporting):
     surface: float
     tilt: str
     construction: str
-    azimuth: Optional[float] = None
+    azimuth: float | None = None
 
     @field_validator("construction", mode="before")
     @classmethod
-    def _construction_validator(cls, value: Dict[str, Any]) -> Optional[str]:
+    def _construction_validator(cls, value: dict[str, Any]) -> str | None:
         return value.get("name")
 
 
@@ -62,11 +62,11 @@ class SystemTable(BaseTable, BaseNestedTable):
 
 class SpaceTable(BaseTable):
     name: str
-    parameters: Dict[str, Any]
-    external_boundaries: List[BoundaryTable]
-    internal_elements: List[BoundaryTable] = Field(default_factory=list)
-    emissions: List[EmissionTable] = Field(default_factory=list)
-    occupancy: Optional[OccupancyTable] = Field(default_factory=OccupancyTable)
+    parameters: dict[str, Any]
+    external_boundaries: list[BoundaryTable]
+    internal_elements: list[BoundaryTable] = Field(default_factory=list)
+    emissions: list[EmissionTable] = Field(default_factory=list)
+    occupancy: OccupancyTable | None = Field(default_factory=OccupancyTable)
 
     def to_html(self) -> str:
         return to_html_space(self.model_dump(exclude_none=True))
@@ -80,26 +80,23 @@ class LayerTable(BaseReporting):
     epsLw: float  # noqa: N815
     epsSw: float  # noqa: N815
     thickness: float
-    solar_transmittance: List[float] = Field(default_factory=list)
-    solar_reflectance_outside_facing: List[float] = Field(default_factory=list)
-    solar_reflectance_room_facing: List[float] = Field(default_factory=list)
-    infrared_transmissivity: Optional[float] = None
-    infrared_absorptivity_outside_facing: Optional[float] = None
-    infrared_absorptivity_room_facing: Optional[float] = None
+    solar_transmittance: list[float] = Field(default_factory=list)
+    solar_reflectance_outside_facing: list[float] = Field(default_factory=list)
+    solar_reflectance_room_facing: list[float] = Field(default_factory=list)
+    infrared_transmissivity: float | None = None
+    infrared_absorptivity_outside_facing: float | None = None
+    infrared_absorptivity_room_facing: float | None = None
 
 
 class ConstructionTable(BaseTable):
     name: str
-    layers: List[LayerTable]
-    u_value_frame: Optional[float] = None
+    layers: list[LayerTable]
+    u_value_frame: float | None = None
 
     @field_validator("layers", mode="before")
     @classmethod
-    def layers_validator(cls, layers: List[Dict[str, Any]]) -> List[LayerTable]:
-        return [
-            LayerTable(**(layer["material"] | {"thickness": layer["thickness"]}))
-            for layer in layers
-        ]
+    def layers_validator(cls, layers: list[dict[str, Any]]) -> list[LayerTable]:
+        return [LayerTable(**(layer["material"] | {"thickness": layer["thickness"]})) for layer in layers]
 
     def to_html(self) -> str:
         return to_html_construction(self.model_dump())

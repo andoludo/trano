@@ -1,5 +1,5 @@
 import abc
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 from pydantic import computed_field
 
@@ -23,15 +23,15 @@ if TYPE_CHECKING:
 
 
 class BaseDocumentation(ContentDocumentation):
-    title: Optional[str] = None
-    introduction: Optional[str] = None
-    table: BaseTable | List[BaseTable]
-    conclusions: Optional[str] = None
+    title: str | None = None
+    introduction: str | None = None
+    table: BaseTable | list[BaseTable]
+    conclusions: str | None = None
 
     @classmethod
     @abc.abstractmethod
     def from_elements(
-        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+        cls, elements: list[BaseElement], content_documentation: ContentDocumentation
     ) -> "BaseDocumentation": ...
 
     @computed_field
@@ -40,11 +40,11 @@ class BaseDocumentation(ContentDocumentation):
 
 
 class SpacesDocumentation(BaseDocumentation):
-    table: List[SpaceTable]  # type: ignore
+    table: list[SpaceTable]  # type: ignore
 
     @classmethod
     def from_elements(
-        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+        cls, elements: list[BaseElement], content_documentation: ContentDocumentation
     ) -> "SpacesDocumentation":
         spaces = _get_elements(elements, Space)
         spaces_ = []
@@ -75,19 +75,15 @@ class SpacesDocumentation(BaseDocumentation):
                 by_alias=True,
             )
             if space.parameters:
-                main_space["parameters"] = space.parameters.model_dump(
-                    by_alias=True, exclude_none=True
-                )
+                main_space["parameters"] = space.parameters.model_dump(by_alias=True, exclude_none=True)
             if (
                 main_space.get("occupancy")
                 and isinstance(space, Space)
                 and space.occupancy
                 and space.occupancy.parameters
             ):
-                main_space["occupancy"]["parameters"] = (
-                    space.occupancy.parameters.model_dump(
-                        by_alias=True, exclude_none=True
-                    )
+                main_space["occupancy"]["parameters"] = space.occupancy.parameters.model_dump(
+                    by_alias=True, exclude_none=True
                 )
             for key, value in document_mapping.items():
                 values = _dump_list_attributes(space, key, value)
@@ -101,11 +97,11 @@ class SpacesDocumentation(BaseDocumentation):
 
 
 class ConstructionDocumentation(BaseDocumentation):
-    table: List[ConstructionTable]  # type: ignore
+    table: list[ConstructionTable]  # type: ignore
 
     @classmethod
     def from_elements(
-        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+        cls, elements: list[BaseElement], content_documentation: ContentDocumentation
     ) -> "ConstructionDocumentation":
         constructions = [
             c.model_dump(
@@ -122,26 +118,22 @@ class ConstructionDocumentation(BaseDocumentation):
             for c in {
                 construction
                 for w in _get_elements(elements, BaseWall)
-                if isinstance(w, (BaseSimpleWall, MergedBaseWall))
-                for construction in (
-                    [w.construction] if hasattr(w, "construction") else w.constructions
-                )
+                if isinstance(w, (BaseSimpleWall, MergedBaseWall))  # noqa: UP038
+                for construction in ([w.construction] if hasattr(w, "construction") else w.constructions)
             }
         ]
         data = {
-            "table": [
-                ConstructionTable(**construction) for construction in constructions
-            ],
+            "table": [ConstructionTable(**construction) for construction in constructions],
         } | content_documentation.model_dump(exclude_none=True)
         return cls(**data)
 
 
 class SystemsDocumentation(BaseDocumentation):
-    table: List[SystemTable]  # type: ignore
+    table: list[SystemTable]  # type: ignore
 
     @classmethod
     def from_elements(
-        cls, elements: List[BaseElement], content_documentation: ContentDocumentation
+        cls, elements: list[BaseElement], content_documentation: ContentDocumentation
     ) -> "SystemsDocumentation":
         spaces = _get_elements(elements, Space)
         get_description()
@@ -149,9 +141,7 @@ class SystemsDocumentation(BaseDocumentation):
             system
             for space in spaces
             if isinstance(space, Space)
-            for system in space.emissions
-            + space.ventilation_inlets
-            + space.ventilation_outlets
+            for system in space.emissions + space.ventilation_inlets + space.ventilation_outlets
         }
         systems = []
         for system in _get_elements(elements, System):
@@ -181,25 +171,19 @@ class ModelDocumentation(ContentDocumentation):
     spaces: SpacesDocumentation
     constructions: ConstructionDocumentation
     systems: SystemsDocumentation
-    elements: List[BaseElement]
-    result: Optional[ResultFile] = None
+    elements: list[BaseElement]
+    result: ResultFile | None = None
 
     @classmethod
     def from_model_elements(
         cls,
-        elements: List[BaseElement],
+        elements: list[BaseElement],
         content_documentation: ContentModelDocumentation,
-        result: Optional[ResultFile] = None,
+        result: ResultFile | None = None,
     ) -> "ModelDocumentation":
-        spaces_documentation = SpacesDocumentation.from_elements(
-            elements, content_documentation.spaces
-        )
-        constructions = ConstructionDocumentation.from_elements(
-            elements, content_documentation.constructions
-        )
-        systems = SystemsDocumentation.from_elements(
-            elements, content_documentation.systems
-        )
+        spaces_documentation = SpacesDocumentation.from_elements(elements, content_documentation.spaces)
+        constructions = ConstructionDocumentation.from_elements(elements, content_documentation.constructions)
+        systems = SystemsDocumentation.from_elements(elements, content_documentation.systems)
         data = content_documentation.model_dump(exclude_none=True) | {
             "spaces": spaces_documentation,
             "constructions": constructions,
@@ -214,20 +198,17 @@ class ModelDocumentation(ContentDocumentation):
     def from_network(
         cls,
         network: "Network",
-        content_model_documentation: Optional[ContentModelDocumentation] = None,
-        result: Optional[ResultFile] = None,
+        content_model_documentation: ContentModelDocumentation | None = None,
+        result: ResultFile | None = None,
     ) -> "ModelDocumentation":
-        content_model_documentation = (
-            content_model_documentation
-            or ContentModelDocumentation(
-                spaces=ContentDocumentation(),
-                constructions=ContentDocumentation(),
-                systems=ContentDocumentation(),
-            )
+        content_model_documentation = content_model_documentation or ContentModelDocumentation(
+            spaces=ContentDocumentation(),
+            constructions=ContentDocumentation(),
+            systems=ContentDocumentation(),
         )
         elements = [
             x
             for x in list(network.graph.nodes)
-            if isinstance(x, (Boiler, Space, BaseSimpleWall, MergedBaseWall))
+            if isinstance(x, (Boiler, Space, BaseSimpleWall, MergedBaseWall))  # noqa: UP038
         ]
         return cls.from_model_elements(elements, content_model_documentation, result)  # type: ignore

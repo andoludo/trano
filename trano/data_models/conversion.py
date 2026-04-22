@@ -4,7 +4,7 @@ import tempfile
 from collections import Counter
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 from linkml.validator import validate_file  # type: ignore
@@ -44,7 +44,7 @@ from trano.topology import Network
 
 SpaceParameter = param_from_config("Space")
 DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")
-COUNTER: Dict[Any, Any] = Counter()
+COUNTER: dict[Any, Any] = Counter()
 
 
 def to_camel_case(snake_str: str) -> str:
@@ -65,7 +65,7 @@ def validate_model(data: Any, suffix: str) -> None:  # noqa: ANN401
             raise Exception("Invalid model.")
 
 
-def _instantiate_component(component_: Dict[str, Any]) -> Component:
+def _instantiate_component(component_: dict[str, Any]) -> Component:
     component = copy.deepcopy(component_)
     components = component.items()
     if len(components) != 1:
@@ -119,7 +119,9 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
     data = assign_space_id(data)
     _parse(data)
     with tempfile.NamedTemporaryFile(
-        mode="w+", suffix=model_path.suffix, delete=False  # TODO: delete later?
+        mode="w+",
+        suffix=model_path.suffix,
+        delete=False,  # TODO: delete later?
     ) as f:
         dump_function(data, f)
 
@@ -132,38 +134,28 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
     return EnrichedModel(data=converted_data)
 
 
-def _build_materials(data: Dict[str, Any]) -> Dict[str, Any]:
+def _build_materials(data: dict[str, Any]) -> dict[str, Any]:
     materials = {}
     material_types = {"material": Material, "gas": Gas, "glass_material": GlassMaterial}
     for material_type, material_class in material_types.items():
         for material in data.get(material_type, []):
-            materials[material["id"]] = material_class(
-                **(material | {"name": material["id"]})
-            )
+            materials[material["id"]] = material_class(**(material | {"name": material["id"]}))
     return materials
 
 
-def _merge_default(data: Dict[str, Any]) -> Dict[str, Any]:
-    data["constructions"] = data.get("constructions", []) + data.get("default", {}).get(
-        "constructions", []
-    )
-    data["material"] = data.get("material", []) + data.get("default", {}).get(
-        "material", []
-    )
-    data["glazings"] = data.get("glazings", []) + data.get("default", {}).get(
-        "glazings", []
-    )
+def _merge_default(data: dict[str, Any]) -> dict[str, Any]:
+    data["constructions"] = data.get("constructions", []) + data.get("default", {}).get("constructions", [])
+    data["material"] = data.get("material", []) + data.get("default", {}).get("material", [])
+    data["glazings"] = data.get("glazings", []) + data.get("default", {}).get("glazings", [])
     data["gas"] = data.get("gas", []) + data.get("default", {}).get("gas", [])
-    data["glass_material"] = data.get("glass_material", []) + data.get(
-        "default", {}
-    ).get("glass_material", [])
+    data["glass_material"] = data.get("glass_material", []) + data.get("default", {}).get("glass_material", [])
     data.pop("default", None)
     return data
 
 
 # TODO: reduce complexity
 def convert_network(  # noqa: PLR0915, C901, PLR0912
-    name: str, model_path: Path, library: Optional[Library] = None
+    name: str, model_path: Path, library: Library | None = None
 ) -> Network:
     network = Network(name=name, library=library)
     occupancy = None
@@ -174,30 +166,17 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
     data = enriched_model.data
     data = _merge_default(data)
     materials = _build_materials(data)
-    constructions: Dict[str, Construction | Glass] = {}
+    constructions: dict[str, Construction | Glass] = {}
     for construction in data["constructions"]:
-        layers = [
-            Layer(**(layer | {"material": materials[layer["material"]]}))
-            for layer in construction["layers"]
-        ]
-        constructions[construction["id"]] = Construction(
-            name=construction["id"], layers=layers
-        )
+        layers = [Layer(**(layer | {"material": materials[layer["material"]]})) for layer in construction["layers"]]
+        constructions[construction["id"]] = Construction(name=construction["id"], layers=layers)
     for glazing in data.get("glazings", []):
-        glazing_layers: List[GasLayer | GlassLayer] = []
+        glazing_layers: list[GasLayer | GlassLayer] = []
         for layer in glazing["layers"]:
             if layer.get("gas", None):
-                glazing_layers.append(
-                    GasLayer(
-                        thickness=layer["thickness"], material=materials[layer["gas"]]
-                    )
-                )
+                glazing_layers.append(GasLayer(thickness=layer["thickness"], material=materials[layer["gas"]]))
             if layer.get("glass", None):
-                glazing_layers.append(
-                    GlassLayer(
-                        thickness=layer["thickness"], material=materials[layer["glass"]]
-                    )
-                )
+                glazing_layers.append(GlassLayer(thickness=layer["thickness"], material=materials[layer["glass"]]))
         constructions[glazing["id"]] = Glass(
             name=glazing["id"],
             layers=glazing_layers,
@@ -209,26 +188,18 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
     systems = {}
     for space in data["spaces"]:
         external_boundaries = space["external_boundaries"]
-        external_walls: List[ExternalWall | Window | FloorOnGround] = []
+        external_walls: list[ExternalWall | Window | FloorOnGround] = []
         for external_wall in external_boundaries.get("external_walls", []):
             external_wall_ = ExternalWall(
-                **(
-                    external_wall
-                    | {"construction": constructions[external_wall["construction"]]}
-                )
+                **(external_wall | {"construction": constructions[external_wall["construction"]]})
             )
             external_walls.append(external_wall_)
         for window in external_boundaries.get("windows", []):
-            window_ = Window(
-                **(window | {"construction": constructions[window["construction"]]})
-            )
+            window_ = Window(**(window | {"construction": constructions[window["construction"]]}))
             external_walls.append(window_)
         for floor_on_ground in external_boundaries.get("floor_on_grounds", []):
             floor_on_ground_ = FloorOnGround(
-                **(
-                    floor_on_ground
-                    | {"construction": constructions[floor_on_ground["construction"]]}
-                )
+                **(floor_on_ground | {"construction": constructions[floor_on_ground["construction"]]})
             )
             external_walls.append(floor_on_ground_)
         occupancy_parameter_class = param_from_config("Occupancy")
@@ -240,23 +211,14 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
                 **(
                     occupancy_
                     | {"name": f"occupancy_{system_counter['occupancy']}"}
-                    | {
-                        "parameters": occupancy_parameter_class(
-                            **occupancy_.get("parameters", {})
-                        )
-                    }
+                    | {"parameters": occupancy_parameter_class(**occupancy_.get("parameters", {}))}
                 )
             )
-        elif (
-            network.library.default_parameters.get("occupancy") is not None
-            and occupancy_parameter_class is not None
-        ):
+        elif network.library.default_parameters.get("occupancy") is not None and occupancy_parameter_class is not None:
             system_counter.update(["occupancy"])
             occupancy = Occupancy(
                 name=f"occupancy_{system_counter['occupancy']}",
-                parameters=occupancy_parameter_class(
-                    **network.library.default_parameters["occupancy"]
-                ),
+                parameters=occupancy_parameter_class(**network.library.default_parameters["occupancy"]),
             )
         emissions = []
         for emission in space.get("emissions", []):
@@ -289,10 +251,7 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
         spaces.append(space_)
     create_internal = not data.get("internal_walls", [])
 
-    if (
-        data.get("weather", {}).get("parameters")
-        and param_from_config("Weather") is not None
-    ):
+    if data.get("weather", {}).get("parameters") and param_from_config("Weather") is not None:
         weather = Weather(
             name="weather",
             parameters=param_from_config("Weather")(**data["weather"]["parameters"]),  # type: ignore
@@ -300,9 +259,7 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
     else:
         weather = Weather(name="weather")
 
-    network.add_boiler_plate_spaces(
-        spaces, weather=weather, create_internal=create_internal
-    )
+    network.add_boiler_plate_spaces(spaces, weather=weather, create_internal=create_internal)
     for internal_wall in data.get("internal_walls", []):
         space_1 = space_dict[internal_wall["space_1"]]
         space_2 = space_dict[internal_wall["space_2"]]
@@ -331,14 +288,8 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
         systems[system_.name] = system_.component_instance
     for system in data["systems"]:
         for value in system.values():
-            edges += [
-                (systems[value["id"]], systems[outlet])
-                for outlet in value.get("outlets", [])
-            ]
-            edges += [
-                (systems[inlet], systems[value["id"]])
-                for inlet in value.get("inlets", [])
-            ]
+            edges += [(systems[value["id"]], systems[outlet]) for outlet in value.get("outlets", [])]
+            edges += [(systems[inlet], systems[value["id"]]) for inlet in value.get("inlets", [])]
     for edge in edges:
         network.connect_systems(*edge)
 
@@ -360,7 +311,7 @@ def convert_model(name: str, model_path: Path) -> str:
     return network.model()
 
 
-def _parse(data: Dict[str, Any]) -> None:
+def _parse(data: dict[str, Any]) -> None:
     for k, v in data.items():
         if isinstance(v, dict):
             _parse(v)
@@ -377,8 +328,8 @@ def _parse(data: Dict[str, Any]) -> None:
                 data[k] = {"parameters": {"occupancy": "3600 * {7, 19}"}}
 
 
-def assign_space_id(data: Dict[str, Any]) -> Dict[str, Any]:
-    space_counter: Dict[Any, Any] = Counter()
+def assign_space_id(data: dict[str, Any]) -> dict[str, Any]:
+    space_counter: dict[Any, Any] = Counter()
     spaces = []
     for space in data.get("spaces", []):
         space_counter.update(["space"])  # type: ignore

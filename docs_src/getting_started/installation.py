@@ -16,9 +16,7 @@ INSTALLATIONS = [
                 website(https://graphviz.org/download/).
                 For windows install, make sure that the graphviz bin folder is added to the system path."""
             ),
-            CleanedText(
-                content="""For linux, one can use the following command to install graphviz."""
-            ),
+            CleanedText(content="""For linux, one can use the following command to install graphviz."""),
             DisplayObject(
                 language="bash",
                 object="""
@@ -41,9 +39,7 @@ sudo apt install graphviz
     Trano requires python 3.9 or higher and docker to be installed on the system.
             """
             ),
-            CleanedText(
-                content="""Trano is a python package that can be installed using pip."""
-            ),
+            CleanedText(content="""Trano is a python package that can be installed using pip."""),
             DisplayObject(language="bash", object="pip install trano"),
             CleanedText(content="""Trano can also be used using poetry."""),
             DisplayObject(language="bash", object="poetry add trano"),
@@ -57,9 +53,7 @@ sudo apt install graphviz
                 (see https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)"""
             ),
             TitleText(content="""Check installation"""),
-            CleanedText(
-                content="""To check installation, run the following command in the terminal."""
-            ),
+            CleanedText(content="""To check installation, run the following command in the terminal."""),
             DisplayObject(
                 language="bash",
                 object="""trano verify""",
@@ -76,11 +70,7 @@ sudo apt install graphviz
 
 def gen_installation_docs() -> None:
     for installation in INSTALLATIONS:
-        installation.write(
-            Path(__file__)
-            .parents[2]
-            .joinpath("docs", "getting-started", f"{installation.name()}.md")
-        )
+        installation.write(Path(__file__).parents[2].joinpath("docs", "getting-started", f"{installation.name()}.md"))
 
 
 if __name__ == "__main__":

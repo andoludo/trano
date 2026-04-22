@@ -25,9 +25,7 @@ def space_1_simple_ventilation_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,
@@ -64,9 +62,7 @@ def space_2_simple_ventilation_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_3", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_3", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_2",
                 surface=1,
@@ -115,9 +111,7 @@ def space_1_simple_ventilation_vav_control_fixture() -> Space:
                 tilt=Tilt.wall,
                 construction=Constructions.external_wall,
             ),
-            FloorOnGround(
-                name="floor_2", surface=10, construction=Constructions.external_wall
-            ),
+            FloorOnGround(name="floor_2", surface=10, construction=Constructions.external_wall),
             Window(
                 name="win1_1",
                 surface=1,

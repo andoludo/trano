@@ -22,17 +22,13 @@ def house() -> Path:
 
 def test_validate_schema() -> None:
     house = Path(__file__).parents[1].joinpath("tests", "models", "house.yaml")
-    data_model_path = (
-        Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
-    )
+    data_model_path = Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
     report = validate_file(house, data_model_path, "Building")
     assert report.results == []
 
 
 @pytest.mark.skip(reason="Create the new schema")
-def test_create_new_schema(
-    schema: Path, schema_original: Path, parameters_path: Path
-) -> None:
+def test_create_new_schema(schema: Path, schema_original: Path, parameters_path: Path) -> None:
     trano_path = schema_original
     trano_final_path = schema
     create_final_schema(parameters_path, trano_final_path, trano_path)
@@ -65,9 +61,7 @@ def test_create_model_json(schema: Path, house: Path) -> None:
 
 
 def test_create_json_schema() -> None:
-    data_model_path = (
-        Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
-    )
+    data_model_path = Path(__file__).parents[1].joinpath("trano", "data_models", "trano.yaml")
     a = JsonSchemaGenerator(data_model_path).serialize()
     faker = JSF(json.loads(a))
     fake_json = faker.generate()  # noqa: F841
@@ -95,9 +89,7 @@ def test_simulate_model_yaml(house: Path) -> None:
 
 @pytest.mark.simulate
 def test_simulate_simplified_yaml() -> None:
-    model_path = (
-        Path(__file__).parents[1].joinpath("tests", "models", "simplified_house.yaml")
-    )
+    model_path = Path(__file__).parents[1].joinpath("tests", "models", "simplified_house.yaml")
     network = convert_network("simplified_yaml", model_path)
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
         results = simulate(

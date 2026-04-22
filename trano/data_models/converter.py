@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from linkml.generators.pythongen import PythonGenerator  # type: ignore
 from linkml.utils import datautils, validation  # type: ignore
@@ -19,7 +19,7 @@ from linkml_runtime.utils.inference_utils import infer_all_slot_values  # type: 
 from linkml_runtime.utils.schemaview import SchemaView  # type: ignore
 
 
-def delete_none(_dict: Dict[str, Any]) -> Dict[str, Any]:
+def delete_none(_dict: dict[str, Any]) -> dict[str, Any]:
     # TODO: this function needs to be reviewed
     """Delete None values recursively from all of the dictionaries"""
     for key, value in list(_dict.items()):
@@ -37,20 +37,20 @@ def delete_none(_dict: Dict[str, Any]) -> Dict[str, Any]:
 
 # TODO: function taken from linkml_runtime.cli.converter
 def converter(  # noqa: PLR0915, PLR0912, PLR0913, C901
-    input: Optional[str] = None,
-    module: Optional[Any] = None,  # noqa: ANN401
-    target_class: Optional[str] = None,
-    context: Optional[List[Any]] = None,
-    output: Optional[str] = None,
-    input_format: Optional[str] = None,
-    output_format: Optional[str] = None,
-    prefix: Optional[str] = None,
-    target_class_from_path: Optional[str] = None,
-    schema: Optional[str] = None,
-    validate: Optional[bool] = None,
-    infer: Optional[bool] = None,
-    index_slot: Optional[bool] = None,
-) -> Dict[str, Any]:
+    input: str | None = None,
+    module: Any | None = None,  # noqa: ANN401
+    target_class: str | None = None,
+    context: list[Any] | None = None,
+    output: str | None = None,
+    input_format: str | None = None,
+    output_format: str | None = None,
+    prefix: str | None = None,
+    target_class_from_path: str | None = None,
+    schema: str | None = None,
+    validate: bool | None = None,
+    infer: bool | None = None,
+    index_slot: bool | None = None,
+) -> dict[str, Any]:
     """
     Converts instance data to and from different LinkML Runtime serialization formats.
 
@@ -112,15 +112,11 @@ def converter(  # noqa: PLR0915, PLR0912, PLR0913, C901
         inargs["schema"] = schema
     obj = loader.load(source=input, target_class=py_target_class, **inargs)
     if infer:
-        infer_config = inference_utils.Config(
-            use_expressions=True, use_string_serialization=True
-        )
+        infer_config = inference_utils.Config(use_expressions=True, use_string_serialization=True)
         infer_all_slot_values(obj, schemaview=sv, config=infer_config)
     if validate:
         if schema is None:
-            raise Exception(
-                "--schema must be passed in order to validate. Suppress with --no-validate"
-            )
+            raise Exception("--schema must be passed in order to validate. Suppress with --no-validate")
         # TODO: use validator framework
         validation.validate_object(obj, schema)
 
