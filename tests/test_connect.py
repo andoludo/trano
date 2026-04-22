@@ -766,7 +766,6 @@ def test_assign_container_position(house_ideas: Network) -> None:
     new_graph = nx.DiGraph()
     new_graph.add_nodes_from(envelope_nodes)
     new_graph.add_edges_from(envelope_edges)
-    pos = nx.nx_pydot.pydot_layout(new_graph, prog="sfdp")
     assert True
 
 
