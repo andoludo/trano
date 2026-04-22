@@ -767,20 +767,7 @@ def test_assign_container_position(house_ideas: Network) -> None:
     new_graph.add_nodes_from(envelope_nodes)
     new_graph.add_edges_from(envelope_edges)
     pos = nx.nx_pydot.pydot_layout(new_graph, prog="sfdp")
-    from matplotlib import pyplot as plt
-
-    # Draw the graph
-    plt.figure(figsize=(6, 3))
-    nx.draw(
-        new_graph,
-        pos,
-        with_labels=True,
-        node_color="lightblue",
-        edge_color="gray",
-        node_size=2000,
-        font_size=10,
-    )
-    plt.show()
+    assert True
 
 
 def test_connect_envelope_databus_data() -> None:

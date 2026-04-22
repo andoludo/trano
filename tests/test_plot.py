@@ -52,5 +52,5 @@ def test_plot_element(buildings_two_rooms_with_storage: Network, data_reader: Re
 def test_plot_plot_ly_many(buildings_two_rooms_with_storage: Network, data_reader: Reader) -> None:
     space = [s for s in buildings_two_rooms_with_storage.graph.nodes if isinstance(s, Space)]
     for figures in list(zip(*[s.figures for s in space], strict=False)):
-        figures_plotly = plot_plot_ly_many(data_reader, figures, show=True)
+        figures_plotly = plot_plot_ly_many(data_reader, figures, show=False)
         assert figures_plotly

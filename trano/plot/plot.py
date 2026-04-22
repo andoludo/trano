@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 FIGURE_COUNT = 1
 
 
-def plot(data: Reader, figure: NamedFigure, show: bool = True) -> pyFigure:
+def plot(data: Reader, figure: NamedFigure, show: bool = False) -> pyFigure:
     fig, ax = plt.subplots(figsize=(10, 6))
     fig.subplots_adjust(right=0.9)
     twin1 = ax.twinx()
