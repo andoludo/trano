@@ -1,6 +1,6 @@
 [project]
 name = "trano"
-version = "0.16.0"
+version = "0.17.0"
 description = ""
 authors = [{ name = "Ando Andriamamonjy", email = "andoludovic.andriamamonjy@gmail.com" }]
 requires-python = ">=3.11,<4.0"
