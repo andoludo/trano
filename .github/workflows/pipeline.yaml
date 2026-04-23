@@ -4,15 +4,19 @@ on:
   push:
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # Linting — runs on branch pushes AND tag pushes, so the publish job is
+  # actually gated on green CI for the tagged commit.
+  # ---------------------------------------------------------------------------
   linting:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/heads/') && ! contains(github.event.head_commit.message, 'Auto-increment')
+    if: >-
+      !contains(github.event.head_commit.message, 'Auto-increment')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
-          ref: ${{ github.ref_name }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -25,15 +29,19 @@ jobs:
       - name: Run linting
         run: make linting
 
+  # ---------------------------------------------------------------------------
+  # Tests — same trigger conditions as linting for consistency.
+  # ---------------------------------------------------------------------------
   tests:
     needs: [linting]
     runs-on: ubuntu-latest
+    if: >-
+      !contains(github.event.head_commit.message, 'Auto-increment')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
-          ref: ${{ github.ref_name }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -42,8 +50,8 @@ jobs:
 
       - name: Install graphviz
         run: |
-          sudo apt update
-          sudo apt install graphviz
+          sudo apt-get update
+          sudo apt-get install -y graphviz
 
       - name: Install dependencies
         run: uv sync --group dev --group docs
@@ -51,8 +59,14 @@ jobs:
       - name: Run tests
         run: make tests
 
+  # ---------------------------------------------------------------------------
+  # Bump the static version in pyproject.toml, commit, and tag.
+  # Only runs on pushes to master.
+  # ---------------------------------------------------------------------------
   create-revision-and-tag:
-    if: startsWith(github.ref, 'refs/heads/master')
+    if: >-
+      github.ref == 'refs/heads/master' &&
+      !contains(github.event.head_commit.message, 'Auto-increment')
     needs: [tests]
     runs-on: ubuntu-latest
     steps:
@@ -60,74 +74,99 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
-          ref: ${{ github.ref_name }}
+          fetch-depth: 0      # needed so the auto-commit action can push
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
+      # CHANGED: replaced the broken `uvx hatch version minor` pipeline with
+      # `uv version`, which edits pyproject.toml directly and works with a
+      # static project.version field.
       - name: Bump minor version
         run: |
-          uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version \
-            $(uvx hatch version minor)
-          echo "NEW_VERSION=$(uvx hatch version)" >> $GITHUB_ENV
+          set -euo pipefail
+          uv version --bump minor
+          NEW_VERSION="$(uv version --short)"
+          test -n "$NEW_VERSION"
+          echo "NEW_VERSION=${NEW_VERSION}" >> "$GITHUB_ENV"
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: ${{ github.ref == 'refs/heads/master' && 'Auto-increment release version' || 'Auto-increment prerelease version' }}
+          commit_message: Auto-increment release version
 
-      - name: Create and Push Git Tag
+      - name: Create and push git tag
         run: |
-          git tag ${{ env.NEW_VERSION }}
-          git push origin ${{ env.NEW_VERSION }}
+          set -euo pipefail
+          git tag "${NEW_VERSION}"
+          git push origin "${NEW_VERSION}"
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
+  # ---------------------------------------------------------------------------
+  # Publish — triggered by the tag pushed above (or any manually-pushed tag).
+  # Needs linting + tests to have passed in THIS run (they now run on tags too).
+  # ---------------------------------------------------------------------------
   publish:
-    runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    needs: [tests]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
-          ref: ${{ github.ref_name }}
+          fetch-depth: 0      # needed for `git describe` in release notes
+          fetch-tags: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
       - name: Set version from tag
-        run: echo "NEW_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+        run: echo "NEW_VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
 
       - name: Build source and wheel archives
         run: uv build
 
-      - name: Get Commit Messages Since Last Tag
-        run: |
-          RELEASE_NOTES=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s")
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-          echo "$RELEASE_NOTES" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
       - name: List generated files
         run: ls -l dist
 
-      - name: Upload Wheel to GitHub Releases
+      - name: Gather commit messages since last tag
+        id: notes
+        run: |
+          set -euo pipefail
+          PREV_TAG="$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)"
+          if [ -n "${PREV_TAG}" ]; then
+            NOTES="$(git log "${PREV_TAG}..${GITHUB_REF_NAME}" --pretty=format:'- %s')"
+          else
+            NOTES="$(git log --pretty=format:'- %s')"
+          fi
+          {
+            echo "RELEASE_NOTES<<EOF"
+            echo "${NOTES}"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      # CHANGED: publish to PyPI FIRST, then create the GitHub release. This
+      # way a PyPI failure doesn't leave behind a GitHub release pointing at
+      # artifacts that don't exist on PyPI.
+      - name: Publish to PyPI
+        run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.NEW_VERSION }}
           name: Release ${{ env.NEW_VERSION }}
           body: |
-            ## Release Notes
-            - Automatically generated release for version **${{ env.NEW_VERSION }}**
-            - Commit: ${{ github.sha }}
-            - Triggered by push to branch `${{ github.ref_name }}`
+            ## Release ${{ env.NEW_VERSION }}
+
+            Commit: ${{ github.sha }}
+
+            ### Changes
+            ${{ env.RELEASE_NOTES }}
           files: dist/*.whl
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: Publish to PyPI
-        if: contains(github.event.head_commit.message, 'Auto-increment release version')
-        run: uv publish
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
