@@ -464,3 +464,14 @@ def test_house_complex_heat_meter(schema: Path) -> None:
     )
     model_ = network.model()
     assert clean_model(model_, network.name) == set(_read(network.name))
+
+
+def test_single_zone_hydronic_occupancy_from_data(schema: Path) -> None:
+    house = get_path("single_zone_hydronic_occupancy_from_data.yaml")
+
+    network = convert_network(
+        "single_zone_hydronic_occupancy_from_data",
+        house,
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))

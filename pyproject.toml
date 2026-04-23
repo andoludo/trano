@@ -1,6 +1,6 @@
 [project]
 name = "trano"
-version = "0.14.0"
+dynamic = ["version"]
 description = ""
 authors = [{ name = "Ando Andriamamonjy", email = "andoludovic.andriamamonjy@gmail.com" }]
 requires-python = ">=3.11,<4.0"
@@ -88,9 +88,14 @@ module-root = ""
 source-include = ["LICENSE"]
 
 [build-system]
-requires = ["uv_build>=0.11.7,<0.12.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[tool.hatch.version]
+path = "trano/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["trano"]
 
 [tool.mypy]
 plugins = "pydantic.mypy"

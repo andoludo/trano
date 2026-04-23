@@ -209,6 +209,13 @@ OccupancyParameters:
       description: None
       ifabsent: string(3600*{7, 19})
       range: string
+    data:
+      alias: data
+      description: Occupancy data sources
+      range: DataSource
+      multivalued: true
+      inlined: true
+      inlined_as_list: true
   classes:
   - Occupancy
 PIDParameters:
@@ -560,3 +567,16 @@ WeatherParameters:
       range: string
   classes:
   - Weather
+DataSource:
+  description: Reference to a data source identified by a component and a variable
+  attributes:
+    component:
+      alias: component
+      description: Name of the component providing the data
+      range: string
+      required: true
+    variable:
+      alias: variable
+      description: Name of the variable within the component
+      range: string
+      required: true
