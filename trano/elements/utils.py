@@ -38,7 +38,7 @@ def compose_func(ports_: list["Port"]) -> Callable[[], list["Port"]]:
     return lambda: ports_
 
 
-def _get_type(_type: Any) -> Any:  # noqa: ANN401
+def _get_type(_type: str) -> Any:  # noqa: ANN401
     if _type == "string":
         return str
     elif _type == "float":

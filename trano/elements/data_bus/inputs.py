@@ -2,9 +2,11 @@ from typing import Literal
 
 from pydantic import BaseModel, computed_field, field_validator
 
+DataSource = Literal["DataSource"]
+
 
 class Target(BaseModel):
-    main: str
+    main: str | DataSource
     sub: str | None = None
     evaluated_element: str = ""
     value: str = ""
@@ -41,7 +43,7 @@ class PowerInput(BaseModel):
 
 
 class BaseInputOutput(BaseModel):
-    name: str
+    name: str | DataSource
     component: str
     port: str
     multi: bool = False

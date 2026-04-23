@@ -139,7 +139,8 @@ class ControllerBus(BaseModel):
                     for evaluated_element_ in evaluated_element:
                         ports = _append_to_port(input, ports, target, evaluated_element_, element)
                 else:
-                    ports = _append_to_port(input, ports, target, evaluated_element, element)
+                    evaluated_element_ = evaluated_element if evaluated_element != element else ""
+                    ports = _append_to_port(input, ports, target, evaluated_element_, element)
         return ports
 
     def bus_ports(
@@ -149,27 +150,39 @@ class ControllerBus(BaseModel):
     ) -> list[str]:
         ports: list[str] = []
         for target, inputs in self._get_targets().items():
-            target_value = _evaluate_target(target, element)
-            for input in inputs:
-                if isinstance(target_value, list):
-                    for i, target_ in enumerate(target_value):
+            if target.main == "DataSource":
+                for input in inputs:
+                    if (
+                        isinstance(input, RealInput | IntegerInput)
+                        and element.parameters is not None
+                        and element.parameters_has_data()
+                    ):
+                        for source in element.parameters.data:  # type: ignore
+                            if input.component == source.component:
+                                ports.append(f"connect(dataBus.{source.variable}, " f"{input.component}.{input.port});")  # noqa: PERF401
+            else:
+                target_value = _evaluate_target(target, element)
+                for input in inputs:
+                    if isinstance(target_value, list):
+                        for i, target_ in enumerate(target_value):
+                            ports = _append_ports(
+                                ports,
+                                input,
+                                target_,
+                                "multi",
+                                f".{input.port}[{i + 1}]",
+                                f"[{i + 1}].{input.port}",
+                            )
+
+                    else:  # : PLR5501
                         ports = _append_ports(
                             ports,
                             input,
-                            target_,
-                            "multi",
-                            f".{input.port}[{i + 1}]",
-                            f"[{i + 1}].{input.port}",
+                            target_value,
+                            "port",
+                            f".{input.port}",
+                            "",
                         )
-                else:  # : PLR5501
-                    ports = _append_ports(
-                        ports,
-                        input,
-                        target_value,
-                        "port",
-                        f".{input.port}",
-                        "",
-                    )
         return ports
 
 

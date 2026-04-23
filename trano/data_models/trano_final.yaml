@@ -224,6 +224,17 @@ classes:
         description: None
         ifabsent: float(30)
         range: float
+  DataSource:
+    attributes:
+      component:
+        description: Name of the component providing the data
+        range: string
+        required: true
+      variable:
+        description: Name of the variable within the component
+        range: string
+        required: true
+    description: Reference to a data source identified by a component and a variable
   Default:
     attributes:
       constructions:
@@ -414,6 +425,10 @@ classes:
     slots:
     - id
   Occupancy:
+    attributes:
+      variant:
+        ifabsent: string('default')
+        range: string
     class_uri: schema:Occupancy
     description: Represents Occupancy
     slot_usage:
@@ -423,6 +438,12 @@ classes:
     - parameters
   OccupancyParameters:
     attributes:
+      data:
+        description: Occupancy data sources
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: DataSource
       gain:
         description: None
         ifabsent: string([35; 70; 30])

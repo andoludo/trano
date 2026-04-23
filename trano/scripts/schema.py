@@ -7,7 +7,7 @@ def create_final_schema(parameters_path: Path, trano_final_path: Path, trano_pat
     trano = yaml.safe_load(trano_path.read_text())
     parameters = yaml.safe_load(parameters_path.read_text())
     for name, parameter in parameters.items():
-        parameter.pop("classes")
+        parameter.pop("classes", None)
         parameter__ = {}
         for k, v in parameter["attributes"].items():
             if "func" not in v:

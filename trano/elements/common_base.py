@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel, Field, ConfigDict
 
 from trano.elements.types import ContainerTypes
@@ -121,6 +123,7 @@ class BaseElementPosition(BaseModel):
 
 class BaseParameter(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
+    data: Any | None = None
 
 
 class MediumTemplate(BaseModel):

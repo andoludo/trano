@@ -1,6 +1,8 @@
 import logging.config
 import warnings
 
+__version__ = "0.14.0"
+
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,

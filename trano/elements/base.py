@@ -137,6 +137,9 @@ class BaseElement(BaseElementPort):
 
         return True
 
+    def parameters_has_data(self) -> bool:
+        return hasattr(self.parameters, "data") and self.parameters.data is not None  # type: ignore
+
     def processed_parameters(self, library: "Library") -> Any:  # noqa: ANN401
         if self.libraries_data:
             library_data = self.get_library_data(library)
@@ -171,7 +174,12 @@ class BaseElement(BaseElementPort):
         library_name = network.library.base_library()
         parameters = self.processed_parameters(network.library)
         # TODO: temporary fix for boolean parameters
-        parameters = {key: value.lower() if value in ["True", "False"] else value for key, value in parameters.items()}
+        # TODO: data is a special parameter that should not be incldued in models
+        parameters = {
+            key: value.lower() if value in ["True", "False"] else value
+            for key, value in parameters.items()
+            if key not in ["data"]
+        }
         component_model: dict[str, Any] = {"id": hash(self)}
         for model_type, annotation in {
             "model": self.position.global_.annotation,

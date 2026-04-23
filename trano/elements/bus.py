@@ -1,13 +1,13 @@
 import itertools
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, get_args
 
 import pandas as pd
 from pydantic import BaseModel, Field, computed_field
 from networkx.classes.reportviews import NodeView
 
 from trano.elements.base import BaseElement, Control
-from trano.elements.data_bus.inputs import BaseInputOutput
+from trano.elements.data_bus.inputs import BaseInputOutput, DataSource
 from trano.elements.types import ContainerTypes
 
 if TYPE_CHECKING:
@@ -98,7 +98,7 @@ def get_non_connected_ports(nodes: list[NodeView]) -> list[BaseInputOutput]:
         ports[f"{port_type}Output"] = list(set(ports[f"{port_type}Output"]))
         ports[f"{port_type}Input"] = list(set(ports[f"{port_type}Input"]))
 
-    return list(
+    inputs = list(
         itertools.chain(
             *[
                 _get_non_connected_ports_intersection(ports[f"{port_type}Input"], ports[f"{port_type}Output"])
@@ -106,6 +106,7 @@ def get_non_connected_ports(nodes: list[NodeView]) -> list[BaseInputOutput]:
             ]
         )
     )
+    return [in_ for in_ in inputs if in_.name not in get_args(DataSource)]
 
 
 def _get_non_connected_ports_intersection(

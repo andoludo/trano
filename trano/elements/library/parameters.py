@@ -2,10 +2,12 @@ from pathlib import Path
 from typing import Any, Optional
 
 import yaml
-from pydantic import ConfigDict, Field, computed_field, create_model
+from pydantic import ConfigDict, Field, computed_field, create_model, BaseModel
 
 from trano.elements.common_base import BaseParameter
 from trano.elements.utils import _get_default, _get_type
+
+PRIORITY = ["DataSource"]
 
 
 def load_parameters() -> dict[str, type["BaseParameter"]]:
@@ -14,14 +16,20 @@ def load_parameters() -> dict[str, type["BaseParameter"]]:
     data = yaml.safe_load(parameter_path.read_text())
     classes = {}
 
-    for name, parameter in data.items():
+    order = {name: i for i, name in enumerate(PRIORITY)}
+    models: dict[str, type["BaseModel"]] = {}
+    for name, parameter in sorted(
+        data.items(),
+        key=lambda kv: (order.get(kv[0], len(PRIORITY)), kv[0]),
+    ):
         attrib_ = {}
         for k, v in parameter["attributes"].items():
             alias = v.get("alias", None)
             alias = alias if alias != "None" else None
+            multivalued = v.get("multivalued", False)
             if v.get("range"):
                 attrib_[k] = (
-                    _get_type(v["range"]),
+                    get_parameters_type(v["range"], models, multivalued),
                     Field(
                         default=_get_default(v),
                         alias=alias,
@@ -35,11 +43,20 @@ def load_parameters() -> dict[str, type["BaseParameter"]]:
                     alias=alias,  # TODO: avoid using eval
                 )
         model = create_model(f"{name}_", __base__=BaseParameter, **attrib_)  # type: ignore # TODO: why?
-        if parameter["classes"] is None:
+        models[name] = model
+        if parameter.get("classes") is None:
             continue
         for class_ in parameter["classes"]:
             classes[class_] = model
     return classes
+
+
+def get_parameters_type(_type: str, models: dict[str, type[BaseModel]], multivalued: bool = False) -> Any:  # noqa: ANN401
+    try:
+        type_ = _get_type(_type)
+    except Exception:
+        type_ = models.get(_type)
+    return list[type_] if multivalued else type_  # type: ignore
 
 
 PARAMETERS = load_parameters()

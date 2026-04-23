@@ -213,6 +213,10 @@ classes:
       - name
     class_uri: schema:Parameter
   Occupancy:
+    attributes:
+      variant:
+        range: string
+        ifabsent: string('default')
     description: >-
       Represents Occupancy
     slots:
