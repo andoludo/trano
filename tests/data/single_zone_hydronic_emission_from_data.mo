@@ -4062,6 +4062,8 @@ connect(MonitoredSetpoint.y, conPID.u_s) annotation (Line(points={{-17,48},{14,4
 connect(conPID.y, y)
 annotation (Line(points={{47,0},{96,0},{96,2},{110,2}}, color={0,0,127}));
 connect(dataBus.temp_01, MonitoredSetpoint.u);
+connect(dataBus.TZonSpace_001, conPID.u_m);
+connect(dataBus.yHeaValve_003, conPID.y);
 end EmissionControlMonitoredSetpointEmission_control_001;
         model OccupancyOccupancy_1
 extends single_zone_hydronic_emission_from_data.Trano.Occupancy.SimpleOccupancy ;
@@ -4168,9 +4170,6 @@ Modelica.Blocks.Sources.RealExpression
             TAirOutBoiler_control_001
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
-            yHeaControl_1
-            (y=25.0);
-Modelica.Blocks.Sources.RealExpression
             TColSetControl_2
             (y=363.15);
 Modelica.Blocks.Sources.BooleanExpression
@@ -4195,8 +4194,6 @@ connect(dataBus.TZonSpace_001, TRoo[1].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
 connect(dataBus.TAirOutBoiler_001,
 TAirOutBoiler_control_001.y);
-connect(dataBus.yHeaValve_003,
-yHeaControl_1.y);
 connect(dataBus.TColSetControl_2,
 TColSetControl_2.y);
 connect(dataBus.triggerControl_2,

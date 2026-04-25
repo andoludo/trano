@@ -317,6 +317,18 @@
         port: u
         target:
           main: DataSource
+      - component: conPID
+        name: TZon
+        port: u_m
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: conPID
+        name: yHea
+        port: y
+        target:
+          main: |-
+            element.controllable_element.name
     category: control
     template: |-
         model EmissionControlMonitoredSetpoint{{ element.name | capitalize}}
