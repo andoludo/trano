@@ -289,6 +289,12 @@ classes:
         description: None
         ifabsent: float(5)
         range: float
+      data:
+        description: Occupancy data sources
+        inlined: true
+        inlined_as_list: true
+        multivalued: true
+        range: DataSource
       schedule:
         ifabsent: string(3600*{7, 19})
         range: string

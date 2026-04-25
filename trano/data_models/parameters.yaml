@@ -190,6 +190,13 @@ EmissionControlParameters:
       description: None
       ifabsent: float(5)
       range: float
+    data:
+      alias: data
+      description: Occupancy data sources
+      range: DataSource
+      multivalued: true
+      inlined: true
+      inlined_as_list: true
   classes:
   - EmissionControl
 OccupancyParameters:
