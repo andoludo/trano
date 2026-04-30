@@ -1026,14 +1026,16 @@ model PartialSystemD
 
   replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
       "Medium model" annotation (choicesAllMatching=true);
+    parameter Real m_flow_nominal=2*100*1.2/3600;
+    parameter Real dp_nominal=200;
   Buildings.Fluid.Movers.FlowControlled_dp
                            fanSup(
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
     redeclare package Medium = Medium,
-    dp_nominal=200,
-    m_flow_nominal=2*100*1.2/3600) "Supply fan"
+    dp_nominal=dp_nominal,
+    m_flow_nominal=m_flow_nominal) "Supply fan"
     annotation (Placement(transformation(extent={{4,6},{24,26}})));
   Buildings.Fluid.Movers.FlowControlled_dp
                            fanRet(
@@ -1041,17 +1043,17 @@ model PartialSystemD
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
     redeclare package Medium = Medium,
-    dp_nominal=200,
-    m_flow_nominal=2*100*1.2/3600) "Return fan"
+    dp_nominal=dp_nominal,
+    m_flow_nominal=m_flow_nominal) "Return fan"
     annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
   Buildings.Fluid.HeatExchangers.ConstantEffectiveness
                                        hex(
     redeclare package Medium1 = Medium,
     redeclare package Medium2 = Medium,
-    m1_flow_nominal=2*100*1.2/3600,
-    m2_flow_nominal=2*100*1.2/3600,
-    dp1_nominal=100,
-    dp2_nominal=100)
+    m1_flow_nominal=m_flow_nominal,
+    m2_flow_nominal=m_flow_nominal,
+    dp1_nominal=dp_nominal,
+    dp2_nominal=dp_nominal)
     "Heat exchanger with constant heat recovery effectivity"
     annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
   Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
@@ -1067,7 +1069,7 @@ model PartialSystemD
   iconTransformation(extent={{94,-48},{110,-31}})));
   Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
     redeclare package Medium = Medium,
-    m_flow_nominal=2*100*1.2/3600,
+    m_flow_nominal=m_flow_nominal,
     allowFlowReversal=false)
     annotation (Placement(transformation(extent={{48,6},{68,26}})));
 Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
@@ -1138,14 +1140,16 @@ end PartialSystemD;
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
             "Medium model" annotation (choicesAllMatching=true);
+        parameter Real m_flow_nominal=2*100*1.2/3600;
+    parameter Real dp_nominal=200;
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanSup(
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Supply fan"
+          dp_nominal=dp_nominal,
+          m_flow_nominal=m_flow_nominal) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanRet(
@@ -1153,17 +1157,17 @@ end PartialSystemD;
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Return fan"
+          dp_nominal=dp_nominal,
+          m_flow_nominal=m_flow_nominal) "Return fan"
           annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
         Buildings.Fluid.HeatExchangers.ConstantEffectiveness
                                              hex(
           redeclare package Medium1 = Medium,
           redeclare package Medium2 = Medium,
-          m1_flow_nominal=2*100*1.2/3600,
-          m2_flow_nominal=2*100*1.2/3600,
-          dp1_nominal=100,
-          dp2_nominal=100)
+          m1_flow_nominal=m_flow_nominal,
+          m2_flow_nominal=m_flow_nominal,
+          dp1_nominal=dp_nominal,
+          dp2_nominal=dp_nominal)
           "Heat exchanger with constant heat recovery effectivity"
           annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
         Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package
@@ -1184,7 +1188,7 @@ end PartialSystemD;
           annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
         Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
           redeclare package Medium = Medium,
-          m_flow_nominal=2*100*1.2/3600,
+          m_flow_nominal=m_flow_nominal,
           allowFlowReversal=false)
           annotation (Placement(transformation(extent={{48,6},{68,26}})));
         Controls.BaseClasses.DataBus dataBus annotation (Placement(
@@ -3724,7 +3728,9 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
 )));
     multizone_air_handling_unit_space_connected.Components.BaseClasses.SystemDAhu_001
     ahu_001
-    (redeclare package Medium = Medium) annotation (
+    (redeclare package Medium = Medium,     m_flow_nominal=2*100*1.2/3600,
+    dp_nominal=200
+) annotation (
     Placement(transformation(origin = { 26.60155378601982, -5.553170173178785 },
     extent = {{ 5, -5}, {-5, 5}}
 )));

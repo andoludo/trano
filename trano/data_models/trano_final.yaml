@@ -3,12 +3,22 @@ classes:
     class_uri: schema:AhuControl
     slots:
     - id
+  AhuParameters:
+    attributes:
+      dp_nominal:
+        description: None
+        ifabsent: string(200)
+        range: string
+      m_flow_nominal:
+        description: None
+        ifabsent: string(2*100*1.2/3600)
+        range: string
   AirHandlingUnit:
     attributes:
       control:
         range: Control
       parameters:
-        range: Parameter
+        range: AhuParameters
     is_a: System
   Boiler:
     attributes:

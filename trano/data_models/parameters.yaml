@@ -587,3 +587,18 @@ DataSource:
       description: Name of the variable within the component
       range: string
       required: true
+AhuParameters:
+  attributes:
+    m_flow_nominal:
+      alias: m_flow_nominal
+      description: None
+      ifabsent: string(2*100*1.2/3600)
+      range: string
+    dp_nominal:
+      alias: dp_nominal
+      description: None
+      ifabsent: string(200)
+      range: string
+
+  classes:
+  - AirHandlingUnit

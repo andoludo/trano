@@ -44,6 +44,9 @@ spaces:
 
 systems:
   - air_handling_unit:
+      parameters:
+        m_flow_nominal: 100.0
+        dp_nominal: 2.5
       id: AHU:001
       variant: test
       inlets:
