@@ -5229,7 +5229,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -5271,7 +5271,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -5313,7 +5313,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -5364,7 +5364,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -5406,7 +5406,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)

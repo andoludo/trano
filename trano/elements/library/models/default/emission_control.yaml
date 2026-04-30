@@ -259,7 +259,7 @@
         Trano.Controls.BaseClasses.DataBus dataBus {% raw %}annotation (Placement(
               transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
       extent={{-120,62},{-78,98}})));{% endraw %}
-            IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+            IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
                                                     {% raw %}annotation (Placement(
                   transformation(extent={{26,-10},{46,10}})));{% endraw %}
       equation 
@@ -343,7 +343,7 @@
         Trano.Controls.BaseClasses.DataBus dataBus {% raw %}annotation (Placement(
               transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
         extent={{-120,62},{-78,98}})));{% endraw %}
-            IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P)
+            IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
                                                     {% raw %}annotation (Placement(
                   transformation(extent={{26,-10},{46,10}})));{% endraw %}
         Modelica.Blocks.Routing.RealPassThrough MonitoredSetpoint
