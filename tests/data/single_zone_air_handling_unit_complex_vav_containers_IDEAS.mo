@@ -1026,14 +1026,16 @@ model PartialSystemD
 
   replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
       "Medium model" annotation (choicesAllMatching=true);
+    parameter Real m_flow_nominal=2*100*1.2/3600;
+    parameter Real dp_nominal=200;
   Buildings.Fluid.Movers.FlowControlled_dp
                            fanSup(
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
     redeclare package Medium = Medium,
-    dp_nominal=200,
-    m_flow_nominal=2*100*1.2/3600) "Supply fan"
+    dp_nominal=dp_nominal,
+    m_flow_nominal=m_flow_nominal) "Supply fan"
     annotation (Placement(transformation(extent={{4,6},{24,26}})));
   Buildings.Fluid.Movers.FlowControlled_dp
                            fanRet(
@@ -1041,17 +1043,17 @@ model PartialSystemD
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
     redeclare package Medium = Medium,
-    dp_nominal=200,
-    m_flow_nominal=2*100*1.2/3600) "Return fan"
+    dp_nominal=dp_nominal,
+    m_flow_nominal=m_flow_nominal) "Return fan"
     annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
   Buildings.Fluid.HeatExchangers.ConstantEffectiveness
                                        hex(
     redeclare package Medium1 = Medium,
     redeclare package Medium2 = Medium,
-    m1_flow_nominal=2*100*1.2/3600,
-    m2_flow_nominal=2*100*1.2/3600,
-    dp1_nominal=100,
-    dp2_nominal=100)
+    m1_flow_nominal=m_flow_nominal,
+    m2_flow_nominal=m_flow_nominal,
+    dp1_nominal=dp_nominal,
+    dp2_nominal=dp_nominal)
     "Heat exchanger with constant heat recovery effectivity"
     annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
   Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
@@ -1067,7 +1069,7 @@ model PartialSystemD
   iconTransformation(extent={{94,-48},{110,-31}})));
   Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
     redeclare package Medium = Medium,
-    m_flow_nominal=2*100*1.2/3600,
+    m_flow_nominal=m_flow_nominal,
     allowFlowReversal=false)
     annotation (Placement(transformation(extent={{48,6},{68,26}})));
 Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
@@ -1138,14 +1140,16 @@ end PartialSystemD;
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
             "Medium model" annotation (choicesAllMatching=true);
+        parameter Real m_flow_nominal=2*100*1.2/3600;
+    parameter Real dp_nominal=200;
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanSup(
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Supply fan"
+          dp_nominal=dp_nominal,
+          m_flow_nominal=m_flow_nominal) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanRet(
@@ -1153,17 +1157,17 @@ end PartialSystemD;
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Return fan"
+          dp_nominal=dp_nominal,
+          m_flow_nominal=m_flow_nominal) "Return fan"
           annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
         Buildings.Fluid.HeatExchangers.ConstantEffectiveness
                                              hex(
           redeclare package Medium1 = Medium,
           redeclare package Medium2 = Medium,
-          m1_flow_nominal=2*100*1.2/3600,
-          m2_flow_nominal=2*100*1.2/3600,
-          dp1_nominal=100,
-          dp2_nominal=100)
+          m1_flow_nominal=m_flow_nominal,
+          m2_flow_nominal=m_flow_nominal,
+          dp1_nominal=dp_nominal,
+          dp2_nominal=dp_nominal)
           "Heat exchanger with constant heat recovery effectivity"
           annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
         Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package
@@ -1184,7 +1188,7 @@ end PartialSystemD;
           annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
         Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
           redeclare package Medium = Medium,
-          m_flow_nominal=2*100*1.2/3600,
+          m_flow_nominal=m_flow_nominal,
           allowFlowReversal=false)
           annotation (Placement(transformation(extent={{48,6},{68,26}})));
         Controls.BaseClasses.DataBus dataBus annotation (Placement(
@@ -3236,30 +3240,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=900.0,
-      rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.3,
       c=880.0,
       rho=850.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=800.0,
+      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
       c=840.0,
       rho=1120.0,
       epsLw=0.88,
+      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=900.0,
+      rho=2240.0,
+      epsLw=0.88,
       epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.89,
       c=800.0,
       rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record concreteslab_001
@@ -3905,46 +3909,46 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            THeaSetVav_control_001
+            TSupSetVav_control_001
             (y=293.15);
 Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_control_001
-            (y=0.0);
+            THeaSetVav_control_001
+            (y=293.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetVav_control_001
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TSupSetVav_control_001
-            (y=293.15);
+            ppmCO2SetVav_control_001
+            (y=0.0);
+Modelica.Blocks.Sources.IntegerExpression
+            oveDamPosVav_control_001
+            (y=0);
+Modelica.Blocks.Sources.IntegerExpression
+            uOpeModVav_control_001
+            (y=1);
 Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_control_001
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             uAhuOpeModAhu_control_001
             (y=0);
-Modelica.Blocks.Sources.IntegerExpression
-            uOpeModVav_control_001
-            (y=1);
-Modelica.Blocks.Sources.IntegerExpression
-            oveDamPosVav_control_001
-            (y=0);
 Modelica.Blocks.Sources.BooleanExpression
-            u1WinVav_control_001
+            uHeaOffVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1OccVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_control_001
+            u1HotPlaVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_control_001
+            u1WinVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1SupFanAhu_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1HotPlaVav_control_001
+            u1FanVav_control_001
             (y=false);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -3963,34 +3967,34 @@ connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_001, TRoo[1].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
-connect(dataBus.THeaSetSpace_001,
-THeaSetVav_control_001.y);
-connect(dataBus.ppmCO2SetSpace_001,
-ppmCO2SetVav_control_001.y);
-connect(dataBus.TCooSetSpace_001,
-TCooSetVav_control_001.y);
 connect(dataBus.TSupSetSpace_001,
 TSupSetVav_control_001.y);
+connect(dataBus.THeaSetSpace_001,
+THeaSetVav_control_001.y);
+connect(dataBus.TCooSetSpace_001,
+TCooSetVav_control_001.y);
+connect(dataBus.ppmCO2SetSpace_001,
+ppmCO2SetVav_control_001.y);
+connect(dataBus.oveDamPosSpace_001,
+oveDamPosVav_control_001.y);
+connect(dataBus.uOpeModSpace_001,
+uOpeModVav_control_001.y);
 connect(dataBus.oveFloSetSpace_001,
 oveFloSetVav_control_001.y);
 connect(dataBus.uAhuOpeModAhu_control_001,
 uAhuOpeModAhu_control_001.y);
-connect(dataBus.uOpeModSpace_001,
-uOpeModVav_control_001.y);
-connect(dataBus.oveDamPosSpace_001,
-oveDamPosVav_control_001.y);
-connect(dataBus.u1WinSpace_001,
-u1WinVav_control_001.y);
-connect(dataBus.u1OccSpace_001,
-u1OccVav_control_001.y);
 connect(dataBus.uHeaOffSpace_001,
 uHeaOffVav_control_001.y);
-connect(dataBus.u1FanSpace_001,
-u1FanVav_control_001.y);
-connect(dataBus.u1SupFanAhu_control_001,
-u1SupFanAhu_control_001.y);
+connect(dataBus.u1OccSpace_001,
+u1OccVav_control_001.y);
 connect(dataBus.u1HotPlaSpace_001,
 u1HotPlaVav_control_001.y);
+connect(dataBus.u1WinSpace_001,
+u1WinVav_control_001.y);
+connect(dataBus.u1SupFanAhu_control_001,
+u1SupFanAhu_control_001.y);
+connect(dataBus.u1FanSpace_001,
+u1FanVav_control_001.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},
@@ -4042,30 +4046,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=900.0,
-      rho=2240.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.3,
       c=880.0,
       rho=850.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=800.0,
+      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
       c=840.0,
       rho=1120.0,
       epsLw=0.88,
+      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=900.0,
+      rho=2240.0,
+      epsLw=0.88,
       epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.89,
       c=800.0,
       rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record concreteslab_001

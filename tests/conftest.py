@@ -69,6 +69,7 @@ RadiatorParameter = param_from_config("Radiator")
 SpaceParameter = param_from_config("Space")
 SplitValveParameters = param_from_config("SplitValve")
 ThreeWayValveParameters = param_from_config("ThreeWayValve")
+AirHandlingUnitParameters = param_from_config("AirHandlingUnit")
 
 
 @pytest.fixture

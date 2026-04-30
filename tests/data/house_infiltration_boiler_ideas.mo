@@ -1026,14 +1026,16 @@ model PartialSystemD
 
   replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
       "Medium model" annotation (choicesAllMatching=true);
+    parameter Real m_flow_nominal=2*100*1.2/3600;
+    parameter Real dp_nominal=200;
   Buildings.Fluid.Movers.FlowControlled_dp
                            fanSup(
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
     redeclare package Medium = Medium,
-    dp_nominal=200,
-    m_flow_nominal=2*100*1.2/3600) "Supply fan"
+    dp_nominal=dp_nominal,
+    m_flow_nominal=m_flow_nominal) "Supply fan"
     annotation (Placement(transformation(extent={{4,6},{24,26}})));
   Buildings.Fluid.Movers.FlowControlled_dp
                            fanRet(
@@ -1041,17 +1043,17 @@ model PartialSystemD
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
     redeclare package Medium = Medium,
-    dp_nominal=200,
-    m_flow_nominal=2*100*1.2/3600) "Return fan"
+    dp_nominal=dp_nominal,
+    m_flow_nominal=m_flow_nominal) "Return fan"
     annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
   Buildings.Fluid.HeatExchangers.ConstantEffectiveness
                                        hex(
     redeclare package Medium1 = Medium,
     redeclare package Medium2 = Medium,
-    m1_flow_nominal=2*100*1.2/3600,
-    m2_flow_nominal=2*100*1.2/3600,
-    dp1_nominal=100,
-    dp2_nominal=100)
+    m1_flow_nominal=m_flow_nominal,
+    m2_flow_nominal=m_flow_nominal,
+    dp1_nominal=dp_nominal,
+    dp2_nominal=dp_nominal)
     "Heat exchanger with constant heat recovery effectivity"
     annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
   Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
@@ -1067,7 +1069,7 @@ model PartialSystemD
   iconTransformation(extent={{94,-48},{110,-31}})));
   Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
     redeclare package Medium = Medium,
-    m_flow_nominal=2*100*1.2/3600,
+    m_flow_nominal=m_flow_nominal,
     allowFlowReversal=false)
     annotation (Placement(transformation(extent={{48,6},{68,26}})));
 Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
@@ -1138,14 +1140,16 @@ end PartialSystemD;
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
             "Medium model" annotation (choicesAllMatching=true);
+        parameter Real m_flow_nominal=2*100*1.2/3600;
+    parameter Real dp_nominal=200;
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanSup(
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Supply fan"
+          dp_nominal=dp_nominal,
+          m_flow_nominal=m_flow_nominal) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanRet(
@@ -1153,17 +1157,17 @@ end PartialSystemD;
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Return fan"
+          dp_nominal=dp_nominal,
+          m_flow_nominal=m_flow_nominal) "Return fan"
           annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
         Buildings.Fluid.HeatExchangers.ConstantEffectiveness
                                              hex(
           redeclare package Medium1 = Medium,
           redeclare package Medium2 = Medium,
-          m1_flow_nominal=2*100*1.2/3600,
-          m2_flow_nominal=2*100*1.2/3600,
-          dp1_nominal=100,
-          dp2_nominal=100)
+          m1_flow_nominal=m_flow_nominal,
+          m2_flow_nominal=m_flow_nominal,
+          dp1_nominal=dp_nominal,
+          dp2_nominal=dp_nominal)
           "Heat exchanger with constant heat recovery effectivity"
           annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
         Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package
@@ -1184,7 +1188,7 @@ end PartialSystemD;
           annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
         Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
           redeclare package Medium = Medium,
-          m_flow_nominal=2*100*1.2/3600,
+          m_flow_nominal=m_flow_nominal,
           allowFlowReversal=false)
           annotation (Placement(transformation(extent={{48,6},{68,26}})));
         Controls.BaseClasses.DataBus dataBus annotation (Placement(
@@ -4047,70 +4051,70 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.11,
-      c=1880.0,
-      rho=550.0,
-      epsLw=0.88,
-      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.54,
-      c=840.0,
-      rho=1400.0,
-      epsLw=0.88,
-      epsSw=0.55);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.6,
-      c=840.0,
-      rho=1100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.036,
       c=1470.0,
       rho=26.0,
-      epsLw=0.88,
-      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.0256,
-      c=1006.0,
-      rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.6,
-      c=840.0,
-      rho=975.0,
       epsLw=0.88,
       epsSw=0.55);    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.3,
       c=880.0,
       rho=850.0,
       epsLw=0.88,
+      epsSw=0.55);    record mineral_wool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.036,
+      c=840.0,
+      rho=80.0,
+      epsLw=0.88,
       epsSw=0.55);    record gypsum_plaster_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=975.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.55);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.11,
+      c=1880.0,
+      rho=550.0,
+      epsLw=0.88,
+      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.6,
       c=840.0,
       rho=975.0,
       epsLw=0.88,
-      epsSw=0.55);    record mineral_wool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.036,
+      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.0256,
+      c=1006.0,
+      rho=1.2,
+      epsLw=0.88,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
       c=840.0,
-      rho=80.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.6,
+      c=840.0,
+      rho=1100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.54,
+      c=840.0,
+      rho=1400.0,
+      epsLw=0.88,
+      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.6,
+      c=840.0,
+      rho=975.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record cavity_wall_001
@@ -4131,21 +4135,21 @@ package Constructions "Library of building envelope constructions"      record c
         (d=0.04),house_infiltration_boiler_ideas.Data.Materials.screed_001
         (d=0.05),house_infiltration_boiler_ideas.Data.Materials.timber_001
         (d=0.1)    });
-    end floor_001;      record roof_001
-    "roof_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={house_infiltration_boiler_ideas.Data.Materials.ceramic_tile_001
-        (d=0.025),house_infiltration_boiler_ideas.Data.Materials.mineral_wool_001
-        (d=0.029),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
-        (d=0.02)    });
-    end roof_001;      record innerwall_001
+    end floor_001;      record innerwall_001
     "innerwall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
         (d=0.02),house_infiltration_boiler_ideas.Data.Materials.masonry_001
         (d=0.14),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
         (d=0.02)    });
-    end innerwall_001;
+    end innerwall_001;      record roof_001
+    "roof_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={house_infiltration_boiler_ideas.Data.Materials.ceramic_tile_001
+        (d=0.025),house_infiltration_boiler_ideas.Data.Materials.mineral_wool_001
+        (d=0.029),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
+        (d=0.02)    });
+    end roof_001;
 end Constructions;
 end Data;
 
@@ -5779,70 +5783,70 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.11,
-      c=1880.0,
-      rho=550.0,
-      epsLw=0.88,
-      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.54,
-      c=840.0,
-      rho=1400.0,
-      epsLw=0.88,
-      epsSw=0.55);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.6,
-      c=840.0,
-      rho=1100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
-      c=840.0,
-      rho=2100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.036,
       c=1470.0,
       rho=26.0,
-      epsLw=0.88,
-      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.0256,
-      c=1006.0,
-      rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.6,
-      c=840.0,
-      rho=975.0,
       epsLw=0.88,
       epsSw=0.55);    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.3,
       c=880.0,
       rho=850.0,
       epsLw=0.88,
+      epsSw=0.55);    record mineral_wool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.036,
+      c=840.0,
+      rho=80.0,
+      epsLw=0.88,
       epsSw=0.55);    record gypsum_plaster_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=975.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.55);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.11,
+      c=1880.0,
+      rho=550.0,
+      epsLw=0.88,
+      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.6,
       c=840.0,
       rho=975.0,
       epsLw=0.88,
-      epsSw=0.55);    record mineral_wool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.036,
+      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.0256,
+      c=1006.0,
+      rho=1.2,
+      epsLw=0.88,
+      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
       c=840.0,
-      rho=80.0,
+      rho=2500.0,
+      epsLw=0.88,
+      epsSw=0.55);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.6,
+      c=840.0,
+      rho=1100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.54,
+      c=840.0,
+      rho=1400.0,
+      epsLw=0.88,
+      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.4,
+      c=840.0,
+      rho=2100.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.6,
+      c=840.0,
+      rho=975.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record cavity_wall_001
@@ -5863,21 +5867,21 @@ package Constructions "Library of building envelope constructions"      record c
         (d=0.04),house_infiltration_boiler_ideas.Data.Materials.screed_001
         (d=0.05),house_infiltration_boiler_ideas.Data.Materials.timber_001
         (d=0.1)    });
-    end floor_001;      record roof_001
-    "roof_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={house_infiltration_boiler_ideas.Data.Materials.ceramic_tile_001
-        (d=0.025),house_infiltration_boiler_ideas.Data.Materials.mineral_wool_001
-        (d=0.029),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
-        (d=0.02)    });
-    end roof_001;      record innerwall_001
+    end floor_001;      record innerwall_001
     "innerwall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
         (d=0.02),house_infiltration_boiler_ideas.Data.Materials.masonry_001
         (d=0.14),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
         (d=0.02)    });
-    end innerwall_001;
+    end innerwall_001;      record roof_001
+    "roof_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={house_infiltration_boiler_ideas.Data.Materials.ceramic_tile_001
+        (d=0.025),house_infiltration_boiler_ideas.Data.Materials.mineral_wool_001
+        (d=0.029),house_infiltration_boiler_ideas.Data.Materials.gypsum_plaster_001
+        (d=0.02)    });
+    end roof_001;
 end Constructions;
 end Data;
 

@@ -149,7 +149,7 @@
     {{package_name}}.Trano.Fluid.
         Ventilation.SimpleHVACBuildings
         {{ element.name }}
-        (redeclare package Medium = Medium)
+        (redeclare package Medium = Medium, {{ macros.render_parameters(parameters) | safe}})
   variant: test
 
 
@@ -201,7 +201,7 @@
   template: |-
     {{package_name}}.Components.BaseClasses.SystemD{{ element.name | capitalize}}
         {{ element.name }}
-        (redeclare package Medium = Medium)
+        (redeclare package Medium = Medium, {{ macros.render_parameters(parameters) | safe}})
   variant: system_d
 
 

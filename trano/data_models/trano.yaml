@@ -312,7 +312,7 @@ classes:
     is_a: System
     attributes:
       parameters:
-        range: Parameter
+        range: AhuParameters
       control:
         range: Control
 
