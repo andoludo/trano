@@ -9,6 +9,10 @@ classes:
         description: None
         ifabsent: string(200)
         range: string
+      heat_exchanger_effectiveness:
+        description: None
+        ifabsent: string(0.8)
+        range: string
       m_flow_nominal:
         description: None
         ifabsent: string(2*100*1.2/3600)

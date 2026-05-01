@@ -599,6 +599,11 @@ AhuParameters:
       description: None
       ifabsent: string(200)
       range: string
+    heat_exchanger_effectiveness:
+      alias: eps
+      description: None
+      ifabsent: string(0.8)
+      range: string
 
   classes:
   - AirHandlingUnit

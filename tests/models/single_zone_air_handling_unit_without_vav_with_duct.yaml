@@ -47,6 +47,7 @@ systems:
       parameters:
         m_flow_nominal: 100.0
         dp_nominal: 2.5
+        heat_exchanger_effectiveness: 0.5
       id: AHU:001
       variant: test
       inlets:
