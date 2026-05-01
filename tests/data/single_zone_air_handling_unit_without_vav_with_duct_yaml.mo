@@ -3585,7 +3585,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[1] ports_a(
     Ventilation.SimpleHVACBuildings
     ahu_001
     (redeclare package Medium = Medium,     m_flow_nominal=100.0,
-    dp_nominal=2.5
+    dp_nominal=2.5,
+    eps=0.5
 ) annotation (
     Placement(transformation(origin = { 26.60155378601982, -5.553170173178785 },
     extent = {{ 5, -5}, {-5, 5}}

@@ -3729,7 +3729,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     multizone_air_handling_unit_space_connected.Components.BaseClasses.SystemDAhu_001
     ahu_001
     (redeclare package Medium = Medium,     m_flow_nominal=2*100*1.2/3600,
-    dp_nominal=200
+    dp_nominal=200,
+    eps=0.8
 ) annotation (
     Placement(transformation(origin = { 26.60155378601982, -5.553170173178785 },
     extent = {{ 5, -5}, {-5, 5}}

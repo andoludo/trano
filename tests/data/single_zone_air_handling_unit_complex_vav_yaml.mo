@@ -3956,34 +3956,34 @@ Modelica.Blocks.Sources.RealExpression
             ppmCO2SetVav_control_001
             (y=0.0);
 Modelica.Blocks.Sources.IntegerExpression
-            oveDamPosVav_control_001
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_control_001
             (y=1);
+Modelica.Blocks.Sources.IntegerExpression
+            uAhuOpeModAhu_control_001
+            (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_control_001
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            uAhuOpeModAhu_control_001
+            oveDamPosVav_control_001
             (y=0);
 Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_control_001
+            u1WinVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_control_001
+            u1FanVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1HotPlaVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1WinVav_control_001
+            u1OccVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1SupFanAhu_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1FanVav_control_001
+            uHeaOffVav_control_001
             (y=false);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -4010,26 +4010,26 @@ connect(dataBus.TCooSetSpace_001,
 TCooSetVav_control_001.y);
 connect(dataBus.ppmCO2SetSpace_001,
 ppmCO2SetVav_control_001.y);
-connect(dataBus.oveDamPosSpace_001,
-oveDamPosVav_control_001.y);
 connect(dataBus.uOpeModSpace_001,
 uOpeModVav_control_001.y);
-connect(dataBus.oveFloSetSpace_001,
-oveFloSetVav_control_001.y);
 connect(dataBus.uAhuOpeModAhu_control_001,
 uAhuOpeModAhu_control_001.y);
-connect(dataBus.uHeaOffSpace_001,
-uHeaOffVav_control_001.y);
-connect(dataBus.u1OccSpace_001,
-u1OccVav_control_001.y);
-connect(dataBus.u1HotPlaSpace_001,
-u1HotPlaVav_control_001.y);
+connect(dataBus.oveFloSetSpace_001,
+oveFloSetVav_control_001.y);
+connect(dataBus.oveDamPosSpace_001,
+oveDamPosVav_control_001.y);
 connect(dataBus.u1WinSpace_001,
 u1WinVav_control_001.y);
-connect(dataBus.u1SupFanAhu_control_001,
-u1SupFanAhu_control_001.y);
 connect(dataBus.u1FanSpace_001,
 u1FanVav_control_001.y);
+connect(dataBus.u1HotPlaSpace_001,
+u1HotPlaVav_control_001.y);
+connect(dataBus.u1OccSpace_001,
+u1OccVav_control_001.y);
+connect(dataBus.u1SupFanAhu_control_001,
+u1SupFanAhu_control_001.y);
+connect(dataBus.uHeaOffSpace_001,
+uHeaOffVav_control_001.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},
