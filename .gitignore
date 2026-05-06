@@ -4,6 +4,9 @@
 *.mat
 *.doc
 *.docx
+# Generated Modelica models from running the tutorial / model tests
+tests/tutorials/*.mo
+tests/models/*.mo
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
