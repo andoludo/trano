@@ -32,6 +32,15 @@ Trano is **Modelica library agnostic** but is natively designed to work with:
   - **Hydronic Distribution** 🚰
   - **Production & Electricity** ⚡  
 
+### 🧩 **Extensible Component Variants**
+Every Trano component (radiator, space, control, AHU, boiler, ...) is selected
+by a **variant** name — switching `variant: ideal` to `variant: default`
+swaps the underlying Modelica model. You can also drop your own variant
+YAML files into any folder and load them via the CLI, the Python API, or the
+`TRANO_VARIANTS_PATH` environment variable.
+
+📚 **Tutorial:** [Creating and using component variants](docs/tutorials/component_variants.md)
+
 🚀 **With Trano, creating and modifying detailed BES models has never been easier!**  
 
 ---

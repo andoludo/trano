@@ -66,6 +66,7 @@ nav:
     - Multi-zone with hydronic heating: tutorials/multi-zone_with_hydronic_heating.md
     - Zone with ventilation: tutorials/zone_with_ventilation.md
     - Model with photovoltaics: tutorials/zone_with_photovoltaics.md
+    - Component variants: tutorials/component_variants.md
   - How-to Guides: how-to guides/index.md
   - Explanation: explanation/index.md
   - Reference:

@@ -6,6 +6,7 @@ from typing import Annotated
 from rich import print
 import typer
 from trano.data_models.conversion import convert_network
+from trano.elements.library.components import register_variants_folder
 from trano.elements.library.library import Library
 from trano.reporting.html import to_html_reporting
 from trano.reporting.reporting import ModelDocumentation
@@ -25,6 +26,11 @@ class LibraryChoice(str, Enum):
     buildings = "Buildings"
 
 
+def _register_variant_folders(folders: list[Path] | None) -> None:
+    for folder in folders or []:
+        register_variants_folder(folder)
+
+
 def _create_network(model: str, library: str) -> Network:
     library_ = Library.from_configuration(library)
     model_ = Path(model).resolve()
@@ -41,7 +47,23 @@ def create_model(
         LibraryChoice,
         typer.Argument(help="Library to be used for simulation."),
     ] = LibraryChoice.buildings,
+    variants_folder: Annotated[
+        list[Path] | None,
+        typer.Option(
+            "--variants-folder",
+            "-V",
+            help=(
+                "Path to a folder containing custom component variant YAML files. "
+                "May be passed multiple times to register several folders."
+            ),
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            resolve_path=True,
+        ),
+    ] = None,
 ) -> None:
+    _register_variant_folders(variants_folder)
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -62,7 +84,7 @@ def create_model(
 
 
 @app.command()
-def simulate_model(
+def simulate_model(  # noqa: PLR0913
     model: Annotated[
         str,
         typer.Argument(help="Local path to the '.yaml' model configuration file."),
@@ -74,7 +96,23 @@ def simulate_model(
     start: Annotated[int | None, typer.Argument(help="Start simulation time.")] = 0,
     end: Annotated[int | None, typer.Argument(help="End simulation time.")] = 2 * 3600 * 24 * 7,
     tolerance: Annotated[float | None, typer.Argument(help="Simulation tolerance.")] = 1e-4,
+    variants_folder: Annotated[
+        list[Path] | None,
+        typer.Option(
+            "--variants-folder",
+            "-V",
+            help=(
+                "Path to a folder containing custom component variant YAML files. "
+                "May be passed multiple times to register several folders."
+            ),
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            resolve_path=True,
+        ),
+    ] = None,
 ) -> None:
+    _register_variant_folders(variants_folder)
     options = SimulationLibraryOptions(
         start_time=start,
         end_time=end,
