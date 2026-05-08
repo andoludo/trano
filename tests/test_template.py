@@ -392,6 +392,17 @@ def test_house_infiltration_boiler(schema: Path) -> None:
     assert clean_model(model_, network.name) == set(_read(network.name))
 
 
+def test_house_infiltration_ela(schema: Path) -> None:
+    house = get_path("house_infiltration_ela.yaml")
+
+    network = convert_network(
+        "house_infiltration_ela",
+        house,
+    )
+    model_ = network.model()
+    assert clean_model(model_, network.name) == set(_read(network.name))
+
+
 def test_house_infiltration_boiler_ideas(schema: Path) -> None:
     house = get_path("house_infiltration_boiler.yaml")
 

@@ -632,6 +632,10 @@ classes:
         description: Average room height [m]
         ifabsent: float(2)
         range: float
+      effective_leakage_area:
+        description: Effective air leakage area [m2]
+        ifabsent: float(0.01)
+        range: float
       floor_area:
         description: Floor area [m2]
         ifabsent: float(20)
