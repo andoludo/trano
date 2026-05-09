@@ -2230,7 +2230,7 @@ end PartialSystemD;
       final parameter Modelica.Units.SI.Volume V=AFlo*hRoo "Volume";
       parameter Modelica.Units.SI.Area AFlo "Floor area";
       parameter Modelica.Units.SI.Length hRoo "Average room height";
-      parameter Real ACH(unit="1/h") = 0.5
+      parameter Real ACH(unit="1/h") = 1.0
       "Air change rate (1/h)"annotation(Dialog(group="Air Infiltration"));
 
       Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heaPorAir
@@ -2490,15 +2490,15 @@ end PartialSystemD;
         "Radiation model for room-side window shade"
         annotation (Placement(transformation(extent={{-60,90},{-40,110}})));
 
-      Buildings.Fluid.Sources.Boundary_pT souInf(
-        redeclare package Medium = Medium,
-        use_T_in=true,
-        nPorts=1) "Source model for air infiltration"
-        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
-      Buildings.Fluid.Sources.MassFlowSource_T sinInf(
+      Buildings.Fluid.Sources.MassFlowSource_T souInf(
         redeclare package Medium = Medium,
         use_m_flow_in=true,
-        nPorts=1) "Sink model for air infiltration"
+        use_T_in=true,
+        nPorts=1) "Outdoor-air infiltration source (mass flow at outdoor T)"
+        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
+      Buildings.Fluid.Sources.Boundary_pT sinInf(
+        redeclare package Medium = Medium,
+        nPorts=1) "Pressure boundary closing the infiltration mass balance"
         annotation (Placement(transformation(extent={{2,-194},{20,-176}})));
       Modelica.Blocks.Sources.RealExpression airInfiltration(y=ACH*V*1.2/3600)
         annotation (Placement(transformation(extent={{-60,-188},{-40,-168}})));
@@ -3007,8 +3007,8 @@ end PartialSystemD;
           extent={{-3,6},{-3,6}},
           horizontalAlignment=TextAlignment.Right));
 
-      connect(airInfiltration.y, sinInf.m_flow_in) annotation (Line(points={{-39,-178},
-              {-8,-178},{-8,-177.8},{0.2,-177.8}}, color={0,0,127}));
+      connect(airInfiltration.y, souInf.m_flow_in) annotation (Line(points={{-39,-178},
+              {-8,-178},{-8,-163.6},{2.6,-163.6}}, color={0,0,127}));
       annotation (
         Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-260,-220},{460,
                 200}})),
