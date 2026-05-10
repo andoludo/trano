@@ -1,4 +1,6 @@
 /.venv*/
+/.cache/bestest/
+/validation/bestest/_reports/
 /System Volume Information/
 *.html
 *.mat
