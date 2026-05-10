@@ -1,0 +1,64 @@
+# BESTEST case 620: lightweight, east+west windows (6 m^2 each), heating 20C / cooling 27C.
+# Iteration 1 limitation as in case_600.yaml: only the heater is modeled. Xfail.
+spaces:
+  - id: Space:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{0, 24}
+        gain: "[80/48; 120/48; 0]"
+        heat_gain_if_occupied: 1/1/1
+    parameters:
+      floor_area: 48
+      average_room_height: 2.7
+    external_boundaries:
+      external_walls:
+        - surface: 21.6
+          azimuth: 180.0
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 21.6
+          azimuth: 0
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 16.2
+          azimuth: 270
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 16.2
+          azimuth: 90
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 48.0
+          azimuth: 0.0
+          tilt: ceiling
+          construction: ROOF:001
+      floor_on_grounds:
+        - surface: 48.0
+          construction: FLOOR:001
+      windows:
+        - surface: 6
+          azimuth: 90
+          tilt: wall
+          construction: WIN:01
+          width: 3
+          height: 2
+        - surface: 6
+          azimuth: 270
+          tilt: wall
+          construction: WIN:01
+          width: 3
+          height: 2
+    emissions:
+      - radiator:
+          id: HEATER:001
+          variant: ideal
+          parameters:
+            nominal_heating_power_positive_for_heating: 1.0e9
+            fraction_radiant_heat_transfer: 0.0
+          control:
+            emission_control:
+              id: HEATER_CONTROL:001
+              parameters:
+                schedule: 3600*{0, 24}
+                temperature_heating_setpoint: 293.15
+                temperature_heating_setback: 293.15

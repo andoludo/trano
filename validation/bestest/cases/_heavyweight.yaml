@@ -1,0 +1,32 @@
+# Heavyweight envelope override for ASHRAE 140 Class I cases 900, 900FF, 920, 940, 950.
+# Same material/construction IDs as _base.yaml — the harness deep-merge replaces the
+# lightweight wall and floor stacks with concrete-based heavyweight equivalents.
+# Roof construction is unchanged (per ASHRAE 140 §5.2.3).
+material:
+  - id: MATERIAL:001
+    thermal_conductivity: 0.510
+    specific_heat_capacity: 1000
+    density: 1400
+  - id: MATERIAL:002
+    thermal_conductivity: 0.040
+    specific_heat_capacity: 1400
+    density: 10
+  - id: MATERIAL:005
+    thermal_conductivity: 1.130
+    specific_heat_capacity: 1000
+    density: 1400
+constructions:
+  - id: EXTERIOR_WALL:001
+    layers:
+      - material: MATERIAL:001
+        thickness: 0.100
+      - material: MATERIAL:002
+        thickness: 0.0615
+      - material: MATERIAL:003
+        thickness: 0.012
+  - id: FLOOR:001
+    layers:
+      - material: MATERIAL:004
+        thickness: 1.007
+      - material: MATERIAL:005
+        thickness: 0.080
