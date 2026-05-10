@@ -478,8 +478,8 @@ def simple_space_template() -> Space:
 
 
 def test_dynamic_template_power_input() -> None:
-    pump_yaml = Path(__file__).parents[1].joinpath(
-        "trano", "elements", "library", "data", "models", "default", "pump.yaml"
+    pump_yaml = (
+        Path(__file__).parents[1].joinpath("trano", "elements", "library", "data", "models", "default", "pump.yaml")
     )
     pump_library = LibraryData.model_validate(yaml.safe_load(pump_yaml.read_text())[0])
     pump_control = CollectorControl(name="test")

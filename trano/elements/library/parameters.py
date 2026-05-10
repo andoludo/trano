@@ -40,7 +40,7 @@ def load_parameters() -> dict[str, type["BaseParameter"]]:
             else:
                 # `eval` here is intentional: callable bodies and return types
                 # come from a trusted parameters.yaml shipped with the package.
-                attrib_[k] = computed_field(  # type: ignore[arg-type]
+                attrib_[k] = computed_field(  # type: ignore[call-overload]
                     eval(v["func"]),  # noqa: S307
                     return_type=eval(v["type"]),  # noqa: S307
                     alias=alias,

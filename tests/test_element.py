@@ -85,11 +85,7 @@ def test_ahu_control_can_be_constructed() -> None:
 
 def test_default_library_models_are_valid_yaml() -> None:
     """Every shipped per-component yaml file must be loadable."""
-    models_dir = (
-        Path(__file__)
-        .parents[1]
-        .joinpath("trano", "elements", "library", "data", "models", "default")
-    )
+    models_dir = Path(__file__).parents[1].joinpath("trano", "elements", "library", "data", "models", "default")
     yaml_files = sorted(models_dir.glob("*.yaml"))
     assert yaml_files, "no library models under data/models/default"
     for f in yaml_files:

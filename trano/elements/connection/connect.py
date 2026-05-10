@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from trano.elements.connection.connection import Connection
 from trano.elements.connection.port import Port
-from trano.elements.types import ConnectionView, Flow, Medium
+from trano.elements.types import ConnectionView, Medium
 from trano.exceptions import ConnectionLimitReached
 
 if TYPE_CHECKING:

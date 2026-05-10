@@ -71,7 +71,7 @@ def default_internal_wall_construction() -> Construction:
     )
 
 
-class Network:  # noqa: PLR0904  # large public surface; split in a follow-up
+class Network:  # large public surface; split in a follow-up
     def __init__(
         self,
         name: str,
@@ -269,7 +269,7 @@ class Network:  # noqa: PLR0904  # large public surface; split in a follow-up
             if (
                 isinstance(node, Weather) and hasattr(node.parameters, "path") and node.parameters.path is not None  # type: ignore
             ):
-                # type: ignore retained: parameters.path is dynamically typed via pydantic create_model
+                # type-ignore below: parameters.path is dynamically typed via pydantic create_model
                 old_path = Path(node.parameters.path).resolve()  # type: ignore
                 if not old_path.exists():
                     parents = [Path.cwd(), *Path.cwd().parents]
