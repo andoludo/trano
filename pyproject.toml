@@ -72,6 +72,14 @@ docs = [
     "python-dotenv>=1.0.1,<2",
 ]
 
+[tool.pytest.ini_options]
+markers = [
+    "simulate: tests that exec OpenModelica via Docker (existing, registered here for visibility)",
+    "bestest: ASHRAE 140 BESTEST validation cases",
+    "slow: takes more than 30 s",
+]
+addopts = "-m 'not slow'"
+
 [tool.uv]
 default-groups = "all"
 
