@@ -299,3 +299,17 @@ def test_simulate_house_complex() -> None:
         options=SimulationOptions(end_time=24 * 3600 * 30 * 3),
     )
     assert is_success(results)
+
+
+@pytest.mark.simulate
+def test_simulate_house_infiltration_boiler() -> None:
+    house = get_path("house_infiltration_boiler.yaml")
+    # TODO: remove ducts here
+    network = convert_network("house_infiltration_boiler", house)
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
+        results = simulate(
+            Path(project_path),
+            network,
+            options=SimulationOptions(end_time=3600),
+        )
+        assert is_success(results)
