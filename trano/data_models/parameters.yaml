@@ -216,6 +216,11 @@ OccupancyParameters:
       description: None
       ifabsent: string(3600*{7, 19})
       range: string
+    ach:
+      alias: ACH
+      description: None
+      ifabsent: float(0.9)
+      range: float
     data:
       alias: data
       description: Occupancy data sources

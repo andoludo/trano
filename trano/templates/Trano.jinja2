@@ -2,9 +2,63 @@
 {% raw %}
 package Trano
   package Occupancy
+    model OccupancyCo2
+
+  // ---- Original parameters (kept) ----
+  parameter Real occupancy[:]=3600*{7,19}
+    "Occupancy table, each entry switching occupancy on or off";
+
+  parameter Real gain[:, :]=[35; 70; 30]
+    "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] ";
+
+  parameter Real k=1/6/4
+    "Heat gain if occupied";
+
+  parameter Boolean firstEntryOccupied=true
+    "Set to true if first entry in occupancy denotes a changed from unoccupied to occupied";
+
+  // ---- Added parameters for CO2-based occupancy ----
+  parameter Real AFlo =  24       "Zone floor area (m2)";
+  parameter Real hRoom = 2.7      "Zone height (m)";
+  parameter Real ACH =   1.0      "Air changes per hour (1/h)";
+  parameter Real ppmOut = 420     "Outdoor CO2 (ppm)";
+  parameter Real gCO2 =   5.2e-6  "Per-person CO2 generation (m3/s, ~1.2 met)";
+
+  final parameter Real V =     AFlo*hRoom   "Zone volume (m3)";
+  final parameter Real QVent = V*ACH/3600   "Ventilation flow (m3/s)";
+
+  // Observable signals (handy for plotting / debugging)
+  Real N       "Estimated occupants in zone";
+  Real density "Occupant density (people/m2)";
+
+  Modelica.Blocks.Math.MatrixGain gai2(K=gain)
+    "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] "
+    annotation (Placement(transformation(extent={{18,-12},{38,8}})));
+  extends Modelica.Blocks.Interfaces.MO(final nout=3);
+  Modelica.Blocks.Routing.RealPassThrough Co2
+    annotation (Placement(transformation(extent={{-94,26},{-68,52}})));
+
+equation
+  // Linear steady-state inversion of the CO2 mass balance
+  N        = max(0, QVent*(Co2.y - ppmOut)*1e-6/gCO2);
+  density  = N/AFlo;
+  gai2.u[1] = density;
+
+  connect(gai2.y, y) annotation (Line(points={{39,-2},{96,-2},{96,0},{110,0}},
+    color={0,0,127}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+    Ellipse(extent={{10,70},{-26,34}}, lineColor={28,108,200}),
+    Line(points={{-8,34},{-8,-26}}, color={28,108,200}),
+    Line(points={{-8,-26},{-48,-68}}, color={28,108,200}),
+    Line(points={{-8,-26},{34,-70},{32,-70}}, color={28,108,200}),
+    Line(points={{-8,20},{-48,-8}}, color={28,108,200}),
+    Line(points={{-8,20},{44,-8}}, color={28,108,200})}),    Diagram(
+    coordinateSystem(preserveAspectRatio=false)));
+end OccupancyCo2;
+
 
     model SimpleOccupancy
-
+        parameter Real ACH =   1.0      "Air changes per hour (1/h)";
       parameter Real occupancy[:]=3600*{7,19}
     "Occupancy table, each entry switching occupancy on or off";
 
