@@ -48,12 +48,7 @@
         target:
           main: element.space_name
       real_inputs:
-        - component: passthrough_2
-          name: DataSource
-          port: u
-          target:
-            main: DataSource
-        - component: passthrough_1
+        - component: co2
           name: DataSource
           port: u
           target:
@@ -61,7 +56,7 @@
 
     category: control
     template: "\nmodel Occupancy{{ element.name | capitalize}}\nextends {{ package_name\
-      \ }}.Trano.Occupancy.SimpleOccupancy ;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ }}.Trano.Occupancy.OccupancyCo2 ;\n{{bus_template}}\nequation\n{{bus_ports\
       \ | safe}}\n end Occupancy{{ element.name | capitalize}};\n "
   figures: []
   library: default
@@ -86,4 +81,4 @@
 
         {{package_name}}.Components.BaseClasses.Occupancy{{ element.name | capitalize}}
         {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
-  variant: data
+  variant: co2

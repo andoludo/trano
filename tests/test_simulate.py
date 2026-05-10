@@ -313,3 +313,17 @@ def test_simulate_house_infiltration_boiler() -> None:
             options=SimulationOptions(end_time=3600),
         )
         assert is_success(results)
+
+
+@pytest.mark.simulate
+def test_check_single_zone_hydronic_occupancy_from_data() -> None:
+    house = get_path("single_zone_hydronic_occupancy_from_data.yaml")
+    # TODO: remove ducts here
+    network = convert_network("single_zone_hydronic_occupancy_from_data", house)
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
+        results = simulate(
+            Path(project_path),
+            network,
+            options=SimulationOptions(end_time=3600, check_only=True),
+        )
+        assert is_success(results, SimulationOptions(end_time=3600, check_only=True))

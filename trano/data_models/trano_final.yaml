@@ -458,6 +458,10 @@ classes:
     - parameters
   OccupancyParameters:
     attributes:
+      ach:
+        description: None
+        ifabsent: float(0.9)
+        range: float
       data:
         description: Occupancy data sources
         inlined: true

@@ -2,9 +2,63 @@ package house
 
 package Trano
   package Occupancy
+    model OccupancyCo2
+
+  // ---- Original parameters (kept) ----
+  parameter Real occupancy[:]=3600*{7,19}
+    "Occupancy table, each entry switching occupancy on or off";
+
+  parameter Real gain[:, :]=[35; 70; 30]
+    "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] ";
+
+  parameter Real k=1/6/4
+    "Heat gain if occupied";
+
+  parameter Boolean firstEntryOccupied=true
+    "Set to true if first entry in occupancy denotes a changed from unoccupied to occupied";
+
+  // ---- Added parameters for CO2-based occupancy ----
+  parameter Real AFlo =  24       "Zone floor area (m2)";
+  parameter Real hRoom = 2.7      "Zone height (m)";
+  parameter Real ACH =   1.0      "Air changes per hour (1/h)";
+  parameter Real ppmOut = 420     "Outdoor CO2 (ppm)";
+  parameter Real gCO2 =   5.2e-6  "Per-person CO2 generation (m3/s, ~1.2 met)";
+
+  final parameter Real V =     AFlo*hRoom   "Zone volume (m3)";
+  final parameter Real QVent = V*ACH/3600   "Ventilation flow (m3/s)";
+
+  // Observable signals (handy for plotting / debugging)
+  Real N       "Estimated occupants in zone";
+  Real density "Occupant density (people/m2)";
+
+  Modelica.Blocks.Math.MatrixGain gai2(K=gain)
+    "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] "
+    annotation (Placement(transformation(extent={{18,-12},{38,8}})));
+  extends Modelica.Blocks.Interfaces.MO(final nout=3);
+  Modelica.Blocks.Routing.RealPassThrough Co2
+    annotation (Placement(transformation(extent={{-94,26},{-68,52}})));
+
+equation
+  // Linear steady-state inversion of the CO2 mass balance
+  N        = max(0, QVent*(Co2.y - ppmOut)*1e-6/gCO2);
+  density  = N/AFlo;
+  gai2.u[1] = density;
+
+  connect(gai2.y, y) annotation (Line(points={{39,-2},{96,-2},{96,0},{110,0}},
+    color={0,0,127}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+    Ellipse(extent={{10,70},{-26,34}}, lineColor={28,108,200}),
+    Line(points={{-8,34},{-8,-26}}, color={28,108,200}),
+    Line(points={{-8,-26},{-48,-68}}, color={28,108,200}),
+    Line(points={{-8,-26},{34,-70},{32,-70}}, color={28,108,200}),
+    Line(points={{-8,20},{-48,-8}}, color={28,108,200}),
+    Line(points={{-8,20},{44,-8}}, color={28,108,200})}),    Diagram(
+    coordinateSystem(preserveAspectRatio=false)));
+end OccupancyCo2;
+
 
     model SimpleOccupancy
-
+        parameter Real ACH =   1.0      "Air changes per hour (1/h)";
       parameter Real occupancy[:]=3600*{7,19}
     "Occupancy table, each entry switching occupancy on or off";
 
@@ -1022,19 +1076,136 @@ end PartialAirWaterHeatPump;
   end Boilers;
 
     package Ventilation
+model PartialSystemD
+
+  replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
+      "Medium model" annotation (choicesAllMatching=true);
+    parameter Real m_flow_nominal=2*100*1.2/3600;
+    parameter Real dp_nominal=200;
+    parameter Real eps=0.8;
+  Buildings.Fluid.Movers.FlowControlled_dp
+                           fanSup(
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    inputType=Buildings.Fluid.Types.InputType.Constant,
+    nominalValuesDefineDefaultPressureCurve=true,
+    redeclare package Medium = Medium,
+    dp_nominal=dp_nominal,
+    m_flow_nominal=m_flow_nominal) "Supply fan"
+    annotation (Placement(transformation(extent={{4,6},{24,26}})));
+  Buildings.Fluid.Movers.FlowControlled_dp
+                           fanRet(
+    energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
+    inputType=Buildings.Fluid.Types.InputType.Constant,
+    nominalValuesDefineDefaultPressureCurve=true,
+    redeclare package Medium = Medium,
+    dp_nominal=dp_nominal,
+    m_flow_nominal=m_flow_nominal) "Return fan"
+    annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
+  Buildings.Fluid.HeatExchangers.ConstantEffectiveness
+                                       hex(
+    redeclare package Medium1 = Medium,
+    redeclare package Medium2 = Medium,
+    m1_flow_nominal=m_flow_nominal,
+    m2_flow_nominal=m_flow_nominal,
+    dp1_nominal=dp_nominal,
+    dp2_nominal=dp_nominal, eps=eps)
+    "Heat exchanger with constant heat recovery effectivity"
+    annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
+  Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
+               Medium)
+    "Fluid connector b (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{118,1},{86,31}}),
+  iconTransformation(extent={{110,31},{94,48}})));
+
+  Modelica.Fluid.Interfaces.FluidPort_a port_a(redeclare final package Medium =
+               Medium)
+    "Fluid connector a (positive design flow direction is from port_a to port_b)"
+    annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
+  iconTransformation(extent={{94,-48},{110,-31}})));
+  Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+    redeclare package Medium = Medium,
+    m_flow_nominal=m_flow_nominal,
+    allowFlowReversal=false)
+    annotation (Placement(transformation(extent={{48,6},{68,26}})));
+Modelica.Fluid.Interfaces.FluidPorts_b ports[2](redeclare each package Medium =
+        Medium, each m_flow(max=if flowDirection == Modelica.Fluid.Types.PortFlowDirection.Leaving
+           then 0 else +Modelica.Constants.inf, min=if flowDirection ==
+          Modelica.Fluid.Types.PortFlowDirection.Entering then 0 else -Modelica.Constants.inf))
+                                               "Fluid ports"
+  annotation (Placement(transformation(extent={{-110,38},{-90,-36}}),
+      iconTransformation(extent={{-112,32},{-98,-28}})));
+protected
+parameter Modelica.Fluid.Types.PortFlowDirection flowDirection=Modelica.Fluid.Types.PortFlowDirection.Bidirectional
+  "Allowed flow direction"
+  annotation (Evaluate=true, Dialog(tab="Advanced"));
+equation
+  connect(
+    hex.port_b1, fanSup.port_a)
+    annotation (Line(points={{-6,2},{-6,16},{4,16}}, color={0,127,255}));
+  connect(
+    hex.port_a2, fanRet.port_b) annotation (Line(points={{-6,-10},{-6,-24},
+          {4,-24}}, color={0,127,255}));
+  connect(
+    fanRet.port_a, port_a)
+    annotation (Line(points={{24,-24},{101,-24}}, color={0,127,255}));
+  connect(
+    fanSup.port_b, TSup.port_a)
+    annotation (Line(points={{24,16},{48,16}}, color={0,127,255}));
+  connect(
+    TSup.port_b, port_b)
+    annotation (Line(points={{68,16},{102,16}}, color={0,127,255}));
+  connect(hex.port_a1, ports[1]) annotation (Line(points={{-26,2},{-84,2},{-84,-8.25},
+          {-100,-8.25}}, color={0,127,255}));
+  connect(hex.port_b2, ports[2]) annotation (Line(points={{-26,-10},{-84,-10},{-84,
+          10.25},{-100,10.25}}, color={0,127,255}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,
+            -60},
+      {100,60}}), graphics={Rectangle(
+    extent={{-102,80},{102,-82}},
+    lineColor={215,215,215},
+    fillColor={215,215,215},
+    fillPattern=FillPattern.Forward),
+        Ellipse(
+          extent={{-58,66},{72,-66}},
+          lineColor={28,108,200},
+          fillColor={244,125,35},
+          fillPattern=FillPattern.Solid),
+        Ellipse(
+          extent={{-46,54},{60,-54}},
+          lineColor={28,108,200},
+          fillColor={215,215,215},
+          fillPattern=FillPattern.Solid),
+        Polygon(
+          points={{35,35},{-1,13},{1,-15},{-35,-35},{35,35}},
+          lineColor={28,108,200},
+          fillColor={0,0,0},
+          fillPattern=FillPattern.Forward,
+          origin={7,-1},
+          rotation=-90),
+        Polygon(
+          points={{42,34},{6,12},{8,-16},{-28,-36},{42,34}},
+          lineColor={28,108,200},
+          fillColor={0,0,0},
+          fillPattern=FillPattern.Forward)}),
+                                        Diagram(coordinateSystem(
+    preserveAspectRatio=false, extent={{-100,-60},{100,60}})));
+end PartialSystemD;
 
       model SimpleHVACBuildings
 
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
             "Medium model" annotation (choicesAllMatching=true);
+        parameter Real m_flow_nominal=2*100*1.2/3600;
+    parameter Real dp_nominal=200;
+    parameter Real eps=0.8;
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanSup(
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Supply fan"
+          dp_nominal=dp_nominal,
+          m_flow_nominal=m_flow_nominal) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanRet(
@@ -1042,17 +1213,17 @@ end PartialAirWaterHeatPump;
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=200,
-          m_flow_nominal=2*100*1.2/3600) "Return fan"
+          dp_nominal=dp_nominal,
+          m_flow_nominal=m_flow_nominal) "Return fan"
           annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
         Buildings.Fluid.HeatExchangers.ConstantEffectiveness
                                              hex(
           redeclare package Medium1 = Medium,
           redeclare package Medium2 = Medium,
-          m1_flow_nominal=2*100*1.2/3600,
-          m2_flow_nominal=2*100*1.2/3600,
-          dp1_nominal=100,
-          dp2_nominal=100)
+          m1_flow_nominal=m_flow_nominal,
+          m2_flow_nominal=m_flow_nominal,
+          dp1_nominal=dp_nominal,
+          dp2_nominal=dp_nominal,eps=eps)
           "Heat exchanger with constant heat recovery effectivity"
           annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
         Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package
@@ -1073,7 +1244,7 @@ end PartialAirWaterHeatPump;
           annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
         Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
           redeclare package Medium = Medium,
-          m_flow_nominal=2*100*1.2/3600,
+          m_flow_nominal=m_flow_nominal,
           allowFlowReversal=false)
           annotation (Placement(transformation(extent={{48,6},{68,26}})));
         Controls.BaseClasses.DataBus dataBus annotation (Placement(
@@ -2113,7 +2284,7 @@ end PartialAirWaterHeatPump;
       final parameter Modelica.Units.SI.Volume V=AFlo*hRoo "Volume";
       parameter Modelica.Units.SI.Area AFlo "Floor area";
       parameter Modelica.Units.SI.Length hRoo "Average room height";
-      parameter Real ACH(unit="1/h") = 0.5
+      parameter Real ACH(unit="1/h") = 1.0
       "Air change rate (1/h)"annotation(Dialog(group="Air Infiltration"));
 
       Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heaPorAir
@@ -2373,15 +2544,15 @@ end PartialAirWaterHeatPump;
         "Radiation model for room-side window shade"
         annotation (Placement(transformation(extent={{-60,90},{-40,110}})));
 
-      Buildings.Fluid.Sources.Boundary_pT souInf(
-        redeclare package Medium = Medium,
-        use_T_in=true,
-        nPorts=1) "Source model for air infiltration"
-        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
-      Buildings.Fluid.Sources.MassFlowSource_T sinInf(
+      Buildings.Fluid.Sources.MassFlowSource_T souInf(
         redeclare package Medium = Medium,
         use_m_flow_in=true,
-        nPorts=1) "Sink model for air infiltration"
+        use_T_in=true,
+        nPorts=1) "Outdoor-air infiltration source (mass flow at outdoor T)"
+        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
+      Buildings.Fluid.Sources.Boundary_pT sinInf(
+        redeclare package Medium = Medium,
+        nPorts=1) "Pressure boundary closing the infiltration mass balance"
         annotation (Placement(transformation(extent={{2,-194},{20,-176}})));
       Modelica.Blocks.Sources.RealExpression airInfiltration(y=ACH*V*1.2/3600)
         annotation (Placement(transformation(extent={{-60,-188},{-40,-168}})));
@@ -2890,8 +3061,8 @@ end PartialAirWaterHeatPump;
           extent={{-3,6},{-3,6}},
           horizontalAlignment=TextAlignment.Right));
 
-      connect(airInfiltration.y, sinInf.m_flow_in) annotation (Line(points={{-39,-178},
-              {-8,-178},{-8,-177.8},{0.2,-177.8}}, color={0,0,127}));
+      connect(airInfiltration.y, souInf.m_flow_in) annotation (Line(points={{-39,-178},
+              {-8,-178},{-8,-163.6},{2.6,-163.6}}, color={0,0,127}));
       annotation (
         Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-260,-220},{460,
                 200}})),
@@ -3911,7 +4082,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
         house.Components.BaseClasses.OccupancyOccupancy_1
     occupancy_1(    gain=[35; 70; 30],
     k=1/6/4,
-    occupancy=3600*{7, 19}
+    occupancy=3600*{7, 19},
+    ACH=0.9
 ) annotation (
     Placement(transformation(origin = { -62.7863058937086, 0.04261363636362603 },
     extent = {{ 3, -3}, {-3, 3}}
@@ -3945,7 +4117,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
         house.Components.BaseClasses.OccupancyOccupancy_2
     occupancy_2(    gain=[35; 70; 30],
     k=1/6/4,
-    occupancy=3600*{7, 19}
+    occupancy=3600*{7, 19},
+    ACH=0.9
 ) annotation (
     Placement(transformation(origin = { 32.77155533214898, 50.72443181818181 },
     extent = {{ 3, -3}, {-3, 3}}
@@ -3979,7 +4152,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
         house.Components.BaseClasses.OccupancyOccupancy_3
     occupancy_3(    gain=[35; 70; 30],
     k=1/6/4,
-    occupancy=3600*{7, 19}
+    occupancy=3600*{7, 19},
+    ACH=0.9
 ) annotation (
     Placement(transformation(origin = { 32.72859253148994, -50.79545454545455 },
     extent = {{ 3, -3}, {-3, 3}}
@@ -4825,28 +4999,28 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TColSetControl_004
+            TColSetControl_003
             (y=363.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_006
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_005
-            (y=298.15);
-Modelica.Blocks.Sources.RealExpression
-            TColSetControl_003
+            TColSetControl_004
             (y=363.15);
-Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_001
-            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_007
             (y=298.15);
-Modelica.Blocks.Sources.BooleanExpression
-            triggerControl_004
-            (y=true);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_005
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TAirOutControl_001
+            (y=0.0);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_003
+            (y=true);
+Modelica.Blocks.Sources.BooleanExpression
+            triggerControl_004
             (y=true);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -4873,22 +5047,22 @@ connect(dataBus.TZonSchema_space_003, TRoo[3].T);
 connect(dataBus.ppmCO2Schema_space_001, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Schema_space_002, TRoo1[2].ppm);
 connect(dataBus.ppmCO2Schema_space_003, TRoo1[3].ppm);
-connect(dataBus.TColSetControl_004,
-TColSetControl_004.y);
-connect(dataBus.TCooSetSchema_space_002,
-TCooSetControl_006.y);
-connect(dataBus.TCooSetSchema_space_003,
-TCooSetControl_005.y);
 connect(dataBus.TColSetControl_003,
 TColSetControl_003.y);
-connect(dataBus.TAirOutSystem_001,
-TAirOutControl_001.y);
+connect(dataBus.TCooSetSchema_space_002,
+TCooSetControl_006.y);
+connect(dataBus.TColSetControl_004,
+TColSetControl_004.y);
 connect(dataBus.TCooSetSchema_space_001,
 TCooSetControl_007.y);
-connect(dataBus.triggerControl_004,
-triggerControl_004.y);
+connect(dataBus.TCooSetSchema_space_003,
+TCooSetControl_005.y);
+connect(dataBus.TAirOutSystem_001,
+TAirOutControl_001.y);
 connect(dataBus.triggerControl_003,
 triggerControl_003.y);
+connect(dataBus.triggerControl_004,
+triggerControl_004.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},

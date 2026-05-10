@@ -2,9 +2,63 @@ package multizone_air_handling_unit_space_connected_ideas
 
 package Trano
   package Occupancy
+    model OccupancyCo2
+
+  // ---- Original parameters (kept) ----
+  parameter Real occupancy[:]=3600*{7,19}
+    "Occupancy table, each entry switching occupancy on or off";
+
+  parameter Real gain[:, :]=[35; 70; 30]
+    "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] ";
+
+  parameter Real k=1/6/4
+    "Heat gain if occupied";
+
+  parameter Boolean firstEntryOccupied=true
+    "Set to true if first entry in occupancy denotes a changed from unoccupied to occupied";
+
+  // ---- Added parameters for CO2-based occupancy ----
+  parameter Real AFlo =  24       "Zone floor area (m2)";
+  parameter Real hRoom = 2.7      "Zone height (m)";
+  parameter Real ACH =   1.0      "Air changes per hour (1/h)";
+  parameter Real ppmOut = 420     "Outdoor CO2 (ppm)";
+  parameter Real gCO2 =   5.2e-6  "Per-person CO2 generation (m3/s, ~1.2 met)";
+
+  final parameter Real V =     AFlo*hRoom   "Zone volume (m3)";
+  final parameter Real QVent = V*ACH/3600   "Ventilation flow (m3/s)";
+
+  // Observable signals (handy for plotting / debugging)
+  Real N       "Estimated occupants in zone";
+  Real density "Occupant density (people/m2)";
+
+  Modelica.Blocks.Math.MatrixGain gai2(K=gain)
+    "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] "
+    annotation (Placement(transformation(extent={{18,-12},{38,8}})));
+  extends Modelica.Blocks.Interfaces.MO(final nout=3);
+  Modelica.Blocks.Routing.RealPassThrough Co2
+    annotation (Placement(transformation(extent={{-94,26},{-68,52}})));
+
+equation
+  // Linear steady-state inversion of the CO2 mass balance
+  N        = max(0, QVent*(Co2.y - ppmOut)*1e-6/gCO2);
+  density  = N/AFlo;
+  gai2.u[1] = density;
+
+  connect(gai2.y, y) annotation (Line(points={{39,-2},{96,-2},{96,0},{110,0}},
+    color={0,0,127}));
+  annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
+    Ellipse(extent={{10,70},{-26,34}}, lineColor={28,108,200}),
+    Line(points={{-8,34},{-8,-26}}, color={28,108,200}),
+    Line(points={{-8,-26},{-48,-68}}, color={28,108,200}),
+    Line(points={{-8,-26},{34,-70},{32,-70}}, color={28,108,200}),
+    Line(points={{-8,20},{-48,-8}}, color={28,108,200}),
+    Line(points={{-8,20},{44,-8}}, color={28,108,200})}),    Diagram(
+    coordinateSystem(preserveAspectRatio=false)));
+end OccupancyCo2;
+
 
     model SimpleOccupancy
-
+        parameter Real ACH =   1.0      "Air changes per hour (1/h)";
       parameter Real occupancy[:]=3600*{7,19}
     "Occupancy table, each entry switching occupancy on or off";
 
@@ -1028,6 +1082,7 @@ model PartialSystemD
       "Medium model" annotation (choicesAllMatching=true);
     parameter Real m_flow_nominal=2*100*1.2/3600;
     parameter Real dp_nominal=200;
+    parameter Real eps=0.8;
   Buildings.Fluid.Movers.FlowControlled_dp
                            fanSup(
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
@@ -1053,7 +1108,7 @@ model PartialSystemD
     m1_flow_nominal=m_flow_nominal,
     m2_flow_nominal=m_flow_nominal,
     dp1_nominal=dp_nominal,
-    dp2_nominal=dp_nominal)
+    dp2_nominal=dp_nominal, eps=eps)
     "Heat exchanger with constant heat recovery effectivity"
     annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
   Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package Medium =
@@ -1142,6 +1197,7 @@ end PartialSystemD;
             "Medium model" annotation (choicesAllMatching=true);
         parameter Real m_flow_nominal=2*100*1.2/3600;
     parameter Real dp_nominal=200;
+    parameter Real eps=0.8;
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanSup(
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
@@ -1167,7 +1223,7 @@ end PartialSystemD;
           m1_flow_nominal=m_flow_nominal,
           m2_flow_nominal=m_flow_nominal,
           dp1_nominal=dp_nominal,
-          dp2_nominal=dp_nominal)
+          dp2_nominal=dp_nominal,eps=eps)
           "Heat exchanger with constant heat recovery effectivity"
           annotation (Placement(transformation(extent={{-26,-14},{-6,6}})));
         Modelica.Fluid.Interfaces.FluidPort_b port_b(redeclare final package
@@ -2228,7 +2284,7 @@ end PartialSystemD;
       final parameter Modelica.Units.SI.Volume V=AFlo*hRoo "Volume";
       parameter Modelica.Units.SI.Area AFlo "Floor area";
       parameter Modelica.Units.SI.Length hRoo "Average room height";
-      parameter Real ACH(unit="1/h") = 0.5
+      parameter Real ACH(unit="1/h") = 1.0
       "Air change rate (1/h)"annotation(Dialog(group="Air Infiltration"));
 
       Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heaPorAir
@@ -2488,15 +2544,15 @@ end PartialSystemD;
         "Radiation model for room-side window shade"
         annotation (Placement(transformation(extent={{-60,90},{-40,110}})));
 
-      Buildings.Fluid.Sources.Boundary_pT souInf(
-        redeclare package Medium = Medium,
-        use_T_in=true,
-        nPorts=1) "Source model for air infiltration"
-        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
-      Buildings.Fluid.Sources.MassFlowSource_T sinInf(
+      Buildings.Fluid.Sources.MassFlowSource_T souInf(
         redeclare package Medium = Medium,
         use_m_flow_in=true,
-        nPorts=1) "Sink model for air infiltration"
+        use_T_in=true,
+        nPorts=1) "Outdoor-air infiltration source (mass flow at outdoor T)"
+        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
+      Buildings.Fluid.Sources.Boundary_pT sinInf(
+        redeclare package Medium = Medium,
+        nPorts=1) "Pressure boundary closing the infiltration mass balance"
         annotation (Placement(transformation(extent={{2,-194},{20,-176}})));
       Modelica.Blocks.Sources.RealExpression airInfiltration(y=ACH*V*1.2/3600)
         annotation (Placement(transformation(extent={{-60,-188},{-40,-168}})));
@@ -3005,8 +3061,8 @@ end PartialSystemD;
           extent={{-3,6},{-3,6}},
           horizontalAlignment=TextAlignment.Right));
 
-      connect(airInfiltration.y, sinInf.m_flow_in) annotation (Line(points={{-39,-178},
-              {-8,-178},{-8,-177.8},{0.2,-177.8}}, color={0,0,127}));
+      connect(airInfiltration.y, souInf.m_flow_in) annotation (Line(points={{-39,-178},
+              {-8,-178},{-8,-163.6},{2.6,-163.6}}, color={0,0,127}));
       annotation (
         Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-260,-220},{460,
                 200}})),
@@ -3273,10 +3329,20 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.0174,
-      c=522.0,
-      rho=1.66,
+extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=800.0,
+      rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=800.0,
+      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
@@ -3288,33 +3354,31 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Bu
       c=880.0,
       rho=850.0,
       epsLw=0.88,
+      epsSw=0.55);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.0174,
+      c=522.0,
+      rho=1.66,
+      epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
       c=840.0,
       rho=1120.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=800.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
       c=840.0,
       rho=2500.0,
       epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
-      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
+package Constructions "Library of building envelope constructions"      record cavitywall_001
+    "cavitywall_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick_001
+        (d=0.08),multizone_air_handling_unit_space_connected_ideas.Data.Materials.rockwool_001
+        (d=0.1),multizone_air_handling_unit_space_connected_ideas.Data.Materials.brickhollow_001
+        (d=0.14),multizone_air_handling_unit_space_connected_ideas.Data.Materials.gypsum_001
+        (d=0.015)    });
+    end cavitywall_001;      record internal_wall
     "internal_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick
@@ -3325,15 +3389,7 @@ package Constructions "Library of building envelope constructions"      record i
       mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.concrete_001
         (d=0.125),multizone_air_handling_unit_space_connected_ideas.Data.Materials.concrete_001
         (d=0.125)    });
-    end concreteslab_001;      record cavitywall_001
-    "cavitywall_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick_001
-        (d=0.08),multizone_air_handling_unit_space_connected_ideas.Data.Materials.rockwool_001
-        (d=0.1),multizone_air_handling_unit_space_connected_ideas.Data.Materials.brickhollow_001
-        (d=0.14),multizone_air_handling_unit_space_connected_ideas.Data.Materials.gypsum_001
-        (d=0.015)    });
-    end cavitywall_001;
+    end concreteslab_001;
 end Constructions;
 end Data;
 
@@ -3424,7 +3480,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
         multizone_air_handling_unit_space_connected_ideas.Components.BaseClasses.OccupancyOccupancy_1
     occupancy_1(    gain=[40; 75; 40],
     k=1/7/3,
-    occupancy=3600*{9, 17}
+    occupancy=3600*{9, 17},
+    ACH=0.9
 ) annotation (
     Placement(transformation(origin = { 85.0, -0.20302208446338454 },
     extent = {{ 3, -3}, {-3, 3}}
@@ -3474,7 +3531,8 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
         multizone_air_handling_unit_space_connected_ideas.Components.BaseClasses.OccupancyOccupancy_2
     occupancy_2(    gain=[40; 75; 40],
     k=1/7/3,
-    occupancy=3600*{9, 17}
+    occupancy=3600*{9, 17},
+    ACH=0.9
 ) annotation (
     Placement(transformation(origin = { -115.0, -0.2402169701665997 },
     extent = {{ 3, -3}, {-3, 3}}
@@ -4077,10 +4135,20 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.0174,
-      c=522.0,
-      rho=1.66,
+extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=800.0,
+      rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.035,
+      c=800.0,
+      rho=100.0,
       epsLw=0.88,
       epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
@@ -4092,33 +4160,31 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Bu
       c=880.0,
       rho=850.0,
       epsLw=0.88,
+      epsSw=0.55);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.0174,
+      c=522.0,
+      rho=1.66,
+      epsLw=0.88,
       epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.38,
       c=840.0,
       rho=1120.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=800.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
       epsLw=0.88,
       epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
       c=840.0,
       rho=2500.0,
       epsLw=0.88,
-      epsSw=0.55);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.035,
-      c=800.0,
-      rho=100.0,
-      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
+package Constructions "Library of building envelope constructions"      record cavitywall_001
+    "cavitywall_001"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick_001
+        (d=0.08),multizone_air_handling_unit_space_connected_ideas.Data.Materials.rockwool_001
+        (d=0.1),multizone_air_handling_unit_space_connected_ideas.Data.Materials.brickhollow_001
+        (d=0.14),multizone_air_handling_unit_space_connected_ideas.Data.Materials.gypsum_001
+        (d=0.015)    });
+    end cavitywall_001;      record internal_wall
     "internal_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick
@@ -4129,15 +4195,7 @@ package Constructions "Library of building envelope constructions"      record i
       mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.concrete_001
         (d=0.125),multizone_air_handling_unit_space_connected_ideas.Data.Materials.concrete_001
         (d=0.125)    });
-    end concreteslab_001;      record cavitywall_001
-    "cavitywall_001"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.brick_001
-        (d=0.08),multizone_air_handling_unit_space_connected_ideas.Data.Materials.rockwool_001
-        (d=0.1),multizone_air_handling_unit_space_connected_ideas.Data.Materials.brickhollow_001
-        (d=0.14),multizone_air_handling_unit_space_connected_ideas.Data.Materials.gypsum_001
-        (d=0.015)    });
-    end cavitywall_001;
+    end concreteslab_001;
 end Constructions;
 end Data;
 
