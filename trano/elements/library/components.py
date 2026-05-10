@@ -13,7 +13,7 @@ class Components(BaseModel):
 
     @classmethod
     def load(cls) -> "Components":
-        libraries_json_path = Path(__file__).parent.joinpath("models")
+        libraries_json_path = Path(__file__).parent.joinpath("data", "models")
         libraries_json_path.mkdir(exist_ok=True)
         components = []
         for file in libraries_json_path.rglob("*.yaml"):

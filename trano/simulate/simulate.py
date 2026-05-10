@@ -11,7 +11,7 @@ from jinja2 import Environment
 from pydantic import BaseModel, Field
 
 from trano.exceptions import DockerNotInstalledError, DockerClientError
-from trano.topology import Network
+from trano.core.topology import Network
 
 
 def check_docker_installed() -> None:

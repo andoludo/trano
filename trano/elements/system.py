@@ -9,7 +9,7 @@ from trano.exceptions import WrongSystemFlowError
 import networkx as nx
 
 if TYPE_CHECKING:
-    from trano.topology import Network
+    from trano.core.topology import Network
     from trano.elements import Space
 
 

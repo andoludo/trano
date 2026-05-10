@@ -11,7 +11,7 @@ from trano.elements.data_bus.inputs import BaseInputOutput, DataSource
 from trano.elements.types import ContainerTypes
 
 if TYPE_CHECKING:
-    from trano.topology import Network
+    from trano.core.topology import Network
 
 
 class ValidationData(BaseModel):

@@ -24,7 +24,7 @@ from trano.elements.envelope import MergedExternalWall, MergedWindows, FloorOnGr
 from trano.elements.system import Occupancy, Valve, Duct, Pump, VAV, Boiler, Weather
 from trano.elements.types import Flow, Medium
 from trano.elements.library.library import Library
-from trano.topology import Network
+from trano.core.topology import Network
 
 
 @pytest.fixture(scope="module")

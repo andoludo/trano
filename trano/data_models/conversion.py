@@ -40,7 +40,7 @@ from trano.elements.system import AirHandlingUnit, Occupancy, Weather
 from trano.elements.types import Tilt
 from trano.elements.utils import import_element_function
 from trano.elements.library.library import Library
-from trano.topology import Network
+from trano.core.topology import Network
 
 SpaceParameter = param_from_config("Space")
 DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")

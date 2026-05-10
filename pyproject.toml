@@ -48,7 +48,7 @@ Homepage = "https://andoludo.github.io/trano/"
 Repository = "https://github.com/andoludo/trano"
 
 [project.scripts]
-trano = "trano.main:app"
+trano = "trano.cli.app:app"
 
 [dependency-groups]
 dev = [

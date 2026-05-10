@@ -26,7 +26,7 @@ from trano.elements.types import BaseVariant, ContainerTypes
 from trano.exceptions import UnknownComponentVariantError
 
 if TYPE_CHECKING:
-    from trano.topology import Network
+    from trano.core.topology import Network
     from trano.elements.library.library import Library
 
 

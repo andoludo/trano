@@ -12,7 +12,7 @@ path_to_yaml_configuration_folder = Path(__file__).parent
 
 @pytest.mark.simulate
 def test_first_simulation() -> None:
-    from trano.main import simulate_model
+    from trano.cli.app import simulate_model
 
     simulate_model(
         path_to_yaml_configuration_folder / "first_model.yaml",
@@ -23,7 +23,7 @@ def test_first_simulation() -> None:
 
 
 def test_first_model() -> None:
-    from trano.main import create_model
+    from trano.cli.app import create_model
 
     create_model(
         path_to_yaml_configuration_folder / "first_model.yaml",
@@ -31,7 +31,7 @@ def test_first_model() -> None:
 
 
 def test_first_model_other_library() -> None:
-    from trano.main import create_model
+    from trano.cli.app import create_model
 
     create_model(
         path_to_yaml_configuration_folder / "first_model.yaml",
@@ -40,7 +40,7 @@ def test_first_model_other_library() -> None:
 
 
 def test_multi_zones() -> None:
-    from trano.main import create_model
+    from trano.cli.app import create_model
 
     create_model(
         path_to_yaml_configuration_folder / "multi_zones.yaml",
@@ -49,7 +49,7 @@ def test_multi_zones() -> None:
 
 
 def test_three_zones_ideal_heating() -> None:
-    from trano.main import create_model
+    from trano.cli.app import create_model
 
     create_model(
         path_to_yaml_configuration_folder / "three_zones_ideal_heating.yaml",
@@ -57,7 +57,7 @@ def test_three_zones_ideal_heating() -> None:
 
 
 def test_three_zones_hydronic_heating() -> None:
-    from trano.main import create_model
+    from trano.cli.app import create_model
 
     create_model(
         path_to_yaml_configuration_folder / "three_zones_hydronic_heating.yaml",
@@ -66,7 +66,7 @@ def test_three_zones_hydronic_heating() -> None:
 
 
 def test_ventilation() -> None:
-    from trano.main import create_model
+    from trano.cli.app import create_model
 
     create_model(
         path_to_yaml_configuration_folder / "zone_with_ventilation.yaml",
@@ -74,7 +74,7 @@ def test_ventilation() -> None:
 
 
 def test_multizones_with_pv() -> None:
-    from trano.main import create_model
+    from trano.cli.app import create_model
 
     create_model(
         path_to_yaml_configuration_folder / "multizones_with_pv.yaml",

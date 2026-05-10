@@ -315,7 +315,7 @@ class Network:  # : PLR0904, #TODO: fix this
         environment = Environment(
             trim_blocks=True,
             lstrip_blocks=True,
-            loader=FileSystemLoader(str(Path(__file__).parent.joinpath("templates"))),
+            loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
             autoescape=True,
         )
         environment.filters["frozenset"] = frozenset

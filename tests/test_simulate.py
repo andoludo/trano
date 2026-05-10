@@ -5,8 +5,8 @@ import pytest
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
 from trano.simulate.simulate import SimulationOptions, simulate
-from trano.topology import Network
-from trano.utils.utils import is_success
+from trano.core.topology import Network
+from trano.core.utils import is_success
 
 
 def get_path(file_name: str) -> Path:

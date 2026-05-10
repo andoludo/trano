@@ -26,7 +26,7 @@ from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUn
 from trano.elements.types import ContainerTypes
 
 if TYPE_CHECKING:
-    from trano.topology import Network
+    from trano.core.topology import Network
 
 MAX_X_SPACES = 3
 

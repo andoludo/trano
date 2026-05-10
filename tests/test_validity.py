@@ -10,7 +10,7 @@ from trano.exceptions import (
     UnknownLibraryError,
     UnknownComponentVariantError,
 )
-from trano.main import create_model
+from trano.cli.app import create_model
 
 
 def get_path(file_name: str) -> Path:

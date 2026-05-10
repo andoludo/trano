@@ -12,7 +12,7 @@ from trano.elements.common_base import Point
 
 if TYPE_CHECKING:
     from trano.elements import Port
-    from trano.topology import Network
+    from trano.core.topology import Network
 
 logger = logging.getLogger(__name__)
 

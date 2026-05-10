@@ -8,7 +8,7 @@ from trano.data_models.conversion import convert_network
 from trano.elements import DataBus
 from trano.elements.space import Space
 from trano.elements.library.library import Library
-from trano.topology import Network
+from trano.core.topology import Network
 
 
 def get_path(file_name: str, directory: str | None = None) -> Path:

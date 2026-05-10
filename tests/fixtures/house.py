@@ -29,7 +29,7 @@ from trano.elements.system import (
     Weather,
 )
 from trano.elements.types import Azimuth, Tilt
-from trano.topology import Network
+from trano.core.topology import Network
 
 BoilerParameters = param_from_config("Boiler")
 OccupancyParameters = param_from_config("Occupancy")

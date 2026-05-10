@@ -19,7 +19,7 @@ from trano.reporting.types import (
 from trano.reporting.utils import _dump_list_attributes, _get_elements, get_description
 
 if TYPE_CHECKING:
-    from trano.topology import Network
+    from trano.core.topology import Network
 
 
 class BaseDocumentation(ContentDocumentation):

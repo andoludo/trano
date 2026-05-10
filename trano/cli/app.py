@@ -11,8 +11,8 @@ from trano.reporting.html import to_html_reporting
 from trano.reporting.reporting import ModelDocumentation
 from trano.reporting.types import ResultFile
 from trano.simulate.simulate import SimulationLibraryOptions, simulate
-from trano.topology import Network
-from trano.utils.utils import is_success
+from trano.core.topology import Network
+from trano.core.utils import is_success
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 app = typer.Typer()

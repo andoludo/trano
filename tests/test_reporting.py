@@ -9,7 +9,7 @@ from trano.reporting.reporting import (
     ModelDocumentation,
     ResultFile,
 )
-from trano.topology import Network
+from trano.core.topology import Network
 
 
 def test_reporting_buildings_two_rooms_with_storage(

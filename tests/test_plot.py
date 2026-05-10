@@ -5,7 +5,7 @@ from buildingspy.io.outputfile import Reader
 
 from trano.elements.space import Space
 from trano.plot.plot import plot, plot_element, plot_plot_ly, plot_plot_ly_many
-from trano.topology import Network
+from trano.core.topology import Network
 
 
 @pytest.fixture

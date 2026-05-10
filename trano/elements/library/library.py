@@ -30,7 +30,7 @@ class Templates(BaseModel):
 
 
 def read_libraries() -> dict[str, dict[str, Any]]:
-    library_json_path = Path(__file__).parent.joinpath("library.json")
+    library_json_path = Path(__file__).parent.joinpath("data", "library.json")
     return cast(dict[str, dict[str, Any]], json.loads(library_json_path.read_text()))
 
 
