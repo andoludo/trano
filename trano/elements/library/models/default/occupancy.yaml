@@ -41,12 +41,6 @@
   - Occupancy
   component_template:
     bus:
-      integer_outputs:
-      - component: occSch2
-        name: Occupied
-        port: occupied
-        target:
-          main: element.space_name
       real_inputs:
         - component: co2
           name: DataSource
