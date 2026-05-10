@@ -14,12 +14,18 @@ import hashlib
 import shutil
 import socket
 import subprocess
+import time
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-from validation.bestest.spec.parameters import CASES, CaseParameters
+from trano.data_models.conversion import convert_network
+from trano.elements.library.library import Library
+from trano.simulate.simulate import SimulationOptions, simulate
+from trano.utils.utils import is_success
+from validation.bestest.kpi import extract_kpis
+from validation.bestest.spec.parameters import CASES, CaseParameters, KPIResults
 
 CASES_DIR: Path = Path(__file__).parent / "cases"
 BASE_YAML: Path = CASES_DIR / "_base.yaml"
@@ -153,3 +159,126 @@ def case_hash(case_id: str) -> str:
 
 def case_parameters(case_id: str) -> CaseParameters:
     return CASES[case_id]
+
+
+SECONDS_PER_YEAR: int = 31_536_000
+RESULT_SUFFIX: str = ".building_res.mat"
+
+
+def _result_mat(project_path: Path, network_name: str) -> Path:
+    return project_path / "results" / f"{network_name}{RESULT_SUFFIX}"
+
+
+def _network_for(case_id: str, yaml_path: Path) -> Any:  # noqa: ANN401  # trano Network
+    return convert_network(
+        f"case_{case_id}",
+        yaml_path,
+        library=Library.from_configuration("Buildings"),
+    )
+
+
+def _emission_names(network: Any, *, polarity: str) -> list[str]:  # noqa: ANN401
+    """Return the normalized Modelica names of heater (positive) or cooler (negative) emissions.
+
+    Iteration 1 convention: YAML IDs starting with ``HEATER`` are heaters, ``COOLER``
+    are coolers. After convert_network normalization, names become lowercase with
+    underscores.
+    """
+    prefix = "heater" if polarity == "heater" else "cooler"
+    names = []
+    for node in network.graph.nodes:
+        if node.__class__.__name__ != "Radiator":
+            continue
+        if str(node.name).startswith(prefix):
+            names.append(str(node.name))
+    return names
+
+
+def _read_cached(case_id: str, expected_hash: str) -> KPIResults | None:
+    cache_dir = CACHE_ROOT / case_id
+    hash_file = cache_dir / "hash.txt"
+    kpis_file = cache_dir / "kpis.json"
+    if not hash_file.exists() or not kpis_file.exists():
+        return None
+    if hash_file.read_text().strip() != expected_hash:
+        return None
+    return KPIResults.model_validate_json(kpis_file.read_text())
+
+
+def _write_cache(case_id: str, results: KPIResults, hash_hex: str) -> None:
+    cache_dir = CACHE_ROOT / case_id
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    (cache_dir / "kpis.json").write_text(results.model_dump_json(indent=2))
+    (cache_dir / "hash.txt").write_text(hash_hex + "\n")
+
+
+def run_case(
+    case_id: str,
+    *,
+    force: bool = False,
+    end_time: int = SECONDS_PER_YEAR,
+) -> KPIResults:
+    """Execute the BESTEST case, returning KPIs (cached on case-input hash).
+
+    Hard-fails when Docker isn't available — call ``docker_available()`` first
+    in test setup to skip cleanly.
+    """
+    case = CASES[case_id]
+    cache_dir = CACHE_ROOT / case_id
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    yaml_path = build_yaml(case_id, output_dir=cache_dir)
+    expected_hash = case_hash(case_id)
+
+    if not force:
+        cached = _read_cached(case_id, expected_hash)
+        if cached is not None:
+            return cached
+
+    if not docker_available():
+        raise RuntimeError(
+            f"BESTEST case {case_id}: Docker daemon is not reachable; "
+            "OpenModelica simulation cannot run."
+        )
+
+    network_name = f"case_{case_id}"
+    network = _network_for(case_id, yaml_path)
+    options = SimulationOptions(start_time=0, end_time=end_time, tolerance=1e-4)
+
+    started = time.monotonic()
+    sim_result = simulate(cache_dir, network, options=options)
+    sim_wall = time.monotonic() - started
+    if not is_success(sim_result):
+        raise RuntimeError(f"BESTEST case {case_id}: simulation did not finish successfully.")
+
+    mat_path = _result_mat(cache_dir, network_name)
+    if not mat_path.exists():
+        raise RuntimeError(f"BESTEST case {case_id}: result file missing at {mat_path}")
+
+    heater_names = _emission_names(network, polarity="heater")
+    cooler_names = _emission_names(network, polarity="cooler")
+
+    results = extract_kpis(
+        mat_path,
+        case_id=case_id,
+        space_name="space_001",
+        floor_area_m2=48.0,
+        heater_names=heater_names,
+        cooler_names=cooler_names,
+        report_days=case.report_days_doy,
+        sim_wall_time_s=sim_wall,
+        cache_key=expected_hash,
+    )
+    _write_cache(case_id, results, expected_hash)
+    return results
+
+
+def run_all(
+    case_ids: list[str] | None = None,
+    *,
+    force: bool = False,
+    end_time: int = SECONDS_PER_YEAR,
+) -> dict[str, KPIResults]:
+    """Run every case sequentially (Docker holds a single OM container)."""
+    targets = case_ids if case_ids is not None else list(CASES.keys())
+    return {cid: run_case(cid, force=force, end_time=end_time) for cid in targets}
