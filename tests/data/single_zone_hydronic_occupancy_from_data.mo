@@ -35,12 +35,12 @@ package Trano
     "Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] "
     annotation (Placement(transformation(extent={{18,-12},{38,8}})));
   extends Modelica.Blocks.Interfaces.MO(final nout=3);
-  Modelica.Blocks.Routing.RealPassThrough Co2
+  Modelica.Blocks.Routing.RealPassThrough co2
     annotation (Placement(transformation(extent={{-94,26},{-68,52}})));
 
 equation
   // Linear steady-state inversion of the CO2 mass balance
-  N        = max(0, QVent*(Co2.y - ppmOut)*1e-6/gCO2);
+  N        = max(0, QVent*(co2.y - ppmOut)*1e-6/gCO2);
   density  = N/AFlo;
   gai2.u[1] = density;
 
@@ -3419,13 +3419,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
       extent= {{-104,-80},{-94,-34}} )),iconTransformation(extent=  {{-108,-92},{-94,-40}} ));
     Buildings.ThermalZones.Detailed.MixedAir space_001(
         redeclare package Medium = Medium,
-            hRoo=2.5,
-    AFlo=100.0,
-    linearizeRadiation=true,
-    m_flow_nominal=0.01,
-    mSenFac=1.0,
-    T_start=294.15
-,nPorts = 3,                    nConExt=2,
+        hRoo=2.5, AFlo=100.0, linearizeRadiation=true, m_flow_nominal=0.01, mSenFac=1.0, T_start=294.15,nPorts = 3,                    nConExt=2,
                     datConExt(
                     layers={ cavitywall_001, cavitywall_001 },
     A={ 30.0, 50.0 },
@@ -3457,17 +3451,12 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     
     
         single_zone_hydronic_occupancy_from_data.Components.BaseClasses.OccupancyOccupancy_1
-    occupancy_1(    gain=[40; 75; 40],
-    k=1/7/3,
-    occupancy=3600*{9, 17},
-    ACH=0.9
-) annotation (
+    occupancy_1(gain=[40; 75; 40], k=1/7/3, occupancy=3600*{9, 17}, ACH=0.9) annotation (
     Placement(transformation(origin = { -20.546698615621423, -4.705030269073603 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
         Buildings.BoundaryConditions.WeatherData.ReaderTMY3
-                weather(    filNam=../tests/resources/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos
-)
+                weather(filNam=../tests/resources/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos)
      annotation (
     Placement(transformation(origin = { -82.00760249870801, -78.91386637878021 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -3653,7 +3642,6 @@ Trano.Controls.BaseClasses.DataBus dataBus
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 equation
 connect(dataBus.co2_01, co2.u);
-connect(dataBus.OccupiedSpace_001, occSch2.occupied);
  end OccupancyOccupancy_1;
  
         model DataServer
