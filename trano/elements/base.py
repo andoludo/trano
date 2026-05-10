@@ -1,3 +1,5 @@
+"""BaseElement: shared behavior for every node in a Network graph."""
+
 from functools import cache
 from pathlib import Path
 from typing import Any, ClassVar, TYPE_CHECKING, get_args

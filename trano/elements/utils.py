@@ -1,3 +1,5 @@
+"""Utility helpers for elements: type lookup, layout normalisation, jinja wraps."""
+
 import logging
 import re
 from pathlib import Path

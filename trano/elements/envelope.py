@@ -1,3 +1,5 @@
+"""Envelope elements: walls, windows, floors, doors, and their merged variants."""
+
 import logging
 import math
 from math import sqrt

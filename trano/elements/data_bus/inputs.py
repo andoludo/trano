@@ -1,3 +1,5 @@
+"""Input/output port descriptors used to build the data bus."""
+
 from typing import Literal
 
 from pydantic import BaseModel, computed_field, field_validator

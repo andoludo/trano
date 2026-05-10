@@ -1,3 +1,6 @@
+"""Custom exception types raised across the trano package."""
+
+
 class WrongSystemFlowError(Exception):
     """Exception raised for wrong system flow."""
 

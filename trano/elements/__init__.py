@@ -1,3 +1,5 @@
+"""Public element types: ports, walls, systems, controls, spaces, ..."""
+
 from trano.elements.base import BaseElement, Control
 from trano.elements.boundary import BaseBoundary, Boundary
 from trano.elements.bus import DataBus

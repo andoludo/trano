@@ -1,3 +1,5 @@
+"""Geometric primitives, parameter base classes, and medium templates."""
+
 from typing import Any
 
 from pydantic import BaseModel, Field, ConfigDict

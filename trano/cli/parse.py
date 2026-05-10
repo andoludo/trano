@@ -1,3 +1,5 @@
+"""Helpers that parse material/glazing/construction folders into default.yaml."""
+
 import re
 from pathlib import Path
 from typing import Any

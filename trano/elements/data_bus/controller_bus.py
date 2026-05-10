@@ -1,3 +1,5 @@
+"""ControllerBus: collects ports across all controls into one bus."""
+
 import json
 import logging
 from pathlib import Path

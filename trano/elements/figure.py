@@ -1,3 +1,5 @@
+"""Figure / NamedFigure: result-plot descriptors attached to elements."""
+
 from typing import TYPE_CHECKING
 
 import jinja2.exceptions

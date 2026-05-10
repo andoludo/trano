@@ -1,3 +1,5 @@
+"""Solar/PV element types."""
+
 from trano.elements import BaseElement
 from trano.elements.types import ContainerTypes
 

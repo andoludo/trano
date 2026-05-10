@@ -1,3 +1,5 @@
+"""Control element types (AHU, boiler, VAV, three-way valve, ...)."""
+
 from pydantic import computed_field
 
 from trano.elements.common_base import BaseParameter

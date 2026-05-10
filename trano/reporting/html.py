@@ -1,3 +1,5 @@
+"""HTML report generation from a ModelDocumentation."""
+
 from typing import Any
 
 from buildingspy.io.outputfile import Reader  # type: ignore

@@ -1,3 +1,5 @@
+"""Construction, layer, and material definitions for envelopes."""
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 

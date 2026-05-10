@@ -1,3 +1,5 @@
+"""Top-level Typer commands: create_model, simulate_model, verify, report."""
+
 import tempfile
 import webbrowser
 from enum import Enum

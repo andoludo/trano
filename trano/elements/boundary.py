@@ -1,3 +1,5 @@
+"""External boundary nodes connecting AHUs and weather."""
+
 from trano.elements.base import BaseElement
 from trano.elements.types import ContainerTypes
 

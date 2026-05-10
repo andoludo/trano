@@ -1,3 +1,5 @@
+"""DataBus and signal-routing helpers for control wiring."""
+
 import itertools
 from pathlib import Path
 from typing import TYPE_CHECKING, get_args

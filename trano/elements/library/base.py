@@ -1,3 +1,5 @@
+"""LibraryData: a single library-specific component template."""
+
 from functools import partial
 from pathlib import Path
 from typing import Any, TYPE_CHECKING

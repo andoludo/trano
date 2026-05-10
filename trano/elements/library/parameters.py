@@ -1,3 +1,5 @@
+"""Dynamic pydantic parameter classes built from data_models/parameters.yaml."""
+
 from pathlib import Path
 from typing import Any, Optional
 

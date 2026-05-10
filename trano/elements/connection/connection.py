@@ -1,3 +1,5 @@
+"""Connection objects rendered as Modelica connect(...) equations."""
+
 import logging
 from pathlib import Path
 

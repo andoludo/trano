@@ -1,3 +1,5 @@
+"""simulate(): run a Network through OpenModelica in a Docker container."""
+
 import platform
 import shutil
 import subprocess

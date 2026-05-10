@@ -1,3 +1,5 @@
+"""Ports and connections between elements in a Network."""
+
 from trano.elements.connection.connect import (
     check_flow_direction,
     connect,

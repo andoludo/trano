@@ -1,3 +1,5 @@
+"""DOCX report generation from a ModelDocumentation."""
+
 from pathlib import Path
 from typing import Any
 

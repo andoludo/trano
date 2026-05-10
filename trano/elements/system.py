@@ -1,3 +1,5 @@
+"""System component types (boiler, pump, AHU, weather, occupancy, ...)."""
+
 from typing import TYPE_CHECKING, Union
 
 from trano.elements import Control

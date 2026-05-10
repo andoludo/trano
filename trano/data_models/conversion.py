@@ -1,3 +1,5 @@
+"""Convert YAML/JSON building descriptions into a trano Network."""
+
 import copy
 import json
 import tempfile

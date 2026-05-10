@@ -1,3 +1,5 @@
+"""Network class: graph of elements, connections, and Modelica rendering."""
+
 import itertools
 import logging
 import shutil

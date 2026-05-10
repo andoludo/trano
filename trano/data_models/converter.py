@@ -1,3 +1,5 @@
+"""LinkML-runtime style converter, kept as a local fork."""
+
 import logging
 import os
 from typing import Any

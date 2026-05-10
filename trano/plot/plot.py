@@ -1,3 +1,5 @@
+"""plot()/plot_element(): render NamedFigures from simulation .mat data."""
+
 import logging
 import tempfile
 from collections.abc import Callable

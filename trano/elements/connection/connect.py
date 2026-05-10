@@ -1,3 +1,5 @@
+"""connect(): pair compatible ports between two elements."""
+
 from typing import TYPE_CHECKING
 
 from trano.elements.connection.connection import Connection

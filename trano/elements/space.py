@@ -1,3 +1,5 @@
+"""Space: a thermal zone with envelopes, occupancy, ventilation, and emissions."""
+
 from math import ceil
 from typing import ClassVar, Optional, Union, TYPE_CHECKING, Annotated, Callable
 

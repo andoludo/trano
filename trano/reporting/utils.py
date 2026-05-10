@@ -1,3 +1,5 @@
+"""Helpers shared between DOCX and HTML reporting (figures, descriptions, ...)."""
+
 from typing import TYPE_CHECKING, Any, Union
 
 from buildingspy.io.outputfile import Reader  # type: ignore

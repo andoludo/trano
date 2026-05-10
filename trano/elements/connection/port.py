@@ -1,3 +1,5 @@
+"""Port: typed connection point on an element."""
+
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field, field_validator

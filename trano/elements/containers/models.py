@@ -1,3 +1,5 @@
+"""Small dataclasses used by Container and Containers."""
+
 from typing import cast
 
 from pydantic import BaseModel, Field, computed_field, model_validator

@@ -1,3 +1,5 @@
+"""Component registry loaded from data/models/*.yaml."""
+
 from pathlib import Path
 from typing import Any
 

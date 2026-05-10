@@ -1,3 +1,5 @@
+"""Enum and literal types shared across the elements package."""
+
 from enum import Enum
 
 from typing import Literal

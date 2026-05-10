@@ -1,3 +1,5 @@
+"""Shared jinja2 Environment used by container templates."""
+
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader

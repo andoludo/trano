@@ -1,3 +1,5 @@
+"""ModelDocumentation: the data structure used by both DOCX and HTML reports."""
+
 import abc
 from typing import TYPE_CHECKING
 

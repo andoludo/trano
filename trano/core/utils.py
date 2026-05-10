@@ -1,3 +1,5 @@
+"""Shared helpers for inspecting simulation results."""
+
 import logging
 
 import docker  # type: ignore

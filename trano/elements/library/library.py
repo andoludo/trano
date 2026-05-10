@@ -1,3 +1,5 @@
+"""Library: the Modelica library configuration consumed by Trano."""
+
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast

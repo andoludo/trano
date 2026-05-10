@@ -1,3 +1,5 @@
+"""Build the bundled trano_final.yaml schema by merging trano.yaml with parameters.yaml."""
+
 from pathlib import Path
 
 import yaml

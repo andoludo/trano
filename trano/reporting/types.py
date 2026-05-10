@@ -1,3 +1,5 @@
+"""Result-file descriptors and reporting type aliases."""
+
 import abc
 from abc import abstractmethod
 from pathlib import Path

@@ -1,3 +1,5 @@
+"""Trano — automated Modelica building energy simulation model generation."""
+
 import logging.config
 import warnings
 

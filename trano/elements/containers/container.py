@@ -1,3 +1,5 @@
+"""Single Container: holds elements and their internal connections."""
+
 from types import SimpleNamespace
 
 from jinja2 import Template

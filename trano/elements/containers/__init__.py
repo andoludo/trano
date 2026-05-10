@@ -1,3 +1,5 @@
+"""Containers: top-level grouping of envelope/emission/distribution/..."""
+
 from trano.elements.containers.container import Container
 from trano.elements.containers.containers import Containers, containers_factory
 from trano.elements.containers.models import (

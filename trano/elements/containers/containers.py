@@ -1,3 +1,5 @@
+"""Containers: collection orchestrating cross-container connections."""
+
 import logging
 from typing import get_args
 

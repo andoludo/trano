@@ -1,3 +1,5 @@
+"""yaml !include support backed by data/default.yaml."""
+
 import json
 import os
 from pathlib import Path
