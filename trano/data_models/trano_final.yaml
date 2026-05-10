@@ -632,6 +632,9 @@ classes:
     - ventilation_outlets
   SpaceParameter:
     attributes:
+      ach:
+        description: Infiltration
+        range: float
       average_room_height:
         description: Average room height [m]
         ifabsent: float(2)

@@ -79,7 +79,7 @@ def change_alias(parameter: BaseParameter, mapping: dict[str, str] | None = None
         if mapping.get(name):
             field.alias = mapping[name]
         new_param[name] = (
-            field.annotation,
+            Optional[field.annotation] if getattr(parameter, name) is None else field.annotation,  # noqa: UP007
             Field(field.default, alias=field.alias, description=field.description),
         )
 

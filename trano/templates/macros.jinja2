@@ -39,11 +39,11 @@ connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ 
 {%- endmacro %}
 
 
-{%- macro render_parameters(parameters)  %}
-{% for key, value in parameters.items() %}
-    {{ key | safe}}={{ value | safe}}{{ "," if not loop.last }}
-{% endfor %}
-{%- endmacro %}
+{%- macro render_parameters(parameters) -%}
+{%- for key, value in parameters.items() if value is not none -%}
+    {{ key | safe }}={{ value | safe }}{{ ", " if not loop.last }}
+{%- endfor -%}
+{%- endmacro -%}
 
 {%- macro convert_tilts(boundary_tilts) -%}
     {% set tilts = ({"wall":"Buildings.Types.Tilt.Wall",

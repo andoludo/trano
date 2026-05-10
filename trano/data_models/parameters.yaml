@@ -398,6 +398,10 @@ SpaceParameter:
       description: Factor for scaling the sensible thermal mass of the zone air volume
       ifabsent: float(1)
       range: float
+    ach:
+      alias: ACH
+      description: Infiltration
+      range: float
     temperature_initial:
       alias: T_start
       description: Initial temperature [K]
