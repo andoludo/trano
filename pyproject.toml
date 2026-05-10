@@ -21,8 +21,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -64,9 +62,7 @@ dev = [
     "networkx-stubs>=0.0.1,<0.0.2",
     "pytest-ordering>=0.6,<0.7",
     "types-pyyaml>=6.0.12.20240808,<7",
-    "isort>=5.13.2,<6",
     "jsf>=0.11.2,<0.12",
-    "black>=24.10.0,<25",
     "pytest>=7.4.3,<8",
 ]
 docs = [
@@ -143,8 +139,10 @@ exclude = [
     "venv",
 ]
 
-[tool.isort]
-skip = ["models"]
+[tool.pytest.ini_options]
+markers = [
+    "simulate: tests that run a Modelica simulation (slow, require docker)",
+]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "B006","RUF","UP","SIM","FURB","PIE","PERF","C4","B","PL","S","C901","N","ANN", "ERA001", "PD"]
