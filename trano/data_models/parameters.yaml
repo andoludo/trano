@@ -221,6 +221,10 @@ OccupancyParameters:
       description: None
       ifabsent: float(0.9)
       range: float
+    floor_area:
+      alias: AFlo
+      description: Floor area [m2]
+      range: float
     data:
       alias: data
       description: Occupancy data sources

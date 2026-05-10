@@ -468,6 +468,9 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: DataSource
+      floor_area:
+        description: Floor area [m2]
+        range: float
       gain:
         description: None
         ifabsent: string([35; 70; 30])
