@@ -1,224 +1,25 @@
 import logging
-from pathlib import Path
-from types import SimpleNamespace
-from typing import get_args, cast
+from typing import get_args
 
-import yaml
-from jinja2 import Environment, FileSystemLoader, Template
-from pydantic import BaseModel, Field, model_validator, computed_field, field_validator
+from jinja2 import Template
+from pydantic import BaseModel, Field, model_validator
 
-from trano.elements import Port, Connection, BaseElement
+from trano.elements import BaseElement, Connection
 from trano.elements.base import ElementPort
-from trano.elements.common_base import (
-    BasePosition,
-    Point,
-    BaseProperties,
-    MediumTemplate,
+from trano.elements.common_base import BaseProperties, BasePosition
+from trano.elements.connection import ContainerConnection, connect
+from trano.elements.containers._env import ENVIRONMENT
+from trano.elements.containers.container import Container
+from trano.elements.containers.models import (
+    BusConnection,
+    ConnectionList,
+    ContainerInput,
+    MainContainerConnection,
 )
-from trano.elements.connection import (
-    BasePartialConnectionWithContainerType,
-    PartialConnection,
-    connect,
-    ContainerConnection,
-)
-from trano.elements.types import (
-    ContainerTypes,
-    ConnectionView,
-    Medium,
-    SystemContainerTypes,
-)
-from trano.elements.utils import wrap_with_raw
+from trano.elements.types import ConnectionView, ContainerTypes, SystemContainerTypes
 from trano.exceptions import ContainerNotFoundError
 
 logger = logging.getLogger(__name__)
-ENVIRONMENT = Environment(
-    trim_blocks=True,
-    lstrip_blocks=True,
-    loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
-    autoescape=True,
-)
-ENVIRONMENT.filters["frozenset"] = frozenset
-ENVIRONMENT.filters["enumerate"] = enumerate
-
-
-class PortGroup(BaseModel):
-    connected_container_names: list[ContainerTypes]
-    ports: list[Port]
-
-
-class PortGroupMedium(BaseModel):
-    medium: Medium
-    port: Port
-
-
-class BaseContainer(BaseModel):
-    component_size: Point = Field(default=Point(x=20, y=20))
-
-
-class ContainerInput(BaseModel):
-    nodes: list[BaseElement]
-    connections: list[Connection]
-    data: BaseProperties
-    medium: MediumTemplate
-
-
-class ContainerLayout(BaseModel):
-    bottom_left: Point = Point(x=-100, y=-100)
-    top_right: Point = Point(x=100, y=100)
-    global_origin: Point
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def scale(self) -> int:
-        scale_x = int(self.top_right.c_.x - self.bottom_left.c_.x)
-        scale_y = int(self.top_right.c_.y - self.bottom_left.c_.y)
-        if scale_x != scale_y:
-            raise ValueError("Scale x and y must be equal")
-        return scale_x
-
-
-class Container(BaseContainer):
-    name: ContainerTypes
-    port_groups: list[PortGroup]
-    port_groups_per_medium: list[PortGroupMedium] = Field(default_factory=list)
-    connections: list[ContainerConnection] = Field(default_factory=list)
-    elements: list[BaseElement] = Field(default_factory=list)
-    template: str
-    left_boundary: ContainerTypes | None = None
-    data: BaseProperties | None = None
-    layout: ContainerLayout = Field(default_factory=lambda: ContainerLayout(global_origin=Point(x=0, y=0)))
-    prescribed_connection_equation: str = ""
-
-    @field_validator("template")
-    @classmethod
-    def _template_validator(cls, value: str) -> str:
-        return wrap_with_raw(value)
-
-    def has_data(self) -> bool:
-        return self.data is not None
-
-    def set_data(self, data: BaseProperties) -> None:
-        if self.name == data.container_type:
-            self.data = data
-
-    def contain_elements(self) -> bool:
-        return bool(self.elements)
-
-    def get_equation_view(self) -> set[tuple[str, ...]]:
-        return {c.equation_view() for c in self.connections}
-
-    def main_equation(self) -> str:
-        location = f"{self.layout.global_origin.c_.x},{self.layout.global_origin.c_.y}"
-        size = (
-            f"{self.layout.global_origin.c_.x+self.component_size.c_.x},"
-            f"{self.layout.global_origin.c_.y+self.component_size.c_.y}"
-        )
-        return (
-            f"Components.Containers.{self.name} {self.name}1 "
-            f"annotation (Placement(transformation(extent={{{{{location}}},"
-            f"{{{size}}}}})));"
-        )
-
-    @model_validator(mode="after")
-    def _validate(self) -> "Container":
-        if self.name in [
-            container_name for port_group in self.port_groups for container_name in port_group.connected_container_names
-        ]:
-            raise ValueError(f"Container {self.name} cannot be connected to itself.")
-        return self
-
-    def get_port_group(self, connected_container_name: ContainerTypes | None = None) -> PortGroup | None:
-        for port_group in self.port_groups:
-            if connected_container_name in port_group.connected_container_names:
-                return port_group
-        return None
-
-    def _initialize_template(self, medium: MediumTemplate) -> None:
-        ports = {}
-        for port_group in self.port_groups:
-            for port in port_group.ports:
-                for name in port.names:
-                    ports[name] = str(port.counter - 1)
-        try:
-            template = ENVIRONMENT.from_string(self.template)
-        except:
-            raise
-        self.template = template.render(medium=medium, ports=SimpleNamespace(**ports))
-
-    def build(self, template: Template, medium: MediumTemplate) -> str:
-        self._initialize_template(medium)
-        self.add_grouped_by_medium_connection()
-        return template.render(container=self)
-
-    def add_grouped_by_medium_connection(self) -> None:
-        for group_per_medium in self.port_groups_per_medium:
-            for element in self.elements:
-                for element_port in element.ports:
-                    if element_port.medium == group_per_medium.medium:
-                        position = BasePosition()
-                        position.set(element.position.x_container, element.position.y_container)
-                        e1 = ElementPort(
-                            ports=[element_port.without_targets()],
-                            container_type=self.name,
-                            position=position,
-                            name=element.name,
-                        )
-                        e2 = ElementPort(
-                            ports=[group_per_medium.port],
-                            container_type=self.name,
-                            position=position,
-                        )
-                        connections = connect(e1, e2)
-                        if connections:
-                            self.connections += [
-                                ContainerConnection.model_validate(
-                                    c.model_dump() | {"source": tuple(sorted([c.right.equation, c.left.equation]))}
-                                )
-                                for c in connections
-                            ]
-
-
-class MainContainerConnection(BaseModel):
-    left: PartialConnection
-    right: PartialConnection
-    annotation: str | None = None
-
-    @classmethod
-    def from_list(cls, connections: list[BasePartialConnectionWithContainerType]) -> "MainContainerConnection":
-        return cls(left=connections[0], right=connections[1])
-
-    def get_equation(self) -> str:
-        return (
-            f"connect({self.left.container_type}1.{self.left.equation}, "
-            f"{self.right.container_type}1.{self.right.equation})"
-        )
-
-
-class Location(BaseModel):
-    point_1: Point
-    point_2: Point
-
-
-class ConnectionList(BaseModel):
-    connection_type: list[str]
-    annotation: str
-
-
-class BusConnection(BaseModel):
-    connection_type: tuple[str, str]
-    location: str
-
-    @model_validator(mode="after")
-    def _validator(self) -> "BusConnection":
-        self.connection_type = cast(tuple[str, str], tuple(sorted(self.connection_type)))
-
-        return self
-
-    def equation(self) -> str:
-        return (
-            f"connect({self.connection_type[0]}1.dataBus, {self.connection_type[1]}1.dataBus) "
-            f"annotation (Line(points={self.location}, color={{255,204,51}}, thickness=0.5));"
-        )
 
 
 class Containers(BaseModel):
@@ -317,7 +118,11 @@ class Containers(BaseModel):
 
     @classmethod
     def load_from_config(cls) -> "Containers":
-        config_yaml = Path(__file__).parents[1].joinpath("elements/config/containers.yaml")
+        from pathlib import Path
+
+        import yaml
+
+        config_yaml = Path(__file__).parents[2].joinpath("elements/config/containers.yaml")
         data = yaml.safe_load(config_yaml.read_text())
         return cls.model_validate(data)
 
