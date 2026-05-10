@@ -172,7 +172,6 @@ def plot_element(
 
 
 def add_element_figures(document: Document, data: Reader, element: BaseElement) -> None:
-    # TODO: duplicate with the one bellow  !!! to be checked!!!
     figures = plot_element(data, element)
     for figure in figures:
         add_figure(document, figure, size=6)

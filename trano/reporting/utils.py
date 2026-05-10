@@ -268,7 +268,6 @@ def to_html_construction(data: dict[str, Any]) -> str:
 
 
 def get_figures(element_name: str, documentation: "ModelDocumentation") -> list:  # type: ignore
-    # TODO: this feels like a duplicate with docx!!!! check why
     if documentation.result is None:
         return []
     mat = Reader(documentation.result.path, documentation.result.type)

@@ -173,8 +173,8 @@ class BaseElement(BaseElementPort):
         package_name = network.name
         library_name = network.library.base_library()
         parameters = self.processed_parameters(network.library)
-        # TODO: temporary fix for boolean parameters
-        # TODO: data is a special parameter that should not be incldued in models
+        # Lowercase booleans for Modelica syntax; drop "data" since it is a special
+        # construction reference, not a component parameter.
         parameters = {
             key: value.lower() if value in ["True", "False"] else value
             for key, value in parameters.items()

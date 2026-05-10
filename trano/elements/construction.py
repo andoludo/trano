@@ -191,7 +191,7 @@ def default_construction(nodes: NodeView) -> ConstructionData:
 
 
 def merged_construction(nodes: NodeView) -> ConstructionData:
-    # TODO: Fix the import
+    # Local import to break the construction <-> envelope import cycle.
     from trano.elements.envelope import BaseSimpleWall, MergedBaseWall
 
     merged_constructions = {

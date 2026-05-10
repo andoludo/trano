@@ -132,7 +132,6 @@ class ControllerBus(BaseModel):
             "BooleanInput": [],
         }
         for target, inputs in self._get_targets().items():
-            # TODO: Fix this
             evaluated_element = _evaluate_target(target, element)
             for input in inputs:
                 if isinstance(evaluated_element, list):

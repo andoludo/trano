@@ -111,7 +111,6 @@ def container(
 
 @contextmanager
 def create_mos_file(network: Network, options: SimulationOptions, project_path: Path) -> Generator[str, None, None]:
-    # TODO: do we want this here?
     network.set_weather_path_to_container_path(project_path)
     model = network.model()
     with (

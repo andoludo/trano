@@ -13,7 +13,8 @@ if TYPE_CHECKING:
     from trano.elements import WallParameters
 
 
-# TODO: this must go!!!
+# Library-specific helper exposed via Library.functions; kept here until the
+# library config can express callables natively.
 def tilts_processing_ideas(element: "WallParameters") -> list[str | int]:
     return [
         (f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" if tilt.value in DEFAULT_TILT else TILT_MAPPING[tilt.value])

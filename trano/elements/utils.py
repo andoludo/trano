@@ -67,7 +67,6 @@ def _get_default(v: Any) -> Any:  # noqa: ANN401
         raise e
 
 
-# TODO: class names should be standardized!!
 def import_element_function(function_name: str) -> Any:  # noqa: ANN401
     attribute = [attribute for attribute in elements.__all__ if attribute.lower() == function_name.lower()]
     if len(attribute) > 1:

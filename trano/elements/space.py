@@ -310,7 +310,7 @@ class Space(BaseSpace):
         # The rest is connected to each other
         network._add_subsequent_systems(self.ventilation_outlets)
         network._add_subsequent_systems(self.ventilation_inlets)
-        self.assign_position()  # TODO: this is not relevant anymore?
+        self.assign_position()
 
     def processing(self, network: "Network", include_container: bool = False) -> None:
         from trano.elements import VAVControl

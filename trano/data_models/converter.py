@@ -35,7 +35,8 @@ def delete_none(_dict: dict[str, Any]) -> dict[str, Any]:
     return _dict
 
 
-# TODO: function taken from linkml_runtime.cli.converter
+# Forked from an earlier `linkml_runtime.cli.converter` (no longer shipped by
+# linkml_runtime) so we keep our own copy here.
 def converter(  # noqa: PLR0915, PLR0912, PLR0913, C901
     input: str | None = None,
     module: Any | None = None,  # noqa: ANN401

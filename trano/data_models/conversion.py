@@ -34,7 +34,8 @@ from trano.elements.control import BoilerControl  # noqa: F401
 from trano.elements.envelope import SpaceTilt
 from trano.elements.space import Space
 
-# TODO: fix these imports
+# Boiler and BoilerControl are imported for their side effect of registering as
+# subclasses; `import_element_function` looks up classes by their string name.
 from trano.elements.system import Boiler  # noqa: F401
 from trano.elements.system import AirHandlingUnit, Occupancy, Weather
 from trano.elements.types import Tilt
@@ -74,8 +75,6 @@ def _instantiate_component(component_: dict[str, Any]) -> Component:
     component_parameters.pop("inlets", None)
     component_parameters.pop("outlets", None)
     component_type = to_camel_case(component_type)
-    # TODO: just find a way to import the required components directly here!
-
     component_class = import_element_function(component_type)
     name = component_parameters.pop("id")
     component_parameters.update({"name": name})
@@ -112,7 +111,7 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
         dump_function = yaml.safe_dump
     elif model_path.suffix == ".json":
         load_function = json.loads  # type: ignore
-        dump_function = json.dump  # type: ignore # TODO: why?
+        dump_function = json.dump  # type: ignore[assignment]
     else:
         raise Exception("Invalid file format")
     data = load_function(model_path.read_text())
@@ -121,7 +120,7 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
     with tempfile.NamedTemporaryFile(
         mode="w+",
         suffix=model_path.suffix,
-        delete=False,  # TODO: delete later?
+        delete=False,  # converter() reads the path after the context exits
     ) as f:
         dump_function(data, f)
 

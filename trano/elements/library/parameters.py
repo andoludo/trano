@@ -11,7 +11,6 @@ PRIORITY = ["DataSource"]
 
 
 def load_parameters() -> dict[str, type["BaseParameter"]]:
-    # TODO: remove absoluth path reference
     parameter_path = Path(__file__).parents[2].joinpath("data_models", "parameters.yaml")
     data = yaml.safe_load(parameter_path.read_text())
     classes = {}
@@ -37,12 +36,14 @@ def load_parameters() -> dict[str, type["BaseParameter"]]:
                     ),
                 )
             else:
-                attrib_[k] = computed_field(  # type: ignore # TODO: why?
+                # `eval` here is intentional: callable bodies and return types
+                # come from a trusted parameters.yaml shipped with the package.
+                attrib_[k] = computed_field(  # type: ignore[arg-type]
                     eval(v["func"]),  # noqa: S307
                     return_type=eval(v["type"]),  # noqa: S307
-                    alias=alias,  # TODO: avoid using eval
+                    alias=alias,
                 )
-        model = create_model(f"{name}_", __base__=BaseParameter, **attrib_)  # type: ignore # TODO: why?
+        model = create_model(f"{name}_", __base__=BaseParameter, **attrib_)  # type: ignore[call-overload]
         models[name] = model
         if parameter.get("classes") is None:
             continue
@@ -65,11 +66,9 @@ PARAMETERS = load_parameters()
 def param_from_config(name: str) -> type[BaseParameter] | None:
     if name in PARAMETERS:
         return PARAMETERS[name]
-    elif name.upper() in PARAMETERS:
+    if name.upper() in PARAMETERS:
         return PARAMETERS[name.upper()]
-    else:
-        return None
-    # TODO: to be replaced with a raise later
+    return None
 
 
 def change_alias(parameter: BaseParameter, mapping: dict[str, str] | None = None) -> Any:  # noqa: ANN401
