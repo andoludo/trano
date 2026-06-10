@@ -1,12 +1,14 @@
 from tests.constructions.constructions import Constructions, Glasses
 from trano.elements import ExternalWall, FloorOnGround, Window
 from trano.elements.space import Space
+from trano.elements.system import Occupancy
 from trano.elements.types import Azimuth, Tilt
 
 
-def simple_space_1_fixture() -> Space:
+def simple_space_1_fixture(occupancy: bool = False) -> Space:
     return Space(
         name="space_1",
+        occupancy=Occupancy(name="occupancy_0") if occupancy else None,
         external_boundaries=[
             ExternalWall(
                 name="w1_1",

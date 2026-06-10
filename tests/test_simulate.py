@@ -1,5 +1,6 @@
 import tempfile
 from pathlib import Path
+
 import pytest
 
 from trano.data_models.conversion import convert_network
@@ -8,322 +9,96 @@ from trano.simulate.simulate import SimulationOptions, simulate
 from trano.topology import Network
 from trano.utils.utils import is_success
 
+ONE_HOUR = 3600
+
 
 def get_path(file_name: str) -> Path:
     return Path(__file__).parent.joinpath("models", file_name)
 
 
-@pytest.mark.simulate
-def test_simulate_buildings_free_float_single_zone(
-    buildings_free_float_single_zone: Network,
-) -> None:
+def simulate_in_temporary_directory(network: Network, options: SimulationOptions) -> None:
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            buildings_free_float_single_zone,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_buildings_simple_hydronic_two_zones_new(
-    buildings_two_rooms_with_storage: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            buildings_two_rooms_with_storage,
-            options=SimulationOptions(end_time=24 * 3600 * 14),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_buildings_free_float_two_zones(
-    buildings_free_float_two_zones: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            buildings_free_float_two_zones,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_buildings_free_float_three_zones(
-    buildings_free_float_three_zones: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            buildings_free_float_three_zones,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_buildings_simple_hydronic(
-    buildings_simple_hydronic: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            buildings_simple_hydronic,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_ideas_free_float_three_zones(
-    ideas_free_float_three_zones: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            ideas_free_float_three_zones,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_ideas_simple_hydronic_no_occupancy(
-    ideas_simple_hydronic_no_occupancy: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            ideas_simple_hydronic_no_occupancy,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_test_space_1_different_construction_types_network(
-    space_1_different_construction_types_network: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            space_1_different_construction_types_network,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_ideas_simple_hydronic_three_zones(
-    ideas_simple_hydronic_three_zones: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            ideas_simple_hydronic_three_zones,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_one_spaces_air_handling_unit(
-    one_spaces_air_handling_unit: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            one_spaces_air_handling_unit,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_two_spaces_air_handling_unit(
-    two_spaces_air_handling_unit: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            two_spaces_air_handling_unit,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_house_model(house_model: Network) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(Path(project_path), house_model, options=SimulationOptions(end_time=3600))
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_building_multiple_internal_walls(
-    building_multiple_internal_walls: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            building_multiple_internal_walls,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_building_multiple_internal_walls_ideas(
-    building_multiple_internal_walls_ideas: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            building_multiple_internal_walls_ideas,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_space_1_ideal_heating_network(
-    space_1_ideal_heating_network: Network,
-) -> None:
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            space_1_ideal_heating_network,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.parametrize("library_name", ["IDEAS", "Buildings"])
-@pytest.mark.simulate
-def test_three_zones_hydronic(schema: Path, library_name: str) -> None:
-    house = get_path("three_zones_hydronic.yaml")
-    network = convert_network("three_zones_hydronic", house, library=Library.from_configuration(library_name))
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            network,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_single_zone_hydronic(schema: Path) -> None:
-    house = get_path("single_zone_hydronic.yaml")
-    network = convert_network("single_zone_hydronic", house)
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            network,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_single_zone_hydronic_weather(schema: Path) -> None:
-    house = get_path("single_zone_hydronic_weather.yaml")
-    network = convert_network("single_zone_hydronic_weather", house)
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            network,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_single_zone_air_handling_unit_simple_vav_control(schema: Path) -> None:
-    house = get_path("single_zone_air_handling_unit_simple_vav_control.yaml")
-    network = convert_network("single_zone_air_handling_unit_simple_vav_control", house)
-
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        options = SimulationOptions(end_time=3600, check_only=True)  # TODO: why simulation fails
-        results = simulate(
-            Path(project_path),
-            network,
-            options=options,
-        )
+        results = simulate(Path(project_path), network, options=options)
         assert is_success(results, options=options)
 
 
-@pytest.mark.simulate
-def test_single_zone_air_handling_unit_complex_vav(schema: Path) -> None:
-    house = get_path("single_zone_air_handling_unit_complex_vav.yaml")
-    network = convert_network("single_zone_air_handling_unit_complex_vav", house)
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            network,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
+# (network fixture name, simulation end time in seconds)
+SIMULATED_FIXTURES: list[tuple[str, int]] = [
+    ("buildings_free_float_single_zone", ONE_HOUR),
+    ("buildings_two_rooms_with_storage", 24 * ONE_HOUR * 14),
+    ("buildings_free_float_two_zones", ONE_HOUR),
+    ("buildings_free_float_three_zones", ONE_HOUR),
+    ("buildings_simple_hydronic", ONE_HOUR),
+    ("ideas_free_float_three_zones", ONE_HOUR),
+    ("ideas_simple_hydronic_no_occupancy", ONE_HOUR),
+    ("space_1_different_construction_types_network", ONE_HOUR),
+    ("ideas_simple_hydronic_three_zones", ONE_HOUR),
+    ("one_spaces_air_handling_unit", ONE_HOUR),
+    ("two_spaces_air_handling_unit", ONE_HOUR),
+    ("house_model", ONE_HOUR),
+    ("building_multiple_internal_walls", ONE_HOUR),
+    ("building_multiple_internal_walls_ideas", ONE_HOUR),
+    ("space_1_ideal_heating_network", ONE_HOUR),
+]
 
 
 @pytest.mark.simulate
-def test_single_zone_air_handling_unit_without_vav_with_duct(schema: Path) -> None:
-    house = get_path("single_zone_air_handling_unit_without_vav_with_duct.yaml")
-    # TODO: remove ducts here
-    network = convert_network("single_zone_air_handling_unit_without_vav_with_duct", house)
+@pytest.mark.parametrize(
+    ("network_fixture", "end_time"), SIMULATED_FIXTURES, ids=[case[0] for case in SIMULATED_FIXTURES]
+)
+def test_simulate_fixture_network(request: pytest.FixtureRequest, network_fixture: str, end_time: int) -> None:
+    network: Network = request.getfixturevalue(network_fixture)
+    simulate_in_temporary_directory(network, SimulationOptions(end_time=end_time))
 
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        options = SimulationOptions(end_time=3600, check_only=True)
-        results = simulate(
-            Path(project_path),
-            network,
-            options=options,  # TODO: investigate why simulation fails
-        )
-        assert is_success(results, options=options)
+
+# (network name, yaml file, library name or None, check_only). check_only entries are
+# models whose simulation fails for reasons still under investigation (see TODOs below).
+YAML_SIMULATIONS: list[tuple[str, str, str | None, bool]] = [
+    ("three_zones_hydronic", "three_zones_hydronic.yaml", "IDEAS", False),
+    ("three_zones_hydronic", "three_zones_hydronic.yaml", "Buildings", False),
+    ("single_zone_hydronic", "single_zone_hydronic.yaml", None, False),
+    ("single_zone_hydronic_weather", "single_zone_hydronic_weather.yaml", None, False),
+    # TODO: why does the simulation fail without check_only?
+    (
+        "single_zone_air_handling_unit_simple_vav_control",
+        "single_zone_air_handling_unit_simple_vav_control.yaml",
+        None,
+        True,
+    ),
+    ("single_zone_air_handling_unit_complex_vav", "single_zone_air_handling_unit_complex_vav.yaml", None, False),
+    # TODO: remove ducts here and investigate why the simulation fails without check_only.
+    (
+        "single_zone_air_handling_unit_without_vav_with_duct",
+        "single_zone_air_handling_unit_without_vav_with_duct.yaml",
+        None,
+        True,
+    ),
+    ("house_infiltration_boiler", "house_infiltration_boiler.yaml", None, False),
+    ("single_zone_hydronic_occupancy_from_data", "single_zone_hydronic_occupancy_from_data.yaml", None, True),
+]
+
+
+@pytest.mark.simulate
+@pytest.mark.parametrize(
+    ("model_name", "yaml_file", "library_name", "check_only"),
+    YAML_SIMULATIONS,
+    ids=[f"{case[0]}_{case[2]}" if case[2] else case[0] for case in YAML_SIMULATIONS],
+)
+def test_simulate_yaml_model(model_name: str, yaml_file: str, library_name: str | None, check_only: bool) -> None:
+    library = Library.from_configuration(library_name) if library_name else None
+    network = convert_network(model_name, get_path(yaml_file), library=library)
+    simulate_in_temporary_directory(network, SimulationOptions(end_time=ONE_HOUR, check_only=check_only))
 
 
 @pytest.mark.simulate
 def test_simulate_house_complex() -> None:
     house = get_path("house_complex.yaml")
-    # TODO: remove ducts here
     network = convert_network("house_complex", house)
     project_path = Path(__file__).parent.joinpath("simulation")
     project_path.mkdir(parents=True, exist_ok=True)
     results = simulate(
         Path(project_path),
         network,
-        options=SimulationOptions(end_time=24 * 3600 * 30 * 3),
+        options=SimulationOptions(end_time=24 * ONE_HOUR * 30 * 3),
     )
     assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_simulate_house_infiltration_boiler() -> None:
-    house = get_path("house_infiltration_boiler.yaml")
-    # TODO: remove ducts here
-    network = convert_network("house_infiltration_boiler", house)
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            network,
-            options=SimulationOptions(end_time=3600),
-        )
-        assert is_success(results)
-
-
-@pytest.mark.simulate
-def test_check_single_zone_hydronic_occupancy_from_data() -> None:
-    house = get_path("single_zone_hydronic_occupancy_from_data.yaml")
-    # TODO: remove ducts here
-    network = convert_network("single_zone_hydronic_occupancy_from_data", house)
-    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
-        results = simulate(
-            Path(project_path),
-            network,
-            options=SimulationOptions(end_time=3600, check_only=True),
-        )
-        assert is_success(results, SimulationOptions(end_time=3600, check_only=True))
