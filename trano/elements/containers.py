@@ -110,8 +110,8 @@ class Container(BaseContainer):
     def main_equation(self) -> str:
         location = f"{self.layout.global_origin.c_.x},{self.layout.global_origin.c_.y}"
         size = (
-            f"{self.layout.global_origin.c_.x+self.component_size.c_.x},"
-            f"{self.layout.global_origin.c_.y+self.component_size.c_.y}"
+            f"{self.layout.global_origin.c_.x + self.component_size.c_.x},"
+            f"{self.layout.global_origin.c_.y + self.component_size.c_.y}"
         )
         return (
             f"Components.Containers.{self.name} {self.name}1 "

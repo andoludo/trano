@@ -324,8 +324,14 @@ class Network:  # : PLR0904, #TODO: fix this
         if not all(n.system_ports_connected() for n in self.graph.nodes):
             raise SystemsNotConnectedError(
                 f"""Not all system ports are connected. 
-            The following are not connected: {[nm for n in self.graph.nodes for nm in n.non_connected_ports_name() 
-                                               if not n.system_ports_connected() and nm]}"""
+            The following are not connected: {
+                    [
+                        nm
+                        for n in self.graph.nodes
+                        for nm in n.non_connected_ports_name()
+                        if not n.system_ports_connected() and nm
+                    ]
+                }"""
             )
         return template.render(
             network=self,
