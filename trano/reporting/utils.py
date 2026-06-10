@@ -1,7 +1,8 @@
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union
 
 from buildingspy.io.outputfile import Reader  # type: ignore
-from jinja2 import Template
+from jinja2 import Environment, FileSystemLoader
 
 from trano.plot.plot import plot_element, plot_plot_ly
 
@@ -15,256 +16,24 @@ if TYPE_CHECKING:
     )
     from trano.reporting.reporting import ModelDocumentation
 
+# autoescape is intentionally disabled: these templates render trusted internal
+# data and the historical output was produced without escaping.
+_TEMPLATES = Environment(
+    loader=FileSystemLoader(str(Path(__file__).parent.joinpath("templates"))),
+    autoescape=False,  # noqa: S701
+)
+
 
 def to_html_space(data: dict[str, Any]) -> str:
-    template = Template(
-        """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>External Boundaries Table</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-            }
-            .fancy-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                font-size: 1em;
-                text-align: left;
-            }
-            .fancy-table th, .fancy-table td {
-                padding: 12px;
-                border: 1px solid #ddd;
-            }
-            .fancy-table th {
-                background-color: #f4f4f4;
-                font-weight: bold;
-            }
-            .fancy-table tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            .fancy-table caption {
-                font-size: 1.5em;
-                margin-bottom: 10px;
-                font-weight: bold;
-            }
-        </style>
-    </head>
-    <body>
-    {% for parameter_ in [data.parameters,data.occupancy] %}
-    <table>
-        <thead>
-            <tr>
-                {% for key in parameter_.keys() %}
-                    <th><strong>{{ key }}</strong></th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                {% for value in parameter_.values() %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-            </tr>
-        </tbody>
-    </table>
-    {% endfor %}
-    <table class="fancy-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Azimuth</th>
-                <th>Construction Name</th>
-                <th>Surface</th>
-                <th>Tilt</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for boundary in data.external_boundaries + data.internal_elements %}
-            <tr>
-                <td>{{ boundary.name }}</td>
-                <td>{{ boundary.azimuth }}</td>
-                <td>{{ boundary.construction }}</td>
-                <td>{{ boundary.surface }}</td>
-                <td>{{ boundary.tilt }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-
-        {% for emission in data.emissions %}
-    <table>
-        <thead>
-            <tr>
-                {% for key in emission.keys() %}
-                    <th><strong>{{ key }}</strong></th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                {% for value in emission.values() %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-            </tr>
-        </tbody>
-    </table>
-    {% endfor %}
-
-    </body>
-    </html>
-    """
-    )
-
-    return template.render(data=data)
+    return _TEMPLATES.get_template("space.html").render(data=data)
 
 
 def to_html_system(data: dict[str, Any]) -> str:
-    template = Template(
-        """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>External Boundaries Table</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-            }
-            .fancy-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-                font-size: 1em;
-                text-align: left;
-            }
-            .fancy-table th, .fancy-table td {
-                padding: 12px;
-                border: 1px solid #ddd;
-            }
-            .fancy-table th {
-                background-color: #f4f4f4;
-                font-weight: bold;
-            }
-            .fancy-table tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            .fancy-table caption {
-                font-size: 1.5em;
-                margin-bottom: 10px;
-                font-weight: bold;
-            }
-        </style>
-    </head>
-    <body>
-
-    <table>
-        <thead>
-            <tr>
-                {% for key in data.keys() %}
-                    <th><strong>{{ key }}</strong></th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                {% for value in data.values() %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-            </tr>
-        </tbody>
-    </table>
-
-
-    </body>
-    </html>
-    """
-    )
-
-    return template.render(data=data)
+    return _TEMPLATES.get_template("system.html").render(data=data)
 
 
 def to_html_construction(data: dict[str, Any]) -> str:
-    template = Template(
-        """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Layer Information Table</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 20px;
-                font-size: 1em;
-            }
-            th, td {
-                padding: 12px;
-                border: 1px solid #ddd;
-                text-align: left;
-            }
-            th {
-                background-color: #f4f4f4;
-                font-weight: bold;
-            }
-            tr:nth-child(even) {
-                background-color: #f9f9f9;
-            }
-            caption {
-                font-size: 0.75em;
-                margin-bottom: 10px;
-                font-weight: bold;
-                text-align: left;
-            }
-        </style>
-    </head>
-    <body>
-
-    <table>
-        <caption>Layers for {{ data.name }}</caption>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>c</th>
-                <th>epsLw</th>
-                <th>epsSw</th>
-                <th>k</th>
-                <th>rho</th>
-                <th>Thickness</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for layer in data.layers %}
-            <tr>
-                <td>{{ layer.name }}</td>
-                <td>{{ layer.c }}</td>
-                <td>{{ layer.epsLw }}</td>
-                <td>{{ layer.epsSw }}</td>
-                <td>{{ layer.k }}</td>
-                <td>{{ layer.rho }}</td>
-                <td>{{ layer.thickness }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    </body>
-    </html>
-    """
-    )
-
-    # Render the template with the data
-    return template.render(data=data)
+    return _TEMPLATES.get_template("construction.html").render(data=data)
 
 
 def get_figures(element_name: str, documentation: "ModelDocumentation") -> list:  # type: ignore
