@@ -1,3 +1,4 @@
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +15,6 @@ class Components(BaseModel):
     @classmethod
     def load(cls) -> "Components":
         libraries_json_path = Path(__file__).parent.joinpath("models")
-        libraries_json_path.mkdir(exist_ok=True)
         components = []
         for file in libraries_json_path.rglob("*.yaml"):
             file_data = yaml.safe_load(file.read_text())
@@ -29,4 +29,7 @@ class Components(BaseModel):
         return libraries_data
 
 
-COMPONENTS = Components.load()
+@cache
+def get_components_registry() -> Components:
+    """Load the component library lazily: parsing every YAML file is slow."""
+    return Components.load()

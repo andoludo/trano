@@ -1,15 +1,14 @@
 from functools import partial
-from pathlib import Path
 from typing import Any, TYPE_CHECKING
 from collections.abc import Callable
 
-from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 from trano.elements.common_base import BaseParameter
 from trano.elements.connection import Port
 from trano.elements.data_bus.controller_bus import ControllerBus
 from trano.elements.figure import Figure
+from trano.elements.jinja import compile_template
 from trano.elements.library import parameters
 from trano.elements.library.parameters import default_parameters
 from trano.elements.types import BaseVariant, DynamicTemplateCategories
@@ -37,14 +36,7 @@ class DynamicComponentTemplate(BaseModel):
 
     def render(self, package_name: str, element: "BaseElement", parameters: dict[str, Any]) -> str:
         ports = list(self.bus.bus_ports(element))
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(str(Path(__file__).parents[2].joinpath("templates"))),
-            autoescape=True,
-        )
-        environment.filters["enumerate"] = enumerate
-        rtemplate = environment.from_string("{% import 'macros.jinja2' as macros %}" + self.template)
+        rtemplate = compile_template("{% import 'macros.jinja2' as macros %}" + self.template)
         component = rtemplate.render(
             element=element,
             package_name=package_name,

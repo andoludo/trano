@@ -1,12 +1,11 @@
 import logging
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
 
 from trano import elements
 from trano.elements.common_base import BaseElementPosition, BasePosition
+from trano.elements.jinja import compile_template
 from trano.elements.types import (
     ConnectionView,
     Flow,
@@ -352,13 +351,7 @@ class Connection(BaseModel):
 
     @computed_field
     def equation(self) -> str:
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
-            autoescape=True,
-        )
-        annotation_template = environment.from_string(
+        annotation_template = compile_template(
             """{% import 'macros.jinja2' as macros %}        
         connect({{ connection.left.equation }},{{ connection.right.equation }})
             {% if not connection.connection_view.disabled %}
