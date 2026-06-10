@@ -284,7 +284,8 @@ class Network:  # : PLR0904, #TODO: fix this
                 # TODO: this is not correct
                 node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
-    def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
+    def _prepare_nodes(self, include_container: bool, data_bus: DataBus | None) -> DataBus | None:
+        """Process and position every node, adding a data bus if none exists."""
         Space.counter = 0
         for node in self.graph.nodes:
             node.assign_container_type(self)
@@ -298,26 +299,12 @@ class Network:  # : PLR0904, #TODO: fix this
         self.assign_nodes_position()
         for node in self.graph.nodes:
             node.set_child_position()
-        self.connect()
-        data = extract_properties(self.library, self.name, self.graph.nodes)
-        component_models = []
-        for node in self.graph.nodes:
-            model = node.model(self)
-            if model:
-                component_models.append(model)
+        return data_bus
 
-        container_input = ContainerInput(
-            nodes=list(self.graph.nodes),
-            connections=self.edge_attributes,
-            data=data,
-            medium=self.library.medium,
-        )
-        container_model = self.containers.build(container_input)
-        element_models = [c.model for c in component_models]
-        template = ENVIRONMENT.get_template("base.jinja2")
+    def _assert_all_systems_connected(self) -> None:
         if not all(n.system_ports_connected() for n in self.graph.nodes):
             raise SystemsNotConnectedError(
-                f"""Not all system ports are connected. 
+                f"""Not all system ports are connected.
             The following are not connected: {
                     [
                         nm
@@ -327,10 +314,25 @@ class Network:  # : PLR0904, #TODO: fix this
                     ]
                 }"""
             )
-        return template.render(
+
+    def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
+        data_bus = self._prepare_nodes(include_container, data_bus)
+        self.connect()
+        data = extract_properties(self.library, self.name, self.graph.nodes)
+        component_models = [model for node in self.graph.nodes if (model := node.model(self))]
+        container_model = self.containers.build(
+            ContainerInput(
+                nodes=list(self.graph.nodes),
+                connections=self.edge_attributes,
+                data=data,
+                medium=self.library.medium,
+            )
+        )
+        self._assert_all_systems_connected()
+        return ENVIRONMENT.get_template("base.jinja2").render(
             network=self,
             data=data,
-            element_models=element_models,
+            element_models=[c.model for c in component_models],
             library=self.library,
             databus=data_bus,
             dynamic_components=self.dynamic_components,

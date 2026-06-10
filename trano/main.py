@@ -31,6 +31,22 @@ def _create_network(model: str, library: str) -> Network:
     return convert_network(str(model_.stem), model_, library=library_)
 
 
+def _simulation_result_path(model_path: Path) -> Path:
+    return Path(model_path.parent) / "results" / f"{model_path.stem}.building_res.mat"
+
+
+def _generate_report(network: Network, model_path: Path, result_path: Path) -> Path:
+    reporting = ModelDocumentation.from_network(
+        network,
+        result=ResultFile(path=result_path),
+    )
+    html = to_html_reporting(reporting)
+    report_path = Path(model_path.parent / f"{model_path.stem}.html")
+    report_path.write_text(html)
+    webbrowser.open(f"file://{report_path}")
+    return report_path
+
+
 @app.command()
 def create_model(
     model: Annotated[
@@ -108,7 +124,7 @@ def simulate_model(
             print(f"{CROSS_MARK} Simulation failed. See logs for more information.")
             return
 
-        result_path = Path(model_.parent) / "results" / f"{model_.stem}.building_res.mat"
+        result_path = _simulation_result_path(model_)
         if not result_path.exists():
             print(f"{CROSS_MARK} Simulation failed. Result file not found in {result_path}.")
             return
@@ -119,14 +135,7 @@ def simulate_model(
             description="Creating report ...",
             total=None,
         )
-        reporting = ModelDocumentation.from_network(
-            network,
-            result=ResultFile(path=result_path),
-        )
-        html = to_html_reporting(reporting)
-        report_path = Path(model_.parent / f"{model_.stem}.html")
-        report_path.write_text(html)
-        webbrowser.open(f"file://{report_path}")
+        report_path = _generate_report(network, model_, result_path)
         progress.remove_task(task)
         print(f"{CHECKMARK} Report available at {report_path}")
 
@@ -173,14 +182,7 @@ def verify() -> None:
 def report(model: Path | str, options: SimulationLibraryOptions) -> None:
     model = Path(model).resolve()
     network = convert_network(model.stem, model, library=Library.from_configuration(options.library_name))
-    reporting = ModelDocumentation.from_network(
-        network,
-        result=ResultFile(path=Path(model.parent) / "results" / f"{model.stem}.building_res.mat"),
-    )
-    html = to_html_reporting(reporting)
-    report_path = Path(model.parent / f"{model.stem}.html")
-    report_path.write_text(html)
-    webbrowser.open(f"file://{report_path}")
+    _generate_report(network, model, _simulation_result_path(model))
 
 
 if __name__ == "__main__":
