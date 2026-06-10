@@ -17,7 +17,7 @@ from trano.topology import Network
 def check_docker_installed() -> None:
     try:
         subprocess.run(
-            ["docker", "--version"],  # noqa: S603, S607
+            ["docker", "--version"],  # noqa: S607
             check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError) as e:

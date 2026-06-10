@@ -178,7 +178,7 @@ class BaseElement(BaseElementPort):
         parameters = {
             key: value.lower() if value in ["True", "False"] else value
             for key, value in parameters.items()
-            if key not in ["data"]
+            if key != "data"
         }
         component_model: dict[str, Any] = {"id": hash(self)}
         for model_type, annotation in {
@@ -242,7 +242,7 @@ class BaseElement(BaseElementPort):
                 iter(
                     sorted(
                         container_types,
-                        key=lambda type_: {v: i for i, v in enumerate(get_args(ContainerTypes))}.get(type_),  # type: ignore
+                        key={v: i for i, v in enumerate(get_args(ContainerTypes))}.get,  # type: ignore
                     )
                 )
             )

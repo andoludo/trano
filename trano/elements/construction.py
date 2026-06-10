@@ -159,14 +159,14 @@ class BaseConstructionData(BaseModel):
             "construction": [],
             "glazing": [],
         }
-        for construction_type_name in models:
+        for construction_type_name, rendered_models in models.items():
             construction_type = getattr(self, construction_type_name)
             for construction in construction_type.constructions:
                 template = environment.from_string(
                     "{% import 'macros.jinja2' as macros %}" + construction_type.template
                 )
                 model = template.render(construction=construction, package_name=package_name)
-                models[construction_type_name].append(model)
+                rendered_models.append(model)
         template = environment.from_string("{% import 'macros.jinja2' as macros %}" + self.template)
         model = template.render(**models, package_name=package_name)
         return model

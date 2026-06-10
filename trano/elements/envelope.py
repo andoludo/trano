@@ -164,7 +164,7 @@ class MergedWindows(MergedBaseWindow):
         unique_constructions = {base_wall.construction for base_wall in base_walls}
 
         for construction in unique_constructions:
-            data: dict[str, list["ExternalWall" | "FloorOnGround" | "BaseWindow" | str]] = {
+            data: dict[str, list[ExternalWall | FloorOnGround | BaseWindow | str]] = {
                 "azimuth": [],
                 "tilt": [],
                 "name": [],
@@ -228,7 +228,7 @@ class WallParameters(BaseModel):
         return sum(self.u_values) / len(self.u_values)
 
     @classmethod
-    def from_neighbors(  # noqa: PLR0913
+    def from_neighbors(
         cls,
         space_name: str,
         neighbors: list["BaseElement"],

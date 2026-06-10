@@ -164,7 +164,7 @@ class AirHandlingUnit(Ventilation):
     def _get_ahu_elements(
         self, element_type: type[Union[VAV, "Space"]], network: "Network"
     ) -> list[Union[VAV, "Space"]]:
-        elements_: list[VAV | "Space"] = []
+        elements_: list[VAV | Space] = []
         elements = [node for node in network.graph.nodes if isinstance(node, element_type)]
         for element in elements:
             try:

@@ -362,7 +362,7 @@ class Containers(BaseModel):
         connection_view = ConnectionView()
         if connected_container_name in get_args(SystemContainerTypes):
             connection_view = ConnectionView(color="{0, 0, 139}", thickness=0.1, pattern="Dash")
-        if connected_container_name in ["bus"]:
+        if connected_container_name == "bus":
             connection_view = ConnectionView(color=None, thickness=0.2, disabled=True)
         return connection_view
 

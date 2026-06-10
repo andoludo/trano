@@ -1,20 +1,22 @@
+"""Parse materials, glazings and constructions from Modelica library sources.
+
+How to run::
+
+    material_folders = [
+        Path("../libraries/IDEAS/IDEAS/Buildings/Data/Materials"),
+        Path("../libraries/IDEAS/IDEAS/Buildings/Data/Insulation"),
+        Path("../libraries/IDEAS/IDEAS/Buildings/Data/Frames"),
+    ]
+    glazing_folder = Path("../libraries/IDEAS/IDEAS/Buildings/Data/Glazing")
+    construction_folder = Path("../libraries/IDEAS/IDEAS/Buildings/Data/Constructions")
+    parser(material_folders, glazing_folder, construction_folder)
+"""
+
 import re
 from pathlib import Path
 from typing import Any
 
 import yaml
-
-# HOW TO RUN # : ERA001
-# material_folders = [ # : ERA001
-#     Path("../libraries/IDEAS/IDEAS/Buildings/Data/Materials"), # noqa : ERA001
-#     Path("../libraries/IDEAS/IDEAS/Buildings/Data/Insulation"), # noqa : ERA001
-#     Path("../libraries/IDEAS/IDEAS/Buildings/Data/Frames"), # noqa : ERA001
-# ] # : ERA001
-# glazing_folder = Path("../libraries/IDEAS/IDEAS/Buildings/Data/Glazing") # noqa : ERA001
-# construction_folder = Path( # : ERA001
-#     "../libraries/IDEAS/IDEAS/Buildings/Data/Constructions" # noqa : ERA001
-# ) # : ERA001
-# parser(material_folders, glazing_folder, construction_folder) # noqa : ERA001
 
 
 def parse_materials(input_str: str) -> list[dict[str, Any]]:
@@ -78,12 +80,12 @@ def parse_gas_and_material(input_str: str) -> dict[str, Any]:
 
     materials = []
     for match in matches:
-        material_type = match[0].upper() + ":001"  # type: ignore
-        thermal_conductivity = float(match[2])  # type: ignore
-        specific_heat_capacity = float(match[3])  # type: ignore
-        density = float(match[4])  # type: ignore
-        longwave_emissivity = float(match[5]) if match[5] else None  # type: ignore
-        shortwave_emissivity = float(match[6]) if match[6] else None  # type: ignore
+        material_type = match[0].upper() + ":001"
+        thermal_conductivity = float(match[2])
+        specific_heat_capacity = float(match[3])
+        density = float(match[4])
+        longwave_emissivity = float(match[5]) if match[5] else None
+        shortwave_emissivity = float(match[6]) if match[6] else None
         material_dict = {
             "id": material_type,
             "thermal_conductivity": thermal_conductivity,

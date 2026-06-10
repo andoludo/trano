@@ -145,7 +145,10 @@ exclude = [
 [tool.ruff.lint]
 select = ["E", "W", "F", "B006","RUF","UP","SIM","FURB","PIE","PERF","C4","B","PL","S","C901","N","ANN", "ERA001", "PD"]
 ignore = ["UP006", "UP035"]
-extend-ignore = ["S101","PLR2004","W291"]
+# UP042 (StrEnum) is ignored because str(enum) rendering inside the Jinja templates
+# would change; PLC0415 because the in-function imports work around circular imports
+# (and the tutorial tests deliberately inline imports as documentation examples).
+extend-ignore = ["S101","PLR2004","W291","UP042","PLC0415"]
 
 fixable = ["ALL"]
 unfixable = []

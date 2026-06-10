@@ -125,6 +125,5 @@ def transform_csv_to_table(file_path: Path, total_second: bool = True) -> Valida
     else:
         data.index = data.index.astype(int) // 10**9
     data_str = data.to_csv(sep=",", header=False, lineterminator=";")
-    if data_str.endswith(";"):
-        data_str = data_str[:-1]
+    data_str = data_str.removesuffix(";")
     return ValidationData(data=data_str, columns=data.columns.tolist())
