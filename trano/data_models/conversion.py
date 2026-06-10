@@ -153,19 +153,7 @@ def _merge_default(data: dict[str, Any]) -> dict[str, Any]:
     return data
 
 
-# TODO: reduce complexity
-def convert_network(  # noqa: PLR0915, C901, PLR0912
-    name: str, model_path: Path, library: Library | None = None
-) -> Network:
-    network = Network(name=name, library=library)
-    occupancy = None
-    system_counter: Any = Counter()
-
-    enriched_model = load_and_enrich_model(model_path)
-    validate_model(enriched_model.data, model_path.suffix)
-    data = enriched_model.data
-    data = _merge_default(data)
-    materials = _build_materials(data)
+def _build_constructions(data: dict[str, Any], materials: dict[str, Any]) -> dict[str, Construction | Glass]:
     constructions: dict[str, Construction | Glass] = {}
     for construction in data["constructions"]:
         layers = [Layer(**(layer | {"material": materials[layer["material"]]})) for layer in construction["layers"]]
@@ -182,84 +170,106 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
             layers=glazing_layers,
             u_value_frame=glazing["u_value_frame"],
         )
+    return constructions
 
-    spaces = []
-    space_dict = {}
-    systems = {}
-    for space in data["spaces"]:
-        external_boundaries = space["external_boundaries"]
-        external_walls: list[ExternalWall | Window | FloorOnGround] = []
-        for external_wall in external_boundaries.get("external_walls", []):
-            external_wall_ = ExternalWall(
-                **(external_wall | {"construction": constructions[external_wall["construction"]]})
-            )
-            external_walls.append(external_wall_)
-        for window in external_boundaries.get("windows", []):
-            window_ = Window(**(window | {"construction": constructions[window["construction"]]}))
-            external_walls.append(window_)
-        for floor_on_ground in external_boundaries.get("floor_on_grounds", []):
-            floor_on_ground_ = FloorOnGround(
-                **(floor_on_ground | {"construction": constructions[floor_on_ground["construction"]]})
-            )
-            external_walls.append(floor_on_ground_)
-        occupancy_parameter_class = param_from_config("Occupancy")
-        if space.get("occupancy") is not None and occupancy_parameter_class is not None:
-            system_counter.update(["occupancy"])
 
-            occupancy_ = space["occupancy"]
-            occupancy = Occupancy(
-                **(
-                    occupancy_
-                    | {"name": f"occupancy_{system_counter['occupancy']}"}
-                    | {"parameters": occupancy_parameter_class(**occupancy_.get("parameters", {}))}
-                )
+def _build_occupancy(
+    space_data: dict[str, Any],
+    library: Library,
+    system_counter: "Counter[str]",
+    current_occupancy: Occupancy | None,
+) -> Occupancy | None:
+    """Build the occupancy for a space.
+
+    When a space defines no occupancy and the library has no default, the previous
+    space's occupancy (`current_occupancy`) is returned. The generated models
+    depend on this carry-over, so it must be preserved.
+    """
+    occupancy_parameter_class = param_from_config("Occupancy")
+    if occupancy_parameter_class is None:
+        return current_occupancy
+    if space_data.get("occupancy") is not None:
+        system_counter.update(["occupancy"])
+        occupancy_ = space_data["occupancy"]
+        return Occupancy(
+            **(
+                occupancy_
+                | {"name": f"occupancy_{system_counter['occupancy']}"}
+                | {"parameters": occupancy_parameter_class(**occupancy_.get("parameters", {}))}
             )
-        elif network.library.default_parameters.get("occupancy") is not None and occupancy_parameter_class is not None:
-            system_counter.update(["occupancy"])
-            occupancy = Occupancy(
-                name=f"occupancy_{system_counter['occupancy']}",
-                parameters=occupancy_parameter_class(**network.library.default_parameters["occupancy"]),
-            )
-        emissions = []
-        for emission in space.get("emissions", []):
-            emission_ = _instantiate_component(emission)
-            systems[emission_.name] = emission_.component_instance
-            emissions.append(emission_.component_instance)
-        ventilation_inlets = []
-        for inlet in space.get("ventilation_inlets", []):
-            inlet_ = _instantiate_component(inlet)
-            systems[inlet_.name] = inlet_.component_instance
-            ventilation_inlets.append(inlet_.component_instance)
-        ventilation_outlets = []
-        for outlet in space.get("ventilation_outlets", []):
-            outlet_ = _instantiate_component(outlet)
-            systems[outlet_.name] = outlet_.component_instance
-            ventilation_outlets.append(outlet_.component_instance)
-        if SpaceParameter is None:
-            raise Exception("SpaceParameter is not defined")
-        space_ = Space(
-            name=space["id"],
-            variant=space["variant"],
-            external_boundaries=external_walls,
-            occupancy=occupancy,
-            parameters=SpaceParameter(**space["parameters"]),
-            emissions=emissions,
-            ventilation_inlets=ventilation_inlets,
-            ventilation_outlets=ventilation_outlets,
         )
-        space_dict[space["id"]] = space_
-        spaces.append(space_)
-    create_internal = not data.get("internal_walls", [])
+    if library.default_parameters.get("occupancy") is not None:
+        system_counter.update(["occupancy"])
+        return Occupancy(
+            name=f"occupancy_{system_counter['occupancy']}",
+            parameters=occupancy_parameter_class(**library.default_parameters["occupancy"]),
+        )
+    return current_occupancy
 
-    if data.get("weather", {}).get("parameters") and param_from_config("Weather") is not None:
-        weather = Weather(
+
+def _build_external_boundaries(
+    external_boundaries: dict[str, Any], constructions: dict[str, Construction | Glass]
+) -> list[ExternalWall | Window | FloorOnGround]:
+    boundaries: list[ExternalWall | Window | FloorOnGround] = [
+        ExternalWall(**(external_wall | {"construction": constructions[external_wall["construction"]]}))
+        for external_wall in external_boundaries.get("external_walls", [])
+    ]
+    boundaries.extend(
+        Window(**(window | {"construction": constructions[window["construction"]]}))
+        for window in external_boundaries.get("windows", [])
+    )
+    boundaries.extend(
+        FloorOnGround(**(floor_on_ground | {"construction": constructions[floor_on_ground["construction"]]}))
+        for floor_on_ground in external_boundaries.get("floor_on_grounds", [])
+    )
+    return boundaries
+
+
+def _instantiate_components(component_data_list: list[dict[str, Any]], systems: dict[str, Any]) -> list[Any]:
+    components = []
+    for component_data in component_data_list:
+        component = _instantiate_component(component_data)
+        systems[component.name] = component.component_instance
+        components.append(component.component_instance)
+    return components
+
+
+def _build_space(
+    space_data: dict[str, Any],
+    constructions: dict[str, Construction | Glass],
+    systems: dict[str, Any],
+    occupancy: Occupancy | None,
+) -> Space:
+    if SpaceParameter is None:
+        raise Exception("SpaceParameter is not defined")
+    return Space(
+        name=space_data["id"],
+        variant=space_data["variant"],
+        external_boundaries=_build_external_boundaries(space_data["external_boundaries"], constructions),
+        occupancy=occupancy,
+        parameters=SpaceParameter(**space_data["parameters"]),
+        emissions=_instantiate_components(space_data.get("emissions", []), systems),
+        ventilation_inlets=_instantiate_components(space_data.get("ventilation_inlets", []), systems),
+        ventilation_outlets=_instantiate_components(space_data.get("ventilation_outlets", []), systems),
+    )
+
+
+def _build_weather(data: dict[str, Any]) -> Weather:
+    weather_parameter_class = param_from_config("Weather")
+    if data.get("weather", {}).get("parameters") and weather_parameter_class is not None:
+        return Weather(
             name="weather",
-            parameters=param_from_config("Weather")(**data["weather"]["parameters"]),  # type: ignore
+            parameters=weather_parameter_class(**data["weather"]["parameters"]),
         )
-    else:
-        weather = Weather(name="weather")
+    return Weather(name="weather")
 
-    network.add_boiler_plate_spaces(spaces, weather=weather, create_internal=create_internal)
+
+def _add_internal_walls(
+    network: Network,
+    data: dict[str, Any],
+    space_dict: dict[str, Space],
+    constructions: dict[str, Construction | Glass],
+) -> None:
     for internal_wall in data.get("internal_walls", []):
         space_1 = space_dict[internal_wall["space_1"]]
         space_2 = space_dict[internal_wall["space_2"]]
@@ -282,10 +292,12 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
         )
         network.connect_spaces(space_1, space_2, internal_element=internal_element)
 
-    edges = []
+
+def _connect_systems(network: Network, data: dict[str, Any], systems: dict[str, Any]) -> None:
     for system in data["systems"]:
         system_ = _instantiate_component(system)
         systems[system_.name] = system_.component_instance
+    edges = []
     for system in data["systems"]:
         for value in system.values():
             edges += [(systems[value["id"]], systems[outlet]) for outlet in value.get("outlets", [])]
@@ -293,16 +305,48 @@ def convert_network(  # noqa: PLR0915, C901, PLR0912
     for edge in edges:
         network.connect_systems(*edge)
 
+
+def _connect_ahu_to_boundary(network: Network) -> None:
     ahus = [n for n in network.graph.nodes if isinstance(n, AirHandlingUnit)]
     if ahus:
         boundary = Boundary(name="boundary")
         network.connect_elements(boundary, ahus[0])
         weather = next(n for n in network.graph.nodes if isinstance(n, Weather))
         network.connect_elements(boundary, weather)
+
+
+def _add_solar_components(network: Network, data: dict[str, Any]) -> None:
     for solar in data.get("solar", []):
         solar_ = _instantiate_component(solar)
         solar_.component_instance.add_to_network(network)
 
+
+def convert_network(name: str, model_path: Path, library: Library | None = None) -> Network:
+    network = Network(name=name, library=library)
+    system_counter: Counter[str] = Counter()
+
+    enriched_model = load_and_enrich_model(model_path)
+    validate_model(enriched_model.data, model_path.suffix)
+    data = _merge_default(enriched_model.data)
+    materials = _build_materials(data)
+    constructions = _build_constructions(data, materials)
+
+    spaces = []
+    space_dict: dict[str, Space] = {}
+    systems: dict[str, Any] = {}
+    occupancy: Occupancy | None = None
+    for space_data in data["spaces"]:
+        occupancy = _build_occupancy(space_data, network.library, system_counter, occupancy)
+        space_ = _build_space(space_data, constructions, systems, occupancy)
+        space_dict[space_data["id"]] = space_
+        spaces.append(space_)
+
+    create_internal = not data.get("internal_walls", [])
+    network.add_boiler_plate_spaces(spaces, weather=_build_weather(data), create_internal=create_internal)
+    _add_internal_walls(network, data, space_dict, constructions)
+    _connect_systems(network, data, systems)
+    _connect_ahu_to_boundary(network)
+    _add_solar_components(network, data)
     return network
 
 
