@@ -37,6 +37,38 @@ def _get_signal(reader: Reader, name: str) -> tuple[NDArray[np.float64], NDArray
     return np.asarray(time, dtype=np.float64), np.asarray(values, dtype=np.float64)
 
 
+def _get_zone_temperature(
+    reader: Reader, space_name: str
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Read the zone air temperature, tolerant to MixedAir's internal naming.
+
+    Buildings.ThermalZones.Detailed.MixedAir exposes the zone temperature as
+    ``space_name.heaPorAir.T``; older / alternate templates surface it as
+    ``space_name.air.vol.T``. Try the canonical name first, then known
+    fallbacks, and finally raise with the available ``space_name``-prefixed
+    variables so the right path is obvious from CI logs.
+    """
+    candidates = [
+        f"{space_name}.heaPorAir.T",
+        f"{space_name}.air.vol.T",
+        f"{space_name}.vol.T",
+    ]
+    for name in candidates:
+        try:
+            return _get_signal(reader, name)
+        except KeyError:
+            continue
+    try:
+        all_names = list(reader.varNames())
+    except AttributeError:
+        all_names = []
+    matches = [n for n in all_names if space_name in n and n.endswith(".T")]
+    raise KeyError(
+        f"zone temperature not found for {space_name!r}; tried {candidates}. "
+        f"Result file contains {len(matches)} matching .T signals: {matches[:20]}"
+    )
+
+
 def integrate_signal(time_s: NDArray[np.float64], values: NDArray[np.float64]) -> float:
     """Trapezoidal integral over the full time series, in the units of values·seconds."""
     return float(np.trapezoid(values, time_s))
@@ -102,7 +134,7 @@ def extract_kpis(  # noqa: PLR0913
     """
     reader = open_mat(mat_path)
 
-    time_zone, t_zone_k = _get_signal(reader, f"{space_name}.air.vol.T")
+    time_zone, t_zone_k = _get_zone_temperature(reader, space_name)
     t_zone_c = t_zone_k - KELVIN_OFFSET
 
     heater_time, heater_signal = _sum_signals(reader, [f"{n}.HeatingPower.y" for n in heater_names])
