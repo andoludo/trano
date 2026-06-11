@@ -248,8 +248,19 @@ def run_case(
     started = time.monotonic()
     sim_result = simulate(cache_dir, network, options=options)
     sim_wall = time.monotonic() - started
+    omc_log_path = cache_dir / "omc_output.log"
+    try:
+        omc_output = sim_result.output.decode(errors="replace")
+    except AttributeError:
+        omc_output = ""
+    omc_log_path.write_text(omc_output)
     if not is_success(sim_result):
-        raise RuntimeError(f"BESTEST case {case_id}: simulation did not finish successfully.")
+        tail = "\n".join(omc_output.splitlines()[-40:]) or "<no output>"
+        raise RuntimeError(
+            f"BESTEST case {case_id}: simulation did not finish successfully.\n"
+            f"Full OMC output saved to {omc_log_path}.\n"
+            f"--- last 40 lines of OMC output ---\n{tail}\n--- end OMC output ---"
+        )
 
     mat_path = _result_mat(cache_dir, network_name)
     if not mat_path.exists():
