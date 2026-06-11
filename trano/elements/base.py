@@ -1,14 +1,11 @@
 from functools import cache
-from pathlib import Path
 from typing import Any, ClassVar, TYPE_CHECKING, get_args
 
-from jinja2 import Environment, FileSystemLoader
 from pydantic import (
     ConfigDict,
     Field,
     field_validator,
     model_validator,
-    PrivateAttr,
 )
 
 
@@ -20,6 +17,7 @@ from trano.elements.common_base import (
 from trano.elements.common_base import BaseParameter
 from trano.elements.connection import Port
 from trano.elements.figure import NamedFigure
+from trano.elements.jinja import ENVIRONMENT, compile_template
 from trano.elements.library.base import DynamicComponentTemplate, LibraryData
 from trano.elements.library.parameters import param_from_config
 from trano.elements.types import BaseVariant, ContainerTypes
@@ -43,17 +41,6 @@ class BaseElementPort(BaseElementPosition):
             port.reset_counter()
 
 
-def default_environment() -> Environment:
-    environment = Environment(
-        trim_blocks=True,
-        lstrip_blocks=True,
-        loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
-        autoescape=True,
-    )
-    environment.filters["enumerate"] = enumerate
-    return environment
-
-
 class BaseElement(BaseElementPort):
     name_counter: ClassVar[int] = 0  # TODO: this needs to be removed and replaced with a proper solution.
 
@@ -65,7 +52,6 @@ class BaseElement(BaseElementPort):
     variant: str = BaseVariant.default
     libraries_data: list[LibraryData] = Field(default=[])
     figures: list[NamedFigure] = Field(default=[])
-    _environment: Environment = PrivateAttr(default_factory=default_environment)
     component_model: ComponentModel | None = None
     include_in_layout: bool = True
     component_size: float = 5
@@ -75,9 +61,9 @@ class BaseElement(BaseElementPort):
     def validate_libraries_data(cls, value: dict[str, Any]) -> dict[str, Any]:
         if isinstance(value, dict):
             if "libraries_data" not in value:
-                from trano.elements.library.components import COMPONENTS
+                from trano.elements.library.components import get_components_registry
 
-                value["libraries_data"] = COMPONENTS.get_components(cls.__name__)
+                value["libraries_data"] = get_components_registry().get_components(cls.__name__)
             parameter_class = param_from_config(cls.__name__)
             if parameter_class and isinstance(value, dict) and not value.get("parameters"):
                 value["parameters"] = parameter_class()
@@ -165,7 +151,7 @@ class BaseElement(BaseElementPort):
     def model(self, network: "Network") -> ComponentModel | None:
         if not self.template:
             return None
-        self._environment.globals.update(network.library.functions)
+        ENVIRONMENT.globals.update(network.library.functions)
         if self.component_template:
             component = self.component_template.render(network.name, self, self.processed_parameters(network.library))
             if self.component_template.category:
@@ -178,16 +164,14 @@ class BaseElement(BaseElementPort):
         parameters = {
             key: value.lower() if value in ["True", "False"] else value
             for key, value in parameters.items()
-            if key not in ["data"]
+            if key != "data"
         }
         component_model: dict[str, Any] = {"id": hash(self)}
         for model_type, annotation in {
             "model": self.position.global_.annotation,
             "container": self.position.container.annotation,
         }.items():
-            template = self._environment.from_string(
-                "{% import 'macros.jinja2' as macros %}" + self.template + " " + annotation
-            )
+            template = compile_template("{% import 'macros.jinja2' as macros %}" + self.template + " " + annotation)
             component_model.update(
                 {
                     model_type: template.render(
@@ -242,7 +226,7 @@ class BaseElement(BaseElementPort):
                 iter(
                     sorted(
                         container_types,
-                        key=lambda type_: {v: i for i, v in enumerate(get_args(ContainerTypes))}.get(type_),  # type: ignore
+                        key={v: i for i, v in enumerate(get_args(ContainerTypes))}.get,  # type: ignore
                     )
                 )
             )

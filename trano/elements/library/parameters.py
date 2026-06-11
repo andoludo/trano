@@ -14,15 +14,16 @@ def load_parameters() -> dict[str, type["BaseParameter"]]:
     # TODO: remove absoluth path reference
     parameter_path = Path(__file__).parents[2].joinpath("data_models", "parameters.yaml")
     data = yaml.safe_load(parameter_path.read_text())
-    classes = {}
+    classes: dict[str, type[BaseParameter]] = {}
 
     order = {name: i for i, name in enumerate(PRIORITY)}
-    models: dict[str, type["BaseModel"]] = {}
+    models: dict[str, type[BaseModel]] = {}
     for name, parameter in sorted(
         data.items(),
         key=lambda kv: (order.get(kv[0], len(PRIORITY)), kv[0]),
     ):
         attrib_ = {}
+        computed_attrib_ = {}
         for k, v in parameter["attributes"].items():
             alias = v.get("alias", None)
             alias = alias if alias != "None" else None
@@ -37,17 +38,22 @@ def load_parameters() -> dict[str, type["BaseParameter"]]:
                     ),
                 )
             else:
-                attrib_[k] = computed_field(  # type: ignore # TODO: why?
-                    eval(v["func"]),  # noqa: S307
+                # TODO: avoid using eval
+                computed_attrib_[k] = computed_field(
                     return_type=eval(v["type"]),  # noqa: S307
-                    alias=alias,  # TODO: avoid using eval
-                )
-        model = create_model(f"{name}_", __base__=BaseParameter, **attrib_)  # type: ignore # TODO: why?
+                    alias=alias,
+                )(eval(v["func"]))  # noqa: S307
+        # create_model does not accept computed fields as field definitions, so they
+        # are attached through an intermediate class built by pydantic's metaclass.
+        base: type[BaseParameter] = BaseParameter
+        if computed_attrib_:
+            base = type(f"{name}_computed_", (BaseParameter,), computed_attrib_)
+        model = create_model(f"{name}_", __base__=base, **attrib_)  # type: ignore # TODO: why?
         models[name] = model
         if parameter.get("classes") is None:
             continue
         for class_ in parameter["classes"]:
-            classes[class_] = model
+            classes[class_] = model  # type: ignore[assignment]
     return classes
 
 
@@ -79,14 +85,14 @@ def change_alias(parameter: BaseParameter, mapping: dict[str, str] | None = None
         if mapping.get(name):
             field.alias = mapping[name]
         new_param[name] = (
-            Optional[field.annotation] if getattr(parameter, name) is None else field.annotation,  # noqa: UP007
+            Optional[field.annotation] if getattr(parameter, name) is None else field.annotation,  # noqa: UP045
             Field(field.default, alias=field.alias, description=field.description),
         )
 
     for name, field in parameter.model_computed_fields.items():  # type: ignore
         if mapping.get(name):
             new_param[name] = (
-                Optional[field.return_type],  # type: ignore # noqa: UP007
+                Optional[field.return_type],  # type: ignore  # noqa: UP045
                 Field(None, alias=mapping[name], description=field.description),
             )
     return create_model(  # type: ignore

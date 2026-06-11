@@ -1,10 +1,10 @@
 import logging
 from pathlib import Path
 from types import SimpleNamespace
-from typing import get_args, cast
+from typing import Any, get_args, cast
 
 import yaml
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Template
 from pydantic import BaseModel, Field, model_validator, computed_field, field_validator
 
 from trano.elements import Port, Connection, BaseElement
@@ -27,18 +27,11 @@ from trano.elements.types import (
     Medium,
     SystemContainerTypes,
 )
+from trano.elements.jinja import ENVIRONMENT, compile_template
 from trano.elements.utils import wrap_with_raw
 from trano.exceptions import ContainerNotFoundError
 
 logger = logging.getLogger(__name__)
-ENVIRONMENT = Environment(
-    trim_blocks=True,
-    lstrip_blocks=True,
-    loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
-    autoescape=True,
-)
-ENVIRONMENT.filters["frozenset"] = frozenset
-ENVIRONMENT.filters["enumerate"] = enumerate
 
 
 class PortGroup(BaseModel):
@@ -110,8 +103,8 @@ class Container(BaseContainer):
     def main_equation(self) -> str:
         location = f"{self.layout.global_origin.c_.x},{self.layout.global_origin.c_.y}"
         size = (
-            f"{self.layout.global_origin.c_.x+self.component_size.c_.x},"
-            f"{self.layout.global_origin.c_.y+self.component_size.c_.y}"
+            f"{self.layout.global_origin.c_.x + self.component_size.c_.x},"
+            f"{self.layout.global_origin.c_.y + self.component_size.c_.y}"
         )
         return (
             f"Components.Containers.{self.name} {self.name}1 "
@@ -140,7 +133,7 @@ class Container(BaseContainer):
                 for name in port.names:
                     ports[name] = str(port.counter - 1)
         try:
-            template = ENVIRONMENT.from_string(self.template)
+            template = compile_template(self.template)
         except:
             raise
         self.template = template.render(medium=medium, ports=SimpleNamespace(**ports))
@@ -350,19 +343,20 @@ class Containers(BaseModel):
         return [c.build(template, container_input.medium) for c in self.in_use_containers()]
 
     def build_main_connections(self) -> None:
-        connections = [conn for c in self.containers for conn in c.connections if not conn.in_the_same_container()]
-        couple_connections = {
-            c.source: [c_.get_container_equation() for c_ in connections if c_.source == c.source] for c in connections
-        }
+        couple_connections: dict[Any, list[Any]] = {}
+        for container in self.containers:
+            for connection in container.connections:
+                if not connection.in_the_same_container():
+                    couple_connections.setdefault(connection.source, []).append(connection.get_container_equation())
         for equations in couple_connections.values():
             if len(equations) == 2:
-                self.connections += [MainContainerConnection.from_list(equations)]  # type: ignore
+                self.connections += [MainContainerConnection.from_list(equations)]
 
     def _get_connection_view(self, connected_container_name: ContainerTypes | None = None) -> ConnectionView:
         connection_view = ConnectionView()
         if connected_container_name in get_args(SystemContainerTypes):
             connection_view = ConnectionView(color="{0, 0, 139}", thickness=0.1, pattern="Dash")
-        if connected_container_name in ["bus"]:
+        if connected_container_name == "bus":
             connection_view = ConnectionView(color=None, thickness=0.2, disabled=True)
         return connection_view
 
@@ -447,82 +441,7 @@ class Containers(BaseModel):
         return template
 
     def _main_template(self) -> Template:
-        template_ = """
-model building
-
-{% for container_ in container.in_use_containers() %}
-{{ container_.main_equation() | safe }}
-{% endfor %}
-{% raw %}
-Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p
-annotation (Placement(transformation(extent={{-126,-18},{-92,18}}),
-iconTransformation(
-extent={{-112,-12},{-88,12}})));
-equation
-connect(term_p, bus1.term_p) annotation (Line(points={{-109,0},{-88,0},
-        {-88,-10},{60,-10},{60,64},{-50,64},{-50,40},{-65,40}}, color={
-        0,120,120}));
-{% endraw %}
-{% for connection in container.connections %}
-connect({{ connection.left.container_type }}1.{{ connection.left.equation }},
-{{ connection.right.container_type }}1.{{ connection.right.equation }})
-{{ connection.annotation }}
-{% endfor %}
-
-{% for bus_equation in container.bus_equations() %}
-{{ bus_equation | safe }}
-{% endfor %}
-{% for container_ in container.in_use_containers() %}
-{{ container_.prescribed_connection_equation | safe }}
-{% endfor %}
-{% raw %}
-annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
-          Rectangle(
-            extent={{-100,100},{100,-100}},
-            fillColor={215,215,215},
-            fillPattern=FillPattern.Solid,
-            pattern=LinePattern.None),
-        Rectangle(
-          extent={{-74,18},{22,-40}},
-            fillColor={255,255,255},
-            fillPattern=FillPattern.Forward,
-            pattern=LinePattern.None,
-            lineColor={238,46,47}),
-        Rectangle(
-          extent={{-62,2},{-38,-16}},
-          lineColor={238,46,47},
-            fillColor={255,255,255},
-            fillPattern=FillPattern.Solid),
-        Rectangle(
-          extent={{-14,2},{8,-16}},
-          lineColor={238,46,47},
-            fillColor={255,255,255},
-            fillPattern=FillPattern.Solid),
-        Polygon(
-          points={{-78,18},{26,18},{10,46},{-66,46},{-78,18}},
-            lineColor={238,46,47},
-            lineThickness=0.5,
-            fillColor={244,125,35},
-            fillPattern=FillPattern.Solid),
-          Polygon(
-            points={{-60,42},{-68,22},{4,22},{6,42},{-60,42}},
-            lineThickness=0.5,
-            fillColor={28,108,200},
-            fillPattern=FillPattern.Forward,
-            pattern=LinePattern.None),
-          Rectangle(
-            extent={{26,0},{40,-40}},
-            lineColor={0,0,0},
-            pattern=LinePattern.None,
-            lineThickness=0.5,
-            fillColor={255,255,255},
-            fillPattern=FillPattern.Solid)}),                  Diagram(
-coordinateSystem(preserveAspectRatio=false)));
-{% endraw %}
-end building;
-"""
-        template = ENVIRONMENT.from_string(template_)
-        return template
+        return ENVIRONMENT.get_template("main_building.jinja2")
 
 
 def containers_factory() -> Containers:

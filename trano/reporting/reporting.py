@@ -118,7 +118,7 @@ class ConstructionDocumentation(BaseDocumentation):
             for c in {
                 construction
                 for w in _get_elements(elements, BaseWall)
-                if isinstance(w, (BaseSimpleWall, MergedBaseWall))  # noqa: UP038
+                if isinstance(w, (BaseSimpleWall, MergedBaseWall))
                 for construction in ([w.construction] if hasattr(w, "construction") else w.constructions)
             }
         ]
@@ -207,8 +207,6 @@ class ModelDocumentation(ContentDocumentation):
             systems=ContentDocumentation(),
         )
         elements = [
-            x
-            for x in list(network.graph.nodes)
-            if isinstance(x, (Boiler, Space, BaseSimpleWall, MergedBaseWall))  # noqa: UP038
+            x for x in list(network.graph.nodes) if isinstance(x, (Boiler, Space, BaseSimpleWall, MergedBaseWall))
         ]
         return cls.from_model_elements(elements, content_model_documentation, result)  # type: ignore

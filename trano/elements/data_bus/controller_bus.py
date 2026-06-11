@@ -159,7 +159,7 @@ class ControllerBus(BaseModel):
                     ):
                         for source in element.parameters.data:  # type: ignore
                             if input.component == source.component:
-                                ports.append(f"connect(dataBus.{source.variable}, " f"{input.component}.{input.port});")  # noqa: PERF401
+                                ports.append(f"connect(dataBus.{source.variable}, {input.component}.{input.port});")  # noqa: PERF401
             else:
                 target_value = _evaluate_target(target, element)
                 for input in inputs:
@@ -195,11 +195,7 @@ def _append_ports(  # noqa: PLR0913
     case_2: str,
 ) -> list[str]:
     if getattr(input, case_1_condition):
-        ports.append(
-            f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, " f"{input.component}{case_1});"
-        )
+        ports.append(f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, {input.component}{case_1});")
     else:
-        ports.append(
-            f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, " f"{input.component}{case_2});"
-        )
+        ports.append(f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, {input.component}{case_2});")
     return ports

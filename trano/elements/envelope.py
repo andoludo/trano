@@ -164,7 +164,7 @@ class MergedWindows(MergedBaseWindow):
         unique_constructions = {base_wall.construction for base_wall in base_walls}
 
         for construction in unique_constructions:
-            data: dict[str, list["ExternalWall" | "FloorOnGround" | "BaseWindow" | str]] = {
+            data: dict[str, list[ExternalWall | FloorOnGround | BaseWindow | str]] = {
                 "azimuth": [],
                 "tilt": [],
                 "name": [],
@@ -227,8 +227,15 @@ class WallParameters(BaseModel):
             return 0
         return sum(self.u_values) / len(self.u_values)
 
+    @staticmethod
+    def _window_area_by_orientation(neighbors: list["BaseElement"], windows: list["BaseSimpleWall"]) -> list[float]:
+        """Window area facing the same orientation as each external wall."""
+        external_walls = [neighbor for neighbor in neighbors if isinstance(neighbor, ExternalWall)]
+        azimuth_surface = {window.azimuth: window.surface for window in windows}
+        return [azimuth_surface.get(external_wall.azimuth, 0) for external_wall in external_walls]
+
     @classmethod
-    def from_neighbors(  # noqa: PLR0913
+    def from_neighbors(
         cls,
         space_name: str,
         neighbors: list["BaseElement"],
@@ -239,50 +246,30 @@ class WallParameters(BaseModel):
         constructions = [
             neighbor for neighbor in neighbors if isinstance(neighbor, wall) if neighbor.name not in (filter or [])
         ]
-        window_area_by_orientation = []
-        number = len(constructions)
-        surfaces = [exterior_construction.surface for exterior_construction in constructions]
+        surfaces = [construction.surface for construction in constructions]
         total_surface = sum(surfaces)
-        azimuths = [exterior_construction.azimuth for exterior_construction in constructions]
-        layers = [exterior_construction.construction.name for exterior_construction in constructions]
-        u_values = [exterior_construction.construction.u_value for exterior_construction in constructions]
-        average_resistance_external = np.mean(
-            [exterior_construction.construction.resistance_external for exterior_construction in constructions]
+        window_area_by_orientation = (
+            cls._window_area_by_orientation(neighbors, constructions) if issubclass(wall, BaseWindow) else []
         )
-        average_resistance_external_remaining = np.mean(
-            [
-                exterior_construction.construction.resistance_external_remaining
-                for exterior_construction in constructions
-            ]
-        )
-        total_thermal_capacitance = total_surface * np.mean(
-            [exterior_construction.construction.total_thermal_capacitance for exterior_construction in constructions]
-        )
-        total_thermal_resistance = total_surface * np.mean(
-            [exterior_construction.construction.total_thermal_resistance for exterior_construction in constructions]
-        )
-
-        tilt = [exterior_construction.get_tilt(space_name) for exterior_construction in constructions]
-        type = wall.__name__ if not suffix_type else f"{wall.__name__}{suffix_type}"
-        if issubclass(wall, BaseWindow):
-            external_walls = [neighbor for neighbor in neighbors if isinstance(neighbor, ExternalWall)]
-            azimuth_surface = {construction.azimuth: construction.surface for construction in constructions}
-            window_area_by_orientation = [
-                (azimuth_surface.get(exterior_construction.azimuth, 0)) for exterior_construction in external_walls
-            ]
         return cls(
-            number=number,
+            number=len(constructions),
             surfaces=surfaces,
-            azimuths=azimuths,
-            layers=layers,
-            tilts=tilt,
-            type=type,
-            u_values=u_values,
+            azimuths=[construction.azimuth for construction in constructions],
+            layers=[construction.construction.name for construction in constructions],
+            tilts=[construction.get_tilt(space_name) for construction in constructions],
+            type=wall.__name__ if not suffix_type else f"{wall.__name__}{suffix_type}",
+            u_values=[construction.construction.u_value for construction in constructions],
             window_area_by_orientation=window_area_by_orientation,
-            average_resistance_external=average_resistance_external,
-            average_resistance_external_remaining=average_resistance_external_remaining,
-            total_thermal_capacitance=total_thermal_capacitance,
-            total_thermal_resistance=total_thermal_resistance,
+            average_resistance_external=np.mean(
+                [construction.construction.resistance_external for construction in constructions]
+            ),
+            average_resistance_external_remaining=np.mean(
+                [construction.construction.resistance_external_remaining for construction in constructions]
+            ),
+            total_thermal_capacitance=total_surface
+            * np.mean([construction.construction.total_thermal_capacitance for construction in constructions]),
+            total_thermal_resistance=total_surface
+            * np.mean([construction.construction.total_thermal_resistance for construction in constructions]),
         )
 
 

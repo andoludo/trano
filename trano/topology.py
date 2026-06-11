@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Optional, cast
 
 import networkx as nx
-from jinja2 import Environment, FileSystemLoader
 from networkx import DiGraph
 
 from trano.elements import (
@@ -25,6 +24,7 @@ from trano.elements.construction import (
     Material,
 )
 from trano.elements.containers import containers_factory, ContainerInput
+from trano.elements.jinja import ENVIRONMENT
 from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.elements.system import (
@@ -247,18 +247,20 @@ class Network:  # : PLR0904, #TODO: fix this
         data_buses = [bus for bus in list(self.graph.nodes) if isinstance(bus, DataBus)]
 
         data_bus = data_buses[0] if data_buses else None
-        new_edges = [edge for edge in self.graph.edges if data_bus not in edge]
-        edge_with_databus = [edge for edge in self.graph.edges if data_bus in edge]
-        edges_with_bus_without_space = [
-            edge for edge in edge_with_databus if not any(isinstance(e, Space) for e in edge)
-        ]
-        edges_with_bus_with_space = sorted(
-            [edge for edge in edge_with_databus if any(isinstance(e, Space) for e in edge)],
-            key=lambda e_: next(e for e in e_ if isinstance(e, Space)).name,
-        )
+        new_edges = []
+        edges_with_bus_without_space = []
+        edges_with_bus_with_space = []
+        for edge in self.graph.edges:
+            if data_bus not in edge:
+                new_edges.append(edge)
+            elif any(isinstance(e, Space) for e in edge):
+                edges_with_bus_with_space.append(edge)
+            else:
+                edges_with_bus_without_space.append(edge)
         # Sorting is necessary here since we need to keep the
         # same index for the same space indatabus
         # TODO: not sure where to put this!!!!
+        edges_with_bus_with_space.sort(key=lambda e_: next(e for e in e_ if isinstance(e, Space)).name)
         for edge in new_edges + edges_with_bus_without_space + edges_with_bus_with_space:
             self.edge_attributes += self.connect_edges(edge)
 
@@ -282,7 +284,8 @@ class Network:  # : PLR0904, #TODO: fix this
                 # TODO: this is not correct
                 node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
 
-    def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
+    def _prepare_nodes(self, include_container: bool, data_bus: DataBus | None) -> DataBus | None:
+        """Process and position every node, adding a data bus if none exists."""
         Space.counter = 0
         for node in self.graph.nodes:
             node.assign_container_type(self)
@@ -296,41 +299,40 @@ class Network:  # : PLR0904, #TODO: fix this
         self.assign_nodes_position()
         for node in self.graph.nodes:
             node.set_child_position()
-        self.connect()
-        data = extract_properties(self.library, self.name, self.graph.nodes)
-        component_models = []
-        for node in self.graph.nodes:
-            model = node.model(self)
-            if model:
-                component_models.append(model)
+        return data_bus
 
-        container_input = ContainerInput(
-            nodes=list(self.graph.nodes),
-            connections=self.edge_attributes,
-            data=data,
-            medium=self.library.medium,
-        )
-        container_model = self.containers.build(container_input)
-        element_models = [c.model for c in component_models]
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(str(Path(__file__).parent.joinpath("templates"))),
-            autoescape=True,
-        )
-        environment.filters["frozenset"] = frozenset
-        environment.filters["enumerate"] = enumerate
-        template = environment.get_template("base.jinja2")
+    def _assert_all_systems_connected(self) -> None:
         if not all(n.system_ports_connected() for n in self.graph.nodes):
             raise SystemsNotConnectedError(
-                f"""Not all system ports are connected. 
-            The following are not connected: {[nm for n in self.graph.nodes for nm in n.non_connected_ports_name() 
-                                               if not n.system_ports_connected() and nm]}"""
+                f"""Not all system ports are connected.
+            The following are not connected: {
+                    [
+                        nm
+                        for n in self.graph.nodes
+                        for nm in n.non_connected_ports_name()
+                        if not n.system_ports_connected() and nm
+                    ]
+                }"""
             )
-        return template.render(
+
+    def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
+        data_bus = self._prepare_nodes(include_container, data_bus)
+        self.connect()
+        data = extract_properties(self.library, self.name, self.graph.nodes)
+        component_models = [model for node in self.graph.nodes if (model := node.model(self))]
+        container_model = self.containers.build(
+            ContainerInput(
+                nodes=list(self.graph.nodes),
+                connections=self.edge_attributes,
+                data=data,
+                medium=self.library.medium,
+            )
+        )
+        self._assert_all_systems_connected()
+        return ENVIRONMENT.get_template("base.jinja2").render(
             network=self,
             data=data,
-            element_models=element_models,
+            element_models=[c.model for c in component_models],
             library=self.library,
             databus=data_bus,
             dynamic_components=self.dynamic_components,

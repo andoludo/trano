@@ -1,11 +1,10 @@
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from jinja2 import Environment, FileSystemLoader
 from networkx.classes.reportviews import NodeView
 from pydantic import BaseModel, ConfigDict, Field, field_validator, computed_field
 
 from trano.elements.common_base import BaseProperties
+from trano.elements.jinja import compile_template
 from trano.elements.types import ContainerTypes
 
 if TYPE_CHECKING:
@@ -148,26 +147,18 @@ class BaseConstructionData(BaseModel):
     glazing: BaseData
 
     def generate_data(self, package_name: str) -> str:
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
-            autoescape=True,
-        )
         models: dict[str, list[str]] = {
             "material": [],
             "construction": [],
             "glazing": [],
         }
-        for construction_type_name in models:
+        for construction_type_name, rendered_models in models.items():
             construction_type = getattr(self, construction_type_name)
             for construction in construction_type.constructions:
-                template = environment.from_string(
-                    "{% import 'macros.jinja2' as macros %}" + construction_type.template
-                )
+                template = compile_template("{% import 'macros.jinja2' as macros %}" + construction_type.template)
                 model = template.render(construction=construction, package_name=package_name)
-                models[construction_type_name].append(model)
-        template = environment.from_string("{% import 'macros.jinja2' as macros %}" + self.template)
+                rendered_models.append(model)
+        template = compile_template("{% import 'macros.jinja2' as macros %}" + self.template)
         model = template.render(**models, package_name=package_name)
         return model
 

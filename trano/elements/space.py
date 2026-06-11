@@ -238,21 +238,21 @@ class BaseSpace(BaseElement):
                     VerticalWallParameters.from_neighbors_(
                         self.name,
                         neighbors,
-                        wall,  # type: ignore
+                        wall,
                     )
                 )
                 self.boundaries.append(
                     RoofWallParameters.from_neighbors_(
                         self.name,
                         neighbors,
-                        wall,  # type: ignore
+                        wall,
                     )
                 )
                 self.boundaries.append(
                     ExternalWallParameters.from_neighbors_(
                         self.name,
                         neighbors,
-                        wall,  # type: ignore
+                        wall,
                     )
                 )
 

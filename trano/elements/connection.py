@@ -1,12 +1,11 @@
 import logging
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, Field, field_validator, model_validator, computed_field
 
 from trano import elements
 from trano.elements.common_base import BaseElementPosition, BasePosition
+from trano.elements.jinja import compile_template
 from trano.elements.types import (
     ConnectionView,
     Flow,
@@ -50,25 +49,25 @@ class Port(BaseModel):
                 return bool(set(port.names).intersection(set(self.expected_ports)))
             else:
                 if self.flow == Flow.inlet:
-                    return (port.flow in [Flow.outlet]) or (
-                        port.flow in [Flow.inlet_or_outlet] and port.multi_connection and port.use_counter
+                    return (port.flow == Flow.outlet) or (
+                        port.flow == Flow.inlet_or_outlet and port.multi_connection and port.use_counter
                     )
                 if self.flow == Flow.outlet:
-                    return port.flow in [Flow.inlet] or (
-                        port.flow in [Flow.inlet_or_outlet] and port.multi_connection and port.use_counter
+                    return port.flow == Flow.inlet or (
+                        port.flow == Flow.inlet_or_outlet and port.multi_connection and port.use_counter
                     )
                 if self.flow == Flow.inlet_or_outlet and self.multi_connection and self.use_counter:
                     return port.flow in [Flow.inlet, Flow.outlet]
                 if self.flow == Flow.inlet_or_outlet:
-                    return port.flow in [Flow.inlet_or_outlet]
+                    return port.flow == Flow.inlet_or_outlet
 
         if self.medium == Medium.data:
             if self.expected_ports:
                 return bool(set(port.names).intersection(set(self.expected_ports)))
             elif self.flow == Flow.inlet:
-                return port.flow in [Flow.outlet]
+                return port.flow == Flow.outlet
             elif self.flow == Flow.outlet:
-                return port.flow in [Flow.inlet]
+                return port.flow == Flow.inlet
             elif self.flow == Flow.undirected:
                 return port.flow in [Flow.undirected, Flow.interchangeable_port]
 
@@ -83,14 +82,14 @@ class Port(BaseModel):
         return self.medium == port.medium and self.get_compatible_port(port)
 
     def is_inlet(self) -> bool:
-        return self.flow in [Flow.inlet] and self.medium == Medium.fluid
+        return self.flow == Flow.inlet and self.medium == Medium.fluid
 
     def is_outlet(self) -> bool:
-        return self.flow in [Flow.outlet] and self.medium == Medium.fluid
+        return self.flow == Flow.outlet and self.medium == Medium.fluid
 
     def is_extended_inlet(self) -> bool:
         return (
-            self.flow in [Flow.inlet_or_outlet]
+            self.flow == Flow.inlet_or_outlet
             and self.medium == Medium.fluid
             and self.multi_connection
             and self.use_counter
@@ -98,7 +97,7 @@ class Port(BaseModel):
 
     def is_extended_outlet(self) -> bool:
         return (
-            self.flow in [Flow.inlet_or_outlet]
+            self.flow == Flow.inlet_or_outlet
             and self.medium == Medium.fluid
             and self.multi_connection
             and self.use_counter
@@ -108,7 +107,7 @@ class Port(BaseModel):
         return self.flow in [Flow.inlet, Flow.outlet]
 
     def bidirectional_flow(self) -> bool:
-        return self.flow in [Flow.inlet_or_outlet] and self.medium == Medium.fluid
+        return self.flow == Flow.inlet_or_outlet and self.medium == Medium.fluid
 
     def without_targets(self) -> "Port":
         return Port.model_validate(self.model_dump(exclude={"targets"}))
@@ -201,7 +200,7 @@ class Port(BaseModel):
 
         return partial_connections
 
-    def link(  # noqa: PLR0913
+    def link(
         self,
         merged_number: int,
         element_name: str | None,
@@ -251,13 +250,9 @@ def check_flow_direction(first_port: Port, second_port: Port) -> bool:
         elif second_port.with_directed_flow() and first_port.with_directed_flow():
             return first_port.is_outlet() and second_port.is_inlet()
         else:
-            return (
-                second_port.bidirectional_flow()
-                and first_port.bidirectional_flow()
-                or (
-                    (first_port.is_outlet() and second_port.is_extended_inlet())
-                    or (first_port.is_extended_outlet() and second_port.is_inlet())
-                )
+            return (second_port.bidirectional_flow() and first_port.bidirectional_flow()) or (
+                (first_port.is_outlet() and second_port.is_extended_inlet())
+                or (first_port.is_extended_outlet() and second_port.is_inlet())
             )
     else:
         return True
@@ -356,13 +351,7 @@ class Connection(BaseModel):
 
     @computed_field
     def equation(self) -> str:
-        environment = Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            loader=FileSystemLoader(str(Path(__file__).parents[1].joinpath("templates"))),
-            autoescape=True,
-        )
-        annotation_template = environment.from_string(
+        annotation_template = compile_template(
             """{% import 'macros.jinja2' as macros %}        
         connect({{ connection.left.equation }},{{ connection.right.equation }})
             {% if not connection.connection_view.disabled %}

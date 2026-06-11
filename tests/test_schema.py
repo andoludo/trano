@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from linkml.validator import validate_file
 
-from tests.conftest import _read, clean_model
+from tests.golden import assert_model_equals_golden
 from trano.data_models.conversion import convert_model, convert_network
 from trano.data_models.converter import converter
 from trano.scripts.schema import create_final_schema
@@ -57,7 +57,7 @@ def test_create_model_json(schema: Path, house: Path) -> None:
         )
         Path(temp.name).write_text(json.dumps(data))
         model_ = convert_model(model_name, Path(temp.name))
-        assert clean_model(model_, model_name) == set(_read(model_name))
+        assert_model_equals_golden(model_, model_name)
 
 
 def test_create_json_schema() -> None:
@@ -71,7 +71,7 @@ def test_create_json_schema() -> None:
 def test_create_model_yaml(schema: Path, house: Path) -> None:
     model_name = "house"
     model_ = convert_model(model_name, house)
-    assert clean_model(model_, model_name) == set(_read(model_name))
+    assert_model_equals_golden(model_, model_name)
 
 
 @pytest.mark.simulate

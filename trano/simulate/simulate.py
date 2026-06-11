@@ -7,17 +7,17 @@ from pathlib import Path
 from collections.abc import Generator
 
 import docker  # type: ignore
-from jinja2 import Environment
 from pydantic import BaseModel, Field
 
 from trano.exceptions import DockerNotInstalledError, DockerClientError
+from trano.elements.jinja import STRING_ENVIRONMENT
 from trano.topology import Network
 
 
 def check_docker_installed() -> None:
     try:
         subprocess.run(
-            ["docker", "--version"],  # noqa: S603, S607
+            ["docker", "--version"],  # noqa: S607
             check=True,
         )
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
@@ -119,9 +119,8 @@ def create_mos_file(network: Network, options: SimulationOptions, project_path: 
         tempfile.NamedTemporaryFile(mode="w", dir=project_path, suffix=".mos") as temp_mos_file,
     ):
         Path(temp_model_file.name).write_text(model)
-        environment = Environment(autoescape=True)
         if options.check_only:
-            template = environment.from_string(
+            template = STRING_ENVIRONMENT.from_string(
                 """
     getVersion();
     loadFile("/simulation/{{model_file}}");
@@ -129,7 +128,7 @@ def create_mos_file(network: Network, options: SimulationOptions, project_path: 
     """
             )
         else:
-            template = environment.from_string(
+            template = STRING_ENVIRONMENT.from_string(
                 f"""
     getVersion();
     loadFile("/simulation/{{{{model_file}}}}");

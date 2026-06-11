@@ -1,0 +1,99 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>External Boundaries Table</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+            .fancy-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                font-size: 1em;
+                text-align: left;
+            }
+            .fancy-table th, .fancy-table td {
+                padding: 12px;
+                border: 1px solid #ddd;
+            }
+            .fancy-table th {
+                background-color: #f4f4f4;
+                font-weight: bold;
+            }
+            .fancy-table tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            .fancy-table caption {
+                font-size: 1.5em;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+    {% for parameter_ in [data.parameters,data.occupancy] %}
+    <table>
+        <thead>
+            <tr>
+                {% for key in parameter_.keys() %}
+                    <th><strong>{{ key }}</strong></th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for value in parameter_.values() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+    {% endfor %}
+    <table class="fancy-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Azimuth</th>
+                <th>Construction Name</th>
+                <th>Surface</th>
+                <th>Tilt</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for boundary in data.external_boundaries + data.internal_elements %}
+            <tr>
+                <td>{{ boundary.name }}</td>
+                <td>{{ boundary.azimuth }}</td>
+                <td>{{ boundary.construction }}</td>
+                <td>{{ boundary.surface }}</td>
+                <td>{{ boundary.tilt }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+
+        {% for emission in data.emissions %}
+    <table>
+        <thead>
+            <tr>
+                {% for key in emission.keys() %}
+                    <th><strong>{{ key }}</strong></th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for value in emission.values() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+    {% endfor %}
+
+    </body>
+    </html>
+    
