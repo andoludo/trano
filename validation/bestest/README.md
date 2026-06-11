@@ -24,10 +24,11 @@ per KPI under `_reports/plots/`.
 ## Compatibility matrix
 
 Every case below uses the same envelope geometry (48 m² floor area, 2.7 m
-height, 0.41 ACH infiltration — ASHRAE 140's 0.5 ACH nominal, altitude-adjusted
-for Denver's 1609 m elevation), 200 W continuous internal gain split 60 %
+height), 200 W continuous internal gain split 60 %
 radiative / 40 % convective per §5.2.1.7, Denver TMY3 weather, and double
 glazing per §5.2.4 (3.175 mm panes, k = 1.06 W/(m·K), τ = 0.86156, 13 mm air gap).
+Infiltration is left at the Buildings MixedAir default (gap, see below) —
+the spec value is 0.5 ACH nominal (altitude-adjusted 0.41 at Denver's 1609 m).
 
 | Case | Spec definition | Iteration 1 status | What's missing for full compliance |
 |------|-----------------|--------------------|-----------------------------------|
@@ -117,6 +118,14 @@ the rest of the cases.
    slightly below the spec's 12 m² (6 m²) of pure glazing. Confirm during
    execution and document the deviation, or extend the template to emit
    `fFra = 0`.
+7. **Constant infiltration ACH.** ASHRAE 140 §5.2.1.6 specifies 0.5 ACH
+   (0.41 altitude-adjusted at Denver). `Buildings.ThermalZones.Detailed.MixedAir`
+   has no `ACH` parameter — infiltration is supplied via a separate
+   `Buildings.Fluid.Sources.MassFlowSource_T` connected to the air port.
+   Trano's space schema currently has no way to attach that source, so the
+   YAMLs cannot set infiltration and MixedAir's internal default is used.
+   Fix: expose an infiltration field on the space and emit a paired
+   mass-flow source in the Buildings space template.
 
 ## Switching from warn-only to fail
 

@@ -67,10 +67,16 @@ def test_build_yaml_applies_ashrae_140_internal_gain_split(tmp_path: Path) -> No
     assert gain.index("120/48") < gain.index("80/48")  # radiative first
 
 
-def test_build_yaml_sets_infiltration(tmp_path: Path) -> None:
+def test_build_yaml_omits_infiltration_ach(tmp_path: Path) -> None:
+    """ach is a Trano-core gap: Buildings.ThermalZones.Detailed.MixedAir has no
+    ACH parameter, so injecting `ach:` into space parameters produces a
+    'Modified element ACH not found in class MixedAir' OMC error. Until
+    infiltration is wired through a proper Buildings component, the YAMLs
+    must not carry an ach key.
+    """
     out = build_yaml("600FF", output_dir=tmp_path)
     data = yaml.safe_load(out.read_text())
-    assert data["spaces"][0]["parameters"]["ach"] == pytest.approx(0.41)
+    assert "ach" not in data["spaces"][0]["parameters"]
 
 
 def test_case_hash_changes_with_case_yaml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

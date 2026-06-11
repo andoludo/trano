@@ -9,7 +9,6 @@ spaces:
         heat_gain_if_occupied: 1/1/1
     parameters:
       floor_area: 48
-      ach: 0.41  # ASHRAE 140 §5.2.1.6: 0.5 ACH nominal; 0.41 altitude-adjusted for Denver (1609 m)
       average_room_height: 2.7
     external_boundaries:
       external_walls:
