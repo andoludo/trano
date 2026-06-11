@@ -1,6 +1,8 @@
 /.venv*/
 /System Volume Information/
 *.html
+# The report templates are package source files, not generated output
+!/trano/reporting/templates/*.html
 *.mat
 *.doc
 *.docx

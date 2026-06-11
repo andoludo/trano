@@ -1,0 +1,59 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>External Boundaries Table</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+            .fancy-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                font-size: 1em;
+                text-align: left;
+            }
+            .fancy-table th, .fancy-table td {
+                padding: 12px;
+                border: 1px solid #ddd;
+            }
+            .fancy-table th {
+                background-color: #f4f4f4;
+                font-weight: bold;
+            }
+            .fancy-table tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            .fancy-table caption {
+                font-size: 1.5em;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+
+    <table>
+        <thead>
+            <tr>
+                {% for key in data.keys() %}
+                    <th><strong>{{ key }}</strong></th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for value in data.values() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+
+
+    </body>
+    </html>
+    
