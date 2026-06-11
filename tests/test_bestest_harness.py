@@ -43,10 +43,33 @@ def test_build_yaml_lightweight_uses_base_only(tmp_path: Path) -> None:
 def test_build_yaml_heavyweight_swaps_envelope(tmp_path: Path) -> None:
     out = build_yaml("900", output_dir=tmp_path)
     data = yaml.safe_load(out.read_text())
+    # Wood siding (MATERIAL:001) is preserved from _base.yaml in the heavyweight stack.
     mat1 = next(m for m in data["material"] if m["id"] == "MATERIAL:001")
-    assert mat1["density"] == 1400  # concrete block
+    assert mat1["density"] == 530  # wood siding (outside layer of heavyweight wall too)
+    # New dedicated heavyweight material IDs introduced by _heavyweight.yaml.
+    concrete = next(m for m in data["material"] if m["id"] == "MATERIAL:HW_CONCRETE_BLOCK")
+    assert concrete["density"] == 1400
+    # EXTERIOR_WALL:001 layer order is outside→inside: wood siding, foam, concrete block.
     ext_wall = next(c for c in data["constructions"] if c["id"] == "EXTERIOR_WALL:001")
-    assert ext_wall["layers"][0]["thickness"] == pytest.approx(0.100)
+    materials = [layer["material"] for layer in ext_wall["layers"]]
+    thicknesses = [layer["thickness"] for layer in ext_wall["layers"]]
+    assert materials == ["MATERIAL:001", "MATERIAL:HW_FOAM", "MATERIAL:HW_CONCRETE_BLOCK"]
+    assert thicknesses == pytest.approx([0.009, 0.0615, 0.100])
+
+
+def test_build_yaml_applies_ashrae_140_internal_gain_split(tmp_path: Path) -> None:
+    # ASHRAE 140 §5.2.1.7: 200 W continuous = 120 W radiative + 80 W convective.
+    out = build_yaml("600", output_dir=tmp_path)
+    data = yaml.safe_load(out.read_text())
+    gain = data["spaces"][0]["occupancy"]["parameters"]["gain"]
+    assert "120/48" in gain and "80/48" in gain
+    assert gain.index("120/48") < gain.index("80/48")  # radiative first
+
+
+def test_build_yaml_sets_infiltration(tmp_path: Path) -> None:
+    out = build_yaml("600FF", output_dir=tmp_path)
+    data = yaml.safe_load(out.read_text())
+    assert data["spaces"][0]["parameters"]["ach"] == pytest.approx(0.41)
 
 
 def test_case_hash_changes_with_case_yaml(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

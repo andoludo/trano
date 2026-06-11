@@ -109,7 +109,7 @@ CASES: dict[str, CaseParameters] = {
         base="lightweight",
         has_heating=False,
         heating_setpoint_c=None,
-        night_ventilation_ach=10.4,
+        night_ventilation_ach=13.14,  # ASHRAE 140 §5.2.1.6: 1703.16 m^3/h vent fan / 129.6 m^3 zone vol
         night_ventilation_schedule=(18, 7),
     ),
     "900": CaseParameters(case_id="900", base="heavyweight"),
@@ -136,7 +136,7 @@ CASES: dict[str, CaseParameters] = {
         base="heavyweight",
         has_heating=False,
         heating_setpoint_c=None,
-        night_ventilation_ach=10.4,
+        night_ventilation_ach=13.14,  # ASHRAE 140 §5.2.1.6: 1703.16 m^3/h vent fan / 129.6 m^3 zone vol
         night_ventilation_schedule=(18, 7),
     ),
 }

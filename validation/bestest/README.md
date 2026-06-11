@@ -21,25 +21,31 @@ with ASHRAE 140‑2017 Annex B numbers when available) and writes
 `_reports/report.md`, `_reports/report.json`, plus one matplotlib trumpet plot
 per KPI under `_reports/plots/`.
 
-## Cases
+## Compatibility matrix
 
-| Case  | Envelope    | Window         | HVAC       | Iteration 1 status |
-|-------|-------------|----------------|------------|--------------------|
-| 600FF | lightweight | south 12 m²    | none       | **runs**           |
-| 900FF | heavyweight | south 12 m²    | none       | **runs**           |
-| 600   | lightweight | south 12 m²    | heater-only† | xfail              |
-| 620   | lightweight | E 6 + W 6 m²   | heater-only† | xfail              |
-| 640   | lightweight | south 12 m²    | heater-only with night setback† | xfail |
-| 650   | lightweight | south 12 m²    | none (cooling+night-vent unsupported) | xfail |
-| 900   | heavyweight | south 12 m²    | heater-only† | xfail              |
-| 920   | heavyweight | E 6 + W 6 m²   | heater-only† | xfail              |
-| 940   | heavyweight | south 12 m²    | heater-only with night setback† | xfail |
-| 950   | heavyweight | south 12 m²    | none (cooling+night-vent unsupported) | xfail |
+Every case below uses the same envelope geometry (48 m² floor area, 2.7 m
+height, 0.41 ACH infiltration — ASHRAE 140's 0.5 ACH nominal, altitude-adjusted
+for Denver's 1609 m elevation), 200 W continuous internal gain split 60 %
+radiative / 40 % convective per §5.2.1.7, Denver TMY3 weather, and double
+glazing per §5.2.4 (3.175 mm panes, k = 1.06 W/(m·K), τ = 0.86156, 13 mm air gap).
 
-† Iteration 1 limitation — see "Known gaps" below.
+| Case | Spec definition | Iteration 1 status | What's missing for full compliance |
+|------|-----------------|--------------------|-----------------------------------|
+| 600FF | LW envelope, S window 12 m², no HVAC | **COMPATIBLE — runs** | — |
+| 900FF | HW envelope, S window 12 m², no HVAC | **COMPATIBLE — runs** | — |
+| 600 | LW + heat<20 °C / cool>27 °C, ideal capacity | **PARTIAL** (heater-only; xfail) | cooling control (gap 1) |
+| 620 | 600 with windows E/W 6 m² each | **PARTIAL** | cooling control |
+| 640 | 600 with heating setback to 10 °C 23:00–07:00 | **PARTIAL** | cooling control |
+| 900 | 600 with HW envelope | **PARTIAL** | cooling control |
+| 920 | 900 with windows E/W | **PARTIAL** | cooling control |
+| 940 | 900 with setback | **PARTIAL** | cooling control |
+| 650 | cool>27 °C 07–18 h, night vent 13.14 ACH 18–07 h | **INCOMPATIBLE** (no HVAC; xfail) | cooling control + time-varying ACH (gaps 1, 3) |
+| 950 | 650 with HW envelope | **INCOMPATIBLE** | cooling control + time-varying ACH |
+| 610, 630, 910, 930 | shading: 1 m overhang (±fins) | **NOT EXPRESSIBLE** — not authored | overhang/fin fields in `Window` (gap 4) |
 
-Cases 610, 630, 910, 930 are **not authored** because they require window
-overhangs and side fins that Trano's `Window` schema doesn't expose yet.
+"PARTIAL" cases simulate end-to-end and the heating-side KPIs are meaningful;
+cooling-side KPIs report 0 because no cooler element is wired (intentional —
+see gap 1). They are marked `pytest.xfail` so the suite stays green.
 
 ## How to run
 
@@ -89,15 +95,28 @@ the rest of the cases.
    (`trano/elements/space.py:198`). This blocks heater + cooler coexistence.
    Fix: relax that constraint to allow multiple emissions and connect each
    to its own control signal.
-3. **Time-varying air change rate.** ASHRAE 140 cases 650/950 require night
-   ventilation 10.4 ACH between 18:00 and 07:00. Buildings space template
-   accepts only a constant `ACH`; the `infiltration` variant of
+3. **Time-varying air change rate.** ASHRAE 140 cases 650/950 require a
+   night ventilation fan delivering 1703.16 m³/h (≈ 13.14 ACH on a 129.6 m³
+   zone) between 18:00 and 07:00. The Buildings space template accepts only
+   a constant `ACH`; the `infiltration` variant of
    `trano/elements/library/models/buildings/space.yaml` may expose a
    `RealInput` for time-varying ACH but needs investigation.
 4. **Window overhangs / side fins.** Cases 610/630/910/930 require window
    shading geometry. Add `overhang` and `side_fin` fields to Trano's
    `Window` schema in `trano/data_models/trano.yaml` and propagate to
    `trano/elements/envelope.py` and the Buildings space template.
+5. **Opaque surface solar absorptance.** ASHRAE 140 specifies exterior and
+   interior solar absorptance 0.6 on opaque surfaces. Trano's
+   `OpaqueConstructions.Generic` glazing-system template (see
+   `trano/elements/library/library.json`) doesn't emit `absSol_a/absSol_b`,
+   so Buildings' default value (0.5) applies and the simulated solar gains
+   on opaque surfaces are systematically below spec.
+6. **Window frame.** ASHRAE 140 windows have no frame, but Trano emits
+   `UFra = 1.4` (per the glazing template). The Buildings window component
+   may apply a default frame fraction; if so, the modelled window area is
+   slightly below the spec's 12 m² (6 m²) of pure glazing. Confirm during
+   execution and document the deviation, or extend the template to emit
+   `fFra = 0`.
 
 ## Switching from warn-only to fail
 
@@ -110,6 +129,15 @@ All cases use the Buildings-bundled Denver TMY3 weather file
 (`modelica://Buildings/Resources/weatherdata/USA_CO_Denver.Intl.AP.725650_TMY3.mos`).
 ASHRAE 140 originally specifies `DRYCOLD.TMY`; Denver TMY3 is the modern
 substitute commonly used when the legacy file is not available.
+
+## Relationship to `tests/models/bestest/case600FF.yaml`
+
+The pre-existing fixture `tests/models/bestest/case600FF.yaml` (and its
+golden Modelica file under `tests/data/`) is used by
+`tests/test_template.py` as a code-generation snapshot test, not as part of
+this validation suite. It is intentionally **not** modified here, even
+though its internal-gain split has the same inversion that this suite
+fixes — touching it would also force regenerating the golden `.mo` file.
 
 ## Layout
 

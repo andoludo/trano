@@ -57,8 +57,8 @@ def docker_available() -> bool:
     if docker_path is None:
         return False
     try:
-        result = subprocess.run(
-            [docker_path, "info", "--format", "{{.ServerVersion}}"],  # noqa: S603
+        result = subprocess.run(  # noqa: S603
+            [docker_path, "info", "--format", "{{.ServerVersion}}"],
             capture_output=True,
             text=True,
             timeout=5,
