@@ -8,6 +8,7 @@ import yaml
 from validation.bestest.harness import (
     _deep_merge,
     _merge_id_lists,
+    _network_for,
     build_yaml,
     case_hash,
     run_case,
@@ -107,6 +108,24 @@ def test_run_case_returns_cached_result_when_hash_matches(
     result = run_case("600FF")
     assert result.t_zone_min_c == 10.0
     assert result.cache_key == case_hash("600FF")
+
+
+def test_weather_resource_uri_survives_container_path_rewrite(tmp_path: Path) -> None:
+    """A modelica:// weather URI must pass through the container-path rewrite untouched.
+
+    Regression: set_weather_path_to_container_path treated the Buildings
+    library resource URI as a local file and crashed with AttributeError,
+    failing every BESTEST case on CI before the simulation even started.
+    """
+    yaml_path = build_yaml("600FF", output_dir=tmp_path)
+    network = _network_for("600FF", yaml_path)
+    network.set_weather_path_to_container_path(tmp_path)
+    weather_nodes = [n for n in network.graph.nodes if n.__class__.__name__ == "Weather"]
+    assert weather_nodes, "composed network must contain a Weather node"
+    assert all(
+        "modelica://Buildings/Resources/weatherdata" in str(node.parameters.path)
+        for node in weather_nodes
+    )
 
 
 def test_cases_dict_covers_ten_cases() -> None:
