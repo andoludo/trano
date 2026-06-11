@@ -73,12 +73,13 @@ docs = [
 ]
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 markers = [
-    "simulate: tests that exec OpenModelica via Docker (existing, registered here for visibility)",
+    "simulate: slow integration tests that require Docker and the OpenModelica image",
     "bestest: ASHRAE 140 BESTEST validation cases",
     "slow: takes more than 30 s",
 ]
-addopts = "-m 'not slow'"
+addopts = "-ra -m 'not slow'"
 
 [tool.uv]
 default-groups = "all"
@@ -91,13 +92,6 @@ source-include = ["LICENSE"]
 requires = ["uv_build>=0.11.7,<0.12.0"]
 build-backend = "uv_build"
 
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-markers = [
-    "simulate: slow integration tests that require Docker and the OpenModelica image",
-]
-addopts = "-ra"
 
 [tool.mypy]
 plugins = "pydantic.mypy"
