@@ -132,10 +132,13 @@ def create_mos_file(network: Network, options: SimulationOptions, project_path: 
                 f"""
     getVersion();
     loadFile("/simulation/{{{{model_file}}}}");
+    getErrorString();
     checkModel({{{{model_name}}}}.building);
+    getErrorString();
     simulate({{{{model_name}}}}.building,startTime = {options.start_time},
     stopTime = {options.end_time},
     tolerance = {options.tolerance});
+    getErrorString();
     """
             )
         mos_file = template.render(model_file=Path(temp_model_file.name).name, model_name=network.name)
