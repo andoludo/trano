@@ -40,32 +40,34 @@ def _get_signal(reader: Reader, name: str) -> tuple[NDArray[np.float64], NDArray
 def _get_zone_temperature(
     reader: Reader, space_name: str
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    """Read the zone air temperature, tolerant to MixedAir's internal naming.
+    """Read the zone air temperature, tolerant to wrapper class naming.
 
-    Buildings.ThermalZones.Detailed.MixedAir exposes the zone temperature as
-    ``space_name.heaPorAir.T``; older / alternate templates surface it as
-    ``space_name.air.vol.T``. Try the canonical name first, then known
-    fallbacks, and finally raise with the available ``space_name``-prefixed
-    variables so the right path is obvious from CI logs.
+    Trano wraps every space inside a ``building.envelope1.<space_name>``
+    container, so the OMC result file holds the zone signals at
+    ``building.envelope1.<space_name>.air.{vol,heaPorAir}.T``. The exact
+    prefix depends on the generated wrapper class; search the result file
+    by suffix to stay tolerant. If nothing matches, raise with the
+    available ``space_name``-prefixed variables so the right path is
+    obvious from CI logs.
     """
-    candidates = [
-        f"{space_name}.heaPorAir.T",
+    suffixes = [
         f"{space_name}.air.vol.T",
+        f"{space_name}.air.heaPorAir.T",
+        f"{space_name}.heaPorAir.T",
         f"{space_name}.vol.T",
     ]
-    for name in candidates:
-        try:
-            return _get_signal(reader, name)
-        except KeyError:
-            continue
     try:
         all_names = list(reader.varNames())
     except AttributeError:
         all_names = []
+    for suffix in suffixes:
+        match = next((n for n in all_names if n.endswith(suffix)), None)
+        if match is not None:
+            return _get_signal(reader, match)
     matches = [n for n in all_names if space_name in n and n.endswith(".T")]
     raise KeyError(
-        f"zone temperature not found for {space_name!r}; tried {candidates}. "
-        f"Result file contains {len(matches)} matching .T signals: {matches[:20]}"
+        f"zone temperature not found for {space_name!r}; tried suffixes {suffixes}. "
+        f"Result file contains {len(matches)} matching .T signals: {matches[:30]}"
     )
 
 
