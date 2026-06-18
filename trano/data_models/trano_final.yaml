@@ -6,15 +6,15 @@ classes:
   AhuParameters:
     attributes:
       dp_nominal:
-        description: None
+        description: Nominal pressure raise [Pa]
         ifabsent: string(200)
         range: string
       heat_exchanger_effectiveness:
-        description: None
+        description: Heat exchanger effectiveness [1]
         ifabsent: string(0.8)
         range: string
       m_flow_nominal:
-        description: None
+        description: Nominal mass flow rate [kg/s]
         ifabsent: string(2*100*1.2/3600)
         range: string
   AirHandlingUnit:
@@ -38,76 +38,80 @@ classes:
         range: BoilerControlParameters
       variant:
         ifabsent: string('default')
-        range: string
+        range: BoilerControlVariant
     class_uri: schema:BoilerControl
     slots:
     - id
   BoilerControlParameters:
     attributes:
       threshold_outdoor_air_cutoff:
-        description: None
+        description: Outdoor air temperature threshold; output is true when the outdoor
+          air is below this heating cut-off limit [K]
         ifabsent: float(288.15)
         range: float
       threshold_to_switch_off_boiler:
-        description: None
+        description: Temperature threshold used to switch the boiler off [K]
         ifabsent: float(288.15)
         range: float
       tsup_nominal:
-        description: None
+        description: Nominal supply temperature for the radiators [K]
         ifabsent: float(353.15)
         range: float
   BoilerParameters:
     attributes:
       coefficients_for_efficiency_curve:
-        description: None
+        description: Coefficients for efficiency curve
         ifabsent: string({0.9})
         range: string
       diff_pressure:
-        description: None
+        description: Pressure rise values defining the boiler-circuit pump pressure
+          curve [Pa]
         ifabsent: string(5000*{2,1})
         range: string
       dp_nominal:
-        description: None
+        description: Pressure difference [Pa]
         ifabsent: float(5000)
         range: float
       dt_boi_nominal:
-        description: None
+        description: Nominal temperature difference for the boiler loop [K]
         ifabsent: float(20)
         range: float
       dt_rad_nominal:
-        description: None
+        description: Nominal temperature difference for the radiator loop [K]
         ifabsent: float(10)
         range: float
       effcur:
-        description: None
+        description: Curve used to compute the efficiency
         ifabsent: string(Buildings.Fluid.Types.EfficiencyCurves.Constant)
         range: string
       fraction_of_nominal_flow_rate_where_flow_transitions_to_laminar:
-        description: None
+        description: Fraction of nominal flow rate where flow transitions to laminar
+          [1]
         ifabsent: float(0.1)
         range: float
       height_of_tank_without_insulation:
-        description: None
+        description: Height of tank (without insulation) [m]
         ifabsent: float(2)
         range: float
       if_actual_temperature_at_port_is_computed:
-        description: None
+        description: = true, if actual temperature at port is computed
         ifabsent: string(false)
         range: string
       nominal_heating_power:
-        description: None
+        description: Nominal heating power [W]
         ifabsent: float(20000)
         range: float
       number_of_volume_segments:
-        description: None
+        description: Number of volume segments [1]
         ifabsent: int(4)
         range: integer
       sca_fac_rad:
-        description: None
+        description: Scaling factor to scale the power (and mass flow rate) of the
+          radiator loop [1]
         ifabsent: float(1.5)
         range: float
       tank_volume:
-        description: None
+        description: Tank volume [m3]
         ifabsent: float(0.2)
         range: float
       temperature_heatpump_source:
@@ -119,15 +123,17 @@ classes:
         ifabsent: float(323.15)
         range: float
       temperature_used_to_compute_nominal_efficiency:
-        description: None
+        description: Temperature used to compute nominal efficiency (only used if
+          efficiency curve depends on temperature) [K]
         ifabsent: float(353.15)
         range: float
       thickness_of_insulation:
-        description: None
+        description: Thickness of insulation [m]
         ifabsent: float(0.002)
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
-        description: None
+        description: = true, use linear relation between m_flow and dp for any flow
+          rate
         ifabsent: string(true)
         range: string
       use_storage_tank:
@@ -211,31 +217,32 @@ classes:
   ControlLoopsParameters:
     attributes:
       dt_hys:
-        description: None
+        description: Delta between the temperature hysteresis high and low limit [K]
         ifabsent: float(0.25)
         range: float
       k_coo_con:
-        description: None
+        description: Gain of controller for cooling control loop [1]
         ifabsent: float(0.1)
         range: float
       k_hea_con:
-        description: None
+        description: Gain of controller for heating control loop [1]
         ifabsent: float(0.1)
         range: float
       loo_hys:
-        description: None
+        description: Threshold value to check if the controller output is near zero
+          [1]
         ifabsent: float(0.01)
         range: float
       ti_coo_con:
-        description: None
+        description: Time constant of integrator block for cooling control loop [s]
         ifabsent: float(900)
         range: float
       ti_hea_con:
-        description: None
+        description: Time constant of integrator block for heating control loop [s]
         ifabsent: float(900)
         range: float
       tim_che:
-        description: None
+        description: Threshold time to check the zone temperature status [s]
         ifabsent: float(30)
         range: float
   DataSource:
@@ -293,14 +300,14 @@ classes:
         range: EmissionControlParameters
       variant:
         ifabsent: string('default')
-        range: string
+        range: EmissionControlVariant
     class_uri: schema:EmissionControl
     slots:
     - id
   EmissionControlParameters:
     attributes:
       controller_gain:
-        description: None
+        description: Gain of controller [1]
         ifabsent: float(5)
         range: float
       data:
@@ -310,14 +317,18 @@ classes:
         multivalued: true
         range: DataSource
       schedule:
+        description: Schedule of switching times that toggles the heating set point
+          between the occupied set point and the setback value
         ifabsent: string(3600*{7, 19})
         range: string
       temperature_heating_setback:
-        description: None
+        description: Room air temperature heating set point during the setback period
+          (e.g. at night) [K]
         ifabsent: float(289)
         range: float
       temperature_heating_setpoint:
-        description: None
+        description: Room air temperature heating set point during occupied period
+          [K]
         ifabsent: float(297)
         range: float
   ExternalBoundaries:
@@ -448,7 +459,7 @@ classes:
     attributes:
       variant:
         ifabsent: string('default')
-        range: string
+        range: OccupancyVariant
     class_uri: schema:Occupancy
     description: Represents Occupancy
     slot_usage:
@@ -459,7 +470,7 @@ classes:
   OccupancyParameters:
     attributes:
       ach:
-        description: None
+        description: Infiltration [1/h]
         ifabsent: float(0.9)
         range: float
       data:
@@ -472,53 +483,55 @@ classes:
         description: Floor area [m2]
         range: float
       gain:
-        description: None
+        description: Gain to convert from occupancy (per person) to radiant, convective
+          and latent heat in [W/m2]
         ifabsent: string([35; 70; 30])
         range: string
       heat_gain_if_occupied:
-        description: None
+        description: Heat gain if occupied
         ifabsent: string(1/6/4)
         range: string
       occupancy:
-        description: None
+        description: Occupancy table, each entry switching occupancy on or off
         ifabsent: string(3600*{7, 19})
         range: string
   PIDParameters:
     attributes:
       controller_type:
-        description: None
+        description: Type of controller
         ifabsent: string(Buildings.Controls.OBC.CDL.Types.SimpleController.P)
         range: string
       k:
-        description: None
+        description: Gain of controller [1]
         ifabsent: float(1)
         range: float
       nd:
-        description: None
+        description: The higher Nd, the more ideal the derivative block [1]
         ifabsent: float(10)
         range: float
       ni:
-        description: None
+        description: Ni*Ti is time constant of anti-windup compensation [1]
         ifabsent: float(0.9)
         range: float
       r:
-        description: None
+        description: Typical range of control error, used for scaling the control
+          error
         ifabsent: float(1)
         range: float
       td:
-        description: None
+        description: Time constant of derivative block [s]
         ifabsent: float(0.1)
         range: float
       ti:
-        description: None
+        description: Time constant of integrator block [s]
         ifabsent: float(0.5)
         range: float
       y_max:
-        description: None
+        description: Upper limit of output [1]
         ifabsent: float(1)
         range: float
       y_min:
-        description: None
+        description: Lower limit of output [1]
         ifabsent: float(0)
         range: float
   Parameter:
@@ -540,14 +553,14 @@ classes:
   PumpParameters:
     attributes:
       constant_input_set_point:
-        description: None
+        description: Constant input set point
         range: float
       dp_nominal:
-        description: None
+        description: Nominal pressure raise [Pa]
         ifabsent: float(30000)
         range: float
       m_flow_nominal:
-        description: None
+        description: Nominal mass flow rate [kg/s]
         ifabsent: float(0.15)
         range: float
   Radiator:
@@ -563,51 +576,53 @@ classes:
   RadiatorParameter:
     attributes:
       air_temperature_at_nominal_condition:
-        description: None
+        description: Air temperature at nominal condition [K]
         ifabsent: float(293.15)
         range: float
       dp_nominal:
-        description: None
+        description: Pressure drop at nominal mass flow rate [Pa]
         ifabsent: float(2000)
         range: float
       exponent_for_heat_transfer:
-        description: None
+        description: Exponent for heat transfer
         ifabsent: float(1.24)
         range: float
       fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
-        description: None
+        description: Fraction of nominal mass flow rate where transition to turbulent
+          occurs [1]
         ifabsent: float(0.01)
         range: float
       fraction_radiant_heat_transfer:
-        description: None
+        description: Fraction radiant heat transfer [1]
         ifabsent: float(0.3)
         range: float
       nominal_heating_power_positive_for_heating:
-        description: None
+        description: Nominal heating power (positive for heating) [W]
         ifabsent: float(5000)
         range: float
       number_of_elements_used_in_the_discretization:
-        description: None
+        description: Number of elements used in the discretization [1]
         ifabsent: int(1)
         range: integer
       radiative_temperature_at_nominal_condition:
-        description: None
+        description: Radiative temperature at nominal condition [K]
         ifabsent: float(293.15)
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
-        description: None
+        description: = true, use linear relation between m_flow and dp for any flow
+          rate
         ifabsent: string(true)
         range: string
       use_m_flow_f_dp_else_dp_f_m_flow:
-        description: None
+        description: = true, use m_flow = f(dp) else dp = f(m_flow)
         ifabsent: string(false)
         range: string
       water_inlet_temperature_at_nominal_condition:
-        description: None
+        description: Water inlet temperature at nominal condition [K]
         ifabsent: float(353.15)
         range: float
       water_outlet_temperature_at_nominal_condition:
-        description: None
+        description: Water outlet temperature at nominal condition [K]
         ifabsent: float(333.15)
         range: float
   Solar:
@@ -618,7 +633,7 @@ classes:
     attributes:
       variant:
         ifabsent: string('default')
-        range: string
+        range: SpaceVariant
     class_uri: schema:Space
     description: Represents a Space
     slot_usage:
@@ -636,7 +651,7 @@ classes:
   SpaceParameter:
     attributes:
       ach:
-        description: Infiltration
+        description: Infiltration [1/h]
         range: float
       average_room_height:
         description: Average room height [m]
@@ -656,7 +671,7 @@ classes:
         range: float
       sensible_thermal_mass_scaling_factor:
         description: Factor for scaling the sensible thermal mass of the zone air
-          volume
+          volume [1]
         ifabsent: float(1)
         range: float
       temperature_initial:
@@ -671,32 +686,37 @@ classes:
   SplitValveParameters:
     attributes:
       dp_nominal:
-        description: None
+        description: Pressure drop at nominal mass flow rate, set to zero or negative
+          number at outflowing ports [Pa]
         ifabsent: string({5000,-1,-1})
         range: string
       fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
-        description: None
+        description: Fraction of nominal mass flow rate where transition to turbulent
+          occurs [1]
         ifabsent: float(0.3)
         range: float
       m_flow_nominal:
-        description: None
+        description: Mass flow rate; set negative at outflowing ports [kg/s]
         ifabsent: string(0.1*{1,-1,-1})
         range: string
       nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
-        description: None
+        description: Nominal mass flow rate for dynamic momentum and energy balance
+          [kg/s]
         range: float
       time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance:
-        description: None
+        description: Time constant at nominal flow for dynamic energy and momentum
+          balance [s]
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
-        description: None
+        description: = true, use linear relation between m_flow and dp for any flow
+          rate
         ifabsent: string(true)
         range: string
   System:
     attributes:
       variant:
         ifabsent: string('default')
-        range: string
+        range: SystemVariant
     class_uri: schema:System
     slots:
     - id
@@ -728,51 +748,55 @@ classes:
   ThreeWayValveParameters:
     attributes:
       Av:
-        description: None
+        description: Av (metric) flow coefficient [m2]
         range: float
       Cv:
-        description: None
+        description: Cv (US) flow coefficient [USG/min/(psi)^(1/2)]
         range: float
       Kv:
-        description: None
+        description: Kv (metric) flow coefficient [m3/h/(bar)^(1/2)]
         range: float
       dp_fixed_nominal:
-        description: None
+        description: Nominal pressure drop of pipes and other equipment in flow legs
+          at port_1 and port_3 [Pa]
         ifabsent: string({2000,0})
         range: string
       dp_valve_nominal:
-        description: None
+        description: Nominal pressure drop of fully open valve, used if CvData=Buildings.Fluid.Types.CvTypes.OpPoint
+          [Pa]
         ifabsent: float(6000)
         range: float
       fra_k:
-        description: None
+        description: Fraction Kv(port_3->port_2)/Kv(port_1->port_2) [1]
         ifabsent: float(0.7)
         range: float
       fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
-        description: None
+        description: Fraction of nominal flow rate where linearization starts, if
+          y=1 [1]
         ifabsent: float(0.02)
         range: float
       m_flow_nominal:
-        description: None
+        description: Nominal mass flow rate [kg/s]
         ifabsent: float(0.3)
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
-        description: None
+        description: Range of significant deviation from equal percentage law [1]
         ifabsent: float(0.01)
         range: float
       rangeability:
-        description: None
+        description: Rangeability, R=50...100 typically [1]
         ifabsent: float(50)
         range: float
       rho_std:
-        description: None
+        description: Inlet density for which valve coefficients are defined [kg/m3]
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
-        description: None
+        description: = true, use linear relation between m_flow and dp for any flow
+          rate
         ifabsent: string({true, true})
         range: string
       valve_leakage:
-        description: None
+        description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
         ifabsent: string({0.01,0.01})
         range: string
   VAV:
@@ -793,57 +817,63 @@ classes:
   ValveParameters:
     attributes:
       av:
-        description: None
+        description: Av (metric) flow coefficient [m2]
         range: string
       cv:
-        description: None
+        description: Cv (US) flow coefficient [USG/min/(psi)^(1/2)]
         range: float
       dp_fixed_nominal:
-        description: None
+        description: Pressure drop of pipe and other resistances that are in series
+          [Pa]
         ifabsent: float(5000)
         range: float
       dp_valve_nominal:
-        description: None
+        description: Nominal pressure drop of fully open valve, used if CvData=Buildings.Fluid.Types.CvTypes.OpPoint
+          [Pa]
         ifabsent: float(10000)
         range: float
       fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
-        description: None
+        description: Fraction of nominal flow rate where linearization starts, if
+          y=1 [1]
         ifabsent: float(0.02)
         range: float
       k_fixed:
+        description: Flow coefficient of fixed resistance that may be in series with
+          valve, k=m_flow/sqrt(dp), with unit=(kg.m)^(1/2)
         range: string
       kv:
-        description: None
+        description: Kv (metric) flow coefficient [m3/h/(bar)^(1/2)]
         range: float
       m_flow_nominal:
-        description: None
+        description: Nominal mass flow rate [kg/s]
         ifabsent: float(0.02)
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
-        description: None
+        description: Range of significant deviation from equal percentage law [1]
         ifabsent: float(0.01)
         range: float
       rangeability:
-        description: None
+        description: Rangeability, R=50...100 typically [1]
         ifabsent: float(50)
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
-        description: None
+        description: = true, use linear relation between m_flow and dp for any flow
+          rate
         ifabsent: string(true)
         range: string
       use_m_flow_f_dp_else_dp_f_m_flow:
-        description: None
+        description: = true, use m_flow = f(dp) else dp = f(m_flow)
         ifabsent: string(true)
         range: string
       valve_leakage:
-        description: None
+        description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
         ifabsent: float(0.0001)
         range: float
   VavControl:
     attributes:
       variant:
         ifabsent: string('default')
-        range: string
+        range: VavControlVariant
     class_uri: schema:VavControl
     slots:
     - id
@@ -866,7 +896,7 @@ classes:
   WeatherParameters:
     attributes:
       path:
-        description: None
+        description: Name of weather data file
         ifabsent: string(None)
         range: string
   Window:
@@ -888,6 +918,11 @@ default_prefix: trano
 default_range: string
 description: This is the project description.
 enums:
+  BoilerControlVariant:
+    permissible_values:
+      complex: null
+      default: null
+      simple: null
   ControlType:
     permissible_values:
       Ahu: null
@@ -896,6 +931,34 @@ enums:
       Emission: null
       ThreeWayValve: null
       VAV: null
+  EmissionControlVariant:
+    permissible_values:
+      MonitoredSetpoint: null
+      PController: null
+      default: null
+      onoff: null
+  OccupancyVariant:
+    permissible_values:
+      co2: null
+      default: null
+  SpaceVariant:
+    permissible_values:
+      default: null
+      infiltration: null
+  SystemVariant:
+    permissible_values:
+      air_water_heat_pump: null
+      complex: null
+      default: null
+      ideal: null
+      system_d: null
+      test: null
+      water_water_heat_pump: null
+      without_storage: null
+  VavControlVariant:
+    permissible_values:
+      constant: null
+      default: null
 id: https://w3id.org/my-org/trano
 imports:
 - linkml:types
