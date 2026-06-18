@@ -45,7 +45,7 @@ classes:
     attributes:
       variant:
         ifabsent: string('default')
-        range: string
+        range: SpaceVariant
     description: >-
       Represents a Space
     slot_usage:
@@ -215,7 +215,7 @@ classes:
   Occupancy:
     attributes:
       variant:
-        range: string
+        range: OccupancyVariant
         ifabsent: string('default')
     description: >-
       Represents Occupancy
@@ -229,7 +229,7 @@ classes:
   System:
     attributes:
       variant:
-        range: string
+        range: SystemVariant
         ifabsent: string('default')
     slots:
       - id
@@ -347,7 +347,7 @@ classes:
     attributes:
       variant:
         ifabsent: string('default')
-        range: string
+        range: EmissionControlVariant
       parameters:
         range: EmissionControlParameters
         multivalued: false
@@ -358,7 +358,7 @@ classes:
     attributes:
       variant:
         ifabsent: string('default')
-        range: string
+        range: BoilerControlVariant
       parameters:
         range: BoilerControlParameters
         multivalued: false
@@ -374,7 +374,7 @@ classes:
   VavControl:
     attributes:
       variant:
-        range: string
+        range: VavControlVariant
         ifabsent: string('default')
     slots:
       - id
@@ -621,3 +621,36 @@ enums:
       Emission:
       VAV:
       ThreeWayValve:
+  SpaceVariant:
+    permissible_values:
+      default:
+      infiltration:
+  OccupancyVariant:
+    permissible_values:
+      default:
+      co2:
+  SystemVariant:
+    permissible_values:
+      default:
+      air_water_heat_pump:
+      complex:
+      ideal:
+      system_d:
+      test:
+      water_water_heat_pump:
+      without_storage:
+  EmissionControlVariant:
+    permissible_values:
+      default:
+      MonitoredSetpoint:
+      onoff:
+      PController:
+  BoilerControlVariant:
+    permissible_values:
+      default:
+      complex:
+      simple:
+  VavControlVariant:
+    permissible_values:
+      default:
+      constant:
