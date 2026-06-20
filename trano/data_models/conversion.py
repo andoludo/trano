@@ -294,11 +294,11 @@ def _add_internal_walls(
 
 
 def _connect_systems(network: Network, data: dict[str, Any], systems: dict[str, Any]) -> None:
-    for system in data["systems"]:
+    for system in data.get("systems", []):
         system_ = _instantiate_component(system)
         systems[system_.name] = system_.component_instance
     edges = []
-    for system in data["systems"]:
+    for system in data.get("systems", []):
         for value in system.values():
             edges += [(systems[value["id"]], systems[outlet]) for outlet in value.get("outlets", [])]
             edges += [(systems[inlet], systems[value["id"]]) for inlet in value.get("inlets", [])]

@@ -7,6 +7,7 @@ from linkml.generators.pythongen import PythonGenerator  # type: ignore
 from linkml_runtime.loaders import json_loader, yaml_loader  # type: ignore
 from linkml_runtime.dumpers import json_dumper  # type: ignore
 
+
 def delete_none(_dict: dict[str, Any]) -> dict[str, Any]:
     # TODO: this function needs to be reviewed
     """Delete None values recursively from all of the dictionaries"""
@@ -44,4 +45,4 @@ def converter(
     py_target_class = python_module.__dict__[target_class]
     loader = yaml_loader if Path(input).suffix in {".yaml", ".yml"} else json_loader
     obj = loader.load(source=input, target_class=py_target_class)
-    return json.loads(json_dumper.dumps(obj, inject_type=False))
+    return json.loads(json_dumper.dumps(obj, inject_type=False))  # type: ignore

@@ -259,8 +259,6 @@ def test_bestest_case600ff(schema: Path) -> None:
     assert_model_equals_golden(network.model(data_bus=data_bus), network.name)
 
 
-def test_yaml_realistic(
-) -> None:
+def test_yaml_realistic() -> None:
     network = convert_network("realistic_model", get_path("realistic.yaml"))
     assert_model_equals_golden(network.model(), network.name)
-
