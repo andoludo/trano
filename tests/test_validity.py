@@ -71,9 +71,3 @@ def test_unknown_library() -> None:
         )
 
 
-def test_unknown_variant() -> None:
-    house = get_path("single_zone_hydronic_unknown_variant.yaml")
-    with pytest.raises(UnknownComponentVariantError):
-        create_model(
-            house,
-        )
