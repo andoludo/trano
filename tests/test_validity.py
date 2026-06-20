@@ -8,7 +8,6 @@ from trano.exceptions import (
     WrongSystemFlowError,
     SystemsNotConnectedError,
     UnknownLibraryError,
-    UnknownComponentVariantError,
 )
 from trano.main import create_model
 
@@ -69,5 +68,3 @@ def test_unknown_library() -> None:
             house,
             library="unknown",
         )
-
-
