@@ -1,0 +1,828 @@
+constructions:
+- id: CONSTRUCTION_01:001
+  layers:
+  - material: MATERIAL_01:001
+    thickness: 0.3714
+  - material: MATERIAL_03:001
+    thickness: 0.0879
+  - material: GAS_01:001
+    thickness: 0.0192
+  - material: MATERIAL_01:001
+    thickness: 0.1249
+  - material: MATERIAL_04:001
+    thickness: 0.1451
+  - material: MATERIAL_07:001
+    thickness: 0.0094
+- id: CONSTRUCTION_02:001
+  layers:
+  - material: MATERIAL_05:001
+    thickness: 0.0286
+  - material: MATERIAL_02:001
+    thickness: 0.3154
+  - material: MATERIAL_06:001
+    thickness: 0.0188
+- id: CONSTRUCTION_03:001
+  layers:
+  - material: MATERIAL_08:001
+    thickness: 0.0223
+  - material: MATERIAL_10:001
+    thickness: 0.0558
+  - material: MATERIAL_08:001
+    thickness: 0.018
+- id: CONSTRUCTION_04:001
+  layers:
+  - material: MATERIAL_09:001
+    thickness: 0.5409
+  - material: MATERIAL_10:001
+    thickness: 0.0366
+  - material: MATERIAL_11:001
+    thickness: 0.0446
+  - material: MATERIAL_12:001
+    thickness: 0.0861
+- id: CONSTRUCTION_05:001
+  layers:
+  - material: MATERIAL_06:001
+    thickness: 0.0214
+  - material: MATERIAL_13:001
+    thickness: 0.1493
+  - material: MATERIAL_06:001
+    thickness: 0.0181
+gas:
+- density: 1.325
+  id: GAS_01:001
+  longwave_emissivity: 0.0
+  shortwave_emissivity: 0.0
+  specific_heat_capacity: 1114.0
+  thermal_conductivity: 0.0281
+- density: 1.744
+  id: GAS_02:001
+  longwave_emissivity: 0.0
+  shortwave_emissivity: 0.0
+  specific_heat_capacity: 493.8
+  thermal_conductivity: 0.0183
+glass_material:
+- density: 2448.4
+  id: GLASS_MATERIAL_01:001
+  longwave_emissivity: 1120.9
+  shortwave_emissivity: 11084.2
+  specific_heat_capacity: 849.7
+  thermal_conductivity: 7729.6
+glazings:
+- id: GLAZING_01:001
+  layers:
+  - glass: GLASS_MATERIAL_01:001
+    thickness: 0.0042
+  - gas: GAS_02:001
+    thickness: 0.0143
+  - glass: GLASS_MATERIAL_01:001
+    thickness: 0.0037
+  - gas: GAS_02:001
+    thickness: 0.0164
+  - glass: GLASS_MATERIAL_01:001
+    thickness: 0.0036
+material:
+- density: 69.168
+  id: MATERIAL_01:001
+  longwave_emissivity: 0.7225
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 887.8
+  thermal_conductivity: 2527.2
+- density: 74.486
+  id: MATERIAL_02:001
+  longwave_emissivity: 0.8431
+  shortwave_emissivity: 0.6652
+  specific_heat_capacity: 2070.6
+  thermal_conductivity: 6853.6
+- density: 764.5
+  id: MATERIAL_03:001
+  longwave_emissivity: 0.7319
+  shortwave_emissivity: 0.6538
+  specific_heat_capacity: 814
+  thermal_conductivity: 0.262
+- density: 1114.2
+  id: MATERIAL_04:001
+  longwave_emissivity: 0.7451
+  shortwave_emissivity: 0.6312
+  specific_heat_capacity: 786
+  thermal_conductivity: 0.6206
+- density: 1893
+  id: MATERIAL_05:001
+  longwave_emissivity: 0.8124
+  shortwave_emissivity: 0.7073
+  specific_heat_capacity: 820
+  thermal_conductivity: 1.522
+- density: 1094
+  id: MATERIAL_06:001
+  longwave_emissivity: 0.8266
+  shortwave_emissivity: 0.6024
+  specific_heat_capacity: 5165.8
+  thermal_conductivity: 8745.6
+- density: 910
+  id: MATERIAL_07:001
+  longwave_emissivity: 0.9385
+  shortwave_emissivity: 0.6788
+  specific_heat_capacity: 851
+  thermal_conductivity: 0.5485
+- density: 610
+  id: MATERIAL_08:001
+  longwave_emissivity: 0.7988
+  shortwave_emissivity: 0.6377
+  specific_heat_capacity: 976
+  thermal_conductivity: 0.1232
+- density: 2272
+  id: MATERIAL_09:001
+  longwave_emissivity: 0.7398
+  shortwave_emissivity: 0.6675
+  specific_heat_capacity: 3192.8
+  thermal_conductivity: 1.475
+- density: 26
+  id: MATERIAL_10:001
+  longwave_emissivity: 0.8665
+  shortwave_emissivity: 0.64
+  specific_heat_capacity: 1287
+  thermal_conductivity: 0.0326
+- density: 986
+  id: MATERIAL_11:001
+  longwave_emissivity: 0.7889
+  shortwave_emissivity: 0.6281
+  specific_heat_capacity: 942
+  thermal_conductivity: 0.6711
+- density: 506
+  id: MATERIAL_12:001
+  longwave_emissivity: 0.8578
+  shortwave_emissivity: 0.7175
+  specific_heat_capacity: 1679
+  thermal_conductivity: 0.101
+- density: 1528
+  id: MATERIAL_13:001
+  longwave_emissivity: 0.7519
+  shortwave_emissivity: 0.6018
+  specific_heat_capacity: 725
+  thermal_conductivity: 0.5942
+weather:
+  parameters:
+    path: weather.mos
+spaces:
+- id: ROOM_01:001
+  variant: infiltration
+  occupancy:
+    variant: co2
+    parameters:
+      floor_area: 10.185
+      ach: 2412.6
+      data:
+      - component: co2
+        variable: signal_0001
+  parameters:
+    ach: 4206.6
+    floor_area: 10.694
+    average_room_height: 2.476
+    temperature_initial: 4314.6
+    sensible_thermal_mass_scaling_factor: 6562.2
+  external_boundaries:
+    external_walls:
+    - surface: 8.727
+      azimuth: 2.733
+      tilt: wall
+      construction: CONSTRUCTION_01:001
+    floor_on_grounds:
+    - surface: 12.666
+      construction: CONSTRUCTION_04:001
+    windows:
+    - surface: 1.197
+      azimuth: 2.733
+      tilt: wall
+      construction: GLAZING_01:001
+  emissions:
+  - radiator:
+      id: RADIATOR_01:001
+      parameters:
+        nominal_heating_power_positive_for_heating: 11070.4
+        air_temperature_at_nominal_condition: 260.9
+        water_inlet_temperature_at_nominal_condition: 7220.9
+        water_outlet_temperature_at_nominal_condition: 337
+        dp_nominal: 5672.6
+  - valve:
+      id: VALVE_01:001
+      parameters:
+        m_flow_nominal: 0.2732
+        dp_fixed_nominal: 7753.7
+      control:
+        emission_control:
+          id: CONTROL_01:001
+          variant: MonitoredSetpoint
+          parameters:
+            controller_gain: 6752.4
+            data:
+            - component: MonitoredSetpoint
+              variable: signal_0002
+- id: ROOM_02:001
+  variant: infiltration
+  occupancy:
+    parameters:
+      occupancy: 3600*{7, 19}
+      gain: '[0;0;0]'
+  parameters:
+    ach: 2885.4
+    floor_area: 1.293
+    average_room_height: 2.683
+    temperature_initial: 315
+    sensible_thermal_mass_scaling_factor: 10
+  external_boundaries:
+    external_walls:
+    - surface: 2.335
+      azimuth: 3.379
+      tilt: wall
+      construction: CONSTRUCTION_01:001
+    floor_on_grounds:
+    - surface: 1.192
+      construction: CONSTRUCTION_04:001
+    windows:
+    - surface: 0.1698
+      azimuth: 3.379
+      tilt: wall
+      construction: GLAZING_01:001
+- id: ROOM_03:001
+  variant: infiltration
+  occupancy:
+    variant: co2
+    parameters:
+      floor_area: 11
+      ach: 6876.4
+      data:
+      - component: co2
+        variable: signal_0003
+  parameters:
+    ach: 10140.3
+    floor_area: 11
+    average_room_height: 2.263
+    temperature_initial: 9566.8
+    sensible_thermal_mass_scaling_factor: 11
+  external_boundaries:
+    external_walls:
+    - surface: 6.463
+      azimuth: 3.407
+      tilt: wall
+      construction: CONSTRUCTION_01:001
+    - surface: 7.594
+      azimuth: 1.449
+      tilt: wall
+      construction: CONSTRUCTION_01:001
+    floor_on_grounds:
+    - surface: 12
+      construction: CONSTRUCTION_04:001
+    windows:
+    - surface: 2.065
+      azimuth: 3.407
+      tilt: wall
+      construction: GLAZING_01:001
+    - surface: 2.268
+      azimuth: 1.449
+      tilt: wall
+      construction: GLAZING_01:001
+  emissions:
+  - radiator:
+      id: RADIATOR_02:001
+      parameters:
+        nominal_heating_power_positive_for_heating: 2271
+  - valve:
+      id: VALVE_02:001
+      control:
+        emission_control:
+          id: CONTROL_02:001
+          variant: MonitoredSetpoint
+          parameters:
+            controller_gain: 5893.4
+            data:
+            - component: MonitoredSetpoint
+              variable: signal_0004
+- id: ROOM_04:001
+  variant: infiltration
+  occupancy:
+    variant: co2
+    parameters:
+      floor_area: 24.504
+      ach: 6765.8
+      data:
+      - component: co2
+        variable: signal_0005
+  parameters:
+    ach: 5456.7
+    floor_area: 26.743
+    average_room_height: 2.227
+    temperature_initial: 6692.5
+    sensible_thermal_mass_scaling_factor: 9880.9
+  external_boundaries:
+    external_walls:
+    - surface: 9.677
+      azimuth: 0
+      tilt: wall
+      construction: CONSTRUCTION_01:001
+    - surface: 19
+      azimuth: 1.578
+      tilt: wall
+      construction: CONSTRUCTION_01:001
+    floor_on_grounds:
+    - surface: 29.162
+      construction: CONSTRUCTION_04:001
+    windows:
+    - surface: 4
+      azimuth: 0
+      tilt: wall
+      construction: GLAZING_01:001
+    - surface: 3.251
+      azimuth: 1.578
+      tilt: wall
+      construction: GLAZING_01:001
+  ventilation_inlets:
+  - duct:
+      id: DUCT_01:001
+  ventilation_outlets:
+  - duct:
+      id: DUCT_02:001
+  emissions:
+  - radiator:
+      id: RADIATOR_03:001
+      parameters:
+        nominal_heating_power_positive_for_heating: 1772.0
+        air_temperature_at_nominal_condition: 260.0
+        water_inlet_temperature_at_nominal_condition: 8946.8
+        water_outlet_temperature_at_nominal_condition: 354
+        dp_nominal: 2792.9
+  - valve:
+      id: VALVE_03:001
+      parameters:
+        m_flow_nominal: 3884.7
+        dp_fixed_nominal: 7828.0
+      control:
+        emission_control:
+          id: CONTROL_03:001
+          variant: MonitoredSetpoint
+          parameters:
+            controller_gain: 7417.4
+            data:
+            - component: MonitoredSetpoint
+              variable: signal_0006
+- id: ROOM_05:001
+  variant: infiltration
+  occupancy:
+    variant: co2
+    parameters:
+      floor_area: 12.325
+      ach: 1106.0
+      data:
+      - component: co2
+        variable: signal_0007
+  parameters:
+    ach: 8510.6
+    floor_area: 10.515
+    average_room_height: 2.693
+    temperature_initial: 7723.3
+    sensible_thermal_mass_scaling_factor: 5783.0
+  external_boundaries:
+    external_walls:
+    - surface: 9.894
+      azimuth: 0
+      tilt: wall
+      construction: CONSTRUCTION_01:001
+    floor_on_grounds:
+    - surface: 9.995
+      construction: CONSTRUCTION_04:001
+    windows:
+    - surface: 2
+      azimuth: 0
+      tilt: wall
+      construction: GLAZING_01:001
+  ventilation_inlets:
+  - duct:
+      id: DUCT_02:001
+  ventilation_outlets:
+  - duct:
+      id: DUCT_03:001
+  emissions:
+  - radiator:
+      id: RADIATOR_04:001
+      parameters:
+        nominal_heating_power_positive_for_heating: 3804.5
+        air_temperature_at_nominal_condition: 298.4
+        water_inlet_temperature_at_nominal_condition: 317.1
+        water_outlet_temperature_at_nominal_condition: 302
+        dp_nominal: 3229.7
+  - valve:
+      id: VALVE_04:001
+      parameters:
+        m_flow_nominal: 2423.8
+        dp_fixed_nominal: 3625.0
+      control:
+        emission_control:
+          id: CONTROL_04:001
+          variant: MonitoredSetpoint
+          parameters:
+            controller_gain: 7316.0
+            data:
+            - component: MonitoredSetpoint
+              variable: signal_0008
+- id: ROOM_06:001
+  variant: infiltration
+  occupancy:
+    parameters:
+      occupancy: 3600*{7, 19}
+      gain: '[0;0;0]'
+  parameters:
+    ach: 6944.2
+    floor_area: 5.467
+    average_room_height: 2.663
+    temperature_initial: 258
+    sensible_thermal_mass_scaling_factor: 10
+  external_boundaries:
+    floor_on_grounds:
+    - surface: 4.954
+      construction: CONSTRUCTION_04:001
+- id: ROOM_07:001
+  variant: infiltration
+  occupancy:
+    variant: co2
+    parameters:
+      floor_area: 5.771
+      ach: 3555.2
+      data:
+      - component: co2
+        variable: signal_0009
+  parameters:
+    ach: 2955.4
+    floor_area: 6.139
+    average_room_height: 2.467
+    temperature_initial: 7014.8
+    sensible_thermal_mass_scaling_factor: 10
+  external_boundaries:
+    floor_on_grounds:
+    - surface: 4.968
+      construction: CONSTRUCTION_04:001
+  emissions:
+  - radiator:
+      id: RADIATOR_05:001
+      parameters:
+        nominal_heating_power_positive_for_heating: 2168
+  - valve:
+      id: VALVE_05:001
+      control:
+        emission_control:
+          id: CONTROL_05:001
+          variant: MonitoredSetpoint
+          parameters:
+            controller_gain: 1291.6
+            data:
+            - component: MonitoredSetpoint
+              variable: signal_0010
+- id: ROOM_08:001
+  occupancy:
+    variant: co2
+    parameters:
+      floor_area: 4
+      ach: 1878.0
+      data:
+      - component: co2
+        variable: signal_0003
+  parameters:
+    floor_area: 4
+    average_room_height: 4.794
+    temperature_initial: 297
+    sensible_thermal_mass_scaling_factor: 11
+  external_boundaries:
+    floor_on_grounds:
+    - surface: 4
+      construction: CONSTRUCTION_04:001
+    external_walls:
+    - surface: 2
+      azimuth: 0
+      tilt: pitched_roof_35
+      construction: CONSTRUCTION_02:001
+    - surface: 2
+      azimuth: 2.886
+      tilt: pitched_roof_35
+      construction: CONSTRUCTION_02:001
+- id: ROOM_09:001
+  variant: infiltration
+  occupancy:
+    variant: co2
+    parameters:
+      floor_area: 17.142
+      ach: 4128.5
+      data:
+      - component: co2
+        variable: signal_0011
+  parameters:
+    ach: 8751.4
+    floor_area: 16.236
+    average_room_height: 2.676
+    temperature_initial: 1512.1
+    sensible_thermal_mass_scaling_factor: 7263.9
+  external_boundaries:
+    external_walls:
+    - surface: 11.352
+      azimuth: 1.353
+      tilt: wall
+      construction: CONSTRUCTION_01:001
+    - surface: 7
+      azimuth: 0
+      tilt: pitched_roof_35
+      construction: CONSTRUCTION_02:001
+    - surface: 8
+      azimuth: 3.195
+      tilt: pitched_roof_35
+      construction: CONSTRUCTION_02:001
+    windows:
+    - surface: 1.554
+      azimuth: 1.353
+      tilt: wall
+      construction: GLAZING_01:001
+  emissions:
+  - radiator:
+      id: RADIATOR_06:001
+      parameters:
+        nominal_heating_power_positive_for_heating: 8873.7
+        air_temperature_at_nominal_condition: 290.2
+        water_inlet_temperature_at_nominal_condition: 7141.3
+        water_outlet_temperature_at_nominal_condition: 330
+        dp_nominal: 4846.2
+  - valve:
+      id: VALVE_06:001
+      parameters:
+        dp_fixed_nominal: 7573.6
+      control:
+        emission_control:
+          id: CONTROL_06:001
+          variant: MonitoredSetpoint
+          parameters:
+            controller_gain: 6433.1
+            data:
+            - component: MonitoredSetpoint
+              variable: signal_0012
+- id: ROOM_10:001
+  variant: infiltration
+  occupancy:
+    variant: co2
+    parameters:
+      floor_area: 17
+      ach: 1378.0
+      data:
+      - component: co2
+        variable: signal_0013
+  parameters:
+    ach: 8979.1
+    floor_area: 19
+    average_room_height: 2.198
+    temperature_initial: 9252.1
+    sensible_thermal_mass_scaling_factor: 8292.6
+  external_boundaries:
+    external_walls:
+    - surface: 8
+      azimuth: 0
+      tilt: pitched_roof_35
+      construction: CONSTRUCTION_02:001
+    - surface: 10
+      azimuth: 3.306
+      tilt: pitched_roof_35
+      construction: CONSTRUCTION_02:001
+  emissions:
+  - radiator:
+      id: RADIATOR_07:001
+      parameters:
+        nominal_heating_power_positive_for_heating: 2595.3
+        air_temperature_at_nominal_condition: 318.0
+        water_inlet_temperature_at_nominal_condition: 1678.1
+        water_outlet_temperature_at_nominal_condition: 287
+        dp_nominal: 7112.4
+  - valve:
+      id: VALVE_07:001
+      parameters:
+        m_flow_nominal: 5982.9
+        dp_fixed_nominal: 3253.7
+      control:
+        emission_control:
+          id: CONTROL_07:001
+          variant: MonitoredSetpoint
+          parameters:
+            controller_gain: 3479.3
+            data:
+            - component: MonitoredSetpoint
+              variable: signal_0014
+- id: ROOM_11:001
+  variant: infiltration
+  occupancy:
+    parameters:
+      occupancy: 3600*{7, 19}
+      gain: '[0;0;0]'
+  parameters:
+    floor_area: 11
+    average_room_height: 2.239
+    temperature_initial: 337
+    sensible_thermal_mass_scaling_factor: 5
+  external_boundaries:
+    external_walls:
+    - surface: 12
+      azimuth: 0
+      tilt: pitched_roof_35
+      construction: CONSTRUCTION_02:001
+- id: ROOM_12:001
+  variant: infiltration
+  occupancy:
+    parameters:
+      occupancy: 3600*{7, 19}
+      gain: '[0;0;0]'
+  parameters:
+    ach: 8809.3
+    floor_area: 1.197
+    average_room_height: 2.665
+    temperature_initial: 283
+    sensible_thermal_mass_scaling_factor: 4
+  external_boundaries:
+    external_walls:
+    - surface: 1
+      azimuth: 0
+      tilt: pitched_roof_35
+      construction: CONSTRUCTION_02:001
+systems:
+- air_handling_unit:
+    id: AHU_01:001
+    parameters:
+      m_flow_nominal: 4217.9
+      dp_nominal: 3578.9
+      heat_exchanger_effectiveness: 3141.5
+    variant: system_d
+    inlets:
+    - DUCT_03:001
+    outlets:
+    - DUCT_01:001
+- boiler:
+    id: BOILER_01:001
+    control:
+      boiler_control:
+        id: BOILER_CONTROL_01:001
+        variant: simple
+    parameters:
+      nominal_heating_power: 5419.3
+      use_storage_tank: true
+      temperature_heatpump_source: 4866.6
+      tank_volume: 0.8481
+    variant: air_water_heat_pump
+    inlets:
+    - TEMP_SENSOR_01:001
+- temperature_sensor:
+    id: TEMP_SENSOR_01:001
+    inlets:
+    - SPLIT_VALVE_01:001
+- heat_meter_sensor:
+    id: HEAT_METER_01:001
+    inlets:
+    - BOILER_01:001
+    - TEMP_SENSOR_01:001
+- pump:
+    id: PUMP_01:001
+    parameters:
+      m_flow_nominal: 9241.8
+      dp_nominal: 3058.7
+    control:
+      collector_control: null
+    inlets:
+    - HEAT_METER_01:001
+- three_way_valve:
+    id: THREE_WAY_VALVE_01:001
+    parameters:
+      m_flow_nominal: 8681.0
+    control:
+      three_way_valve_control: null
+    inlets:
+    - SPLIT_VALVE_01:001
+    - PUMP_01:001
+    outlets:
+    - TEMP_SENSOR_02:001
+- temperature_sensor:
+    id: TEMP_SENSOR_02:001
+    outlets:
+    - RADIATOR_01:001
+    - RADIATOR_03:001
+    - RADIATOR_04:001
+    - RADIATOR_06:001
+    - RADIATOR_07:001
+    - RADIATOR_05:001
+    - RADIATOR_02:001
+- split_valve:
+    id: SPLIT_VALVE_01:001
+    parameters:
+      m_flow_nominal: 0.3*{1,-1,-1}
+    inlets:
+    - VALVE_01:001
+    - VALVE_03:001
+    - VALVE_04:001
+    - VALVE_06:001
+    - VALVE_07:001
+    - VALVE_05:001
+    - VALVE_02:001
+    outlets:
+    - BOILER_01:001
+internal_walls:
+- space_1: ROOM_09:001
+  space_2: ROOM_04:001
+  construction: CONSTRUCTION_05:001
+  surface: 20
+  space_2_tilt: ceiling
+  space_1_tilt: floor
+- space_1: ROOM_09:001
+  space_2: ROOM_03:001
+  construction: CONSTRUCTION_05:001
+  surface: 8
+- space_1: ROOM_10:001
+  space_2: ROOM_08:001
+  construction: CONSTRUCTION_05:001
+  surface: 13
+- space_1: ROOM_09:001
+  space_2: ROOM_08:001
+  construction: CONSTRUCTION_05:001
+  surface: 12
+- space_1: ROOM_10:001
+  space_2: ROOM_11:001
+  construction: CONSTRUCTION_05:001
+  surface: 5
+- space_1: ROOM_10:001
+  space_2: ROOM_12:001
+  construction: CONSTRUCTION_05:001
+  surface: 2
+- space_1: ROOM_03:001
+  space_2: ROOM_12:001
+  construction: CONSTRUCTION_05:001
+  surface: 2
+- space_1: ROOM_01:001
+  space_2: ROOM_02:001
+  construction: CONSTRUCTION_05:001
+  surface: 3.613
+- space_1: ROOM_01:001
+  space_2: ROOM_08:001
+  construction: CONSTRUCTION_05:001
+  surface: 2.241
+- space_1: ROOM_01:001
+  space_2: ROOM_07:001
+  construction: CONSTRUCTION_05:001
+  surface: 6.234
+- space_1: ROOM_01:001
+  space_2: ROOM_03:001
+  construction: CONSTRUCTION_05:001
+  surface: 3.117
+- space_1: ROOM_02:001
+  space_2: ROOM_03:001
+  construction: CONSTRUCTION_05:001
+  surface: 6.177
+- space_1: ROOM_03:001
+  space_2: ROOM_04:001
+  construction: CONSTRUCTION_05:001
+  surface: 7.753
+- space_1: ROOM_04:001
+  space_2: ROOM_08:001
+  construction: CONSTRUCTION_05:001
+  surface: 11.654
+- space_1: ROOM_04:001
+  space_2: ROOM_05:001
+  construction: CONSTRUCTION_05:001
+  surface: 6.369
+- space_1: ROOM_05:001
+  space_2: ROOM_06:001
+  construction: CONSTRUCTION_05:001
+  surface: 5.893
+- space_1: ROOM_05:001
+  space_2: ROOM_08:001
+  construction: CONSTRUCTION_05:001
+  surface: 2.097
+- space_1: ROOM_06:001
+  space_2: ROOM_07:001
+  construction: CONSTRUCTION_05:001
+  surface: 6.748
+- space_1: ROOM_07:001
+  space_2: ROOM_08:001
+  construction: CONSTRUCTION_05:001
+  surface: 5
+- space_1: ROOM_06:001
+  space_2: ROOM_08:001
+  construction: CONSTRUCTION_05:001
+  surface: 5
+- space_1: ROOM_10:001
+  space_2: ROOM_06:001
+  construction: CONSTRUCTION_05:001
+  surface: 5.271
+  space_2_tilt: ceiling
+  space_1_tilt: floor
+- space_1: ROOM_10:001
+  space_2: ROOM_07:001
+  construction: CONSTRUCTION_05:001
+  surface: 6.235
+  space_2_tilt: ceiling
+  space_1_tilt: floor
+- space_1: ROOM_10:001
+  space_2: ROOM_01:001
+  construction: CONSTRUCTION_05:001
+  surface: 3
+  space_2_tilt: ceiling
+  space_1_tilt: floor
+- space_1: ROOM_11:001
+  space_2: ROOM_05:001
+  construction: CONSTRUCTION_05:001
+  surface: 11
