@@ -269,16 +269,22 @@ class Network:  # : PLR0904, #TODO: fix this
             if (
                 isinstance(node, Weather) and hasattr(node.parameters, "path") and node.parameters.path is not None  # type: ignore
             ):
+                if "modelica://" in str(node.parameters.path):  # type: ignore
+                    # Library resource URI (e.g. Buildings weather data): resolved
+                    # by the Modelica tool inside the container, nothing to copy.
+                    continue
                 # TODO: type ognore needs to be fixed
                 old_path = Path(node.parameters.path).resolve()  # type: ignore
                 if not old_path.exists():
-                    parents = [Path.cwd(), *Path.cwd().parents]
-                    for parent in parents:
-                        old_path = next(parent.rglob(old_path.name), None)  # type: ignore
-                        if old_path and old_path.exists():
+                    file_name = old_path.name
+                    found: Path | None = None
+                    for parent in [Path.cwd(), *Path.cwd().parents]:
+                        found = next(parent.rglob(file_name), None)
+                        if found is not None:
                             break
-                    if not old_path or not old_path.exists():
-                        raise FileNotFoundError(f"File {old_path} not found")
+                    if found is None:
+                        raise FileNotFoundError(f"File {file_name} not found")
+                    old_path = found
                 new_path = project_path.joinpath(old_path.name)
                 shutil.copy(old_path, new_path)
                 # TODO: this is not correct

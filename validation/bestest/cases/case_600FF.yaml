@@ -1,0 +1,45 @@
+# BESTEST case 600FF: lightweight envelope, free-float (no HVAC).
+# Internal gains 200 W continuous (60 W radiative + 120 W convective + 0 W latent).
+# South window 12 m^2 (6 m wide x 2 m high).
+spaces:
+  - id: Space:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{0, 24}
+        gain: "[120/48; 80/48; 0]"  # ASHRAE 140 §5.2.1.7: 60% radiative, 40% convective
+        heat_gain_if_occupied: 1/1/1
+    parameters:
+      floor_area: 48
+      average_room_height: 2.7
+    external_boundaries:
+      external_walls:
+        - surface: 21.6
+          azimuth: 180.0
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 21.6
+          azimuth: 0
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 16.2
+          azimuth: 270
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 16.2
+          azimuth: 90
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 48.0
+          azimuth: 0.0
+          tilt: ceiling
+          construction: ROOF:001
+      floor_on_grounds:
+        - surface: 48.0
+          construction: FLOOR:001
+      windows:
+        - surface: 12
+          azimuth: 0
+          tilt: wall
+          construction: WIN:01
+          width: 6
+          height: 2

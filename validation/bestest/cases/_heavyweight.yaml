@@ -1,0 +1,46 @@
+# Heavyweight envelope override for ASHRAE 140 Class I cases 900, 900FF, 920, 940, 950.
+# Adds dedicated heavyweight material IDs and overrides EXTERIOR_WALL:001 and FLOOR:001
+# layer stacks to the spec's heavyweight stack. The lightweight roof construction is
+# unchanged (per ASHRAE 140 §5.2.3, roof is identical between cases 600 and 900).
+#
+# Trano emits construction layers OUTSIDE-FIRST (verified against tests/data/case600FF.mo
+# — Buildings.HeatTransfer.Data.OpaqueConstructions.Generic material[1] is the
+# outside-facing layer). So in the lists below, the FIRST entry is the outside surface
+# and the LAST is the room-facing surface.
+#
+# Heavyweight wall (per ASHRAE 140 Table 5-1, outside → inside):
+#   - 9 mm wood siding  (MATERIAL:001, inherited from _base.yaml)
+#   - 61.5 mm foam insulation  (MATERIAL:HW_FOAM, new)
+#   - 100 mm concrete block  (MATERIAL:HW_CONCRETE_BLOCK, new)
+# Heavyweight floor (slab on grade; ground side → room side):
+#   - 1.007 m insulation under slab  (MATERIAL:004, inherited; spec calls for very
+#     thick insulation under slab to approximate the standard's ground BC)
+#   - 80 mm concrete slab  (MATERIAL:HW_CONCRETE_SLAB, new)
+material:
+  - id: MATERIAL:HW_FOAM
+    thermal_conductivity: 0.040
+    specific_heat_capacity: 1400
+    density: 10
+  - id: MATERIAL:HW_CONCRETE_BLOCK
+    thermal_conductivity: 0.510
+    specific_heat_capacity: 1000
+    density: 1400
+  - id: MATERIAL:HW_CONCRETE_SLAB
+    thermal_conductivity: 1.130
+    specific_heat_capacity: 1000
+    density: 1400
+constructions:
+  - id: EXTERIOR_WALL:001
+    layers:
+      - material: MATERIAL:001  # 9 mm wood siding (outside)
+        thickness: 0.009
+      - material: MATERIAL:HW_FOAM
+        thickness: 0.0615
+      - material: MATERIAL:HW_CONCRETE_BLOCK  # 100 mm concrete block (room-facing)
+        thickness: 0.100
+  - id: FLOOR:001
+    layers:
+      - material: MATERIAL:004  # ground-side insulation
+        thickness: 1.007
+      - material: MATERIAL:HW_CONCRETE_SLAB  # 80 mm slab (room-facing)
+        thickness: 0.080

@@ -1,0 +1,59 @@
+# BESTEST case 940: heavyweight, south windows, heating with night setback to 10C
+# from 23h-07h, cooling 27C. Identical to case_640 — heavyweight envelope from
+# _heavyweight.yaml. Heater-only (see case_600.yaml header). Xfail.
+spaces:
+  - id: Space:001
+    occupancy:
+      parameters:
+        occupancy: 3600*{0, 24}
+        gain: "[120/48; 80/48; 0]"  # ASHRAE 140 §5.2.1.7: 60% radiative, 40% convective
+        heat_gain_if_occupied: 1/1/1
+    parameters:
+      floor_area: 48
+      average_room_height: 2.7
+    external_boundaries:
+      external_walls:
+        - surface: 21.6
+          azimuth: 180.0
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 21.6
+          azimuth: 0
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 16.2
+          azimuth: 270
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 16.2
+          azimuth: 90
+          tilt: wall
+          construction: EXTERIOR_WALL:001
+        - surface: 48.0
+          azimuth: 0.0
+          tilt: ceiling
+          construction: ROOF:001
+      floor_on_grounds:
+        - surface: 48.0
+          construction: FLOOR:001
+      windows:
+        - surface: 12
+          azimuth: 0
+          tilt: wall
+          construction: WIN:01
+          width: 6
+          height: 2
+    emissions:
+      - radiator:
+          id: HEATER:001
+          variant: ideal
+          parameters:
+            nominal_heating_power_positive_for_heating: 1.0e9
+            fraction_radiant_heat_transfer: 0.0
+          control:
+            emission_control:
+              id: HEATER_CONTROL:001
+              parameters:
+                schedule: 3600*{7, 23}
+                temperature_heating_setpoint: 293.15
+                temperature_heating_setback: 283.15

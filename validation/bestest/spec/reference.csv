@@ -1,0 +1,11 @@
+case_id,kpi,ref_min,ref_max,ref_mean,units,source
+# Iteration-1 seed: only the free-float (FF) cases have entries because they are
+# the only cases the suite can simulate cleanly until Trano's HVAC control gains
+# heating+cooling support. Values below are illustrative ranges drawn from the
+# BESTEST literature spread across reference programs (EnergyPlus, ESP-r, DOE-2,
+# SUNREL, TRNSYS, BLAST) for Denver TMY weather; the user should overwrite them
+# with the exact ASHRAE 140-2017 Annex B numbers when those become available.
+600FF,t_zone_min_c,-18.8,-15.6,-17.2,degC,BESTEST literature spread (placeholder)
+600FF,t_zone_max_c,64.9,69.5,67.2,degC,BESTEST literature spread (placeholder)
+900FF,t_zone_min_c,-1.6,1.7,0.0,degC,BESTEST literature spread (placeholder)
+900FF,t_zone_max_c,41.8,45.2,43.5,degC,BESTEST literature spread (placeholder)
