@@ -6,6 +6,7 @@
 *.mat
 *.doc
 *.docx
+tests/tutorials/*.mo
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
