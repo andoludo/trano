@@ -951,6 +951,7 @@ enums:
       complex: null
       default: null
       ideal: null
+      idealbus: null
       system_d: null
       test: null
       water_water_heat_pump: null

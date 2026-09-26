@@ -32,6 +32,63 @@
   variant: default
 - classes:
   - Radiator
+  component_template:
+    bus:
+      real_outputs:
+        - component: HeatingPower
+          name: power
+          port: y
+          target:
+            main: |-
+              element.name
+    category: ventilation
+    template: "\nmodel IdealHeatingBus{{ element.name | capitalize}}\nextends {{ package_name\
+      \ }}.Trano.HeatTransfer.IdealHeatingSystem.PartialIdealHeatEmission;\n{{bus_template}}\nequation\n{{bus_ports\
+      \ | safe}}\n end IdealHeatingBus{{ element.name | capitalize}};\n "
+  figures: []
+  library: default
+  parameter_processing:
+    function: modify_alias
+    parameter:
+      fraction_radiant_heat_transfer: frad
+      nominal_heating_power_positive_for_heating: power
+  ports:
+  - flow: radiative
+    medium: heat
+    names:
+    - heatPortRad
+    targets:
+    - Space
+  - flow: convective
+    medium: heat
+    names:
+    - heatPortCon
+    targets:
+    - Space
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - Control
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |2-
+
+          {{ package_name }}.Components.BaseClasses.IdealHeatingBus{{ element.name | capitalize }}
+             {{ element.name }}
+  variant: idealbus
+
+
+
+- classes:
+  - Radiator
   figures: []
   library: default
   parameter_processing:

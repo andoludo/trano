@@ -1,6 +1,6 @@
 import itertools
 from pathlib import Path
-from typing import TYPE_CHECKING, get_args
+from typing import Any, TYPE_CHECKING, get_args
 
 import pandas as pd
 from pydantic import BaseModel, Field, computed_field
@@ -62,10 +62,31 @@ class DataBus(BaseElement):
             network.graph.add_edge(control, self)
         for ahu in ahus:
             network.graph.add_edge(ahu, self)
+        for system in get_bus_only_systems(network.graph.nodes):
+            network.graph.add_edge(system, self)
 
     def configure(self, network: "Network") -> None:
         self.non_connected_ports = get_non_connected_ports(network.graph.nodes)
         self.power_ports = get_power_ports(network.graph.nodes)
+
+
+def get_bus_only_systems(nodes: list[NodeView]) -> list[Any]:
+    """Systems with a port that only a direct edge to the data bus can satisfy.
+
+    A port whose single target is the data bus cannot be reached through any other
+    element, so such a system needs its own edge to the bus. Systems that also target
+    a control reach the bus through that control instead and are left out here.
+    """
+    from trano.elements.system import System
+
+    return sorted(
+        [
+            node
+            for node in nodes
+            if isinstance(node, System) and any(list(port.targets) == [DataBus] for port in node.ports)
+        ],
+        key=lambda node: node.name,
+    )
 
 
 def get_power_ports(nodes: list[NodeView]) -> list[BaseInputOutput]:

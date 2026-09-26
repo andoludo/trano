@@ -195,6 +195,12 @@ YAML_CASES: list[tuple[str, str, str | None, str]] = [
         None,
         "single_zone_hydronic_emission_from_data",
     ),
+    (
+        "three_zones_ideal_heaters",
+        "three_zones_ideal_heaters.yaml",
+        None,
+        "three_zones_ideal_heaters",
+    ),
 ]
 
 
@@ -262,3 +268,13 @@ def test_bestest_case600ff(schema: Path) -> None:
 def test_yaml_realistic() -> None:
     network = convert_network("realistic_model", get_path("realistic.yaml"))
     assert_model_equals_golden(network.model(), network.name)
+
+
+def test_three_zones_ideal_heaters(schema: Path) -> None:
+    house = get_path("three_zones_ideal_heaters.yaml")
+    network = convert_network(
+        "three_zones_ideal_heaters",
+        house,
+    )
+    model_ = network.model()
+    assert model_

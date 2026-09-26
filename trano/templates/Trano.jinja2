@@ -1880,80 +1880,159 @@ end PartialSystemD;
   package HeatTransfer
   package IdealHeatingSystem
   model IdealHeatEmission
-    parameter Real frad=0.3 "radiative fraction";
-      parameter Real power=2000 "heating power";
-    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortCon
-      "Heat port for convective heat transfer with room air temperature"
-      annotation (Placement(transformation(extent={{-30,62},{-10,82}})));
-    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortRad
-      "Heat port for radiative heat transfer with room radiation temperature"
-      annotation (Placement(transformation(extent={{10,62},{30,82}})));
-    Modelica.Blocks.Interfaces.RealInput y
-      annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
-    Modelica.Blocks.Math.Gain HeatingPower(k=power)
-          annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
-    Modelica.Blocks.Math.Gain convectiveGain(k=1 - frad)
-      annotation (Placement(transformation(extent={{2,-60},{22,-40}})));
-    Modelica.Blocks.Math.Gain radiativeGain(k=frad)
-      annotation (Placement(transformation(extent={{2,-90},{22,-70}})));
-        Modelica.Blocks.Nonlinear.Limiter limiter(uMax=1, uMin=0)
-          annotation (Placement(transformation(extent={{-86,-10},{-66,10}})));
-      protected
-    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumCon(final
-        alpha=0)
-      "Heat input into radiator from convective heat transfer"
-      annotation (Placement(transformation(extent={{52,-60},{72,-40}})));
-    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumRad(final
-        alpha=0)
-      "Heat input into radiator from radiative heat transfer"
-      annotation (Placement(transformation(extent={{52,-90},{72,-70}})));
-  equation
+  parameter Real frad=0.3 "radiative fraction";
+    parameter Real power=2000 "heating power";
+  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortCon
+    "Heat port for convective heat transfer with room air temperature"
+    annotation (Placement(transformation(extent={{-30,62},{-10,82}})));
+  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortRad
+    "Heat port for radiative heat transfer with room radiation temperature"
+    annotation (Placement(transformation(extent={{10,62},{30,82}})));
+  Modelica.Blocks.Interfaces.RealInput y
+    annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+  Modelica.Blocks.Math.Gain HeatingPower(k=power)
+        annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
+  Modelica.Blocks.Math.Gain convectiveGain(k=1 - frad)
+    annotation (Placement(transformation(extent={{2,-60},{22,-40}})));
+  Modelica.Blocks.Math.Gain radiativeGain(k=frad)
+    annotation (Placement(transformation(extent={{2,-90},{22,-70}})));
+      Modelica.Blocks.Nonlinear.Limiter limiter(uMax=1, uMin=0)
+        annotation (Placement(transformation(extent={{-86,-10},{-66,10}})));
+  Modelica.Blocks.Interfaces.RealOutput PowerOutput annotation (Placement(
+        transformation(extent={{100,62},{122,84}}), iconTransformation(extent={{
+            100,62},{122,84}})));
+protected
+  Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumCon(final
+      alpha=0)
+    "Heat input into radiator from convective heat transfer"
+    annotation (Placement(transformation(extent={{52,-60},{72,-40}})));
+  Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumRad(final
+      alpha=0)
+    "Heat input into radiator from radiative heat transfer"
+    annotation (Placement(transformation(extent={{52,-90},{72,-70}})));
+equation
+  connect(preSumCon.port,heatPortCon)        annotation (Line(
+      points={{72,-50},{80,-50},{80,40},{-20,40},{-20,72}},
+      color={191,0,0}));
+  connect(preSumRad.port,heatPortRad)         annotation (Line(
+      points={{72,-80},{86,-80},{86,50},{20,50},{20,72}},
+      color={191,0,0}));
+  connect(preSumCon.Q_flow, convectiveGain.y)
+    annotation (Line(points={{52,-50},{23,-50}}, color={0,0,127}));
+  connect(radiativeGain.y, preSumRad.Q_flow)
+    annotation (Line(points={{23,-80},{52,-80}}, color={0,0,127}));
+      connect(HeatingPower.y, convectiveGain.u) annotation (Line(points={{-19,
+              0},{-6,0},{-6,-50},{0,-50}}, color={0,0,127}));
+      connect(HeatingPower.y, radiativeGain.u) annotation (Line(points={{-19,
+              0},{-6,0},{-6,-80},{0,-80}}, color={0,0,127}));
+      connect(y, limiter.u)
+        annotation (Line(points={{-120,0},{-88,0}}, color={0,0,127}));
+      connect(limiter.y, HeatingPower.u)
+        annotation (Line(points={{-65,0},{-42,0}}, color={0,0,127}));
+  connect(HeatingPower.y, PowerOutput) annotation (Line(points={{-19,0},{47.5,0},
+          {47.5,73},{111,73}}, color={0,0,127}));
+  annotation (Icon(graphics={
+        Ellipse(
+          extent={{-20,20},{20,-22}},
+          fillColor={127,0,0},
+          fillPattern=FillPattern.Solid,
+          pattern=LinePattern.None),
+        Ellipse(
+          extent={{-20,20},{20,-22}},
+          fillColor={127,0,0},
+          fillPattern=FillPattern.Solid,
+          pattern=LinePattern.None),
+        Rectangle(
+          extent={{-80,58},{80,-62}},
+          lineColor={0,0,0},
+          fillColor={127,0,0},
+          fillPattern=FillPattern.Solid),
+        Line(
+          points={{-66,28},{66,28}}),
+        Line(
+          points={{-66,0},{66,0}}),
+        Line(
+          points={{-66,-32},{66,-32}}),
+        Line(
+          points={{-66,58},{-66,-62}}),
+        Line(
+          points={{66,58},{66,-62}})}));
+end IdealHeatEmission;
+    partial model PartialIdealHeatEmission
+  parameter Real frad=0.3 "radiative fraction";
+    parameter Real power=2000 "heating power";
+  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortCon
+    "Heat port for convective heat transfer with room air temperature"
+    annotation (Placement(transformation(extent={{-30,62},{-10,82}})));
+  Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortRad
+    "Heat port for radiative heat transfer with room radiation temperature"
+    annotation (Placement(transformation(extent={{10,62},{30,82}})));
+  Modelica.Blocks.Interfaces.RealInput y
+    annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+  Modelica.Blocks.Math.Gain HeatingPower(k=power)
+        annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
+  Modelica.Blocks.Math.Gain convectiveGain(k=1 - frad)
+    annotation (Placement(transformation(extent={{2,-60},{22,-40}})));
+  Modelica.Blocks.Math.Gain radiativeGain(k=frad)
+    annotation (Placement(transformation(extent={{2,-90},{22,-70}})));
+      Modelica.Blocks.Nonlinear.Limiter limiter(uMax=1, uMin=0)
+        annotation (Placement(transformation(extent={{-86,-10},{-66,10}})));
+protected
+  Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumCon(final
+      alpha=0)
+    "Heat input into radiator from convective heat transfer"
+    annotation (Placement(transformation(extent={{52,-60},{72,-40}})));
+  Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preSumRad(final
+      alpha=0)
+    "Heat input into radiator from radiative heat transfer"
+    annotation (Placement(transformation(extent={{52,-90},{72,-70}})));
+equation
 
-    connect(preSumCon.port,heatPortCon)        annotation (Line(
-        points={{72,-50},{80,-50},{80,40},{-20,40},{-20,72}},
-        color={191,0,0}));
-    connect(preSumRad.port,heatPortRad)         annotation (Line(
-        points={{72,-80},{86,-80},{86,50},{20,50},{20,72}},
-        color={191,0,0}));
-    connect(preSumCon.Q_flow, convectiveGain.y)
-      annotation (Line(points={{52,-50},{23,-50}}, color={0,0,127}));
-    connect(radiativeGain.y, preSumRad.Q_flow)
-      annotation (Line(points={{23,-80},{52,-80}}, color={0,0,127}));
-        connect(HeatingPower.y, convectiveGain.u) annotation (Line(points={{-19,
-                0},{-6,0},{-6,-50},{0,-50}}, color={0,0,127}));
-        connect(HeatingPower.y, radiativeGain.u) annotation (Line(points={{-19,
-                0},{-6,0},{-6,-80},{0,-80}}, color={0,0,127}));
-        connect(y, limiter.u)
-          annotation (Line(points={{-120,0},{-88,0}}, color={0,0,127}));
-        connect(limiter.y, HeatingPower.u)
-          annotation (Line(points={{-65,0},{-42,0}}, color={0,0,127}));
-    annotation (Icon(graphics={
-          Ellipse(
-            extent={{-20,20},{20,-22}},
-            fillColor={127,0,0},
-            fillPattern=FillPattern.Solid,
-            pattern=LinePattern.None),
-          Ellipse(
-            extent={{-20,20},{20,-22}},
-            fillColor={127,0,0},
-            fillPattern=FillPattern.Solid,
-            pattern=LinePattern.None),
-          Rectangle(
-            extent={{-80,58},{80,-62}},
-            lineColor={0,0,0},
-            fillColor={127,0,0},
-            fillPattern=FillPattern.Solid),
-          Line(
-            points={{-66,28},{66,28}}),
-          Line(
-            points={{-66,0},{66,0}}),
-          Line(
-            points={{-66,-32},{66,-32}}),
-          Line(
-            points={{-66,58},{-66,-62}}),
-          Line(
-            points={{66,58},{66,-62}})}));
-  end IdealHeatEmission;
+  connect(preSumCon.port,heatPortCon)        annotation (Line(
+      points={{72,-50},{80,-50},{80,40},{-20,40},{-20,72}},
+      color={191,0,0}));
+  connect(preSumRad.port,heatPortRad)         annotation (Line(
+      points={{72,-80},{86,-80},{86,50},{20,50},{20,72}},
+      color={191,0,0}));
+  connect(preSumCon.Q_flow, convectiveGain.y)
+    annotation (Line(points={{52,-50},{23,-50}}, color={0,0,127}));
+  connect(radiativeGain.y, preSumRad.Q_flow)
+    annotation (Line(points={{23,-80},{52,-80}}, color={0,0,127}));
+      connect(HeatingPower.y, convectiveGain.u) annotation (Line(points={{-19,
+              0},{-6,0},{-6,-50},{0,-50}}, color={0,0,127}));
+      connect(HeatingPower.y, radiativeGain.u) annotation (Line(points={{-19,
+              0},{-6,0},{-6,-80},{0,-80}}, color={0,0,127}));
+      connect(y, limiter.u)
+        annotation (Line(points={{-120,0},{-88,0}}, color={0,0,127}));
+      connect(limiter.y, HeatingPower.u)
+        annotation (Line(points={{-65,0},{-42,0}}, color={0,0,127}));
+  annotation (Icon(graphics={
+        Ellipse(
+          extent={{-20,20},{20,-22}},
+          fillColor={127,0,0},
+          fillPattern=FillPattern.Solid,
+          pattern=LinePattern.None),
+        Ellipse(
+          extent={{-20,20},{20,-22}},
+          fillColor={127,0,0},
+          fillPattern=FillPattern.Solid,
+          pattern=LinePattern.None),
+        Rectangle(
+          extent={{-80,58},{80,-62}},
+          lineColor={0,0,0},
+          fillColor={127,0,0},
+          fillPattern=FillPattern.Solid),
+        Line(
+          points={{-66,28},{66,28}}),
+        Line(
+          points={{-66,0},{66,0}}),
+        Line(
+          points={{-66,-32},{66,-32}}),
+        Line(
+          points={{-66,58},{-66,-62}}),
+        Line(
+          points={{66,58},{66,-62}})}));
+end PartialIdealHeatEmission;
   end IdealHeatingSystem;
   end HeatTransfer;
 

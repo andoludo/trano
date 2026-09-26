@@ -635,6 +635,7 @@ enums:
       air_water_heat_pump:
       complex:
       ideal:
+      idealbus:
       system_d:
       test:
       water_water_heat_pump:
