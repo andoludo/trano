@@ -276,5 +276,4 @@ def test_three_zones_ideal_heaters_power_sensor(schema: Path) -> None:
         "three_zones_ideal_heaters_power_sensor",
         house,
     )
-    model_ = network.model()
-    assert model_
+    assert_model_equals_golden(network.model(), network.name)
