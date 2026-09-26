@@ -270,10 +270,10 @@ def test_yaml_realistic() -> None:
     assert_model_equals_golden(network.model(), network.name)
 
 
-def test_three_zones_ideal_heaters(schema: Path) -> None:
-    house = get_path("three_zones_ideal_heaters.yaml")
+def test_three_zones_ideal_heaters_power_sensor(schema: Path) -> None:
+    house = get_path("three_zones_ideal_heaters_power_sensor.yaml")
     network = convert_network(
-        "three_zones_ideal_heaters",
+        "three_zones_ideal_heaters_power_sensor",
         house,
     )
     model_ = network.model()

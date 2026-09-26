@@ -28,6 +28,7 @@ from trano.elements.jinja import ENVIRONMENT
 from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.elements.system import (
+    PowerSensor,
     System,
     TemperatureSensor,
     ThreeWayValve,
@@ -186,23 +187,20 @@ class Network:  # : PLR0904, #TODO: fix this
                 self.add_node(element)
         self.graph.add_edge(element_1, element_2)
 
-    def connect_systems(self, system_1: System, system_2: System) -> None:
-        if system_1 not in self.graph.nodes:
-            self.add_node(system_1)
-            if system_1.control:
-                if system_1.control not in self.graph.nodes:
-                    self.add_node(system_1.control)
-                    self._system_controls.append(system_1.control)
-                self.graph.add_edge(system_1, system_1.control)
-                # TODO: check if it is controllable the system
+    def _add_system_with_control(self, system: System) -> None:
+        if system in self.graph.nodes:
+            return
+        self.add_node(system)
+        if system.control:
+            if system.control not in self.graph.nodes:
+                self.add_node(system.control)
+                self._system_controls.append(system.control)
+            # TODO: check if it is controllable the system
+            self.graph.add_edge(system, system.control)
 
-        if system_2 not in self.graph.nodes:
-            self.add_node(system_2)
-            if system_2.control:
-                if system_2.control not in self.graph.nodes:
-                    self.add_node(system_2.control)
-                    self._system_controls.append(system_2.control)
-                self.graph.add_edge(system_2, system_2.control)
+    def connect_systems(self, system_1: System, system_2: System) -> None:
+        self._add_system_with_control(system_1)
+        self._add_system_with_control(system_2)
         if (isinstance(system_2, ThreeWayValve) and isinstance(system_1, TemperatureSensor)) or (
             isinstance(system_1, ThreeWayValve) and isinstance(system_2, TemperatureSensor)
         ):
@@ -210,6 +208,9 @@ class Network:  # : PLR0904, #TODO: fix this
                 self.graph.add_edge(system_2.control, system_1)
             if system_1.control:
                 self.graph.add_edge(system_1.control, system_2)
+        if isinstance(system_2, PowerSensor):
+            # Fail here rather than later on an unusable graph.
+            system_2.validate_inlet(system_1)
         self.graph.add_edge(system_1, system_2)
 
     def connect_edges(

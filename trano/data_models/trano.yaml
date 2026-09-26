@@ -246,6 +246,7 @@ classes:
       - temperature_sensor
       - heat_meter_sensor
       - air_handling_unit
+      - power_sensor
     class_uri: schema:Systems
   Solar:
     slots:
@@ -335,6 +336,9 @@ classes:
             range: Parameter
 
   TemperatureSensor:
+    is_a: System
+
+  PowerSensor:
     is_a: System
 
   HeatMeterSensor:
@@ -515,6 +519,10 @@ slots:
     inlined: true
   temperature_sensor:
     range: TemperatureSensor
+    multivalued: false
+    inlined: true
+  power_sensor:
+    range: PowerSensor
     multivalued: false
     inlined: true
   heat_meter_sensor:

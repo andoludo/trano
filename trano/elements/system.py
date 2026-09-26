@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Union
 from trano.elements import Control
 from trano.elements.base import BaseElement
 from trano.elements.types import BaseVariant, ContainerTypes
-from pydantic import model_validator, BaseModel
+from pydantic import model_validator, BaseModel, Field
 
-from trano.exceptions import WrongSystemFlowError
+from trano.exceptions import InvalidSensorInletError, WrongSystemFlowError
 import networkx as nx
 
 if TYPE_CHECKING:
@@ -32,6 +32,7 @@ class Sensor(System): ...
 class EmissionVariant(BaseVariant):
     radiator: str = "radiator"
     ideal: str = "ideal"
+    ideal_bus: str = "idealbus"
 
 
 class SpaceSystem(System):
@@ -81,6 +82,28 @@ class SplitValve(DistributionSystem): ...
 
 
 class Radiator(Emission): ...
+
+
+class PowerSensor(Sensor):
+    """Sums, through the data bus, the heating power of the ideal radiators wired to it."""
+
+    radiators: list[Radiator] = Field(default=[])
+
+    def validate_inlet(self, inlet: BaseElement) -> None:
+        """Reject any inlet whose heating power is not published on the data bus."""
+        if not isinstance(inlet, Radiator) or inlet.variant != EmissionVariant.ideal_bus:
+            raise InvalidSensorInletError(
+                f"Inlet {inlet.name} of type {type(inlet).__name__} with variant "
+                f"{inlet.variant} cannot be measured by power sensor {self.name}. "
+                f"Only radiators with variant {EmissionVariant.ideal_bus} publish "
+                f"their heating power on the data bus."
+            )
+
+    def configure(self, network: "Network") -> None:
+        inlets = sorted(network.graph.predecessors(self), key=lambda node: node.name)  # type: ignore
+        for inlet in inlets:
+            self.validate_inlet(inlet)
+        self.radiators = inlets
 
 
 class HydronicSystemControl(BaseModel):
