@@ -1,0 +1,51 @@
+- classes:
+  - PowerSensor
+  component_template:
+    bus:
+      real_inputs:
+      - component: sum1
+        multi: true
+        name: power
+        port: u
+        target:
+          main: element.radiators
+          sub: name
+      real_outputs:
+        - component: sum1
+          name: power
+          port: y
+          target:
+            main: element.name
+    category: control
+    template: |-
+      model PowerSensor{{ element.name | capitalize}}
+      extends {{ package_name }}.Trano.HeatTransfer.PartialPowerSensor(
+      n={{ element.radiators | length }});
+      {{bus_template}}
+      equation
+      {{bus_ports | safe}}
+      end PowerSensor{{ element.name | capitalize}};
+  figures:
+  - left_axis:
+      label: Heating power [W]
+      lines:
+      - label: Total heating power [W]
+        template: |-
+          {{ element.name }}.power
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |2-
+
+        {{ package_name }}.Components.BaseClasses.PowerSensor{{ element.name | capitalize}}
+           {{ element.name }}
+  variant: default

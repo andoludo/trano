@@ -543,6 +543,8 @@ classes:
     slots:
     - id
     - name
+  PowerSensor:
+    is_a: System
   Pump:
     attributes:
       control:
@@ -732,6 +734,7 @@ classes:
     - temperature_sensor
     - heat_meter_sensor
     - air_handling_unit
+    - power_sensor
   TemperatureSensor:
     is_a: System
   ThreeWayValve:
@@ -951,6 +954,7 @@ enums:
       complex: null
       default: null
       ideal: null
+      idealbus: null
       system_d: null
       test: null
       water_water_heat_pump: null
@@ -1054,6 +1058,10 @@ slots:
     inlined: true
     multivalued: false
     range: Photovoltaic
+  power_sensor:
+    inlined: true
+    multivalued: false
+    range: PowerSensor
   pump:
     inlined: true
     multivalued: false
