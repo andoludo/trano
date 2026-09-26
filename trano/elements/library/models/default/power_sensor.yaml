@@ -10,6 +10,12 @@
         target:
           main: element.radiators
           sub: name
+      real_outputs:
+        - component: sum1
+          name: power
+          port: y
+          target:
+            main: element.name
     category: control
     template: |-
       model PowerSensor{{ element.name | capitalize}}
