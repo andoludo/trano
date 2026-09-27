@@ -32,6 +32,10 @@ Trano is **Modelica library agnostic** but is natively designed to work with:
   - **Hydronic Distribution** 🚰
   - **Production & Electricity** ⚡  
 
+### 🎛️ **Control-oriented RC models for MPC**
+- Generates simple, **CasADi/IPOPT compatible** RC Modelica models (`R1C1`, `R3C2`, `R4C3`, `ISO13790`) from the same building description.
+- Includes a ready-to-use **economic model predictive controller** (`pip install 'trano[mpc]'`, see the [RC models for MPC tutorial](https://andoludo.github.io/trano/tutorials/rc_model_predictive_control/)).
+
 🚀 **With Trano, creating and modifying detailed BES models has never been easier!**  
 
 ---

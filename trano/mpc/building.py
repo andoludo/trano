@@ -1,0 +1,215 @@
+"""Multi-zone RC building model and its Modelica representation."""
+
+import re
+from functools import cache
+from pathlib import Path
+from typing import TYPE_CHECKING, Self
+
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, Template
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
+
+from trano.mpc.parameters import (
+    ZONE_PARAMETERS,
+    ModelicaParameter,
+    ModelicaState,
+    RCModelType,
+    ZoneParameters,
+)
+
+if TYPE_CHECKING:
+    from trano.mpc.casadi_model import CasadiRCModel
+
+MODELICA_IDENTIFIER = re.compile(r"^[A-Za-z_]\w*$")
+TEMPLATE_DIRECTORY = Path(__file__).parents[1].joinpath("templates")
+
+
+def _modelica_number(value: float) -> str:
+    return f"{float(value):.10g}"
+
+
+@cache
+def _rc_template() -> Template:
+    # Modelica is not HTML: autoescaping would corrupt the generated source code.
+    environment = Environment(
+        loader=FileSystemLoader(str(TEMPLATE_DIRECTORY)),
+        trim_blocks=True,
+        lstrip_blocks=True,
+        undefined=StrictUndefined,
+        autoescape=False,  # noqa: S701
+    )
+    environment.filters["mo"] = _modelica_number
+    return environment.get_template("rc.jinja2")
+
+
+def _validate_identifier(value: str) -> str:
+    if not MODELICA_IDENTIFIER.match(value):
+        raise ValueError(f"'{value}' is not a valid Modelica identifier.")
+    return value
+
+
+class RCZone(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    name: str
+    parameters: ZoneParameters
+    temperature_initial: float = Field(294.15, gt=0, description="Initial temperature of all the zone states [K]")
+
+    _name_validator = field_validator("name")(_validate_identifier)
+
+    @property
+    def prefix(self) -> str:
+        return f"{self.name}_"
+
+    @property
+    def states(self) -> tuple[ModelicaState, ...]:
+        return self.parameters.states
+
+    @property
+    def state_names(self) -> list[str]:
+        return [f"{self.prefix}{state.name}" for state in self.states]
+
+    @property
+    def indoor_temperature(self) -> str:
+        return f"{self.prefix}Ti"
+
+    @property
+    def heating_input(self) -> str:
+        return f"{self.prefix}QHea"
+
+    @property
+    def internal_gains_input(self) -> str:
+        return f"{self.prefix}QInt"
+
+
+class ZoneCoupling(BaseModel):
+    """Heat transfer through the internal walls between two zones."""
+
+    model_config = ConfigDict(frozen=True)
+
+    zone_a: str
+    zone_b: str
+    conductance: float = Field(gt=0, description="Heat transfer coefficient between the zones [W/K]")
+
+    @property
+    def parameter(self) -> str:
+        return f"H_{self.zone_a}_{self.zone_b}"
+
+
+class _ZoneView(BaseModel):
+    """Flattened view of a zone consumed by the Jinja template."""
+
+    name: str
+    prefix: str
+    model_type: str
+    title: str
+    documentation: str
+    temperature_initial: float
+    parameters: list[ModelicaParameter]
+    states: list[ModelicaState]
+    couplings: list[dict[str, str]]
+
+
+class RCBuilding(BaseModel):
+    """A multi-zone building made of CasADi-compatible RC zone models.
+
+    Shared (building level) inputs are the outdoor temperature ``TOut`` [K] and the global
+    horizontal irradiance ``HGlo`` [W/m2]. Each zone ``z`` has the internal gains ``z_QInt`` [W]
+    as disturbance and the heating power ``z_QHea`` [W] as control input.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    name: str = "Building"
+    zones: list[RCZone] = Field(min_length=1)
+    couplings: list[ZoneCoupling] = Field(default_factory=list)
+    ground_temperature: float = Field(283.15, gt=0, description="Ground temperature below the slab [K]")
+
+    _name_validator = field_validator("name")(_validate_identifier)
+
+    @model_validator(mode="after")
+    def _check_references(self) -> Self:
+        names = [zone.name for zone in self.zones]
+        if len(set(names)) != len(names):
+            raise ValueError(f"Zone names must be unique, got {names}.")
+        for coupling in self.couplings:
+            if {coupling.zone_a, coupling.zone_b} - set(names):
+                raise ValueError(f"Coupling {coupling.parameter} refers to an unknown zone.")
+            if coupling.zone_a == coupling.zone_b:
+                raise ValueError(f"Coupling {coupling.parameter} connects a zone to itself.")
+        return self
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def model_type(self) -> str:
+        return "/".join(sorted({zone.parameters.model_type.value for zone in self.zones}))
+
+    @property
+    def state_names(self) -> list[str]:
+        return [name for zone in self.zones for name in zone.state_names]
+
+    def get_zone(self, name: str) -> RCZone:
+        return next(zone for zone in self.zones if zone.name == name)
+
+    def _zone_view(self, zone: RCZone) -> _ZoneView:
+        couplings = []
+        for coupling in self.couplings:
+            if zone.name in (coupling.zone_a, coupling.zone_b):
+                neighbour = coupling.zone_b if coupling.zone_a == zone.name else coupling.zone_a
+                couplings.append({"parameter": coupling.parameter, "neighbour": f"{neighbour}_"})
+        return _ZoneView(
+            name=zone.name,
+            prefix=zone.prefix,
+            model_type=zone.parameters.model_type.value,
+            title=zone.parameters.title,
+            documentation=zone.parameters.documentation,
+            temperature_initial=zone.temperature_initial,
+            parameters=zone.parameters.modelica_parameters(),
+            states=list(zone.states),
+            couplings=couplings,
+        )
+
+    def to_modelica(self, package_name: str = "TranoRC") -> str:
+        """Render a stand-alone Modelica package with the zone library and the building model."""
+        _validate_identifier(package_name)
+        library_zones = [
+            _ZoneView(
+                name=model_type.value,
+                prefix="",
+                model_type=model_type.value,
+                title=parameters_class.title,
+                documentation=parameters_class.documentation,
+                temperature_initial=self.zones[0].temperature_initial,
+                parameters=_default_parameters(model_type).modelica_parameters(),
+                states=list(parameters_class.states),
+                couplings=[],
+            )
+            for model_type, parameters_class in ZONE_PARAMETERS.items()
+        ]
+        return _rc_template().render(
+            package_name=package_name,
+            library_zones=library_zones,
+            building={
+                "name": self.name,
+                "model_type": self.model_type,
+                "ground_temperature": self.ground_temperature,
+                "zones": [self._zone_view(zone) for zone in self.zones],
+                "couplings": [
+                    {**coupling.model_dump(), "parameter": coupling.parameter} for coupling in self.couplings
+                ],
+            },
+        )
+
+    def to_casadi(self, package_name: str = "TranoRC") -> "CasadiRCModel":
+        """Translate the generated Modelica model into a symbolic CasADi model."""
+        from trano.mpc.casadi_model import CasadiRCModel
+
+        return CasadiRCModel.from_modelica(
+            self.to_modelica(package_name), model=f"{package_name}.{self.name}", building=self
+        )
+
+
+def _default_parameters(model_type: RCModelType) -> ZoneParameters:
+    """Parameters of a 100 m2 reference zone used for the stand-alone library models."""
+    from trano.mpc.estimation import reference_zone_parameters
+
+    return reference_zone_parameters(model_type)
