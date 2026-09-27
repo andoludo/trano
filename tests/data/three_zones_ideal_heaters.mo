@@ -3398,7 +3398,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
       iconTransformation(extent= {{-228,58},{-208,78}} )
   );
           three_zones_ideal_heaters.Components.BaseClasses.IdealHeatingBusRadiator_003
-         radiator_003 annotation (
+         radiator_003(frad=0.3, power=5000.0) annotation (
     Placement(transformation(origin = { 4.49107505575499, -14.285714285714292 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
@@ -3408,7 +3408,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
     extent = {{ 5, -5}, {-5, 5}}
 )));
           three_zones_ideal_heaters.Components.BaseClasses.IdealHeatingBusRadiator_001
-         radiator_001 annotation (
+         radiator_001(frad=0.3, power=5000.0) annotation (
     Placement(transformation(origin = { 100.0, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
@@ -3418,7 +3418,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
     extent = {{ 5, -5}, {-5, 5}}
 )));
           three_zones_ideal_heaters.Components.BaseClasses.IdealHeatingBusRadiator_002
-         radiator_002 annotation (
+         radiator_002(frad=0.3, power=5000.0) annotation (
     Placement(transformation(origin = { 58.214845336892836, -100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));

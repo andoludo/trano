@@ -3319,7 +3319,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
       iconTransformation(extent= {{-228,58},{-208,78}} )
   );
         space_1_different_construction_types.Trano.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
-    emission annotation (
+    emission(frad=0.3, power=5000.0) annotation (
     Placement(transformation(origin = { 100.0, 0.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));

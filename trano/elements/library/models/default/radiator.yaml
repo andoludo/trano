@@ -82,7 +82,7 @@
   template: |2-
 
           {{ package_name }}.Components.BaseClasses.IdealHeatingBus{{ element.name | capitalize }}
-             {{ element.name }}
+             {{ element.name }}({{ macros.render_parameters(parameters) | safe }})
   variant: idealbus
 
 
@@ -118,5 +118,5 @@
   template: |2-
 
         {{package_name}}.Trano.HeatTransfer.IdealHeatingSystem.IdealHeatEmission
-        {{ element.name }}
+        {{ element.name }}({{ macros.render_parameters(parameters) | safe }})
   variant: ideal
