@@ -1,7 +1,13 @@
+import shutil
 from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
+from typer.testing import CliRunner
+
+from trano.data_models.conversion import convert_network
+from trano.elements.library.library import Library
+from trano.main import app
 
 from trano.mpc import (
     EstimationSettings,
@@ -87,8 +93,49 @@ def test_to_modelica(three_zones: dict[RCModelType, RCBuilding], model_type: RCM
     source = three_zones[model_type].to_modelica("MyPackage")
     assert source.startswith("package MyPackage")
     assert source.rstrip().endswith("end MyPackage;")
-    assert "Modelica." not in source  # no dependency, not even on the MSL
     for library_model in RCModelType:
         assert f"model {library_model.value} " in source
-    assert "der(space_003_Ti)" in source
-    assert "H_space_001_space_002*(space_002_Ti - space_001_Ti)" in source
+    building = _building_model(source)
+    assert "Modelica." not in building  # no dependency, not even on the MSL
+    assert "connect(" not in building
+    assert "der(space_003_Ti)" in building
+    assert "H_space_001_space_002*(space_002_Ti - space_001_Ti)" in building
+
+
+def _building_model(source: str) -> str:
+    return source[source.index("model building") : source.index("end building;")]
+
+
+def test_mpc_library_is_registered() -> None:
+    assert Library.from_configuration("mpc").rc_model_type == RCModelType.r3c2
+    assert not Library.from_configuration("Buildings").is_rc
+
+
+def test_trano_library_embeds_mpc_zones() -> None:
+    source = convert_network("house", THREE_ZONES).model()
+    trano_package = source[source.index("package Trano") : source.index("end Trano;")]
+    for model_type in RCModelType:
+        assert f"model {model_type.value} " in trano_package
+    assert "end MPC;" in trano_package
+
+
+@pytest.mark.parametrize("model_type", [None, RCModelType.iso13790])
+def test_network_model_with_mpc_library(model_type: RCModelType | None) -> None:
+    library = Library.from_configuration("mpc")
+    if model_type:
+        library = library.model_copy(update={"rc_model_type": model_type})
+    source = convert_network("house", THREE_ZONES, library=library).model()
+    assert source.startswith("package house")
+    assert "package Trano" in source
+    building = _building_model(source)
+    assert f"({(model_type or RCModelType.r3c2).value})" in building
+    assert "der(space_001_Te)" in building if model_type is None else "der(space_001_Tm)" in building
+
+
+def test_cli_create_model_with_mpc_library(tmp_path: Path) -> None:
+    model_path = tmp_path / "house.yaml"
+    shutil.copy(THREE_ZONES, model_path)
+    result = CliRunner().invoke(app, ["create-model", str(model_path), "mpc", "--rc-model-type", "R4C3"])
+    assert result.exit_code == 0, result.output
+    building = _building_model(model_path.with_suffix(".mo").read_text())
+    assert "der(space_001_Th)" in building

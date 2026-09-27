@@ -7,6 +7,7 @@ parameters) and for parameter identification (free parameters).
 """
 
 import math
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -16,6 +17,9 @@ import numpy.typing as npt
 
 if TYPE_CHECKING:
     from trano.mpc.building import RCBuilding
+    from trano.topology import Network
+
+BUILDING_MODEL = "building"
 
 HEATING_INPUT = "QHea"
 # Real-axis stability limit of the explicit Runge-Kutta 4 method (~2.785) with a safety margin.
@@ -75,6 +79,19 @@ class CasadiRCModel:
             default_parameters=np.asarray(export.default_parameters, dtype=np.float64),
             building=building,
         )
+
+    @classmethod
+    def from_file(cls, path: Path | str, model: str | None = None) -> "CasadiRCModel":
+        """Load a model generated with the ``mpc`` library, by default ``<file stem>.building``."""
+        path = Path(path)
+        return cls.from_modelica(path.read_text(), model=model or f"{path.stem}.{BUILDING_MODEL}")
+
+    @classmethod
+    def from_network(cls, network: "Network") -> "CasadiRCModel":
+        """Generate and translate the model of a network built with the ``mpc`` library."""
+        if not network.library.is_rc:
+            raise ValueError(f"Library '{network.library.name}' does not generate RC models, use the 'mpc' library.")
+        return cls.from_modelica(network.model(), model=f"{network.name}.{BUILDING_MODEL}")
 
     @property
     def control_names(self) -> tuple[str, ...]:

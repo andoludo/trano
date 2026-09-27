@@ -1,0 +1,7 @@
+{% import 'Trano.jinja2' as Trano %}
+{% import 'mpc.jinja2' as mpc %}
+package {{ package_name }}
+{{ Trano.Trano_library(None, None) }}
+
+{{ mpc.building_model(building) }}
+end {{ package_name }};

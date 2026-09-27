@@ -6,6 +6,8 @@ import pytest
 pytest.importorskip("casadi")
 pytest.importorskip("rumoca")
 
+from trano.data_models.conversion import convert_network
+from trano.elements.library.library import Library
 from trano.mpc import ISO13790Parameters, R3C2Parameters, RCBuilding, RCModelType, RCZone, rc_building_from_yaml
 from trano.mpc.casadi_model import CasadiRCModel
 from trano.mpc.controller import (
@@ -32,7 +34,7 @@ def _single_zone(model_type: RCModelType) -> RCBuilding:
 @pytest.mark.parametrize("model_type", list(RCModelType))
 def test_library_models_translate_to_casadi(model_type: RCModelType) -> None:
     source = _single_zone(model_type).to_modelica()
-    model = CasadiRCModel.from_modelica(source, model=f"TranoRC.Zones.{model_type.value}")
+    model = CasadiRCModel.from_modelica(source, model=f"TranoRC.Trano.MPC.Zones.{model_type.value}")
     assert model.control_names == ("QHea",)
     assert model.disturbance_names == ("TOut", "HGlo", "QInt")
 
@@ -206,3 +208,19 @@ def test_forecast_too_short() -> None:
     controller = ModelPredictiveController(model, MPCSettings(horizon=24))
     with pytest.raises(ValueError, match="shorter than the horizon"):
         controller.solve(_forecast(12, 1))
+
+
+def test_casadi_model_from_network_and_file(tmp_path: Path) -> None:
+    network = convert_network("house", THREE_ZONES, library=Library.from_configuration("mpc"))
+    model = CasadiRCModel.from_network(network)
+    model_path = tmp_path / "house.mo"
+    model_path.write_text(network.model())
+    from_file = CasadiRCModel.from_file(model_path)
+    assert from_file.state_names == model.state_names
+    assert from_file.default_parameters == pytest.approx(model.default_parameters)
+
+
+def test_casadi_model_from_network_requires_mpc_library() -> None:
+    network = convert_network("house", THREE_ZONES)
+    with pytest.raises(ValueError, match="mpc"):
+        CasadiRCModel.from_network(network)

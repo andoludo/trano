@@ -7,7 +7,6 @@ from rich import print
 import typer
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.mpc.estimation import rc_building_from_network
 from trano.mpc.parameters import RCModelType
 from trano.reporting.html import to_html_reporting
 from trano.reporting.reporting import ModelDocumentation
@@ -25,10 +24,13 @@ CROSS_MARK = "[red]✘[/red]"
 class LibraryChoice(str, Enum):
     ideas = "IDEAS"
     buildings = "Buildings"
+    mpc = "mpc"
 
 
-def _create_network(model: str, library: str) -> Network:
+def _create_network(model: str, library: str, rc_model_type: RCModelType | None = None) -> Network:
     library_ = Library.from_configuration(library)
+    if library_.is_rc and rc_model_type is not None:
+        library_ = library_.model_copy(update={"rc_model_type": rc_model_type})
     model_ = Path(model).resolve()
     return convert_network(str(model_.stem), model_, library=library_)
 
@@ -57,8 +59,12 @@ def create_model(
     ],
     library: Annotated[
         LibraryChoice,
-        typer.Argument(help="Library to be used for simulation."),
+        typer.Argument(help="Library to be used: a simulation library or 'mpc' for a CasADi-compatible RC model."),
     ] = LibraryChoice.buildings,
+    rc_model_type: Annotated[
+        RCModelType | None,
+        typer.Option(help="RC zone model of the 'mpc' library (default: R3C2)."),
+    ] = None,
 ) -> None:
     with Progress(
         SpinnerColumn(),
@@ -70,7 +76,7 @@ def create_model(
             description=f"Generating model {modelica_model_path.name} with library {library}",
             total=None,
         )
-        network = _create_network(model, library)
+        network = _create_network(model, library, rc_model_type)
         modelica_model = network.model()
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)
@@ -140,30 +146,6 @@ def simulate_model(
         report_path = _generate_report(network, model_, result_path)
         progress.remove_task(task)
         print(f"{CHECKMARK} Report available at {report_path}")
-
-
-@app.command()
-def create_rc_model(
-    model: Annotated[
-        str,
-        typer.Argument(help="Local path to the '.yaml' model configuration file."),
-    ],
-    model_type: Annotated[
-        RCModelType,
-        typer.Option(help="Structure of the RC zone models."),
-    ] = RCModelType.r3c2,
-    package_name: Annotated[str, typer.Option(help="Name of the generated Modelica package.")] = "TranoRC",
-) -> None:
-    """Generate a CasADi-compatible RC Modelica model for MPC from a building description."""
-    model_path = Path(model).resolve()
-    network = convert_network(model_path.stem, model_path)
-    building = rc_building_from_network(network, model_type=model_type)
-    modelica_model_path = model_path.with_name(f"{model_path.stem}_rc.mo")
-    modelica_model_path.write_text(building.to_modelica(package_name))
-    print(
-        f"{CHECKMARK} {model_type.value} model with {len(building.zones)} zone(s) generated at "
-        f"{modelica_model_path} (model {package_name}.{building.name})"
-    )
 
 
 @app.command()

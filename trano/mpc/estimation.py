@@ -21,7 +21,6 @@ from typing import TYPE_CHECKING, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from trano.elements.construction import GlassMaterial
 from trano.mpc.building import RCBuilding, RCZone, ZoneCoupling
 from trano.mpc.parameters import (
     ISO13790Parameters,
@@ -126,6 +125,8 @@ def _capacitance_per_area(construction: "Construction | Glass") -> float:
 
 
 def _g_value(glass: "Glass", settings: EstimationSettings) -> float:
+    from trano.elements.construction import GlassMaterial
+
     transmittances = [
         layer.material.solar_transmittance[0]
         for layer in glass.layers
@@ -325,13 +326,17 @@ def _couplings(spaces: list["Space"], settings: EstimationSettings) -> list[Zone
 
 def rc_building_from_network(
     network: "Network",
-    model_type: RCModelType = RCModelType.r3c2,
+    model_type: RCModelType | None = None,
     settings: EstimationSettings | None = None,
-    name: str = "Building",
+    name: str = "building",
 ) -> RCBuilding:
-    """Create an RC building model from a Trano network (one RC zone per space)."""
+    """Create an RC building model from a Trano network (one RC zone per space).
+
+    ``model_type`` defaults to the one of the network library (``R3C2`` if not set).
+    """
     from trano.elements.space import Space
 
+    model_type = model_type or network.library.rc_model_type or RCModelType.r3c2
     settings = settings or EstimationSettings()
     spaces = [node for node in network.graph.nodes if isinstance(node, Space)]
     if not spaces:
@@ -354,13 +359,14 @@ def rc_building_from_network(
 
 def rc_building_from_yaml(
     model_path: Path | str,
-    model_type: RCModelType = RCModelType.r3c2,
+    model_type: RCModelType | None = None,
     settings: EstimationSettings | None = None,
-    name: str = "Building",
+    name: str = "building",
 ) -> RCBuilding:
     """Create an RC building model from a Trano ``.yaml``/``.json`` building description."""
     from trano.data_models.conversion import convert_network
+    from trano.elements.library.library import Library
 
     model_path = Path(model_path).resolve()
-    network = convert_network(model_path.stem, model_path)
+    network = convert_network(model_path.stem, model_path, library=Library.from_configuration("mpc"))
     return rc_building_from_network(network, model_type=model_type, settings=settings, name=name)
