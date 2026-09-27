@@ -1,67 +1,15 @@
-# RC models for model predictive control (CasADi + IPOPT)
+# RC models for model predictive control (`mpc` library)
 
 Detailed Modelica libraries (Buildings, IDEAS, AixLib) are well suited to simulation but not to
 optimisation: they rely on events, tables, media models and large algebraic loops that optimal
-control solvers cannot handle. Trano can also generate **simple resistance-capacitance (RC) models**
-from the same building description. They are written in a Modelica subset that translates
-directly into a symbolic [CasADi](https://web.casadi.org/) ODE, so they can be used for MPC with
-[IPOPT](https://coin-or.github.io/Ipopt/).
-
-The MPC features need optional dependencies:
+control solvers cannot handle. The `mpc` library generates, from the same YAML building description,
+**simple resistance-capacitance (RC) models** that can be translated directly into a symbolic
+[CasADi](https://web.casadi.org/) ODE and used for MPC with [IPOPT](https://coin-or.github.io/Ipopt/).
 
 ```bash
-pip install 'trano[mpc]'   # casadi + rumoca (Modelica -> CasADi compiler)
-```
-
-## Available zone models (`Trano.MPC.Zones`)
-
-| Model      | States       | Structure                                                                         | Reference                                  |
-|------------|--------------|-----------------------------------------------------------------------------------|--------------------------------------------|
-| `R1C1`     | Ti           | one lumped capacity, indoor-outdoor and indoor-ground resistances                  | Bacher & Madsen (2011), *Ti* model          |
-| `R3C2`     | Ti, Te       | indoor air + envelope/mass; windows and ventilation connect indoor air to outdoor | Bacher & Madsen (2011), *TiTe*; Harb et al. (2016) |
-| `R4C3`     | Ti, Te, Th   | `R3C2` + heat emitter capacity (radiator or floor heating lag)                    | Bacher & Madsen (2011), *TiTeTh*            |
-| `ISO13790` | Ti, Tm       | ISO 13790 5R1C network with a capacitive air node (5R2C)                           | ISO 13790:2008, annex C                     |
-
-All the models share the same inputs:
-
-* `TOut` outdoor air temperature [K] and `HGlo` global horizontal irradiance [W/m²] (building level),
-* `<zone>_QInt` internal gains [W] (disturbance) and `<zone>_QHea` heating power [W] (control),
-
-and the ground temperature `TGro` is a parameter. Adjacent zones are coupled through the
-conductance of the internal walls: `H_<zone a>_<zone b>*(Ti_b - Ti_a)`.
-
-For example, the `R3C2` zone equations are:
-
-```modelica
-der(Ti) = ((Te - Ti)/Rie + (TOut - Ti)/Ria + gA*HGlo + QInt + QHea)/Ci;
-der(Te) = ((Ti - Te)/Rie + (TOut - Te)/Rea + (TGro - Te)/Reg + aE*HGlo)/Ce;
-```
-
-In the ISO 13790 model the massless surface node of the standard is eliminated analytically, so
-the model stays an explicit ODE while matching the standard heat balances.
-
-### Why these models are CasADi/IPOPT compatible
-
-The generated Modelica code only uses:
-
-* flat, scalar models (no connectors, no sub-components, no arrays),
-* explicit state equations `der(x) = f(x, u, p)` without algebraic variables,
-* parameters bound to literal values (they remain symbolic in CasADi, which enables parameter
-  identification),
-* smooth expressions: no events, `if`, `min`/`max`, tables or external functions,
-* no dependency on any other Modelica library (not even the Modelica Standard Library).
-
-The resulting dynamics are linear in the states and inputs, so the MPC problem is a convex
-quadratic program that IPOPT solves in a few iterations.
-
-## Generating an MPC model with the `mpc` library
-
-`mpc` is a Trano library like `Buildings` or `IDEAS`: the same YAML file can be turned into a
-detailed simulation model or into a control-oriented RC model.
-
-```bash
-trano create-model three_zones_ideal_heaters.yaml mpc                        # R3C2 zones
-trano create-model three_zones_ideal_heaters.yaml mpc --rc-model-type R4C3   # other structure
+trano create-model house.yaml mpc                          # R3C2 zones (default)
+trano create-model house.yaml mpc --rc-model-type R4C3     # R1C1 | R3C2 | R4C3 | ISO13790
+trano simulate-model house.yaml mpc                        # runnable, like the other libraries
 ```
 
 or in Python:
@@ -73,121 +21,109 @@ from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
 from trano.mpc import RCModelType
 
-library = Library.from_configuration("mpc")  # R3C2 by default
-library = library.model_copy(update={"rc_model_type": RCModelType.r4c3})
-network = convert_network("house", Path("three_zones_ideal_heaters.yaml"), library=library)
+library = Library.from_configuration("mpc").model_copy(update={"rc_model_type": RCModelType.r4c3})
+network = convert_network("house", Path("house.yaml"), library=library)
+network.external_data = Path("measurements.csv")  # optional, see below
 modelica_model = network.model()
 ```
 
-The generated package has the same layout as for the other libraries:
+## Generated package
 
-* `house.Trano` - the internal Trano Modelica library. Its `Trano.MPC.Zones` package contains the
-  four single-zone RC models (it is embedded in every model generated by Trano, whatever the library);
-* `house.building` - a **flat** multi-zone RC model: one RC zone per space, coupled through the
-  internal walls. The systems of the YAML file (radiators, boilers, controls...) are abstracted as the
-  heating power `<space>_QHea` of each zone, the weather as `TOut`/`HGlo` and the occupancy as the
-  internal gains `<space>_QInt`.
+| Model                   | Content                                                                                             |
+|-------------------------|-----------------------------------------------------------------------------------------------------|
+| `house.Trano.MPC.Zones` | the single-zone RC models (embedded in the `Trano` package of every model generated by Trano)        |
+| `house.building_mpc`    | the flat multi-zone RC model: **the MPC model**, translatable into a CasADi ODE                      |
+| `house.building`        | the **runnable** model: weather file, solar gains, occupancy and external data connected to `building_mpc` |
 
-The building model is flat on purpose: connecting component instances creates algebraic equations
-that cannot be exported as a CasADi ODE.
+### `building_mpc`: the MPC model
+
+One RC zone per space, coupled through the conductance of the internal walls. Inputs:
+
+* `TOut` outdoor air temperature [K],
+* `HSol_<orientation>` total solar irradiance on each facade orientation [W/m²], e.g. `HSol_azi0_til90`
+  for the south facade (azimuth 0°, tilt 90°, Buildings library convention),
+* `<space>_QInt` internal gains [W] (disturbance) and `<space>_QHea` heating power [W] (control input).
+
+The states are the zone temperatures (`<space>_Ti`, `<space>_Te`, ...). The solar gains are
+`gA_<orientation>*HSol_<orientation>` for the windows (to the indoor air) and
+`aE_<orientation>*HSol_<orientation>` for the opaque envelope, with parameters per zone and orientation.
+
+The model only uses the Modelica subset that CasADi translators (e.g.
+[rumoca](https://github.com/rumoca/rumoca)) accept:
+
+* flat, scalar model (no sub-components, no arrays),
+* explicit state equations `der(x) = f(x, u, p)` without algebraic variables,
+* parameters bound to literal values (they stay symbolic in CasADi, which enables identification),
+* smooth expressions: no events, `if`, `min`/`max`, tables or functions,
+* inputs declared with the local `Trano.MPC.RealInput` connector: no dependency on any library.
+
+The test suite translates the `building_mpc` model of every test building, for every RC structure,
+with rumoca to guarantee that the generated models stay MPC ready.
+
+```python
+import rumoca
+
+export = rumoca.Session().loads(modelica_model, model="house.building_mpc").to_casadi()
+export.rhs  # casadi.Function xdot = rhs(t, x, u, p)
+export.state_names, export.input_names, export.parameter_names
+```
+
+### `building`: the runnable model
+
+`building` instantiates `building_mpc` and connects all its inputs, like the other Trano libraries:
+
+* **weather**: the same `ReaderTMY3` reader and `.mos` weather file as the Buildings library
+  (`weather.parameters.path` in the YAML file); `TOut` is the dry-bulb temperature;
+* **solar gains**: direct (`DirectTiltedSurface`) plus diffuse (`DiffuseIsotropic`) irradiance for each
+  orientation of the envelope, connected to `HSol_<orientation>`;
+* **occupancy**: the Trano occupancy models (schedule, or CO₂-based estimation from data); their
+  sensible gains are scaled by the floor area and connected to `<space>_QInt`;
+* **external data**: the CSV file of the network (`network.external_data`, same as the other libraries)
+  becomes a `CombiTimeTable`. Occupancy data sources read their column from it, and a column named
+  `<space>_QHea` replays a measured heating power;
+* **heating**: otherwise `<space>_QHea` is a top-level input of `building`, to be set by the MPC
+  (e.g. in co-simulation or through an FMU); `<space>_TZon` outputs give the zone temperatures.
+
+The emission systems of the YAML file (radiators, boilers, controls...) are abstracted as the heating
+power of each zone.
+
+## Zone models (`Trano.MPC.Zones`)
+
+| Model      | States     | Structure                                                                         | Reference                                           |
+|------------|------------|-----------------------------------------------------------------------------------|-----------------------------------------------------|
+| `R1C1`     | Ti         | one lumped capacity, indoor-outdoor and indoor-ground resistances                  | Bacher & Madsen (2011), *Ti* model                   |
+| `R3C2`     | Ti, Te     | indoor air + envelope/mass; windows and ventilation connect indoor air to outdoor | Bacher & Madsen (2011), *TiTe*; Harb et al. (2016)   |
+| `R4C3`     | Ti, Te, Th | `R3C2` + heat emitter capacity (radiator or floor heating lag)                    | Bacher & Madsen (2011), *TiTeTh*                     |
+| `ISO13790` | Ti, Tm     | ISO 13790 5R1C network with a capacitive air node (5R2C)                           | ISO 13790:2008, annex C                              |
+
+For example, the `R3C2` zone equations are:
+
+```modelica
+der(Ti) = ((Te - Ti)/Rie + (TOut - Ti)/Ria + gA*HSol + QInt + QHea)/Ci;
+der(Te) = ((Ti - Te)/Rie + (TOut - Te)/Rea + (TGro - Te)/Reg + aE*HSol)/Ce;
+```
+
+In the ISO 13790 model the massless surface node of the standard is eliminated analytically, so the
+model stays an explicit ODE while matching the standard heat balances.
+
+## Parameters
 
 The RC parameters are derived from the geometry and the constructions of the YAML file: ISO 6946
 surface resistances, opaque elements split in two halves around the mass node, windows and
-ventilation directly between indoor and outdoor air, and half of the internal walls capacity assigned
-to each adjacent zone. The assumptions are gathered in `EstimationSettings`; to change them, build the
-RC building explicitly:
+ventilation directly between indoor and outdoor air, half of the internal walls capacity assigned to
+each adjacent zone, window apertures `g·(1-Ff)·A` and opaque absorption areas `α·Rse·U·A` per
+orientation. The assumptions are gathered in `EstimationSettings`:
 
 ```python
 from trano.mpc import EstimationSettings, rc_building_from_network
 
 building = rc_building_from_network(network, settings=EstimationSettings(air_change_rate=0.4))
-modelica_model = building.to_modelica("house")
+modelica_model = building.to_modelica("house")  # Trano library + building_mpc
 ```
-
-## From Modelica to CasADi
-
-The generated model is translated into a CasADi function with
-[rumoca](https://github.com/rumoca/rumoca):
-
-```python
-from trano.mpc.casadi_model import CasadiRCModel
-
-model = CasadiRCModel.from_network(network)
-# or, from the file written by `trano create-model house.yaml mpc`:
-# model = CasadiRCModel.from_file("house.mo")  # model 'house.building'
-
-model.state_names  # ('space_001_Ti', 'space_001_Te', ...)
-model.control_names  # ('space_001_QHea', 'space_002_QHea', 'space_003_QHea')
-model.disturbance_names  # ('TOut', 'HGlo', 'space_001_QInt', ...)
-
-f = model.continuous_dynamics()  # casadi.Function xdot = f(x, u, d, p)
-F = model.discrete_dynamics(time_step=900)  # RK4 with stable sub-steps: x+ = F(x, u, d, p)
-```
-
-The library zone models can be translated too, e.g.
-`CasadiRCModel.from_modelica(modelica_model, "house.Trano.MPC.Zones.ISO13790")`.
 
 !!! note
     The derived parameters are physically consistent initial guesses. For a real building, calibrate
-    them on measurements: `F` keeps the parameters `p` symbolic, so a least-squares identification
-    problem can be written with `casadi.Opti` and solved with IPOPT.
-
-## A simple economic MPC
-
-`ModelPredictiveController` minimises the heating cost while keeping the indoor temperatures
-inside a comfort band, with soft constraints so that the problem is always feasible:
-
-```text
-min   Σk price[k]·ΣQHea[k]·Δt  +  wc·Σ(sLow + sHigh)  +  wq·Σ(sLow² + sHigh²)  +  ws·Σ(ΔQHea/QMax)²
-s.t.  x[k+1] = F(x[k], QHea[k], d[k], p)
-      TLow[k] - sLow[k] ≤ Ti[k+1] ≤ THigh[k] + sHigh[k],   sLow, sHigh ≥ 0
-      0 ≤ QHea[k] ≤ QMax
-```
-
-The problem is built once as a parametric NLP (multiple shooting); at each step only the initial
-state and the forecasts change, and IPOPT is warm started with the shifted previous solution.
-
-```python
-import numpy as np
-
-from trano.mpc.controller import Forecast, MPCSettings, ModelPredictiveController, run_closed_loop
-
-K = 273.15
-hour = np.arange(72) % 24
-occupied = (hour >= 7) & (hour < 22)
-forecast = Forecast(
-    outdoor_temperature=K + 2 + 5 * np.sin(2 * np.pi * (hour - 9) / 24),
-    solar_irradiance=np.clip(600 * np.sin(np.pi * (hour - 7) / 10), 0, None) * (hour <= 17),
-    internal_gains=np.where(occupied, 300.0, 100.0),  # W, same for every zone
-    lower_temperature=np.where(occupied, K + 20, K + 16),
-    upper_temperature=np.where(occupied, K + 24, K + 26),
-    price=np.where((hour >= 17) & (hour < 21), 0.40, 0.25),  # per kWh
-)
-
-controller = ModelPredictiveController(
-    model,
-    MPCSettings(horizon=24, time_step=3600, max_heating_power=6000),
-)
-solution = controller.solve(forecast.slice(0, 24))  # open loop
-print(solution.status, solution.energy_cost)
-print(solution.heating_power)  # (24, 3) W
-
-result = run_closed_loop(controller, forecast, n_steps=48)  # receding horizon
-print(result.energy_cost, result.comfort_violation)
-```
-
-The controller lowers the temperature at night, pre-heats the zones before the occupancy and
-before the expensive price period, and keeps the comfort band during occupancy. Each IPOPT solve
-takes about 0.1 s for the three zones house.
-
-To evaluate the controller under model mismatch, simulate a different plant:
-
-```python
-import dataclasses
-
-plant = dataclasses.replace(model, default_parameters=model.parameter_values(space_001_Ci=3e6))
-result = run_closed_loop(controller, forecast, n_steps=48, plant=plant)
-```
+    them on measurements: they remain symbolic once `building_mpc` is translated into CasADi.
 
 ## References
 
@@ -198,5 +134,3 @@ result = run_closed_loop(controller, forecast, n_steps=48, plant=plant)
   *Energy and Buildings*, 117, 199-207.
 * ISO 13790:2008. Energy performance of buildings - Calculation of energy use for space heating and
   cooling (simple hourly method, annex C).
-* J. A. E. Andersson et al. (2019). CasADi: a software framework for nonlinear optimization and
-  optimal control. *Mathematical Programming Computation*, 11, 1-36.

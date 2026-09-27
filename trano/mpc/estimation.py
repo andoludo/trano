@@ -11,8 +11,8 @@ The lumping rules follow the usual practice for reduced order building models
 * internal walls couple adjacent zones and half of their capacity is given to each zone.
 
 These values are physically consistent *initial guesses*. For MPC in a real building they
-should be calibrated on measurements, e.g. with :meth:`CasadiRCModel.discrete_dynamics`
-and a least-squares problem solved with IPOPT.
+should be calibrated on measurements: the parameters stay symbolic once ``building_mpc`` is
+translated into CasADi, so a least-squares identification problem can be solved with IPOPT.
 """
 
 from collections.abc import Iterable
@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from trano.mpc.building import RCBuilding, RCZone, ZoneCoupling
+from trano.mpc.building import Orientation, RCBuilding, RCZone, SolarAperture, ZoneCoupling
 from trano.mpc.parameters import (
     ISO13790Parameters,
     R1C1Parameters,
@@ -33,13 +33,12 @@ from trano.mpc.parameters import (
 
 if TYPE_CHECKING:
     from trano.elements.construction import Construction, Glass
-    from trano.elements.envelope import BaseInternalElement
+    from trano.elements.envelope import BaseInternalElement, BaseSimpleWall
     from trano.elements.space import Space
     from trano.topology import Network
 
 AIR_DENSITY = 1.2  # kg/m3
 AIR_HEAT_CAPACITY = 1005.0  # J/(kg.K)
-TILT_ROOF = "ceiling"
 
 
 class EstimationSettings(BaseModel):
@@ -57,9 +56,6 @@ class EstimationSettings(BaseModel):
     window_frame_fraction: float = Field(0.3, ge=0, lt=1, description="Frame area fraction of the windows")
     default_g_value: float = Field(0.6, ge=0, le=1, description="g-value when the glazing has no optical data")
     opaque_solar_absorptance: float = Field(0.6, ge=0, le=1, description="Solar absorptance of the facades")
-    vertical_irradiance_ratio: float = Field(
-        0.5, ge=0, description="Ratio between the irradiance on vertical surfaces and the global horizontal one"
-    )
     design_outdoor_temperature: float = Field(263.15, gt=0, description="Heating design outdoor temperature [K]")
     design_indoor_temperature: float = Field(293.15, gt=0, description="Heating design indoor temperature [K]")
     emitter_oversizing: float = Field(1.5, gt=0, description="Ratio between emitter and design heating power")
@@ -81,11 +77,9 @@ class ZoneEnvelope(BaseModel):
     floor_area: float
     ventilation_conductance: float
     window_conductance: float = 0
-    window_solar_aperture: float = 0
     opaque_conductance: float = 0
     opaque_inner_conductance: float = 0
     opaque_outer_conductance: float = 0
-    opaque_solar_aperture: float = 0
     opaque_capacitance: float = 0
     floor_conductance: float = 0
     floor_inner_conductance: float = 0
@@ -93,6 +87,7 @@ class ZoneEnvelope(BaseModel):
     floor_capacitance: float = 0
     internal_inner_conductance: float = 0
     internal_capacitance: float = 0
+    solar_apertures: list[SolarAperture] = Field(default_factory=list)
 
     @property
     def air_capacitance(self) -> float:
@@ -140,8 +135,10 @@ def _g_value(glass: "Glass", settings: EstimationSettings) -> float:
     return g_value
 
 
-def _irradiance_ratio(tilt: str, settings: EstimationSettings) -> float:
-    return 1.0 if tilt == TILT_ROOF else settings.vertical_irradiance_ratio
+def _orientation(boundary: "BaseSimpleWall") -> Orientation:
+    from trano.elements.types import TILT_MAPPING
+
+    return Orientation(azimuth=float(boundary.azimuth), tilt=float(TILT_MAPPING[boundary.tilt.value]))
 
 
 def zone_envelope(space: "Space", settings: EstimationSettings) -> ZoneEnvelope:
@@ -159,22 +156,24 @@ def zone_envelope(space: "Space", settings: EstimationSettings) -> ZoneEnvelope:
     def add(key: str, value: float) -> None:
         values[key] = values.get(key, 0.0) + value
 
+    apertures: dict[Orientation, dict[str, float]] = {}
+
+    def add_solar(boundary: "BaseSimpleWall", kind: str, value: float) -> None:
+        aperture = apertures.setdefault(_orientation(boundary), {"window": 0.0, "opaque": 0.0})
+        aperture[kind] += value
+
     rsi, rse = settings.internal_surface_resistance, settings.external_surface_resistance
     for boundary in space.external_boundaries:
         area = float(boundary.surface)
         construction = boundary.construction
         resistance = _layers_resistance(construction)
-        tilt = boundary.tilt.value
         if isinstance(boundary, BaseWindow):
             glazing_u_value = 1 / (resistance + rsi + rse)
             frame_u_value = getattr(construction, "u_value_frame", glazing_u_value)
             frame_fraction = settings.window_frame_fraction
             add("window_conductance", area * ((1 - frame_fraction) * glazing_u_value + frame_fraction * frame_u_value))
             g_value = _g_value(construction, settings)  # type: ignore[arg-type]
-            add(
-                "window_solar_aperture",
-                area * (1 - frame_fraction) * g_value * _irradiance_ratio(tilt, settings),
-            )
+            add_solar(boundary, "window", area * (1 - frame_fraction) * g_value)
         elif isinstance(boundary, BaseFloorOnGround):
             rsi_floor, ground = settings.floor_surface_resistance, settings.ground_resistance
             add("floor_conductance", area / (resistance + rsi_floor + ground))
@@ -187,17 +186,18 @@ def zone_envelope(space: "Space", settings: EstimationSettings) -> ZoneEnvelope:
             add("opaque_inner_conductance", area / (resistance / 2 + rsi))
             add("opaque_outer_conductance", area / (resistance / 2 + rse))
             add("opaque_capacitance", area * _capacitance_per_area(construction))
-            add(
-                "opaque_solar_aperture",
-                settings.opaque_solar_absorptance * rse * u_value * area * _irradiance_ratio(tilt, settings),
-            )
+            add_solar(boundary, "opaque", settings.opaque_solar_absorptance * rse * u_value * area)
     for internal_element in _unique(space.internal_elements):
         area = float(internal_element.surface)
         resistance = _layers_resistance(internal_element.construction)
         add("internal_inner_conductance", area / (resistance / 2 + rsi))
         # Each side of the internal wall belongs to one of the two adjacent zones.
         add("internal_capacitance", area * _capacitance_per_area(internal_element.construction) / 2)
-    return ZoneEnvelope(**values)
+    solar_apertures = [
+        SolarAperture(orientation=orientation, **aperture)
+        for orientation, aperture in sorted(apertures.items(), key=lambda item: (item[0].tilt, item[0].azimuth))
+    ]
+    return ZoneEnvelope(**values, solar_apertures=solar_apertures)
 
 
 def _unique(elements: Iterable["BaseInternalElement"]) -> list["BaseInternalElement"]:
@@ -229,7 +229,6 @@ def estimate_zone_parameters(
             air_capacitance=air_capacitance + envelope.mass_capacitance,
             indoor_outdoor_resistance=_safe_inverse(envelope.outdoor_conductance),
             ground_resistance=_safe_inverse(envelope.floor_conductance),
-            solar_aperture=envelope.window_solar_aperture + envelope.opaque_solar_aperture,
         )
     if model_type in (RCModelType.r3c2, RCModelType.r4c3):
         envelope_parameters = {
@@ -239,8 +238,6 @@ def estimate_zone_parameters(
             "indoor_envelope_resistance": _safe_inverse(envelope.mass_inner_conductance),
             "envelope_outdoor_resistance": _safe_inverse(envelope.opaque_outer_conductance),
             "envelope_ground_resistance": _safe_inverse(envelope.floor_outer_conductance),
-            "solar_aperture": envelope.window_solar_aperture,
-            "envelope_solar_aperture": envelope.opaque_solar_aperture,
         }
         if model_type == RCModelType.r3c2:
             return R3C2Parameters(**envelope_parameters)
@@ -276,7 +273,6 @@ def _iso13790_parameters(
         surface_mass_conductance=surface_mass_conductance,
         mass_outdoor_conductance=mass_outdoor_conductance,
         ground_conductance=envelope.floor_conductance,
-        solar_aperture=envelope.window_solar_aperture + envelope.opaque_solar_aperture,
         convective_fraction=settings.iso_convective_fraction,
         surface_fraction=surface_fraction,
         mass_fraction=mass_fraction,
@@ -290,11 +286,9 @@ def reference_zone_parameters(model_type: RCModelType) -> ZoneParameters:
         floor_area=100,
         ventilation_conductance=AIR_DENSITY * AIR_HEAT_CAPACITY * 250 * 0.5 / 3600,
         window_conductance=10 * 1.4,
-        window_solar_aperture=10 * 0.7 * 0.6 * 0.5,
         opaque_conductance=100 * 0.3,
         opaque_inner_conductance=100 / (1.6 + 0.13),
         opaque_outer_conductance=100 / (1.6 + 0.04),
-        opaque_solar_aperture=0.6 * 0.04 * 0.3 * 100 * 0.5,
         opaque_capacitance=100 * 250_000,
         floor_conductance=100 * 0.35,
         floor_inner_conductance=100 / (1.2 + 0.17),
@@ -304,7 +298,7 @@ def reference_zone_parameters(model_type: RCModelType) -> ZoneParameters:
     return estimate_zone_parameters(reference, model_type)
 
 
-def _sanitize(name: str) -> str:
+def sanitize_name(name: str) -> str:
     sanitized = "".join(character if character.isalnum() or character == "_" else "_" for character in name)
     return sanitized if sanitized[:1].isalpha() else f"z_{sanitized}"
 
@@ -312,7 +306,7 @@ def _sanitize(name: str) -> str:
 def _couplings(spaces: list["Space"], settings: EstimationSettings) -> list[ZoneCoupling]:
     conductances: dict[tuple[str, str], float] = {}
     elements_per_space = {
-        _sanitize(space.name): {element.name for element in space.internal_elements} for space in spaces
+        sanitize_name(space.name): {element.name for element in space.internal_elements} for space in spaces
     }
     for internal_element in _unique(element for space in spaces for element in space.internal_elements):
         adjacent = [name for name, elements in elements_per_space.items() if internal_element.name in elements]
@@ -328,7 +322,7 @@ def rc_building_from_network(
     network: "Network",
     model_type: RCModelType | None = None,
     settings: EstimationSettings | None = None,
-    name: str = "building",
+    name: str = "building_mpc",
 ) -> RCBuilding:
     """Create an RC building model from a Trano network (one RC zone per space).
 
@@ -338,17 +332,21 @@ def rc_building_from_network(
 
     model_type = model_type or network.library.rc_model_type or RCModelType.r3c2
     settings = settings or EstimationSettings()
-    spaces = [node for node in network.graph.nodes if isinstance(node, Space)]
+    spaces = sorted((node for node in network.graph.nodes if isinstance(node, Space)), key=lambda space: space.name)
     if not spaces:
         raise ValueError("The network does not contain any space.")
-    zones = [
-        RCZone(
-            name=_sanitize(space.name),
-            parameters=estimate_zone_parameters(zone_envelope(space, settings), model_type, settings),
-            temperature_initial=getattr(space.parameters, "temperature_initial", None) or 294.15,
+    zones = []
+    for space in spaces:
+        envelope = zone_envelope(space, settings)
+        zones.append(
+            RCZone(
+                name=sanitize_name(space.name),
+                parameters=estimate_zone_parameters(envelope, model_type, settings),
+                solar_apertures=envelope.solar_apertures,
+                temperature_initial=getattr(space.parameters, "temperature_initial", None) or 294.15,
+                floor_area=envelope.floor_area,
+            )
         )
-        for space in spaces
-    ]
     return RCBuilding(
         name=name,
         zones=zones,
@@ -361,7 +359,7 @@ def rc_building_from_yaml(
     model_path: Path | str,
     model_type: RCModelType | None = None,
     settings: EstimationSettings | None = None,
-    name: str = "building",
+    name: str = "building_mpc",
 ) -> RCBuilding:
     """Create an RC building model from a Trano ``.yaml``/``.json`` building description."""
     from trano.data_models.conversion import convert_network

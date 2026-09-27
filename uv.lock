@@ -3368,20 +3368,16 @@ dependencies = [
     { name = "yattag" },
 ]
 
-[package.optional-dependencies]
-mpc = [
-    { name = "casadi" },
-    { name = "rumoca" },
-]
-
 [package.dev-dependencies]
 dev = [
+    { name = "casadi" },
     { name = "jsf" },
     { name = "mypy" },
     { name = "networkx-stubs" },
     { name = "pandas-stubs" },
     { name = "pytest" },
     { name = "ruff" },
+    { name = "rumoca" },
     { name = "types-beautifulsoup4" },
     { name = "types-pyyaml" },
     { name = "types-simplejson" },
@@ -3400,7 +3396,6 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "buildingspy", specifier = ">=5.2.0,<6" },
-    { name = "casadi", marker = "extra == 'mpc'", specifier = ">=3.6.7,<4" },
     { name = "docker", specifier = ">=7.1.0,<8" },
     { name = "jinja2", specifier = ">=3.1.6,<4" },
     { name = "linkml", specifier = ">=1.11.1,<2" },
@@ -3411,20 +3406,20 @@ requires-dist = [
     { name = "pydot", specifier = ">=3.0.4,<4" },
     { name = "python-docx", specifier = ">=1.2.0,<2" },
     { name = "pyyaml-include", specifier = ">=2.2,<3" },
-    { name = "rumoca", marker = "extra == 'mpc'", specifier = ">=0.10.0,<0.11" },
     { name = "typer", specifier = ">=0.19.2,<1" },
     { name = "yattag", specifier = ">=1.16.1,<2" },
 ]
-provides-extras = ["mpc"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "casadi", specifier = ">=3.6.7,<4" },
     { name = "jsf", specifier = ">=0.11.2,<0.12" },
     { name = "mypy", specifier = ">=2.1.0,<3" },
     { name = "networkx-stubs", specifier = ">=0.0.1,<0.0.2" },
     { name = "pandas-stubs", specifier = ">=2.2.0.240218,<3" },
     { name = "pytest", specifier = ">=9.0.3,<10" },
     { name = "ruff", specifier = ">=0.15.16,<0.16" },
+    { name = "rumoca", specifier = ">=0.10.0,<0.11" },
     { name = "types-beautifulsoup4", specifier = ">=4.12.0.20240229,<5" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20240808,<7" },
     { name = "types-simplejson", specifier = ">=3.19.0.20240218,<4" },

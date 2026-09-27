@@ -321,7 +321,7 @@ class Network:  # : PLR0904, #TODO: fix this
             # Flat RC model for MPC: the systems are abstracted as the heating power of each zone.
             from trano.mpc.modelica import render_network
 
-            return render_network(self)
+            return render_network(self, data_bus)
         data_bus = self._prepare_nodes(include_container, data_bus)
         self.connect()
         data = extract_properties(self.library, self.name, self.graph.nodes)

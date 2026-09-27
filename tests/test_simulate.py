@@ -75,6 +75,8 @@ YAML_SIMULATIONS: list[tuple[str, str, str | None, bool]] = [
     ),
     ("house_infiltration_boiler", "house_infiltration_boiler.yaml", None, False),
     ("single_zone_hydronic_occupancy_from_data", "single_zone_hydronic_occupancy_from_data.yaml", None, True),
+    ("three_zones_mpc", "three_zones_mpc.yaml", "mpc", False),
+    ("single_zone_hydronic_weather", "single_zone_hydronic_weather.yaml", "mpc", False),
 ]
 
 

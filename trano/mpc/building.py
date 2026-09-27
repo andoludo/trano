@@ -1,14 +1,12 @@
-"""Multi-zone RC building model and its Modelica representation."""
+"""Multi-zone RC building model: the data rendered by the ``mpc`` library."""
 
+import math
 import re
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 from trano.mpc.parameters import ModelicaState, ZoneParameters
-
-if TYPE_CHECKING:
-    from trano.mpc.casadi_model import CasadiRCModel
 
 MODELICA_IDENTIFIER = re.compile(r"^[A-Za-z_]\w*$")
 
@@ -19,12 +17,59 @@ def _validate_identifier(value: str) -> str:
     return value
 
 
+def _format_angle(value: float) -> str:
+    angle = f"{value:g}".replace("-", "m").replace(".", "p")
+    return angle
+
+
+class Orientation(BaseModel):
+    """Orientation of a surface receiving solar irradiance (Buildings library convention)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    azimuth: float = Field(description="Surface azimuth [deg], 0 for south, 90 for west")
+    tilt: float = Field(ge=0, le=180, description="Surface tilt [deg], 0 for a roof, 90 for a wall")
+
+    @property
+    def name(self) -> str:
+        return f"azi{_format_angle(self.azimuth)}_til{_format_angle(self.tilt)}"
+
+    @property
+    def irradiance(self) -> str:
+        """Name of the building input with the total irradiance on this orientation."""
+        return f"HSol_{self.name}"
+
+    @property
+    def azimuth_radians(self) -> float:
+        return math.radians(self.azimuth)
+
+    @property
+    def tilt_radians(self) -> float:
+        return math.radians(self.tilt)
+
+
+class SolarAperture(BaseModel):
+    """Solar heat gain coefficients of a zone for one orientation.
+
+    The solar heat gains are ``window*H + opaque*H`` with ``H`` the total irradiance on the
+    orientation [W/m2]: ``window`` goes to the indoor air, ``opaque`` to the envelope.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    orientation: Orientation
+    window: float = Field(0.0, ge=0, description="Effective window aperture g.(1-Ff).A [m2]")
+    opaque: float = Field(0.0, ge=0, description="Effective opaque absorption area alpha.Rse.U.A [m2]")
+
+
 class RCZone(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     name: str
     parameters: ZoneParameters
+    solar_apertures: list[SolarAperture] = Field(default_factory=list)
     temperature_initial: float = Field(294.15, gt=0, description="Initial temperature of all the zone states [K]")
+    floor_area: float = Field(100.0, gt=0, description="Floor area used to scale the occupancy gains [m2]")
 
     _name_validator = field_validator("name")(_validate_identifier)
 
@@ -39,18 +84,6 @@ class RCZone(BaseModel):
     @property
     def state_names(self) -> list[str]:
         return [f"{self.prefix}{state.name}" for state in self.states]
-
-    @property
-    def indoor_temperature(self) -> str:
-        return f"{self.prefix}Ti"
-
-    @property
-    def heating_input(self) -> str:
-        return f"{self.prefix}QHea"
-
-    @property
-    def internal_gains_input(self) -> str:
-        return f"{self.prefix}QInt"
 
 
 class ZoneCoupling(BaseModel):
@@ -70,14 +103,14 @@ class ZoneCoupling(BaseModel):
 class RCBuilding(BaseModel):
     """A multi-zone building made of CasADi-compatible RC zone models.
 
-    Shared (building level) inputs are the outdoor temperature ``TOut`` [K] and the global
-    horizontal irradiance ``HGlo`` [W/m2]. Each zone ``z`` has the internal gains ``z_QInt`` [W]
-    as disturbance and the heating power ``z_QHea`` [W] as control input.
+    Shared inputs are the outdoor temperature ``TOut`` [K] and the total irradiance on each
+    orientation ``HSol_<orientation>`` [W/m2]. Each zone ``z`` has the internal gains
+    ``z_QInt`` [W] as disturbance and the heating power ``z_QHea`` [W] as control input.
     """
 
     model_config = ConfigDict(frozen=True)
 
-    name: str = "building"
+    name: str = "building_mpc"
     zones: list[RCZone] = Field(min_length=1)
     couplings: list[ZoneCoupling] = Field(default_factory=list)
     ground_temperature: float = Field(283.15, gt=0, description="Ground temperature below the slab [K]")
@@ -102,23 +135,17 @@ class RCBuilding(BaseModel):
         return "/".join(sorted({zone.parameters.model_type.value for zone in self.zones}))
 
     @property
+    def orientations(self) -> list[Orientation]:
+        unique = {aperture.orientation for zone in self.zones for aperture in zone.solar_apertures}
+        return sorted(unique, key=lambda orientation: (orientation.tilt, orientation.azimuth))
+
+    @property
     def state_names(self) -> list[str]:
         return [name for zone in self.zones for name in zone.state_names]
 
-    def get_zone(self, name: str) -> RCZone:
-        return next(zone for zone in self.zones if zone.name == name)
-
     def to_modelica(self, package_name: str = "TranoRC") -> str:
-        """Modelica package with the Trano library (including ``Trano.MPC``) and the flat building model."""
+        """Modelica package with the Trano library (including ``Trano.MPC``) and the flat RC model."""
         from trano.mpc.modelica import render_building
 
         _validate_identifier(package_name)
         return render_building(self, package_name)
-
-    def to_casadi(self, package_name: str = "TranoRC") -> "CasadiRCModel":
-        """Translate the generated Modelica model into a symbolic CasADi model."""
-        from trano.mpc.casadi_model import CasadiRCModel
-
-        return CasadiRCModel.from_modelica(
-            self.to_modelica(package_name), model=f"{package_name}.{self.name}", building=self
-        )

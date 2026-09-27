@@ -42,12 +42,6 @@ dependencies = [
     "yattag>=1.16.1,<2",
 ]
 
-[project.optional-dependencies]
-mpc = [
-    "casadi>=3.6.7,<4",
-    "rumoca>=0.10.0,<0.11",
-]
-
 [project.urls]
 Homepage = "https://andoludo.github.io/trano/"
 Repository = "https://github.com/andoludo/trano"
@@ -66,6 +60,8 @@ dev = [
     "types-pyyaml>=6.0.12.20240808,<7",
     "jsf>=0.11.2,<0.12",
     "pytest>=9.0.3,<10",
+    "rumoca>=0.10.0,<0.11",
+    "casadi>=3.6.7,<4",
 ]
 docs = [
     "mkdocs>=1.6.1,<2",
@@ -116,10 +112,6 @@ exclude = [
     "test_*",
     "conftest.py",
 ]
-
-[[tool.mypy.overrides]]
-module = ["casadi", "casadi.*", "rumoca", "rumoca.*"]
-ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 120

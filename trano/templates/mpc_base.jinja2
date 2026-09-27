@@ -4,4 +4,8 @@ package {{ package_name }}
 {{ Trano.Trano_library(None, None) }}
 
 {{ mpc.building_model(building) }}
+{% if runnable %}
+
+{{ mpc.runnable_model(building, runnable) }}
+{% endif %}
 end {{ package_name }};

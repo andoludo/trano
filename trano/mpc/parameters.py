@@ -90,7 +90,6 @@ class R1C1Parameters(BaseZoneParameters):
     air_capacitance: float = rc_field("Ci", "J/K", "Lumped zone heat capacity", gt=0)
     indoor_outdoor_resistance: float = rc_field("Ria", "K/W", "Indoor to outdoor air thermal resistance", gt=0)
     ground_resistance: float = rc_field("Rig", "K/W", "Indoor to ground thermal resistance", gt=0)
-    solar_aperture: float = rc_field("gA", "m2", "Effective solar aperture of the zone", ge=0)
 
 
 class _EnvelopeZoneParameters(BaseZoneParameters):
@@ -104,8 +103,6 @@ class _EnvelopeZoneParameters(BaseZoneParameters):
     indoor_envelope_resistance: float = rc_field("Rie", "K/W", "Indoor air to envelope thermal resistance", gt=0)
     envelope_outdoor_resistance: float = rc_field("Rea", "K/W", "Envelope to outdoor air thermal resistance", gt=0)
     envelope_ground_resistance: float = rc_field("Reg", "K/W", "Envelope to ground thermal resistance", gt=0)
-    solar_aperture: float = rc_field("gA", "m2", "Effective solar aperture of the windows", ge=0)
-    envelope_solar_aperture: float = rc_field("aE", "m2", "Effective solar absorption area of the envelope", ge=0)
 
 
 class R3C2Parameters(_EnvelopeZoneParameters):
@@ -160,7 +157,6 @@ class ISO13790Parameters(BaseZoneParameters):
     surface_mass_conductance: float = rc_field("Hms", "W/K", "Surface to mass node coupling", gt=0)
     mass_outdoor_conductance: float = rc_field("Hem", "W/K", "Mass node to outdoor heat transfer", ge=0)
     ground_conductance: float = rc_field("Hg", "W/K", "Mass node to ground heat transfer", ge=0)
-    solar_aperture: float = rc_field("gA", "m2", "Effective solar aperture of the windows", ge=0)
     convective_fraction: float = rc_field("fIa", "1", "Fraction of internal gains to the air node", ge=0, le=1)
     surface_fraction: float = rc_field("fSt", "1", "Fraction of radiant gains to the surface node", ge=0, le=1)
     mass_fraction: float = rc_field("fM", "1", "Fraction of radiant gains to the mass node", ge=0, le=1)
