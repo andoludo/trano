@@ -1,0 +1,740 @@
+constructions:
+  - id: CAVITY_WALL:001
+    layers:
+      - material: MINERAL_WOOL_WALL:001
+        thickness: 0.35
+      - material: BRICK_HOLLOW:001
+        thickness: 0.09
+      - material: AIR:001
+        thickness: 0.02
+      - material: MINERAL_WOOL_WALL:001
+        thickness: 0.12
+      - material: BRICK:001
+        thickness: 0.14
+      - material: GYPSUM:001
+        thickness: 0.01
+  - id: ROOF:001
+    layers:
+      - material: CERAMIC_TILE:001
+        thickness: 0.025
+      - material: MINERAL_WOOL_ROOF:001
+        thickness: 0.30
+      - material: GYPSUM_PLASTER:001
+        thickness: 0.02
+  - id: DOOR:001
+    layers:
+      - material: WOOD:001
+        thickness: 0.02
+      - material: EPS:001
+        thickness: 0.06
+      - material: WOOD:001
+        thickness: 0.02
+  - id: FLOOR:001
+    layers:
+      - material: CONCRETE:001
+        thickness: 0.5
+      - material: EPS:001
+        thickness: 0.04
+      - material: SCREED:001
+        thickness: 0.05
+      - material: TIMBER:001
+        thickness: 0.1
+  - id: INNERWALL:001
+    layers:
+      - material: GYPSUM_PLASTER:001
+        thickness: 0.02
+      - material: MASONRY:001
+        thickness: 0.14
+      - material: GYPSUM_PLASTER:001
+        thickness: 0.02
+
+gas:
+  - density: 1.2
+    id: AIR:001
+    longwave_emissivity: 0.0
+    shortwave_emissivity: 0.0
+    specific_heat_capacity: 1006.0
+    thermal_conductivity: 0.0256
+  - density: 1.66
+    id: ARGON:001
+    longwave_emissivity: 0.0
+    shortwave_emissivity: 0.0
+    specific_heat_capacity: 520.0
+    thermal_conductivity: 0.016
+
+glass_material:
+  - density: 2500.0
+    id: GLASS:001
+    longwave_emissivity: 0.84
+    shortwave_emissivity: 0.67
+    specific_heat_capacity: 840.0
+    thermal_conductivity: 0.05
+
+glazings:
+  - id: SIMPLE:001
+    layers:
+      - glass: GLASS:001
+        thickness: 0.004
+      - gas: ARGON:001
+        thickness: 0.015
+      - glass: GLASS:001
+        thickness: 0.004
+      - gas: ARGON:001
+        thickness: 0.015
+      - glass: GLASS:001
+        thickness: 0.004
+
+material:
+  - density: 80.0
+    id: MINERAL_WOOL_WALL:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 0.036
+  - density: 80.0
+    id: MINERAL_WOOL_ROOF:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 0.036
+  - density: 850.0
+    id: BRICK_HOLLOW:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 880
+    thermal_conductivity: 0.3
+  - density: 975.0
+    id: BRICK:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 0.6
+  - density: 2100
+    id: CERAMIC_TILE:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 1.4
+  - density: 975
+    id: GYPSUM_PLASTER:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 1.4
+  - density: 975
+    id: GYPSUM:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 0.6
+  - density: 600
+    id: WOOD:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 1000
+    thermal_conductivity: 0.131
+  - density: 2100
+    id: CONCRETE:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 1.4
+  - density: 26
+    id: EPS:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 1470
+    thermal_conductivity: 0.036
+  - density: 1100
+    id: SCREED:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 0.6
+  - density: 550
+    id: TIMBER:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 1880
+    thermal_conductivity: 0.11
+  - density: 1400
+    id: MASONRY:001
+    longwave_emissivity: 0.85
+    shortwave_emissivity: 0.65
+    specific_heat_capacity: 840
+    thermal_conductivity: 0.54
+
+weather:
+  parameters:
+    path: "weather.mos"
+
+spaces:
+  - id: ZONE_01:001
+    variant: infiltration
+    occupancy:
+      variant: co2
+      parameters:
+        floor_area: 11.77
+        ach: 0.1
+        data:
+          - component: 'co2'
+            variable: 'zone_01_co2'
+    parameters:
+      ach: 0.5
+      floor_area: 11.77
+      average_room_height: 2.4
+      temperature_initial: 295
+      sensible_thermal_mass_scaling_factor: 5
+    external_boundaries:
+      external_walls:
+        - surface: 7.74
+          azimuth: 4.71
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 11.77
+          construction: FLOOR:001
+      windows:
+        - surface: 1.16
+          azimuth: 4.71
+          tilt: wall
+          construction: SIMPLE:001
+    emissions:
+      - radiator:
+          id: RADIATOR:001
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 870
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:001
+              variant: MonitoredSetpoint
+              parameters:
+                controller_gain: 5
+                data:
+                  - component: 'MonitoredSetpoint'
+                    variable: 'zone_01_setpoint'
+  - id: ZONE_02:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+        gain: '[0;0;0]'
+    parameters:
+      ach: 0.5
+      floor_area: 1.32
+      average_room_height: 2.4
+      temperature_initial: 293
+      sensible_thermal_mass_scaling_factor: 10
+    external_boundaries:
+      external_walls:
+        - surface: 2.46
+          azimuth: 4.71
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 1.32
+          construction: FLOOR:001
+      windows:
+        - surface: 0.17
+          azimuth: 4.71
+          tilt: wall
+          construction: SIMPLE:001
+  - id: ZONE_03:001
+    variant: infiltration
+    occupancy:
+      variant: co2
+      parameters:
+        floor_area: 11.39
+        ach: 0.1
+        data:
+          - component: 'co2'
+            variable: 'zone_03_co2'
+    parameters:
+      ach: 0.5
+      floor_area: 11.39
+      average_room_height: 2.4
+      temperature_initial: 295
+      sensible_thermal_mass_scaling_factor: 10
+    external_boundaries:
+      external_walls:
+        - surface: 6.0
+          azimuth: 4.71
+          tilt: wall
+          construction: CAVITY_WALL:001
+        - surface: 6.18
+          azimuth: 3.14
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 11.39
+          construction: FLOOR:001
+      windows:
+        - surface: 1.65
+          azimuth: 4.71
+          tilt: wall
+          construction: SIMPLE:001
+        - surface: 2.4
+          azimuth: 3.14
+          tilt: wall
+          construction: SIMPLE:001
+    emissions:
+      - radiator:
+          id: RADIATOR:002
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 1620
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:002
+              variant: MonitoredSetpoint
+              parameters:
+                controller_gain: 5
+                data:
+                  - component: 'MonitoredSetpoint'
+                    variable: 'zone_03_setpoint'
+  - id: ZONE_04:001
+    variant: infiltration
+    occupancy:
+      variant: co2
+      parameters:
+        floor_area: 24.66
+        ach: 0.1
+        data:
+          - component: 'co2'
+            variable: 'zone_04_co2'
+    parameters:
+      ach: 0.5
+      floor_area: 24.66
+      average_room_height: 2.4
+      temperature_initial: 295
+      sensible_thermal_mass_scaling_factor: 10
+    external_boundaries:
+      external_walls:
+        - surface: 9.05
+          azimuth: 1.57
+          tilt: wall
+          construction: CAVITY_WALL:001
+        - surface: 18.24
+          azimuth: 3.14
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 24.66
+          construction: FLOOR:001
+      windows:
+        - surface: 3.66
+          azimuth: 1.57
+          tilt: wall
+          construction: SIMPLE:001
+        - surface: 3.29
+          azimuth: 3.14
+          tilt: wall
+          construction: SIMPLE:001
+    ventilation_inlets:
+      - duct:
+          id: DUCT:001
+    ventilation_outlets:
+      - duct:
+          id: DUCT:002
+    emissions:
+      - radiator:
+          id: RADIATOR:003
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 4060
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:003
+              variant: MonitoredSetpoint
+              parameters:
+                controller_gain: 5
+                data:
+                  - component: 'MonitoredSetpoint'
+                    variable: 'zone_04_setpoint'
+  - id: ZONE_05:001
+    variant: infiltration
+    occupancy:
+      variant: co2
+      parameters:
+        floor_area: 9.61
+        ach: 0.1
+        data:
+          - component: 'co2'
+            variable: 'zone_05_co2'
+    parameters:
+      ach: 0.5
+      floor_area: 9.61
+      average_room_height: 2.4
+      temperature_initial: 295
+      sensible_thermal_mass_scaling_factor: 10
+    external_boundaries:
+      external_walls:
+        - surface: 9.87
+          azimuth: 1.57
+          tilt: wall
+          construction: CAVITY_WALL:001
+      floor_on_grounds:
+        - surface: 9.61
+          construction: FLOOR:001
+      windows:
+        - surface: 2.12
+          azimuth: 1.57
+          tilt: wall
+          construction: SIMPLE:001
+    ventilation_inlets:
+      - duct:
+          id: DUCT:002
+    ventilation_outlets:
+      - duct:
+          id: DUCT:003
+    emissions:
+      - radiator:
+          id: RADIATOR:004
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 1870
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:004
+              variant: MonitoredSetpoint
+              parameters:
+                controller_gain: 5
+                data:
+                  - component: 'MonitoredSetpoint'
+                    variable: 'zone_05_setpoint'
+  - id: ZONE_06:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+        gain: '[0;0;0]'
+    parameters:
+      ach: 0.5
+      floor_area: 5.12
+      average_room_height: 2.4
+      temperature_initial: 293
+      sensible_thermal_mass_scaling_factor: 10
+    external_boundaries:
+      floor_on_grounds:
+        - surface: 5.12
+          construction: FLOOR:001
+  - id: ZONE_07:001
+    variant: infiltration
+    occupancy:
+      variant: co2
+      parameters:
+        floor_area: 6.49
+        ach: 0.1
+        data:
+          - component: 'co2'
+            variable: 'zone_07_co2'
+    parameters:
+      ach: 0.5
+      floor_area: 6.49
+      average_room_height: 2.4
+      temperature_initial: 295
+      sensible_thermal_mass_scaling_factor: 10
+    external_boundaries:
+      floor_on_grounds:
+        - surface: 6.49
+          construction: FLOOR:001
+    emissions:
+      - radiator:
+          id: RADIATOR:005
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 1870
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:005
+              variant: MonitoredSetpoint
+              parameters:
+                controller_gain: 5
+                data:
+                  - component: 'MonitoredSetpoint'
+                    variable: 'zone_07_setpoint'
+  - id: ZONE_08:001
+    occupancy:
+      variant: co2
+      parameters:
+        floor_area: 3.51
+        ach: 0.1
+        data:
+          - component: 'co2'
+            variable: 'zone_03_co2'
+    parameters:
+      floor_area: 3.51
+      average_room_height: 4.8
+      temperature_initial: 293
+      sensible_thermal_mass_scaling_factor: 10
+    external_boundaries:
+      floor_on_grounds:
+        - surface: 3.51
+          construction: FLOOR:001
+      external_walls:
+        - surface: 1.76
+          azimuth: 1.57
+          tilt: pitched_roof_35
+          construction: ROOF:001
+        - surface: 2.21
+          azimuth: 4.71
+          tilt: pitched_roof_35
+          construction: ROOF:001
+  # second floor
+  - id: ZONE_09:001
+    variant: infiltration
+    occupancy:
+      variant: co2
+      parameters:
+        floor_area: 16.19
+        ach: 0.1
+        data:
+          - component: 'co2'
+            variable: 'zone_09_co2'
+    parameters:
+      ach: 0.5
+      floor_area: 16.19
+      average_room_height: 2.4
+      temperature_initial: 295
+      sensible_thermal_mass_scaling_factor: 5
+    external_boundaries:
+      external_walls:
+        - surface: 13.65
+          azimuth: 3.14
+          tilt: wall
+          construction: CAVITY_WALL:001
+        - surface: 8.55
+          azimuth: 1.57
+          tilt: pitched_roof_35
+          construction: ROOF:001
+        - surface: 8.09
+          azimuth: 4.71
+          tilt: pitched_roof_35
+          construction: ROOF:001
+      windows:
+        - surface: 1.75
+          azimuth: 3.14
+          tilt: wall
+          construction: SIMPLE:001
+    emissions:
+      - radiator:
+          id: RADIATOR:006
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 1900
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:006
+              variant: MonitoredSetpoint
+              parameters:
+                controller_gain: 5
+                data:
+                  - component: 'MonitoredSetpoint'
+                    variable: 'zone_09_setpoint'
+  - id: ZONE_10:001
+    variant: infiltration
+    occupancy:
+      variant: co2
+      parameters:
+        floor_area: 17.27
+        ach: 0.1
+        data:
+          - component: 'co2'
+            variable: 'zone_10_co2'
+    parameters:
+      ach: 0.5
+      floor_area: 17.27
+      average_room_height: 2.4
+      temperature_initial: 295
+      sensible_thermal_mass_scaling_factor: 5
+    external_boundaries:
+      external_walls:
+        - surface: 9.89
+          azimuth: 1.57
+          tilt: pitched_roof_35
+          construction: ROOF:001
+        - surface: 9.32
+          azimuth: 4.71
+          tilt: pitched_roof_35
+          construction: ROOF:001
+    emissions:
+      - radiator:
+          id: RADIATOR:007
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 1570
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:007
+              variant: MonitoredSetpoint
+              parameters:
+                controller_gain: 5
+                data:
+                  - component: 'MonitoredSetpoint'
+                    variable: 'zone_10_setpoint'
+  - id: ZONE_11:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+        gain: '[0;0;0]'
+    parameters:
+      floor_area: 11.26
+      average_room_height: 2.4
+      temperature_initial: 293
+      sensible_thermal_mass_scaling_factor: 5
+    external_boundaries:
+      external_walls:
+        - surface: 12.74
+          azimuth: 1.57
+          tilt: pitched_roof_35
+          construction: ROOF:001
+  - id: ZONE_12:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 19}
+        gain: '[0;0;0]'
+    parameters:
+      ach: 0.5
+      floor_area: 1.06
+      average_room_height: 2.4
+      temperature_initial: 293
+      sensible_thermal_mass_scaling_factor: 5
+    external_boundaries:
+      external_walls:
+        - surface: 0.92
+          azimuth: 1.57
+          tilt: pitched_roof_35
+          construction: ROOF:001
+
+systems:
+  - power_sensor:
+      id: POWER_SENSOR:001
+      inlets:
+        - RADIATOR:001
+        - RADIATOR:002
+        - RADIATOR:003
+        - RADIATOR:004
+        - RADIATOR:005
+        - RADIATOR:006
+        - RADIATOR:007
+  - air_handling_unit:
+      id: AHU:001
+      parameters:
+        m_flow_nominal: 0.06
+        dp_nominal: 100
+        heat_exchanger_effectiveness: 0.8
+      variant: system_d
+      inlets:
+        - DUCT:003
+      outlets:
+        - DUCT:001
+
+internal_walls:
+  - space_1: ZONE_09:001
+    space_2: ZONE_04:001
+    construction: INNERWALL:001
+    surface: 20.61
+    space_2_tilt: ceiling
+    space_1_tilt: floor
+  - space_1: ZONE_09:001
+    space_2: ZONE_03:001
+    construction: INNERWALL:001
+    surface: 6.12
+  - space_1: ZONE_10:001
+    space_2: ZONE_08:001
+    construction: INNERWALL:001
+    surface: 11.04
+  - space_1: ZONE_09:001
+    space_2: ZONE_08:001
+    construction: INNERWALL:001
+    surface: 10.56
+  - space_1: ZONE_10:001
+    space_2: ZONE_11:001
+    construction: INNERWALL:001
+    surface: 5.6
+  - space_1: ZONE_10:001
+    space_2: ZONE_12:001
+    construction: INNERWALL:001
+    surface: 2.08
+  - space_1: ZONE_03:001
+    space_2: ZONE_12:001
+    construction: INNERWALL:001
+    surface: 1.92
+  - space_1: ZONE_01:001
+    space_2: ZONE_02:001
+    construction: INNERWALL:001
+    surface: 3.08
+  - space_1: ZONE_01:001
+    space_2: ZONE_08:001
+    construction: INNERWALL:001
+    surface: 1.99
+  - space_1: ZONE_01:001
+    space_2: ZONE_07:001
+    construction: INNERWALL:001
+    surface: 6.03
+  - space_1: ZONE_01:001
+    space_2: ZONE_03:001
+    construction: INNERWALL:001
+    surface: 4.07
+  - space_1: ZONE_02:001
+    space_2: ZONE_03:001
+    construction: INNERWALL:001
+    surface: 5.68
+  - space_1: ZONE_03:001
+    space_2: ZONE_04:001
+    construction: INNERWALL:001
+    surface: 8.94
+  - space_1: ZONE_04:001
+    space_2: ZONE_08:001
+    construction: INNERWALL:001
+    surface: 12.03
+  - space_1: ZONE_04:001
+    space_2: ZONE_05:001
+    construction: INNERWALL:001
+    surface: 7.72
+  - space_1: ZONE_05:001
+    space_2: ZONE_06:001
+    construction: INNERWALL:001
+    surface: 5.83
+  - space_1: ZONE_05:001
+    space_2: ZONE_08:001
+    construction: INNERWALL:001
+    surface: 2.11
+  - space_1: ZONE_06:001
+    space_2: ZONE_07:001
+    construction: INNERWALL:001
+    surface: 7.43
+  - space_1: ZONE_07:001
+    space_2: ZONE_08:001
+    construction: INNERWALL:001
+    surface: 5.21
+  - space_1: ZONE_06:001
+    space_2: ZONE_08:001
+    construction: INNERWALL:001
+    surface: 5.09
+  # floor
+  - space_1: ZONE_10:001
+    space_2: ZONE_06:001
+    construction: INNERWALL:001
+    surface: 6.03
+    space_2_tilt: ceiling
+    space_1_tilt: floor
+  - space_1: ZONE_10:001
+    space_2: ZONE_07:001
+    construction: INNERWALL:001
+    surface: 6.31
+    space_2_tilt: ceiling
+    space_1_tilt: floor
+  - space_1: ZONE_10:001
+    space_2: ZONE_01:001
+    construction: INNERWALL:001
+    surface: 3.25
+    space_2_tilt: ceiling
+    space_1_tilt: floor
+  - space_1: ZONE_11:001
+    space_2: ZONE_05:001
+    construction: INNERWALL:001
+    surface: 10.11
