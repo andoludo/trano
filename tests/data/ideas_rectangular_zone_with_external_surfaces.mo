@@ -3468,50 +3468,50 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
+extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.025,
+      c=1005.0,
+      rho=1.2,
       epsLw=0.88,
       epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
+      epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
       epsLw=0.88,
       epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.12,
       c=1210.0,
       rho=540.0,
       epsLw=0.88,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.03,
+      c=1200.0,
+      rho=40.0,
+      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;      record external_wall
+package Constructions "Library of building envelope constructions"      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.concrete
         (d=0.2),ideas_rectangular_zone_with_external_surfaces.Data.Materials.insulation_board
         (d=0.02),ideas_rectangular_zone_with_external_surfaces.Data.Materials.plywood
         (d=0.1)    });
-    end external_wall;
+    end external_wall;      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;
 end Constructions;
 end Data;
 
@@ -3595,7 +3595,6 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     A={ 2 },
     final azi={ 0 },
     redeclare package Medium = Medium,
-    each coeffsCp=merged_door[1].Cp_table.Cp_Wall,
     final inc={IDEAS.Types.Tilt.Wall}) annotation (
     Placement(transformation(origin = { -85.0, -100.0 },
     extent = {{ 3, -3}, {-3, 3}}
@@ -3608,7 +3607,6 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     A={ 14 },
     final azi={ 0 },
     redeclare package Medium = Medium,
-    each coeffsCp=merged_roof[1].Cp_table.Cp_Roof_30_45,
     final inc={0.785}) annotation (
     Placement(transformation(origin = { -85.0, -90.0 },
     extent = {{ 3, -3}, {-3, 3}}
@@ -3620,7 +3618,6 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     A={ 1 },
     final azi={ 0 },
     redeclare package Medium = Medium,
-    each coeffsCp=merged_window_south_bis[1].Cp_table.Cp_Wall,
     final inc={IDEAS.Types.Tilt.Wall}) annotation (
     Placement(transformation(origin = { -85.0, -80.0 },
     extent = {{ 3, -3}, {-3, 3}}
@@ -3933,50 +3930,50 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
+extends Modelica.Icons.MaterialPropertiesPackage;    record Air = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.025,
+      c=1005.0,
+      rho=1.2,
       epsLw=0.88,
       epsSw=0.55);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2240.0,
       epsLw=0.88,
-      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.89,
-      c=790.0,
-      rho=1920.0,
-      epsLw=0.88,
-      epsSw=0.55);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
-      c=1005.0,
-      rho=1.2,
+      epsSw=0.55);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=1.0,
+      c=840.0,
+      rho=2500.0,
       epsLw=0.88,
       epsSw=0.55);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.12,
       c=1210.0,
       rho=540.0,
       epsLw=0.88,
+      epsSw=0.55);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.89,
+      c=790.0,
+      rho=1920.0,
+      epsLw=0.88,
+      epsSw=0.55);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.03,
+      c=1200.0,
+      rho=40.0,
+      epsLw=0.88,
       epsSw=0.55);end Materials;
-package Constructions "Library of building envelope constructions"      record internal_wall
-    "internal_wall"
-   extends IDEAS.Buildings.Data.Interfaces.Construction(
-      mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.brick
-        (d=0.2)    });
-    end internal_wall;      record external_wall
+package Constructions "Library of building envelope constructions"      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.concrete
         (d=0.2),ideas_rectangular_zone_with_external_surfaces.Data.Materials.insulation_board
         (d=0.02),ideas_rectangular_zone_with_external_surfaces.Data.Materials.plywood
         (d=0.1)    });
-    end external_wall;
+    end external_wall;      record internal_wall
+    "internal_wall"
+   extends IDEAS.Buildings.Data.Interfaces.Construction(
+      mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.brick
+        (d=0.2)    });
+    end internal_wall;
 end Constructions;
 end Data;
 

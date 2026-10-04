@@ -8,9 +8,7 @@ from trano.elements import ExternalDoor, ExternalWall, FloorOnGround, Window
 from trano.elements.construction import Construction, Glass
 from trano.elements.library.library import Library
 from trano.elements.space import Space, SpaceVariant
-from trano.elements.envelope import MergedExternalWall
-from trano.elements.jinja import compile_template
-from trano.elements.types import TILT_RADIANS, Azimuth, Tilt, wind_pressure_table
+from trano.elements.types import Azimuth, Tilt
 from trano.elements.zone_template import RectangularZone, same_angle, to_radians
 from trano.exceptions import UnknownComponentVariantError
 from trano.topology import Network
@@ -152,38 +150,3 @@ def test_zone_template_model_declares_every_construction_once() -> None:
     # The data package is rendered once at package level and once in the envelope container.
     assert model.count("record external_wall") == model.count("package Data ")
     assert model.count("record  double_glazing") == model.count("package Data ")
-
-
-@pytest.mark.parametrize(
-    ("tilt", "table"),
-    [
-        (Tilt.wall, "Cp_Wall"),
-        (Tilt.ceiling, "Cp_Roof_0_10"),
-        (Tilt.floor, "Cp_Floor"),
-        (Tilt.pitched_roof_20, "Cp_Roof_11_30"),
-        (Tilt.pitched_roof_30, "Cp_Roof_30_45"),
-        (Tilt.pitched_roof_45, "Cp_Roof_30_45"),
-    ],
-)
-def test_wind_pressure_table_follows_ideas_selection(tilt: Tilt, table: str) -> None:
-    assert wind_pressure_table(tilt) == table
-
-
-def test_tilt_macro_and_python_mapping_agree() -> None:
-    template = compile_template("{% import 'macros.jinja2' as macros %}{{ macros.convert_tilt(tilt, 'IDEAS') }}")
-    for tilt in Tilt:
-        rendered = template.render(tilt=tilt)
-        expected = TILT_RADIANS[tilt.value]
-        if rendered.startswith("IDEAS.Types.Tilt."):
-            assert expected == {"Wall": math.pi / 2, "Ceiling": 0.0, "Floor": math.pi}[rendered.split(".")[-1]]
-        else:
-            assert float(rendered) == expected
-
-
-def test_merged_walls_split_by_wind_pressure_table() -> None:
-    walls = [_wall("south", Azimuth.south), _wall("roof", Azimuth.south, tilt=Tilt.pitched_roof_45)]
-    merged = MergedExternalWall.from_base_elements(walls)
-    assert [(m.name, m.wind_pressure_table) for m in merged] == [
-        ("merged_roof", "Cp_Roof_30_45"),
-        ("merged_south", "Cp_Wall"),
-    ]

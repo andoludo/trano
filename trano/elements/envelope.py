@@ -8,7 +8,7 @@ from pydantic import BaseModel, model_validator, computed_field, Field
 
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
-from trano.elements.types import Azimuth, Tilt, ContainerTypes, TILT_MAPPING, wind_pressure_table
+from trano.elements.types import Azimuth, Tilt, ContainerTypes, TILT_MAPPING
 from trano.exceptions import InvalidBuildingStructureError
 
 if TYPE_CHECKING:
@@ -68,24 +68,12 @@ class BaseWindow(BaseSimpleWall):
         return self
 
 
-MergeKey = tuple[Construction | Glass, str]
-
-
-def merge_key(wall: BaseSimpleWall) -> MergeKey:
-    """Walls lumped into one array component share a construction and a wind pressure table.
-
-    IDEAS picks the wind pressure coefficients of a surface from its inclination; the tables
-    have different sizes, so an array component can only bind one of them for all elements.
-    """
-    return wall.construction, wind_pressure_table(wall.tilt)
-
-
 def _get_element(
     construction_type: str,
     base_walls: list[BaseExternalWall | BaseWindow | BaseFloorOnGround],
-    key: MergeKey,
+    construction: Construction | Glass,
 ) -> list[BaseExternalWall | BaseWindow | BaseFloorOnGround]:
-    return [getattr(base_wall, construction_type) for base_wall in base_walls if merge_key(base_wall) == key]
+    return [getattr(base_wall, construction_type) for base_wall in base_walls if base_wall.construction == construction]
 
 
 class MergedBaseWall(BaseWall):
@@ -96,22 +84,14 @@ class MergedBaseWall(BaseWall):
     include_in_layout: bool = False
     component_size: float = 3
 
-    @property
-    def wind_pressure_table(self) -> str:
-        """Wind pressure coefficient table shared by the lumped surfaces (IDEAS `coeffsCp`)."""
-        tables = {wind_pressure_table(tilt) for tilt in self.tilts}
-        if len(tables) != 1:
-            raise InvalidBuildingStructureError(f"{self.name} lumps surfaces with different wind pressure tables.")
-        return tables.pop()
-
     @classmethod
     def from_base_elements(
         cls, base_walls: list[BaseExternalWall | BaseWindow | BaseFloorOnGround]
     ) -> list["MergedBaseWall"]:
         merged_walls = []
-        unique_keys = {merge_key(base_wall) for base_wall in base_walls}
+        unique_constructions = {base_wall.construction for base_wall in base_walls}
 
-        for key in unique_keys:
+        for construction in unique_constructions:
             data: dict[
                 str,
                 list[BaseExternalWall | BaseWindow | BaseFloorOnGround],
@@ -122,13 +102,13 @@ class MergedBaseWall(BaseWall):
                 "surface": [],
             }
             for construction_type in data:
-                data[construction_type] = _get_element(construction_type, base_walls, key)
+                data[construction_type] = _get_element(construction_type, base_walls, construction)
             merged_wall = cls(
                 name=f"merged_{'_'.join(data['name'])}",  # type: ignore
                 surfaces=data["surface"],
                 azimuths=data["azimuth"],
                 tilts=data["tilt"],
-                constructions=[key[0]],
+                constructions=[construction],
             )
             merged_walls.append(merged_wall)
         return sorted(merged_walls, key=lambda x: x.name)  # type: ignore #TODO: what is the issue with this!!!
@@ -181,9 +161,9 @@ class MergedWindows(MergedBaseWindow):
     @classmethod
     def from_base_windows(cls, base_walls: list["BaseWindow"]) -> list["MergedWindows"]:
         merged_windows = []
-        unique_keys = {merge_key(base_wall) for base_wall in base_walls}
+        unique_constructions = {base_wall.construction for base_wall in base_walls}
 
-        for key in unique_keys:
+        for construction in unique_constructions:
             data: dict[str, list[ExternalWall | FloorOnGround | BaseWindow | str]] = {
                 "azimuth": [],
                 "tilt": [],
@@ -196,14 +176,14 @@ class MergedWindows(MergedBaseWindow):
                 data[construction_type] = _get_element(
                     construction_type,
                     base_walls,  # type: ignore
-                    key,
+                    construction,
                 )
             merged_window = cls(
                 name=f"merged_{'_'.join(data['name'])}",  # type: ignore
                 surfaces=data["surface"],
                 azimuths=data["azimuth"],
                 tilts=data["tilt"],
-                constructions=[key[0]],
+                constructions=[construction],
                 heights=data["height"],
                 widths=data["width"],
             )

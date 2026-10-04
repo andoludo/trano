@@ -25,6 +25,5 @@
         A={{  macros.join_list(element.surfaces)}},
         final azi={{macros.join_list(element.azimuths)}},
         redeclare package Medium = Medium,
-        each coeffsCp={{ element.name }}[1].Cp_table.{{ element.wind_pressure_table }},
         final inc={{ macros.convert_tilts(element.tilts, library_name) }})
   variant: default
