@@ -57,20 +57,50 @@ class ModelicaEnvironment(BaseModel):
     ideas: str = Field(default="4.0.0")
     aixlib: str = Field(default="3.0.1")
 
+    @property
+    def modelica_version(self) -> str:
+        """Modelica Standard Library version to load before a model: the newest one.
+
+        Every generated model refers to Buildings (through the embedded Trano package) and
+        possibly IDEAS or AixLib, whose `uses` annotations ask for different versions. Only
+        one can be loaded, and the newer one declares itself compatible with the older.
+        """
+        return max(self.modelica, key=_version_key).split("+")[0]
+
     def configure_script(self) -> str:
-        """Content of the OpenModelica script installing the libraries."""
+        """Content of the OpenModelica script installing the libraries.
+
+        A library already available on the MODELICAPATH (for instance baked into a custom
+        image) is not installed again: that keeps the package manager, and the network, out
+        of the loop and makes the container start in seconds instead of minutes.
+        """
         lines = ["getVersion();"]
-        for version in self.modelica:
-            lines += [
-                f'installPackage({package}, "{version}", exactMatch=true);'
-                for package in ("ModelicaServices", "Modelica", "Complex")
-            ]
         lines += [
-            f'installPackage(Buildings, "{self.buildings}");',
-            f'installPackage(IDEAS, "{self.ideas}");',
-            f'installPackage(AixLib, "{self.aixlib}");',
+            _install_unless_available(
+                "Modelica", version, ("ModelicaServices", "Modelica", "Complex"), exact_match=True
+            )
+            for version in self.modelica
+        ]
+        lines += [
+            _install_unless_available("Buildings", self.buildings),
+            _install_unless_available("IDEAS", self.ideas),
+            _install_unless_available("AixLib", self.aixlib),
         ]
         return "\n".join(lines) + "\n"
+
+
+def _version_key(version: str) -> tuple[int, ...]:
+    return tuple(int(part) for part in version.split("+", maxsplit=1)[0].split("."))
+
+
+def _install_unless_available(
+    library: str, version: str, packages: tuple[str, ...] | None = None, exact_match: bool = False
+) -> str:
+    """OpenModelica statement installing `packages` unless `library` has `version` installed."""
+    suffix = ", exactMatch=true" if exact_match else ""
+    installs = " ".join(f'installPackage({package}, "{version}"{suffix});' for package in packages or (library,))
+    available = f'sum({{if v == "{version}" then 1 else 0 for v in getAvailableLibraryVersions({library})}})'
+    return f"if {available} == 0 then {installs} end if;"
 
 
 MODELICA_ENVIRONMENT = ModelicaEnvironment()
@@ -143,7 +173,12 @@ def container(
 
 
 @contextmanager
-def create_mos_file(network: Network, options: SimulationOptions, project_path: Path) -> Generator[str, None, None]:
+def create_mos_file(
+    network: Network,
+    options: SimulationOptions,
+    project_path: Path,
+    environment: ModelicaEnvironment = MODELICA_ENVIRONMENT,
+) -> Generator[str, None, None]:
     # TODO: do we want this here?
     network.set_weather_path_to_container_path(project_path)
     model = network.model()
@@ -152,25 +187,22 @@ def create_mos_file(network: Network, options: SimulationOptions, project_path: 
         tempfile.NamedTemporaryFile(mode="w", dir=project_path, suffix=".mos") as temp_mos_file,
     ):
         Path(temp_model_file.name).write_text(model)
-        if options.check_only:
-            template = STRING_ENVIRONMENT.from_string(
-                """
-    getVersion();
-    loadFile("/simulation/{{model_file}}");
-    checkModel({{model_name}}.building);
-    """
-            )
-        else:
-            template = STRING_ENVIRONMENT.from_string(
-                f"""
-    getVersion();
-    loadFile("/simulation/{{{{model_file}}}}");
-    checkModel({{{{model_name}}}}.building);
+        simulation = (
+            ""
+            if options.check_only
+            else f"""
     simulate({{{{model_name}}}}.building,startTime = {options.start_time},
     stopTime = {options.end_time},
-    tolerance = {options.tolerance});
+    tolerance = {options.tolerance});"""
+        )
+        template = STRING_ENVIRONMENT.from_string(
+            f"""
+    getVersion();
+    loadModel(Modelica, {{"{environment.modelica_version}"}});
+    loadFile("/simulation/{{{{model_file}}}}");
+    checkModel({{{{model_name}}}}.building);{simulation}
     """
-            )
+        )
         mos_file = template.render(model_file=Path(temp_model_file.name).name, model_name=network.name)
         Path(temp_mos_file.name).write_text(mos_file)
         yield Path(temp_mos_file.name).name
