@@ -204,9 +204,14 @@ def _unique(elements: Iterable["BaseInternalElement"]) -> list["BaseInternalElem
     return list({element.name: element for element in elements}.values())
 
 
-def _emitter(envelope: ZoneEnvelope, settings: EstimationSettings) -> tuple[float, float]:
+def design_heating_power(envelope: ZoneEnvelope, settings: EstimationSettings) -> float:
+    """Oversized design heat load of the zone [W]."""
     design_temperature_difference = settings.design_indoor_temperature - settings.design_outdoor_temperature
-    nominal_power = settings.emitter_oversizing * envelope.heat_loss_coefficient * design_temperature_difference
+    return settings.emitter_oversizing * envelope.heat_loss_coefficient * design_temperature_difference
+
+
+def _emitter(envelope: ZoneEnvelope, settings: EstimationSettings) -> tuple[float, float]:
+    nominal_power = design_heating_power(envelope, settings)
     resistance = settings.emitter_temperature_difference / nominal_power
     return settings.emitter_time_constant / resistance, resistance
 
@@ -345,6 +350,7 @@ def rc_building_from_network(
                 solar_apertures=envelope.solar_apertures,
                 temperature_initial=getattr(space.parameters, "temperature_initial", None) or 294.15,
                 floor_area=envelope.floor_area,
+                design_heating_power=design_heating_power(envelope, settings),
             )
         )
     return RCBuilding(

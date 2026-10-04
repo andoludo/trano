@@ -87,6 +87,43 @@ export.state_names, export.input_names, export.parameter_names
 The emission systems of the YAML file (radiators, boilers, controls...) are abstracted as the heating
 power of each zone.
 
+## Plugging the model into an MPC runtime
+
+`trano create-model house.yaml mpc` writes two files:
+
+* `house.mo` - the Modelica package (`house.building_mpc` and the runnable `house.building`),
+* `house.mpc.json` - the `MPCModelInterface` of `house.building_mpc`.
+
+The interface lists the states, inputs and parameters **in the order of the CasADi vectors**
+`x`, `u` and `p` of the translated model, so an MPC runtime never has to parse the Modelica code:
+
+* `states`: name, zone, RC node (`Ti`, `Te`, `Th`, `Tm`) and initial value,
+* `inputs`: `role` (`control` for the heating powers, `disturbance` otherwise) and, for the
+  disturbances, their `source`: the weather variable (`TOut`), the orientation of the irradiance
+  (`HSol_<orientation>`: azimuth and tilt in degrees), or the occupancy model, its parameters and
+  floor area (`<space>_QInt`), plus the external data column replaying an input, if any,
+* `parameters`: name, value, unit and zone (they stay symbolic in CasADi, e.g. for identification),
+* `zones`: comfort state (`indoor_temperature`), heating input and an estimated
+  `design_heating_power` usable as upper bound of the control input,
+* `weather_file`: the weather file of the runnable model, to build the forecasts.
+
+```python
+import rumoca
+
+from trano.mpc import InputRole, MPCModelInterface
+
+interface = MPCModelInterface.read("house.mpc.json")
+export = rumoca.Session().loads(open("house.mo").read(), model=interface.model).to_casadi()
+assert interface.input_names == list(export.input_names)  # guaranteed by the test suite
+
+controls = [signal.name for signal in interface.inputs if signal.role == InputRole.control]
+rhs = export.rhs  # casadi.Function xdot = rhs(t, x, u, p), p = interface.parameter_values
+```
+
+The test suite contains a reference runtime (`tests/test_mpc_interface.py`) built only from these two
+files: it discretises the ODE, builds the forecasts from the disturbance sources and solves an
+economic MPC problem with IPOPT for every RC structure.
+
 ## Zone models (`Trano.MPC.Zones`)
 
 | Model      | States     | Structure                                                                         | Reference                                           |

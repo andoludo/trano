@@ -2,11 +2,14 @@
 
 import math
 import re
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 from trano.mpc.parameters import ModelicaState, ZoneParameters
+
+if TYPE_CHECKING:
+    from trano.mpc.interface import MPCModelInterface
 
 MODELICA_IDENTIFIER = re.compile(r"^[A-Za-z_]\w*$")
 
@@ -70,6 +73,7 @@ class RCZone(BaseModel):
     solar_apertures: list[SolarAperture] = Field(default_factory=list)
     temperature_initial: float = Field(294.15, gt=0, description="Initial temperature of all the zone states [K]")
     floor_area: float = Field(100.0, gt=0, description="Floor area used to scale the occupancy gains [m2]")
+    design_heating_power: float | None = Field(None, ge=0, description="Estimated design heating power [W]")
 
     _name_validator = field_validator("name")(_validate_identifier)
 
@@ -142,6 +146,12 @@ class RCBuilding(BaseModel):
     @property
     def state_names(self) -> list[str]:
         return [name for zone in self.zones for name in zone.state_names]
+
+    def interface(self, package_name: str = "TranoRC") -> "MPCModelInterface":
+        """Machine-readable description of the model rendered by :meth:`to_modelica`."""
+        from trano.mpc.modelica import build_interface
+
+        return build_interface(self, package_name)
 
     def to_modelica(self, package_name: str = "TranoRC") -> str:
         """Modelica package with the Trano library (including ``Trano.MPC``) and the flat RC model."""

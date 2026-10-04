@@ -83,6 +83,11 @@ def create_model(
         modelica_model_path.write_text(modelica_model)
         progress.remove_task(task)
         print(f"{CHECKMARK} Model generated at {modelica_model_path}")
+        if network.library.is_rc:
+            from trano.mpc.modelica import network_interface
+
+            interface_path = network_interface(network).write(modelica_model_path.with_suffix(".mpc.json"))
+            print(f"{CHECKMARK} MPC interface of {network.name}.building_mpc generated at {interface_path}")
 
 
 @app.command()

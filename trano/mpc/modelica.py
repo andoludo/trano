@@ -17,6 +17,7 @@ from pydantic import BaseModel
 from trano.mpc.parameters import ZONE_PARAMETERS, ModelicaParameter, ModelicaState, RCModelType
 
 if TYPE_CHECKING:
+    from trano.mpc.interface import MPCModelInterface
     from trano.elements.base import BaseElement
     from trano.elements.bus import DataBus
     from trano.elements.system import BaseOccupancy
@@ -74,6 +75,8 @@ class OrientationView(BaseModel):
 class OccupancyView(BaseModel):
     model: str
     parameters: str
+    values: dict[str, str | float] = {}
+    data_column: str | None = None
 
 
 class RunnableZoneView(BaseModel):
@@ -92,6 +95,7 @@ class ExternalDataView(BaseModel):
 class RunnableView(BaseModel):
     weather: str
     weather_name: str
+    weather_file: str | None = None
     orientations: list[OrientationView]
     zones: list[RunnableZoneView]
     external_data: ExternalDataView | None = None
@@ -242,7 +246,9 @@ def _occupancy_view(
     }
     data_sources = getattr(occupancy.parameters, "data", None) or []
     if not data_sources:
-        return OccupancyView(model="SimpleOccupancy", parameters=_render_parameters(parameters))
+        return OccupancyView(
+            model="SimpleOccupancy", parameters=_render_parameters(parameters), values=dict(parameters)
+        )
     variable = data_sources[0].variable
     column = _column(external_data, variable)
     if column is None:
@@ -250,9 +256,12 @@ def _occupancy_view(
             f"Occupancy {occupancy.name} reads '{variable}' but the external data does not contain this column."
         )
     parameters["AFlo"] = floor_area
+    values = dict(parameters)
     # The measured CO2 concentration is bound to the (non-connector) input of the occupancy estimator.
     parameters["co2"] = f"(u=externalData.y[{column}])"
-    return OccupancyView(model="OccupancyCo2", parameters=_render_parameters(parameters))
+    return OccupancyView(
+        model="OccupancyCo2", parameters=_render_parameters(parameters), values=values, data_column=variable
+    )
 
 
 def _render_parameters(parameters: dict[str, Any]) -> str:
@@ -291,6 +300,7 @@ def _runnable_view(network: "Network", building: "RCBuilding", data_bus: "DataBu
     return RunnableView(
         weather=_render_element(weather, network),
         weather_name=weather.name,
+        weather_file=_weather_file(weather, network),
         orientations=[
             OrientationView(
                 name=orientation.name,
@@ -320,10 +330,150 @@ def _render_element(element: "BaseElement", network: "Network") -> str:
     return " ".join(declaration.split()) + ";"
 
 
-def render_network(network: "Network", data_bus: "DataBus | None" = None) -> str:
-    """Model of a network generated with the ``mpc`` library: flat RC model and runnable model."""
+def _weather_file(weather: "BaseElement", network: "Network") -> str | None:
+    path = weather.processed_parameters(network.library).get("filNam")
+    return str(path).strip('"') if path else None
+
+
+def _prepare(network: "Network", data_bus: "DataBus | None") -> tuple["RCBuilding", RunnableView]:
     from trano.mpc.estimation import rc_building_from_network
 
     model_type = network.library.rc_model_type or RCModelType.r3c2
     building = rc_building_from_network(network, model_type=model_type)
-    return _render(building, network.name, _runnable_view(network, building, data_bus))
+    return building, _runnable_view(network, building, data_bus)
+
+
+def render_network(network: "Network", data_bus: "DataBus | None" = None) -> str:
+    """Model of a network generated with the ``mpc`` library: flat RC model and runnable model."""
+    building, runnable = _prepare(network, data_bus)
+    return _render(building, network.name, runnable)
+
+
+def network_interface(network: "Network", data_bus: "DataBus | None" = None) -> "MPCModelInterface":
+    """Interface of the model generated for a network with the ``mpc`` library."""
+    building, runnable = _prepare(network, data_bus)
+    return build_interface(building, network.name, runnable)
+
+
+def build_interface(
+    building: "RCBuilding", package_name: str, runnable: RunnableView | None = None
+) -> "MPCModelInterface":
+    """Describe ``building_mpc`` in the declaration order, i.e. the order of the CasADi vectors."""
+    from trano.mpc.interface import (
+        InputRole,
+        InputSpec,
+        IrradianceSource,
+        MPCModelInterface,
+        OccupancySource,
+        OutdoorTemperatureSource,
+        ParameterSpec,
+        StateSpec,
+        ZoneSpec,
+    )
+
+    view = _building_view(building)
+    runnable_zones = {zone.name: zone for zone in runnable.zones} if runnable else {}
+    external_columns = runnable.external_data.columns if runnable and runnable.external_data else []
+    parameters = [
+        ParameterSpec(
+            name="TGro", value=building.ground_temperature, unit="K", description="Ground temperature below the slab"
+        ),
+        *(
+            ParameterSpec(
+                name=coupling.parameter,
+                value=coupling.conductance,
+                unit="W/K",
+                description=f"Conductance between {coupling.zone_a} and {coupling.zone_b}",
+            )
+            for coupling in building.couplings
+        ),
+    ]
+    inputs = [
+        InputSpec(
+            name="TOut",
+            role=InputRole.disturbance,
+            unit="K",
+            description="Outdoor dry-bulb air temperature",
+            source=OutdoorTemperatureSource(),
+        ),
+        *(
+            InputSpec(
+                name=orientation.irradiance,
+                role=InputRole.disturbance,
+                unit="W/m2",
+                description=f"Total solar irradiance, {_describe(orientation)}",
+                source=IrradianceSource(azimuth=orientation.azimuth, tilt=orientation.tilt),
+            )
+            for orientation in building.orientations
+        ),
+    ]
+    states, zones = [], []
+    for zone, zone_view in zip(building.zones, view.zones, strict=True):
+        parameters += [
+            ParameterSpec(
+                name=f"{zone.prefix}{parameter.name}",
+                value=parameter.value,
+                unit=parameter.unit,
+                description=parameter.description,
+                zone=zone.name,
+            )
+            for parameter in zone_view.parameters
+        ]
+        runnable_zone = runnable_zones.get(zone.name)
+        occupancy = runnable_zone.occupancy if runnable_zone else None
+        inputs += [
+            InputSpec(
+                name=f"{zone.prefix}QInt",
+                role=InputRole.disturbance,
+                unit="W",
+                description="Internal heat gains (occupants, appliances, lighting)",
+                zone=zone.name,
+                source=OccupancySource(
+                    zone=zone.name,
+                    floor_area=zone.floor_area,
+                    model=occupancy.model if occupancy else None,
+                    parameters=occupancy.values if occupancy else {},
+                    data_column=occupancy.data_column if occupancy else None,
+                ),
+            ),
+            InputSpec(
+                name=f"{zone.prefix}QHea",
+                role=InputRole.control,
+                unit="W",
+                description="Heating (> 0) or cooling (< 0) power",
+                zone=zone.name,
+                data_column=f"{zone.prefix}QHea" if f"{zone.prefix}QHea" in external_columns else None,
+            ),
+        ]
+        states += [
+            StateSpec(
+                name=f"{zone.prefix}{state.name}",
+                zone=zone.name,
+                node=state.name,
+                initial_value=zone.temperature_initial,
+                description=state.description,
+            )
+            for state in zone.states
+        ]
+        zones.append(
+            ZoneSpec(
+                name=zone.name,
+                model_type=zone.parameters.model_type.value,
+                indoor_temperature=f"{zone.prefix}Ti",
+                heating_input=f"{zone.prefix}QHea",
+                internal_gains_input=f"{zone.prefix}QInt",
+                floor_area=zone.floor_area,
+                design_heating_power=zone.design_heating_power,
+            )
+        )
+    return MPCModelInterface(
+        package=package_name,
+        model=f"{package_name}.{building.name}",
+        runnable_model=f"{package_name}.building" if runnable else None,
+        weather_file=runnable.weather_file if runnable else None,
+        external_data_columns=external_columns,
+        states=states,
+        inputs=inputs,
+        parameters=parameters,
+        zones=zones,
+    )

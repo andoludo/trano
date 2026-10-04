@@ -11,6 +11,10 @@ The generated package contains:
   (e.g. with rumoca) for model predictive control with IPOPT,
 * ``building``: the runnable model connecting the weather file, the solar irradiance of each
   orientation, the occupancy and the external data to ``building_mpc``.
+
+``trano create-model house.yaml mpc`` also writes ``house.mpc.json``: the :class:`MPCModelInterface`
+describing the states, inputs (controls and disturbances with their origin) and parameters of
+``building_mpc`` in the order of the CasADi vectors, to plug the model into an MPC runtime.
 """
 
 from trano.mpc.building import Orientation, RCBuilding, RCZone, SolarAperture, ZoneCoupling
@@ -22,6 +26,8 @@ from trano.mpc.estimation import (
     sanitize_name,
     zone_envelope,
 )
+from trano.mpc.interface import InputRole, InputSpec, MPCModelInterface, ParameterSpec, StateSpec, ZoneSpec
+from trano.mpc.modelica import build_interface, network_interface
 from trano.mpc.parameters import (
     ISO13790Parameters,
     R1C1Parameters,
@@ -33,7 +39,11 @@ from trano.mpc.parameters import (
 __all__ = [
     "EstimationSettings",
     "ISO13790Parameters",
+    "InputRole",
+    "InputSpec",
+    "MPCModelInterface",
     "Orientation",
+    "ParameterSpec",
     "R1C1Parameters",
     "R3C2Parameters",
     "R4C3Parameters",
@@ -41,8 +51,12 @@ __all__ = [
     "RCModelType",
     "RCZone",
     "SolarAperture",
+    "StateSpec",
     "ZoneCoupling",
+    "ZoneSpec",
+    "build_interface",
     "estimate_zone_parameters",
+    "network_interface",
     "rc_building_from_network",
     "rc_building_from_yaml",
     "sanitize_name",
