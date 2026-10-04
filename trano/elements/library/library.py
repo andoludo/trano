@@ -1,24 +1,12 @@
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
-from collections.abc import Callable
+from typing import Any, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from trano.elements.common_base import MediumTemplate
-from trano.elements.types import TILT_MAPPING, DEFAULT_TILT
+from trano.elements.jinja import compile_template
 from trano.exceptions import UnknownLibraryError
-
-if TYPE_CHECKING:
-    from trano.elements import WallParameters
-
-
-# TODO: this must go!!!
-def tilts_processing_ideas(element: "WallParameters") -> list[str | int]:
-    return [
-        (f"IDEAS.Types.Tilt.{tilt.value.capitalize()}" if tilt.value in DEFAULT_TILT else TILT_MAPPING[tilt.value])
-        for tilt in element.tilts
-    ]
 
 
 class Templates(BaseModel):
@@ -37,13 +25,18 @@ def read_libraries() -> dict[str, dict[str, Any]]:
 class Library(BaseModel):
     name: str
     merged_external_boundaries: bool = False
-    functions: dict[str, Callable[[Any], Any]] = {"tilts_processing_ideas": tilts_processing_ideas}
     core_library: str | None = None
     medium: MediumTemplate
     constants: str = ""
     templates: Templates
     default: bool = False
     default_parameters: dict[str, Any] = Field(default_factory=dict)  # TODO: this should be baseparameters
+
+    @model_validator(mode="after")
+    def _render_constants(self) -> "Library":
+        """Render the constants template once: it may refer to the medium and include shared blocks."""
+        self.constants = compile_template(self.constants).render(library=self)
+        return self
 
     def base_library(self) -> str:
         return self.core_library or self.name

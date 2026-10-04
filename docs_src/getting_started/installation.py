@@ -32,6 +32,13 @@ sudo apt install graphviz
     on the official
                 website(https://docs.docker.com/engine/install/)."""
             ),
+            CleanedText(
+                content="""### Modelica libraries
+    The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0
+    (built against Modelica 4.1.0), IDEAS 4.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the
+    openmodelica/openmodelica:v1.26.9-ompython image. Both Modelica Standard Library versions are installed
+    side by side; the versions are defined in one place, trano.simulate.simulate.ModelicaEnvironment."""
+            ),
             TitleText(content="""Python package"""),
             Text(
                 content="""

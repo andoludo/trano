@@ -10,11 +10,12 @@ from tests.fixtures.network_builders import (
 from tests.fixtures.spaces_with_different_construction_types import space_with_door_fixture
 from tests.fixtures.three_spaces import three_spaces
 from tests.fixtures.two_spaces import two_spaces
-from trano.elements import Port, param_from_config
+from tests.constructions.constructions import Constructions, Glasses
+from trano.elements import ExternalDoor, ExternalWall, FloorOnGround, Port, Window, param_from_config
 from trano.elements.boundary import Boundary
 from trano.elements.control import AhuControl, BoilerControl, CollectorControl, ThreeWayValveControl
 from trano.elements.library.library import Library
-from trano.elements.space import Space
+from trano.elements.space import Space, SpaceVariant
 from trano.elements.system import (
     AirHandlingUnit,
     Boiler,
@@ -25,7 +26,7 @@ from trano.elements.system import (
     ThreeWayValve,
     Weather,
 )
-from trano.elements.types import Flow
+from trano.elements.types import Azimuth, Flow, Tilt
 from trano.topology import Network
 
 PumpParameters = param_from_config("Pump")
@@ -347,3 +348,88 @@ def building_multiple_internal_walls_ideas() -> Network:
 @pytest.fixture
 def house_model() -> Network:
     return house_model_fixture()
+
+
+def _with_zone_template(spaces: list[Space]) -> list[Space]:
+    for space in spaces:
+        space.variant = SpaceVariant.rectangular_zone
+    return spaces
+
+
+@pytest.fixture
+def ideas_rectangular_zone_single_zone(simple_space_1: Space) -> Network:
+    network = Network(name="ideas_rectangular_zone_single_zone", library=ideas_library_fixture(co2_medium=False))
+    network.add_boiler_plate_spaces(_with_zone_template([simple_space_1]))
+    return network
+
+
+@pytest.fixture
+def ideas_rectangular_zone_three_zones(ideas_free_float_three_zones_spaces: list) -> Network:
+    network = Network(name="ideas_rectangular_zone_three_zones", library=ideas_library_fixture(co2_medium=False))
+    network.add_boiler_plate_spaces(_with_zone_template(ideas_free_float_three_zones_spaces))
+    return network
+
+
+@pytest.fixture
+def ideas_rectangular_zone_with_external_surfaces() -> Network:
+    """A space whose envelope only partly fits the rectangular template.
+
+    The pitched roof, the door (another construction on the south face) and the window
+    with a second glazing stay separate components connected through `proBusExt`.
+    """
+    space = Space(
+        name="space_1",
+        external_boundaries=[
+            ExternalWall(
+                name="south",
+                surface=12,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="west", surface=10, azimuth=Azimuth.west, tilt=Tilt.wall, construction=Constructions.external_wall
+            ),
+            ExternalWall(
+                name="north",
+                surface=10,
+                azimuth=Azimuth.north,
+                tilt=Tilt.wall,
+                construction=Constructions.external_wall,
+            ),
+            ExternalWall(
+                name="roof",
+                surface=14,
+                azimuth=Azimuth.south,
+                tilt=Tilt.pitched_roof_45,
+                construction=Constructions.external_wall,
+            ),
+            ExternalDoor(
+                name="door", surface=2, azimuth=Azimuth.south, tilt=Tilt.wall, construction=Constructions.internal_wall
+            ),
+            FloorOnGround(name="floor", surface=20, construction=Constructions.external_wall),
+            Window(
+                name="window_south",
+                surface=2,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                width=2,
+                height=1,
+                construction=Glasses.double_glazing,
+            ),
+            Window(
+                name="window_south_bis",
+                surface=1,
+                azimuth=Azimuth.south,
+                tilt=Tilt.wall,
+                width=1,
+                height=1,
+                construction=Glasses.simple_glazing,
+            ),
+        ],
+    )
+    network = Network(
+        name="ideas_rectangular_zone_with_external_surfaces", library=ideas_library_fixture(co2_medium=False)
+    )
+    network.add_boiler_plate_spaces(_with_zone_template([space]))
+    return network

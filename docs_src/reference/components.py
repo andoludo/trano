@@ -3,18 +3,22 @@ from pathlib import Path
 import yaml
 
 
+def _as_list(value: str | list[str]) -> list[str]:
+    return [value] if isinstance(value, str) else value
+
+
 def write_components() -> None:
     components_text = ""
-    components = Path(__file__).parents[2].joinpath("trano", "elements", "models").glob("*.yaml")
+    components = Path(__file__).parents[2].joinpath("trano", "elements", "library", "models").rglob("*.yaml")
     classes = {}
     for component in components:
-        components_ = yaml.safe_load(component.read_text())["components"]
+        components_ = yaml.safe_load(component.read_text())
         classes.update(
             {
                 cl: [
                     {
                         "variant": c_["variant"],
-                        "library": c_["library"],
+                        "library": ", ".join(_as_list(c_["library"])),
                         "template": c_["template"],
                     }
                     for c_ in components_

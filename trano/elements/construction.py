@@ -172,10 +172,19 @@ class BaseTemplateData(BaseModel):
     constructions: list[Construction | Material | Glass]
 
 
+def _space_constructions(nodes: NodeView) -> set[Construction | Glass]:
+    from trano.elements.space import BaseSpace
+
+    return {
+        construction for node in nodes if isinstance(node, BaseSpace) for construction in node.template_constructions()
+    }
+
+
 def default_construction(nodes: NodeView) -> ConstructionData:
     from trano.elements.envelope import BaseSimpleWall
 
     constructions = {node.construction for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]}
+    constructions |= _space_constructions(nodes)
     wall_constructions = sorted([c for c in constructions if isinstance(c, Construction)], key=lambda x: x.name)
     glazing = sorted([c for c in constructions if isinstance(c, Glass)], key=lambda x: x.name)
     return ConstructionData(constructions=wall_constructions, materials=[], glazing=glazing)
@@ -192,6 +201,7 @@ def merged_construction(nodes: NodeView) -> ConstructionData:
     }
     constructions = {node.construction for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]}
     merged_constructions.update(constructions)
+    merged_constructions.update(_space_constructions(nodes))
     wall_constructions = [c for c in merged_constructions if isinstance(c, Construction)]
     glazing = [c for c in merged_constructions if isinstance(c, Glass)]
     materials = {layer.material for construction in merged_constructions for layer in construction.layers}

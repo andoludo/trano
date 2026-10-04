@@ -1,10 +1,12 @@
+from functools import cached_property
 from math import ceil
 from typing import ClassVar, Optional, Union, TYPE_CHECKING, Annotated, Callable
 
 from networkx import Graph
-from pydantic import Field, BaseModel, model_validator, AfterValidator
+from pydantic import Field, BaseModel, PrivateAttr, model_validator, AfterValidator
 
 from trano.elements.base import BaseElement
+from trano.elements.construction import Construction, Glass
 from trano.elements.envelope import (
     BaseExternalWall,
     BaseFloorOnGround,
@@ -23,12 +25,37 @@ from trano.elements.envelope import (
     ExternalWallParameters,
 )
 from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUnit
-from trano.elements.types import ContainerTypes
+from trano.elements.types import BaseVariant, ContainerTypes
+from trano.elements.zone_template import RectangularZone
+from trano.exceptions import UnknownComponentVariantError
 
 if TYPE_CHECKING:
+    from trano.elements.library.library import Library
     from trano.topology import Network
 
 MAX_X_SPACES = 3
+
+ExternalBoundary = Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]
+EnvelopeComponent = Union[ExternalBoundary, "MergedBaseWall"]
+
+
+class SpaceVariant(BaseVariant):
+    infiltration: str = "infiltration"
+    # IDEAS only: the envelope is rendered with IDEAS.Buildings.Components.RectangularZoneTemplate.
+    rectangular_zone: str = "rectangular_zone"
+
+
+def merge_external_boundaries(boundaries: list[ExternalBoundary]) -> list[EnvelopeComponent]:
+    """Lump the walls (and windows) sharing a construction into array components."""
+    external_walls = [boundary for boundary in boundaries if boundary.type in ["ExternalWall", "ExternalDoor"]]
+    windows = [boundary for boundary in boundaries if boundary.type == "Window"]
+    merged_external_walls = MergedExternalWall.from_base_elements(external_walls)
+    merged_windows = MergedWindows.from_base_windows(windows)  # type: ignore
+    return (
+        merged_external_walls
+        + merged_windows
+        + [boundary for boundary in boundaries if boundary.type not in ["ExternalWall", "Window", "ExternalDoor"]]
+    )
 
 
 def _get_controllable_element(elements: list[System]) -> Optional["System"]:
@@ -122,6 +149,7 @@ class BaseSpace(BaseElement):
     merged_external_boundaries: list[Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]] = (
         Field(default_factory=list)
     )
+    _merged_for_variant: str | None = PrivateAttr(default=None)
 
     def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
         self._assign_space()
@@ -145,26 +173,42 @@ class BaseSpace(BaseElement):
     def _merged_external_boundaries_validator(
         self,
     ) -> "BaseSpace":
-        if self.merged_external_boundaries:
+        # Runs again on every assignment (validate_assignment): only rebuild when the variant
+        # changed, which keeps the merged components stable and avoids re-entering here.
+        if self._merged_for_variant == self.variant:
             return self
-
-        external_walls = [
-            boundary for boundary in self.external_boundaries if boundary.type in ["ExternalWall", "ExternalDoor"]
-        ]
-        windows = [boundary for boundary in self.external_boundaries if boundary.type == "Window"]
-        merged_external_walls = MergedExternalWall.from_base_elements(external_walls)
-        merged_windows = MergedWindows.from_base_windows(windows)  # type: ignore
-        external_boundaries: list[BaseExternalWall | BaseWindow | BaseFloorOnGround | MergedBaseWall] = (
-            merged_external_walls
-            + merged_windows
-            + [
-                boundary
-                for boundary in self.external_boundaries
-                if boundary.type not in ["ExternalWall", "Window", "ExternalDoor"]
-            ]
-        )
-        self.merged_external_boundaries = external_boundaries
+        self._merged_for_variant = self.variant
+        self.merged_external_boundaries = self._merged_envelope()
         return self
+
+    def _merged_envelope(self) -> list[EnvelopeComponent]:
+        """Array components of the envelope; with the zone template only the surfaces it cannot hold."""
+        if self.uses_zone_template:
+            return merge_external_boundaries(self.rectangular_zone.external_surfaces)
+        return merge_external_boundaries(self.external_boundaries)
+
+    @property
+    def uses_zone_template(self) -> bool:
+        return self.variant == SpaceVariant.rectangular_zone
+
+    @cached_property
+    def rectangular_zone(self) -> RectangularZone:
+        """Envelope mapped onto IDEAS' RectangularZoneTemplate (variant `rectangular_zone`)."""
+        return RectangularZone.from_boundaries(
+            self.external_boundaries,
+            height=self.parameters.average_room_height,  # type: ignore[union-attr]
+            floor_area=self.parameters.floor_area,  # type: ignore[union-attr]
+        )
+
+    def envelope_components(self, library: "Library") -> list[EnvelopeComponent]:
+        """Envelope elements rendered as components of their own next to the space."""
+        if self.uses_zone_template or library.merged_external_boundaries:
+            return self.merged_external_boundaries
+        return list(self.external_boundaries)
+
+    def template_constructions(self) -> set[Construction | Glass]:
+        """Constructions rendered inside the space component rather than by a wall component."""
+        return self.rectangular_zone.constructions() if self.uses_zone_template else set()
 
     def get_controllable_emission(self) -> Optional["System"]:
         return _get_controllable_element(self.emissions)
@@ -278,12 +322,10 @@ class Space(BaseSpace):
     def add_to_network(self, network: "Network") -> None:
         network.add_node(self)
         if not self.template:
-            raise ValueError("No valid Space component template found for Space.")
-        if network.library.merged_external_boundaries:
-            external_boundaries = self.merged_external_boundaries
-        else:
-            external_boundaries = self.external_boundaries  # type: ignore
-        for boundary in external_boundaries:
+            raise UnknownComponentVariantError(
+                f"No Space component template for variant '{self.variant}' in library {network.library.name}."
+            )
+        for boundary in self.envelope_components(network.library):
             network.add_node(boundary)
             network.graph.add_edge(
                 self,

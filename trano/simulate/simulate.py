@@ -1,5 +1,4 @@
 import platform
-import shutil
 import subprocess
 import tempfile
 from contextlib import contextmanager
@@ -44,6 +43,39 @@ def client() -> docker.DockerClient:
     return client
 
 
+class ModelicaEnvironment(BaseModel):
+    """Versions of the OpenModelica image and of the Modelica libraries installed in it.
+
+    Buildings 13 is built against Modelica 4.1 while IDEAS 4 and AixLib 3 still declare
+    Modelica 4.0, so both Modelica Standard Library versions are installed side by side and
+    OpenModelica picks the one each library asks for.
+    """
+
+    openmodelica_image: str = Field(default="openmodelica/openmodelica:v1.26.9-ompython")
+    modelica: list[str] = Field(default=["4.0.0+maint.om", "4.1.0+maint.om"])
+    buildings: str = Field(default="13.0.0")
+    ideas: str = Field(default="4.0.0")
+    aixlib: str = Field(default="3.0.1")
+
+    def configure_script(self) -> str:
+        """Content of the OpenModelica script installing the libraries."""
+        lines = ["getVersion();"]
+        for version in self.modelica:
+            lines += [
+                f'installPackage({package}, "{version}", exactMatch=true);'
+                for package in ("ModelicaServices", "Modelica", "Complex")
+            ]
+        lines += [
+            f'installPackage(Buildings, "{self.buildings}");',
+            f'installPackage(IDEAS, "{self.ideas}");',
+            f'installPackage(AixLib, "{self.aixlib}");',
+        ]
+        return "\n".join(lines) + "\n"
+
+
+MODELICA_ENVIRONMENT = ModelicaEnvironment()
+
+
 class SimulationOptions(BaseModel):
     start_time: int = Field(default=0)
     end_time: int = Field(default=2 * 3600 * 24 * 7)
@@ -82,12 +114,14 @@ def stop_container(client: docker.DockerClient, container_name: str) -> None:
 
 @contextmanager
 def container(
-    client: docker.DockerClient, project_path: Path
+    client: docker.DockerClient,
+    project_path: Path,
+    environment: ModelicaEnvironment = MODELICA_ENVIRONMENT,
 ) -> Generator[docker.models.containers.Container, None, None]:
     container_name = "openmodelica"
     stop_container(client, container_name)
     container = client.containers.run(
-        "openmodelica/openmodelica:v1.24.4-ompython",
+        environment.openmodelica_image,
         command="tail -f /dev/null",
         volumes=[
             f"{project_path}:/simulation",
@@ -96,8 +130,7 @@ def container(
         detach=True,
         name=container_name,
     )
-    configuration_path = Path(__file__).parent / "configure.mos"
-    shutil.copy(configuration_path, project_path / "configure.mos")
+    (project_path / "configure.mos").write_text(environment.configure_script())
     container.exec_run(cmd="chmod -R 777 /results")
     container.exec_run(cmd="chmod -R 777 /simulation")
     container.exec_run(cmd="omc /simulation/configure.mos")

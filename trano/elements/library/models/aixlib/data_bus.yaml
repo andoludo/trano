@@ -81,7 +81,9 @@
       end DataServerReducedOrder;
 
   figures: []
-  library: iso_13790
+  library:
+  - iso_13790
+  - reduced_order
   parameter_processing:
     function: default_parameters
   ports:

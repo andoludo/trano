@@ -57,8 +57,18 @@ class LibraryData(BaseModel):
     figures: list[Figure] = Field(default=[])
     ports: Callable[[], list[Port]]
     parameter_processing: Callable[[BaseParameter], dict[str, Any]] = default_parameters
-    library: str
+    library: list[str]
     classes: list[str]
+
+    @field_validator("library", mode="before")
+    @classmethod
+    def _library_validator(cls, value: str | list[str]) -> list[str]:
+        """A component definition may serve one library or several (`library: [a, b]`)."""
+        libraries = [value] if isinstance(value, str) else list(value)
+        return [library.lower() for library in libraries]
+
+    def serves(self, library_name: str) -> bool:
+        return library_name.lower() in self.library
 
     @field_validator("parameter_processing", mode="before")
     @classmethod

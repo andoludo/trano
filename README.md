@@ -9,6 +9,8 @@ Trano is **Modelica library agnostic** but is natively designed to work with:
 ✅ **Reduced-order models** (e.g., **[AIXLIB](https://github.com/RWTH-EBC/AixLib)**, **ISO13790**,...)  
 ✅ **your library...**  
 
+Simulations run against Buildings 13.0.0, IDEAS 4.0.0 and AixLib 3.0.1 in the official OpenModelica image (see the installation docs).  
+
 ## ✨ Key Features
 
 ### 🛠️ **Built for Open-Source BES**

@@ -1,18 +1,18 @@
+# IDEAS zone definitions. The `infiltration` variant renders the same component as the
+# default one (n50 already accounts for infiltration); both share the definitions below.
 - classes:
   - Space
-  figures:
+  figures: &ideas_zone_figures
   - left_axis:
       label: Zone air temperature [K]
       lines:
       - color: blue
         label: Air temperature [K]
-        template: |-
-          {{ element.name }}.TSensor
+        template: '{{ element.name }}.TSensor'
       - color: black
         label: Measured Air temperature [K]
         line_width: 2.0
-        template: |-
-          data_bus.dataBus.T{{ element.name | capitalize}}
+        template: data_bus.dataBus.T{{ element.name | capitalize}}
     right_axis:
       label: Occupancy schedule [-]
       lines:
@@ -24,19 +24,15 @@
       lines:
       - color: red
         label: Radiative heat flow rate [W]
-        template: |-
-          {{ element.name }}.heaPorRad.Q_flow
+        template: '{{ element.name }}.heaPorRad.Q_flow'
       - color: blue
         label: Convective heat flow rate [W]
-        template: |-
-          {{ element.name }}.heaPorAir.Q_flow
+        template: '{{ element.name }}.heaPorAir.Q_flow'
       - color: yellow
         label: Latent heat gain [W]
-        template: |-
-          {{ element.name }}.air.QLat_flow
+        template: '{{ element.name }}.air.QLat_flow'
       - label: Convective heat gain [W]
-        template: |-
-          {{ element.name }}.air.QCon_flow
+        template: '{{ element.name }}.air.QCon_flow'
   - left_axis:
       label: Control signal [-]
       lines:
@@ -53,12 +49,12 @@
         label: Zone controller measured [K]
         template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_m'
   library: ideas
-  parameter_processing:
+  parameter_processing: &ideas_zone_parameters
     function: modify_alias
     parameter:
       average_room_height: hZone
       volume: V
-  ports:
+  ports: &ideas_zone_ports
   - bus_connection: true
     flow: undirected
     medium: data
@@ -103,7 +99,7 @@
     - Ventilation
     - Control
     - DataBus
-  template: |-
+  template: &ideas_zone_template |-
     IDEAS.Buildings.Components.Zone {{ element.name }}(
         mSenFac=0.822,
             {%- if element.number_ventilation_ports != 0 -%}
@@ -118,20 +114,32 @@
 
 - classes:
   - Space
-  figures: []
+  figures: *ideas_zone_figures
+  library: ideas
+  parameter_processing: *ideas_zone_parameters
+  ports: *ideas_zone_ports
+  template: *ideas_zone_template
+  variant: infiltration
+
+# Envelope rendered with IDEAS' RectangularZoneTemplate: the zone, its four vertical faces,
+# floor and ceiling (one construction and one window each) are a single component. Surfaces
+# that do not fit the rectangle and the internal walls connect through `proBusExt`.
+- classes:
+  - Space
+  figures: *ideas_zone_figures
   library: ideas
   parameter_processing:
     function: modify_alias
     parameter:
-      average_room_height: hZone
-      volume: V
+      average_room_height: h
+      floor_area: AZone
   ports:
   - bus_connection: true
     flow: undirected
     medium: data
     multi_connection: true
     names:
-    - propsBus
+    - proBusExt
     targets:
     - BaseWall
   - flow: undirected
@@ -171,7 +179,8 @@
     - Control
     - DataBus
   template: |-
-    IDEAS.Buildings.Components.Zone {{ element.name }}(
+    {% set zone = element.rectangular_zone %}
+    IDEAS.Buildings.Components.RectangularZoneTemplate {{ element.name }}(
         mSenFac=0.822,
             {%- if element.number_ventilation_ports != 0 -%}
         nPorts = {{ element.number_ventilation_ports }},
@@ -179,6 +188,25 @@
         {{ macros.render_parameters(parameters) | safe}},
         n50=0.822*0.5*{{ element.name }}.n50toAch,
         redeclare package Medium = Medium,
-        nSurf={{ element.number_merged_external_boundaries }},
-        T_start=293.15)
-  variant: infiltration
+        T_start=293.15,
+        aziA={{ zone.azimuth }},
+        l={{ zone.length }},
+        w={{ zone.width }},
+        ACei={{ zone.ceiling_area }},
+    {% for face in zone.faces %}
+        bouTyp{{ face.key }}=IDEAS.Buildings.Components.Interfaces.BoundaryType.{{ face.boundary_type }},
+    {% if face.construction %}
+        redeclare parameter {{ package_name }}.Data.Constructions.{{ face.construction.name }} conTyp{{ face.key }},
+    {% endif %}
+    {% if face.length %}
+        l{{ face.key }}={{ face.length }},
+    {% endif %}
+    {% if face.window %}
+        hasWin{{ face.key }}=true,
+        A_win{{ face.key }}={{ face.window.area }},
+        h_win{{ face.key }}={{ face.window.height }},
+        redeclare {{ package_name }}.Data.Glazing.{{ face.window.glazing.name }} glazing{{ face.key }},
+    {% endif %}
+    {% endfor %}
+        nSurfExt={{ element.number_merged_external_boundaries }})
+  variant: rectangular_zone

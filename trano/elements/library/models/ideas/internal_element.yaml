@@ -17,9 +17,13 @@
     - propsBus_b
     targets:
     - Space
-  template: "\n    IDEAS.Buildings.Components.InternalWall {{ element.name }}\n  \
-    \  (redeclare parameter {{ package_name }}.\n    Data.Constructions.{{ element.construction.name\
-    \ }} constructionType,\n    redeclare package Medium = Medium,\n    A = {{ element.surface\
-    \ }}, inc = IDEAS.Types.Tilt.\n    {{ element.tilt.value | capitalize }}, azi\
-    \ =\n    {{ element.azimuth }}) \"Partition wall between the two\n    rooms\" "
+  template: |2-
+
+        IDEAS.Buildings.Components.InternalWall {{ element.name }}
+        (redeclare parameter {{ package_name }}.
+        Data.Constructions.{{ element.construction.name }} constructionType,
+        redeclare package Medium = Medium,
+        A = {{ element.surface }}, inc = {{ macros.convert_tilt(element.tilt, library_name) }}, azi =
+        {{ element.azimuth }}) "Partition wall between the two
+        rooms"
   variant: default
