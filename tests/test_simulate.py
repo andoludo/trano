@@ -111,7 +111,9 @@ def test_simulate_house_complex() -> None:
 def test_configure_script_installs_only_missing_libraries() -> None:
     script = ModelicaEnvironment(modelica=["4.1.0+maint.om"], buildings="13.0.0").configure_script()
     assert script.startswith("getVersion();\n")
-    assert script.count("installPackage(") == 6  # 3 MSL packages + Buildings + IDEAS + AixLib
+    # Each of the 3 MSL packages, Buildings, IDEAS and AixLib is installed in both branches.
+    assert script.count("installPackage(") == 12
+    assert "getAvailableLibraries()" in script
     assert "getAvailableLibraryVersions(Modelica)" in script
     assert 'installPackage(Modelica, "4.1.0+maint.om", exactMatch=true);' in script
     assert 'then installPackage(Buildings, "13.0.0"); end if;' in script

@@ -100,11 +100,16 @@ def _version_key(version: str) -> tuple[int, ...]:
 def _install_unless_available(
     library: str, version: str, packages: tuple[str, ...] | None = None, exact_match: bool = False
 ) -> str:
-    """OpenModelica statement installing `packages` unless `library` has `version` installed."""
+    """OpenModelica statements installing `packages` unless `library` has `version` installed.
+
+    The library name is checked before its versions: asking the versions of a library that
+    is not installed aborts the script.
+    """
     suffix = ", exactMatch=true" if exact_match else ""
     installs = " ".join(f'installPackage({package}, "{version}"{suffix});' for package in packages or (library,))
-    available = f'sum({{if v == "{version}" then 1 else 0 for v in getAvailableLibraryVersions({library})}})'
-    return f"if {available} == 0 then {installs} end if;"
+    library_present = f'max({{l == "{library}" for l in cat(1, {{""}}, getAvailableLibraries())}})'
+    version_present = f'max({{v == "{version}" for v in cat(1, {{""}}, getAvailableLibraryVersions({library}))}})'
+    return f"if {library_present} then\n  if not {version_present} then {installs} end if;\nelse\n  {installs}\nend if;"
 
 
 MODELICA_ENVIRONMENT = ModelicaEnvironment()
