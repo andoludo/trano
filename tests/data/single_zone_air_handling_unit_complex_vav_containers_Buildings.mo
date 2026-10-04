@@ -3291,10 +3291,10 @@ package Components
     parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         cavitywall_001(
     final nLay=4,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.88,
+    absIR_b=0.85,
+    absSol_a=0.55,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.08,
         k=0.89,
@@ -3316,10 +3316,10 @@ package Components
     annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         concreteslab_001(
     final nLay=2,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.88,
+    absIR_b=0.88,
+    absSol_a=0.55,
+    absSol_b=0.55,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.125,
         k=1.4,

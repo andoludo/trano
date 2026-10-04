@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from networkx.classes.reportviews import NodeView
 from pydantic import BaseModel, ConfigDict, Field, field_validator, computed_field
@@ -40,7 +40,38 @@ class GlassMaterial(Material):
     infrared_absorptivity_room_facing: float
 
 
-class Gas(Material): ...
+class StandardGas(NamedTuple):
+    molar_mass: float  # [kg/mol]
+    a_mu: float  # [N.s/m2]
+    b_mu: float  # [N.s/(m2.K)]
+
+
+# Viscosity coefficients and molar masses of Buildings.HeatTransfer.Data.Gases (ISO 15099).
+STANDARD_GASES = (
+    StandardGas(molar_mass=28.97e-3, a_mu=3.723e-6, b_mu=4.940e-8),  # Air
+    StandardGas(molar_mass=39.948e-3, a_mu=3.379e-6, b_mu=6.451e-8),  # Argon
+    StandardGas(molar_mass=83.80e-3, a_mu=2.213e-6, b_mu=7.777e-8),  # Krypton
+    StandardGas(molar_mass=131.3e-3, a_mu=1.069e-6, b_mu=7.414e-8),  # Xenon
+)
+GAS_REFERENCE_TEMPERATURE = 293.15  # [K]
+GAS_REFERENCE_PRESSURE = 101325.0  # [Pa]
+UNIVERSAL_GAS_CONSTANT = 8.314462618  # [J/(mol.K)]
+
+
+class Gas(Material):
+    @property
+    def molar_mass(self) -> float:
+        """Molar mass [kg/mol] giving the gas density at 20 °C and 1 atm (ideal gas law)."""
+        return self.density * UNIVERSAL_GAS_CONSTANT * GAS_REFERENCE_TEMPERATURE / GAS_REFERENCE_PRESSURE
+
+    @property
+    def viscosity_coefficients(self) -> tuple[float, float]:
+        """Viscosity coefficients (a_mu, b_mu) of the standard gas with the closest molar mass.
+
+        The viscosity is not part of the gas description, so it is taken from the standard gas it resembles most.
+        """
+        gas = min(STANDARD_GASES, key=lambda standard_gas: abs(standard_gas.molar_mass - self.molar_mass))
+        return gas.a_mu, gas.b_mu
 
 
 class Layer(BaseModel):

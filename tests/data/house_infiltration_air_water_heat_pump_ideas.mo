@@ -4111,68 +4111,68 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Bu
  k=0.6,
       c=840.0,
       rho=975.0,
-      epsLw=0.88,
-      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record gypsum_plaster_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record gypsum_plaster_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=975.0,
-      epsLw=0.88,
-      epsSw=0.55);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.11,
       c=1880.0,
       rho=550.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.3,
       c=880.0,
       rho=850.0,
-      epsLw=0.88,
-      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.54,
       c=840.0,
       rho=1400.0,
-      epsLw=0.88,
-      epsSw=0.55);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.036,
       c=1470.0,
       rho=26.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.6,
       c=840.0,
       rho=1100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record mineral_wool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record mineral_wool_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.036,
       c=840.0,
       rho=80.0,
-      epsLw=0.88,
-      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0256,
       c=1006.0,
       rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.0,
+      epsSw=0.0);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.6,
       c=840.0,
       rho=975.0,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
       c=840.0,
       rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);end Materials;
+      epsLw=0.84,
+      epsSw=0.67);end Materials;
 package Constructions "Library of building envelope constructions"      record cavity_wall_001
     "cavity_wall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
@@ -5845,68 +5845,68 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Bu
  k=0.6,
       c=840.0,
       rho=975.0,
-      epsLw=0.88,
-      epsSw=0.55);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record ceramic_tile_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record gypsum_plaster_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record gypsum_plaster_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=975.0,
-      epsLw=0.88,
-      epsSw=0.55);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record timber_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.11,
       c=1880.0,
       rho=550.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record brick_hollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.3,
       c=880.0,
       rho=850.0,
-      epsLw=0.88,
-      epsSw=0.55);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record masonry_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.54,
       c=840.0,
       rho=1400.0,
-      epsLw=0.88,
-      epsSw=0.55);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record eps_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.036,
       c=1470.0,
       rho=26.0,
-      epsLw=0.88,
-      epsSw=0.55);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record concrete_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.4,
       c=840.0,
       rho=2100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record screed_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.6,
       c=840.0,
       rho=1100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record mineral_wool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record mineral_wool_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.036,
       c=840.0,
       rho=80.0,
-      epsLw=0.88,
-      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.0256,
       c=1006.0,
       rho=1.2,
-      epsLw=0.88,
-      epsSw=0.55);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.0,
+      epsSw=0.0);    record gypsum_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.6,
       c=840.0,
       rho=975.0,
-      epsLw=0.88,
-      epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.85,
+      epsSw=0.65);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.0,
       c=840.0,
       rho=2500.0,
-      epsLw=0.88,
-      epsSw=0.55);end Materials;
+      epsLw=0.84,
+      epsSw=0.67);end Materials;
 package Constructions "Library of building envelope constructions"      record cavity_wall_001
     "cavity_wall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(

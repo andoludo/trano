@@ -3305,8 +3305,8 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Bu
  k=0.035,
       c=800.0,
       rho=100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.8,
+      epsSw=0.8);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.3,
       c=880.0,
       rho=850.0,
@@ -3320,8 +3320,8 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Bu
  k=0.38,
       c=840.0,
       rho=1120.0,
-      epsLw=0.88,
-      epsSw=0.55);end Materials;
+      epsLw=0.85,
+      epsSw=0.65);end Materials;
 package Constructions "Library of building envelope constructions"      record cavitywall_001
     "cavitywall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
@@ -4112,8 +4112,8 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Bu
  k=0.035,
       c=800.0,
       rho=100.0,
-      epsLw=0.88,
-      epsSw=0.55);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsLw=0.8,
+      epsSw=0.8);    record brickhollow_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.3,
       c=880.0,
       rho=850.0,
@@ -4127,8 +4127,8 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record brick_001 = IDEAS.Bu
  k=0.38,
       c=840.0,
       rho=1120.0,
-      epsLw=0.88,
-      epsSw=0.55);end Materials;
+      epsLw=0.85,
+      epsSw=0.65);end Materials;
 package Constructions "Library of building envelope constructions"      record cavitywall_001
     "cavitywall_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(

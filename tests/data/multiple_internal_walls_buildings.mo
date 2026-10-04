@@ -3291,10 +3291,10 @@ package Components
     parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         Door(
     final nLay=1,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.04,
         k=0.131,
@@ -3304,10 +3304,10 @@ package Components
     annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         external_wall(
     final nLay=3,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.2,
         k=1.4,
@@ -3325,10 +3325,10 @@ package Components
     annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         internal_wall(
     final nLay=1,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.2,
         k=0.89,
