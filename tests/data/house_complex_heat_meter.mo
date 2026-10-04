@@ -4126,7 +4126,15 @@ equation
         
     },
     final gas={
-            Buildings.HeatTransfer.Data.Gases.Air(x=0.016)
+            Buildings.HeatTransfer.Data.Gases.Generic(
+            x=0.016,
+            a_k=0.0256,
+            b_k=0,
+            a_mu=3.723e-06,
+            b_mu=4.94e-08,
+            a_c=1006.0,
+            b_c=0,
+            MM=0.02886614023942798)
             
     },
     UFra=1.4)
@@ -4136,10 +4144,10 @@ equation
     parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         cavity_wall_001(
     final nLay=6,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.18,
         k=0.036,
@@ -4169,10 +4177,10 @@ equation
     annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         floor_001(
     final nLay=4,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.2,
         k=1.4,
@@ -4194,10 +4202,10 @@ equation
     annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         innerwall_001(
     final nLay=3,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.02,
         k=1.4,
@@ -4215,10 +4223,10 @@ equation
     annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         roof_001(
     final nLay=3,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.025,
         k=1.4,

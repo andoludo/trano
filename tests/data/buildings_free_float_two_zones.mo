@@ -3312,7 +3312,15 @@ package Components
         
     },
     final gas={
-            Buildings.HeatTransfer.Data.Gases.Air(x=0.0127)
+            Buildings.HeatTransfer.Data.Gases.Generic(
+            x=0.0127,
+            a_k=0.025,
+            b_k=0,
+            a_mu=3.723e-06,
+            b_mu=4.94e-08,
+            a_c=1005.0,
+            b_c=0,
+            MM=0.02886614023942798)
             
     },
     UFra=1.4)
@@ -3322,10 +3330,10 @@ package Components
     parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         external_wall(
     final nLay=3,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.2,
         k=1.4,
@@ -3343,10 +3351,10 @@ package Components
     annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         internal_wall(
     final nLay=1,
-    absIR_a=0.9,
-    absIR_b=0.9,
-    absSol_a=0.6,
-    absSol_b=0.6,
+    absIR_a=0.85,
+    absIR_b=0.85,
+    absSol_a=0.65,
+    absSol_b=0.65,
     material={Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.2,
         k=0.89,

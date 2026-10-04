@@ -3,10 +3,6 @@
 The golden-file tests only detect *changes* in a generated model. The tests below
 compare the generated model with the YAML input itself, value by value, so that a
 value silently dropped or replaced by a default is caught.
-
-Known gaps are marked ``xfail(strict=True)``: they document values that are not
-transmitted yet and will turn into failures as soon as they are, so the marker gets
-removed together with the fix.
 """
 
 import re
@@ -184,10 +180,7 @@ def test_buildings_construction_layers(buildings_model: str, construction_id: st
     assert rendered == pytest.approx(expected)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Buildings template hard-codes absIR=0.9 and absSol=0.6 instead of the layer emissivities.",
-)
+# Side a of a Buildings construction is its first layer (outside), side b its last layer (room).
 @pytest.mark.parametrize("construction_id", USED_CONSTRUCTIONS)
 def test_buildings_construction_surface_emissivities(buildings_model: str, construction_id: str) -> None:
     arguments = buildings_construction(buildings_model, construction_id)
@@ -209,7 +202,7 @@ def test_buildings_glazing_layers(buildings_model: str, glazing_id: str) -> None
     layers = GLAZINGS[glazing_id]["layers"]
     glass_pattern = rf"Glasses\.Generic\(\s*x=({NUMBER}),\s*k=({NUMBER})"
     glasses = [tuple(map(float, glass)) for glass in re.findall(glass_pattern, arguments)]
-    gases = [float(x) for x in re.findall(rf"Gases\.\w+\(x=({NUMBER})\)", arguments)]
+    gases = [float(x) for x in re.findall(rf"Gases\.Generic\(\s*x=({NUMBER})", arguments)]
     assert glasses == pytest.approx(
         [
             (layer["thickness"], MATERIALS[layer["glass"]]["thermal_conductivity"])
@@ -220,17 +213,35 @@ def test_buildings_glazing_layers(buildings_model: str, glazing_id: str) -> None
     assert gases == pytest.approx([layer["thickness"] for layer in layers if "gas" in layer])
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Buildings glazing template always renders Gases.Air: the gas type and properties are lost.",
-)
+# Viscosity coefficients of the Buildings.HeatTransfer.Data.Gases records the YAML gases correspond to.
+GAS_VISCOSITY_COEFFICIENTS = {"AIR:001": (3.723e-6, 4.940e-8), "ARGON:001": (3.379e-6, 6.451e-8)}
+
+
 @pytest.mark.parametrize("glazing_id", sorted(GLAZINGS))
-def test_buildings_glazing_gas_type(buildings_model: str, glazing_id: str) -> None:
+def test_buildings_glazing_gas_properties(buildings_model: str, glazing_id: str) -> None:
     arguments = buildings_glazing(buildings_model, glazing_id)
-    rendered = re.findall(r"Gases\.(\w+)\(", arguments)
-    # Buildings ships Air, Argon, Krypton and Xenon records; the YAML ids name the gas.
-    expected = [layer["gas"].split(":")[0].capitalize() for layer in GLAZINGS[glazing_id]["layers"] if "gas" in layer]
-    assert rendered == expected
+    rendered = re.findall(r"Gases\.Generic\(([^)]*)\)", arguments)
+    gas_layers = [layer for layer in GLAZINGS[glazing_id]["layers"] if "gas" in layer]
+    assert len(rendered) == len(gas_layers)
+    for gas_arguments, layer in zip(rendered, gas_layers, strict=True):
+        gas = MATERIALS[layer["gas"]]
+        a_mu, b_mu = GAS_VISCOSITY_COEFFICIENTS[layer["gas"]]
+        assert {
+            key: scalar(gas_arguments, key) for key in ("x", "a_k", "b_k", "a_c", "b_c", "a_mu", "b_mu")
+        } == pytest.approx(
+            {
+                "x": layer["thickness"],
+                "a_k": gas["thermal_conductivity"],
+                "b_k": 0,
+                "a_c": gas["specific_heat_capacity"],
+                "b_c": 0,
+                "a_mu": a_mu,
+                "b_mu": b_mu,
+            }
+        )
+        # Buildings computes the density from the molar mass: rho = P0 * MM / (R * T), here at 20 °C.
+        density = 101325 * scalar(gas_arguments, "MM") / (8.314462618 * 293.15)
+        assert density == pytest.approx(gas["density"])
 
 
 # --------------------------------------------------------------------------- #
@@ -464,7 +475,6 @@ def test_ideas_material(ideas_model: str, material_id: str) -> None:
     )
 
 
-@pytest.mark.xfail(strict=True, reason="IDEAS material template hard-codes epsLw=0.88 and epsSw=0.55.")
 @pytest.mark.parametrize("material_id", USED_MATERIALS)
 def test_ideas_material_emissivities(ideas_model: str, material_id: str) -> None:
     arguments = _ideas_material(ideas_model, material_id)
