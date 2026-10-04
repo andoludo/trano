@@ -1,0 +1,31 @@
+# The 'mpc' library generates a flat, CasADi-compatible RC model 'building_mpc' (see trano/mpc and
+# templates/mpc.jinja2): each space becomes a Trano.MPC.Zones.<model type> zone whose equations are
+# inlined. The emission systems are abstracted as the heating power input <space>_QHea. The runnable
+# 'building' model connects the weather (TOut, HSol_<orientation>) and the occupancy (<space>_QInt).
+- classes:
+  - Space
+  library: mpc
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - weaBus
+    targets:
+    - Weather
+  - flow: convective
+    medium: heat
+    names:
+    - heaPorAir
+    targets:
+    - Emission
+  - flow: undirected
+    medium: data
+    names:
+    - intGai
+    targets:
+    - BaseOccupancy
+  template: |
+    {{package_name}}.Trano.MPC.Zones.R3C2 {{ element.name }}
+  variant: default

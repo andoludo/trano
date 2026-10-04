@@ -1,0 +1,201 @@
+{#-
+  CasADi-compatible resistance-capacitance (RC) building models (``mpc`` library).
+
+  The RC models (the ``Trano.MPC.Zones`` library and the generated ``building_mpc`` model)
+  are written in the Modelica subset that can be translated symbolically into a CasADi
+  explicit ODE ``xdot = f(t, x, u, p)`` (e.g. with rumoca):
+
+  * flat and scalar models (no sub-components, no arrays),
+  * explicit state equations ``der(x) = expression`` (no algebraic variables),
+  * parameters bound to literal values only (no parameter expressions),
+  * smooth equations: no events, no tables, no ``if``, ``min``/``max`` or ``abs``,
+  * inputs declared with the local ``Trano.MPC.RealInput`` connector: no dependency on any
+    external library, not even the Modelica Standard Library.
+
+  The generated ``building`` model wraps ``building_mpc`` into a directly runnable model: it
+  connects the weather file, the solar irradiance of each orientation, the occupancy gains and
+  the external data (Buildings library), exactly as for the other Trano libraries.
+
+  The zone equations are defined once in the ``*_equations`` macros below and are reused for
+  the library models and for the building model, so that both always stay consistent.
+-#}
+
+{%- macro sum_terms(terms) -%}
+{{ terms | join(" + ") if terms else "0" }}
+{%- endmacro -%}
+
+{%- macro window_solar(zone, p) -%}
+{{ sum_terms(zone.solar | selectattr("window") | map(attribute="window") | map("replace", "@", p) | list) }}
+{%- endmacro -%}
+
+{%- macro opaque_solar(zone, p) -%}
+{{ sum_terms(zone.solar | selectattr("opaque") | map(attribute="opaque") | map("replace", "@", p) | list) }}
+{%- endmacro -%}
+
+{%- macro couplings(zone, p) -%}
+{%- for coupling in zone.couplings %} + {{ coupling.parameter }}*({{ coupling.neighbour }}Ti - {{ p }}Ti){% endfor -%}
+{%- endmacro -%}
+
+{%- macro r1c1_equations(zone, p) %}
+  der({{ p }}Ti) = ((TOut - {{ p }}Ti)/{{ p }}Ria + (TGro - {{ p }}Ti)/{{ p }}Rig + {{ window_solar(zone, p) }} + {{ opaque_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }} + {{ p }}QHea)/{{ p }}Ci;
+{%- endmacro -%}
+
+{%- macro envelope_equation(zone, p) %}
+  der({{ p }}Te) = (({{ p }}Ti - {{ p }}Te)/{{ p }}Rie + (TOut - {{ p }}Te)/{{ p }}Rea + (TGro - {{ p }}Te)/{{ p }}Reg + {{ opaque_solar(zone, p) }})/{{ p }}Ce;
+{%- endmacro -%}
+
+{%- macro r3c2_equations(zone, p) %}
+  der({{ p }}Ti) = (({{ p }}Te - {{ p }}Ti)/{{ p }}Rie + (TOut - {{ p }}Ti)/{{ p }}Ria + {{ window_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }} + {{ p }}QHea)/{{ p }}Ci;
+{{ envelope_equation(zone, p) }}
+{%- endmacro -%}
+
+{%- macro r4c3_equations(zone, p) %}
+  der({{ p }}Ti) = (({{ p }}Te - {{ p }}Ti)/{{ p }}Rie + (TOut - {{ p }}Ti)/{{ p }}Ria + ({{ p }}Th - {{ p }}Ti)/{{ p }}Rih + {{ window_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }})/{{ p }}Ci;
+{{ envelope_equation(zone, p) }}
+  der({{ p }}Th) = (({{ p }}Ti - {{ p }}Th)/{{ p }}Rih + {{ p }}QHea)/{{ p }}Ch;
+{%- endmacro -%}
+
+{%- macro iso13790_radiant_gains(zone, p) -%}
+((1 - {{ p }}fIa)*{{ p }}QInt + {{ window_solar(zone, p) }} + {{ opaque_solar(zone, p) }})
+{%- endmacro -%}
+
+{%- macro iso13790_equations(zone, p) -%}
+{%- set radiant = iso13790_radiant_gains(zone, p) -%}
+{%- set ts = "((" ~ p ~ "His*" ~ p ~ "Ti + " ~ p ~ "Hw*TOut + " ~ p ~ "Hms*" ~ p ~ "Tm + " ~ p ~ "fSt*" ~ radiant ~ ")/(" ~ p ~ "His + " ~ p ~ "Hw + " ~ p ~ "Hms))" %}
+  der({{ p }}Ti) = ({{ p }}Hve*(TOut - {{ p }}Ti) + {{ p }}His*({{ ts }} - {{ p }}Ti) + {{ p }}fIa*{{ p }}QInt{{ couplings(zone, p) }} + {{ p }}QHea)/{{ p }}Ci;
+  der({{ p }}Tm) = ({{ p }}Hms*({{ ts }} - {{ p }}Tm) + {{ p }}Hem*(TOut - {{ p }}Tm) + {{ p }}Hg*(TGro - {{ p }}Tm) + {{ p }}fM*{{ radiant }})/{{ p }}Cm;
+{%- endmacro -%}
+
+{%- macro zone_equations(zone, p) -%}
+{%- if zone.model_type == "R1C1" -%}{{ r1c1_equations(zone, p) }}
+{%- elif zone.model_type == "R3C2" -%}{{ r3c2_equations(zone, p) }}
+{%- elif zone.model_type == "R4C3" -%}{{ r4c3_equations(zone, p) }}
+{%- elif zone.model_type == "ISO13790" -%}{{ iso13790_equations(zone, p) }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro zone_declarations(zone, p, connector) -%}
+{% for parameter in zone.parameters %}
+  parameter Real {{ p }}{{ parameter.name }}(unit="{{ parameter.unit }}") = {{ parameter.value | mo }}
+    "{{ parameter.description }}";
+{% endfor %}
+  {{ connector }} {{ p }}QInt(unit="W") "Internal heat gains (occupants, appliances, lighting)";
+  {{ connector }} {{ p }}QHea(unit="W") "Heating (> 0) or cooling (< 0) power, control input";
+{% for state in zone.states %}
+  Real {{ p }}{{ state.name }}(unit="K", start={{ zone.temperature_initial | mo }}, fixed=true)
+    "{{ state.description }}";
+{% endfor %}
+{%- endmacro -%}
+
+{%- macro boundary_declarations(connector, ground_temperature, irradiances) %}
+  parameter Real TGro(unit="K") = {{ ground_temperature | mo }} "Ground temperature below the slab";
+  {{ connector }} TOut(unit="K") "Outdoor dry-bulb air temperature";
+{% for irradiance in irradiances %}
+  {{ connector }} {{ irradiance.name }}(unit="W/m2") "{{ irradiance.description }}";
+{% endfor %}
+{%- endmacro -%}
+
+{%- macro zones_library(library_zones, ground_temperature, irradiances) -%}
+{% autoescape false %}
+package MPC "CasADi/IPOPT compatible RC models for model predictive control"
+  connector RealInput = input Real "Real input signal (library independent, for CasADi export)";
+
+package Zones "Single-zone RC models"
+{% for zone in library_zones %}
+  model {{ zone.model_type }} "{{ zone.title }}"
+{{ boundary_declarations("Trano.MPC.RealInput", ground_temperature, irradiances) }}
+{{ zone_declarations(zone, "", "Trano.MPC.RealInput") }}
+  equation
+{{ zone_equations(zone, "") }}
+    annotation (Documentation(info="<html><p>{{ zone.documentation }}</p></html>"));
+  end {{ zone.model_type }};
+
+{% endfor %}
+end Zones;
+end MPC;
+{% endautoescape %}
+{%- endmacro -%}
+
+{%- macro building_model(building) -%}
+{% autoescape false %}
+model {{ building.name }} "{{ building.zones | length }}-zone RC building model ({{ building.model_type }}), CasADi/IPOPT compatible"
+{{ boundary_declarations("Trano.MPC.RealInput", building.ground_temperature, building.irradiances) }}
+{% for coupling in building.couplings %}
+  parameter Real {{ coupling.parameter }}(unit="W/K") = {{ coupling.conductance | mo }}
+    "Conductance between {{ coupling.zone_a }} and {{ coupling.zone_b }}";
+{% endfor %}
+{% for zone in building.zones %}
+  // ---- Zone {{ zone.name }} ({{ zone.model_type }}) ----
+{{ zone_declarations(zone, zone.prefix, "Trano.MPC.RealInput") }}
+{% endfor %}
+equation
+{% for zone in building.zones %}
+{{ zone_equations(zone, zone.prefix) }}
+{% endfor %}
+end {{ building.name }};
+{% endautoescape %}
+{%- endmacro -%}
+
+{%- macro runnable_model(building, runnable) -%}
+{% autoescape false %}
+model building "Runnable {{ building.zones | length }}-zone RC building: weather, solar gains, occupancy and external data connected to {{ building.name }}"
+  {{ runnable.weather }}
+  Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather data bus";
+  {{ building.name }} rc "CasADi/IPOPT compatible RC model";
+{% for orientation in runnable.orientations %}
+  Buildings.BoundaryConditions.SolarIrradiation.DirectTiltedSurface HDir_{{ orientation.name }}(
+    til={{ orientation.tilt | mo }}, azi={{ orientation.azimuth | mo }}) "Direct irradiance, {{ orientation.description }}";
+  Buildings.BoundaryConditions.SolarIrradiation.DiffuseIsotropic HDif_{{ orientation.name }}(
+    til={{ orientation.tilt | mo }}, outSkyCon=true, outGroCon=true) "Diffuse irradiance, {{ orientation.description }}";
+  Modelica.Blocks.Math.Add HSol_{{ orientation.name }} "Total irradiance, {{ orientation.description }}";
+{% endfor %}
+{% if runnable.external_data %}
+  Modelica.Blocks.Sources.CombiTimeTable externalData(
+    tableOnFile=false,
+    table=[{{ runnable.external_data.table }}],
+    smoothness=Modelica.Blocks.Types.Smoothness.LinearSegments,
+    extrapolation=Modelica.Blocks.Types.Extrapolation.HoldLastPoint)
+    "External data, columns: {{ runnable.external_data.columns | join(', ') }}";
+{% endif %}
+{% for zone in runnable.zones %}
+  // ---- Zone {{ zone.name }} ----
+{% if zone.occupancy %}
+  Trano.Occupancy.{{ zone.occupancy.model }} occupancy_{{ zone.name }}({{ zone.occupancy.parameters }})
+    "Occupancy of {{ zone.name }}";
+  Modelica.Blocks.Math.Sum QInt_{{ zone.name }}(nin=2, k={ {{- zone.floor_area | mo }}, {{ zone.floor_area | mo -}} })
+    "Sensible internal gains (radiant and convective) of {{ zone.name }}";
+{% else %}
+  Modelica.Blocks.Sources.Constant QInt_{{ zone.name }}(k=0) "No internal gains in {{ zone.name }}";
+{% endif %}
+{% if zone.heating_column is none %}
+  Modelica.Blocks.Interfaces.RealInput {{ zone.name }}_QHea(unit="W")
+    "Heating power of {{ zone.name }}, control input (e.g. set by the MPC)";
+{% endif %}
+  Modelica.Blocks.Interfaces.RealOutput {{ zone.name }}_TZon(unit="K") "Indoor air temperature of {{ zone.name }}";
+{% endfor %}
+equation
+  connect({{ runnable.weather_name }}.weaBus, weaBus);
+  connect(weaBus.TDryBul, rc.TOut);
+{% for orientation in runnable.orientations %}
+  connect({{ runnable.weather_name }}.weaBus, HDir_{{ orientation.name }}.weaBus);
+  connect({{ runnable.weather_name }}.weaBus, HDif_{{ orientation.name }}.weaBus);
+  connect(HDir_{{ orientation.name }}.H, HSol_{{ orientation.name }}.u1);
+  connect(HDif_{{ orientation.name }}.H, HSol_{{ orientation.name }}.u2);
+  connect(HSol_{{ orientation.name }}.y, rc.{{ orientation.irradiance }});
+{% endfor %}
+{% for zone in runnable.zones %}
+{% if zone.occupancy %}
+  connect(occupancy_{{ zone.name }}.y[1], QInt_{{ zone.name }}.u[1]);
+  connect(occupancy_{{ zone.name }}.y[2], QInt_{{ zone.name }}.u[2]);
+{% endif %}
+  connect(QInt_{{ zone.name }}.y, rc.{{ zone.prefix }}QInt);
+{% if zone.heating_column is none %}
+  connect({{ zone.name }}_QHea, rc.{{ zone.prefix }}QHea);
+{% else %}
+  connect(externalData.y[{{ zone.heating_column }}], rc.{{ zone.prefix }}QHea);
+{% endif %}
+  {{ zone.name }}_TZon = rc.{{ zone.prefix }}Ti;
+{% endfor %}
+end building;
+{% endautoescape %}
+{%- endmacro -%}
