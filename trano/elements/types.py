@@ -1,3 +1,4 @@
+import math
 from enum import Enum
 
 from typing import Literal
@@ -21,6 +22,36 @@ TILT_MAPPING = {
 }
 
 DEFAULT_TILT = ["wall", "ceiling", "floor"]
+
+# Inclination rendered in the Modelica models [rad]; the pitched roofs are rounded the same way
+# as in macros.jinja2 (convert_tilt) so that both agree.
+TILT_RADIANS = {
+    "wall": math.pi / 2,
+    "ceiling": 0.0,
+    "floor": math.pi,
+    "pitched_roof_45": 0.785,
+    "pitched_roof_40": 0.698,
+    "pitched_roof_35": 0.611,
+    "pitched_roof_30": 0.524,
+    "pitched_roof_20": 0.349,
+}
+
+
+def wind_pressure_table(tilt: "Tilt") -> str:
+    """Wind pressure coefficient table IDEAS selects for a surface of this inclination.
+
+    Mirrors the selection in IDEAS.Buildings.Components.OuterWall (parameter coeffsCp).
+    """
+    inclination = TILT_RADIANS[tilt.value]
+    if inclination <= math.pi / 18:
+        return "Cp_Roof_0_10"
+    if inclination <= math.pi / 6:
+        return "Cp_Roof_11_30"
+    if inclination <= math.pi / 4:
+        return "Cp_Roof_30_45"
+    if abs(inclination - math.pi) < 0.01:
+        return "Cp_Floor"
+    return "Cp_Wall"
 
 
 class Tilt(str, Enum):
