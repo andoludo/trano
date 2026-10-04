@@ -26,7 +26,7 @@ Trano utilizes the official OpenModelica Docker image to execute simulations. It
 
 ### Modelica libraries
 
-The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0 (built against Modelica 4.1.0), IDEAS 4.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the `openmodelica/openmodelica:v1.26.9-ompython` image. Both Modelica Standard Library versions are installed side by side; the versions are defined in one place, `trano.simulate.simulate.ModelicaEnvironment`.
+The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0 (built against Modelica 4.1.0), IDEAS 3.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the `openmodelica/openmodelica:v1.26.9-ompython` image. Both Modelica Standard Library versions are installed side by side; the versions are defined in one place, `trano.simulate.simulate.ModelicaEnvironment`. IDEAS 4.0.0 is not used yet: no OpenModelica release handles it (1.25 cannot parse it, 1.26 and 1.27 fail with internal errors on its weather bus, also in IDEAS' own examples).
 
 Each simulation container first runs an OpenModelica script that installs these libraries with the package manager. A library already present on the container's `MODELICAPATH` (for example baked into an image derived from the official one under `/root/.openmodelica/libraries`) is not installed again, so simulations also work where the package index cannot be reached.
 

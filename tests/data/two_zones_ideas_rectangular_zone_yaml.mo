@@ -3435,30 +3435,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.038,
-      c=920.0,
-      rho=2050.0,
-      epsLw=0.88,
-      epsSw=0.55);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.04,
       c=950.0,
       rho=1950.0,
       epsLw=0.88,
-      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.045,
-      c=900.0,
-      rho=2100.0,
+      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.026,
+      c=1005.0,
+      rho=1.18,
+      epsLw=0.88,
+      epsSw=0.55);    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.038,
+      c=920.0,
+      rho=2050.0,
       epsLw=0.88,
       epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.1,
       c=860.0,
       rho=2500.0,
       epsLw=0.88,
-      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.026,
-      c=1005.0,
-      rho=1.18,
+      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.045,
+      c=900.0,
+      rho=2100.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record construction_001
@@ -3531,7 +3531,6 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     lB=36.6,
     hasWinB=true,
     A_winB=1.5,
-    h_winB=1.0,
     redeclare two_zones_ideas_rectangular_zone.Data.Glazing.ins2ar2020_001 glazingB,
     bouTypC=IDEAS.Buildings.Components.Interfaces.BoundaryType.OuterWall,
     redeclare parameter two_zones_ideas_rectangular_zone.Data.Constructions.construction_001 conTypC,
@@ -3541,7 +3540,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     redeclare parameter two_zones_ideas_rectangular_zone.Data.Constructions.construction_001 conTypFlo,
     bouTypCei=IDEAS.Buildings.Components.Interfaces.BoundaryType.None,
     nSurfExt=1) annotation (
-    Placement(transformation(origin = { -58.016258239746094, 69.65837097167969 },
+    Placement(transformation(origin = { 54.16326904296875, -100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     IDEAS.Buildings.Components.RectangularZoneTemplate space_002(
@@ -3564,14 +3563,13 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     lC=45.18518518518518,
     hasWinC=true,
     A_winC=2.0,
-    h_winC=1.2,
     redeclare two_zones_ideas_rectangular_zone.Data.Glazing.ins2ar2020_001 glazingC,
     bouTypD=IDEAS.Buildings.Components.Interfaces.BoundaryType.None,
     bouTypFlo=IDEAS.Buildings.Components.Interfaces.BoundaryType.SlabOnGround,
     redeclare parameter two_zones_ideas_rectangular_zone.Data.Constructions.construction_001 conTypFlo,
     bouTypCei=IDEAS.Buildings.Components.Interfaces.BoundaryType.None,
     nSurfExt=1) annotation (
-    Placement(transformation(origin = { -100.0, -100.0 },
+    Placement(transformation(origin = { -36.325740814208984, -41.28092956542969 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
             inner IDEAS.BoundaryConditions.SimInfoManager
@@ -3579,7 +3577,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
   IDEAS.BoundaryConditions.Types.
   InterZonalAirFlow.OnePort) "Data reader"
 annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotation (
-    Placement(transformation(origin = { -59.28104782104492, 100.0 },
+    Placement(transformation(origin = { -100.0, -44.56867599487305 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
         IDEAS.Buildings.Components.InternalWall internal_space_002_space_001_construction
@@ -3589,13 +3587,13 @@ annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotati
     A = 18.0, inc = IDEAS.Types.Tilt.Wall, azi =
     10) "Partition wall between the two
     rooms" annotation (
-    Placement(transformation(origin = { 100.0, 90.2275390625 },
+    Placement(transformation(origin = { 100.0, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(space_001.proBusExt[1],internal_space_002_space_001_construction.propsBus_a)
         annotation (Line(
-        points={{ -58.016258239746094, 69.65837097167969 }    ,{ 20.991870880126953, 69.65837097167969 }    ,{ 20.991870880126953, 90.2275390625 }    ,{ 100.0, 90.2275390625 }    },
+        points={{ 54.16326904296875, -100.0 }    ,{ 77.08163452148438, -100.0 }    ,{ 77.08163452148438, 100.0 }    ,{ 100.0, 100.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3603,7 +3601,7 @@ equation
             ;        
         connect(space_002.proBusExt[1],internal_space_002_space_001_construction.propsBus_b)
         annotation (Line(
-        points={{ -100.0, -100.0 }    ,{ 0.0, -100.0 }    ,{ 0.0, 90.2275390625 }    ,{ 100.0, 90.2275390625 }    },
+        points={{ -36.325740814208984, -41.28092956542969 }    ,{ 31.837129592895508, -41.28092956542969 }    ,{ 31.837129592895508, 100.0 }    ,{ 100.0, 100.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3619,7 +3617,7 @@ equation
             ;        
         connect(weather.weaDatBus,dataBus)
         annotation (Line(
-        points={{ -59.28104782104492, 100.0 }    ,{ -59.28104782104492, 100.0 }    ,{ -59.28104782104492, 100.0 }    ,{ -59.28104782104492, 100.0 }    },
+        points={{ -100.0, -44.56867599487305 }    ,{ -100.0, -44.56867599487305 }    ,{ -100.0, -44.56867599487305 }    ,{ -100.0, -44.56867599487305 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3883,30 +3881,30 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.038,
-      c=920.0,
-      rho=2050.0,
-      epsLw=0.88,
-      epsSw=0.55);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
  k=0.04,
       c=950.0,
       rho=1950.0,
       epsLw=0.88,
-      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.045,
-      c=900.0,
-      rho=2100.0,
+      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.026,
+      c=1005.0,
+      rho=1.18,
+      epsLw=0.88,
+      epsSw=0.55);    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.038,
+      c=920.0,
+      rho=2050.0,
       epsLw=0.88,
       epsSw=0.55);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
  k=1.1,
       c=860.0,
       rho=2500.0,
       epsLw=0.88,
-      epsSw=0.55);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.026,
-      c=1005.0,
-      rho=1.18,
+      epsSw=0.55);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+ k=0.045,
+      c=900.0,
+      rho=2100.0,
       epsLw=0.88,
       epsSw=0.55);end Materials;
 package Constructions "Library of building envelope constructions"      record construction_001

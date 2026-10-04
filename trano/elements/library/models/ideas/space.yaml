@@ -204,7 +204,6 @@
     {% if face.window %}
         hasWin{{ face.key }}=true,
         A_win{{ face.key }}={{ face.window.area }},
-        h_win{{ face.key }}={{ face.window.height }},
         redeclare {{ package_name }}.Data.Glazing.{{ face.window.glazing.name }} glazing{{ face.key }},
     {% endif %}
     {% endfor %}

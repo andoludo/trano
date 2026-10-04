@@ -46,15 +46,19 @@ def client() -> docker.DockerClient:
 class ModelicaEnvironment(BaseModel):
     """Versions of the OpenModelica image and of the Modelica libraries installed in it.
 
-    Buildings 13 is built against Modelica 4.1 while IDEAS 4 and AixLib 3 still declare
-    Modelica 4.0, so both Modelica Standard Library versions are installed side by side and
-    OpenModelica picks the one each library asks for.
+    Buildings 13 is built against Modelica 4.1 while IDEAS and AixLib still declare
+    Modelica 4.0, so both Modelica Standard Library versions are installed side by side.
+
+    IDEAS stays at 3.0.0: IDEAS 4.0.0 cannot be parsed by OpenModelica 1.25 and triggers
+    internal compiler errors in OpenModelica 1.26 and 1.27 (expandable weather bus of
+    SlabOnGround and of the zone lighting control, `coeffsCp` on surface arrays), which
+    IDEAS' own examples reproduce.
     """
 
     openmodelica_image: str = Field(default="openmodelica/openmodelica:v1.26.9-ompython")
     modelica: list[str] = Field(default=["4.0.0+maint.om", "4.1.0+maint.om"])
     buildings: str = Field(default="13.0.0")
-    ideas: str = Field(default="4.0.0")
+    ideas: str = Field(default="3.0.0")
     aixlib: str = Field(default="3.0.1")
 
     @property

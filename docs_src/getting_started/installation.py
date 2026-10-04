@@ -35,7 +35,7 @@ sudo apt install graphviz
             CleanedText(
                 content="""### Modelica libraries
     The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0
-    (built against Modelica 4.1.0), IDEAS 4.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the
+    (built against Modelica 4.1.0), IDEAS 3.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the
     openmodelica/openmodelica:v1.26.9-ompython image. Both Modelica Standard Library versions are installed
     side by side; the versions are defined in one place, trano.simulate.simulate.ModelicaEnvironment.
     Each simulation container first runs an OpenModelica script that installs these libraries with the
