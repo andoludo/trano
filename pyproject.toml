@@ -1,6 +1,6 @@
 [project]
 name = "trano"
-version = "0.32.0"
+version = "0.34.0"
 description = ""
 authors = [{ name = "Ando Andriamamonjy", email = "andoludovic.andriamamonjy@gmail.com" }]
 requires-python = ">=3.11,<4.0"
@@ -60,6 +60,8 @@ dev = [
     "types-pyyaml>=6.0.12.20240808,<7",
     "jsf>=0.11.2,<0.12",
     "pytest>=9.0.3,<10",
+    "rumoca>=0.10.0,<0.11",
+    "casadi>=3.6.7,<4",
 ]
 docs = [
     "mkdocs>=1.6.1,<2",

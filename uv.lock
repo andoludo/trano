@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11, <4.0"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -227,6 +227,25 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/78/be/a6aa8b9199b785df50f8905ce318d166a19acbdd7861f2e20d02e07219f7/buildingspy-5.2.0.tar.gz", hash = "sha256:8622d1260e83fc1bbe066980cba62b661942e2f47cdf8032274037dccc1a0c5c", size = 1571631, upload-time = "2025-03-14T18:21:49.542Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/53/db/c67859366b146a22aaaf8a397d99539937b5a39cbb4e9ab4b1c95a7916df/buildingspy-5.2.0-py3-none-any.whl", hash = "sha256:e1143b207d4356b7915e52081d11e8d3bd0082ca022a4d2830de20c82524d55a", size = 784470, upload-time = "2025-03-14T18:21:48.034Z" },
+]
+
+[[package]]
+name = "casadi"
+version = "3.8.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c5/7a/4d3c8edfbddaedc0a99b64f8154a7169b951ac2462e2f30474aac5c1ee2a/casadi-3.8.1.tar.gz", hash = "sha256:04141daf3ab7934f881a476294bf965173d1599412db0baf19f65341a612f217", size = 6471066, upload-time = "2026-09-16T07:14:25.974Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/21/a8/5a61763109d40c6fed835cdc906a2a4a9c11ce8977b9d311bec0424e5f2f/casadi-3.8.1-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:67bb7c3fd247cd840521d820aba9d7021d4d60d61732861d53ada20844a9410a", size = 52036464, upload-time = "2026-09-16T06:19:52.434Z" },
+    { url = "https://files.pythonhosted.org/packages/d9/7b/312ac1a9eaeaca9dd92f4bfc5b703cb2449ca1c20557664e7524bb5a1542/casadi-3.8.1-cp311-abi3-macosx_11_0_x86_64.macosx_11_0_intel.whl", hash = "sha256:1d3a4f124b28cd4bd0e4218777ab6e8ee204c74a9a8db86cbd21d76703b9c96a", size = 53657225, upload-time = "2026-09-16T06:20:28.097Z" },
+    { url = "https://files.pythonhosted.org/packages/3b/c0/07f34c91d1a9a7a278611f36c212462daaec5d3680731afbbc515b7f68dd/casadi-3.8.1-cp311-abi3-manylinux2014_aarch64.whl", hash = "sha256:dd7c359faa65c1ab77e3ddfe179fa725ff28f4c9f9b1c90a95e7a7bb3495be5d", size = 54202846, upload-time = "2026-09-16T06:21:02.986Z" },
+    { url = "https://files.pythonhosted.org/packages/63/95/e78db537ed7ec4bc637ee493050fa4b1bcaa5aa96093b2fbf3bb8cb83007/casadi-3.8.1-cp311-abi3-manylinux2014_i686.whl", hash = "sha256:110714f57e36e5f9b917de7af6d00cfd41e46ad16f9d265da9965c18a152206d", size = 83550406, upload-time = "2026-09-16T06:21:58.653Z" },
+    { url = "https://files.pythonhosted.org/packages/54/38/80f9d07c6ed55392524e786dc5391f1e068cb9d7a6a13343750c68141f1d/casadi-3.8.1-cp311-abi3-manylinux2014_x86_64.whl", hash = "sha256:c9d161e1427dc306a34ad33bccd25e70d8dd863bad2ee3b4194afb5f0d8d2c8d", size = 88536827, upload-time = "2026-09-16T06:22:55.477Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/b8/3847f0b2c67eb5c12aa0540d780f1dbda965e3376e31b6c1682f54be564c/casadi-3.8.1-cp311-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:61e53644a4a00965a45a5170b2b26e12489952a106aab0ef5118cbcfb772de65", size = 56740071, upload-time = "2026-09-16T06:23:32.389Z" },
+    { url = "https://files.pythonhosted.org/packages/63/88/79cdbd539a62e971b881dd5d598c2b65ab5c646e7d58fe5ba22f2cad5e13/casadi-3.8.1-cp311-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:99c32594513bec827ba51e6b24f6d84bb94abbf95f7fe9c2b924f62bec3e02ea", size = 89403549, upload-time = "2026-09-16T06:24:31.399Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/5b/62721e8962acc2385829ac51a938ce0213e86981fda158ee03c6335d6040/casadi-3.8.1-cp311-abi3-win_amd64.whl", hash = "sha256:7376d81ef20b65e021cc74ff729fea6b37db0a5f6392876130d0cbbc99dc226c", size = 57655196, upload-time = "2026-09-16T06:25:09.021Z" },
 ]
 
 [[package]]
@@ -2876,6 +2895,19 @@ wheels = [
 ]
 
 [[package]]
+name = "rumoca"
+version = "0.10.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/a0/c7d3e5d4031901e3e7ea2f654f29a377222bec44b365341d81fe828ab3a0/rumoca-0.10.0.tar.gz", hash = "sha256:6ac81a4fa8b221d8ed65dfa66affe195de7616ebe2826dc7879cfa1ef955ff38", size = 5778083, upload-time = "2026-09-19T18:05:23.929Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/0c/98d072ed0529366a9a163997bc970f30a86b33280db47fbe188ab05e0fef/rumoca-0.10.0-cp310-abi3-macosx_14_0_arm64.whl", hash = "sha256:dc293f410f60ff43d54abb94c4789157d02e3ced1e69dbf1d2ffc52d2823d8ba", size = 23795232, upload-time = "2026-09-19T18:05:11.061Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/24/22f1d147f96a9350d1e2a61b0dc4d3fe7510a1ef4cd91f40231cfad6fd3e/rumoca-0.10.0-cp310-abi3-macosx_14_0_x86_64.whl", hash = "sha256:65ca20308a6da0e2da84ff0c103862853db7823fa2c3cf92fa5299ba684464b8", size = 25790383, upload-time = "2026-09-19T18:05:13.669Z" },
+    { url = "https://files.pythonhosted.org/packages/13/e2/d476f4e1b0e0f50c3cf8ac50541d89a8d7c3f074e9d1082a5ec329898528/rumoca-0.10.0-cp310-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:1ee4dafa908fde3a6936f5bfdc57641517b28792bb802fc281aa932b1720c081", size = 21817899, upload-time = "2026-09-19T18:05:16.025Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/07/27b19e3ecacbe610d33d8fc02825285627a8ad13b04079b5e9cd4457c66b/rumoca-0.10.0-cp310-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:34d9712b8b0ddac76cf91dee55073c3dd4a9dc8e7a7091d82a43ce5c86972f7c", size = 24118284, upload-time = "2026-09-19T18:05:18.794Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/82/d29dc4763bd507b3308983af4bf422c14f19d034d92ca9195b5118c99286/rumoca-0.10.0-cp310-abi3-win_amd64.whl", hash = "sha256:b0db5c2aa6eb7d7f6e5f3058e7fd17d87fd16e4d630926ac7ee2eeacabdc0e9e", size = 24668345, upload-time = "2026-09-19T18:05:21.505Z" },
+]
+
+[[package]]
 name = "scipy"
 version = "1.17.1"
 source = { registry = "https://pypi.org/simple" }
@@ -3304,8 +3336,9 @@ wheels = [
 
 [[package]]
 name = "trano"
-version = "0.32.0"
+version = "0.34.0"
 source = { editable = "." }
+default-groups = "all"
 dependencies = [
     { name = "buildingspy" },
     { name = "docker" },
@@ -3324,12 +3357,14 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "casadi" },
     { name = "jsf" },
     { name = "mypy" },
     { name = "networkx-stubs" },
     { name = "pandas-stubs" },
     { name = "pytest" },
     { name = "ruff" },
+    { name = "rumoca" },
     { name = "types-beautifulsoup4" },
     { name = "types-pyyaml" },
     { name = "types-simplejson" },
@@ -3364,12 +3399,14 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "casadi", specifier = ">=3.6.7,<4" },
     { name = "jsf", specifier = ">=0.11.2,<0.12" },
     { name = "mypy", specifier = ">=2.1.0,<3" },
     { name = "networkx-stubs", specifier = ">=0.0.1,<0.0.2" },
     { name = "pandas-stubs", specifier = ">=2.2.0.240218,<3" },
     { name = "pytest", specifier = ">=9.0.3,<10" },
     { name = "ruff", specifier = ">=0.15.16,<0.16" },
+    { name = "rumoca", specifier = ">=0.10.0,<0.11" },
     { name = "types-beautifulsoup4", specifier = ">=4.12.0.20240229,<5" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20240808,<7" },
     { name = "types-simplejson", specifier = ">=3.19.0.20240218,<4" },

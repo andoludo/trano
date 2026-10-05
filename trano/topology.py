@@ -317,6 +317,11 @@ class Network:  # : PLR0904, #TODO: fix this
             )
 
     def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
+        if self.library.is_rc:
+            # Flat RC model for MPC: the systems are abstracted as the heating power of each zone.
+            from trano.mpc.modelica import render_network
+
+            return render_network(self, data_bus)
         data_bus = self._prepare_nodes(include_container, data_bus)
         self.connect()
         data = extract_properties(self.library, self.name, self.graph.nodes)
