@@ -588,6 +588,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#modelica-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelica libraries
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1163,6 +1174,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#modelica-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modelica libraries
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1270,6 +1292,9 @@
 </span></code></pre></div>
 <h3 id="docker">Docker</h3>
 <p>Trano utilizes the official OpenModelica Docker image to execute simulations. It is recommended to install Docker on your system so that Trano can pull the required images and run simulations. You can install Docker by following the instructions on the <a href="https://docs.docker.com/engine/install/">official website</a>.</p>
+<h3 id="modelica-libraries">Modelica libraries</h3>
+<p>The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0 (built against Modelica 4.1.0), IDEAS 3.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the <code>openmodelica/openmodelica:v1.26.9-ompython</code> image. Both Modelica Standard Library versions are installed side by side; the versions are defined in one place, <code>trano.simulate.simulate.ModelicaEnvironment</code>. IDEAS 4.0.0 is not used yet: no OpenModelica release handles it (1.25 cannot parse it, 1.26 and 1.27 fail with internal errors on its weather bus, also in IDEAS' own examples).</p>
+<p>Each simulation container first runs an OpenModelica script that installs these libraries with the package manager. A library already present on the container's <code>MODELICAPATH</code> (for example baked into an image derived from the official one under <code>/root/.openmodelica/libraries</code>) is not installed again, so simulations also work where the package index cannot be reached.</p>
 <h2 id="python-package">Python package</h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
