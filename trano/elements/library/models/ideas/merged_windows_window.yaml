@@ -1,4 +1,6 @@
+# IDEAS always merges the windows sharing a glazing into one Window array.
 - classes:
+  - Window
   - MergedWindows
   figures: []
   library: ideas
@@ -16,7 +18,6 @@
     - Space
   template: |2-
 
-        {% set tilts = tilts_processing_ideas(element) %}
         IDEAS.Buildings.Components.Window[{{ element.surfaces | length }}]
         {{ element.name }}(
         redeclare parameter {{ package_name }}.Data.Glazing.
@@ -24,5 +25,5 @@
         A={{  macros.join_list(element.surfaces)}},
         final azi={{macros.join_list(element.azimuths)}},
         redeclare package Medium = Medium,
-        final inc={{macros.join_list(tilts)}})
+        final inc={{ macros.convert_tilts(element.tilts, library_name) }})
   variant: default

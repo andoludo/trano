@@ -17,7 +17,7 @@ from trano.elements.common_base import (
 from trano.elements.common_base import BaseParameter
 from trano.elements.connection import Port
 from trano.elements.figure import NamedFigure
-from trano.elements.jinja import ENVIRONMENT, compile_template
+from trano.elements.jinja import compile_template
 from trano.elements.library.base import DynamicComponentTemplate, LibraryData
 from trano.elements.library.parameters import param_from_config
 from trano.elements.types import BaseVariant, ContainerTypes
@@ -91,11 +91,9 @@ class BaseElement(BaseElementPort):
             raise UnknownComponentVariantError(
                 f"Library data not found for {self.name} in {library.name} for variant {self.variant}"
             )
-        libraries_data = [
-            library_ for library_ in libraries_data_variants if (library_.library == library.name.lower())
-        ]
+        libraries_data = [library_ for library_ in libraries_data_variants if library_.serves(library.name)]
         if not libraries_data:
-            libraries_data = [library_ for library_ in libraries_data_variants if (library_.library == "default")]
+            libraries_data = [library_ for library_ in libraries_data_variants if library_.serves("default")]
         if libraries_data:
             return libraries_data[0]
         return None
@@ -151,7 +149,6 @@ class BaseElement(BaseElementPort):
     def model(self, network: "Network") -> ComponentModel | None:
         if not self.template:
             return None
-        ENVIRONMENT.globals.update(network.library.functions)
         if self.component_template:
             component = self.component_template.render(network.name, self, self.processed_parameters(network.library))
             if self.component_template.category:

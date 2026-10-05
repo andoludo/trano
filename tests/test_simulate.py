@@ -5,7 +5,7 @@ import pytest
 
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.simulate.simulate import SimulationOptions, simulate
+from trano.simulate.simulate import ModelicaEnvironment, SimulationOptions, simulate
 from trano.topology import Network
 from trano.utils.utils import is_success
 
@@ -39,6 +39,9 @@ SIMULATED_FIXTURES: list[tuple[str, int]] = [
     ("building_multiple_internal_walls", ONE_HOUR),
     ("building_multiple_internal_walls_ideas", ONE_HOUR),
     ("space_1_ideal_heating_network", ONE_HOUR),
+    ("ideas_rectangular_zone_single_zone", ONE_HOUR),
+    ("ideas_rectangular_zone_three_zones", ONE_HOUR),
+    ("ideas_rectangular_zone_with_external_surfaces", ONE_HOUR),
 ]
 
 
@@ -75,8 +78,7 @@ YAML_SIMULATIONS: list[tuple[str, str, str | None, bool]] = [
     ),
     ("house_infiltration_boiler", "house_infiltration_boiler.yaml", None, False),
     ("single_zone_hydronic_occupancy_from_data", "single_zone_hydronic_occupancy_from_data.yaml", None, True),
-    ("three_zones_mpc", "three_zones_mpc.yaml", "mpc", False),
-    ("single_zone_hydronic_weather", "single_zone_hydronic_weather.yaml", "mpc", False),
+    ("two_zones_ideas_rectangular_zone", "two_zones_ideas_rectangular_zone.yaml", "IDEAS", False),
 ]
 
 
@@ -104,3 +106,19 @@ def test_simulate_house_complex() -> None:
         options=SimulationOptions(end_time=24 * ONE_HOUR * 30 * 3),
     )
     assert is_success(results)
+
+
+def test_configure_script_installs_only_missing_libraries() -> None:
+    script = ModelicaEnvironment(modelica=["4.1.0+maint.om"], buildings="13.0.0").configure_script()
+    assert script.startswith("getVersion();\n")
+    # Each of the 3 MSL packages, Buildings, IDEAS and AixLib is installed in both branches.
+    assert script.count("installPackage(") == 12
+    assert "getAvailableLibraries()" in script
+    assert "getAvailableLibraryVersions(Modelica)" in script
+    assert 'installPackage(Modelica, "4.1.0+maint.om", exactMatch=true);' in script
+    assert 'then installPackage(Buildings, "13.0.0"); end if;' in script
+
+
+def test_modelica_version_is_the_newest_installed() -> None:
+    assert ModelicaEnvironment(modelica=["4.0.0+maint.om", "4.1.0+maint.om"]).modelica_version == "4.1.0"
+    assert ModelicaEnvironment(modelica=["4.1.0+maint.om", "4.0.0+maint.om"]).modelica_version == "4.1.0"

@@ -37,6 +37,9 @@ FIXTURE_CASES: list[str] = [
     "building_multiple_internal_walls",
     "building_multiple_internal_walls_ideas",
     "house_model",
+    "ideas_rectangular_zone_single_zone",
+    "ideas_rectangular_zone_three_zones",
+    "ideas_rectangular_zone_with_external_surfaces",
 ]
 
 
@@ -71,6 +74,12 @@ YAML_CASES: list[tuple[str, str, str | None, str]] = [
     ),
     ("two_zones", "two_zones.yaml", None, "two_zones_yaml"),
     ("two_zones_ideas", "two_zones_ideas.yaml", None, "two_zones_ideas_yaml"),
+    (
+        "two_zones_ideas_rectangular_zone",
+        "two_zones_ideas_rectangular_zone.yaml",
+        "IDEAS",
+        "two_zones_ideas_rectangular_zone_yaml",
+    ),
     # TODO: remove ducts here
     (
         "single_zone_air_handling_unit_without_vav_with_duct",

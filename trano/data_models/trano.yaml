@@ -633,6 +633,7 @@ enums:
     permissible_values:
       default:
       infiltration:
+      rectangular_zone:
   OccupancyVariant:
     permissible_values:
       default:

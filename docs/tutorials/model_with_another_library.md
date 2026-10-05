@@ -29,3 +29,31 @@ The figure below illustrates the envelope subcomponent generated using the IDEAS
 
 ![Envelope components using IDEAS](./img/other_library_1.jpg)
 
+## Zone template (IDEAS only)
+
+By default Trano renders an IDEAS envelope with separate components: an `IDEAS.Buildings.Components.Zone` plus one `OuterWall`, `Window` or `SlabOnGround` array per construction. IDEAS also provides `IDEAS.Buildings.Components.RectangularZoneTemplate`, a single component bundling the zone, its four vertical faces, floor and ceiling. Set the space variant to `rectangular_zone` to use it:
+
+```yaml
+spaces:
+  - id: SPACE:001
+    variant: rectangular_zone
+    parameters:
+      floor_area: 80.0
+      average_room_height: 2.5
+    external_boundaries:
+      external_walls:
+        - surface: 90.0
+          azimuth: 180.0
+          tilt: wall
+          construction: CONSTRUCTION:001
+      floor_on_grounds:
+        - surface: 80.0
+          construction: CONSTRUCTION:001
+      windows:
+        - surface: 1.5
+          azimuth: 180.0
+          tilt: wall
+          construction: INS2AR2020:001
+```
+
+Trano maps the walls onto the four faces of the template (face A takes the orientation shared by most surfaces, the other faces are at 90° steps from it), lumps the windows of a face sharing a glazing into one window, and uses the floor on ground as `SlabOnGround` and a horizontal roof as the ceiling. Surfaces that do not fit the rectangle (pitched roofs, a second construction or glazing on the same face, extra orientations) and the internal walls stay separate components connected through the template's `proBusExt` bus, so nothing is lost. The variant is only available with the IDEAS library.

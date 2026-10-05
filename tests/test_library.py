@@ -532,6 +532,7 @@ def test_reduced_order_single_zone(simple_space_template: Space) -> None:
     )
     assert model
     assert {c.equation_view() for c in network.containers.get_container("envelope").connections} == {
+        ("dataBus", "weather_0.weaBus"),
         ("occupancy_0.y", "space_1.intGains"),
         ("space_1.TAir", "y[1]"),
         ("space_1.weaBus", "weather_0.weaBus"),
@@ -541,3 +542,28 @@ def test_reduced_order_single_zone(simple_space_template: Space) -> None:
         ("data_bus.term_p", "term_p"),
         ("data_bus.u[1]", "u[1]"),
     }
+
+
+def test_library_data_may_serve_several_libraries() -> None:
+    data = {
+        "classes": ["Weather"],
+        "library": ["iso_13790", "Reduced_Order"],
+        "ports": [],
+        "parameter_processing": {"function": "default_parameters"},
+    }
+    library_data = LibraryData.model_validate(data)
+    assert library_data.library == ["iso_13790", "reduced_order"]
+    assert library_data.serves("reduced_order")
+    assert library_data.serves("ISO_13790")
+    assert not library_data.serves("default")
+    assert LibraryData.model_validate(data | {"library": "buildings"}).library == ["buildings"]
+
+
+@pytest.mark.parametrize("library_name", ["Buildings", "IDEAS"])
+def test_library_constants_share_the_hydronic_block(library_name: str) -> None:
+    library = Library.from_configuration(library_name)
+    assert library.medium.air in library.constants
+    assert library.medium.water in library.constants
+    assert "{{" not in library.constants
+    assert "parameter Modelica.Units.SI.Power Q_flow_nominal=2200" in library.constants
+    assert "dp_nominal=dpPip_nominal" in library.constants

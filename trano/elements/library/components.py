@@ -24,7 +24,8 @@ class Components(BaseModel):
 
     def get_components(self, component_name: str) -> list[LibraryData]:
         libraries_data = [LibraryData.model_validate(c) for c in self.components if component_name in c["classes"]]
-        if len({(ld.variant, ld.library) for ld in libraries_data}) != len(libraries_data):
+        variants = [(ld.variant, library) for ld in libraries_data for library in ld.library]
+        if len(set(variants)) != len(variants):
             raise ValueError(f"Duplicate variant for {component_name}")
         return libraries_data
 

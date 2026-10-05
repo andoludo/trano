@@ -948,6 +948,7 @@ enums:
     permissible_values:
       default: null
       infiltration: null
+      rectangular_zone: null
   SystemVariant:
     permissible_values:
       air_water_heat_pump: null

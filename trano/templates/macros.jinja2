@@ -45,18 +45,22 @@ connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ 
 {%- endfor -%}
 {%- endmacro -%}
 
-{%- macro convert_tilts(boundary_tilts) -%}
-    {% set tilts = ({"wall":"Buildings.Types.Tilt.Wall",
-"ceiling":"Buildings.Types.Tilt.Ceiling",
-"roof":"Buildings.Types.Tilt.Roof",
-"floor":"Buildings.Types.Tilt.Floor",
- "pitched_roof_45": 0.785,
+{%- macro convert_tilt(tilt, library_name="Buildings") -%}
+    {%- set radians = ({"pitched_roof_45": 0.785,
   "pitched_roof_30": 0.524,
   "pitched_roof_35": 0.611,
   "pitched_roof_40": 0.698,
-  "pitched_roof_20": 0.349}) %}
+  "pitched_roof_20": 0.349}) -%}
+    {%- if tilt.value in radians -%}
+        {{ radians[tilt.value] }}
+    {%- else -%}
+        {{ library_name }}.Types.Tilt.{{ tilt.value | capitalize }}
+    {%- endif -%}
+{%- endmacro %}
+
+{%- macro convert_tilts(boundary_tilts, library_name="Buildings") -%}
     {% raw %}{{% endraw %} {%- for tilt in boundary_tilts -%}
-    {{ tilts[tilt.value] }}{{ "," if not loop.last }} {%- endfor %}{% raw %}}{% endraw %}
+    {{ convert_tilt(tilt, library_name) }}{{ "," if not loop.last }} {%- endfor %}{% raw %}}{% endraw %}
 {%- endmacro %}
 
 {%- macro connect_path(paths) -%}

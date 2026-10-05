@@ -20,6 +20,6 @@
     - AirHandlingUnit
     use_counter: false
   template: |2-
-      Buildings.Fluid.Sources.Outside {{ element.name }}
+      {{ library_name }}.Fluid.Sources.Outside {{ element.name }}
         (nPorts=2,redeclare package Medium = Medium)
   variant: default
