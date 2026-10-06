@@ -893,6 +893,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#energy-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Energy systems
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#plugging-the-model-into-an-mpc-runtime" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1191,6 +1202,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#energy-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Energy systems
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#plugging-the-model-into-an-mpc-runtime" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1353,7 +1375,9 @@ control solvers cannot handle. The <code>mpc</code> library generates, from the 
 <li><code>TOut</code> outdoor air temperature [K],</li>
 <li><code>HSol_&lt;orientation&gt;</code> total solar irradiance on each facade orientation [W/m²], e.g. <code>HSol_azi0_til90</code>
   for the south facade (azimuth 0°, tilt 90°, Buildings library convention),</li>
-<li><code>&lt;space&gt;_QInt</code> internal gains [W] (disturbance) and <code>&lt;space&gt;_QHea</code> heating power [W] (control input).</li>
+<li><code>&lt;space&gt;_QInt</code> internal gains [W] (disturbance) and <code>&lt;space&gt;_QHea</code> heating power [W] (control input),
+  or <code>&lt;space&gt;_PHea</code> electrical power [W] of the heat pump serving the space (see
+  <a href="#energy-systems">Energy systems</a>).</li>
 </ul>
 <p>The states are the zone temperatures (<code>&lt;space&gt;_Ti</code>, <code>&lt;space&gt;_Te</code>, ...). The solar gains are
 <code>gA_&lt;orientation&gt;*HSol_&lt;orientation&gt;</code> for the windows (to the indoor air) and
@@ -1390,8 +1414,92 @@ with rumoca to guarantee that the generated models stay MPC ready.</p>
 <li><strong>heating</strong>: otherwise <code>&lt;space&gt;_QHea</code> is a top-level input of <code>building</code>, to be set by the MPC
   (e.g. in co-simulation or through an FMU); <code>&lt;space&gt;_TZon</code> outputs give the zone temperatures.</li>
 </ul>
-<p>The emission systems of the YAML file (radiators, boilers, controls...) are abstracted as the heating
-power of each zone.</p>
+<p>The hydraulics of the YAML file (pumps, valves, controls...) are abstracted; the production and
+storage systems are kept, see the next section.</p>
+<h2 id="energy-systems">Energy systems</h2>
+<p>The systems of the YAML file are rendered <strong>inline</strong> in <code>building_mpc</code>, next to the zone equations,
+because the CasADi target of rumoca accepts neither output variables nor sub-models. Each converter
+takes its <em>electrical</em> power as control input and the heat it delivers is derived inside the ODE from
+a smooth performance polynomial; the storages are extra states. The YAML stays the single source of
+truth: the same file generates the detailed Buildings model and the MPC model.</p>
+<table>
+<thead>
+<tr>
+<th>YAML element</th>
+<th><code>mpc</code> system</th>
+<th>Inputs (control unless stated) and states</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>boiler</code> with variant <code>air_water_heat_pump</code> or <code>water_water_heat_pump</code></td>
+<td><code>HeatPump</code></td>
+<td><code>&lt;space&gt;_PHea</code> [W] for each zone served; heat <code>= COP(TOut, TSup) · P</code> with <code>COP = cop0 + copA·(TOut − 280.15) + copS·(TSup − 308.15) + copX·(TOut − 280.15)·(TSup − 308.15)</code> (rating point A7/W35); <code>TSup</code> is the emitter state <code>Th</code> plus <code>dTSup</code> for R4C3 zones, the parameter <code>TSup</code> otherwise</td>
+</tr>
+<tr>
+<td><code>boiler</code> (other variants)</td>
+<td><code>GasBoiler</code></td>
+<td><code>&lt;space&gt;_QHea</code> [W] stays thermal; the interface reports the efficiency and the carrier <code>gas</code></td>
+</tr>
+<tr>
+<td><code>chiller</code></td>
+<td><code>Chiller</code></td>
+<td><code>&lt;space&gt;_PCoo</code> [W] for each zone served; cooling <code>= −EER(TOut) · P</code> with <code>EER = eer0 + eerA·(TOut − 308.15)</code></td>
+</tr>
+<tr>
+<td><code>dhw_tank</code></td>
+<td><code>DHWTank</code></td>
+<td>state <code>&lt;tank&gt;_T</code> [K]; <code>&lt;tank&gt;_PHea</code> [W] (through the COP of the heat pump upstream, at <code>T + dTSup</code>, or a resistance); <code>&lt;tank&gt;_QDraw</code> [W] disturbance from a daily draw-off profile; standing losses <code>UA·(T − Ti)</code> to the zone of <code>parameters.zone</code></td>
+</tr>
+<tr>
+<td><code>battery</code></td>
+<td><code>Battery</code></td>
+<td>state <code>&lt;bat&gt;_E</code> [J]; <code>&lt;bat&gt;_PCha</code>, <code>&lt;bat&gt;_PDis</code> [W]; <code>der(E) = etaCha·PCha − PDis/etaDis</code></td>
+</tr>
+<tr>
+<td><code>ev_charger</code></td>
+<td><code>EVCharger</code></td>
+<td>state <code>&lt;ev&gt;_E</code> [J]; <code>&lt;ev&gt;_PCha</code> [W]; <code>&lt;ev&gt;_PDri</code> [W] disturbance (driving discharge between departure and arrival)</td>
+</tr>
+<tr>
+<td><code>photovoltaic</code></td>
+<td><code>Photovoltaic</code></td>
+<td><code>&lt;pv&gt;_P</code> [W] disturbance: <code>area · efficiency · HSol</code> on the panel orientation</td>
+</tr>
+</tbody>
+</table>
+<p>A production system serves the spaces whose emitters (or ventilation inlets) are downstream of it in
+the hydraulic graph of the YAML; a system without connections serves every space. The nominal
+water temperatures of the radiators (<code>water_inlet_temperature_at_nominal_condition</code>, ...) size the
+emitter of the R4C3 zones (floor heating: 35/30 °C) and give the supply temperature of the heat pump.
+The performance parameters (<code>cop_nominal</code>, <code>cop_outdoor_slope</code>, <code>cop_supply_slope</code>,
+<code>cop_cross_term</code>, <code>max_electrical_power</code>) are attributes of the boiler parameters, read by the <code>mpc</code>
+library only. <code>chiller</code>, <code>dhw_tank</code>, <code>battery</code> and <code>ev_charger</code> are rendered by the <code>mpc</code> library only.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">systems</span><span class="p">:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">boiler</span><span class="p">:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">      </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HEATPUMP:001</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="nt">variant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">air_water_heat_pump</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="nt">nominal_heating_power</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">        </span><span class="nt">cop_nominal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4.6</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">dhw_tank</span><span class="p">:</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TANK:001</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> volume</span><span class="p">:</span><span class="w"> </span><span class="nv">0.3</span><span class="p p-Indicator">,</span><span class="nt"> daily_draw_off_energy</span><span class="p">:</span><span class="w"> </span><span class="nv">6</span><span class="p p-Indicator">,</span><span class="nt"> zone</span><span class="p">:</span><span class="w"> </span><span class="nv">SPACE</span><span class="p p-Indicator">:</span><span class="nv">002</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span><span class="nt">inlets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">HEATPUMP</span><span class="p p-Indicator">:</span><span class="nv">001</span><span class="p p-Indicator">]</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">battery</span><span class="p">:</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">      </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">BATTERY:001</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> capacity</span><span class="p">:</span><span class="w"> </span><span class="nv">8</span><span class="p p-Indicator">,</span><span class="nt"> max_charge_power</span><span class="p">:</span><span class="w"> </span><span class="nv">3000</span><span class="p p-Indicator">,</span><span class="nt"> max_discharge_power</span><span class="p">:</span><span class="w"> </span><span class="nv">3000</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="nt">solar</span><span class="p">:</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">photovoltaic</span><span class="p">:</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">      </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PV:001</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> area</span><span class="p">:</span><span class="w"> </span><span class="nv">30</span><span class="p p-Indicator">,</span><span class="nt"> efficiency</span><span class="p">:</span><span class="w"> </span><span class="nv">0.19</span><span class="p p-Indicator">,</span><span class="nt"> azimuth</span><span class="p">:</span><span class="w"> </span><span class="nv">0</span><span class="p p-Indicator">,</span><span class="nt"> tilt</span><span class="p">:</span><span class="w"> </span><span class="nv">35</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</span></code></pre></div>
+<p>Everything that is not part of the ODE is in the interface: the compressor limit shared by the
+zones of one heat pump (<code>max_electrical_power</code> over <code>inputs</code> and <code>tank_inputs</code>), the state of charge
+bounds of the batteries, the temperature bounds of the tank, the energy carrier of every control
+input (<code>heat</code>, <code>electricity</code>, <code>gas</code>) and the sources of the new disturbances (<code>photovoltaic</code>,
+<code>draw_off</code>, <code>ev_driving</code>). The runnable <code>building</code> model feeds the draw-off and driving schedules
+with periodic <code>CombiTimeTable</code>s and the PV generation with the irradiance blocks of its orientation.</p>
 <h2 id="plugging-the-model-into-an-mpc-runtime">Plugging the model into an MPC runtime</h2>
 <p><code>trano create-model house.yaml mpc</code> writes two files:</p>
 <ul>
@@ -1407,20 +1515,24 @@ power of each zone.</p>
   (<code>HSol_&lt;orientation&gt;</code>: azimuth and tilt in degrees), or the occupancy model, its parameters and
   floor area (<code>&lt;space&gt;_QInt</code>), plus the external data column replaying an input, if any,</li>
 <li><code>parameters</code>: name, value, unit and zone (they stay symbolic in CasADi, e.g. for identification),</li>
-<li><code>zones</code>: comfort state (<code>indoor_temperature</code>), heating input and an estimated
-  <code>design_heating_power</code> usable as upper bound of the control input,</li>
+<li><code>zones</code>: comfort state (<code>indoor_temperature</code>), heating input (thermal or electrical, with its
+  <code>heating_carrier</code> and <code>heating_system</code>), optional <code>cooling_input</code> and an estimated
+  <code>design_heating_power</code> usable as upper bound of a thermal control input,</li>
+<li><code>systems</code>: one entry per energy system (<code>heat_pump</code>, <code>boiler</code>, <code>chiller</code>, <code>dhw_tank</code>, <code>battery</code>,
+  <code>ev_charger</code>, <code>photovoltaic</code>) with its inputs, states and the bounds that are not in the ODE,</li>
 <li><code>weather_file</code>: the weather file of the runnable model, to build the forecasts.</li>
 </ul>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">rumoca</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.mpc</span><span class="w"> </span><span class="kn">import</span> <span class="n">InputRole</span><span class="p">,</span> <span class="n">MPCModelInterface</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">interface</span> <span class="o">=</span> <span class="n">MPCModelInterface</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;house.mpc.json&quot;</span><span class="p">)</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">export</span> <span class="o">=</span> <span class="n">rumoca</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;house.mo&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">model</span><span class="o">=</span><span class="n">interface</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">to_casadi</span><span class="p">()</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">assert</span> <span class="n">interface</span><span class="o">.</span><span class="n">input_names</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">export</span><span class="o">.</span><span class="n">input_names</span><span class="p">)</span>  <span class="c1"># guaranteed by the test suite</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">controls</span> <span class="o">=</span> <span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">interface</span><span class="o">.</span><span class="n">inputs</span> <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">InputRole</span><span class="o">.</span><span class="n">control</span><span class="p">]</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">rhs</span> <span class="o">=</span> <span class="n">export</span><span class="o">.</span><span class="n">rhs</span>  <span class="c1"># casadi.Function xdot = rhs(t, x, u, p), p = interface.parameter_values</span>
+<p>The interface version is <code>2</code> (version 1 files, envelope only, are still read).</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">rumoca</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.mpc</span><span class="w"> </span><span class="kn">import</span> <span class="n">InputRole</span><span class="p">,</span> <span class="n">MPCModelInterface</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">interface</span> <span class="o">=</span> <span class="n">MPCModelInterface</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;house.mpc.json&quot;</span><span class="p">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">export</span> <span class="o">=</span> <span class="n">rumoca</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;house.mo&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">model</span><span class="o">=</span><span class="n">interface</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">to_casadi</span><span class="p">()</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">assert</span> <span class="n">interface</span><span class="o">.</span><span class="n">input_names</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">export</span><span class="o">.</span><span class="n">input_names</span><span class="p">)</span>  <span class="c1"># guaranteed by the test suite</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">controls</span> <span class="o">=</span> <span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">interface</span><span class="o">.</span><span class="n">inputs</span> <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">InputRole</span><span class="o">.</span><span class="n">control</span><span class="p">]</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">rhs</span> <span class="o">=</span> <span class="n">export</span><span class="o">.</span><span class="n">rhs</span>  <span class="c1"># casadi.Function xdot = rhs(t, x, u, p), p = interface.parameter_values</span>
 </span></code></pre></div>
 <p>The test suite contains a reference runtime (<code>tests/test_mpc_interface.py</code>) built only from these two
 files: it discretises the ODE, builds the forecasts from the disturbance sources and solves an
@@ -1463,8 +1575,8 @@ economic MPC problem with IPOPT for every RC structure.</p>
 </tbody>
 </table>
 <p>For example, the <code>R3C2</code> zone equations are:</p>
-<div class="language-modelica highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kr">der</span><span class="p">(</span><span class="n">Ti</span><span class="p">)</span> <span class="o">=</span> <span class="p">((</span><span class="n">Te</span> <span class="o">-</span> <span class="n">Ti</span><span class="p">)</span><span class="o">/</span><span class="n">Rie</span> <span class="o">+</span> <span class="p">(</span><span class="n">TOut</span> <span class="o">-</span> <span class="n">Ti</span><span class="p">)</span><span class="o">/</span><span class="n">Ria</span> <span class="o">+</span> <span class="n">gA</span><span class="o">*</span><span class="n">HSol</span> <span class="o">+</span> <span class="n">QInt</span> <span class="o">+</span> <span class="n">QHea</span><span class="p">)</span><span class="o">/</span><span class="n">Ci</span><span class="p">;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kr">der</span><span class="p">(</span><span class="n">Te</span><span class="p">)</span> <span class="o">=</span> <span class="p">((</span><span class="n">Ti</span> <span class="o">-</span> <span class="n">Te</span><span class="p">)</span><span class="o">/</span><span class="n">Rie</span> <span class="o">+</span> <span class="p">(</span><span class="n">TOut</span> <span class="o">-</span> <span class="n">Te</span><span class="p">)</span><span class="o">/</span><span class="n">Rea</span> <span class="o">+</span> <span class="p">(</span><span class="n">TGro</span> <span class="o">-</span> <span class="n">Te</span><span class="p">)</span><span class="o">/</span><span class="n">Reg</span> <span class="o">+</span> <span class="n">aE</span><span class="o">*</span><span class="n">HSol</span><span class="p">)</span><span class="o">/</span><span class="n">Ce</span><span class="p">;</span>
+<div class="language-modelica highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kr">der</span><span class="p">(</span><span class="n">Ti</span><span class="p">)</span> <span class="o">=</span> <span class="p">((</span><span class="n">Te</span> <span class="o">-</span> <span class="n">Ti</span><span class="p">)</span><span class="o">/</span><span class="n">Rie</span> <span class="o">+</span> <span class="p">(</span><span class="n">TOut</span> <span class="o">-</span> <span class="n">Ti</span><span class="p">)</span><span class="o">/</span><span class="n">Ria</span> <span class="o">+</span> <span class="n">gA</span><span class="o">*</span><span class="n">HSol</span> <span class="o">+</span> <span class="n">QInt</span> <span class="o">+</span> <span class="n">QHea</span><span class="p">)</span><span class="o">/</span><span class="n">Ci</span><span class="p">;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kr">der</span><span class="p">(</span><span class="n">Te</span><span class="p">)</span> <span class="o">=</span> <span class="p">((</span><span class="n">Ti</span> <span class="o">-</span> <span class="n">Te</span><span class="p">)</span><span class="o">/</span><span class="n">Rie</span> <span class="o">+</span> <span class="p">(</span><span class="n">TOut</span> <span class="o">-</span> <span class="n">Te</span><span class="p">)</span><span class="o">/</span><span class="n">Rea</span> <span class="o">+</span> <span class="p">(</span><span class="n">TGro</span> <span class="o">-</span> <span class="n">Te</span><span class="p">)</span><span class="o">/</span><span class="n">Reg</span> <span class="o">+</span> <span class="n">aE</span><span class="o">*</span><span class="n">HSol</span><span class="p">)</span><span class="o">/</span><span class="n">Ce</span><span class="p">;</span>
 </span></code></pre></div>
 <p>In the ISO 13790 model the massless surface node of the standard is eliminated analytically, so the
 model stays an explicit ODE while matching the standard heat balances.</p>
@@ -1474,10 +1586,10 @@ surface resistances, opaque elements split in two halves around the mass node, w
 ventilation directly between indoor and outdoor air, half of the internal walls capacity assigned to
 each adjacent zone, window apertures <code>g·(1-Ff)·A</code> and opaque absorption areas <code>α·Rse·U·A</code> per
 orientation. The assumptions are gathered in <code>EstimationSettings</code>:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.mpc</span><span class="w"> </span><span class="kn">import</span> <span class="n">EstimationSettings</span><span class="p">,</span> <span class="n">rc_building_from_network</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">building</span> <span class="o">=</span> <span class="n">rc_building_from_network</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">EstimationSettings</span><span class="p">(</span><span class="n">air_change_rate</span><span class="o">=</span><span class="mf">0.4</span><span class="p">))</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">modelica_model</span> <span class="o">=</span> <span class="n">building</span><span class="o">.</span><span class="n">to_modelica</span><span class="p">(</span><span class="s2">&quot;house&quot;</span><span class="p">)</span>  <span class="c1"># Trano library + building_mpc</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.mpc</span><span class="w"> </span><span class="kn">import</span> <span class="n">EstimationSettings</span><span class="p">,</span> <span class="n">rc_building_from_network</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">building</span> <span class="o">=</span> <span class="n">rc_building_from_network</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">EstimationSettings</span><span class="p">(</span><span class="n">air_change_rate</span><span class="o">=</span><span class="mf">0.4</span><span class="p">))</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">modelica_model</span> <span class="o">=</span> <span class="n">building</span><span class="o">.</span><span class="n">to_modelica</span><span class="p">(</span><span class="s2">&quot;house&quot;</span><span class="p">)</span>  <span class="c1"># Trano library + building_mpc</span>
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
