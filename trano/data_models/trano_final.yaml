@@ -24,6 +24,45 @@ classes:
       parameters:
         range: AhuParameters
     is_a: System
+  Battery:
+    attributes:
+      parameters:
+        range: BatteryParameters
+    is_a: System
+  BatteryParameters:
+    attributes:
+      capacity:
+        description: Usable energy capacity [kWh]
+        ifabsent: float(10.0)
+        range: float
+      charge_efficiency:
+        description: Charging efficiency [1]
+        ifabsent: float(0.95)
+        range: float
+      discharge_efficiency:
+        description: Discharging efficiency [1]
+        ifabsent: float(0.95)
+        range: float
+      initial_soc:
+        description: Initial state of charge [1]
+        ifabsent: float(0.5)
+        range: float
+      max_charge_power:
+        description: Maximum charging power [W]
+        ifabsent: float(5000)
+        range: float
+      max_discharge_power:
+        description: Maximum discharging power [W]
+        ifabsent: float(5000)
+        range: float
+      max_soc:
+        description: Upper bound of the state of charge [1]
+        ifabsent: float(0.9)
+        range: float
+      min_soc:
+        description: Lower bound of the state of charge [1]
+        ifabsent: float(0.1)
+        range: float
   Boiler:
     attributes:
       control:
@@ -63,6 +102,26 @@ classes:
         description: Coefficients for efficiency curve
         ifabsent: string({0.9})
         range: string
+      cop_cross_term:
+        description: Heat pump COP cross term outdoor x supply deviation, mpc library
+          [1/K2]
+        ifabsent: float(-0.0025)
+        range: float
+      cop_nominal:
+        description: Heat pump COP at the rating point A7/W35, used by the mpc library
+          [1]
+        ifabsent: float(4.5)
+        range: float
+      cop_outdoor_slope:
+        description: Heat pump COP change per kelvin of outdoor temperature, mpc library
+          [1/K]
+        ifabsent: float(0.11)
+        range: float
+      cop_supply_slope:
+        description: Heat pump COP change per kelvin of supply temperature, mpc library
+          [1/K]
+        ifabsent: float(-0.075)
+        range: float
       diff_pressure:
         description: Pressure rise values defining the boiler-circuit pump pressure
           curve [Pa]
@@ -97,6 +156,11 @@ classes:
         description: = true, if actual temperature at port is computed
         ifabsent: string(false)
         range: string
+      max_electrical_power:
+        description: Maximum electrical power of the heat pump compressor, mpc library
+          [W] (nominal heating power / COP when absent)
+        ifabsent: float(None)
+        range: float
       nominal_heating_power:
         description: Nominal heating power [W]
         ifabsent: float(20000)
@@ -193,6 +257,30 @@ classes:
         range: Weather
     description: A holder for Space objects
     tree_root: true
+  Chiller:
+    attributes:
+      parameters:
+        range: ChillerParameters
+    is_a: System
+  ChillerParameters:
+    attributes:
+      eer_nominal:
+        description: EER at 35 degC outdoor temperature [1]
+        ifabsent: float(3.5)
+        range: float
+      eer_outdoor_slope:
+        description: EER change per kelvin of outdoor temperature [1/K]
+        ifabsent: float(-0.06)
+        range: float
+      max_electrical_power:
+        description: Maximum electrical power of the compressor [W] (nominal cooling
+          power / EER when absent)
+        ifabsent: float(None)
+        range: float
+      nominal_cooling_power:
+        description: Nominal cooling power [W]
+        ifabsent: float(10000)
+        range: float
   CollectorControl:
     class_uri: schema:CollectorControl
     slots:
@@ -283,6 +371,42 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: Material
+  DhwTank:
+    attributes:
+      parameters:
+        range: DhwTankParameters
+    is_a: System
+  DhwTankParameters:
+    attributes:
+      daily_draw_off_energy:
+        description: Heat drawn by the hot water taps per day [kWh]
+        ifabsent: float(8.0)
+        range: float
+      loss_coefficient:
+        description: Standing loss coefficient of the tank [W/K]
+        ifabsent: float(2.0)
+        range: float
+      min_temperature:
+        description: Lower comfort bound of the tank temperature [K]
+        ifabsent: float(318.15)
+        range: float
+      set_temperature:
+        description: Upper comfort bound of the tank temperature [K]
+        ifabsent: float(328.15)
+        range: float
+      supply_offset:
+        description: Heat pump supply temperature above the tank temperature [K]
+        ifabsent: float(5.0)
+        range: float
+      volume:
+        description: Water volume of the tank [m3]
+        ifabsent: float(0.2)
+        range: float
+      zone:
+        description: Space receiving the standing losses of the tank (first space
+          when absent)
+        ifabsent: string(None)
+        range: string
   Duct:
     attributes:
       parameters:
@@ -331,6 +455,49 @@ classes:
           [K]
         ifabsent: float(297)
         range: float
+  EvCharger:
+    attributes:
+      parameters:
+        range: EvChargerParameters
+    is_a: System
+  EvChargerParameters:
+    attributes:
+      arrival_hour:
+        description: Hour of the day the vehicle plugs in [h]
+        ifabsent: float(18)
+        range: float
+      battery_capacity:
+        description: Battery capacity of the vehicle [kWh]
+        ifabsent: float(60.0)
+        range: float
+      charge_efficiency:
+        description: Charging efficiency [1]
+        ifabsent: float(0.9)
+        range: float
+      departure_hour:
+        description: Hour of the day the vehicle leaves [h]
+        ifabsent: float(7)
+        range: float
+      energy_per_day:
+        description: Energy consumed by driving per day [kWh]
+        ifabsent: float(10.0)
+        range: float
+      initial_soc:
+        description: Initial state of charge [1]
+        ifabsent: float(0.5)
+        range: float
+      max_charge_power:
+        description: Maximum charging power [W]
+        ifabsent: float(7400)
+        range: float
+      target_soc:
+        description: State of charge required at departure [1]
+        ifabsent: float(0.8)
+        range: float
+      weekend_present:
+        description: The vehicle stays plugged in during the weekend
+        ifabsent: string(true)
+        range: string
   ExternalBoundaries:
     attributes:
       external_walls:
@@ -540,9 +707,30 @@ classes:
     slots:
     - name
   Photovoltaic:
+    attributes:
+      parameters:
+        range: PhotovoltaicParameters
     slots:
     - id
     - name
+  PhotovoltaicParameters:
+    attributes:
+      area:
+        description: Module area [m2]
+        ifabsent: float(20.0)
+        range: float
+      azimuth:
+        description: Surface azimuth [deg], 0 for south, 90 for west
+        ifabsent: float(0.0)
+        range: float
+      efficiency:
+        description: Module and inverter efficiency [1]
+        ifabsent: float(0.18)
+        range: float
+      tilt:
+        description: Surface tilt [deg], 0 for a roof, 90 for a wall
+        ifabsent: float(35.0)
+        range: float
   PowerSensor:
     is_a: System
   Pump:
@@ -735,6 +923,10 @@ classes:
     - heat_meter_sensor
     - air_handling_unit
     - power_sensor
+    - chiller
+    - dhw_tank
+    - battery
+    - ev_charger
   TemperatureSensor:
     is_a: System
   ThreeWayValve:
@@ -996,6 +1188,10 @@ slots:
   azimuth:
     range: float
     slot_uri: schema:azimuth
+  battery:
+    inlined: true
+    multivalued: false
+    range: Battery
   boiler:
     inlined: true
     multivalued: false
@@ -1005,11 +1201,19 @@ slots:
     multivalued: false
     range: BoilerControl
     slot_uri: schema:boiler_control
+  chiller:
+    inlined: true
+    multivalued: false
+    range: Chiller
   collector_control:
     inlined: true
     multivalued: false
     range: CollectorControl
     slot_uri: schema:collector_control
+  dhw_tank:
+    inlined: true
+    multivalued: false
+    range: DhwTank
   duct:
     inlined: true
     multivalued: false
@@ -1024,6 +1228,10 @@ slots:
     multivalued: true
     range: Emission
     slot_uri: schema:emissions
+  ev_charger:
+    inlined: true
+    multivalued: false
+    range: EvCharger
   external_boundaries:
     multivalued: false
     range: ExternalBoundaries

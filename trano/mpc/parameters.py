@@ -17,10 +17,19 @@ Field names are Pythonic; the Modelica/CasADi name of each parameter is stored a
 parameters in the generated Modelica model and therefore in the CasADi parameter vector.
 """
 
+import re
 from enum import Enum
 from typing import Annotated, Any, ClassVar, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+
+MODELICA_IDENTIFIER = re.compile(r"^[A-Za-z_]\w*$")
+
+
+def validate_identifier(value: str) -> str:
+    if not MODELICA_IDENTIFIER.match(value):
+        raise ValueError(f"'{value}' is not a valid Modelica identifier.")
+    return value
 
 
 class RCModelType(str, Enum):
@@ -42,9 +51,27 @@ class ModelicaState(BaseModel):
     description: str
 
 
-def rc_field(symbol: str, unit: str, description: str, **constraints: float) -> Any:  # noqa: ANN401
+def rc_field(symbol: str, unit: str, description: str, default: Any = ..., **constraints: float) -> Any:  # noqa: ANN401
     """Declare an RC parameter together with its Modelica symbol and unit."""
-    return Field(description=description, json_schema_extra={"symbol": symbol, "unit": unit}, **constraints)  # type: ignore[call-overload]
+    return Field(default, description=description, json_schema_extra={"symbol": symbol, "unit": unit}, **constraints)  # type: ignore[call-overload]
+
+
+def modelica_parameters_of(model: BaseModel) -> list[ModelicaParameter]:
+    """The fields declared with :func:`rc_field`, in declaration order, as Modelica parameters."""
+    parameters = []
+    for name, field in type(model).model_fields.items():
+        extra = field.json_schema_extra
+        if not isinstance(extra, dict):
+            continue
+        parameters.append(
+            ModelicaParameter(
+                name=str(extra["symbol"]),
+                value=getattr(model, name),
+                unit=str(extra["unit"]),
+                description=field.description or "",
+            )
+        )
+    return parameters
 
 
 class BaseZoneParameters(BaseModel):
@@ -57,20 +84,7 @@ class BaseZoneParameters(BaseModel):
     model_type: RCModelType
 
     def modelica_parameters(self) -> list[ModelicaParameter]:
-        parameters = []
-        for name, field in type(self).model_fields.items():
-            extra = field.json_schema_extra
-            if not isinstance(extra, dict):
-                continue
-            parameters.append(
-                ModelicaParameter(
-                    name=str(extra["symbol"]),
-                    value=getattr(self, name),
-                    unit=str(extra["unit"]),
-                    description=field.description or "",
-                )
-            )
-        return parameters
+        return modelica_parameters_of(self)
 
 
 _INDOOR = ModelicaState(name="Ti", description="Indoor air temperature")

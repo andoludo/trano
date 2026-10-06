@@ -35,7 +35,7 @@ Simulations run against Buildings 13.0.0, IDEAS 3.0.0 and AixLib 3.0.1 in the of
   - **Production & Electricity** ⚡  
 
 ### 🎛️ **Control-oriented RC models for MPC**
-- `mpc` library: `trano create-model house.yaml mpc` generates simple RC models (`R1C1`, `R3C2`, `R4C3`, `ISO13790` from `Trano.MPC`) from the same building description.
+- `mpc` library: `trano create-model house.yaml mpc` generates simple RC models (`R1C1`, `R3C2`, `R4C3`, `ISO13790` from `Trano.MPC`) from the same building description, with the energy systems (heat pump, chiller, DHW tank, PV, battery, EV charger) inlined as CasADi-ready equations.
 - `building_mpc` is **CasADi/IPOPT ready** (flat explicit ODE); `building` is directly runnable with the same weather file, solar gains, occupancy and external data as the other libraries (see the [RC models for MPC tutorial](https://andoludo.github.io/trano/tutorials/rc_model_predictive_control/)).
 
 🚀 **With Trano, creating and modifying detailed BES models has never been easier!**  

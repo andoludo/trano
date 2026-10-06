@@ -41,6 +41,9 @@ classes:
     slots:
       - id
       - name
+    attributes:
+      parameters:
+        range: PhotovoltaicParameters
   Space:
     attributes:
       variant:
@@ -247,6 +250,10 @@ classes:
       - heat_meter_sensor
       - air_handling_unit
       - power_sensor
+      - chiller
+      - dhw_tank
+      - battery
+      - ev_charger
     class_uri: schema:Systems
   Solar:
     slots:
@@ -340,7 +347,26 @@ classes:
 
   PowerSensor:
     is_a: System
-
+  Chiller:
+    is_a: System
+    attributes:
+      parameters:
+        range: ChillerParameters
+  DhwTank:
+    is_a: System
+    attributes:
+      parameters:
+        range: DhwTankParameters
+  Battery:
+    is_a: System
+    attributes:
+      parameters:
+        range: BatteryParameters
+  EvCharger:
+    is_a: System
+    attributes:
+      parameters:
+        range: EvChargerParameters
   HeatMeterSensor:
     is_a: System
 
@@ -523,6 +549,22 @@ slots:
     inlined: true
   power_sensor:
     range: PowerSensor
+    multivalued: false
+    inlined: true
+  chiller:
+    range: Chiller
+    multivalued: false
+    inlined: true
+  dhw_tank:
+    range: DhwTank
+    multivalued: false
+    inlined: true
+  battery:
+    range: Battery
+    multivalued: false
+    inlined: true
+  ev_charger:
+    range: EvCharger
     multivalued: false
     inlined: true
   heat_meter_sensor:
