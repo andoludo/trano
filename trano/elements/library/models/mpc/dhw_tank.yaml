@@ -1,0 +1,23 @@
+# Domestic hot water tank mapped to the `DHWTank` system of the mpc library (lumped temperature
+# state fed by the heat pump upstream, standing losses to a zone, daily draw-off profile).
+- classes:
+  - DhwTank
+  figures: []
+  library: mpc
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+  template: ""
+  variant: default

@@ -168,6 +168,26 @@ class Boiler(HydronicSystemControl, ProductionSystem):
         return pumps_
 
 
+class Chiller(ProductionSystem):
+    """Cooling production (rendered by the ``mpc`` library only)."""
+
+
+class DhwTank(ProductionSystem):
+    """Domestic hot water tank fed by the production system upstream (``mpc`` library only)."""
+
+
+class Battery(System):
+    """Stationary battery (``mpc`` library only; the electrical container)."""
+
+    container_type: ContainerTypes = "solar"
+
+
+class EvCharger(System):
+    """Electric vehicle charger (``mpc`` library only; the electrical container)."""
+
+    container_type: ContainerTypes = "solar"
+
+
 class AirHandlingUnit(Ventilation):
     def configure(self, network: "Network") -> None:
         from trano.elements import AhuControl

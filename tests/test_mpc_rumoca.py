@@ -56,14 +56,16 @@ def test_many_buildings_are_covered() -> None:
 def test_generated_mpc_model_translates_to_casadi(path: Path, model_type: RCModelType) -> None:
     network = convert_network(path.stem, path, library=mpc_library(model_type))
     export = to_casadi(network.model(), f"{path.stem}.building_mpc")
-    zones = [name.removesuffix("_QHea") for name in export.input_names if name.endswith("_QHea")]
+    zones = [name.removesuffix("_QInt") for name in export.input_names if name.endswith("_QInt")]
     assert zones
     states_per_zone = {RCModelType.r1c1: 1, RCModelType.r4c3: 3}.get(model_type, 2)
-    assert len(export.state_names) == states_per_zone * len(zones)
+    storages = [name for name in export.state_names if name.endswith(("_T", "_E"))]
+    assert len(export.state_names) == states_per_zone * len(zones) + len(storages)
     assert "TOut" in export.input_names
     for zone in zones:
         assert f"{zone}_Ti" in export.state_names
-        assert f"{zone}_QInt" in export.input_names
+        # Heated by a thermal input (QHea) or, with a heat pump, by an electrical input (PHea).
+        assert f"{zone}_QHea" in export.input_names or f"{zone}_PHea" in export.input_names
     # The exported right-hand side is a differentiable CasADi function.
     xdot = export.rhs(0, export.default_states, np.zeros(len(export.input_names)), export.default_parameters)
     assert np.all(np.isfinite(np.array(xdot)))

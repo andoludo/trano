@@ -1,0 +1,11 @@
+# Electric vehicle charger mapped to the `EVCharger` system of the mpc library (vehicle energy
+# state while plugged in, daily driving discharge). Not rendered by the other libraries.
+- classes:
+  - EvCharger
+  figures: []
+  library: mpc
+  parameter_processing:
+    function: default_parameters
+  ports: []
+  template: ""
+  variant: default

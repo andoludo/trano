@@ -42,7 +42,9 @@ One RC zone per space, coupled through the conductance of the internal walls. In
 * `TOut` outdoor air temperature [K],
 * `HSol_<orientation>` total solar irradiance on each facade orientation [W/m²], e.g. `HSol_azi0_til90`
   for the south facade (azimuth 0°, tilt 90°, Buildings library convention),
-* `<space>_QInt` internal gains [W] (disturbance) and `<space>_QHea` heating power [W] (control input).
+* `<space>_QInt` internal gains [W] (disturbance) and `<space>_QHea` heating power [W] (control input),
+  or `<space>_PHea` electrical power [W] of the heat pump serving the space (see
+  [Energy systems](#energy-systems)).
 
 The states are the zone temperatures (`<space>_Ti`, `<space>_Te`, ...). The solar gains are
 `gA_<orientation>*HSol_<orientation>` for the windows (to the indoor air) and
@@ -84,8 +86,62 @@ export.state_names, export.input_names, export.parameter_names
 * **heating**: otherwise `<space>_QHea` is a top-level input of `building`, to be set by the MPC
   (e.g. in co-simulation or through an FMU); `<space>_TZon` outputs give the zone temperatures.
 
-The emission systems of the YAML file (radiators, boilers, controls...) are abstracted as the heating
-power of each zone.
+The hydraulics of the YAML file (pumps, valves, controls...) are abstracted; the production and
+storage systems are kept, see the next section.
+
+## Energy systems
+
+The systems of the YAML file are rendered **inline** in `building_mpc`, next to the zone equations,
+because the CasADi target of rumoca accepts neither output variables nor sub-models. Each converter
+takes its *electrical* power as control input and the heat it delivers is derived inside the ODE from
+a smooth performance polynomial; the storages are extra states. The YAML stays the single source of
+truth: the same file generates the detailed Buildings model and the MPC model.
+
+| YAML element | `mpc` system | Inputs (control unless stated) and states |
+|--------------|--------------|-------------------------------------------|
+| `boiler` with variant `air_water_heat_pump` or `water_water_heat_pump` | `HeatPump` | `<space>_PHea` [W] for each zone served; heat `= COP(TOut, TSup) · P` with `COP = cop0 + copA·(TOut − 280.15) + copS·(TSup − 308.15) + copX·(TOut − 280.15)·(TSup − 308.15)` (rating point A7/W35); `TSup` is the emitter state `Th` plus `dTSup` for R4C3 zones, the parameter `TSup` otherwise |
+| `boiler` (other variants) | `GasBoiler` | `<space>_QHea` [W] stays thermal; the interface reports the efficiency and the carrier `gas` |
+| `chiller` | `Chiller` | `<space>_PCoo` [W] for each zone served; cooling `= −EER(TOut) · P` with `EER = eer0 + eerA·(TOut − 308.15)` |
+| `dhw_tank` | `DHWTank` | state `<tank>_T` [K]; `<tank>_PHea` [W] (through the COP of the heat pump upstream, at `T + dTSup`, or a resistance); `<tank>_QDraw` [W] disturbance from a daily draw-off profile; standing losses `UA·(T − Ti)` to the zone of `parameters.zone` |
+| `battery` | `Battery` | state `<bat>_E` [J]; `<bat>_PCha`, `<bat>_PDis` [W]; `der(E) = etaCha·PCha − PDis/etaDis` |
+| `ev_charger` | `EVCharger` | state `<ev>_E` [J]; `<ev>_PCha` [W]; `<ev>_PDri` [W] disturbance (driving discharge between departure and arrival) |
+| `photovoltaic` | `Photovoltaic` | `<pv>_P` [W] disturbance: `area · efficiency · HSol` on the panel orientation |
+
+A production system serves the spaces whose emitters (or ventilation inlets) are downstream of it in
+the hydraulic graph of the YAML; a system without connections serves every space. The nominal
+water temperatures of the radiators (`water_inlet_temperature_at_nominal_condition`, ...) size the
+emitter of the R4C3 zones (floor heating: 35/30 °C) and give the supply temperature of the heat pump.
+The performance parameters (`cop_nominal`, `cop_outdoor_slope`, `cop_supply_slope`,
+`cop_cross_term`, `max_electrical_power`) are attributes of the boiler parameters, read by the `mpc`
+library only. `chiller`, `dhw_tank`, `battery` and `ev_charger` are rendered by the `mpc` library only.
+
+```yaml
+systems:
+  - boiler:
+      id: HEATPUMP:001
+      variant: air_water_heat_pump
+      parameters:
+        nominal_heating_power: 8000
+        cop_nominal: 4.6
+  - dhw_tank:
+      id: TANK:001
+      parameters: { volume: 0.3, daily_draw_off_energy: 6, zone: SPACE:002 }
+      inlets: [HEATPUMP:001]
+  - battery:
+      id: BATTERY:001
+      parameters: { capacity: 8, max_charge_power: 3000, max_discharge_power: 3000 }
+solar:
+  - photovoltaic:
+      id: PV:001
+      parameters: { area: 30, efficiency: 0.19, azimuth: 0, tilt: 35 }
+```
+
+Everything that is not part of the ODE is in the interface: the compressor limit shared by the
+zones of one heat pump (`max_electrical_power` over `inputs` and `tank_inputs`), the state of charge
+bounds of the batteries, the temperature bounds of the tank, the energy carrier of every control
+input (`heat`, `electricity`, `gas`) and the sources of the new disturbances (`photovoltaic`,
+`draw_off`, `ev_driving`). The runnable `building` model feeds the draw-off and driving schedules
+with periodic `CombiTimeTable`s and the PV generation with the irradiance blocks of its orientation.
 
 ## Plugging the model into an MPC runtime
 
@@ -103,9 +159,14 @@ The interface lists the states, inputs and parameters **in the order of the CasA
   (`HSol_<orientation>`: azimuth and tilt in degrees), or the occupancy model, its parameters and
   floor area (`<space>_QInt`), plus the external data column replaying an input, if any,
 * `parameters`: name, value, unit and zone (they stay symbolic in CasADi, e.g. for identification),
-* `zones`: comfort state (`indoor_temperature`), heating input and an estimated
-  `design_heating_power` usable as upper bound of the control input,
+* `zones`: comfort state (`indoor_temperature`), heating input (thermal or electrical, with its
+  `heating_carrier` and `heating_system`), optional `cooling_input` and an estimated
+  `design_heating_power` usable as upper bound of a thermal control input,
+* `systems`: one entry per energy system (`heat_pump`, `boiler`, `chiller`, `dhw_tank`, `battery`,
+  `ev_charger`, `photovoltaic`) with its inputs, states and the bounds that are not in the ODE,
 * `weather_file`: the weather file of the runnable model, to build the forecasts.
+
+The interface version is `2` (version 1 files, envelope only, are still read).
 
 ```python
 import rumoca
