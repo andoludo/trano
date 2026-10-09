@@ -49,7 +49,6 @@ containers:
       use_counter: false
   template: |
     extends Trano.BaseClasses.Containers.distribution;
-    parameter Real mRad_flow_nominal = 123;
     package MediumW = {{ medium.water | safe }};
     
     replaceable package Medium = Modelica.Media.Interfaces.PartialMedium;
@@ -311,7 +310,6 @@ containers:
   template: |
     extends Trano.BaseClasses.Containers.production;
     // Define Parameter
-    parameter Real mRad_flow_nominal = 123;
     
     // Define Medium Package
     package MediumW = {{ medium.water | safe }};

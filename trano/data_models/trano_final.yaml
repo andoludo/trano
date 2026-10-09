@@ -89,11 +89,12 @@ classes:
         ifabsent: float(288.15)
         range: float
       threshold_to_switch_off_boiler:
-        description: Temperature threshold used to switch the boiler off [K]
-        ifabsent: float(288.15)
+        description: Tank bottom temperature above which the boiler switches off;
+          defaults to tsup_nominal + 5 K [K]
         range: float
       tsup_nominal:
-        description: Nominal supply temperature for the radiators [K]
+        description: Supply temperature set point; the boiler starts when the tank
+          top drops 1 K below it [K]
         ifabsent: float(353.15)
         range: float
   BoilerParameters:
@@ -193,7 +194,7 @@ classes:
         range: float
       thickness_of_insulation:
         description: Thickness of insulation [m]
-        ifabsent: float(0.002)
+        ifabsent: float(0.1)
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: = true, use linear relation between m_flow and dp for any flow
@@ -578,6 +579,9 @@ classes:
         description: Thickness [m]
         range: float
   HeatMeterSensor:
+    attributes:
+      parameters:
+        range: SensorParameters
     is_a: System
   InternalWall:
     attributes:
@@ -815,6 +819,13 @@ classes:
         description: Water outlet temperature at nominal condition [K]
         ifabsent: float(333.15)
         range: float
+  SensorParameters:
+    attributes:
+      nominal_mass_flow_rate:
+        description: Nominal mass flow rate through the sensor, used for its dynamics
+          and its small-flow regularization [kg/s]
+        ifabsent: float(0.15)
+        range: float
   Solar:
     class_uri: schema:Solar
     slots:
@@ -887,7 +898,7 @@ classes:
         range: float
       m_flow_nominal:
         description: Mass flow rate; set negative at outflowing ports [kg/s]
-        ifabsent: string(0.1*{1,-1,-1})
+        ifabsent: string(0.15*{1,-1,-1})
         range: string
       nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
         description: Nominal mass flow rate for dynamic momentum and energy balance
@@ -928,6 +939,9 @@ classes:
     - battery
     - ev_charger
   TemperatureSensor:
+    attributes:
+      parameters:
+        range: SensorParameters
     is_a: System
   ThreeWayValve:
     attributes:
@@ -972,7 +986,7 @@ classes:
         range: float
       m_flow_nominal:
         description: Nominal mass flow rate [kg/s]
-        ifabsent: float(0.3)
+        ifabsent: float(0.15)
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
         description: Range of significant deviation from equal percentage law [1]
@@ -1041,7 +1055,7 @@ classes:
         range: float
       m_flow_nominal:
         description: Nominal mass flow rate [kg/s]
-        ifabsent: float(0.02)
+        ifabsent: float(0.06)
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
         description: Range of significant deviation from equal percentage law [1]
