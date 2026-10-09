@@ -173,7 +173,7 @@ def test_connect_space_occupancy(house_ideas: Network) -> None:
     e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e1, e2)
     assert len(connections) == 1
-    assert {c.equation_view() for c in connections} == {("occupancy_1.y", "space_001.yOcc")}
+    assert {c.equation_view() for c in connections} == {("occupancy_1.occupantDensity", "space_001.yOcc")}
 
 
 def test_connect_space_occupancy_buildings(house_buildings: Network) -> None:
@@ -191,7 +191,7 @@ def test_connect_space_occupancy_inverted(house_ideas: Network) -> None:
     e2 = ElementPort.from_element_without_ports(edge[1])
     connections = connect(e2, e1)
     assert len(connections) == 1
-    assert {c.equation_view() for c in connections} == {("occupancy_1.y", "space_001.yOcc")}
+    assert {c.equation_view() for c in connections} == {("occupancy_1.occupantDensity", "space_001.yOcc")}
 
 
 def test_connect_radiator_valve(house_ideas: Network) -> None:

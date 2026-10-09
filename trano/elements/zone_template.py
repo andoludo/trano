@@ -20,24 +20,19 @@ from trano.elements.envelope import (
     BaseFloorOnGround,
     BaseSimpleWall,
     BaseWindow,
+    same_angle,
 )
 from trano.elements.types import Tilt
 
 FaceKey = Literal["A", "B", "C", "D", "Flo", "Cei"]
 BoundaryType = Literal["OuterWall", "SlabOnGround", "None"]
 VERTICAL_FACES: tuple[FaceKey, ...] = ("A", "B", "C", "D")
-ANGLE_TOLERANCE = 1e-2  # [rad] accepts azimuths rounded to two decimals (1.57 for pi/2)
 MINIMUM_WINDOW_HEIGHT = 0.1  # [m] lower bound enforced by IDEAS on h_win
 
 
 def normalize_azimuth(azimuth: float) -> float:
     """Wrap an azimuth in radians into [0, 2pi)."""
     return azimuth % (2 * math.pi)
-
-
-def same_angle(first: float, second: float) -> bool:
-    difference = (first - second) % (2 * math.pi)
-    return min(difference, 2 * math.pi - difference) < ANGLE_TOLERANCE
 
 
 class TemplateWindow(BaseModel):

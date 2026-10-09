@@ -42,6 +42,8 @@ SIMULATED_FIXTURES: list[tuple[str, int]] = [
     ("ideas_rectangular_zone_single_zone", ONE_HOUR),
     ("ideas_rectangular_zone_three_zones", ONE_HOUR),
     ("ideas_rectangular_zone_with_external_surfaces", ONE_HOUR),
+    ("reduced_order_three_zones", ONE_HOUR),
+    ("iso_13790_three_zones", ONE_HOUR),
 ]
 
 

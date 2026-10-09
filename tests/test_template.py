@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 
-from tests.fixtures.three_spaces import three_spaces
 from tests.golden import assert_model_equals_golden
 from trano.data_models.conversion import convert_network
 from trano.elements import DataBus
@@ -40,6 +39,8 @@ FIXTURE_CASES: list[str] = [
     "ideas_rectangular_zone_single_zone",
     "ideas_rectangular_zone_three_zones",
     "ideas_rectangular_zone_with_external_surfaces",
+    "reduced_order_three_zones",
+    "iso_13790_three_zones",
 ]
 
 
@@ -236,19 +237,6 @@ def test_space_with_same_properties(space_with_same_properties: Space, library_n
         library=Library.from_configuration(library_name) if library_name else None,
     )
     network.add_boiler_plate_spaces([space_with_same_properties])
-    assert_model_equals_golden(network.model(), network.name)
-
-
-@pytest.mark.parametrize(
-    ("library_name", "network_name"),
-    [("reduced_order", "reduced_order_three_zones"), ("iso_13790", "iso_13790_three_zones")],
-)
-def test_free_float_three_zones_low_order_libraries(library_name: str, network_name: str) -> None:
-    network = Network(
-        name=network_name,
-        library=Library.from_configuration(library_name),
-    )
-    network.add_boiler_plate_spaces(three_spaces())
     assert_model_equals_golden(network.model(), network.name)
 
 

@@ -149,4 +149,4 @@ def test_zone_template_model_declares_every_construction_once() -> None:
     assert "IDEAS.Buildings.Components.Window" not in model
     # The data package is rendered once at package level and once in the envelope container.
     assert model.count("record external_wall") == model.count("package Data ")
-    assert model.count("record  double_glazing") == model.count("package Data ")
+    assert model.count("record double_glazing") == model.count("package Data ")

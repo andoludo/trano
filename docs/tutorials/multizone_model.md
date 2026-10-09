@@ -121,7 +121,7 @@ spaces:
         - surface: 120.0
           construction: CONSTRUCTION:001
       windows:
-        - surface: 2.0
+        - surface: 2.4
           azimuth: 3.14
           tilt: wall
           construction: INS2AR2020:001
@@ -142,7 +142,7 @@ spaces:
           tilt: wall
           construction: CONSTRUCTION:001
       windows:
-        - surface: 2.0
+        - surface: 2.4
           azimuth: 1.57
           tilt: wall
           construction: INS2AR2020:001

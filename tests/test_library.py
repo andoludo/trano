@@ -533,7 +533,7 @@ def test_reduced_order_single_zone(simple_space_template: Space) -> None:
     assert model
     assert {c.equation_view() for c in network.containers.get_container("envelope").connections} == {
         ("dataBus", "weather_0.weaBus"),
-        ("occupancy_0.y", "space_1.intGains"),
+        ("occupancy_0.relativeGains", "space_1.intGains"),
         ("space_1.TAir", "y[1]"),
         ("space_1.weaBus", "weather_0.weaBus"),
     }

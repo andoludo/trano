@@ -1,11 +1,14 @@
-from typing import TYPE_CHECKING, Union
+import ast
+import operator
+from collections.abc import Callable
+from typing import TYPE_CHECKING, NamedTuple, Union
 
 from trano.elements import Control
 from trano.elements.base import BaseElement
 from trano.elements.types import BaseVariant, ContainerTypes
 from pydantic import model_validator, BaseModel, Field
 
-from trano.exceptions import InvalidSensorInletError, WrongSystemFlowError
+from trano.exceptions import InvalidBuildingStructureError, InvalidSensorInletError, WrongSystemFlowError
 import networkx as nx
 
 if TYPE_CHECKING:
@@ -53,10 +56,70 @@ class Ventilation(SpaceSystem):
 class BaseWeather(System): ...
 
 
+_BINARY_OPERATORS: dict[type[ast.operator], Callable[[float, float], float]] = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+}
+_UNARY_OPERATORS: dict[type[ast.unaryop], Callable[[float], float]] = {ast.USub: operator.neg, ast.UAdd: operator.pos}
+
+
+def evaluate_number(expression: str) -> float:
+    """Value of a numeric Modelica expression made of numbers and + - * / (e.g. ``1/6/4``)."""
+
+    def evaluate(node: ast.AST) -> float:
+        if isinstance(node, ast.Constant) and isinstance(node.value, int | float):
+            return float(node.value)
+        if isinstance(node, ast.BinOp) and type(node.op) in _BINARY_OPERATORS:
+            return _BINARY_OPERATORS[type(node.op)](evaluate(node.left), evaluate(node.right))
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY_OPERATORS:
+            return _UNARY_OPERATORS[type(node.op)](evaluate(node.operand))
+        raise ValueError(f"Unsupported expression {expression!r}")
+
+    return evaluate(ast.parse(expression.strip(), mode="eval").body)
+
+
+class HeatGains(NamedTuple):
+    """Heat released per occupant [W]."""
+
+    radiant: float
+    convective: float
+    latent: float
+
+    @property
+    def sensible(self) -> float:
+        return self.radiant + self.convective
+
+    @property
+    def radiant_fraction(self) -> float:
+        return self.radiant / self.sensible if self.sensible else 0.0
+
+
 class BaseOccupancy(System):
     space_name: str | None = None
     include_in_layout: bool = False
     component_size: float = 3
+
+    @property
+    def gains_per_person(self) -> HeatGains:
+        """Radiant, convective and latent heat per occupant, from the ``gain`` matrix ``[radiant; convective; latent]``.
+
+        Libraries that take occupants rather than heat flows (IDEAS, AixLib) need the three values as numbers.
+        """
+        gain = str(getattr(self.parameters, "gain", None) or "[35; 70; 30]").strip()
+        try:
+            if not (gain.startswith("[") and gain.endswith("]")):
+                raise ValueError(gain)
+            values = [evaluate_number(entry) for entry in gain[1:-1].replace(",", ";").split(";")]
+            if len(values) != 3:
+                raise ValueError(gain)
+        except (ValueError, SyntaxError) as error:
+            raise InvalidBuildingStructureError(
+                f"Occupancy {self.name}: gain must be a column of three numbers [radiant; convective; latent] "
+                f"in W per occupant, got {gain!r}."
+            ) from error
+        return HeatGains(*values)
 
 
 class DistributionSystem(System):
