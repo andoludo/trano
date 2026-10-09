@@ -12,6 +12,11 @@
   * inputs declared with the local ``Trano.MPC.RealInput`` connector: no dependency on any
     external library, not even the Modelica Standard Library.
 
+  The energy systems (trano/mpc/systems.py) follow the same rules: their parameters, inputs,
+  storage states and equations are inlined after the zones, and the heating input of a zone
+  served by a heat pump is the electrical power, the heat being ``P * COP(TOut, TSup)``
+  (``zone.heating``); cooling and tank losses are extra terms of the air balance (``zone.direct``).
+
   The generated ``building`` model wraps ``building_mpc`` into a directly runnable model: it
   connects the weather file, the solar irradiance of each orientation, the occupancy gains and
   the external data (Buildings library), exactly as for the other Trano libraries.
@@ -37,7 +42,7 @@
 {%- endmacro -%}
 
 {%- macro r1c1_equations(zone, p) %}
-  der({{ p }}Ti) = ((TOut - {{ p }}Ti)/{{ p }}Ria + (TGro - {{ p }}Ti)/{{ p }}Rig + {{ window_solar(zone, p) }} + {{ opaque_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }} + {{ p }}QHea)/{{ p }}Ci;
+  der({{ p }}Ti) = ((TOut - {{ p }}Ti)/{{ p }}Ria + (TGro - {{ p }}Ti)/{{ p }}Rig + {{ window_solar(zone, p) }} + {{ opaque_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }} + {{ zone.heating }}{{ zone.direct }})/{{ p }}Ci;
 {%- endmacro -%}
 
 {%- macro envelope_equation(zone, p) %}
@@ -45,14 +50,14 @@
 {%- endmacro -%}
 
 {%- macro r3c2_equations(zone, p) %}
-  der({{ p }}Ti) = (({{ p }}Te - {{ p }}Ti)/{{ p }}Rie + (TOut - {{ p }}Ti)/{{ p }}Ria + {{ window_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }} + {{ p }}QHea)/{{ p }}Ci;
+  der({{ p }}Ti) = (({{ p }}Te - {{ p }}Ti)/{{ p }}Rie + (TOut - {{ p }}Ti)/{{ p }}Ria + {{ window_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }} + {{ zone.heating }}{{ zone.direct }})/{{ p }}Ci;
 {{ envelope_equation(zone, p) }}
 {%- endmacro -%}
 
 {%- macro r4c3_equations(zone, p) %}
-  der({{ p }}Ti) = (({{ p }}Te - {{ p }}Ti)/{{ p }}Rie + (TOut - {{ p }}Ti)/{{ p }}Ria + ({{ p }}Th - {{ p }}Ti)/{{ p }}Rih + {{ window_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }})/{{ p }}Ci;
+  der({{ p }}Ti) = (({{ p }}Te - {{ p }}Ti)/{{ p }}Rie + (TOut - {{ p }}Ti)/{{ p }}Ria + ({{ p }}Th - {{ p }}Ti)/{{ p }}Rih + {{ window_solar(zone, p) }} + {{ p }}QInt{{ couplings(zone, p) }}{{ zone.direct }})/{{ p }}Ci;
 {{ envelope_equation(zone, p) }}
-  der({{ p }}Th) = (({{ p }}Ti - {{ p }}Th)/{{ p }}Rih + {{ p }}QHea)/{{ p }}Ch;
+  der({{ p }}Th) = (({{ p }}Ti - {{ p }}Th)/{{ p }}Rih + {{ zone.heating }})/{{ p }}Ch;
 {%- endmacro -%}
 
 {%- macro iso13790_radiant_gains(zone, p) -%}
@@ -62,7 +67,7 @@
 {%- macro iso13790_equations(zone, p) -%}
 {%- set radiant = iso13790_radiant_gains(zone, p) -%}
 {%- set ts = "((" ~ p ~ "His*" ~ p ~ "Ti + " ~ p ~ "Hw*TOut + " ~ p ~ "Hms*" ~ p ~ "Tm + " ~ p ~ "fSt*" ~ radiant ~ ")/(" ~ p ~ "His + " ~ p ~ "Hw + " ~ p ~ "Hms))" %}
-  der({{ p }}Ti) = ({{ p }}Hve*(TOut - {{ p }}Ti) + {{ p }}His*({{ ts }} - {{ p }}Ti) + {{ p }}fIa*{{ p }}QInt{{ couplings(zone, p) }} + {{ p }}QHea)/{{ p }}Ci;
+  der({{ p }}Ti) = ({{ p }}Hve*(TOut - {{ p }}Ti) + {{ p }}His*({{ ts }} - {{ p }}Ti) + {{ p }}fIa*{{ p }}QInt{{ couplings(zone, p) }} + {{ zone.heating }}{{ zone.direct }})/{{ p }}Ci;
   der({{ p }}Tm) = ({{ p }}Hms*({{ ts }} - {{ p }}Tm) + {{ p }}Hem*(TOut - {{ p }}Tm) + {{ p }}Hg*(TGro - {{ p }}Tm) + {{ p }}fM*{{ radiant }})/{{ p }}Cm;
 {%- endmacro -%}
 
@@ -79,10 +84,25 @@
   parameter Real {{ p }}{{ parameter.name }}(unit="{{ parameter.unit }}") = {{ parameter.value | mo }}
     "{{ parameter.description }}";
 {% endfor %}
-  {{ connector }} {{ p }}QInt(unit="W") "Internal heat gains (occupants, appliances, lighting)";
-  {{ connector }} {{ p }}QHea(unit="W") "Heating (> 0) or cooling (< 0) power, control input";
+{% for input in zone.inputs %}
+  {{ connector }} {{ input.name }}(unit="{{ input.unit }}") "{{ input.description }}";
+{% endfor %}
 {% for state in zone.states %}
   Real {{ p }}{{ state.name }}(unit="K", start={{ zone.temperature_initial | mo }}, fixed=true)
+    "{{ state.description }}";
+{% endfor %}
+{%- endmacro -%}
+
+{%- macro system_declarations(system, connector) -%}
+{% for parameter in system.parameters %}
+  parameter Real {{ parameter.name }}(unit="{{ parameter.unit }}") = {{ parameter.value | mo }}
+    "{{ parameter.description }}";
+{% endfor %}
+{% for input in system.inputs %}
+  {{ connector }} {{ input.name }}(unit="{{ input.unit }}") "{{ input.description }}";
+{% endfor %}
+{% for state in system.states %}
+  Real {{ state.name }}(unit="{{ state.unit }}", start={{ state.start | mo }}, fixed=true)
     "{{ state.description }}";
 {% endfor %}
 {%- endmacro -%}
@@ -128,9 +148,18 @@ model {{ building.name }} "{{ building.zones | length }}-zone RC building model 
   // ---- Zone {{ zone.name }} ({{ zone.model_type }}) ----
 {{ zone_declarations(zone, zone.prefix, "Trano.MPC.RealInput") }}
 {% endfor %}
+{% for system in building.systems %}
+  // ---- System {{ system.name }}: {{ system.title }} ----
+{{ system_declarations(system, "Trano.MPC.RealInput") }}
+{% endfor %}
 equation
 {% for zone in building.zones %}
 {{ zone_equations(zone, zone.prefix) }}
+{% endfor %}
+{% for system in building.systems %}
+{% for equation in system.equations %}
+  {{ equation }}
+{% endfor %}
 {% endfor %}
 end {{ building.name }};
 {% endautoescape %}
@@ -167,11 +196,24 @@ model building "Runnable {{ building.zones | length }}-zone RC building: weather
 {% else %}
   Modelica.Blocks.Sources.Constant QInt_{{ zone.name }}(k=0) "No internal gains in {{ zone.name }}";
 {% endif %}
-{% if zone.heating_column is none %}
-  Modelica.Blocks.Interfaces.RealInput {{ zone.name }}_QHea(unit="W")
-    "Heating power of {{ zone.name }}, control input (e.g. set by the MPC)";
-{% endif %}
   Modelica.Blocks.Interfaces.RealOutput {{ zone.name }}_TZon(unit="K") "Indoor air temperature of {{ zone.name }}";
+{% endfor %}
+  // ---- Control inputs (e.g. set by the MPC) and system schedules ----
+{% for control in runnable.controls %}
+{% if control.column is none %}
+  Modelica.Blocks.Interfaces.RealInput {{ control.name }}(unit="W") "{{ control.description }}";
+{% endif %}
+{% endfor %}
+{% for table in runnable.tables %}
+  Modelica.Blocks.Sources.CombiTimeTable {{ table.name }}(
+    tableOnFile=false,
+    table=[{{ table.rows }}],
+    smoothness=Modelica.Blocks.Types.Smoothness.ConstantSegments,
+    extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic)
+    "{{ table.description }}";
+{% endfor %}
+{% for pv in runnable.photovoltaics %}
+  Modelica.Blocks.Math.Gain {{ pv.name }}(k={{ pv.gain | mo }}) "PV generation: area x efficiency x irradiance";
 {% endfor %}
 equation
   connect({{ runnable.weather_name }}.weaBus, weaBus);
@@ -189,12 +231,21 @@ equation
   connect(occupancy_{{ zone.name }}.y[2], QInt_{{ zone.name }}.u[2]);
 {% endif %}
   connect(QInt_{{ zone.name }}.y, rc.{{ zone.prefix }}QInt);
-{% if zone.heating_column is none %}
-  connect({{ zone.name }}_QHea, rc.{{ zone.prefix }}QHea);
-{% else %}
-  connect(externalData.y[{{ zone.heating_column }}], rc.{{ zone.prefix }}QHea);
-{% endif %}
   {{ zone.name }}_TZon = rc.{{ zone.prefix }}Ti;
+{% endfor %}
+{% for control in runnable.controls %}
+{% if control.column is none %}
+  connect({{ control.name }}, rc.{{ control.name }});
+{% else %}
+  connect(externalData.y[{{ control.column }}], rc.{{ control.name }});
+{% endif %}
+{% endfor %}
+{% for table in runnable.tables %}
+  connect({{ table.name }}.y[1], rc.{{ table.input }});
+{% endfor %}
+{% for pv in runnable.photovoltaics %}
+  connect(HSol_{{ pv.orientation }}.y, {{ pv.name }}.u);
+  connect({{ pv.name }}.y, rc.{{ pv.input }});
 {% endfor %}
 end building;
 {% endautoescape %}

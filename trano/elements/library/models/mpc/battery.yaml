@@ -1,0 +1,11 @@
+# Stationary battery mapped to the `Battery` system of the mpc library (energy state, charging and
+# discharging power inputs). Not rendered by the other libraries.
+- classes:
+  - Battery
+  figures: []
+  library: mpc
+  parameter_processing:
+    function: default_parameters
+  ports: []
+  template: ""
+  variant: default

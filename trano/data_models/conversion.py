@@ -298,6 +298,10 @@ def _connect_systems(network: Network, data: dict[str, Any], systems: dict[str, 
     for system in data.get("systems", []):
         system_ = _instantiate_component(system)
         systems[system_.name] = system_.component_instance
+        if network.library.is_rc:
+            # The flat RC model abstracts the hydraulics: a system without inlets or outlets (a heat
+            # pump serving every zone, a battery, an EV charger) is still part of the building.
+            network._add_system_with_control(system_.component_instance)
     edges = []
     for system in data.get("systems", []):
         for value in system.values():

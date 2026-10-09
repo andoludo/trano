@@ -16,10 +16,12 @@ translated into CasADi, so a least-squares identification problem can be solved 
 """
 
 import math
+import re
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
+import networkx as nx
 from pydantic import BaseModel, ConfigDict, Field
 
 from trano.mpc.building import Orientation, RCBuilding, RCZone, SolarAperture, ZoneCoupling
@@ -31,12 +33,29 @@ from trano.mpc.parameters import (
     RCModelType,
     ZoneParameters,
 )
+from trano.mpc.systems import (
+    JOULE_PER_KWH,
+    AnySystem,
+    Battery,
+    Chiller,
+    DHWTank,
+    DrawOffProfile,
+    EVCharger,
+    EVSessions,
+    GasBoiler,
+    HeatPump,
+    Photovoltaic,
+)
 
 if TYPE_CHECKING:
+    from trano.elements.base import BaseElement
     from trano.elements.construction import Construction, Glass
     from trano.elements.envelope import BaseInternalElement, BaseSimpleWall
     from trano.elements.space import Space
     from trano.topology import Network
+
+HEAT_PUMP_VARIANTS = frozenset({"air_water_heat_pump", "water_water_heat_pump"})
+"""Boiler variants of the YAML that the ``mpc`` library maps to a heat pump."""
 
 AIR_DENSITY = 1.2  # kg/m3
 AIR_HEAT_CAPACITY = 1005.0  # J/(kg.K)
@@ -64,6 +83,9 @@ class EstimationSettings(BaseModel):
         40.0, gt=0, description="Emitter to indoor air temperature difference at nominal power [K]"
     )
     emitter_time_constant: float = Field(1200.0, gt=0, description="Heat emitter time constant [s]")
+    supply_offset: float = Field(
+        5.0, ge=0, description="Heat pump supply temperature above the emitter temperature when unknown [K]"
+    )
     iso_total_area_factor: float = Field(4.5, gt=0, description="ISO 13790 ratio At/Af")
     iso_mass_area_factor: float = Field(2.5, gt=0, description="ISO 13790 ratio Am/Af (medium class)")
     iso_air_surface_coefficient: float = Field(3.45, gt=0, description="ISO 13790 his [W/(m2.K)]")
@@ -217,9 +239,12 @@ def design_heating_power(envelope: ZoneEnvelope, settings: EstimationSettings) -
     return settings.emitter_oversizing * envelope.heat_loss_coefficient * design_temperature_difference
 
 
-def _emitter(envelope: ZoneEnvelope, settings: EstimationSettings) -> tuple[float, float]:
+def _emitter(
+    envelope: ZoneEnvelope, settings: EstimationSettings, temperature_difference: float | None = None
+) -> tuple[float, float]:
     nominal_power = design_heating_power(envelope, settings)
-    resistance = settings.emitter_temperature_difference / nominal_power
+    difference = temperature_difference or settings.emitter_temperature_difference
+    resistance = difference / nominal_power
     return settings.emitter_time_constant / resistance, resistance
 
 
@@ -231,8 +256,13 @@ def estimate_zone_parameters(
     envelope: ZoneEnvelope,
     model_type: RCModelType,
     settings: EstimationSettings | None = None,
+    emitter_temperature_difference: float | None = None,
 ) -> ZoneParameters:
-    """Derive the parameters of an RC zone model from its aggregated envelope."""
+    """Derive the parameters of an RC zone model from its aggregated envelope.
+
+    ``emitter_temperature_difference`` (emitter to air at nominal power [K], e.g. 12.5 K for floor
+    heating, 50 K for high temperature radiators) overrides the setting for the R4C3 emitter.
+    """
     settings = settings or EstimationSettings()
     air_capacitance = envelope.air_capacitance * settings.air_capacity_multiplier
     direct_conductance = envelope.window_conductance + envelope.ventilation_conductance
@@ -253,7 +283,7 @@ def estimate_zone_parameters(
         }
         if model_type == RCModelType.r3c2:
             return R3C2Parameters(**envelope_parameters)
-        emitter_capacitance, emitter_resistance = _emitter(envelope, settings)
+        emitter_capacitance, emitter_resistance = _emitter(envelope, settings, emitter_temperature_difference)
         return R4C3Parameters(
             **envelope_parameters,
             emitter_capacitance=emitter_capacitance,
@@ -330,15 +360,49 @@ def _couplings(spaces: list["Space"], settings: EstimationSettings) -> list[Zone
     return [ZoneCoupling(zone_a=a, zone_b=b, conductance=value) for (a, b), value in conductances.items()]
 
 
+class EmitterTemperatures(BaseModel):
+    """Nominal water and air temperatures of the emitter of a zone [K] (EN 442 convention)."""
+
+    supply: float
+    return_: float
+    air: float
+
+    @property
+    def temperature_difference(self) -> float:
+        """Mean emitter temperature above the air at nominal power."""
+        return (self.supply + self.return_) / 2 - self.air
+
+    @property
+    def supply_offset(self) -> float:
+        """Supply temperature above the mean emitter temperature."""
+        return (self.supply - self.return_) / 2
+
+
+def emitter_temperatures(space: "Space") -> EmitterTemperatures | None:
+    """Temperatures of the radiator (or floor heating) of the space, when its parameters are given."""
+    from trano.elements.system import Radiator
+
+    for emission in space.emissions:
+        if isinstance(emission, Radiator) and emission.parameters is not None:
+            parameters = emission.parameters
+            supply = getattr(parameters, "water_inlet_temperature_at_nominal_condition", None)
+            return_ = getattr(parameters, "water_outlet_temperature_at_nominal_condition", None)
+            air = getattr(parameters, "air_temperature_at_nominal_condition", None)
+            if supply is not None and return_ is not None and air is not None:
+                return EmitterTemperatures(supply=float(supply), return_=float(return_), air=float(air))
+    return None
+
+
 def rc_building_from_network(
     network: "Network",
     model_type: RCModelType | None = None,
     settings: EstimationSettings | None = None,
     name: str = "building_mpc",
 ) -> RCBuilding:
-    """Create an RC building model from a Trano network (one RC zone per space).
+    """Create an RC building model from a Trano network (one RC zone per space, plus its systems).
 
-    ``model_type`` defaults to the one of the network library (``R3C2`` if not set).
+    ``model_type`` defaults to the one of the network library (``R3C2`` if not set). The emitter
+    of an R4C3 zone is sized from the nominal temperatures of its radiator when they are given.
     """
     from trano.elements.space import Space
 
@@ -350,10 +414,16 @@ def rc_building_from_network(
     zones = []
     for space in spaces:
         envelope = zone_envelope(space, settings)
+        emitter = emitter_temperatures(space)
         zones.append(
             RCZone(
                 name=sanitize_name(space.name),
-                parameters=estimate_zone_parameters(envelope, model_type, settings),
+                parameters=estimate_zone_parameters(
+                    envelope,
+                    model_type,
+                    settings,
+                    emitter_temperature_difference=emitter.temperature_difference if emitter else None,
+                ),
                 solar_apertures=envelope.solar_apertures,
                 temperature_initial=getattr(space.parameters, "temperature_initial", None) or 294.15,
                 floor_area=envelope.floor_area,
@@ -365,7 +435,199 @@ def rc_building_from_network(
         zones=zones,
         couplings=_couplings(spaces, settings),
         ground_temperature=settings.ground_temperature,
+        systems=systems_from_network(network, spaces, settings),
     )
+
+
+# --------------------------------------------------------------------------- systems of the YAML
+def _parameter(element: "BaseElement", name: str, default: Any) -> Any:  # noqa: ANN401
+    value = getattr(element.parameters, name, None) if element.parameters is not None else None
+    return default if value is None else value
+
+
+def _name(element: "BaseElement") -> str:
+    return sanitize_name(str(element.name))
+
+
+def _descendants(network: "Network", node: "BaseElement") -> set[Any]:
+    return set(nx.descendants(network.graph, node)) if node in network.graph else set()  # type: ignore[no-untyped-call]
+
+
+def _ancestors(network: "Network", node: "BaseElement") -> set[Any]:
+    return set(nx.ancestors(network.graph, node)) if node in network.graph else set()  # type: ignore[no-untyped-call]
+
+
+def _flag(element: "BaseElement", name: str, default: bool) -> bool:
+    value = _parameter(element, name, default)
+    return value.strip().lower() == "true" if isinstance(value, str) else bool(value)
+
+
+def _served_zones(system: "BaseElement", network: "Network", spaces: list["Space"]) -> list[str]:
+    """Zones whose emission (or ventilation) is downstream of the system; all the zones when none is."""
+    reachable = _descendants(network, system)
+    served = [
+        sanitize_name(space.name)
+        for space in spaces
+        if any(element in reachable for element in space.emissions + space.ventilation_inlets)
+    ]
+    return served or [sanitize_name(space.name) for space in spaces]
+
+
+def _first_number(text: str, default: float) -> float:
+    match = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", text)
+    return float(match.group()) if match else default
+
+
+def _heating_system(
+    boiler: "BaseElement", network: "Network", spaces: list["Space"], settings: EstimationSettings
+) -> HeatPump | GasBoiler:
+    name = _name(boiler)
+    zones = _served_zones(boiler, network, spaces)
+    nominal_power = float(_parameter(boiler, "nominal_heating_power", 20000.0))
+    if boiler.variant not in HEAT_PUMP_VARIANTS:
+        efficiency = _first_number(str(_parameter(boiler, "coefficients_for_efficiency_curve", "{0.9}")), 0.9)
+        return GasBoiler(name=name, zones=zones, efficiency=efficiency, max_heating_power=nominal_power)
+    emitters = [
+        emitter for space in spaces if sanitize_name(space.name) in zones and (emitter := emitter_temperatures(space))
+    ]
+    supply = max((emitter.supply for emitter in emitters), default=None)
+    offset = sum(emitter.supply_offset for emitter in emitters) / len(emitters) if emitters else settings.supply_offset
+    cop_nominal = float(_parameter(boiler, "cop_nominal", 4.5))
+    max_electrical = _parameter(boiler, "max_electrical_power", None)
+    return HeatPump(
+        name=name,
+        zones=zones,
+        cop_nominal=cop_nominal,
+        cop_outdoor_slope=float(_parameter(boiler, "cop_outdoor_slope", 0.11)),
+        cop_supply_slope=float(_parameter(boiler, "cop_supply_slope", -0.075)),
+        cop_cross_term=float(_parameter(boiler, "cop_cross_term", -0.0025)),
+        supply_temperature=float(supply or _parameter(boiler, "temperature_supply_setpoint_heat_pump", 323.15)),
+        supply_offset=float(offset),
+        max_electrical_power=float(max_electrical) if max_electrical is not None else nominal_power / cop_nominal,
+    )
+
+
+def _chiller(chiller: "BaseElement", network: "Network", spaces: list["Space"]) -> Chiller:
+    nominal_power = float(_parameter(chiller, "nominal_cooling_power", 10000.0))
+    eer_nominal = float(_parameter(chiller, "eer_nominal", 3.5))
+    max_electrical = _parameter(chiller, "max_electrical_power", None)
+    return Chiller(
+        name=_name(chiller),
+        zones=_served_zones(chiller, network, spaces),
+        eer_nominal=eer_nominal,
+        eer_outdoor_slope=float(_parameter(chiller, "eer_outdoor_slope", -0.06)),
+        max_electrical_power=float(max_electrical) if max_electrical is not None else nominal_power / eer_nominal,
+    )
+
+
+def _dhw_tank(tank: "BaseElement", network: "Network", spaces: list["Space"], heat_pumps: dict[Any, str]) -> DHWTank:
+    zone_names = [sanitize_name(space.name) for space in spaces]
+    zone = _parameter(tank, "zone", None)
+    # Element names are lowercased with ':' replaced by '_' when the YAML is read (SPACE:002 -> space_002).
+    zone = sanitize_name(str(zone).lower().replace(":", "_")) if zone else zone_names[0]
+    if zone not in zone_names:
+        raise ValueError(f"The DHW tank {tank.name} refers to an unknown zone {zone}.")
+    upstream = _ancestors(network, tank)
+    heat_pump = next((name for node, name in heat_pumps.items() if node in upstream), None)
+    daily_energy = float(_parameter(tank, "daily_draw_off_energy", 8.0))
+    return DHWTank.from_volume(
+        float(_parameter(tank, "volume", 0.2)),
+        name=_name(tank),
+        zone=zone,
+        heat_pump=heat_pump,
+        loss_coefficient=float(_parameter(tank, "loss_coefficient", 2.0)),
+        supply_offset=float(_parameter(tank, "supply_offset", 5.0)),
+        temperature_initial=float(_parameter(tank, "set_temperature", 328.15)),
+        set_temperature=float(_parameter(tank, "set_temperature", 328.15)),
+        min_temperature=float(_parameter(tank, "min_temperature", 318.15)),
+        draw_off=DrawOffProfile(daily_energy_kwh=daily_energy),
+    )
+
+
+def _battery(battery: "BaseElement") -> Battery:
+    return Battery(
+        name=_name(battery),
+        capacity=float(_parameter(battery, "capacity", 10.0)) * JOULE_PER_KWH,
+        max_charge_power=float(_parameter(battery, "max_charge_power", 5000.0)),
+        max_discharge_power=float(_parameter(battery, "max_discharge_power", 5000.0)),
+        charge_efficiency=float(_parameter(battery, "charge_efficiency", 0.95)),
+        discharge_efficiency=float(_parameter(battery, "discharge_efficiency", 0.95)),
+        min_soc=float(_parameter(battery, "min_soc", 0.1)),
+        max_soc=float(_parameter(battery, "max_soc", 0.9)),
+        initial_soc=float(_parameter(battery, "initial_soc", 0.5)),
+    )
+
+
+def _ev_charger(charger: "BaseElement") -> EVCharger:
+    return EVCharger(
+        name=_name(charger),
+        capacity=float(_parameter(charger, "battery_capacity", 60.0)) * JOULE_PER_KWH,
+        max_charge_power=float(_parameter(charger, "max_charge_power", 7400.0)),
+        charge_efficiency=float(_parameter(charger, "charge_efficiency", 0.9)),
+        initial_soc=float(_parameter(charger, "initial_soc", 0.5)),
+        sessions=EVSessions(
+            arrival_hour=float(_parameter(charger, "arrival_hour", 18.0)),
+            departure_hour=float(_parameter(charger, "departure_hour", 7.0)),
+            energy_per_day_kwh=float(_parameter(charger, "energy_per_day", 10.0)),
+            target_soc=float(_parameter(charger, "target_soc", 0.8)),
+            weekend_present=_flag(charger, "weekend_present", True),
+        ),
+    )
+
+
+def _photovoltaic(photovoltaic: "BaseElement") -> Photovoltaic:
+    return Photovoltaic(
+        name=_name(photovoltaic),
+        area=float(_parameter(photovoltaic, "area", 20.0)),
+        efficiency=float(_parameter(photovoltaic, "efficiency", 0.18)),
+        azimuth=float(_parameter(photovoltaic, "azimuth", 0.0)),
+        tilt=float(_parameter(photovoltaic, "tilt", 35.0)),
+    )
+
+
+def systems_from_network(
+    network: "Network", spaces: list["Space"] | None = None, settings: EstimationSettings | None = None
+) -> list[AnySystem]:
+    """Map the systems of a Trano network onto the energy systems of the ``mpc`` library.
+
+    * a ``boiler`` with a heat pump variant becomes a :class:`HeatPump` of the zones whose
+      emitters are downstream of it (all the zones when it is not connected), any other boiler a
+      :class:`GasBoiler`;
+    * ``chiller``, ``dhw_tank`` (fed by the heat pump upstream of it, if any), ``battery``,
+      ``ev_charger`` and ``photovoltaic`` map one to one.
+    """
+    from trano.elements.solar import Photovoltaic as PhotovoltaicElement
+    from trano.elements.space import Space
+    from trano.elements.system import Battery as BatteryElement
+    from trano.elements.system import Boiler
+    from trano.elements.system import Chiller as ChillerElement
+    from trano.elements.system import DhwTank, EvCharger
+
+    settings = settings or EstimationSettings()
+    if spaces is None:
+        spaces = sorted((node for node in network.graph.nodes if isinstance(node, Space)), key=lambda s: s.name)
+    nodes = sorted(network.graph.nodes, key=lambda node: str(node.name))
+    systems: list[AnySystem] = []
+    heat_pumps: dict[Any, str] = {}
+    for node in nodes:
+        if isinstance(node, Boiler):
+            heating = _heating_system(node, network, spaces, settings)
+            if isinstance(heating, HeatPump):
+                heat_pumps[node] = heating.name
+            systems.append(heating)
+        elif isinstance(node, ChillerElement):
+            systems.append(_chiller(node, network, spaces))
+    builders: list[tuple[type, Any]] = [
+        (DhwTank, lambda node: _dhw_tank(node, network, spaces, heat_pumps)),
+        (BatteryElement, _battery),
+        (EvCharger, _ev_charger),
+        (PhotovoltaicElement, _photovoltaic),
+    ]
+    for node in nodes:
+        for element_type, build in builders:
+            if isinstance(node, element_type):
+                systems.append(build(node))
+    return systems
 
 
 def rc_building_from_yaml(

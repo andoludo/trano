@@ -1,0 +1,124 @@
+# Two-zone house for the energy systems of the mpc library: an air-water heat pump on floor
+# heating (low temperature radiators), a domestic hot water tank fed by the heat pump, a chiller,
+# PV, a battery and an EV charger. The systems are not connected hydraulically: the mpc library
+# then assigns the heat pump and the chiller to every zone.
+default: !include_default
+
+weather:
+  parameters:
+    path: "../tests/resources/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos"
+spaces:
+  - occupancy:
+    parameters:
+      floor_area: 80.0
+      average_room_height: 2.6
+    id: SPACE:001
+    external_boundaries:
+      external_walls:
+        - surface: 30
+          azimuth: 0
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 24
+          azimuth: 1.57
+          tilt: wall
+          construction: CAVITYWALL:001
+      windows:
+        - surface: 8.0
+          construction: INS2AR2020:001
+          azimuth: 0
+          tilt: wall
+      floor_on_grounds:
+        - surface: 80
+          construction: CONCRETESLAB:001
+    emissions:
+      - radiator:
+          id: RADIATOR:001
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 4000
+            water_inlet_temperature_at_nominal_condition: 308.15
+            water_outlet_temperature_at_nominal_condition: 303.15
+          control:
+            emission_control:
+  - occupancy:
+    parameters:
+      floor_area: 60.0
+      average_room_height: 2.6
+    id: SPACE:002
+    external_boundaries:
+      external_walls:
+        - surface: 30
+          azimuth: 3.14
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 24
+          azimuth: 4.71
+          tilt: wall
+          construction: CAVITYWALL:001
+      windows:
+        - surface: 4.0
+          construction: INS2AR2020:001
+          azimuth: 3.14
+          tilt: wall
+      floor_on_grounds:
+        - surface: 60
+          construction: CONCRETESLAB:001
+    emissions:
+      - radiator:
+          id: RADIATOR:002
+          variant: idealbus
+          parameters:
+            nominal_heating_power_positive_for_heating: 3000
+            water_inlet_temperature_at_nominal_condition: 308.15
+            water_outlet_temperature_at_nominal_condition: 303.15
+          control:
+            emission_control:
+internal_walls:
+  - space_1: SPACE:001
+    space_2: SPACE:002
+    construction: CAVITYWALL:001
+    surface: 20
+systems:
+  - boiler:
+      id: HEATPUMP:001
+      variant: air_water_heat_pump
+      parameters:
+        nominal_heating_power: 8000
+        cop_nominal: 4.6
+        max_electrical_power: 2500
+  - dhw_tank:
+      id: TANK:001
+      parameters:
+        volume: 0.3
+        daily_draw_off_energy: 6
+        zone: SPACE:002
+      inlets:
+        - HEATPUMP:001
+  - chiller:
+      id: CHILLER:001
+      parameters:
+        nominal_cooling_power: 5000
+        eer_nominal: 3.2
+  - battery:
+      id: BATTERY:001
+      parameters:
+        capacity: 8
+        max_charge_power: 3000
+        max_discharge_power: 3000
+  - ev_charger:
+      id: EV:001
+      parameters:
+        battery_capacity: 50
+        max_charge_power: 7400
+        arrival_hour: 18
+        departure_hour: 7
+        energy_per_day: 12
+solar:
+  - photovoltaic:
+      id: PV:001
+      parameters:
+        area: 30
+        efficiency: 0.19
+        azimuth: 0
+        tilt: 35

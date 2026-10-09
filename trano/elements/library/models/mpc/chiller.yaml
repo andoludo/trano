@@ -1,0 +1,23 @@
+# Chiller: cooling production mapped to the `Chiller` system of the mpc library (electrical
+# power per cooled zone, linear EER in the outdoor temperature). Not rendered by the other libraries.
+- classes:
+  - Chiller
+  figures: []
+  library: mpc
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    use_counter: false
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    use_counter: false
+  template: ""
+  variant: default

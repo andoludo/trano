@@ -58,6 +58,11 @@
     - dt_boi_nominal
     - dt_rad_nominal
     - sca_fac_rad
+    - cop_nominal
+    - cop_outdoor_slope
+    - cop_supply_slope
+    - cop_cross_term
+    - max_electrical_power
   ports:
   - flow: inlet
     medium: fluid
@@ -110,6 +115,11 @@
     - dt_boi_nominal
     - dt_rad_nominal
     - sca_fac_rad
+    - cop_nominal
+    - cop_outdoor_slope
+    - cop_supply_slope
+    - cop_cross_term
+    - max_electrical_power
   ports:
   - flow: inlet
     medium: fluid
@@ -186,6 +196,11 @@
     - dt_boi_nominal
     - dt_rad_nominal
     - sca_fac_rad
+    - cop_nominal
+    - cop_outdoor_slope
+    - cop_supply_slope
+    - cop_cross_term
+    - max_electrical_power
   ports:
   - flow: inlet
     medium: fluid
@@ -242,6 +257,11 @@
     - dt_boi_nominal
     - dt_rad_nominal
     - sca_fac_rad
+    - cop_nominal
+    - cop_outdoor_slope
+    - cop_supply_slope
+    - cop_cross_term
+    - max_electrical_power
   ports:
   - flow: inlet
     medium: fluid

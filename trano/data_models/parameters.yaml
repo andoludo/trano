@@ -131,6 +131,26 @@ BoilerParameters:
       description: None
       ifabsent: float(323.15)
       range: float
+    cop_nominal:
+      description: Heat pump COP at the rating point A7/W35, used by the mpc library [1]
+      ifabsent: float(4.5)
+      range: float
+    cop_outdoor_slope:
+      description: Heat pump COP change per kelvin of outdoor temperature, mpc library [1/K]
+      ifabsent: float(0.11)
+      range: float
+    cop_supply_slope:
+      description: Heat pump COP change per kelvin of supply temperature, mpc library [1/K]
+      ifabsent: float(-0.075)
+      range: float
+    cop_cross_term:
+      description: Heat pump COP cross term outdoor x supply deviation, mpc library [1/K2]
+      ifabsent: float(-0.0025)
+      range: float
+    max_electrical_power:
+      description: Maximum electrical power of the heat pump compressor, mpc library [W] (nominal heating power / COP when absent)
+      ifabsent: float(None)
+      range: float
   classes:
   - Boiler
 ControlLoopsParameters:
@@ -628,3 +648,151 @@ AhuParameters:
 
   classes:
   - AirHandlingUnit
+ChillerParameters:
+  attributes:
+    nominal_cooling_power:
+      description: Nominal cooling power [W]
+      ifabsent: float(10000)
+      range: float
+    eer_nominal:
+      description: EER at 35 degC outdoor temperature [1]
+      ifabsent: float(3.5)
+      range: float
+    eer_outdoor_slope:
+      description: EER change per kelvin of outdoor temperature [1/K]
+      ifabsent: float(-0.06)
+      range: float
+    max_electrical_power:
+      description: Maximum electrical power of the compressor [W] (nominal cooling power / EER when absent)
+      ifabsent: float(None)
+      range: float
+  classes:
+  - Chiller
+DhwTankParameters:
+  attributes:
+    volume:
+      description: Water volume of the tank [m3]
+      ifabsent: float(0.2)
+      range: float
+    set_temperature:
+      description: Upper comfort bound of the tank temperature [K]
+      ifabsent: float(328.15)
+      range: float
+    min_temperature:
+      description: Lower comfort bound of the tank temperature [K]
+      ifabsent: float(318.15)
+      range: float
+    loss_coefficient:
+      description: Standing loss coefficient of the tank [W/K]
+      ifabsent: float(2.0)
+      range: float
+    supply_offset:
+      description: Heat pump supply temperature above the tank temperature [K]
+      ifabsent: float(5.0)
+      range: float
+    daily_draw_off_energy:
+      description: Heat drawn by the hot water taps per day [kWh]
+      ifabsent: float(8.0)
+      range: float
+    zone:
+      description: Space receiving the standing losses of the tank (first space when absent)
+      ifabsent: string(None)
+      range: string
+  classes:
+  - DhwTank
+BatteryParameters:
+  attributes:
+    capacity:
+      description: Usable energy capacity [kWh]
+      ifabsent: float(10.0)
+      range: float
+    max_charge_power:
+      description: Maximum charging power [W]
+      ifabsent: float(5000)
+      range: float
+    max_discharge_power:
+      description: Maximum discharging power [W]
+      ifabsent: float(5000)
+      range: float
+    charge_efficiency:
+      description: Charging efficiency [1]
+      ifabsent: float(0.95)
+      range: float
+    discharge_efficiency:
+      description: Discharging efficiency [1]
+      ifabsent: float(0.95)
+      range: float
+    min_soc:
+      description: Lower bound of the state of charge [1]
+      ifabsent: float(0.1)
+      range: float
+    max_soc:
+      description: Upper bound of the state of charge [1]
+      ifabsent: float(0.9)
+      range: float
+    initial_soc:
+      description: Initial state of charge [1]
+      ifabsent: float(0.5)
+      range: float
+  classes:
+  - Battery
+EvChargerParameters:
+  attributes:
+    battery_capacity:
+      description: Battery capacity of the vehicle [kWh]
+      ifabsent: float(60.0)
+      range: float
+    max_charge_power:
+      description: Maximum charging power [W]
+      ifabsent: float(7400)
+      range: float
+    charge_efficiency:
+      description: Charging efficiency [1]
+      ifabsent: float(0.9)
+      range: float
+    initial_soc:
+      description: Initial state of charge [1]
+      ifabsent: float(0.5)
+      range: float
+    arrival_hour:
+      description: Hour of the day the vehicle plugs in [h]
+      ifabsent: float(18)
+      range: float
+    departure_hour:
+      description: Hour of the day the vehicle leaves [h]
+      ifabsent: float(7)
+      range: float
+    energy_per_day:
+      description: Energy consumed by driving per day [kWh]
+      ifabsent: float(10.0)
+      range: float
+    target_soc:
+      description: State of charge required at departure [1]
+      ifabsent: float(0.8)
+      range: float
+    weekend_present:
+      description: The vehicle stays plugged in during the weekend
+      ifabsent: string(true)
+      range: string
+  classes:
+  - EvCharger
+PhotovoltaicParameters:
+  attributes:
+    area:
+      description: Module area [m2]
+      ifabsent: float(20.0)
+      range: float
+    efficiency:
+      description: Module and inverter efficiency [1]
+      ifabsent: float(0.18)
+      range: float
+    azimuth:
+      description: Surface azimuth [deg], 0 for south, 90 for west
+      ifabsent: float(0.0)
+      range: float
+    tilt:
+      description: Surface tilt [deg], 0 for a roof, 90 for a wall
+      ifabsent: float(35.0)
+      range: float
+  classes:
+  - Photovoltaic
