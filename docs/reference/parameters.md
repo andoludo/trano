@@ -10,8 +10,8 @@ threshold_outdoor_air_cutoff:
   range: float
 threshold_to_switch_off_boiler:
   alias: threshold_to_switch_off_boiler
-  description: Tank bottom temperature above which the boiler switches off [K]
-  ifabsent: float(358.15)
+  description: Tank bottom temperature above which the boiler switches off; defaults
+    to tsup_nominal + 5 K [K]
   range: float
 tsup_nominal:
   alias: TSup_nominal

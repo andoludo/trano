@@ -89,8 +89,8 @@ classes:
         ifabsent: float(288.15)
         range: float
       threshold_to_switch_off_boiler:
-        description: Tank bottom temperature above which the boiler switches off [K]
-        ifabsent: float(358.15)
+        description: Tank bottom temperature above which the boiler switches off;
+          defaults to tsup_nominal + 5 K [K]
         range: float
       tsup_nominal:
         description: Supply temperature set point; the boiler starts when the tank

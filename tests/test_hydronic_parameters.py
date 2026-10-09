@@ -48,7 +48,9 @@ def test_sensors_get_their_own_nominal_flow(hydronic_model: str) -> None:
 def test_boiler_control_starts_on_supply_set_point_and_stops_on_tank_bottom(hydronic_model: str) -> None:
     assert "greThr(t=\n        threshold_to_switch_off_boiler)" in hydronic_model
     assert "dTThr1(k=\n              TSup_nominal)" in hydronic_model
-    assert scalar(hydronic_model, "threshold_to_switch_off_boiler") == pytest.approx(358.15)
+    assert "threshold_to_switch_off_boiler=\n            TSup_nominal + 5" in hydronic_model
+    # Not set on the fixture: the Modelica default (set point + 5 K) applies and nothing is rendered.
+    assert "threshold_to_switch_off_boiler=" not in remove_trano_package(hydronic_model)
     assert scalar(hydronic_model, "TSup_nominal") == pytest.approx(353.15)
 
 
