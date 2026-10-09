@@ -8,7 +8,7 @@ def write_parameters() -> None:
     parameter_path = Path(__file__).parents[2].joinpath("trano", "data_models", "parameters.yaml")
     parameters = yaml.safe_load(parameter_path.read_text())
     for name, parameter in parameters.items():
-        if not parameter["classes"]:
+        if not parameter.get("classes"):
             continue
         parameter_st += f"""
 ## {name}

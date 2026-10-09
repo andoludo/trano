@@ -7,12 +7,12 @@ BoilerControlParameters:
       range: float
     threshold_to_switch_off_boiler:
       alias: threshold_to_switch_off_boiler
-      description: Temperature threshold used to switch the boiler off [K]
-      ifabsent: float(288.15)
+      description: Tank bottom temperature above which the boiler switches off [K]
+      ifabsent: float(358.15)
       range: float
     tsup_nominal:
       alias: TSup_nominal
-      description: Nominal supply temperature for the radiators [K]
+      description: Supply temperature set point; the boiler starts when the tank top drops 1 K below it [K]
       ifabsent: float(353.15)
       range: float
   classes:
@@ -78,7 +78,7 @@ BoilerParameters:
     nominal_mass_flow_rate_boiler:
       alias: null
       description: Nominal mass flow rate of the boiler loop [kg/s]
-      func: 'lambda self: self.sca_fac_rad * self.nominal_heating_power / self.dt_rad_nominal
+      func: 'lambda self: self.sca_fac_rad * self.nominal_heating_power / self.dt_boi_nominal
         / 4200'
       type: float
     number_of_volume_segments:
@@ -104,7 +104,7 @@ BoilerParameters:
     thickness_of_insulation:
       alias: dIns
       description: Thickness of insulation [m]
-      ifabsent: float(0.002)
+      ifabsent: float(0.1)
       range: float
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearizeFlowResistance
@@ -397,7 +397,7 @@ RadiatorParameter:
     water_volume_of_radiator:
       alias: VWat
       description: Water volume of radiator [m3]
-      func: lambda self:5.8e-5 * abs(self.nominal_heating_power_positive_for_heating)
+      func: lambda self:5.8e-6 * abs(self.nominal_heating_power_positive_for_heating)
       type: float
   classes:
   - Radiator
@@ -459,7 +459,7 @@ SplitValveParameters:
     m_flow_nominal:
       alias: None
       description: Mass flow rate; set negative at outflowing ports [kg/s]
-      ifabsent: string(0.1*{1,-1,-1})
+      ifabsent: string(0.15*{1,-1,-1})
       range: string
     nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
       alias: mDyn_flow_nominal
@@ -513,7 +513,7 @@ ThreeWayValveParameters:
     m_flow_nominal:
       alias: m_flow_nominal
       description: Nominal mass flow rate [kg/s]
-      ifabsent: float(0.3)
+      ifabsent: float(0.15)
       range: float
     range_of_significant_deviation_from_equal_percentage_law:
       alias: delta0
@@ -577,7 +577,7 @@ ValveParameters:
     m_flow_nominal:
       alias: m_flow_nominal
       description: Nominal mass flow rate [kg/s]
-      ifabsent: float(0.02)
+      ifabsent: float(0.06)
       range: float
     range_of_significant_deviation_from_equal_percentage_law:
       alias: delta0
@@ -796,3 +796,13 @@ PhotovoltaicParameters:
       range: float
   classes:
   - Photovoltaic
+SensorParameters:
+  attributes:
+    nominal_mass_flow_rate:
+      alias: m_flow_nominal
+      description: Nominal mass flow rate through the sensor, used for its dynamics and its small-flow regularization [kg/s]
+      ifabsent: float(0.15)
+      range: float
+  classes:
+  - TemperatureSensor
+  - HeatMeterSensor

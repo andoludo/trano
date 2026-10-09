@@ -51,7 +51,7 @@ systems:
         boiler_control:
           id: BOILER_CONTROL:001
           parameters:
-            tsup_nominal: 473.15
+            tsup_nominal: 343.15
       inlets:
         - SPLIT_VALVE:002
   - pump:

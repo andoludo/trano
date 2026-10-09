@@ -43,7 +43,7 @@
       - color: blue
         label: Computed gas consumption [m3]
         template: |-
-          {{ element.name }}.gain2.y
+          {{ element.name }}.GasUsage.y
     right_axis:
       label: Boiler control input [-]
       lines:

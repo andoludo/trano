@@ -30,7 +30,8 @@
     - TExt
     targets:
     - TemperatureSensor
-  template: "    Buildings.Fluid.Sensors.HeatMeter {{ element.name }}(\n\
-    \    redeclare package Medium = MediumW,\n    m_flow_nominal=mRad_flow_nominal)\
-    \ \"Radiator\" "
+  template: |2-
+        Buildings.Fluid.Sensors.HeatMeter {{ element.name }}(
+        redeclare package Medium = MediumW,
+        {{ macros.render_parameters(parameters) | safe }})
   variant: default

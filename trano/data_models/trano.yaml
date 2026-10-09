@@ -344,6 +344,9 @@ classes:
 
   TemperatureSensor:
     is_a: System
+    attributes:
+      parameters:
+        range: SensorParameters
 
   PowerSensor:
     is_a: System
@@ -369,6 +372,9 @@ classes:
         range: EvChargerParameters
   HeatMeterSensor:
     is_a: System
+    attributes:
+      parameters:
+        range: SensorParameters
 
   EmissionControl:
 

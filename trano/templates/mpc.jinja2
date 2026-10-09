@@ -82,28 +82,28 @@
 {%- macro zone_declarations(zone, p, connector) -%}
 {% for parameter in zone.parameters %}
   parameter Real {{ p }}{{ parameter.name }}(unit="{{ parameter.unit }}") = {{ parameter.value | mo }}
-    "{{ parameter.description }}";
+    "{{ parameter.description | safe }}";
 {% endfor %}
 {% for input in zone.inputs %}
-  {{ connector }} {{ input.name }}(unit="{{ input.unit }}") "{{ input.description }}";
+  {{ connector }} {{ input.name }}(unit="{{ input.unit }}") "{{ input.description | safe }}";
 {% endfor %}
 {% for state in zone.states %}
   Real {{ p }}{{ state.name }}(unit="K", start={{ zone.temperature_initial | mo }}, fixed=true)
-    "{{ state.description }}";
+    "{{ state.description | safe }}";
 {% endfor %}
 {%- endmacro -%}
 
 {%- macro system_declarations(system, connector) -%}
 {% for parameter in system.parameters %}
   parameter Real {{ parameter.name }}(unit="{{ parameter.unit }}") = {{ parameter.value | mo }}
-    "{{ parameter.description }}";
+    "{{ parameter.description | safe }}";
 {% endfor %}
 {% for input in system.inputs %}
-  {{ connector }} {{ input.name }}(unit="{{ input.unit }}") "{{ input.description }}";
+  {{ connector }} {{ input.name }}(unit="{{ input.unit }}") "{{ input.description | safe }}";
 {% endfor %}
 {% for state in system.states %}
   Real {{ state.name }}(unit="{{ state.unit }}", start={{ state.start | mo }}, fixed=true)
-    "{{ state.description }}";
+    "{{ state.description | safe }}";
 {% endfor %}
 {%- endmacro -%}
 
@@ -111,7 +111,7 @@
   parameter Real TGro(unit="K") = {{ ground_temperature | mo }} "Ground temperature below the slab";
   {{ connector }} TOut(unit="K") "Outdoor dry-bulb air temperature";
 {% for irradiance in irradiances %}
-  {{ connector }} {{ irradiance.name }}(unit="W/m2") "{{ irradiance.description }}";
+  {{ connector }} {{ irradiance.name }}(unit="W/m2") "{{ irradiance.description | safe }}";
 {% endfor %}
 {%- endmacro -%}
 
@@ -173,10 +173,10 @@ model building "Runnable {{ building.zones | length }}-zone RC building: weather
   {{ building.name }} rc "CasADi/IPOPT compatible RC model";
 {% for orientation in runnable.orientations %}
   Buildings.BoundaryConditions.SolarIrradiation.DirectTiltedSurface HDir_{{ orientation.name }}(
-    til={{ orientation.tilt | mo }}, azi={{ orientation.azimuth | mo }}) "Direct irradiance, {{ orientation.description }}";
+    til={{ orientation.tilt | mo }}, azi={{ orientation.azimuth | mo }}) "Direct irradiance, {{ orientation.description | safe }}";
   Buildings.BoundaryConditions.SolarIrradiation.DiffuseIsotropic HDif_{{ orientation.name }}(
-    til={{ orientation.tilt | mo }}, outSkyCon=true, outGroCon=true) "Diffuse irradiance, {{ orientation.description }}";
-  Modelica.Blocks.Math.Add HSol_{{ orientation.name }} "Total irradiance, {{ orientation.description }}";
+    til={{ orientation.tilt | mo }}, outSkyCon=true, outGroCon=true) "Diffuse irradiance, {{ orientation.description | safe }}";
+  Modelica.Blocks.Math.Add HSol_{{ orientation.name }} "Total irradiance, {{ orientation.description | safe }}";
 {% endfor %}
 {% if runnable.external_data %}
   Modelica.Blocks.Sources.CombiTimeTable externalData(

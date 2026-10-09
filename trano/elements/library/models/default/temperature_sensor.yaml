@@ -24,7 +24,8 @@
     targets:
     - Control
     - HeatMeterSensor
-  template: "    Buildings.Fluid.Sensors.TemperatureTwoPort {{ element.name }}(\n\
-    \    redeclare package Medium = MediumW,\n    m_flow_nominal=mRad_flow_nominal)\
-    \ \"Radiator\" "
+  template: |2-
+        Buildings.Fluid.Sensors.TemperatureTwoPort {{ element.name }}(
+        redeclare package Medium = MediumW,
+        {{ macros.render_parameters(parameters) | safe }})
   variant: default
