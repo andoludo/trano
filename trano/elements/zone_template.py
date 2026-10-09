@@ -30,15 +30,9 @@ ANGLE_TOLERANCE = 1e-2  # [rad] accepts azimuths rounded to two decimals (1.57 f
 MINIMUM_WINDOW_HEIGHT = 0.1  # [m] lower bound enforced by IDEAS on h_win
 
 
-def to_radians(azimuth: float) -> float:
-    """Normalize an azimuth to [0, 2pi).
-
-    Trano does not enforce a unit for azimuths: the YAML models document degrees while
-    the Python API has historically been used with radians. A magnitude above 2pi can
-    only be degrees, anything else is taken as radians.
-    """
-    radians = math.radians(azimuth) if abs(azimuth) > 2 * math.pi else azimuth
-    return radians % (2 * math.pi)
+def normalize_azimuth(azimuth: float) -> float:
+    """Wrap an azimuth in radians into [0, 2pi)."""
+    return azimuth % (2 * math.pi)
 
 
 def same_angle(first: float, second: float) -> bool:
@@ -189,8 +183,8 @@ class RectangularZone(BaseModel):
 
 def _face_a_azimuth(walls: Sequence[BaseExternalWall], windows: Sequence[BaseWindow]) -> float:
     """Azimuth of face A: the candidate that puts the most surfaces on the four faces."""
-    surfaces = [to_radians(element.azimuth) for element in [*walls, *windows]]
-    candidates = sorted({to_radians(wall.azimuth) for wall in walls})
+    surfaces = [normalize_azimuth(element.azimuth) for element in [*walls, *windows]]
+    candidates = sorted({normalize_azimuth(wall.azimuth) for wall in walls})
     if not candidates:
         return 0.0
 
@@ -209,9 +203,9 @@ def _vertical_face(
     windows: Sequence[BaseWindow],
 ) -> tuple[Face, list[BaseSimpleWall], list[BaseSimpleWall]]:
     """Face for this azimuth, the surfaces of that orientation it cannot hold, and all it looked at."""
-    face_walls: list[BaseSimpleWall] = [wall for wall in walls if same_angle(to_radians(wall.azimuth), azimuth)]
+    face_walls: list[BaseSimpleWall] = [wall for wall in walls if same_angle(normalize_azimuth(wall.azimuth), azimuth)]
     face_windows: list[BaseSimpleWall] = [
-        window for window in windows if same_angle(to_radians(window.azimuth), azimuth)
+        window for window in windows if same_angle(normalize_azimuth(window.azimuth), azimuth)
     ]
     kept_walls, rest = _largest_group(face_walls)
     if not kept_walls:

@@ -20,11 +20,11 @@ spaces:
           tilt: wall
           construction: CAVITYWALL:001
         - surface: 30
-          azimuth: 90
+          azimuth: 1.57
           tilt: wall
           construction: CAVITYWALL:001
         - surface: 50
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CAVITYWALL:001
       windows:
@@ -34,7 +34,7 @@ spaces:
           tilt: wall
         - surface: 2.0
           construction: INS3AR2020:001
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
       floor_on_grounds:
         - surface: 50.0

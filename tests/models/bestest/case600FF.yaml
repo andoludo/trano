@@ -99,7 +99,7 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 21.6
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: EXTERIOR_WALL:001
         - surface: 21.6
@@ -107,11 +107,11 @@ spaces:
           tilt: wall
           construction: EXTERIOR_WALL:001
         - surface: 16.2
-          azimuth: 270
+          azimuth: 4.71
           tilt: wall
           construction: EXTERIOR_WALL:001
         - surface: 16.2
-          azimuth: 90
+          azimuth: 1.57
           tilt: wall
           construction: EXTERIOR_WALL:001
         - surface: 48.0

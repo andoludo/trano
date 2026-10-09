@@ -40,11 +40,11 @@ spaces:
           tilt: wall
           construction: CAVITYWALL:001
         - surface: 30
-          azimuth: 90
+          azimuth: 1.57
           tilt: wall
           construction: CAVITYWALL:001
         - surface: 50
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CAVITYWALL:001
       windows:
@@ -54,7 +54,7 @@ spaces:
           tilt: wall
         - surface: 2.0
           construction: EPCDOUBLE:001
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
       floor_on_grounds:
         - surface: 120
@@ -78,11 +78,11 @@ spaces:
           tilt: wall
           construction: CAVITYWALLPARTIALFILL:001
         - surface: 25
-          azimuth: 90
+          azimuth: 1.57
           tilt: wall
           construction: CAVITYWALLPARTIALFILL:001
         - surface: 34
-          azimuth: 180
+          azimuth: 3.14
           tilt: wall
           construction: CAVITYWALLPARTIALFILL:001
       windows:
@@ -92,7 +92,7 @@ spaces:
           tilt: wall
         - surface: 2.0
           construction: INS2AR2020:001
-          azimuth: 180
+          azimuth: 3.14
           tilt: wall
       floor_on_grounds:
         - surface: 60
@@ -112,21 +112,21 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 22
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 17
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 36
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
       windows:
         - surface: 5.0
           construction: EPCDOUBLE:001
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
       floor_on_grounds:
         - surface: 60.0

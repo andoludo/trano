@@ -4,7 +4,7 @@ from math import sqrt
 from typing import TYPE_CHECKING, Type
 
 import numpy as np
-from pydantic import BaseModel, model_validator, computed_field, Field
+from pydantic import BaseModel, field_validator, model_validator, computed_field, Field
 
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
@@ -28,17 +28,38 @@ class BaseWall(BaseElement):
         return 1
 
 
+FULL_TURN = 2 * math.pi
+
+
+def check_azimuth_in_radians(azimuth: float | int) -> float | int:
+    """Azimuths are radians (0 south, pi/2 west, pi north, -pi/2 east).
+
+    A magnitude above one full turn can only be degrees, which every library would silently
+    wrap into a wrong orientation.
+    """
+    if abs(azimuth) > FULL_TURN:
+        raise InvalidBuildingStructureError(
+            f"Azimuth {azimuth} is outside [-2*pi, 2*pi]: azimuths must be given in radians "
+            "(0 south, pi/2 west, pi north, -pi/2 east), not in degrees."
+        )
+    return azimuth
+
+
 class BaseSimpleWall(BaseWall):
     surface: float | int
     azimuth: float | int
     tilt: Tilt
     construction: Construction | Glass
 
+    _azimuth_in_radians = field_validator("azimuth")(check_azimuth_in_radians)
+
     def get_tilt(self, space_name: str) -> Tilt:
         return self.tilt
 
 
-class BaseInternalElement(BaseSimpleWall): ...
+class BaseInternalElement(BaseSimpleWall):
+    # An internal element receives no solar radiation: its orientation is irrelevant.
+    azimuth: float | int = Azimuth.south
 
 
 class BaseFloorOnGround(BaseSimpleWall): ...
@@ -214,9 +235,6 @@ class WallParameters(BaseModel):
     average_resistance_external_remaining: float = Field(default=0)
     total_thermal_capacitance: float = Field(default=0)
     total_thermal_resistance: float = Field(default=0)
-
-    def azimuths_to_radians(self) -> list[float]:
-        return [math.radians(azimuth) for azimuth in self.azimuths]
 
     def tilts_to_radians(self) -> list[float]:
         return [math.radians(TILT_MAPPING[tilt.value]) for tilt in self.tilts]

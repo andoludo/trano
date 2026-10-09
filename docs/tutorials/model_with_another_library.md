@@ -43,7 +43,7 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 90.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
       floor_on_grounds:
@@ -51,7 +51,7 @@ spaces:
           construction: CONSTRUCTION:001
       windows:
         - surface: 1.5
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: INS2AR2020:001
 ```

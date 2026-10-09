@@ -37,3 +37,7 @@ class InvalidBuildingStructureError(Exception): ...
 
 
 class InvalidSensorInletError(Exception): ...
+
+
+class InvalidModelError(ValueError):
+    """The YAML model does not satisfy the Trano schema."""

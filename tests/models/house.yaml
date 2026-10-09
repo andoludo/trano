@@ -50,11 +50,11 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 10.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 10.0
-          azimuth: 90.0
+          azimuth: 1.57
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 20.0
@@ -66,7 +66,7 @@ spaces:
           construction: CONSTRUCTION:001
       windows:
         - surface: 1.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:011
           width: 1.0
@@ -96,15 +96,15 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 100.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 100.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 200.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
     emissions:
@@ -133,15 +133,15 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 100.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 100.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 200.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
     emissions:

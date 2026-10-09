@@ -3382,6 +3382,158 @@ end PartialPowerSensor;
             visible=use_C_flow)}));
   end MixedAirInf;
 end ThermalZones;
+package MPC "CasADi/IPOPT compatible RC models for model predictive control"
+  connector RealInput = input Real "Real input signal (library independent, for CasADi export)";
+
+package Zones "Single-zone RC models"
+  model R1C1 "Ti model: one thermal capacity (1R1C + ground coupling)"
+  parameter Real TGro(unit="K") = 283.15 "Ground temperature below the slab";
+  Trano.MPC.RealInput TOut(unit="K") "Outdoor dry-bulb air temperature";
+  Trano.MPC.RealInput HSol(unit="W/m2") "Total solar irradiance on the facade";
+
+  parameter Real Ci(unit="J/K") = 66507500
+    "Lumped zone heat capacity";
+  parameter Real Ria(unit="K/W") = 0.01164483261
+    "Indoor to outdoor air thermal resistance";
+  parameter Real Rig(unit="K/W") = 0.02857142857
+    "Indoor to ground thermal resistance";
+  parameter Real gA(unit="m2") = 3
+    "Effective solar aperture of the windows";
+  parameter Real aE(unit="m2") = 0.4
+    "Effective solar absorption area of the envelope";
+  Trano.MPC.RealInput QInt(unit="W") "Internal heat gains (occupants, appliances, lighting)";
+  Trano.MPC.RealInput QHea(unit="W") "Heating (> 0) or cooling (< 0) power, control input";
+  Real Ti(unit="K", start=294.15, fixed=true)
+    "Indoor air temperature";
+
+  equation
+  der(Ti) = ((TOut - Ti)/Ria + (TGro - Ti)/Rig + gA*HSol + aE*HSol + QInt + QHea)/Ci;
+    annotation (Documentation(info="<html><p>Single state model where the whole zone thermal mass is lumped with the indoor air. Reference: Bacher, P. and Madsen, H. (2011), Identifying suitable models for the heat dynamics of buildings, Energy and Buildings 43(7).</p></html>"));
+  end R1C1;
+
+  model R3C2 "TiTe model: indoor air and envelope capacities (3R2C + ground coupling)"
+  parameter Real TGro(unit="K") = 283.15 "Ground temperature below the slab";
+  Trano.MPC.RealInput TOut(unit="K") "Outdoor dry-bulb air temperature";
+  Trano.MPC.RealInput HSol(unit="W/m2") "Total solar irradiance on the facade";
+
+  parameter Real Ci(unit="J/K") = 1507500
+    "Indoor air and furniture heat capacity";
+  parameter Real Ce(unit="J/K") = 65000000
+    "Building envelope and thermal mass heat capacity";
+  parameter Real Ria(unit="K/W") = 0.01789709172
+    "Indoor to outdoor air thermal resistance (windows and ventilation)";
+  parameter Real Rie(unit="K/W") = 0.007645483871
+    "Indoor air to envelope thermal resistance";
+  parameter Real Rea(unit="K/W") = 0.0164
+    "Envelope to outdoor air thermal resistance";
+  parameter Real Reg(unit="K/W") = 0.017
+    "Envelope to ground thermal resistance";
+  parameter Real gA(unit="m2") = 3
+    "Effective solar aperture of the windows";
+  parameter Real aE(unit="m2") = 0.4
+    "Effective solar absorption area of the envelope";
+  Trano.MPC.RealInput QInt(unit="W") "Internal heat gains (occupants, appliances, lighting)";
+  Trano.MPC.RealInput QHea(unit="W") "Heating (> 0) or cooling (< 0) power, control input";
+  Real Ti(unit="K", start=294.15, fixed=true)
+    "Indoor air temperature";
+  Real Te(unit="K", start=294.15, fixed=true)
+    "Building envelope and thermal mass temperature";
+
+  equation
+  der(Ti) = ((Te - Ti)/Rie + (TOut - Ti)/Ria + gA*HSol + QInt + QHea)/Ci;
+  der(Te) = ((Ti - Te)/Rie + (TOut - Te)/Rea + (TGro - Te)/Reg + aE*HSol)/Ce;
+    annotation (Documentation(info="<html><p>Two states model: indoor air (Ti) and building envelope/thermal mass (Te). Windows and ventilation connect the indoor air directly to the outdoor. References: Bacher and Madsen (2011); Harb et al. (2016), Development and validation of grey-box models for forecasting the thermal response of occupied buildings, Energy and Buildings 117.</p></html>"));
+  end R3C2;
+
+  model R4C3 "TiTeTh model: indoor air, envelope and heat emitter capacities (4R3C + ground coupling)"
+  parameter Real TGro(unit="K") = 283.15 "Ground temperature below the slab";
+  Trano.MPC.RealInput TOut(unit="K") "Outdoor dry-bulb air temperature";
+  Trano.MPC.RealInput HSol(unit="W/m2") "Total solar irradiance on the facade";
+
+  parameter Real Ci(unit="J/K") = 1507500
+    "Indoor air and furniture heat capacity";
+  parameter Real Ce(unit="J/K") = 65000000
+    "Building envelope and thermal mass heat capacity";
+  parameter Real Ria(unit="K/W") = 0.01789709172
+    "Indoor to outdoor air thermal resistance (windows and ventilation)";
+  parameter Real Rie(unit="K/W") = 0.007645483871
+    "Indoor air to envelope thermal resistance";
+  parameter Real Rea(unit="K/W") = 0.0164
+    "Envelope to outdoor air thermal resistance";
+  parameter Real Reg(unit="K/W") = 0.017
+    "Envelope to ground thermal resistance";
+  parameter Real Ch(unit="J/K") = 163181.25
+    "Heat emitter heat capacity";
+  parameter Real Rih(unit="K/W") = 0.007353786051
+    "Heat emitter to indoor air thermal resistance";
+  parameter Real gA(unit="m2") = 3
+    "Effective solar aperture of the windows";
+  parameter Real aE(unit="m2") = 0.4
+    "Effective solar absorption area of the envelope";
+  Trano.MPC.RealInput QInt(unit="W") "Internal heat gains (occupants, appliances, lighting)";
+  Trano.MPC.RealInput QHea(unit="W") "Heating (> 0) or cooling (< 0) power, control input";
+  Real Ti(unit="K", start=294.15, fixed=true)
+    "Indoor air temperature";
+  Real Te(unit="K", start=294.15, fixed=true)
+    "Building envelope and thermal mass temperature";
+  Real Th(unit="K", start=294.15, fixed=true)
+    "Heat emitter temperature";
+
+  equation
+  der(Ti) = ((Te - Ti)/Rie + (TOut - Ti)/Ria + (Th - Ti)/Rih + gA*HSol + QInt)/Ci;
+  der(Te) = ((Ti - Te)/Rie + (TOut - Te)/Rea + (TGro - Te)/Reg + aE*HSol)/Ce;
+  der(Th) = ((Ti - Th)/Rih + QHea)/Ch;
+    annotation (Documentation(info="<html><p>Three states model: indoor air (Ti), envelope (Te) and heat emitter (Th). The heating power is injected into the emitter, which introduces the lag of radiators or floor heating. Reference: Bacher and Madsen (2011).</p></html>"));
+  end R4C3;
+
+  model ISO13790 "ISO 13790 5R1C network with a capacitive air node (5R2C)"
+  parameter Real TGro(unit="K") = 283.15 "Ground temperature below the slab";
+  Trano.MPC.RealInput TOut(unit="K") "Outdoor dry-bulb air temperature";
+  Trano.MPC.RealInput HSol(unit="W/m2") "Total solar irradiance on the facade";
+
+  parameter Real Ci(unit="J/K") = 1507500
+    "Indoor air and furniture heat capacity";
+  parameter Real Cm(unit="J/K") = 65000000
+    "Building thermal mass heat capacity";
+  parameter Real Hve(unit="W/K") = 41.875
+    "Ventilation and infiltration heat transfer";
+  parameter Real Hw(unit="W/K") = 14
+    "Windows heat transfer coefficient";
+  parameter Real His(unit="W/K") = 1552.5
+    "Air to surface node coupling";
+  parameter Real Hms(unit="W/K") = 2275
+    "Surface to mass node coupling";
+  parameter Real Hem(unit="W/K") = 30.40089087
+    "Mass node to outdoor heat transfer";
+  parameter Real Hg(unit="W/K") = 35
+    "Mass node to ground heat transfer";
+  parameter Real fIa(unit="1") = 0.5
+    "Fraction of internal gains to the air node";
+  parameter Real fSt(unit="1") = 0.441025641
+    "Fraction of radiant gains to the surface node";
+  parameter Real fM(unit="1") = 0.5555555556
+    "Fraction of radiant gains to the mass node";
+  parameter Real gA(unit="m2") = 3
+    "Effective solar aperture of the windows";
+  parameter Real aE(unit="m2") = 0.4
+    "Effective solar absorption area of the envelope";
+  Trano.MPC.RealInput QInt(unit="W") "Internal heat gains (occupants, appliances, lighting)";
+  Trano.MPC.RealInput QHea(unit="W") "Heating (> 0) or cooling (< 0) power, control input";
+  Real Ti(unit="K", start=294.15, fixed=true)
+    "Indoor air temperature";
+  Real Tm(unit="K", start=294.15, fixed=true)
+    "Building thermal mass temperature";
+
+  equation
+  der(Ti) = (Hve*(TOut - Ti) + His*(((His*Ti + Hw*TOut + Hms*Tm + fSt*((1 - fIa)*QInt + gA*HSol + aE*HSol))/(His + Hw + Hms)) - Ti) + fIa*QInt + QHea)/Ci;
+  der(Tm) = (Hms*(((His*Ti + Hw*TOut + Hms*Tm + fSt*((1 - fIa)*QInt + gA*HSol + aE*HSol))/(His + Hw + Hms)) - Tm) + Hem*(TOut - Tm) + Hg*(TGro - Tm) + fM*((1 - fIa)*QInt + gA*HSol + aE*HSol))/Cm;
+    annotation (Documentation(info="<html><p>ISO 13790:2008 simple hourly method. The air node receives the capacity of the indoor air and furniture, which turns the original differential-algebraic 5R1C network into an explicit ODE. The massless surface node is eliminated analytically.</p></html>"));
+  end ISO13790;
+
+end Zones;
+end MPC;
+
+
   annotation (uses(Buildings(version = "11.0.0"), Modelica(version = "4.0.0"),
       IDEAS(version="3.0.0")),
   Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
@@ -3500,7 +3652,7 @@ AZone=20.0, VAir=40.0,
     hConRoofOut=20,
     hRadRoof=5,
     tiltExtWalls={ 1.5708, 1.5708, 1.5708, 1.5708 },
-    aziExtWalls={ 0.0274, 0.0548, -0.0274, 0.0 },
+    aziExtWalls={ 1.57, 3.14, -1.57, 0.0 },
     wfWall={ 0.2, 0.2, 0.2, 0.2 },
     wfWin={ 0.25, 0.25, 0.25, 0.25 },
     wfGro=0.1,
@@ -3540,7 +3692,7 @@ TThresholdHeater=273.15 + 15,
 TThresholdCooler=273.15 + 22,
     withIdealThresholds=false))
  annotation (
-    Placement(transformation(origin = { 65.00410461425781, -3.4625320434570312 },
+    Placement(transformation(origin = { 27.983978271484375, -77.2345199584961 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3638,7 +3790,7 @@ TThresholdCooler=273.15 + 22,
        590400,0,0,0,0; 593940,0,0,0,0; 594000,0,0,0,0; 597540,0,0,0,0; 597600,
        0,0,0,0; 601140,0,0,0,0; 601200,0,0,0,0; 604740,0,0,0,0])
  annotation (
-    Placement(transformation(origin = { 50.00410461425781, -3.4625320434570312 },
+    Placement(transformation(origin = { 12.983978271484375, -77.2345199584961 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone space_2(
@@ -3703,7 +3855,7 @@ AZone=20.0, VAir=40.0,
     hConRoofOut=20,
     hRadRoof=5,
     tiltExtWalls={ 1.5708, 1.5708, 1.5708 },
-    aziExtWalls={ 0.0274, 0.0548, 0.0 },
+    aziExtWalls={ 1.57, 3.14, 0.0 },
     wfWall={ 0.2, 0.2, 0.2 },
     wfWin={ 0.25, 0.25, 0.25 },
     wfGro=0.1,
@@ -3743,7 +3895,7 @@ TThresholdHeater=273.15 + 15,
 TThresholdCooler=273.15 + 22,
     withIdealThresholds=false))
  annotation (
-    Placement(transformation(origin = { 1.0374679565429688, 58.378448486328125 },
+    Placement(transformation(origin = { -70.00955963134766, 14.071014404296875 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3840,7 +3992,7 @@ TThresholdCooler=273.15 + 22,
        590400,0,0,0,0; 593940,0,0,0,0; 594000,0,0,0,0; 597540,0,0,0,0; 597600,
        0,0,0,0; 601140,0,0,0,0; 601200,0,0,0,0; 604740,0,0,0,0])
  annotation (
-    Placement(transformation(origin = { -13.962532043457031, 58.378448486328125 },
+    Placement(transformation(origin = { -85.00955963134766, 14.071014404296875 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone space_3(
@@ -3905,7 +4057,7 @@ AZone=20.0, VAir=40.0,
     hConRoofOut=20,
     hRadRoof=5,
     tiltExtWalls={ 1.5708, 1.5708, 1.5708 },
-    aziExtWalls={ 0.0274, 0.0548, -0.0274 },
+    aziExtWalls={ 1.57, 3.14, -1.57 },
     wfWall={ 0.2, 0.2, 0.2 },
     wfWin={ 0.25, 0.25, 0.25 },
     wfGro=0.1,
@@ -3945,7 +4097,7 @@ TThresholdHeater=273.15 + 15,
 TThresholdCooler=273.15 + 22,
     withIdealThresholds=false))
  annotation (
-    Placement(transformation(origin = { -51.785640716552734, 75.50918579101562 },
+    Placement(transformation(origin = { -54.81401443481445, 17.685768127441406 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -4041,7 +4193,7 @@ TThresholdCooler=273.15 + 22,
        590400,0,0,0,0; 593940,0,0,0,0; 594000,0,0,0,0; 597540,0,0,0,0; 597600,
        0,0,0,0; 601140,0,0,0,0; 601200,0,0,0,0; 604740,0,0,0,0])
  annotation (
-    Placement(transformation(origin = { -66.78564071655273, 75.50918579101562 },
+    Placement(transformation(origin = { -69.81401443481445, 17.685768127441406 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     
@@ -4051,13 +4203,13 @@ TThresholdCooler=273.15 + 22,
             weather_0(filNam=Modelica.Utilities.Files.loadResource
     ("modelica://AixLib/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
  annotation (
-    Placement(transformation(origin = { -100.0, 38.34977722167969 },
+    Placement(transformation(origin = { 100.0, 57.43254089355469 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(space_1.intGains,occupancy_0.y)
         annotation (Line(
-        points={{ 65.00410461425781, -3.4625320434570312 }    ,{ 57.50410461425781, -3.4625320434570312 }    ,{ 57.50410461425781, -3.4625320434570312 }    ,{ 50.00410461425781, -3.4625320434570312 }    },
+        points={{ 27.983978271484375, -77.2345199584961 }    ,{ 20.483978271484375, -77.2345199584961 }    ,{ 20.483978271484375, -77.2345199584961 }    ,{ 12.983978271484375, -77.2345199584961 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4065,7 +4217,7 @@ equation
             ;        
         connect(space_1.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ 65.00410461425781, -3.4625320434570312 }    ,{ -17.497947692871094, -3.4625320434570312 }    ,{ -17.497947692871094, 38.34977722167969 }    ,{ -100.0, 38.34977722167969 }    },
+        points={{ 27.983978271484375, -77.2345199584961 }    ,{ 63.99198913574219, -77.2345199584961 }    ,{ 63.99198913574219, 57.43254089355469 }    ,{ 100.0, 57.43254089355469 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4073,7 +4225,7 @@ equation
             ;        
         connect(space_2.intGains,occupancy_1.y)
         annotation (Line(
-        points={{ 1.0374679565429688, 58.378448486328125 }    ,{ -6.462532043457031, 58.378448486328125 }    ,{ -6.462532043457031, 58.378448486328125 }    ,{ -13.962532043457031, 58.378448486328125 }    },
+        points={{ -70.00955963134766, 14.071014404296875 }    ,{ -77.50955963134766, 14.071014404296875 }    ,{ -77.50955963134766, 14.071014404296875 }    ,{ -85.00955963134766, 14.071014404296875 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4081,7 +4233,7 @@ equation
             ;        
         connect(space_2.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ 1.0374679565429688, 58.378448486328125 }    ,{ -49.481266021728516, 58.378448486328125 }    ,{ -49.481266021728516, 38.34977722167969 }    ,{ -100.0, 38.34977722167969 }    },
+        points={{ -70.00955963134766, 14.071014404296875 }    ,{ 14.995220184326172, 14.071014404296875 }    ,{ 14.995220184326172, 57.43254089355469 }    ,{ 100.0, 57.43254089355469 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4089,7 +4241,7 @@ equation
             ;        
         connect(space_3.intGains,occupancy_2.y)
         annotation (Line(
-        points={{ -51.785640716552734, 75.50918579101562 }    ,{ -59.285640716552734, 75.50918579101562 }    ,{ -59.285640716552734, 75.50918579101562 }    ,{ -66.78564071655273, 75.50918579101562 }    },
+        points={{ -54.81401443481445, 17.685768127441406 }    ,{ -62.31401443481445, 17.685768127441406 }    ,{ -62.31401443481445, 17.685768127441406 }    ,{ -69.81401443481445, 17.685768127441406 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4097,7 +4249,7 @@ equation
             ;        
         connect(space_3.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ -51.785640716552734, 75.50918579101562 }    ,{ -75.89282035827637, 75.50918579101562 }    ,{ -75.89282035827637, 38.34977722167969 }    ,{ -100.0, 38.34977722167969 }    },
+        points={{ -54.81401443481445, 17.685768127441406 }    ,{ 22.592992782592773, 17.685768127441406 }    ,{ 22.592992782592773, 57.43254089355469 }    ,{ 100.0, 57.43254089355469 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4111,7 +4263,7 @@ equation
             ;        
         connect(weather_0.weaBus,dataBus)
         annotation (Line(
-        points={{ -100.0, 38.34977722167969 }    ,{ -100.0, 38.34977722167969 }    ,{ -100.0, 38.34977722167969 }    ,{ -100.0, 38.34977722167969 }    },
+        points={{ 100.0, 57.43254089355469 }    ,{ 100.0, 57.43254089355469 }    ,{ 100.0, 57.43254089355469 }    ,{ 100.0, 57.43254089355469 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,

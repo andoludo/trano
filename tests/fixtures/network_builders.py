@@ -160,14 +160,12 @@ def building_with_multiple_internal_walls(network_name: str, library: Library | 
     internal_1 = InternalElement(
         name=f"internal_{space_1.name}_{space_2.name}_1",
         surface=10,
-        azimuth=45,
         construction=Constructions.internal_wall,
         tilt=Tilt.wall,
     )
     door = InternalElement(
         name=f"internal_{space_1.name}_{space_2.name}_2",
         surface=10,
-        azimuth=10,
         construction=Constructions.door,
         tilt=Tilt.wall,
     )

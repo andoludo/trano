@@ -3,8 +3,13 @@ from pathlib import Path
 import pytest
 
 from trano.data_models.conversion import convert_network
+from tests.constructions.constructions import Constructions
+from trano.elements import ExternalWall
+from trano.elements.types import Tilt
 from trano.exceptions import (
     IncompatiblePortsError,
+    InvalidBuildingStructureError,
+    InvalidModelError,
     WrongSystemFlowError,
     SystemsNotConnectedError,
     UnknownLibraryError,
@@ -68,3 +73,23 @@ def test_unknown_library() -> None:
             house,
             library="unknown",
         )
+
+
+@pytest.mark.parametrize("azimuth", [90, 180.0, -270, 360.5])
+def test_azimuth_in_degrees_is_rejected(azimuth: float) -> None:
+    with pytest.raises(InvalidBuildingStructureError, match="radians"):
+        ExternalWall(name="w", surface=10, azimuth=azimuth, tilt=Tilt.wall, construction=Constructions.external_wall)
+
+
+@pytest.mark.parametrize("azimuth", [0, 1.57, -1.57, 3.14, 4.71, -6.2831, 6.2831])
+def test_azimuth_in_radians_is_accepted(azimuth: float) -> None:
+    wall = ExternalWall(name="w", surface=10, azimuth=azimuth, tilt=Tilt.wall, construction=Constructions.external_wall)
+    assert wall.azimuth == azimuth
+
+
+def test_yaml_azimuth_in_degrees_is_rejected(schema: Path, tmp_path: Path) -> None:
+    model = get_path("single_zone_hydronic.yaml").read_text().replace("azimuth: 1.57", "azimuth: 90", 1)
+    house = tmp_path / "single_zone_hydronic_degrees.yaml"
+    house.write_text(model)
+    with pytest.raises(InvalidModelError, match=r"(?i)azimuth"):
+        convert_network("single_zone_hydronic_degrees", house)

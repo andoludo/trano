@@ -484,7 +484,6 @@ space_11 = Space(
 
 internal_construction = InternalElement(
     surface=7.43,
-    azimuth=10,
     construction=construction_5,
     tilt=Tilt.wall,
 )
@@ -520,7 +519,6 @@ def house_model_fixture() -> Network:
         space_5,
         InternalElement(
             surface=11.368,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -530,7 +528,6 @@ def house_model_fixture() -> Network:
         space_2,
         InternalElement(
             surface=3.64,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -540,7 +537,6 @@ def house_model_fixture() -> Network:
         space_1,
         InternalElement(
             surface=6.44,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -550,7 +546,6 @@ def house_model_fixture() -> Network:
         space_8,
         InternalElement(
             surface=8,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -560,7 +555,6 @@ def house_model_fixture() -> Network:
         space_2,
         InternalElement(
             surface=7.22,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -570,7 +564,6 @@ def house_model_fixture() -> Network:
         space_2,
         InternalElement(
             surface=7.22,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -580,7 +573,6 @@ def house_model_fixture() -> Network:
         space_6,
         InternalElement(
             surface=6.5,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -590,7 +582,6 @@ def house_model_fixture() -> Network:
         space_8,
         InternalElement(
             surface=1.5,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -600,7 +591,6 @@ def house_model_fixture() -> Network:
         space_7,
         InternalElement(
             surface=6.5,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -610,7 +600,6 @@ def house_model_fixture() -> Network:
         space_8,
         InternalElement(
             surface=5,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -620,7 +609,6 @@ def house_model_fixture() -> Network:
         space_8,
         InternalElement(
             surface=5,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -630,7 +618,6 @@ def house_model_fixture() -> Network:
         space_5,
         InternalElement(
             surface=6.5,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -640,7 +627,6 @@ def house_model_fixture() -> Network:
         space_8,
         InternalElement(
             surface=12.321,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.wall,
         ),
@@ -650,7 +636,6 @@ def house_model_fixture() -> Network:
         space_5,
         InternalElement(
             surface=3.33,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.floor,
         ),
@@ -660,7 +645,6 @@ def house_model_fixture() -> Network:
         space_4,
         InternalElement(
             surface=15.7,
-            azimuth=10,
             construction=construction_5,
             tilt=Tilt.floor,
         ),

@@ -77,15 +77,15 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 90.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 70.0
-          azimuth: 90.0
+          azimuth: 1.57
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 160.0
-          azimuth: 270.0
+          azimuth: 4.71
           tilt: wall
           construction: CONSTRUCTION:001
       floor_on_grounds:
@@ -93,7 +93,7 @@ spaces:
           construction: CONSTRUCTION:001
       windows:
         - surface: 1.5
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: INS2AR2020:001
           width: 1.5
@@ -106,11 +106,11 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 120.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 100.0
-          azimuth: 90.0
+          azimuth: 1.57
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 220.0
@@ -122,7 +122,7 @@ spaces:
           construction: CONSTRUCTION:001
       windows:
         - surface: 2.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: INS2AR2020:001
           width: 2.0
@@ -134,16 +134,16 @@ spaces:
     external_boundaries:
       external_walls:
         - surface: 120.0
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
         - surface: 100.0
-          azimuth: 90.0
+          azimuth: 1.57
           tilt: wall
           construction: CONSTRUCTION:001
       windows:
         - surface: 2.0
-          azimuth: 90.0
+          azimuth: 1.57
           tilt: wall
           construction: INS2AR2020:001
           width: 2.0

@@ -155,7 +155,6 @@ class Network:  # : PLR0904, #TODO: fix this
         internal_element = internal_element or InternalElement(
             name=f"internal_{space_1.name}_{space_2.name}",
             surface=10,
-            azimuth=10,
             construction=default_internal_wall_construction(),
             tilt=Tilt.wall,
         )
