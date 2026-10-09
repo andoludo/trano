@@ -15,6 +15,7 @@ should be calibrated on measurements: the parameters stay symbolic once ``buildi
 translated into CasADi, so a least-squares identification problem can be solved with IPOPT.
 """
 
+import math
 from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
@@ -136,9 +137,15 @@ def _g_value(glass: "Glass", settings: EstimationSettings) -> float:
 
 
 def _orientation(boundary: "BaseSimpleWall") -> Orientation:
+    """Orientation of a boundary, in the degrees the MPC interface uses for its names.
+
+    Boundaries carry radians; rounding to whole degrees keeps surfaces that share an
+    orientation to two decimals (1.57 and 1.5708) on the same `HSol_<orientation>` input.
+    """
     from trano.elements.types import TILT_MAPPING
 
-    return Orientation(azimuth=float(boundary.azimuth), tilt=float(TILT_MAPPING[boundary.tilt.value]))
+    azimuth = float(round(math.degrees(boundary.azimuth)))
+    return Orientation(azimuth=azimuth, tilt=float(TILT_MAPPING[boundary.tilt.value]))
 
 
 def zone_envelope(space: "Space", settings: EstimationSettings) -> ZoneEnvelope:

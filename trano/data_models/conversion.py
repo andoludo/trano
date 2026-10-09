@@ -11,6 +11,7 @@ from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
 from trano.data.include import Loader
+from trano.exceptions import InvalidModelError
 from trano.data_models.converter import converter
 from trano.elements import (
     Boundary,
@@ -62,7 +63,8 @@ def validate_model(data: Any, suffix: str) -> None:  # noqa: ANN401
         enriched_path.write_text(json.dumps(data))
         report = validate_file(enriched_path, DATA_MODEL_PATH, "Building")
         if report.results:
-            raise Exception("Invalid model.")
+            messages = "\n".join(f"- {result.message}" for result in report.results)
+            raise InvalidModelError(f"Invalid model:\n{messages}")
 
 
 def _instantiate_component(component_: dict[str, Any]) -> Component:
@@ -276,7 +278,6 @@ def _add_internal_walls(
         internal_element = InternalElement(
             name=f"internal_{space_1.name}_{space_2.name}_{internal_wall['construction'].lower().split(':')[0]}",
             surface=internal_wall["surface"],
-            azimuth=10,
             construction=constructions[internal_wall["construction"]],
             tilt=Tilt.wall,
             space_tilts=[

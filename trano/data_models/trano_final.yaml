@@ -994,6 +994,10 @@ slots:
     multivalued: false
     range: AirHandlingUnit
   azimuth:
+    description: Orientation of the surface in radians, 0 south, pi/2 west, pi north,
+      -pi/2 east.
+    maximum_value: 6.2832
+    minimum_value: -6.2832
     range: float
     slot_uri: schema:azimuth
   boiler:

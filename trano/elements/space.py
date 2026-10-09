@@ -104,7 +104,7 @@ class BoundaryParameter(BaseModel):
             average_resistance_external_remaining=parameter.average_resistance_external_remaining,
             total_thermal_capacitance=parameter.total_thermal_capacitance,
             tilts=parameter.tilts_to_radians(),
-            azimuths=parameter.azimuths_to_radians(),
+            azimuths=parameter.azimuths,
             average_u_value=parameter.average_u_value,
             tottal_thermal_resistance=parameter.total_thermal_resistance,
         )

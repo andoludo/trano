@@ -9,7 +9,7 @@ from trano.elements.construction import Construction, Glass
 from trano.elements.library.library import Library
 from trano.elements.space import Space, SpaceVariant
 from trano.elements.types import Azimuth, Tilt
-from trano.elements.zone_template import RectangularZone, same_angle, to_radians
+from trano.elements.zone_template import RectangularZone, normalize_azimuth, same_angle
 from trano.exceptions import UnknownComponentVariantError
 from trano.topology import Network
 
@@ -41,10 +41,10 @@ def _window(
 
 @pytest.mark.parametrize(
     ("azimuth", "expected"),
-    [(0, 0), (1.57, 1.57), (-1.57, 2 * math.pi - 1.57), (180.0, math.pi), (270, 1.5 * math.pi), (-90.0, 1.5 * math.pi)],
+    [(0, 0), (1.57, 1.57), (-1.57, 2 * math.pi - 1.57), (3 * math.pi, math.pi), (-math.pi / 2, 1.5 * math.pi)],
 )
-def test_to_radians_accepts_degrees_and_radians(azimuth: float, expected: float) -> None:
-    assert to_radians(azimuth) == pytest.approx(expected)
+def test_normalize_azimuth_wraps_into_one_turn(azimuth: float, expected: float) -> None:
+    assert normalize_azimuth(azimuth) == pytest.approx(expected)
 
 
 def test_same_angle_wraps_around() -> None:

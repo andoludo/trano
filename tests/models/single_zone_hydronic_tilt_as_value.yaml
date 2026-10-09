@@ -16,11 +16,11 @@ spaces:
           tilt: pitched_roof_30
           construction: CAVITYWALL:001
         - surface: 30
-          azimuth: 90
+          azimuth: 1.57
           tilt: pitched_roof_45
           construction: CAVITYWALL:001
         - surface: 50
-          azimuth: 180.0
+          azimuth: 3.14
           tilt: pitched_roof_40
           construction: CAVITYWALL:001
 

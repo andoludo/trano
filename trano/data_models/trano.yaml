@@ -616,6 +616,9 @@ slots:
   azimuth:
     slot_uri: schema:azimuth
     range: float
+    description: Orientation of the surface in radians, 0 south, pi/2 west, pi north, -pi/2 east.
+    minimum_value: -6.2832
+    maximum_value: 6.2832
   tilt:
     slot_uri: schema:tilt
     range: string
