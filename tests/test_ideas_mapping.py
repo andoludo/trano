@@ -126,13 +126,14 @@ def test_overhang_and_fins_become_one_shading_box_for_the_window_array() -> None
     )
 
 
-def test_an_overhang_alone_is_an_overhang_shading() -> None:
+def test_an_overhang_alone_is_a_box_without_fins() -> None:
+    """OpenModelica 1.26 cannot instantiate IDEAS' Overhang in a window array: a Box with no fins is the same."""
     window = shaded_window("s", Azimuth.south, overhang=Overhang(depth=1.0, width_left=0.5))
     model = ideas_model([with_windows([window])])
 
     assert re.search(
-        r"Shading\.Overhang shaType\( each hWin=2\.0, each wWin=2\.0, each wLeft=0\.5, each wRight=0\.0, "
-        r"each dep=1\.0, each gap=0\.0\)",
+        r"Shading\.Box shaType\( each hWin=2\.0, each wWin=2\.0, each wLeft=0\.5, each wRight=0\.0, "
+        r"each ovDep=1\.0, each ovGap=0\.0, each hFin=0, each finDep=0, each finGap=0\)",
         model,
     )
 

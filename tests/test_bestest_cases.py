@@ -175,7 +175,16 @@ def test_the_sun_space_case_has_a_light_zone_behind_a_heavy_sun_space() -> None:
     }
     assert sunspace["external_boundaries"]["floor_on_grounds"][0]["construction"] == "HEAVY_FLOOR:001"
     assert sunspace["external_boundaries"]["windows"][0]["surface"] == 12.0
-    assert "emissions" not in sunspace and "occupancy" not in sunspace
+    assert "emissions" not in sunspace and sunspace["occupancy"] == {"variant": "none"}
+
+
+@pytest.mark.parametrize("library", ["Buildings", "IDEAS"])
+def test_the_sun_space_has_no_occupancy_in_the_model(library: str) -> None:
+    network = convert_network("case_960", case_file("960"), library=Library.from_configuration(library))
+    spaces = {node.name: node for node in network.graph.nodes if isinstance(node, Space)}
+
+    assert spaces["sunspace_001"].occupancy is None
+    assert spaces["zone_001"].occupancy is not None and spaces["zone_001"].occupancy.space_name == "zone_001"
 
 
 def test_the_night_ventilation_cases_bring_in_outdoor_air_from_18_to_7() -> None:

@@ -225,6 +225,8 @@ spaces:
       width: 6.0
       height: 2.0
       frame_fraction: 0.001
+  occupancy:
+    variant: none
 internal_walls:
 - space_1: ZONE:001
   space_2: SUNSPACE:001

@@ -427,9 +427,9 @@ def _space(
             "linearize_emissive_power": "false",
         },
         "external_boundaries": boundaries,
+        # No occupancy at all for an unconditioned space: an empty `occupancy:` would get trano's default one.
+        "occupancy": occupancy if occupancy is not None else {"variant": "none"},
     }
-    if occupancy is not None:
-        space["occupancy"] = occupancy
     return space
 
 

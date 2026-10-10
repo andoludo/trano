@@ -12,8 +12,9 @@ import logging
 import re
 import time
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor
+import signal
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -165,12 +166,31 @@ def run_cases(
     (element name counters, zone numbering), so two networks built in parallel threads corrupt each
     other's models.
     """
-    with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("spawn")) as pool:
-        futures = {
-            case_id: pool.submit(run_case, case_id, library, force, f"openmodelica-bestest-{case_id}", end_time)
-            for case_id in case_ids
-        }
-        return {case_id: future.result() for case_id, future in futures.items()}
+    # A worker pool rather than an executor: leaving the block terminates the workers, so a stopped batch
+    # does not leave simulations running in the background (a SIGTERM is turned into that exit).
+    signal.signal(signal.SIGTERM, _raise_keyboard_interrupt)
+    arguments = [(case_id, library, force, f"openmodelica-bestest-{case_id}", end_time) for case_id in case_ids]
+    with multiprocessing.get_context("spawn").Pool(workers) as pool:
+        outcomes = pool.starmap(_run_case_or_error, arguments)
+    results = {}
+    for case_id, outcome in zip(case_ids, outcomes, strict=True):
+        if isinstance(outcome, CaseResult):
+            results[case_id] = outcome
+        else:
+            logger.error("Case %s with %s failed: %s", case_id, library, outcome)
+    return results
+
+
+def _run_case_or_error(*arguments: Any) -> CaseResult | str:  # noqa: ANN401
+    """The result of a case, or the error that kept it from simulating (the other cases go on)."""
+    try:
+        return run_case(*arguments)
+    except Exception as error:
+        return f"{type(error).__name__}: {error}"
+
+
+def _raise_keyboard_interrupt(signum: int, frame: object) -> None:
+    raise KeyboardInterrupt
 
 
 def cached_results(library: str) -> dict[str, CaseResult]:

@@ -96,6 +96,10 @@ spaces:
 
 ```
 
+A space without an `occupancy` entry, or with an empty one, gets trano's default occupancy schedule
+(35 W radiant, 70 W convective and 30 W latent per person, from 7:00 to 19:00). An unconditioned
+space with no occupancy at all says so with `occupancy: {variant: none}`.
+
 A window takes a few optional attributes: `frame_fraction` (share of the area taken by the frame, 0.1
 when absent), an `overhang` and `side_fins`. The shading devices are given by their geometry in
 metres: `depth` perpendicular to the wall, `gap` (distance between the window and the device),

@@ -1,13 +1,17 @@
 """Occupancy must reach the zone of every library: as heat flows, occupant densities or people gains."""
 
 import re
+from pathlib import Path
 
 import pytest
+import yaml
 
 from tests.fixtures.three_spaces import three_spaces
 from tests.golden import remove_trano_package
+from trano.data_models.conversion import convert_network
 from trano.elements import param_from_config
 from trano.elements.library.library import Library
+from trano.elements.space import Space
 from trano.elements.system import Occupancy, evaluate_number
 from trano.exceptions import InvalidBuildingStructureError
 from trano.topology import Network
@@ -107,3 +111,16 @@ def test_iso_13790_zone_scales_the_gains_per_floor_area() -> None:
     assert re.search(r"connect\(space_1\.intLatGaiFlo,\s*occupancy_0\.latentGains\)", model)
     assert "final intSenGai=intSenGaiFlo*AFlo" in full_model
     assert "final intLatGai=intLatGaiFlo*AFlo" in full_model
+
+
+def test_a_none_occupancy_variant_leaves_the_space_without_occupancy(tmp_path: Path) -> None:
+    """``occupancy: {variant: none}`` is explicit; an empty ``occupancy:`` gets the default schedule."""
+    data = yaml.safe_load(Path(__file__).parent.joinpath("models", "house.yaml").read_text())
+    data["spaces"][0]["occupancy"] = {"variant": "none"}
+    model = tmp_path.joinpath("house.yaml")
+    model.write_text(yaml.safe_dump(data, sort_keys=False))
+    network = convert_network("house", model, library=Library.from_configuration("Buildings"))
+    spaces = sorted((node for node in network.graph.nodes if isinstance(node, Space)), key=lambda s: s.name)
+
+    assert spaces[0].occupancy is None
+    assert all(space.occupancy is not None for space in spaces[1:])

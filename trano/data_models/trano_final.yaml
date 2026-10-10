@@ -1259,6 +1259,7 @@ enums:
     permissible_values:
       co2: null
       default: null
+      none: null
   SpaceVariant:
     permissible_values:
       default: null

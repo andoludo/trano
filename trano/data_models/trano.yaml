@@ -754,6 +754,7 @@ enums:
     permissible_values:
       default:
       co2:
+      none:  # the space has no occupancy at all; an empty `occupancy:` gets the default one
   SystemVariant:
     permissible_values:
       default:

@@ -183,10 +183,13 @@ def _build_occupancy(
 ) -> Occupancy | None:
     """Build the occupancy for a space.
 
-    When a space defines no occupancy and the library has no default, the previous
-    space's occupancy (`current_occupancy`) is returned. The generated models
-    depend on this carry-over, so it must be preserved.
+    ``occupancy: {variant: none}`` means no occupancy at all (an unconditioned space); an empty
+    ``occupancy:`` gets the default one. When the key is absent and the library has no default, the
+    previous space's occupancy (`current_occupancy`) is returned. The generated models depend on
+    this carry-over, so it must be preserved.
     """
+    if (space_data.get("occupancy") or {}).get("variant") == "none":
+        return None
     occupancy_parameter_class = param_from_config("Occupancy")
     if occupancy_parameter_class is None:
         return current_occupancy
