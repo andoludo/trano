@@ -340,6 +340,9 @@ GLAZINGS: dict[Glazing, dict[str, Any]] = {
 
 # Features of the standard a library cannot model with trano yet; its cases with them are skipped.
 UNSUPPORTED_FEATURES: dict[str, frozenset[str]] = {
+    # trano renders IDEAS overhangs and side fins, but OpenModelica 1.26 cannot instantiate IDEAS 3.0.0's
+    # Overhang model (its `tmpH[4](fixed=false)` lacks `each`), so the shading cases cannot be simulated.
+    "IDEAS": frozenset({"shading"}),
     "reduced_order": frozenset({"night_ventilation", "shading", "sunspace"}),
     "iso_13790": frozenset({"night_ventilation", "shading", "sunspace"}),
 }

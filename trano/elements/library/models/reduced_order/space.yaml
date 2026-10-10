@@ -1,6 +1,7 @@
 - classes:
   - Space
   library: reduced_order
+  requires_occupancy: true
   parameter_processing: &reduced_order_zone_parameter_processing
     function: modify_alias
     parameter:
@@ -157,6 +158,7 @@
 - classes:
   - Space
   library: reduced_order
+  requires_occupancy: true
   parameter_processing: *reduced_order_zone_parameter_processing
   ports: *reduced_order_zone_ports
   template: *reduced_order_zone_template

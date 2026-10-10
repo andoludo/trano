@@ -13,7 +13,7 @@ from validation.bestest.report import compare, regressions
 
 # Libraries whose cases must pass; a case not yet supported by the generator is skipped with the
 # feature it waits for, and the deviations listed in ``report.KNOWN_DEVIATIONS`` are accepted.
-GATING_LIBRARIES = ("Buildings",)
+GATING_LIBRARIES = ("Buildings", "IDEAS")
 
 
 def parameters() -> list[pytest.param]:  # type: ignore[valid-type]

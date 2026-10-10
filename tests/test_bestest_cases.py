@@ -178,13 +178,16 @@ def test_the_sun_space_case_has_a_light_zone_behind_a_heavy_sun_space() -> None:
     assert "emissions" not in sunspace and sunspace["occupancy"] == {"variant": "none"}
 
 
-@pytest.mark.parametrize("library", ["Buildings", "IDEAS"])
-def test_the_sun_space_has_no_occupancy_in_the_model(library: str) -> None:
-    network = convert_network("case_960", case_file("960"), library=Library.from_configuration(library))
-    spaces = {node.name: node for node in network.graph.nodes if isinstance(node, Space)}
-
-    assert spaces["sunspace_001"].occupancy is None
-    assert spaces["zone_001"].occupancy is not None and spaces["zone_001"].occupancy.space_name == "zone_001"
+def test_the_sun_space_has_no_occupancy_in_the_models() -> None:
+    for library, expected_sunspace_occupancy in (("IDEAS", None), ("Buildings", "no_occupancy_sunspace_001")):
+        network = convert_network("case_960", case_file("960"), library=Library.from_configuration(library))
+        spaces = {node.name: node for node in network.graph.nodes if isinstance(node, Space)}
+        sunspace = spaces["sunspace_001"].occupancy
+        # A Buildings zone must have its gain input connected: it gets an occupancy with zero gains.
+        assert (sunspace.name if sunspace else None) == expected_sunspace_occupancy, library
+        assert sunspace is None or sunspace.parameters.gain == "[0; 0; 0]"  # type: ignore[union-attr]
+        zone = spaces["zone_001"].occupancy
+        assert zone is not None and zone.space_name == "zone_001" and zone.name == "occupancy_1"
 
 
 def test_the_night_ventilation_cases_bring_in_outdoor_air_from_18_to_7() -> None:

@@ -213,6 +213,7 @@ class BaseElement(BaseElementPort):
                 figure.modify_key_based_on_container(self.container_type, include_container)
 
     def configure(self, network: "Network") -> None: ...
+
     def system_ports_connected(self) -> bool:
         return True
 

@@ -119,8 +119,13 @@ def test_a_none_occupancy_variant_leaves_the_space_without_occupancy(tmp_path: P
     data["spaces"][0]["occupancy"] = {"variant": "none"}
     model = tmp_path.joinpath("house.yaml")
     model.write_text(yaml.safe_dump(data, sort_keys=False))
-    network = convert_network("house", model, library=Library.from_configuration("Buildings"))
+    network = convert_network("house", model, library=Library.from_configuration("IDEAS"))
     spaces = sorted((node for node in network.graph.nodes if isinstance(node, Space)), key=lambda s: s.name)
 
     assert spaces[0].occupancy is None
     assert all(space.occupancy is not None for space in spaces[1:])
+    # A Buildings zone needs its gain input connected: the space gets an occupancy with no gains.
+    network = convert_network("house", model, library=Library.from_configuration("Buildings"))
+    spaces = sorted((node for node in network.graph.nodes if isinstance(node, Space)), key=lambda s: s.name)
+    assert spaces[0].occupancy is not None and spaces[0].occupancy.parameters.gain == "[0; 0; 0]"  # type: ignore[union-attr]
+    assert "no_occupancy_" in spaces[0].occupancy.name

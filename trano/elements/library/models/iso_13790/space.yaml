@@ -1,6 +1,7 @@
 - classes:
   - Space
   library: iso_13790
+  requires_occupancy: true
   parameter_processing: &iso_zone_parameter_processing
     function: modify_alias
     parameter:
@@ -70,6 +71,7 @@
 - classes:
   - Space
   library: iso_13790
+  requires_occupancy: true
   parameter_processing: *iso_zone_parameter_processing
   ports: *iso_zone_ports
   template: *iso_zone_template

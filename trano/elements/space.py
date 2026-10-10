@@ -24,7 +24,9 @@ from trano.elements.envelope import (
     WindowedWallParameters,
     assign_windows_to_walls,
 )
-from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUnit
+from trano.elements.common_base import BaseParameter
+from trano.elements.library.parameters import param_from_config
+from trano.elements.system import AirHandlingUnit, BaseOccupancy, Emission, Occupancy, System
 from trano.elements.types import BaseVariant, ContainerTypes
 from trano.elements.zone_template import RectangularZone
 from trano.exceptions import UnknownComponentVariantError
@@ -37,6 +39,14 @@ MAX_X_SPACES = 3
 
 ExternalBoundary = Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]
 EnvelopeComponent = Union[ExternalBoundary, "MergedBaseWall"]
+
+
+def _zero_occupancy_parameters() -> BaseParameter:
+    """Parameters of an occupancy with no one in and no gains, for zones whose gain input must be connected."""
+    parameters = param_from_config("Occupancy")
+    if parameters is None:
+        raise UnknownComponentVariantError("No occupancy parameters are defined.")
+    return parameters(gain="[0; 0; 0]", heat_gain_if_occupied="0")
 
 
 class SpaceVariant(BaseVariant):
@@ -123,6 +133,11 @@ class BaseSpace(BaseElement):
         if self.uses_zone_template:
             return merge_external_boundaries(self.rectangular_zone.external_surfaces)
         return merge_external_boundaries(self.external_boundaries)
+
+    def _zone_requires_occupancy(self, network: "Network") -> bool:
+        """Whether the zone of the library takes its gains from an input that must be connected."""
+        library_data = self.get_library_data(network.library)
+        return bool(library_data and library_data.requires_occupancy)
 
     @property
     def uses_zone_template(self) -> bool:
@@ -257,6 +272,9 @@ class Space(BaseSpace):
                 emission,
             )
             network._add_subsequent_systems(self.emissions)
+        if self.occupancy is None and self._zone_requires_occupancy(network):
+            self.occupancy = Occupancy(name=f"no_occupancy_{self.name}", parameters=_zero_occupancy_parameters())
+            self.occupancy.space_name = self.name
         if self.occupancy:
             network.add_node(self.occupancy)
             network.connect_system(self, self.occupancy)

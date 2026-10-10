@@ -49,6 +49,7 @@
         label: Zone controller measured [K]
         template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_m'
   library: buildings
+  requires_occupancy: true
   parameter_processing: &buildings_zone_parameters
     function: exclude_parameters
     parameter:
@@ -191,6 +192,7 @@
   - Space
   figures: []
   library: buildings
+  requires_occupancy: true
   parameter_processing: *buildings_zone_parameters
   ports: *buildings_zone_ports
   template: *buildings_zone_template

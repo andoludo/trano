@@ -35,12 +35,10 @@
             each hFin={{ element.side_fins.height }}, each finDep={{ element.side_fins.depth }},
             each finGap={{ element.side_fins.gap }}),
         {%- elif element.overhang %}
-        {#- A box without fins: OpenModelica 1.26 cannot instantiate IDEAS' Overhang in a window array. #}
-        redeclare IDEAS.Buildings.Components.Shading.Box shaType(
+        redeclare IDEAS.Buildings.Components.Shading.Overhang shaType(
             each hWin={{ element.heights[0] }}, each wWin={{ element.widths[0] }},
             each wLeft={{ element.overhang.width_left }}, each wRight={{ element.overhang.width_right }},
-            each ovDep={{ element.overhang.depth }}, each ovGap={{ element.overhang.gap }},
-            each hFin=0, each finDep=0, each finGap=0),
+            each dep={{ element.overhang.depth }}, each gap={{ element.overhang.gap }}),
         {%- elif element.side_fins %}
         redeclare IDEAS.Buildings.Components.Shading.SideFins shaType(
             each hWin={{ element.heights[0] }}, each wWin={{ element.widths[0] }},
