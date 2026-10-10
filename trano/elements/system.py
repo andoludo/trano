@@ -128,15 +128,20 @@ class DistributionSystem(System):
 
 class Weather(BaseWeather):
     linearize_radiation: bool = True  # IDEAS: `linIntRad` and `linExtRad` of the SimInfoManager
+    # IDEAS: pressure driven air exchange through one port per surface, unless a zone asks for a fixed
+    # infiltration rate (the `infiltration` variant): IDEAS honours a zone's n50 as a fixed flow only then.
+    interzonal_airflow: str = "OnePort"
 
     def configure(self, network: "Network") -> None:
-        """Follow the zones: linearized radiation unless a zone asks for the emissive power as is."""
-        from trano.elements.space import Space
+        """Follow the zones: radiation and air flow settings of the IDEAS simulation manager are global."""
+        from trano.elements.space import Space, SpaceVariant
 
+        spaces = [node for node in network.graph.nodes if isinstance(node, Space)]
         self.linearize_radiation = all(
-            str(getattr(node.parameters, "linearize_emissive_power", "true")).lower() != "false"
-            for node in network.graph.nodes
-            if isinstance(node, Space)
+            str(getattr(space.parameters, "linearize_emissive_power", "true")).lower() != "false" for space in spaces
+        )
+        self.interzonal_airflow = (
+            "None" if any(space.variant == SpaceVariant.infiltration for space in spaces) else "OnePort"
         )
 
 

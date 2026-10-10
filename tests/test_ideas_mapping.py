@@ -43,7 +43,15 @@ def test_the_infiltration_zone_converts_the_air_change_rate_to_n50() -> None:
     space.variant = "infiltration"
     space.parameters = SpaceParameters(floor_area=48, average_room_height=2.7, ach=0.414)
 
-    assert "n50=0.414*space_1.n50toAch" in zone(ideas_model([space]))
+    model = ideas_model([space])
+
+    assert "n50=0.414*space_1.n50toAch" in zone(model)
+    # A fixed infiltration flow needs IDEAS' fixed n50 air exchange, not the pressure driven one.
+    assert "interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.None" in model
+
+
+def test_zones_without_infiltration_keep_the_pressure_driven_air_exchange() -> None:
+    assert "InterZonalAirFlow.OnePort" in ideas_model([simple_space_1_fixture()])
 
 
 def test_the_simulation_manager_is_the_inner_sim_with_the_weather_file() -> None:

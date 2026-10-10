@@ -21,7 +21,7 @@
   template: |2-
 
         inner IDEAS.BoundaryConditions.SimInfoManager {{ element.name }}(
-        interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort,
+        interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.{{ element.interzonal_airflow }},
         linIntRad={{ "true" if element.linearize_radiation else "false" }},
         linExtRad={{ "true" if element.linearize_radiation else "false" }}
         {%- for key, value in parameters.items() if value is not none %},
