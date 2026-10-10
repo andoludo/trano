@@ -93,9 +93,35 @@ class BaseExternalWall(BaseSimpleWall):
         return _ten_digits(float(self.surface) - self.hosted_window_area)
 
 
+class Overhang(BaseModel):
+    """Horizontal projection above a window, measured in metres."""
+
+    model_config = ConfigDict(frozen=True)
+    depth: float = Field(..., gt=0, description="Projection perpendicular to the wall [m]")
+    gap: float = Field(0.0, ge=0, description="Distance between the top of the window and the overhang [m]")
+    width_left: float = Field(0.0, ge=0, description="Extension beyond the left edge of the window [m]")
+    width_right: float = Field(0.0, ge=0, description="Extension beyond the right edge of the window [m]")
+
+
+class SideFins(BaseModel):
+    """Vertical projections on both sides of a window, measured in metres."""
+
+    model_config = ConfigDict(frozen=True)
+    depth: float = Field(..., gt=0, description="Projection perpendicular to the wall [m]")
+    gap: float = Field(0.0, ge=0, description="Distance between the edges of the window and the fins [m]")
+    height: float = Field(0.0, ge=0, description="Extension of the fins above the top of the window [m]")
+
+
 class BaseWindow(BaseSimpleWall):
     width: float | None = None
     height: float | None = None
+    frame_fraction: float = 0.1  # [1] share of the window area taken by the frame (the Buildings default)
+    overhang: Overhang | None = None
+    side_fins: SideFins | None = None
+
+    @property
+    def shaded(self) -> bool:
+        return self.overhang is not None or self.side_fins is not None
 
     @model_validator(mode="after")
     def width_validator(self) -> "BaseWindow":
@@ -210,6 +236,14 @@ class MergedExternalWall(MergedBaseExternalWall): ...
 class MergedWindows(MergedBaseWindow):
     widths: list[float | int]
     heights: list[float | int]
+    frame_fractions: list[float]
+    # The shading of the array (IDEAS redeclares one `shaType` for the whole array): the merged windows agree on it.
+    overhang: Overhang | None = None
+    side_fins: SideFins | None = None
+
+    @property
+    def shaded(self) -> bool:
+        return self.overhang is not None or self.side_fins is not None
 
     @classmethod
     def from_base_windows(cls, base_walls: list["BaseWindow"]) -> list["MergedWindows"]:
@@ -224,12 +258,20 @@ class MergedWindows(MergedBaseWindow):
                 "surface": [],
                 "width": [],
                 "height": [],
+                "frame_fraction": [],
             }
             for construction_type in data:
                 data[construction_type] = _get_element(
                     construction_type,
                     base_walls,  # type: ignore
                     construction,
+                )
+            windows = [window for window in base_walls if window.construction == construction]
+            overhang, side_fins = _shading_of(windows)
+            if (overhang or side_fins) and len({(window.width, window.height) for window in windows}) > 1:
+                raise InvalidBuildingStructureError(
+                    f"The shaded windows {[window.name for window in windows]} share a glazing but differ in "
+                    "size: IDEAS gives one shading geometry to all of them, so use one size or different glazings."
                 )
             merged_window = cls(
                 name=f"merged_{'_'.join(data['name'])}",  # type: ignore
@@ -239,6 +281,9 @@ class MergedWindows(MergedBaseWindow):
                 constructions=[construction],
                 heights=data["height"],
                 widths=data["width"],
+                frame_fractions=data["frame_fraction"],
+                overhang=overhang,
+                side_fins=side_fins,
             )
             merged_windows.append(merged_window)
         return sorted(merged_windows, key=lambda x: x.name)  # type: ignore
@@ -363,13 +408,42 @@ class WindowedWallParameters(WallParameters):
     window_layers: list[str]
     window_width: list[float]
     window_height: list[float]
+    window_frame_fraction: list[float]
+    # Overhang and side fins per entry (Buildings ``ove`` and ``sidFin``), zero depth when absent.
+    overhang_width_left: list[float]
+    overhang_width_right: list[float]
+    overhang_depth: list[float]
+    overhang_gap: list[float]
+    side_fin_height: list[float]
+    side_fin_depth: list[float]
+    side_fin_gap: list[float]
     included_external_walls: list[str]
+
+    @property
+    def has_shading(self) -> bool:
+        return any(depth > 0 for depth in self.overhang_depth + self.side_fin_depth)
 
     @classmethod
     def from_neighbors(cls, neighbors: list["BaseElement"]) -> "WindowedWallParameters":  # type: ignore[override]
         entries: dict[str, list[Any]] = {
             key: []
-            for key in ("surfaces", "azimuths", "layers", "tilts", "window_layers", "window_width", "window_height")
+            for key in (
+                "surfaces",
+                "azimuths",
+                "layers",
+                "tilts",
+                "window_layers",
+                "window_width",
+                "window_height",
+                "window_frame_fraction",
+                "overhang_width_left",
+                "overhang_width_right",
+                "overhang_depth",
+                "overhang_gap",
+                "side_fin_height",
+                "side_fin_depth",
+                "side_fin_gap",
+            )
         }
         included_external_walls: list[str] = []
         for group in hosted_windows(neighbors):
@@ -386,12 +460,35 @@ class WindowedWallParameters(WallParameters):
                 entries["window_layers"].append(glazing_windows[0].construction.name)
                 entries["window_height"].append(_ten_digits(height))
                 entries["window_width"].append(_ten_digits(area / height))
+                entries["window_frame_fraction"].append(
+                    _ten_digits(sum(window.surface * window.frame_fraction for window in glazing_windows) / area)
+                )
+                overhang, side_fins = _shading_of(glazing_windows)
+                entries["overhang_width_left"].append(overhang.width_left if overhang else 0.0)
+                entries["overhang_width_right"].append(overhang.width_right if overhang else 0.0)
+                entries["overhang_depth"].append(overhang.depth if overhang else 0.0)
+                entries["overhang_gap"].append(overhang.gap if overhang else 0.0)
+                entries["side_fin_height"].append(side_fins.height if side_fins else 0.0)
+                entries["side_fin_depth"].append(side_fins.depth if side_fins else 0.0)
+                entries["side_fin_gap"].append(side_fins.gap if side_fins else 0.0)
         return cls(
             number=len(entries["surfaces"]),
             type="WindowedWall",
             included_external_walls=included_external_walls,
             **entries,
         )
+
+
+def _shading_of(windows: list[BaseWindow]) -> tuple[Overhang | None, SideFins | None]:
+    """The shading shared by windows merged into one entry; they must agree on it."""
+    overhangs = {window.overhang for window in windows}
+    side_fins = {window.side_fins for window in windows}
+    if len(overhangs) > 1 or len(side_fins) > 1:
+        raise InvalidBuildingStructureError(
+            f"The windows {[window.name for window in windows]} share one orientation and glazing but differ in "
+            "their overhang or side fins: give them the same shading or different glazings."
+        )
+    return overhangs.pop(), side_fins.pop()
 
 
 def _group(elements: list[Any], same: Callable[[Any, Any], bool]) -> list[list[Any]]:

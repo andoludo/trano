@@ -3,9 +3,10 @@ from pathlib import Path
 
 import pytest
 
+from tests.fixtures.simple_space_1 import simple_space_1_fixture
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.simulate.simulate import ModelicaEnvironment, SimulationOptions, simulate
+from trano.simulate.simulate import ModelicaEnvironment, SimulationOptions, create_mos_file, simulate
 from trano.topology import Network
 from trano.utils.utils import is_success
 
@@ -124,3 +125,31 @@ def test_configure_script_installs_only_missing_libraries() -> None:
 def test_modelica_version_is_the_newest_installed() -> None:
     assert ModelicaEnvironment(modelica=["4.0.0+maint.om", "4.1.0+maint.om"]).modelica_version == "4.1.0"
     assert ModelicaEnvironment(modelica=["4.1.0+maint.om", "4.0.0+maint.om"]).modelica_version == "4.1.0"
+
+
+def test_simulate_arguments_only_set_the_output_points_when_asked() -> None:
+    options = SimulationOptions(start_time=0, end_time=3600, tolerance=1e-6)
+    assert options.simulate_arguments == "startTime = 0, stopTime = 3600, tolerance = 1e-06"
+    hourly = options.model_copy(update={"number_of_intervals": 8760})
+    assert hourly.simulate_arguments.endswith(", numberOfIntervals = 8760")
+
+
+def test_a_rendered_model_is_simulated_as_given(tmp_path: Path) -> None:
+    network = Network(name="given", library=Library.from_configuration("Buildings"))
+    network.add_boiler_plate_spaces([simple_space_1_fixture()])
+    with create_mos_file(network, SimulationOptions(end_time=3600), tmp_path, model="package given end given;") as mos:
+        models = [path for path in tmp_path.iterdir() if path.suffix == ".mo"]
+        assert len(models) == 1 and models[0].read_text() == "package given end given;"
+        script = tmp_path.joinpath(mos).read_text()
+        assert "simulate(given.building, startTime = 0, stopTime = 3600, tolerance = 0.0001);" in script
+
+
+def test_installed_libraries_are_mounted_from_the_environment_variable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from trano.simulate.simulate import LIBRARIES_VARIABLE
+
+    monkeypatch.delenv(LIBRARIES_VARIABLE, raising=False)
+    assert ModelicaEnvironment().libraries_path is None
+    monkeypatch.setenv(LIBRARIES_VARIABLE, str(tmp_path))
+    assert ModelicaEnvironment().libraries_path == tmp_path

@@ -45,6 +45,7 @@ ROOF_TILTS = frozenset(
     }
 )
 SIGNIFICANT_DIGITS = 6
+MASS_CLASSES = {"Light": 110e3, "Medium": 165e3, "Heavy": 260e3}  # [J/(m2.K)] Buildings.ThermalZones.ISO13790.Data
 
 # Values rendered for an empty group, where AixLib still requires a valid (unused) parameter.
 EMPTY_RESISTANCE = 0.001  # [K/W]
@@ -211,6 +212,7 @@ class AggregatedEnvelope(BaseModel):
     floor: LumpedElement
     windows: WindowGroup
     ground_temperature: float = GROUND_TEMPERATURE  # [K]
+    internal_capacity: float = 0.0  # [J/K] heat capacity of the opaque elements reached from the room (ISO 13786)
 
     @classmethod
     def from_boundaries(cls, boundaries: Sequence[BaseSimpleWall]) -> AggregatedEnvelope:
@@ -232,7 +234,12 @@ class AggregatedEnvelope(BaseModel):
             if floor_area > 0
             else GROUND_TEMPERATURE
         )
+        opaque = [*walls, *roofs, *floors]
+        internal_capacity = sum(
+            element.opaque_surface * element.construction.internal_heat_capacity for element in opaque
+        )
         return cls(
+            internal_capacity=significant(internal_capacity),
             orientations=orientations,
             roof_orientations=roof_orientations,
             exterior_walls=LumpedElement.from_elements(walls, INTERIOR_RESISTANCE_WALL, EXTERIOR_RESISTANCE),
@@ -253,6 +260,18 @@ class AggregatedEnvelope(BaseModel):
         if conditioned_floor_area <= 0:
             return self.floor.u_value
         return significant(self.floor.u_value * self.floor.area / conditioned_floor_area)
+
+    def mass_class(self, floor_area: float) -> str:
+        """ISO 13790 building mass class of the Buildings records: the closest areal heat capacity.
+
+        The classes of the standard are 110 (light), 165 (medium) and 260 kJ/(m2.K) (heavy) of
+        conditioned floor area; the capacity counts the envelope reached from the room, not the
+        internal walls and furniture.
+        """
+        if floor_area <= 0:
+            return "Light"
+        capacity = self.internal_capacity / floor_area
+        return min(MASS_CLASSES, key=lambda name: abs(MASS_CLASSES[name] - capacity))
 
     @property
     def opaque_areas(self) -> list[float]:

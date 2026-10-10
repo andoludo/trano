@@ -13,10 +13,13 @@ linting:
 
 # ── Tests ──────────────────────────────────────────────────────────────────────
 tests:
-	uv run pytest -m "not simulate"
+	uv run pytest -m "not simulate and not bestest"
 
 simulate:
 	uv run pytest -m simulate
 
 # ── Composite ──────────────────────────────────────────────────────────────────
 all: install linting tests
+bestest:
+	uv run python -m validation.bestest run --workers 2
+	uv run pytest -m bestest

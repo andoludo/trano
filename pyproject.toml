@@ -90,12 +90,13 @@ build-backend = "uv_build"
 testpaths = ["tests"]
 markers = [
     "simulate: slow integration tests that require Docker and the OpenModelica image",
+    "bestest: year-long ASHRAE 140 validation simulations (Docker, hours); run with -m bestest",
 ]
 addopts = "-ra"
 
 [tool.mypy]
 plugins = "pydantic.mypy"
-packages= "trano"
+packages = ["trano", "validation"]
 
 follow_imports = "silent"
 warn_redundant_casts = true

@@ -174,3 +174,4 @@ cython_debug/
 
 # Working directory of tests/test_simulate.py::test_simulate_house_complex
 tests/simulation/
+validation/bestest/_reports/

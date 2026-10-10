@@ -323,6 +323,53 @@ m_flow_nominal:
 
 
 
+## IdealHeatingCoolingParameter
+The following parameters are valid for the following classes idealheatingcooling
+```yaml
+controller_gain:
+  alias: k
+  description: Gain of the heating and cooling PI controllers, output fraction of
+    the capacity per kelvin of error [1/K]
+  ifabsent: float(0.1)
+  range: float
+controller_integral_time:
+  alias: Ti
+  description: Integral time of the heating and cooling PI controllers [s]
+  ifabsent: float(300)
+  range: float
+cooling_setpoint_schedule:
+  alias: TSetCoo
+  description: Day schedule of the cooling set point, rows of time since midnight
+    [s] and set point [K], repeated every day; one row for a constant set point
+  ifabsent: string([0, 300.15])
+  range: string
+heating_setpoint_schedule:
+  alias: TSetHea
+  description: Day schedule of the heating set point, rows of time since midnight
+    [s] and set point [K], repeated every day; one row for a constant set point
+  ifabsent: string([0, 293.15])
+  range: string
+maximum_cooling_power:
+  alias: QCoo_flow_max
+  description: Cooling capacity; zero switches cooling off [W]
+  ifabsent: float(1000000)
+  range: float
+maximum_heating_power:
+  alias: QHea_flow_max
+  description: Heating capacity; zero switches heating off [W]
+  ifabsent: float(1000000)
+  range: float
+radiative_fraction:
+  alias: frad
+  description: Fraction of the heat flow exchanged with the radiative temperature
+    of the zone, the rest with its air [1]
+  ifabsent: float(0)
+  range: float
+
+```
+
+
+
 ## RadiatorParameter
 The following parameters are valid for the following classes radiator
 ```yaml
@@ -440,6 +487,12 @@ temperature_initial:
   description: Initial temperature [K]
   ifabsent: float(294.15)
   range: float
+ventilation_schedule:
+  alias: ventilationSchedule
+  description: Day schedule of outdoor air brought into the zone on top of the infiltration,
+    rows of time since midnight [s] and mass flow rate [kg/s], repeated every day
+    (Buildings infiltration variant)
+  range: string
 volume:
   alias: null
   description: Air volume of the zone [m3]
@@ -634,6 +687,13 @@ valve_leakage:
 ## WeatherParameters
 The following parameters are valid for the following classes weather
 ```yaml
+atmospheric_pressure_source:
+  alias: pAtmSou
+  description: Source of the atmospheric pressure, e.g. Buildings.BoundaryConditions.Types.DataSource.File
+    to read it from the weather file; the library default (a constant 101325 Pa) when
+    absent
+  ifabsent: string(None)
+  range: string
 path:
   alias: filNam
   description: Name of weather data file

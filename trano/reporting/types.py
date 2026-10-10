@@ -79,6 +79,7 @@ class LayerTable(BaseReporting):
     rho: float
     epsLw: float  # noqa: N815
     epsSw: float  # noqa: N815
+    nStaRef: int = 3  # noqa: N815
     thickness: float
     solar_transmittance: list[float] = Field(default_factory=list)
     solar_reflectance_outside_facing: list[float] = Field(default_factory=list)

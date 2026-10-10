@@ -25,5 +25,25 @@
         A={{  macros.join_list(element.surfaces)}},
         final azi={{macros.join_list(element.azimuths)}},
         redeclare package Medium = Medium,
+        frac={{ macros.join_list(element.frame_fractions) }},
+        redeclare parameter IDEAS.Buildings.Data.Frames.Wood fraType(each U_value={{ element.constructions[0].u_value_frame }}),
+        {%- if element.overhang and element.side_fins %}
+        redeclare IDEAS.Buildings.Components.Shading.Box shaType(
+            each hWin={{ element.heights[0] }}, each wWin={{ element.widths[0] }},
+            each wLeft={{ element.overhang.width_left }}, each wRight={{ element.overhang.width_right }},
+            each ovDep={{ element.overhang.depth }}, each ovGap={{ element.overhang.gap }},
+            each hFin={{ element.side_fins.height }}, each finDep={{ element.side_fins.depth }},
+            each finGap={{ element.side_fins.gap }}),
+        {%- elif element.overhang %}
+        redeclare IDEAS.Buildings.Components.Shading.Overhang shaType(
+            each hWin={{ element.heights[0] }}, each wWin={{ element.widths[0] }},
+            each wLeft={{ element.overhang.width_left }}, each wRight={{ element.overhang.width_right }},
+            each dep={{ element.overhang.depth }}, each gap={{ element.overhang.gap }}),
+        {%- elif element.side_fins %}
+        redeclare IDEAS.Buildings.Components.Shading.SideFins shaType(
+            each hWin={{ element.heights[0] }}, each wWin={{ element.widths[0] }},
+            each hFin={{ element.side_fins.height }}, each dep={{ element.side_fins.depth }},
+            each gap={{ element.side_fins.gap }}),
+        {%- endif %}
         final inc={{ macros.convert_tilts(element.tilts, library_name) }})
   variant: default

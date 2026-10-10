@@ -126,7 +126,23 @@ class DistributionSystem(System):
     container_type: ContainerTypes = "distribution"
 
 
-class Weather(BaseWeather): ...
+class Weather(BaseWeather):
+    linearize_radiation: bool = True  # IDEAS: `linIntRad` and `linExtRad` of the SimInfoManager
+    # IDEAS: pressure driven air exchange through one port per surface, unless a zone asks for a fixed
+    # infiltration rate (the `infiltration` variant): IDEAS honours a zone's n50 as a fixed flow only then.
+    interzonal_airflow: str = "OnePort"
+
+    def configure(self, network: "Network") -> None:
+        """Follow the zones: radiation and air flow settings of the IDEAS simulation manager are global."""
+        from trano.elements.space import Space, SpaceVariant
+
+        spaces = [node for node in network.graph.nodes if isinstance(node, Space)]
+        self.linearize_radiation = all(
+            str(getattr(space.parameters, "linearize_emissive_power", "true")).lower() != "false" for space in spaces
+        )
+        self.interzonal_airflow = (
+            "None" if any(space.variant == SpaceVariant.infiltration for space in spaces) else "OnePort"
+        )
 
 
 class Valve(SpaceHeatingSystem): ...
@@ -145,6 +161,10 @@ class SplitValve(DistributionSystem): ...
 
 
 class Radiator(Emission): ...
+
+
+class IdealHeatingCooling(Emission):
+    """Ideal heating and cooling of the zone air towards scheduled set points, without a control element."""
 
 
 class PowerSensor(Sensor):

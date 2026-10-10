@@ -54,6 +54,16 @@ class LibraryData(BaseModel):
     template: str = ""
     component_template: DynamicComponentTemplate | None = None
     variant: str = BaseVariant.default
+    requires_occupancy: bool = Field(
+        default=False,
+        description="The zone takes its internal gains from an occupancy input that must be connected: a "
+        "space without occupancy gets one with zero gains.",
+    )
+    fixed_name: str | None = Field(
+        default=None,
+        description="Name the component must carry in the model, whatever the element is called "
+        "(IDEAS looks for its simulation manager as `sim`).",
+    )
     figures: list[Figure] = Field(default=[])
     ports: Callable[[], list[Port]]
     parameter_processing: Callable[[BaseParameter], dict[str, Any]] = default_parameters

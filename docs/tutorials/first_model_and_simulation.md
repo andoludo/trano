@@ -95,7 +95,35 @@ spaces:
           height: 1.0
 
 ```
-            
+
+A space without an `occupancy` entry, or with an empty one, gets trano's default occupancy schedule
+(35 W radiant, 70 W convective and 30 W latent per person, from 7:00 to 19:00). An unconditioned
+space with no occupancy at all says so with `occupancy: {variant: none}`.
+
+A window takes a few optional attributes: `frame_fraction` (share of the area taken by the frame, 0.1
+when absent), an `overhang` and `side_fins`. The shading devices are given by their geometry in
+metres: `depth` perpendicular to the wall, `gap` (distance between the window and the device),
+`width_left` and `width_right` for the overhang and `height` above the window for the fins. They are
+rendered for the Buildings library:
+
+```yaml
+      windows:
+        - surface: 12.0
+          azimuth: 0.0
+          tilt: wall
+          construction: INS2AR2020:001
+          width: 6.0
+          height: 2.0
+          frame_fraction: 0.001
+          overhang:
+            depth: 1.0
+            gap: 0.5
+            width_left: 0.5
+            width_right: 0.5
+          side_fins:
+            depth: 1.0
+            height: 0.5
+```
 
 ## Generate Modelica model
 

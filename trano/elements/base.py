@@ -98,6 +98,13 @@ class BaseElement(BaseElementPort):
             return libraries_data[0]
         return None
 
+    def connects_to(self, library: "Library", target: type) -> bool:
+        """Whether the element's definition for the library has a port aimed at ``target`` elements."""
+        if not self.libraries_data:
+            return False
+        library_data = self.get_library_data(library)
+        return library_data is not None and any(target in port.targets for port in library_data.ports())
+
     def assign_library_property(self, library: "Library") -> bool:
         if library.medium.is_empty():
             raise ValueError("Library medium is empty")
@@ -108,6 +115,8 @@ class BaseElement(BaseElementPort):
             self.medium = library.medium
         if not library_data:
             return False
+        if library_data.fixed_name:
+            self.name = library_data.fixed_name
         if not self.ports:
             self.ports = library_data.ports()
         if not self.template:
@@ -204,6 +213,7 @@ class BaseElement(BaseElementPort):
                 figure.modify_key_based_on_container(self.container_type, include_container)
 
     def configure(self, network: "Network") -> None: ...
+
     def system_ports_connected(self) -> bool:
         return True
 

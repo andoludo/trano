@@ -1,12 +1,13 @@
 - classes:
   - Space
   library: reduced_order
-  parameter_processing:
+  requires_occupancy: true
+  parameter_processing: &reduced_order_zone_parameter_processing
     function: modify_alias
     parameter:
       volume: "VAir"
       floor_area: "AZone"
-  ports:
+  ports: &reduced_order_zone_ports
   - flow: convective
     medium: heat
     names:
@@ -37,9 +38,10 @@
     - intGains
     targets:
     - BaseOccupancy
-  template: |
+  template: &reduced_order_zone_template |
     AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone {{ element.name }}(
-        use_moisture_balance=true,
+    {#- A constant outdoor air exchange is dry: AixLib's moisture balance fails on the humidity it brings in. #}
+        use_moisture_balance={{ "false" if element.variant == "infiltration" else "true" }},
         ROM(extWallRC(thermCapExt(each der_T(fixed=true))), intWallRC(thermCapInt(
                 each der_T(fixed=true)))),
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
@@ -119,8 +121,13 @@
         ratioConvectiveHeatMachines=0.6,
         lightingPowerSpecific=0,
         ratioConvectiveHeatLighting=0.6,
+    {%- if element.variant == "infiltration" and element.parameters.ach is not none %}
+        useConstantACHrate=true,
+        baseACH={{ element.parameters.ach }},
+    {%- else %}
         useConstantACHrate=false,
         baseACH=0.2,
+    {%- endif %}
         maxUserACH=1,
         maxOverheatingACH={3.0,2.0},
     maxSummerACH={1.0,273.15 + 10,273.15 + 17},
@@ -147,3 +154,13 @@
         withIdealThresholds=false))
 
   variant: default
+
+# Constant infiltration from the YAML air change rate instead of AixLib's occupancy driven air exchange.
+- classes:
+  - Space
+  library: reduced_order
+  requires_occupancy: true
+  parameter_processing: *reduced_order_zone_parameter_processing
+  ports: *reduced_order_zone_ports
+  template: *reduced_order_zone_template
+  variant: infiltration

@@ -418,6 +418,7 @@ classes:
     slots:
     - radiator
     - valve
+    - ideal_heating_cooling
   EmissionControl:
     attributes:
       parameters:
@@ -527,6 +528,11 @@ classes:
       construction:
         description: Construction
         range: Construction
+      variant:
+        description: 'What lies under the floor: the ground at a fixed temperature
+          (default) or the outdoor air (outdoor_air, a raised floor)'
+        ifabsent: string('default')
+        range: FloorOnGroundVariant
     slots:
     - surface
   Gas:
@@ -583,6 +589,47 @@ classes:
       parameters:
         range: SensorParameters
     is_a: System
+  IdealHeatingCooling:
+    is_a: System
+    slot_usage:
+      parameters:
+        range: IdealHeatingCoolingParameter
+    slots:
+    - parameters
+  IdealHeatingCoolingParameter:
+    attributes:
+      controller_gain:
+        description: Gain of the heating and cooling PI controllers, output fraction
+          of the capacity per kelvin of error [1/K]
+        ifabsent: float(0.1)
+        range: float
+      controller_integral_time:
+        description: Integral time of the heating and cooling PI controllers [s]
+        ifabsent: float(300)
+        range: float
+      cooling_setpoint_schedule:
+        description: Day schedule of the cooling set point, rows of time since midnight
+          [s] and set point [K], repeated every day; one row for a constant set point
+        ifabsent: string([0, 300.15])
+        range: string
+      heating_setpoint_schedule:
+        description: Day schedule of the heating set point, rows of time since midnight
+          [s] and set point [K], repeated every day; one row for a constant set point
+        ifabsent: string([0, 293.15])
+        range: string
+      maximum_cooling_power:
+        description: Cooling capacity; zero switches cooling off [W]
+        ifabsent: float(1000000)
+        range: float
+      maximum_heating_power:
+        description: Heating capacity; zero switches heating off [W]
+        ifabsent: float(1000000)
+        range: float
+      radiative_fraction:
+        description: Fraction of the heat flow exchanged with the radiative temperature
+          of the zone, the rest with its air [1]
+        ifabsent: float(0)
+        range: float
   InternalWall:
     attributes:
       construction:
@@ -614,6 +661,12 @@ classes:
         description: Longwave emissivity [1]
         ifabsent: float(0.85)
         range: float
+      number_of_states:
+        description: Spatial discretization of the layers (Buildings), number of states
+          of a 0.2 m concrete reference layer scaled with the thickness and diffusivity
+          of each layer [1]
+        ifabsent: int(3)
+        range: integer
       shortwave_emissivity:
         description: Shortwave emissivity [1]
         ifabsent: float(0.85)
@@ -666,6 +719,22 @@ classes:
         description: Occupancy table, each entry switching occupancy on or off
         ifabsent: string(3600*{7, 19})
         range: string
+  Overhang:
+    attributes:
+      depth:
+        description: Projection perpendicular to the wall [m]
+        range: float
+        required: true
+      gap:
+        description: Distance between the top of the window and the overhang [m],
+          0 when absent
+        range: float
+      width_left:
+        description: Extension beyond the left edge of the window [m], 0 when absent
+        range: float
+      width_right:
+        description: Extension beyond the right edge of the window [m], 0 when absent
+        range: float
   PIDParameters:
     attributes:
       controller_type:
@@ -826,6 +895,20 @@ classes:
           and its small-flow regularization [kg/s]
         ifabsent: float(0.15)
         range: float
+  SideFins:
+    attributes:
+      depth:
+        description: Projection perpendicular to the wall [m]
+        range: float
+        required: true
+      gap:
+        description: Distance between the edges of the window and the fins [m], 0
+          when absent
+        range: float
+      height:
+        description: Extension of the fins above the top of the window [m], 0 when
+          absent
+        range: float
   Solar:
     class_uri: schema:Solar
     slots:
@@ -879,6 +962,11 @@ classes:
         description: Initial temperature [K]
         ifabsent: float(294.15)
         range: float
+      ventilation_schedule:
+        description: Day schedule of outdoor air brought into the zone on top of the
+          infiltration, rows of time since midnight [s] and mass flow rate [kg/s],
+          repeated every day (Buildings infiltration variant)
+        range: string
   SplitValve:
     attributes:
       parameters:
@@ -1104,6 +1192,12 @@ classes:
     - parameters
   WeatherParameters:
     attributes:
+      atmospheric_pressure_source:
+        description: Source of the atmospheric pressure, e.g. Buildings.BoundaryConditions.Types.DataSource.File
+          to read it from the weather file; the library default (a constant 101325
+          Pa) when absent
+        ifabsent: string(None)
+        range: string
       path:
         description: Name of weather data file
         ifabsent: string(None)
@@ -1113,8 +1207,19 @@ classes:
       construction:
         description: Glazing
         range: Glazing
+      frame_fraction:
+        description: Share of the window area taken by the frame [1], 0.1 when absent
+        range: float
       height:
         range: float
+      overhang:
+        description: Horizontal projection above the window
+        inlined: true
+        range: Overhang
+      side_fins:
+        description: Vertical projections on both sides of the window
+        inlined: true
+        range: SideFins
       width:
         range: float
     slots:
@@ -1146,10 +1251,15 @@ enums:
       PController: null
       default: null
       onoff: null
+  FloorOnGroundVariant:
+    permissible_values:
+      default: null
+      outdoor_air: null
   OccupancyVariant:
     permissible_values:
       co2: null
       default: null
+      none: null
   SpaceVariant:
     permissible_values:
       default: null
@@ -1262,6 +1372,10 @@ slots:
     description: A unique identifier for a thing
     identifier: true
     slot_uri: schema:identifier
+  ideal_heating_cooling:
+    inlined: true
+    multivalued: false
+    range: IdealHeatingCooling
   inlets:
     multivalued: true
     range: System

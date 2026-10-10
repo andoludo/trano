@@ -1,5 +1,7 @@
 # Buildings zone definitions. The `infiltration` variant uses Trano's MixedAirInf, a copy of
-# Buildings.ThermalZones.Detailed.MixedAir with an infiltration air flow; everything else is shared.
+# Buildings.ThermalZones.Detailed.MixedAir that brings outdoor air in from the weather data (at its
+# temperature, humidity and pressure, like Buildings' own BESTEST models) at the air change rate plus
+# the scheduled ventilation, and draws the same flow out; everything else is shared.
 - classes:
   - Space
   figures: &buildings_zone_figures
@@ -49,6 +51,7 @@
         label: Zone controller measured [K]
         template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_m'
   library: buildings
+  requires_occupancy: true
   parameter_processing: &buildings_zone_parameters
     function: exclude_parameters
     parameter:
@@ -155,6 +158,16 @@
                         glaSys={{ macros.join_list(boundary.window_layers) }},
                         wWin={{ macros.join_list(boundary.window_width) }},
                         hWin={{ macros.join_list(boundary.window_height) }},
+                        fFra={{ macros.join_list(boundary.window_frame_fraction) }},
+                        {%- if boundary.has_shading %}
+                        ove(wL={{ macros.join_list(boundary.overhang_width_left) }},
+                            wR={{ macros.join_list(boundary.overhang_width_right) }},
+                            dep={{ macros.join_list(boundary.overhang_depth) }},
+                            gap={{ macros.join_list(boundary.overhang_gap) }}),
+                        sidFin(h={{ macros.join_list(boundary.side_fin_height) }},
+                            dep={{ macros.join_list(boundary.side_fin_depth) }},
+                            gap={{ macros.join_list(boundary.side_fin_gap) }}),
+                        {%- endif %}
                         azi={{ macros.join_list(boundary.azimuths) }}),
                     {% else %}
                         nConExtWin=0,
@@ -181,6 +194,7 @@
   - Space
   figures: []
   library: buildings
+  requires_occupancy: true
   parameter_processing: *buildings_zone_parameters
   ports: *buildings_zone_ports
   template: *buildings_zone_template

@@ -79,6 +79,12 @@ classes:
       construction:
         description: Construction
         range: Construction
+      variant:
+        description: >-
+          What lies under the floor: the ground at a fixed temperature (default) or the outdoor air
+          (outdoor_air, a raised floor)
+        ifabsent: string('default')
+        range: FloorOnGroundVariant
     slots:
       - surface
   InternalWall:
@@ -104,10 +110,48 @@ classes:
         range: float
       height:
         range: float
+      frame_fraction:
+        description: Share of the window area taken by the frame [1], 0.1 when absent
+        range: float
+      overhang:
+        description: Horizontal projection above the window
+        range: Overhang
+        inlined: true
+      side_fins:
+        description: Vertical projections on both sides of the window
+        range: SideFins
+        inlined: true
     slots:
       - surface
       - azimuth
       - tilt
+  Overhang:
+    attributes:
+      depth:
+        description: Projection perpendicular to the wall [m]
+        range: float
+        required: true
+      gap:
+        description: Distance between the top of the window and the overhang [m], 0 when absent
+        range: float
+      width_left:
+        description: Extension beyond the left edge of the window [m], 0 when absent
+        range: float
+      width_right:
+        description: Extension beyond the right edge of the window [m], 0 when absent
+        range: float
+  SideFins:
+    attributes:
+      depth:
+        description: Projection perpendicular to the wall [m]
+        range: float
+        required: true
+      gap:
+        description: Distance between the edges of the window and the fins [m], 0 when absent
+        range: float
+      height:
+        description: Extension of the fins above the top of the window [m], 0 when absent
+        range: float
   ExternalBoundaries:
     attributes:
       external_walls:
@@ -144,6 +188,10 @@ classes:
         description: Shortwave emissivity [1]
         range: float
         ifabsent: float(0.85)
+      number_of_states:
+        description: Spatial discretization of the layers (Buildings), number of states of a 0.2 m concrete reference layer scaled with the thickness and diffusivity of each layer [1]
+        range: integer
+        ifabsent: int(3)
   Gas:
     is_a: Material
   GlassMaterial:
@@ -263,6 +311,7 @@ classes:
     slots:
       - radiator
       - valve
+      - ideal_heating_cooling
     class_uri: schema:Emission
 
   VentilationInlet:
@@ -292,6 +341,13 @@ classes:
     slot_usage:
       parameters:
         range: RadiatorParameter
+  IdealHeatingCooling:
+    is_a: System
+    slots:
+      - parameters
+    slot_usage:
+      parameters:
+        range: IdealHeatingCoolingParameter
   Valve:
     is_a: System
     attributes:
@@ -545,6 +601,10 @@ slots:
     range: Valve
     multivalued: false
     inlined: true
+  ideal_heating_cooling:
+    range: IdealHeatingCooling
+    multivalued: false
+    inlined: true
   three_way_valve:
     range: ThreeWayValve
     multivalued: false
@@ -686,10 +746,15 @@ enums:
       default:
       infiltration:
       rectangular_zone:
+  FloorOnGroundVariant:
+    permissible_values:
+      default:
+      outdoor_air:
   OccupancyVariant:
     permissible_values:
       default:
       co2:
+      none:  # the space has no occupancy at all; an empty `occupancy:` gets the default one
   SystemVariant:
     permissible_values:
       default:

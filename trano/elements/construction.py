@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     from trano.elements.library.library import Library
 
 
+EFFECTIVE_DEPTH = 0.1  # [m] depth of the layers taking part in the daily heat storage (ISO 13786)
+
+
 class Material(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     name: str
@@ -21,6 +24,14 @@ class Material(BaseModel):
     density: float = Field(..., title="Density [kg/m3]", alias="rho")
     longwave_emissivity: float = Field(0.85, title="Longwave emissivity [1]", alias="epsLw")
     shortwave_emissivity: float = Field(0.65, title="Shortwave emissivity [1]", alias="epsSw")
+    number_of_states: int = Field(
+        3,
+        ge=1,
+        title="Number of states of a 0.2 m reference layer [1]",
+        description="Spatial discretization of the layers (Buildings): states of a 0.2 m concrete layer, "
+        "scaled with the thickness and diffusivity of each layer; 3 is the library default.",
+        alias="nStaRef",
+    )
 
     def __hash__(self) -> int:
         return hash(self.name)
@@ -117,6 +128,23 @@ class BaseConstruction(BaseModel):
     @property
     def total_thermal_capacitance(self) -> float:
         return sum([layer.thermal_capacitance for layer in self.layers])
+
+    @property
+    def internal_heat_capacity(self) -> float:
+        """Areal heat capacity [J/(m2.K)] of the layers reached from the room within the effective depth.
+
+        The simplified effective thickness of ISO 13786: the layers from the inside (the last layer)
+        down to 0.1 m, the last one counted in proportion. Used to class a zone's thermal mass.
+        """
+        remaining = EFFECTIVE_DEPTH
+        capacity = 0.0
+        for layer in reversed(self.layers):
+            thickness = min(layer.thickness, remaining)
+            capacity += thickness * layer.material.density * layer.material.specific_heat_capacity
+            remaining -= thickness
+            if remaining <= 0:
+                break
+        return capacity
 
     @computed_field
     def u_value(self) -> float:
@@ -272,10 +300,12 @@ def merged_construction(nodes: NodeView) -> ConstructionData:
     constructions = {node.construction for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]}
     merged_constructions.update(constructions)
     merged_constructions.update(_space_constructions(nodes))
-    wall_constructions = [c for c in merged_constructions if isinstance(c, Construction)]
-    glazing = [c for c in merged_constructions if isinstance(c, Glass)]
+    # Sorted by name: sets iterate in an order that differs between processes, the model must not.
+    by_name = lambda item: item.name  # noqa: E731
+    wall_constructions = sorted((c for c in merged_constructions if isinstance(c, Construction)), key=by_name)
+    glazing = sorted((c for c in merged_constructions if isinstance(c, Glass)), key=by_name)
     materials = {layer.material for construction in merged_constructions for layer in construction.layers}
-    return ConstructionData(constructions=wall_constructions, materials=list(materials), glazing=glazing)
+    return ConstructionData(constructions=wall_constructions, materials=sorted(materials, key=by_name), glazing=glazing)
 
 
 def extract_data(package_name: str, nodes: NodeView, library: "Library") -> MaterialProperties:

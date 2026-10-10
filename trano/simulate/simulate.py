@@ -1,6 +1,9 @@
+import os
 import platform
 import subprocess
 import tempfile
+import time
+from http import HTTPStatus
 from contextlib import contextmanager
 from pathlib import Path
 from collections.abc import Generator
@@ -43,6 +46,10 @@ def client() -> docker.DockerClient:
     return client
 
 
+LIBRARIES_VARIABLE = "TRANO_MODELICA_LIBRARIES"
+CONTAINER_LIBRARIES = "/root/.openmodelica/libraries"  # where OpenModelica's package manager installs
+
+
 class ModelicaEnvironment(BaseModel):
     """Versions of the OpenModelica image and of the Modelica libraries installed in it.
 
@@ -56,6 +63,12 @@ class ModelicaEnvironment(BaseModel):
     """
 
     openmodelica_image: str = Field(default="openmodelica/openmodelica:v1.26.9-ompython")
+    libraries_path: Path | None = Field(
+        default_factory=lambda: Path(path) if (path := os.environ.get(LIBRARIES_VARIABLE)) else None,
+        description="Host directory of installed Modelica libraries mounted into the container; "
+        f"from the environment variable {LIBRARIES_VARIABLE}. Without it the libraries are installed "
+        "by OpenModelica's package manager at every container start, which needs network access.",
+    )
     modelica: list[str] = Field(default=["4.0.0+maint.om", "4.1.0+maint.om"])
     buildings: str = Field(default="13.0.0")
     ideas: str = Field(default="3.0.0")
@@ -120,6 +133,17 @@ class SimulationOptions(BaseModel):
     end_time: int = Field(default=2 * 3600 * 24 * 7)
     check_only: bool = Field(default=False)
     tolerance: float = Field(default=1e-4)
+    number_of_intervals: int | None = Field(
+        default=None, gt=0, description="Output points over the simulation; OpenModelica's default when unset."
+    )
+
+    @property
+    def simulate_arguments(self) -> str:
+        """The keyword arguments of OpenModelica's ``simulate`` command."""
+        arguments = [f"startTime = {self.start_time}", f"stopTime = {self.end_time}", f"tolerance = {self.tolerance}"]
+        if self.number_of_intervals is not None:
+            arguments.append(f"numberOfIntervals = {self.number_of_intervals}")
+        return ", ".join(arguments)
 
 
 class SimulationLibraryOptions(SimulationOptions):
@@ -130,25 +154,39 @@ def simulate(
     project_path: Path,
     model_network: Network,
     options: SimulationOptions | None = None,
+    container_name: str = "openmodelica",
+    model: str | None = None,
 ) -> docker.models.containers.ExecResult:
+    """Simulate the network in a container of the OpenModelica image; results land in ``project_path/results``.
+
+    Simulations run at the same time need distinct ``container_name``s. ``model`` is the Modelica text
+    of the network when it was rendered already; a network renders its model once.
+    """
     client_ = client()
     options = options or SimulationOptions()
     with (
-        container(client_, project_path) as container_,
-        create_mos_file(model_network, options, project_path) as mos_file_name,
+        container(client_, project_path, container_name=container_name) as container_,
+        create_mos_file(model_network, options, project_path, model=model) as mos_file_name,
     ):
         results = container_.exec_run(cmd=f"omc /simulation/{mos_file_name}")
     return results
 
 
-def stop_container(client: docker.DockerClient, container_name: str) -> None:
-    try:
-        container = client.containers.get(container_name)
-        if container.attrs["State"]["Status"] == "running":
-            container.stop()
-        container.remove()
-    except docker.errors.NotFound:
-        pass
+def stop_container(client: docker.DockerClient, container_name: str, attempts: int = 10) -> None:
+    """Stop and remove a leftover container of that name, waiting for a removal already in progress."""
+    for attempt in range(attempts):
+        try:
+            container = client.containers.get(container_name)
+            if container.attrs["State"]["Status"] == "running":
+                container.stop()
+            container.remove()
+            return
+        except docker.errors.NotFound:
+            return
+        except docker.errors.APIError as error:
+            if error.status_code != HTTPStatus.CONFLICT or attempt == attempts - 1:
+                raise
+            time.sleep(1)
 
 
 @contextmanager
@@ -156,16 +194,16 @@ def container(
     client: docker.DockerClient,
     project_path: Path,
     environment: ModelicaEnvironment = MODELICA_ENVIRONMENT,
+    container_name: str = "openmodelica",
 ) -> Generator[docker.models.containers.Container, None, None]:
-    container_name = "openmodelica"
     stop_container(client, container_name)
+    volumes = [f"{project_path}:/simulation", f"{project_path}/results:/results"]
+    if environment.libraries_path is not None:
+        volumes.append(f"{environment.libraries_path.resolve()}:{CONTAINER_LIBRARIES}")
     container = client.containers.run(
         environment.openmodelica_image,
         command="tail -f /dev/null",
-        volumes=[
-            f"{project_path}:/simulation",
-            f"{project_path}/results:/results",
-        ],
+        volumes=volumes,
         detach=True,
         name=container_name,
     )
@@ -187,10 +225,12 @@ def create_mos_file(
     options: SimulationOptions,
     project_path: Path,
     environment: ModelicaEnvironment = MODELICA_ENVIRONMENT,
+    model: str | None = None,
 ) -> Generator[str, None, None]:
-    # TODO: do we want this here?
-    network.set_weather_path_to_container_path(project_path)
-    model = network.model()
+    if model is None:
+        # TODO: do we want this here?
+        network.set_weather_path_to_container_path(project_path)
+        model = network.model()
     with (
         tempfile.NamedTemporaryFile(mode="w", dir=project_path, suffix=".mo") as temp_model_file,
         tempfile.NamedTemporaryFile(mode="w", dir=project_path, suffix=".mos") as temp_mos_file,
@@ -200,9 +240,7 @@ def create_mos_file(
             ""
             if options.check_only
             else f"""
-    simulate({{{{model_name}}}}.building,startTime = {options.start_time},
-    stopTime = {options.end_time},
-    tolerance = {options.tolerance});"""
+    simulate({{{{model_name}}}}.building, {options.simulate_arguments});"""
         )
         template = STRING_ENVIRONMENT.from_string(
             f"""
