@@ -142,3 +142,14 @@ def test_a_rendered_model_is_simulated_as_given(tmp_path: Path) -> None:
         assert len(models) == 1 and models[0].read_text() == "package given end given;"
         script = tmp_path.joinpath(mos).read_text()
         assert "simulate(given.building, startTime = 0, stopTime = 3600, tolerance = 0.0001);" in script
+
+
+def test_installed_libraries_are_mounted_from_the_environment_variable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from trano.simulate.simulate import LIBRARIES_VARIABLE
+
+    monkeypatch.delenv(LIBRARIES_VARIABLE, raising=False)
+    assert ModelicaEnvironment().libraries_path is None
+    monkeypatch.setenv(LIBRARIES_VARIABLE, str(tmp_path))
+    assert ModelicaEnvironment().libraries_path == tmp_path

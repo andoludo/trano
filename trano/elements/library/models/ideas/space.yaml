@@ -1,5 +1,5 @@
 # IDEAS zone definitions. The `infiltration` variant renders the same component as the
-# default one (n50 already accounts for infiltration); both share the definitions below.
+# default one (the infiltration variant sets n50 from the air change rate); both share the definitions below.
 - classes:
   - Space
   figures: &ideas_zone_figures
@@ -54,6 +54,8 @@
     parameter:
       average_room_height: hZone
       volume: V
+      sensible_thermal_mass_scaling_factor: mSenFac
+      temperature_initial: T_start
   ports: &ideas_zone_ports
   - bus_connection: true
     flow: undirected
@@ -101,12 +103,13 @@
     - DataBus
   template: &ideas_zone_template |-
     IDEAS.Buildings.Components.Zone {{ element.name }}(
-        mSenFac=0.822,
             {%- if element.number_ventilation_ports != 0 -%}
         nPorts = {{ element.number_ventilation_ports }},
         {%- endif %}
         {{ macros.render_parameters(parameters) | safe}},
-        n50=0.822*0.5*{{ element.name }}.n50toAch,
+        {%- if element.variant == "infiltration" and element.parameters.ach is not none %}
+        n50={{ element.parameters.ach }}*{{ element.name }}.n50toAch,
+        {%- endif %}
         redeclare package Medium = Medium,
     {% if element.occupancy %}
         redeclare IDEAS.Buildings.Components.Occupants.AreaWeightedInput occNum,
@@ -115,8 +118,7 @@
           QlatPp={{ element.occupancy.gains_per_person.latent }},
           radFra={{ element.occupancy.gains_per_person.radiant_fraction | round(6) }}),
     {% endif %}
-        nSurf={{ element.number_merged_external_boundaries }},
-        T_start=293.15)
+        nSurf={{ element.number_merged_external_boundaries }})
   variant: default
 
 - classes:
@@ -140,6 +142,8 @@
     parameter:
       average_room_height: h
       floor_area: AZone
+      sensible_thermal_mass_scaling_factor: mSenFac
+      temperature_initial: T_start
   ports:
   - bus_connection: true
     flow: undirected
@@ -188,12 +192,10 @@
   template: |-
     {% set zone = element.rectangular_zone %}
     IDEAS.Buildings.Components.RectangularZoneTemplate {{ element.name }}(
-        mSenFac=0.822,
             {%- if element.number_ventilation_ports != 0 -%}
         nPorts = {{ element.number_ventilation_ports }},
         {%- endif %}
         {{ macros.render_parameters(parameters) | safe}},
-        n50=0.822*0.5*{{ element.name }}.n50toAch,
         redeclare package Medium = Medium,
     {% if element.occupancy %}
         redeclare IDEAS.Buildings.Components.Occupants.AreaWeightedInput occNum,
@@ -202,7 +204,6 @@
           QlatPp={{ element.occupancy.gains_per_person.latent }},
           radFra={{ element.occupancy.gains_per_person.radiant_fraction | round(6) }}),
     {% endif %}
-        T_start=293.15,
         aziA={{ zone.azimuth }},
         l={{ zone.length }},
         w={{ zone.width }},

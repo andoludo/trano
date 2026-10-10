@@ -6,7 +6,15 @@ import argparse
 import logging
 from pathlib import Path
 
-from validation.bestest.cases import CASES, CASES_DIR, Case, UnsupportedCaseError, building_description, write_cases
+from validation.bestest.cases import (
+    CASES,
+    CASES_DIR,
+    Case,
+    UnsupportedCaseError,
+    building_description,
+    check_support,
+    write_cases,
+)
 from validation.bestest.harness import LIBRARIES, cached_results, run_cases
 from validation.bestest.report import compare, render_markdown, write_report
 from validation.bestest.reference import load_reference
@@ -14,9 +22,10 @@ from validation.bestest.reference import load_reference
 REPORT_DIR = Path(__file__).parent.joinpath("_reports")
 
 
-def supported(case: Case) -> bool:
+def supported(case: Case, library: str) -> bool:
     try:
         building_description(case)
+        check_support(case, library)
     except UnsupportedCaseError:
         return False
     return True
@@ -54,7 +63,7 @@ def main(argv: list[str] | None = None) -> None:
         for path in write_cases(arguments.directory):
             print(path)
     elif arguments.command == "run":
-        case_ids = arguments.cases or [case.id for case in CASES.values() if supported(case)]
+        case_ids = arguments.cases or [case.id for case in CASES.values() if supported(case, arguments.library)]
         results = run_cases(case_ids, arguments.library, force=arguments.force, workers=arguments.workers)
         reference = load_reference()
         for case_id, result in results.items():

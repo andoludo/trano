@@ -236,6 +236,14 @@ class MergedExternalWall(MergedBaseExternalWall): ...
 class MergedWindows(MergedBaseWindow):
     widths: list[float | int]
     heights: list[float | int]
+    frame_fractions: list[float]
+    # The shading of the array (IDEAS redeclares one `shaType` for the whole array): the merged windows agree on it.
+    overhang: Overhang | None = None
+    side_fins: SideFins | None = None
+
+    @property
+    def shaded(self) -> bool:
+        return self.overhang is not None or self.side_fins is not None
 
     @classmethod
     def from_base_windows(cls, base_walls: list["BaseWindow"]) -> list["MergedWindows"]:
@@ -250,12 +258,20 @@ class MergedWindows(MergedBaseWindow):
                 "surface": [],
                 "width": [],
                 "height": [],
+                "frame_fraction": [],
             }
             for construction_type in data:
                 data[construction_type] = _get_element(
                     construction_type,
                     base_walls,  # type: ignore
                     construction,
+                )
+            windows = [window for window in base_walls if window.construction == construction]
+            overhang, side_fins = _shading_of(windows)
+            if (overhang or side_fins) and len({(window.width, window.height) for window in windows}) > 1:
+                raise InvalidBuildingStructureError(
+                    f"The shaded windows {[window.name for window in windows]} share a glazing but differ in "
+                    "size: IDEAS gives one shading geometry to all of them, so use one size or different glazings."
                 )
             merged_window = cls(
                 name=f"merged_{'_'.join(data['name'])}",  # type: ignore
@@ -265,6 +281,9 @@ class MergedWindows(MergedBaseWindow):
                 constructions=[construction],
                 heights=data["height"],
                 widths=data["width"],
+                frame_fractions=data["frame_fraction"],
+                overhang=overhang,
+                side_fins=side_fins,
             )
             merged_windows.append(merged_window)
         return sorted(merged_windows, key=lambda x: x.name)  # type: ignore

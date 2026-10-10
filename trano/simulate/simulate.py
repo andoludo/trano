@@ -1,3 +1,4 @@
+import os
 import platform
 import subprocess
 import tempfile
@@ -45,6 +46,10 @@ def client() -> docker.DockerClient:
     return client
 
 
+LIBRARIES_VARIABLE = "TRANO_MODELICA_LIBRARIES"
+CONTAINER_LIBRARIES = "/root/.openmodelica/libraries"  # where OpenModelica's package manager installs
+
+
 class ModelicaEnvironment(BaseModel):
     """Versions of the OpenModelica image and of the Modelica libraries installed in it.
 
@@ -58,6 +63,12 @@ class ModelicaEnvironment(BaseModel):
     """
 
     openmodelica_image: str = Field(default="openmodelica/openmodelica:v1.26.9-ompython")
+    libraries_path: Path | None = Field(
+        default_factory=lambda: Path(path) if (path := os.environ.get(LIBRARIES_VARIABLE)) else None,
+        description="Host directory of installed Modelica libraries mounted into the container; "
+        f"from the environment variable {LIBRARIES_VARIABLE}. Without it the libraries are installed "
+        "by OpenModelica's package manager at every container start, which needs network access.",
+    )
     modelica: list[str] = Field(default=["4.0.0+maint.om", "4.1.0+maint.om"])
     buildings: str = Field(default="13.0.0")
     ideas: str = Field(default="3.0.0")
@@ -186,13 +197,13 @@ def container(
     container_name: str = "openmodelica",
 ) -> Generator[docker.models.containers.Container, None, None]:
     stop_container(client, container_name)
+    volumes = [f"{project_path}:/simulation", f"{project_path}/results:/results"]
+    if environment.libraries_path is not None:
+        volumes.append(f"{environment.libraries_path.resolve()}:{CONTAINER_LIBRARIES}")
     container = client.containers.run(
         environment.openmodelica_image,
         command="tail -f /dev/null",
-        volumes=[
-            f"{project_path}:/simulation",
-            f"{project_path}/results:/results",
-        ],
+        volumes=volumes,
         detach=True,
         name=container_name,
     )

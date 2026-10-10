@@ -25,7 +25,7 @@ from trano.elements.system import IdealHeatingCooling
 from trano.simulate.simulate import SimulationOptions, simulate
 from trano.topology import Network
 from trano.utils.utils import is_success
-from validation.bestest.cases import CASES, Case, building_description, render_case
+from validation.bestest.cases import CASES, Case, building_description, check_support, render_case
 from validation.bestest.kpi import KpiResults, Signals, extract_kpis, find_variable
 
 logger = logging.getLogger(__name__)
@@ -124,6 +124,7 @@ def run_case(
 ) -> CaseResult:
     """Simulate the case (unless cached) and return its KPIs."""
     case = CASES[case_id]
+    check_support(case, library)
     options = SimulationOptions(
         start_time=0, end_time=end_time, tolerance=TOLERANCE, number_of_intervals=end_time // 3600
     )

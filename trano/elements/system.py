@@ -126,7 +126,18 @@ class DistributionSystem(System):
     container_type: ContainerTypes = "distribution"
 
 
-class Weather(BaseWeather): ...
+class Weather(BaseWeather):
+    linearize_radiation: bool = True  # IDEAS: `linIntRad` and `linExtRad` of the SimInfoManager
+
+    def configure(self, network: "Network") -> None:
+        """Follow the zones: linearized radiation unless a zone asks for the emissive power as is."""
+        from trano.elements.space import Space
+
+        self.linearize_radiation = all(
+            str(getattr(node.parameters, "linearize_emissive_power", "true")).lower() != "false"
+            for node in network.graph.nodes
+            if isinstance(node, Space)
+        )
 
 
 class Valve(SpaceHeatingSystem): ...

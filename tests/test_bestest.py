@@ -6,7 +6,7 @@ in ``.cache/bestest`` by the generated model, so an unchanged case is not simula
 
 import pytest
 
-from validation.bestest.cases import CASES, UnsupportedCaseError, building_description
+from validation.bestest.cases import CASES, UnsupportedCaseError, building_description, check_support
 from validation.bestest.harness import run_case
 from validation.bestest.reference import load_reference
 from validation.bestest.report import compare
@@ -23,6 +23,7 @@ def parameters() -> list[pytest.param]:  # type: ignore[valid-type]
             marks = []
             try:
                 building_description(case)
+                check_support(case, library)
             except UnsupportedCaseError as error:
                 marks.append(pytest.mark.skip(reason=str(error)))
             cases.append(pytest.param(case.id, library, id=f"{case.id}-{library}", marks=marks))
