@@ -1,5 +1,6 @@
 """The ASHRAE 140 cases are described faithfully and the YAML files are the generated ones."""
 
+import math
 import re
 from pathlib import Path
 
@@ -103,3 +104,75 @@ def test_internal_gain_is_200_w_split_60_40() -> None:
 
     assert occupancy["gain"] == "[120/48; 80/48; 0]"
     assert occupancy["occupancy"] == "{1, 86400}"  # an entry at 0 would switch the schedule off
+
+
+def hvac_parameters(case_id: str) -> dict[str, str | float]:
+    return building_description(CASES[case_id])["spaces"][0]["emissions"][0]["ideal_heating_cooling"]["parameters"]  # type: ignore[no-any-return]
+
+
+def test_the_base_case_heats_below_20_and_cools_above_27() -> None:
+    parameters = hvac_parameters("600")
+
+    assert parameters["heating_setpoint_schedule"] == "[0, 293.15]"
+    assert parameters["cooling_setpoint_schedule"] == "[0, 300.15]"
+    assert parameters["maximum_heating_power"] == parameters["maximum_cooling_power"] == 1e6
+
+
+def test_the_setback_cases_ramp_the_heating_set_point_between_7_and_8() -> None:
+    assert (
+        hvac_parameters("640")["heating_setpoint_schedule"]
+        == hvac_parameters("940")["heating_setpoint_schedule"]
+        == "[0, 283.15; 25200, 283.15; 28800, 293.15; 82800, 293.15; 82800, 283.15; 86400, 283.15]"
+    )
+
+
+def test_the_single_set_point_cases_keep_a_dead_band_of_0_2_k() -> None:
+    for case_id in ("685", "695", "985", "995"):
+        parameters = hvac_parameters(case_id)
+        assert parameters["heating_setpoint_schedule"] == "[0, 293.05]"
+        assert parameters["cooling_setpoint_schedule"] == "[0, 293.25]"
+
+
+def test_the_night_ventilation_cases_only_cool_between_7_and_18() -> None:
+    hvac = CASES["650"].hvac
+    assert hvac is not None
+
+    assert hvac.emission["ideal_heating_cooling"]["parameters"]["maximum_heating_power"] == 0
+    cooling_7_to_18 = "[0, 373.15; 25200, 373.15; 25200, 300.15; 64800, 300.15; 64800, 373.15; 86400, 373.15]"
+    assert hvac.cooling_schedule == cooling_7_to_18
+
+
+def test_the_materials_resolve_the_layers_with_18_states() -> None:
+    description = building_description(CASES["900"])
+
+    assert {material["number_of_states"] for material in description["material"]} == {18}
+    assert "nStaRef=18" in zone_declaration(case_file("900")) or "nStaRef=18" in remove_trano_package(
+        convert_network("case_900", case_file("900"), library=Library.from_configuration("Buildings")).model()
+    )
+
+
+def test_east_west_cases_split_the_12_m2_of_glazing_over_both_side_walls() -> None:
+    windows = building_description(CASES["620"])["spaces"][0]["external_boundaries"]["windows"]
+
+    assert [(window["surface"], window["width"], window["azimuth"]) for window in windows] == [
+        (6.0, 3.0, pytest.approx(-math.pi / 2)),
+        (6.0, 3.0, pytest.approx(math.pi / 2)),
+    ]
+
+
+def test_the_sun_space_case_has_a_light_zone_behind_a_heavy_sun_space() -> None:
+    zone, sunspace = building_description(CASES["960"])["spaces"]
+
+    assert zone["external_boundaries"]["windows"] == []
+    assert {wall["construction"] for wall in zone["external_boundaries"]["external_walls"]} == {
+        "LIGHT_WALL:001",
+        "ROOF:001",
+    }
+    assert zone["external_boundaries"]["floor_on_grounds"][0]["construction"] == "LIGHT_FLOOR:001"
+    assert {wall["construction"] for wall in sunspace["external_boundaries"]["external_walls"]} == {
+        "HEAVY_WALL:001",
+        "ROOF:001",
+    }
+    assert sunspace["external_boundaries"]["floor_on_grounds"][0]["construction"] == "HEAVY_FLOOR:001"
+    assert sunspace["external_boundaries"]["windows"][0]["surface"] == 12.0
+    assert "emissions" not in sunspace and "occupancy" not in sunspace

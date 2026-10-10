@@ -11,23 +11,20 @@ from validation.bestest.harness import run_case
 from validation.bestest.reference import load_reference
 from validation.bestest.report import compare
 
-# Cases expected to pass per library; the others are skipped with the feature they wait for.
-EXPECTED_TO_PASS: dict[str, set[str]] = {
-    "Buildings": {"600FF", "900FF", "680FF", "980FF"},
-}
+# Libraries whose cases must pass; a case not yet supported by the generator is skipped with the
+# feature it waits for, and the deviations listed in ``report.KNOWN_DEVIATIONS`` are accepted.
+GATING_LIBRARIES = ("Buildings",)
 
 
 def parameters() -> list[pytest.param]:  # type: ignore[valid-type]
     cases = []
-    for library, expected in EXPECTED_TO_PASS.items():
+    for library in GATING_LIBRARIES:
         for case in CASES.values():
             marks = []
             try:
                 building_description(case)
             except UnsupportedCaseError as error:
                 marks.append(pytest.mark.skip(reason=str(error)))
-            if case.id not in expected and not marks:
-                marks.append(pytest.mark.xfail(reason=f"{case.id} not validated with {library} yet", strict=False))
             cases.append(pytest.param(case.id, library, id=f"{case.id}-{library}", marks=marks))
     return cases
 
@@ -42,6 +39,6 @@ def test_case_matches_the_reference(case_id: str, library: str) -> None:
     failures = [
         f"{c.kpi}: {c.value:.3f} {c.unit} outside [{c.lower:.3f}, {c.upper:.3f}]"
         for c in comparisons
-        if c.status != "pass"
+        if c.status == "fail"
     ]
     assert not failures, "\n".join(failures)

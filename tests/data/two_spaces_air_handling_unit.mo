@@ -1946,6 +1946,103 @@ equation
         Line(
           points={{66,58},{66,-62}})}));
 end IdealHeatEmission;
+
+  model IdealHeatingCooling
+    "Ideal heating and cooling of a zone towards scheduled set points"
+    parameter Real TSetHea[:, 2]=[0, 293.15]
+      "Heating set point day schedule: time since midnight [s] and set point [K], repeated daily";
+    parameter Real TSetCoo[:, 2]=[0, 300.15]
+      "Cooling set point day schedule: time since midnight [s] and set point [K], repeated daily";
+    parameter Modelica.Units.SI.HeatFlowRate QHea_flow_max=1e6 "Heating capacity";
+    parameter Modelica.Units.SI.HeatFlowRate QCoo_flow_max=1e6 "Cooling capacity";
+    parameter Real k=0.1 "Controller gain [1/K]";
+    parameter Modelica.Units.SI.Time Ti=300 "Controller integral time";
+    parameter Real frad=0 "Radiative fraction of the heat flow";
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortCon
+      "Heat port for convective heat transfer with room air temperature"
+      annotation (Placement(transformation(extent={{-30,62},{-10,82}})));
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heatPortRad
+      "Heat port for radiative heat transfer with room radiation temperature"
+      annotation (Placement(transformation(extent={{10,62},{30,82}})));
+    Modelica.Blocks.Interfaces.RealOutput QHea_flow(unit="W") "Heating power delivered"
+      annotation (Placement(transformation(extent={{100,30},{120,50}})));
+    Modelica.Blocks.Interfaces.RealOutput QCoo_flow(unit="W") "Cooling power delivered, positive when cooling"
+      annotation (Placement(transformation(extent={{100,-50},{120,-30}})));
+    Modelica.Blocks.Interfaces.RealOutput EHea(unit="J") "Heating energy delivered"
+      annotation (Placement(transformation(extent={{100,10},{120,30}})));
+    Modelica.Blocks.Interfaces.RealOutput ECoo(unit="J") "Cooling energy delivered"
+      annotation (Placement(transformation(extent={{100,-30},{120,-10}})));
+    Modelica.Blocks.Continuous.Integrator intHea(
+      initType=Modelica.Blocks.Types.Init.InitialState, y_start=0) "Heating energy"
+      annotation (Placement(transformation(extent={{70,10},{90,30}})));
+    Modelica.Blocks.Continuous.Integrator intCoo(
+      initType=Modelica.Blocks.Types.Init.InitialState, y_start=0) "Cooling energy"
+      annotation (Placement(transformation(extent={{70,-30},{90,-10}})));
+    Modelica.Blocks.Sources.CombiTimeTable heaSch(
+      table=TSetHea,
+      extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic,
+      smoothness=Modelica.Blocks.Types.Smoothness.LinearSegments) "Heating set point"
+      annotation (Placement(transformation(extent={{-90,30},{-70,50}})));
+    Modelica.Blocks.Sources.CombiTimeTable cooSch(
+      table=TSetCoo,
+      extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic,
+      smoothness=Modelica.Blocks.Types.Smoothness.LinearSegments) "Cooling set point"
+      annotation (Placement(transformation(extent={{-90,-50},{-70,-30}})));
+    Modelica.Blocks.Continuous.LimPID conHea(
+      controllerType=Modelica.Blocks.Types.SimpleController.PI,
+      k=k,
+      Ti=Ti,
+      yMax=1,
+      yMin=0) "Heating controller"
+      annotation (Placement(transformation(extent={{-40,30},{-20,50}})));
+    Modelica.Blocks.Continuous.LimPID conCoo(
+      controllerType=Modelica.Blocks.Types.SimpleController.PI,
+      k=k,
+      Ti=Ti,
+      yMax=1,
+      yMin=0) "Cooling controller, acting on the zone temperature above its set point"
+      annotation (Placement(transformation(extent={{-40,-50},{-20,-30}})));
+    Modelica.Thermal.HeatTransfer.Sensors.TemperatureSensor TAir "Zone air temperature"
+      annotation (Placement(transformation(extent={{-90,-10},{-70,10}})));
+  protected
+    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preCon(final alpha=0)
+      "Convective heat flow into the zone"
+      annotation (Placement(transformation(extent={{40,20},{60,40}})));
+    Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow preRad(final alpha=0)
+      "Radiative heat flow into the zone"
+      annotation (Placement(transformation(extent={{40,-20},{60,0}})));
+  equation
+    QHea_flow = conHea.y*QHea_flow_max;
+    QCoo_flow = conCoo.y*QCoo_flow_max;
+    intHea.u = QHea_flow;
+    intCoo.u = QCoo_flow;
+    EHea = intHea.y;
+    ECoo = intCoo.y;
+    preCon.Q_flow = (1 - frad)*(QHea_flow - QCoo_flow);
+    preRad.Q_flow = frad*(QHea_flow - QCoo_flow);
+    connect(TAir.port, heatPortCon)
+      annotation (Line(points={{-90,0},{-96,0},{-96,56},{-20,56},{-20,72}}, color={191,0,0}));
+    connect(heaSch.y[1], conHea.u_s)
+      annotation (Line(points={{-69,40},{-42,40}}, color={0,0,127}));
+    connect(TAir.T, conHea.u_m)
+      annotation (Line(points={{-69,0},{-30,0},{-30,28}}, color={0,0,127}));
+    connect(TAir.T, conCoo.u_s)
+      annotation (Line(points={{-69,0},{-56,0},{-56,-40},{-42,-40}}, color={0,0,127}));
+    connect(cooSch.y[1], conCoo.u_m)
+      annotation (Line(points={{-69,-40},{-60,-40},{-60,-60},{-30,-60},{-30,-52}}, color={0,0,127}));
+    connect(preCon.port, heatPortCon)
+      annotation (Line(points={{60,30},{80,30},{80,56},{-20,56},{-20,72}}, color={191,0,0}));
+    connect(preRad.port, heatPortRad)
+      annotation (Line(points={{60,-10},{86,-10},{86,50},{20,50},{20,72}}, color={191,0,0}));
+    annotation (Icon(graphics={
+          Rectangle(
+            extent={{-80,60},{80,-60}},
+            lineColor={0,0,0},
+            fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-60,-20},{-20,20},{20,-20},{60,20}}, color={238,46,47}),
+          Line(points={{-60,20},{-20,-20},{20,20},{60,-20}}, color={28,108,200})}));
+  end IdealHeatingCooling;
     partial model PartialIdealHeatEmission
   parameter Real frad=0.3 "radiative fraction";
     parameter Real power=2000 "heating power";
@@ -2649,6 +2746,14 @@ end PartialPowerSensor;
         use_p_in=true,
         nPorts=1) "Pressure boundary closing the infiltration mass balance, at the outdoor pressure"
         annotation (Placement(transformation(extent={{2,-194},{20,-176}})));
+      Buildings.Fluid.FixedResistances.PressureDrop resInf(
+        redeclare package Medium = Medium,
+        m_flow_nominal=m_flow_nominal,
+        dp_nominal=5,
+        from_dp=true,
+        linearized=true)
+        "Decouples the room pressure state from the outdoor pressure of the boundary"
+        annotation (Placement(transformation(extent={{30,-194},{48,-176}})));
       Modelica.Blocks.Sources.RealExpression airInfiltration(
         y=ACH*V*Medium.density(Medium.setState_pTX(weaBus.pAtm, heaPorAir.T, Medium.X_default))/3600)
         "Infiltration mass flow rate at the density of the zone air"
@@ -3062,7 +3167,8 @@ end PartialPowerSensor;
           color={191,0,0},
           smooth=Smooth.None));
           connect(souInf.ports[1], air.ports[1]);
-    connect(sinInf.ports[1], air.ports[2]);
+    connect(sinInf.ports[1], resInf.port_a);
+    connect(resInf.port_b, air.ports[2]);
     connect(weaBus.pAtm, sinInf.p_in);
       for i in 1:nPorts loop
         connect(ports[i],air. ports[i+2])
@@ -3267,7 +3373,10 @@ end PartialPowerSensor;
     extends Trano.ThermalZones.BaseClasses.RoomHeatMassBalanceInf(
     redeclare Buildings.ThermalZones.Detailed.BaseClasses.MixedAirHeatMassBalance air(
       final energyDynamics=energyDynamics,
-      final massDynamics = energyDynamics,
+      // The pressure starts in balance with the infiltration boundary: a fixed start value away from
+      // the site pressure would blow the zone down (and cool it) in the first seconds.
+      final massDynamics = if energyDynamics == Modelica.Fluid.Types.Dynamics.FixedInitial
+        then Modelica.Fluid.Types.Dynamics.SteadyStateInitial else energyDynamics,
       final p_start=p_start,
       final T_start=T_start,
       final X_start=X_start,
@@ -3609,15 +3718,18 @@ package Components
         x=0.2,
         k=1.4,
         c=840.0,
-        d=2240.0),Buildings.HeatTransfer.Data.Solids.Generic(
+        d=2240.0,
+        nStaRef=3),Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.02,
         k=0.03,
         c=1200.0,
-        d=40.0),Buildings.HeatTransfer.Data.Solids.Generic(
+        d=40.0,
+        nStaRef=3),Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.1,
         k=0.12,
         c=1210.0,
-        d=540.0)    },
+        d=540.0,
+        nStaRef=3)    },
     roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
     annotation (Placement(transformation(extent={{20,84},{34,98}})));    parameter Buildings.HeatTransfer.Data.OpaqueConstructions.Generic
         internal_wall(
@@ -3630,7 +3742,8 @@ package Components
         x=0.2,
         k=0.89,
         c=790.0,
-        d=1920.0)    },
+        d=1920.0,
+        nStaRef=3)    },
     roughness_a=Buildings.HeatTransfer.Types.SurfaceRoughness.Rough)
     annotation (Placement(transformation(extent={{20,84},{34,98}})));
 
@@ -3707,20 +3820,20 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     azi={ -1.57 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { 78.02252197265625, 24.13426971435547 },
+    Placement(transformation(origin = { -14.036056518554688, -73.9330825805664 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
     
         Buildings.HeatTransfer.Sources.FixedTemperature floor_2(T=283.15)
     "Ground under the floor" annotation (
-    Placement(transformation(origin = { 93.02252197265625, 44.13426971435547 },
+    Placement(transformation(origin = { 0.9639434814453125, -53.933082580566406 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     
         two_spaces_air_handling_unit.Components.BaseClasses.OccupancyOccupancy_0
     occupancy_0(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { 63.02252197265625, 24.13426971435547 },
+    Placement(transformation(origin = { -29.036056518554688, -73.9330825805664 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     Buildings.ThermalZones.Detailed.MixedAir space_2(
@@ -3748,19 +3861,19 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     azi={ -1.57 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { -100.0, -33.08197021484375 },
+    Placement(transformation(origin = { 100.0, 29.048965454101562 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
         Buildings.HeatTransfer.Sources.FixedTemperature floor_3(T=283.15)
     "Ground under the floor" annotation (
-    Placement(transformation(origin = { -85.0, -13.08197021484375 },
+    Placement(transformation(origin = { 115.0, 49.04896545410156 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     
         two_spaces_air_handling_unit.Components.BaseClasses.OccupancyOccupancy_1
     occupancy_1(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { -115.0, -33.08197021484375 },
+    Placement(transformation(origin = { 85.0, 29.048965454101562 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
         Buildings.HeatTransfer.Conduction.MultiLayer
@@ -3769,20 +3882,20 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     internal_wall, stateAtSurface_a = true, stateAtSurface_b = true)
     "Partition wall between the two
     rooms"  annotation (
-    Placement(transformation(origin = { -99.34959411621094, 61.656829833984375 },
+    Placement(transformation(origin = { -85.05924987792969, 30.9739990234375 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             weather_0(filNam=Modelica.Utilities.Files.loadResource
     ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
  annotation (
-    Placement(transformation(origin = { 12.899162292480469, 59.422576904296875 },
+    Placement(transformation(origin = { -66.03617858886719, 11.905960083007812 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(space_1.surf_conBou[1],floor_2.port)
         annotation (Line(
-        points={{ 78.02252197265625, 24.13426971435547 }    ,{ 85.52252197265625, 24.13426971435547 }    ,{ 85.52252197265625, 44.13426971435547 }    ,{ 93.02252197265625, 44.13426971435547 }    },
+        points={{ -14.036056518554688, -73.9330825805664 }    ,{ -6.5360565185546875, -73.9330825805664 }    ,{ -6.5360565185546875, -53.933082580566406 }    ,{ 0.9639434814453125, -53.933082580566406 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3790,7 +3903,7 @@ equation
             ;        
         connect(space_1.qGai_flow,occupancy_0.y)
         annotation (Line(
-        points={{ 78.02252197265625, 24.13426971435547 }    ,{ 70.52252197265625, 24.13426971435547 }    ,{ 70.52252197265625, 24.13426971435547 }    ,{ 63.02252197265625, 24.13426971435547 }    },
+        points={{ -14.036056518554688, -73.9330825805664 }    ,{ -21.536056518554688, -73.9330825805664 }    ,{ -21.536056518554688, -73.9330825805664 }    ,{ -29.036056518554688, -73.9330825805664 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3798,7 +3911,7 @@ equation
             ;        
         connect(space_1.ports[1],ports_b[1])
         annotation (Line(
-        points={{ 78.02252197265625, 24.13426971435547 }    ,{ 39.011260986328125, 24.13426971435547 }    ,{ 39.011260986328125, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ -14.036056518554688, -73.9330825805664 }    ,{ -7.018028259277344, -73.9330825805664 }    ,{ -7.018028259277344, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -3806,7 +3919,7 @@ equation
             ;        
         connect(space_1.surf_surBou[1],internal_space_1_space_2.port_a)
         annotation (Line(
-        points={{ 78.02252197265625, 24.13426971435547 }    ,{ -10.663536071777344, 24.13426971435547 }    ,{ -10.663536071777344, 61.656829833984375 }    ,{ -99.34959411621094, 61.656829833984375 }    },
+        points={{ -14.036056518554688, -73.9330825805664 }    ,{ -49.54765319824219, -73.9330825805664 }    ,{ -49.54765319824219, 30.9739990234375 }    ,{ -85.05924987792969, 30.9739990234375 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3814,7 +3927,7 @@ equation
             ;        
         connect(space_1.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ 78.02252197265625, 24.13426971435547 }    ,{ 45.46084213256836, 24.13426971435547 }    ,{ 45.46084213256836, 59.422576904296875 }    ,{ 12.899162292480469, 59.422576904296875 }    },
+        points={{ -14.036056518554688, -73.9330825805664 }    ,{ -40.03611755371094, -73.9330825805664 }    ,{ -40.03611755371094, 11.905960083007812 }    ,{ -66.03617858886719, 11.905960083007812 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3822,7 +3935,7 @@ equation
             ;        
         connect(space_1.ports[2],ports_b[2])
         annotation (Line(
-        points={{ 78.02252197265625, 24.13426971435547 }    ,{ 39.011260986328125, 24.13426971435547 }    ,{ 39.011260986328125, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ -14.036056518554688, -73.9330825805664 }    ,{ -7.018028259277344, -73.9330825805664 }    ,{ -7.018028259277344, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -3830,7 +3943,7 @@ equation
             ;        
         connect(space_2.surf_conBou[1],floor_3.port)
         annotation (Line(
-        points={{ -100.0, -33.08197021484375 }    ,{ -92.5, -33.08197021484375 }    ,{ -92.5, -13.08197021484375 }    ,{ -85.0, -13.08197021484375 }    },
+        points={{ 100.0, 29.048965454101562 }    ,{ 107.5, 29.048965454101562 }    ,{ 107.5, 49.04896545410156 }    ,{ 115.0, 49.04896545410156 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3838,7 +3951,7 @@ equation
             ;        
         connect(space_2.qGai_flow,occupancy_1.y)
         annotation (Line(
-        points={{ -100.0, -33.08197021484375 }    ,{ -107.5, -33.08197021484375 }    ,{ -107.5, -33.08197021484375 }    ,{ -115.0, -33.08197021484375 }    },
+        points={{ 100.0, 29.048965454101562 }    ,{ 92.5, 29.048965454101562 }    ,{ 92.5, 29.048965454101562 }    ,{ 85.0, 29.048965454101562 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3846,7 +3959,7 @@ equation
             ;        
         connect(space_2.ports[1],ports_b[3])
         annotation (Line(
-        points={{ -100.0, -33.08197021484375 }    ,{ -50.0, -33.08197021484375 }    ,{ -50.0, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 100.0, 29.048965454101562 }    ,{ 50.0, 29.048965454101562 }    ,{ 50.0, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -3854,7 +3967,7 @@ equation
             ;        
         connect(space_2.surf_surBou[1],internal_space_1_space_2.port_b)
         annotation (Line(
-        points={{ -100.0, -33.08197021484375 }    ,{ -99.67479705810547, -33.08197021484375 }    ,{ -99.67479705810547, 61.656829833984375 }    ,{ -99.34959411621094, 61.656829833984375 }    },
+        points={{ 100.0, 29.048965454101562 }    ,{ 7.470375061035156, 29.048965454101562 }    ,{ 7.470375061035156, 30.9739990234375 }    ,{ -85.05924987792969, 30.9739990234375 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3862,7 +3975,7 @@ equation
             ;        
         connect(space_2.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ -100.0, -33.08197021484375 }    ,{ -43.550418853759766, -33.08197021484375 }    ,{ -43.550418853759766, 59.422576904296875 }    ,{ 12.899162292480469, 59.422576904296875 }    },
+        points={{ 100.0, 29.048965454101562 }    ,{ 16.981910705566406, 29.048965454101562 }    ,{ 16.981910705566406, 11.905960083007812 }    ,{ -66.03617858886719, 11.905960083007812 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3870,7 +3983,7 @@ equation
             ;        
         connect(space_2.ports[2],ports_b[4])
         annotation (Line(
-        points={{ -100.0, -33.08197021484375 }    ,{ -50.0, -33.08197021484375 }    ,{ -50.0, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 100.0, 29.048965454101562 }    ,{ 50.0, 29.048965454101562 }    ,{ 50.0, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -3890,7 +4003,7 @@ equation
             ;        
         connect(weather_0.weaBus,dataBus)
         annotation (Line(
-        points={{ 12.899162292480469, 59.422576904296875 }    ,{ 12.899162292480469, 59.422576904296875 }    ,{ 12.899162292480469, 59.422576904296875 }    ,{ 12.899162292480469, 59.422576904296875 }    },
+        points={{ -66.03617858886719, 11.905960083007812 }    ,{ -66.03617858886719, 11.905960083007812 }    ,{ -66.03617858886719, 11.905960083007812 }    ,{ -66.03617858886719, 11.905960083007812 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4024,12 +4137,12 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     THeaAirInl_nominal=30,
     THeaAirDis_nominal=25
     ) annotation (
-    Placement(transformation(origin = { 43.96833801269531, -42.56168746948242 },
+    Placement(transformation(origin = { 45.141510009765625, -27.661537170410156 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
         two_spaces_air_handling_unit.Components.BaseClasses.VAVControlVav_in_control
     vav_in_control annotation (
-    Placement(transformation(origin = { -100.0, -53.252925872802734 },
+    Placement(transformation(origin = { 98.57365417480469, 76.48442077636719 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
       Buildings.Fluid.FixedResistances.PressureDrop
@@ -4038,7 +4151,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { -18.09406280517578, 10.474464416503906 },
+    Placement(transformation(origin = { -13.501434326171875, 3.0474700927734375 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
       Buildings.Fluid.FixedResistances.PressureDrop
@@ -4047,7 +4160,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { 17.6253662109375, 79.95208740234375 },
+    Placement(transformation(origin = { 22.750534057617188, 31.154525756835938 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
       two_spaces_air_handling_unit.Components.BaseClasses.VAVBoxVav_in_2
@@ -4062,12 +4175,12 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     THeaAirInl_nominal=30,
     THeaAirDis_nominal=25
     ) annotation (
-    Placement(transformation(origin = { 9.490501403808594, -36.25346374511719 },
+    Placement(transformation(origin = { -91.9343490600586, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
         two_spaces_air_handling_unit.Components.BaseClasses.VAVControlVav_in_control_2
     vav_in_control_2 annotation (
-    Placement(transformation(origin = { -37.96358108520508, 100.0 },
+    Placement(transformation(origin = { 67.08224487304688, 74.93365478515625 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
       Buildings.Fluid.FixedResistances.PressureDrop
@@ -4076,7 +4189,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { 37.388916015625, 58.9671630859375 },
+    Placement(transformation(origin = { -73.57579040527344, 80.36970520019531 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
       Buildings.Fluid.FixedResistances.PressureDrop
@@ -4085,7 +4198,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     redeclare package Medium = Medium,
     allowFlowReversal = false,
     dp_nominal=40) "Pressure drop for return duct"  annotation (
-    Placement(transformation(origin = { 100.0, 97.90144348144531 },
+    Placement(transformation(origin = { -100.0, -36.55030822753906 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     two_spaces_air_handling_unit.Components.BaseClasses.AhuAhu
@@ -4095,23 +4208,23 @@ Modelica.Fluid.Interfaces.FluidPorts_a[2] ports_a(
     VRoo={100,100},
     AFlo={20,20},
     mCooVAV_flow_nominal={0.01,0.01}) annotation (
-    Placement(transformation(origin = { -51.0606689453125, -100.0 },
+    Placement(transformation(origin = { -92.32461547851562, 95.44331359863281 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
         two_spaces_air_handling_unit.Components.BaseClasses.AhuControlAhu_control
     ahu_control annotation (
-    Placement(transformation(origin = { 35.300567626953125, 19.393310546875 },
+    Placement(transformation(origin = { 100.0, 75.34011840820312 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
       Buildings.Fluid.Sources.Outside boundary
     (nPorts=2,redeclare package Medium = Medium) annotation (
-    Placement(transformation(origin = { 97.512451171875, 34.88722229003906 },
+    Placement(transformation(origin = { -10.45635986328125, -100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(pressure_drop_duct_out.port_a,ports_a[1])
         annotation (Line(
-        points={{ -18.09406280517578, 10.474464416503906 }    ,{ -9.04703140258789, 10.474464416503906 }    ,{ -9.04703140258789, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ -13.501434326171875, 3.0474700927734375 }    ,{ -6.7507171630859375, 3.0474700927734375 }    ,{ -6.7507171630859375, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -4119,7 +4232,7 @@ equation
             ;        
         connect(vav_in.dataBus,vav_in_control.dataBus)
         annotation (Line(
-        points={{ 43.96833801269531, -42.56168746948242 }    ,{ -28.015830993652344, -42.56168746948242 }    ,{ -28.015830993652344, -53.252925872802734 }    ,{ -100.0, -53.252925872802734 }    },
+        points={{ 45.141510009765625, -27.661537170410156 }    ,{ 71.85758209228516, -27.661537170410156 }    ,{ 71.85758209228516, 76.48442077636719 }    ,{ 98.57365417480469, 76.48442077636719 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4127,7 +4240,7 @@ equation
             ;        
         connect(vav_in.port_bAir,ports_b[1])
         annotation (Line(
-        points={{ 43.96833801269531, -42.56168746948242 }    ,{ 21.984169006347656, -42.56168746948242 }    ,{ 21.984169006347656, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ 45.141510009765625, -27.661537170410156 }    ,{ 22.570755004882812, -27.661537170410156 }    ,{ 22.570755004882812, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -4135,7 +4248,7 @@ equation
             ;        
         connect(pressure_drop_duct_out.port_b,ahu.port_a)
         annotation (Line(
-        points={{ -18.09406280517578, 10.474464416503906 }    ,{ -34.57736587524414, 10.474464416503906 }    ,{ -34.57736587524414, -100.0 }    ,{ -51.0606689453125, -100.0 }    },
+        points={{ -13.501434326171875, 3.0474700927734375 }    ,{ -52.91302490234375, 3.0474700927734375 }    ,{ -52.91302490234375, 95.44331359863281 }    ,{ -92.32461547851562, 95.44331359863281 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4143,7 +4256,7 @@ equation
             ;        
         connect(pressure_drop_duct_in.port_b,vav_in.port_aAir)
         annotation (Line(
-        points={{ 17.6253662109375, 79.95208740234375 }    ,{ 30.796852111816406, 79.95208740234375 }    ,{ 30.796852111816406, -42.56168746948242 }    ,{ 43.96833801269531, -42.56168746948242 }    },
+        points={{ 22.750534057617188, 31.154525756835938 }    ,{ 33.946022033691406, 31.154525756835938 }    ,{ 33.946022033691406, -27.661537170410156 }    ,{ 45.141510009765625, -27.661537170410156 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4151,7 +4264,7 @@ equation
             ;        
         connect(pressure_drop_duct_out_2.port_a,ports_a[2])
         annotation (Line(
-        points={{ 37.388916015625, 58.9671630859375 }    ,{ 18.6944580078125, 58.9671630859375 }    ,{ 18.6944580078125, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ -73.57579040527344, 80.36970520019531 }    ,{ -36.78789520263672, 80.36970520019531 }    ,{ -36.78789520263672, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -4159,7 +4272,7 @@ equation
             ;        
         connect(vav_in_2.dataBus,vav_in_control_2.dataBus)
         annotation (Line(
-        points={{ 9.490501403808594, -36.25346374511719 }    ,{ -14.236539840698242, -36.25346374511719 }    ,{ -14.236539840698242, 100.0 }    ,{ -37.96358108520508, 100.0 }    },
+        points={{ -91.9343490600586, 100.0 }    ,{ -12.42605209350586, 100.0 }    ,{ -12.42605209350586, 74.93365478515625 }    ,{ 67.08224487304688, 74.93365478515625 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4167,7 +4280,7 @@ equation
             ;        
         connect(vav_in_2.port_bAir,ports_b[2])
         annotation (Line(
-        points={{ 9.490501403808594, -36.25346374511719 }    ,{ 4.745250701904297, -36.25346374511719 }    ,{ 4.745250701904297, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ -91.9343490600586, 100.0 }    ,{ -45.9671745300293, 100.0 }    ,{ -45.9671745300293, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -4175,7 +4288,7 @@ equation
             ;        
         connect(pressure_drop_duct_out_2.port_b,ahu.port_a)
         annotation (Line(
-        points={{ 37.388916015625, 58.9671630859375 }    ,{ -6.83587646484375, 58.9671630859375 }    ,{ -6.83587646484375, -100.0 }    ,{ -51.0606689453125, -100.0 }    },
+        points={{ -73.57579040527344, 80.36970520019531 }    ,{ -82.95020294189453, 80.36970520019531 }    ,{ -82.95020294189453, 95.44331359863281 }    ,{ -92.32461547851562, 95.44331359863281 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4183,7 +4296,7 @@ equation
             ;        
         connect(pressure_drop_duct_in_2.port_b,vav_in_2.port_aAir)
         annotation (Line(
-        points={{ 100.0, 97.90144348144531 }    ,{ 54.7452507019043, 97.90144348144531 }    ,{ 54.7452507019043, -36.25346374511719 }    ,{ 9.490501403808594, -36.25346374511719 }    },
+        points={{ -100.0, -36.55030822753906 }    ,{ -95.9671745300293, -36.55030822753906 }    ,{ -95.9671745300293, 100.0 }    ,{ -91.9343490600586, 100.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4191,7 +4304,7 @@ equation
             ;        
         connect(ahu.dataBus,ahu_control.dataBus)
         annotation (Line(
-        points={{ -51.0606689453125, -100.0 }    ,{ -7.8800506591796875, -100.0 }    ,{ -7.8800506591796875, 19.393310546875 }    ,{ 35.300567626953125, 19.393310546875 }    },
+        points={{ -92.32461547851562, 95.44331359863281 }    ,{ 3.8376922607421875, 95.44331359863281 }    ,{ 3.8376922607421875, 75.34011840820312 }    ,{ 100.0, 75.34011840820312 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4199,7 +4312,7 @@ equation
             ;        
         connect(ahu.port_b,pressure_drop_duct_in.port_a)
         annotation (Line(
-        points={{ -51.0606689453125, -100.0 }    ,{ -16.7176513671875, -100.0 }    ,{ -16.7176513671875, 79.95208740234375 }    ,{ 17.6253662109375, 79.95208740234375 }    },
+        points={{ -92.32461547851562, 95.44331359863281 }    ,{ -34.78704071044922, 95.44331359863281 }    ,{ -34.78704071044922, 31.154525756835938 }    ,{ 22.750534057617188, 31.154525756835938 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4207,7 +4320,7 @@ equation
             ;        
         connect(ahu.port_b,pressure_drop_duct_in_2.port_a)
         annotation (Line(
-        points={{ -51.0606689453125, -100.0 }    ,{ 24.46966552734375, -100.0 }    ,{ 24.46966552734375, 97.90144348144531 }    ,{ 100.0, 97.90144348144531 }    },
+        points={{ -92.32461547851562, 95.44331359863281 }    ,{ -96.16230773925781, 95.44331359863281 }    ,{ -96.16230773925781, -36.55030822753906 }    ,{ -100.0, -36.55030822753906 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4215,7 +4328,7 @@ equation
             ;        
         connect(boundary.ports,ahu.ports)
         annotation (Line(
-        points={{ 97.512451171875, 34.88722229003906 }    ,{ 23.22589111328125, 34.88722229003906 }    ,{ 23.22589111328125, -100.0 }    ,{ -51.0606689453125, -100.0 }    },
+        points={{ -10.45635986328125, -100.0 }    ,{ -51.39048767089844, -100.0 }    ,{ -51.39048767089844, 95.44331359863281 }    ,{ -92.32461547851562, 95.44331359863281 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4223,7 +4336,7 @@ equation
             ;        
         connect(boundary.weaBus,dataBus)
         annotation (Line(
-        points={{ 97.512451171875, 34.88722229003906 }    ,{ 48.7562255859375, 34.88722229003906 }    ,{ 48.7562255859375, 0.0 }    ,{ 0.0, 0.0 }    },
+        points={{ -10.45635986328125, -100.0 }    ,{ -5.228179931640625, -100.0 }    ,{ -5.228179931640625, 0.0 }    ,{ 0.0, 0.0 }    },
         color={0, 0, 139},
         thickness=0.1,pattern =
         LinePattern.Dash,
@@ -4568,26 +4681,26 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TSupSetVav_in_control
-            (y=293.15);
-Modelica.Blocks.Sources.RealExpression
             TSupSetVav_in_control_2
             (y=293.15);
-Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_in_control
-            (y=0.0);
-Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_in_control_2
-            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TCooSetVav_in_control
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetVav_in_control_2
-            (y=298.15);
+            ppmCO2SetVav_in_control
+            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             THeaSetVav_in_control
             (y=293.15);
+Modelica.Blocks.Sources.RealExpression
+            TSupSetVav_in_control
+            (y=293.15);
+Modelica.Blocks.Sources.RealExpression
+            TCooSetVav_in_control_2
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            ppmCO2SetVav_in_control_2
+            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             THeaSetVav_in_control_2
             (y=293.15);
@@ -4595,28 +4708,31 @@ Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_in_control
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            oveFloSetVav_in_control_2
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
-            oveDamPosVav_in_control
+            uAhuOpeModAhu_control
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
             oveDamPosVav_in_control_2
             (y=0);
 Modelica.Blocks.Sources.IntegerExpression
-            uOpeModVav_in_control
-            (y=1);
-Modelica.Blocks.Sources.IntegerExpression
-            uAhuOpeModAhu_control
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_in_control_2
             (y=1);
-Modelica.Blocks.Sources.BooleanExpression
-            u1HotPlaVav_in_control
-            (y=false);
+Modelica.Blocks.Sources.IntegerExpression
+            oveDamPosVav_in_control
+            (y=0);
+Modelica.Blocks.Sources.IntegerExpression
+            oveFloSetVav_in_control_2
+            (y=0);
+Modelica.Blocks.Sources.IntegerExpression
+            uOpeModVav_in_control
+            (y=1);
 Modelica.Blocks.Sources.BooleanExpression
             u1SupFanAhu_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1OccVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1WinVav_in_control_2
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1HotPlaVav_in_control_2
@@ -4625,25 +4741,22 @@ Modelica.Blocks.Sources.BooleanExpression
             u1FanVav_in_control_2
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1WinVav_in_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1WinVav_in_control_2
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_in_control
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
             uHeaOffVav_in_control_2
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_in_control
+            u1HotPlaVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1OccVav_in_control_2
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1FanVav_in_control
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_in_control_2
+            u1WinVav_in_control
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            uHeaOffVav_in_control
             (y=false);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -4666,58 +4779,58 @@ connect(dataBus.TZonSpace_1, TRoo[1].T);
 connect(dataBus.TZonSpace_2, TRoo[2].T);
 connect(dataBus.ppmCO2Space_1, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_2, TRoo1[2].ppm);
-connect(dataBus.TSupSetSpace_1,
-TSupSetVav_in_control.y);
 connect(dataBus.TSupSetSpace_2,
 TSupSetVav_in_control_2.y);
-connect(dataBus.ppmCO2SetSpace_1,
-ppmCO2SetVav_in_control.y);
-connect(dataBus.ppmCO2SetSpace_2,
-ppmCO2SetVav_in_control_2.y);
 connect(dataBus.TCooSetSpace_1,
 TCooSetVav_in_control.y);
-connect(dataBus.TCooSetSpace_2,
-TCooSetVav_in_control_2.y);
+connect(dataBus.ppmCO2SetSpace_1,
+ppmCO2SetVav_in_control.y);
 connect(dataBus.THeaSetSpace_1,
 THeaSetVav_in_control.y);
+connect(dataBus.TSupSetSpace_1,
+TSupSetVav_in_control.y);
+connect(dataBus.TCooSetSpace_2,
+TCooSetVav_in_control_2.y);
+connect(dataBus.ppmCO2SetSpace_2,
+ppmCO2SetVav_in_control_2.y);
 connect(dataBus.THeaSetSpace_2,
 THeaSetVav_in_control_2.y);
 connect(dataBus.oveFloSetSpace_1,
 oveFloSetVav_in_control.y);
-connect(dataBus.oveFloSetSpace_2,
-oveFloSetVav_in_control_2.y);
-connect(dataBus.oveDamPosSpace_1,
-oveDamPosVav_in_control.y);
-connect(dataBus.oveDamPosSpace_2,
-oveDamPosVav_in_control_2.y);
-connect(dataBus.uOpeModSpace_1,
-uOpeModVav_in_control.y);
 connect(dataBus.uAhuOpeModAhu_control,
 uAhuOpeModAhu_control.y);
+connect(dataBus.oveDamPosSpace_2,
+oveDamPosVav_in_control_2.y);
 connect(dataBus.uOpeModSpace_2,
 uOpeModVav_in_control_2.y);
-connect(dataBus.u1HotPlaSpace_1,
-u1HotPlaVav_in_control.y);
+connect(dataBus.oveDamPosSpace_1,
+oveDamPosVav_in_control.y);
+connect(dataBus.oveFloSetSpace_2,
+oveFloSetVav_in_control_2.y);
+connect(dataBus.uOpeModSpace_1,
+uOpeModVav_in_control.y);
 connect(dataBus.u1SupFanAhu_control,
 u1SupFanAhu_control.y);
+connect(dataBus.u1OccSpace_1,
+u1OccVav_in_control.y);
+connect(dataBus.u1WinSpace_2,
+u1WinVav_in_control_2.y);
 connect(dataBus.u1HotPlaSpace_2,
 u1HotPlaVav_in_control_2.y);
 connect(dataBus.u1FanSpace_2,
 u1FanVav_in_control_2.y);
-connect(dataBus.u1WinSpace_1,
-u1WinVav_in_control.y);
-connect(dataBus.u1WinSpace_2,
-u1WinVav_in_control_2.y);
-connect(dataBus.uHeaOffSpace_1,
-uHeaOffVav_in_control.y);
 connect(dataBus.uHeaOffSpace_2,
 uHeaOffVav_in_control_2.y);
-connect(dataBus.u1OccSpace_1,
-u1OccVav_in_control.y);
-connect(dataBus.u1FanSpace_1,
-u1FanVav_in_control.y);
+connect(dataBus.u1HotPlaSpace_1,
+u1HotPlaVav_in_control.y);
 connect(dataBus.u1OccSpace_2,
 u1OccVav_in_control_2.y);
+connect(dataBus.u1FanSpace_1,
+u1FanVav_in_control.y);
+connect(dataBus.u1WinSpace_1,
+u1WinVav_in_control.y);
+connect(dataBus.uHeaOffSpace_1,
+uHeaOffVav_in_control.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},

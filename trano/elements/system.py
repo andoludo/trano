@@ -147,6 +147,10 @@ class SplitValve(DistributionSystem): ...
 class Radiator(Emission): ...
 
 
+class IdealHeatingCooling(Emission):
+    """Ideal heating and cooling of the zone air towards scheduled set points, without a control element."""
+
+
 class PowerSensor(Sensor):
     """Sums, through the data bus, the heating power of the ideal radiators wired to it."""
 

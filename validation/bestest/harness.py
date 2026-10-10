@@ -11,7 +11,8 @@ import json
 import logging
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -20,6 +21,7 @@ from trano.data_models.conversion import convert_network
 from trano.elements.base import BaseElement
 from trano.elements.library.library import Library
 from trano.elements.space import Space
+from trano.elements.system import IdealHeatingCooling
 from trano.simulate.simulate import SimulationOptions, simulate
 from trano.topology import Network
 from trano.utils.utils import is_success
@@ -93,12 +95,24 @@ def _cached(directory: Path, expected_hash: str) -> CaseResult | None:
     return result.model_copy(update={"wall_time": 0.0}) if result.model_hash == expected_hash else None
 
 
-def signals_for(network: Network, library: str, result_file: Path) -> Signals:
+def signals_for(network: Network, library: str, result_file: Path, case: Case) -> Signals:
+    """Result variables of the case: the temperature of the free-floating zone, the loads of the ideal system.
+
+    With a sun-space (case 960) the standard reports the temperatures of the sun-space.
+    """
     from buildingspy.io.outputfile import Reader  # type: ignore
 
     reader = Reader(str(result_file), "dymola")
-    zone = next(node for node in network.graph.nodes if isinstance(node, Space) and node.name == "zone_001")
-    return Signals(temperature=find_variable(reader, f"{zone.name}.{TEMPERATURE_VARIABLE[library]}"))
+    zone_name = "sunspace_001" if case.sunspace else "zone_001"
+    zone = next(node for node in network.graph.nodes if isinstance(node, Space) and node.name == zone_name)
+    hvac = next((node for node in network.graph.nodes if isinstance(node, IdealHeatingCooling)), None)
+    return Signals(
+        temperature=find_variable(reader, f"{zone.name}.{TEMPERATURE_VARIABLE[library]}"),
+        heating_power=None if hvac is None else find_variable(reader, f"{hvac.name}.QHea_flow"),
+        cooling_power=None if hvac is None else find_variable(reader, f"{hvac.name}.QCoo_flow"),
+        heating_energy=None if hvac is None else find_variable(reader, f"{hvac.name}.EHea"),
+        cooling_energy=None if hvac is None else find_variable(reader, f"{hvac.name}.ECoo"),
+    )
 
 
 def run_case(
@@ -114,21 +128,24 @@ def run_case(
         start_time=0, end_time=end_time, tolerance=TOLERANCE, number_of_intervals=end_time // 3600
     )
     directory = cache_directory(case_id, library)
-    expected_hash = model_hash(network_for(case, library).model(), library, options)
+    network = network_for(case, library)
+    network.set_weather_path_to_container_path(directory)
+    model = network.model()  # rendered once: this very text is hashed, kept and simulated
+    expected_hash = model_hash(model, library, options)
     if not force and (cached := _cached(directory, expected_hash)) is not None:
         logger.info("Case %s with %s read from the cache", case_id, library)
         return cached
-    # A network renders its model once: the simulation gets a fresh one.
-    network = network_for(case, library)
+    directory.joinpath("model.mo").write_text(model)
     started = time.monotonic()
-    outcome = simulate(directory, network, options=options, container_name=container_name)
+    outcome = simulate(directory, network, options=options, container_name=container_name, model=model)
     wall_time = time.monotonic() - started
     output = outcome.output.decode(errors="replace") if isinstance(outcome.output, bytes) else str(outcome.output)
     directory.joinpath("omc.log").write_text(output)
     if not is_success(outcome, options=options):
         raise RuntimeError(f"Case {case_id} with {library} did not simulate; see {directory / 'omc.log'}")
     result_file = directory.joinpath("results", f"case_{case_id}.building_res.mat")
-    kpis = extract_kpis(result_file, case_id, library, signals_for(network, library, result_file), case.trace_days)
+    signals = signals_for(network, library, result_file, case)
+    kpis = extract_kpis(result_file, case_id, library, signals, case.trace_days)
     result = CaseResult(kpis=kpis, model_hash=expected_hash, wall_time=wall_time)
     directory.joinpath("result.json").write_text(result.model_dump_json(indent=2))
     return result
@@ -141,11 +158,16 @@ def run_cases(
     workers: int = 1,
     end_time: int = SECONDS_PER_YEAR,
 ) -> dict[str, CaseResult]:
-    """Run several cases, ``workers`` of them at a time in separate containers."""
-    with ThreadPoolExecutor(max_workers=workers) as pool:
+    """Run several cases, ``workers`` of them at a time in separate containers.
+
+    Each case runs in its own process: the model generation keeps state at module and class level
+    (element name counters, zone numbering), so two networks built in parallel threads corrupt each
+    other's models.
+    """
+    with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("spawn")) as pool:
         futures = {
-            case_id: pool.submit(run_case, case_id, library, force, f"openmodelica-bestest-{index % workers}", end_time)
-            for index, case_id in enumerate(case_ids)
+            case_id: pool.submit(run_case, case_id, library, force, f"openmodelica-bestest-{case_id}", end_time)
+            for case_id in case_ids
         }
         return {case_id: future.result() for case_id, future in futures.items()}
 

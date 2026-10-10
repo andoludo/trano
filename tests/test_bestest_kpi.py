@@ -53,3 +53,28 @@ def test_temperature_bins_count_hours_per_degree() -> None:
 
     assert sum(bins) == HOURS_PER_YEAR
     assert bins[0] == 1 and bins[20 + 50] == 2 and bins[21 + 50] == HOURS_PER_YEAR - 4 and bins[-1] == 1
+
+
+def test_hourly_increments_of_a_cumulative_signal_are_the_mean_rates() -> None:
+    from validation.bestest.kpi import HOURS_PER_YEAR, SECONDS_PER_HOUR, hourly_increments
+
+    time = np.array([0.0, 1800.0, 3600.0, HOURS_PER_YEAR * SECONDS_PER_HOUR])
+    energy = np.array([0.0, 3600.0 * 1000, 3600.0 * 1000, 3600.0 * 1000 + 2 * 3600.0 * 500 * (HOURS_PER_YEAR - 1)])
+
+    rates = hourly_increments(time, energy)
+
+    assert rates[0] == pytest.approx(1000)  # 1 kW on average over the first hour
+    assert rates[1] == pytest.approx(1000) and rates[-1] == pytest.approx(1000)
+    assert len(rates) == HOURS_PER_YEAR
+
+
+def test_known_deviations_are_reported_but_not_failures() -> None:
+    from validation.bestest.report import KNOWN_DEVIATIONS, Comparison
+
+    (library, case, kpi), reason = next(iter(KNOWN_DEVIATIONS.items()))
+    outside = Comparison(case=case, library=library, kpi=kpi, value=0.0, lower=1.0, upper=2.0, mean=1.5, unit="MWh")
+    unknown = outside.model_copy(update={"case": "no-such-case"})
+
+    assert outside.status == "known" and outside.known_deviation == reason
+    assert unknown.status == "fail" and unknown.known_deviation is None
+    assert outside.model_copy(update={"value": 1.5}).status == "pass"

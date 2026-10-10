@@ -31,6 +31,10 @@ class Signals(BaseModel):
     temperature: str
     heating_power: str | None = None  # [W], positive when heating
     cooling_power: str | None = None  # [W], positive when cooling
+    # Cumulative energies [J]: when given, the hourly loads are their increments, exact whatever the
+    # output interval, instead of the integral of the sampled power.
+    heating_energy: str | None = None
+    cooling_energy: str | None = None
 
 
 class HourlyTrace(BaseModel):
@@ -102,6 +106,20 @@ def _hourly(reader: Reader, name: str | None) -> FloatArray:
     return hourly_means(*_signal(reader, name))
 
 
+def hourly_increments(time: FloatArray, cumulative: FloatArray) -> FloatArray:
+    """Mean rate over each hour of the year of a cumulative signal (an integrator output)."""
+    if time[0] > 0 or time[-1] < HOURS_PER_YEAR * SECONDS_PER_HOUR - 1e-6:
+        raise ValueError("The simulation must cover the whole year.")
+    edges = np.arange(HOURS_PER_YEAR + 1) * SECONDS_PER_HOUR
+    return np.diff(np.interp(edges, time, cumulative)) / SECONDS_PER_HOUR  # type: ignore[no-any-return]
+
+
+def _hourly_load(reader: Reader, power: str | None, energy: str | None) -> FloatArray:
+    if energy is not None:
+        return np.maximum(hourly_increments(*_signal(reader, energy)), 0.0)
+    return np.maximum(_hourly(reader, power), 0.0)
+
+
 def extract_kpis(
     result_file: Path,
     case: str,
@@ -111,8 +129,8 @@ def extract_kpis(
 ) -> KpiResults:
     reader = Reader(str(result_file), "dymola")
     temperature = _hourly(reader, signals.temperature) - KELVIN
-    heating = np.maximum(_hourly(reader, signals.heating_power), 0.0)
-    cooling = np.maximum(_hourly(reader, signals.cooling_power), 0.0)
+    heating = _hourly_load(reader, signals.heating_power, signals.heating_energy)
+    cooling = _hourly_load(reader, signals.cooling_power, signals.cooling_energy)
     load = (heating - cooling) / 1000  # [kWh] per hour, heating positive as in the standard's tables
     peak_heating, peak_cooling = int(np.argmax(heating)), int(np.argmax(cooling))
     hottest, coldest = int(np.argmax(temperature)), int(np.argmin(temperature))

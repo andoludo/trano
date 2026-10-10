@@ -114,3 +114,13 @@ def test_floor_on_ground_is_held_at_the_ground_temperature() -> None:
     assert re.search(r"connect\(space_1\.surf_conBou\[1\],\s*floor_1\.port\)", model)
     # A prescribed surface temperature cannot also be an initialized state of the floor.
     assert re.search(r"datConBou\([^)]*each stateAtSurface_a=false\)", model)
+
+
+def test_layers_carry_their_discretization() -> None:
+    network = Network(name="buildings_states", library=Library.from_configuration("Buildings"))
+    network.add_boiler_plate_spaces(three_spaces())
+    model = remove_trano_package(network.model())
+
+    # Buildings' default of 3 states per 0.2 m reference layer, written for every solid layer.
+    solids = re.findall(r"Solids\.Generic\((.*?)\)", model, re.DOTALL)
+    assert solids and all("nStaRef=3)" in re.sub(r"\s+", "", solid + ")") for solid in solids)

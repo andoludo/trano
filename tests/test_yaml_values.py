@@ -164,7 +164,8 @@ def test_buildings_construction_layers(buildings_model: str, construction_id: st
     rendered = [
         tuple(map(float, layer))
         for layer in re.findall(
-            rf"Solids\.Generic\(\s*x=({NUMBER}),\s*k=({NUMBER}),\s*c=({NUMBER}),\s*d=({NUMBER})\)", arguments
+            rf"Solids\.Generic\(\s*x=({NUMBER}),\s*k=({NUMBER}),\s*c=({NUMBER}),\s*d=({NUMBER}),\s*nStaRef=\d+\)",
+            arguments,
         )
     ]
     expected = [

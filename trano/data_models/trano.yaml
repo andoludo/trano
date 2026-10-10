@@ -153,6 +153,10 @@ classes:
         description: Shortwave emissivity [1]
         range: float
         ifabsent: float(0.85)
+      number_of_states:
+        description: Spatial discretization of the layers (Buildings), number of states of a 0.2 m concrete reference layer scaled with the thickness and diffusivity of each layer [1]
+        range: integer
+        ifabsent: int(3)
   Gas:
     is_a: Material
   GlassMaterial:
@@ -272,6 +276,7 @@ classes:
     slots:
       - radiator
       - valve
+      - ideal_heating_cooling
     class_uri: schema:Emission
 
   VentilationInlet:
@@ -301,6 +306,13 @@ classes:
     slot_usage:
       parameters:
         range: RadiatorParameter
+  IdealHeatingCooling:
+    is_a: System
+    slots:
+      - parameters
+    slot_usage:
+      parameters:
+        range: IdealHeatingCoolingParameter
   Valve:
     is_a: System
     attributes:
@@ -552,6 +564,10 @@ slots:
     inlined: true
   valve:
     range: Valve
+    multivalued: false
+    inlined: true
+  ideal_heating_cooling:
+    range: IdealHeatingCooling
     multivalued: false
     inlined: true
   three_way_valve:

@@ -239,3 +239,28 @@ Opening the building envelope component, we notice three distinct spaces defined
 
 ![Envelope components using IDEAS](./img/ideal_heating_3.jpg)
 
+
+## Ideal heating and cooling with scheduled set points
+
+When a zone needs both heating and cooling towards given set points, with no control element to
+describe, the `ideal_heating_cooling` emission replaces the ideal radiator and its control. It
+holds a PI controller per mode, delivering up to the given capacities to the zone air. The set
+points are day schedules repeated every day: rows of time since midnight in seconds and set point in
+kelvin, a single row for a constant set point.
+
+```yaml
+emissions:
+  - ideal_heating_cooling:
+      id: HVAC:001
+      parameters:
+        heating_setpoint_schedule: "[0, 283.15; 25200, 283.15; 28800, 293.15; 82800, 293.15; 82800, 283.15; 86400, 283.15]"
+        cooling_setpoint_schedule: "[0, 300.15]"
+        maximum_heating_power: 10000
+        maximum_cooling_power: 10000
+```
+
+The schedule above heats to 20 °C from 08:00 to 23:00 with a set-back to 10 °C at night, ramping up
+between 07:00 and 08:00, and cools above 27 °C at all hours. A capacity of zero switches a mode off.
+The element outputs the heating and cooling powers (`QHea_flow`, `QCoo_flow`) and their integrals
+(`EHea`, `ECoo`) for post-processing. This is the system of the ASHRAE 140 (BESTEST) cases
+in `validation/bestest`.

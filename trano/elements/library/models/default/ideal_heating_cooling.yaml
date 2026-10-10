@@ -1,0 +1,27 @@
+# Ideal heating and cooling of a zone towards day schedules of set points: a PI controller per mode
+# delivers up to the given capacities to the zone air (and radiatively for the given fraction).
+# The schedules are internal, so the element takes no control.
+- classes:
+  - IdealHeatingCooling
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: convective
+    medium: heat
+    names:
+    - heatPortCon
+    targets:
+    - Space
+  - flow: radiative
+    medium: heat
+    names:
+    - heatPortRad
+    targets:
+    - Space
+  template: |2-
+
+        {{ package_name }}.Trano.HeatTransfer.IdealHeatingSystem.IdealHeatingCooling
+        {{ element.name }}({{ macros.render_parameters(parameters) | safe }})
+  variant: default

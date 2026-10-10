@@ -6,48 +6,56 @@ material:
   density: 1400
   shortwave_emissivity: 0.6
   longwave_emissivity: 0.9
+  number_of_states: 18
 - id: CONCRETE_SLAB:001
   thermal_conductivity: 1.13
   specific_heat_capacity: 1000
   density: 1400
   shortwave_emissivity: 0.6
   longwave_emissivity: 0.9
+  number_of_states: 18
 - id: FIBERGLASS:001
   thermal_conductivity: 0.04
   specific_heat_capacity: 840
   density: 12
   shortwave_emissivity: 0.6
   longwave_emissivity: 0.9
+  number_of_states: 18
 - id: FLOOR_INSULATION:001
   thermal_conductivity: 0.04
   specific_heat_capacity: 0
   density: 0
   shortwave_emissivity: 0.6
   longwave_emissivity: 0.9
+  number_of_states: 18
 - id: FOAM_INSULATION:001
   thermal_conductivity: 0.04
   specific_heat_capacity: 1400
   density: 10
   shortwave_emissivity: 0.6
   longwave_emissivity: 0.9
+  number_of_states: 18
 - id: PLASTERBOARD:001
   thermal_conductivity: 0.16
   specific_heat_capacity: 840
   density: 950
   shortwave_emissivity: 0.6
   longwave_emissivity: 0.9
+  number_of_states: 18
 - id: ROOF_DECK:001
   thermal_conductivity: 0.14
   specific_heat_capacity: 900
   density: 530
   shortwave_emissivity: 0.6
   longwave_emissivity: 0.9
+  number_of_states: 18
 - id: WOOD_SIDING:001
   thermal_conductivity: 0.14
   specific_heat_capacity: 900
   density: 530
   shortwave_emissivity: 0.6
   longwave_emissivity: 0.9
+  number_of_states: 18
 gas:
 - id: AIR:001
   thermal_conductivity: 0.025

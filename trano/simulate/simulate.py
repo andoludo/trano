@@ -1,6 +1,8 @@
 import platform
 import subprocess
 import tempfile
+import time
+from http import HTTPStatus
 from contextlib import contextmanager
 from pathlib import Path
 from collections.abc import Generator
@@ -142,29 +144,38 @@ def simulate(
     model_network: Network,
     options: SimulationOptions | None = None,
     container_name: str = "openmodelica",
+    model: str | None = None,
 ) -> docker.models.containers.ExecResult:
     """Simulate the network in a container of the OpenModelica image; results land in ``project_path/results``.
 
-    Simulations run at the same time need distinct ``container_name``s.
+    Simulations run at the same time need distinct ``container_name``s. ``model`` is the Modelica text
+    of the network when it was rendered already; a network renders its model once.
     """
     client_ = client()
     options = options or SimulationOptions()
     with (
         container(client_, project_path, container_name=container_name) as container_,
-        create_mos_file(model_network, options, project_path) as mos_file_name,
+        create_mos_file(model_network, options, project_path, model=model) as mos_file_name,
     ):
         results = container_.exec_run(cmd=f"omc /simulation/{mos_file_name}")
     return results
 
 
-def stop_container(client: docker.DockerClient, container_name: str) -> None:
-    try:
-        container = client.containers.get(container_name)
-        if container.attrs["State"]["Status"] == "running":
-            container.stop()
-        container.remove()
-    except docker.errors.NotFound:
-        pass
+def stop_container(client: docker.DockerClient, container_name: str, attempts: int = 10) -> None:
+    """Stop and remove a leftover container of that name, waiting for a removal already in progress."""
+    for attempt in range(attempts):
+        try:
+            container = client.containers.get(container_name)
+            if container.attrs["State"]["Status"] == "running":
+                container.stop()
+            container.remove()
+            return
+        except docker.errors.NotFound:
+            return
+        except docker.errors.APIError as error:
+            if error.status_code != HTTPStatus.CONFLICT or attempt == attempts - 1:
+                raise
+            time.sleep(1)
 
 
 @contextmanager
@@ -203,10 +214,12 @@ def create_mos_file(
     options: SimulationOptions,
     project_path: Path,
     environment: ModelicaEnvironment = MODELICA_ENVIRONMENT,
+    model: str | None = None,
 ) -> Generator[str, None, None]:
-    # TODO: do we want this here?
-    network.set_weather_path_to_container_path(project_path)
-    model = network.model()
+    if model is None:
+        # TODO: do we want this here?
+        network.set_weather_path_to_container_path(project_path)
+        model = network.model()
     with (
         tempfile.NamedTemporaryFile(mode="w", dir=project_path, suffix=".mo") as temp_model_file,
         tempfile.NamedTemporaryFile(mode="w", dir=project_path, suffix=".mos") as temp_mos_file,

@@ -27,18 +27,22 @@ FRAME_FRACTION = 0.001  # the windows have no frame; a tiny one keeps the window
 LENGTH, WIDTH, HEIGHT = 8.0, 6.0, 2.7  # [m]
 FLOOR_AREA = LENGTH * WIDTH  # [m2]
 SUNSPACE_DEPTH = 2.0  # [m] case 960
-WINDOW_AREA = 12.0  # [m2] per orientation, 2 m high
+WINDOW_AREA = 12.0  # [m2] in total, 2 m high: one south window, or one of 6 m2 on each of the east and west walls
 WINDOW_HEIGHT = 2.0  # [m]
 INFILTRATION = 0.414  # [1/h] 0.5 ACH at sea level corrected for the altitude of Denver
 INTERNAL_GAIN = 200.0  # [W] continuous, 60 % radiant and 40 % convective
 RADIANT_FRACTION = 0.6
 SOLAR_ABSORPTANCE = 0.6
 INFRARED_EMITTANCE = 0.9
+REFERENCE_STATES = 18  # states per 0.2 m reference layer as in Buildings' BESTEST models; 3 under-resolves heavy walls
 SOUTH, WEST, NORTH, EAST = 0.0, round(math.pi / 2, 6), round(math.pi, 6), round(-math.pi / 2, 6)  # [rad]
 NIGHT_VENTILATION = 1700.0  # [m3/h] from 18:00 to 07:00, no fan heat
 HEATING_SETPOINT, COOLING_SETPOINT = 20.0, 27.0  # [degC]
 SETBACK = 10.0  # [degC] heating set point from 23:00 to 07:00 in cases 640 and 940
 SINGLE_SETPOINT = (19.9, 20.1)  # [degC] cases 685, 695, 985, 995: 20 degC with a 0.2 K dead band
+KELVIN = 273.15
+COOLING_OFF = 100.0  # [degC] cooling set point outside the cooling hours
+MAXIMUM_POWER = 1e6  # [W] capacity of the ideal system, as in the Buildings reference models
 
 
 class Mass(str, Enum):
@@ -68,13 +72,50 @@ class Shading(str, Enum):
     overhang_and_fins = "overhang_and_fins"  # cases 630, 930: plus 1 m deep side fins
 
 
+def day_schedule(rows: list[tuple[int, float]]) -> str:
+    """A Modelica table of (hour of the day, set point in degC) rows, in seconds and kelvin."""
+    return "[" + "; ".join(f"{hour * 3600}, {value + KELVIN:g}" for hour, value in rows) + "]"
+
+
 class Hvac(BaseModel):
     """Ideal heating and cooling of the zone air with dual set points."""
 
     heating_setpoint: float | None = HEATING_SETPOINT  # [degC], None: no heating
     cooling_setpoint: float | None = COOLING_SETPOINT  # [degC], None: no cooling
-    heating_setback: float | None = None  # [degC] set point from 23:00 to 07:00
+    heating_setback: float | None = None  # [degC] set point from 23:00 to 07:00, ramping up until 08:00
     cooling_hours: tuple[int, int] | None = None  # cooling only between these hours (cases 650, 950)
+
+    @property
+    def heating_schedule(self) -> str:
+        setpoint = self.heating_setpoint if self.heating_setpoint is not None else 0.0
+        if self.heating_setback is None:
+            return day_schedule([(0, setpoint)])
+        setback = self.heating_setback
+        return day_schedule([(0, setback), (7, setback), (8, setpoint), (23, setpoint), (23, setback), (24, setback)])
+
+    @property
+    def cooling_schedule(self) -> str:
+        setpoint = self.cooling_setpoint if self.cooling_setpoint is not None else COOLING_OFF
+        if self.cooling_hours is None:
+            return day_schedule([(0, setpoint)])
+        start, end = self.cooling_hours
+        off = COOLING_OFF
+        return day_schedule([(0, off), (start, off), (start, setpoint), (end, setpoint), (end, off), (24, off)])
+
+    @property
+    def emission(self) -> dict[str, Any]:
+        """The trano YAML emission element of the ideal system."""
+        return {
+            "ideal_heating_cooling": {
+                "id": "HVAC:001",
+                "parameters": {
+                    "heating_setpoint_schedule": self.heating_schedule,
+                    "cooling_setpoint_schedule": self.cooling_schedule,
+                    "maximum_heating_power": 0.0 if self.heating_setpoint is None else MAXIMUM_POWER,
+                    "maximum_cooling_power": 0.0 if self.cooling_setpoint is None else MAXIMUM_POWER,
+                },
+            }
+        }
 
 
 class Case(BaseModel):
@@ -160,7 +201,7 @@ CASES: dict[str, Case] = {
         ),
         _case("940", "900 with a night heating setback", H, _SETBACK),
         _case("950", "900 with night ventilation and no heating", H, _NIGHT_VENT, night_ventilation=True),
-        _case("960", "Low mass zone with an unconditioned high mass sun-space", H, Hvac(), sunspace=True),
+        _case("960", "Low mass zone with an unconditioned high mass sun-space", L, Hvac(), sunspace=True),
         _case("980", "900 with more wall and roof insulation", H, Hvac(), insulation=Insulation.high),
         _case("985", "900 with a single 20 degC set point", H, _SINGLE),
         _case("995", "980 with a single 20 degC set point", H, _SINGLE, insulation=Insulation.high),
@@ -184,6 +225,7 @@ def _material(id_: str, k: float, c: float, rho: float) -> dict[str, Any]:
         "density": rho,
         "shortwave_emissivity": SOLAR_ABSORPTANCE,
         "longwave_emissivity": INFRARED_EMITTANCE,
+        "number_of_states": REFERENCE_STATES,
     }
 
 
@@ -253,7 +295,8 @@ GLASS_MATERIALS: dict[str, dict[str, Any]] = {
 }
 GASES: dict[str, dict[str, Any]] = {
     "AIR:001": {"id": "AIR:001", "thermal_conductivity": 0.025, "density": 1.2, "specific_heat_capacity": 1006},
-    "ARGON:001": {"id": "ARGON:001", "thermal_conductivity": 0.016, "density": 1.784, "specific_heat_capacity": 520},
+    # Argon at 20 degC and 1 atm, where the glazing records of Buildings evaluate the gas properties.
+    "ARGON:001": {"id": "ARGON:001", "thermal_conductivity": 0.0174, "density": 1.661, "specific_heat_capacity": 521.9},
 }
 GLAZINGS: dict[Glazing, dict[str, Any]] = {
     Glazing.double_clear: {
@@ -310,13 +353,13 @@ def _floor(surface: float, construction: str) -> dict[str, Any]:
     return {"surface": surface, "construction": construction, "variant": "outdoor_air"}
 
 
-def _window(azimuth: float, glazing: str) -> dict[str, Any]:
+def _window(azimuth: float, glazing: str, area: float = WINDOW_AREA) -> dict[str, Any]:
     return {
-        "surface": WINDOW_AREA,
+        "surface": area,
         "azimuth": azimuth,
         "tilt": "wall",
         "construction": glazing,
-        "width": WINDOW_AREA / WINDOW_HEIGHT,
+        "width": area / WINDOW_HEIGHT,
         "height": WINDOW_HEIGHT,
         "frame_fraction": FRAME_FRACTION,
     }
@@ -375,7 +418,7 @@ def _zone_boundaries(case: Case) -> dict[str, list[dict[str, Any]]]:
         windows.append(_window(SOUTH, glazing))
     else:
         walls.insert(0, _wall(south_area, SOUTH, wall))
-        windows += [_window(EAST, glazing), _window(WEST, glazing)]
+        windows += [_window(EAST, glazing, WINDOW_AREA / 2), _window(WEST, glazing, WINDOW_AREA / 2)]
     return {
         "external_walls": walls,
         "floor_on_grounds": [_floor(FLOOR_AREA, floor_construction(case.mass))],
@@ -400,10 +443,12 @@ def _sunspace_boundaries(case: Case) -> dict[str, list[dict[str, Any]]]:
 
 def building_description(case: Case) -> dict[str, Any]:
     """The trano YAML content of a case."""
-    unsupported = case.features & {"hvac", "night_ventilation", "shading"}
+    unsupported = case.features & {"night_ventilation", "shading"}
     if unsupported:
         raise UnsupportedCaseError(f"Case {case.id} needs {sorted(unsupported)}, not supported by trano yet.")
     zone = _space("ZONE:001", FLOOR_AREA, _zone_boundaries(case), _occupancy(FLOOR_AREA))
+    if case.hvac is not None:
+        zone["emissions"] = [case.hvac.emission]
     spaces = [zone]
     internal_walls: list[dict[str, Any]] = []
     if case.sunspace:

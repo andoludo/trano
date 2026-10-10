@@ -14,7 +14,15 @@ from validation.bestest.reference import KPIS, Kpi, KpiReference, ReferenceData,
 
 TEMPERATURE_TOLERANCE = 1.0  # [K] added around the spread of the reference programs
 PEAK_TOLERANCE = 0.05  # share of the largest reference peak, added around the spread of the programs
-Status = Literal["pass", "fail"]
+Status = Literal["pass", "fail", "known"]
+
+# Results outside their band that are understood and accepted, with the reason: (library, case, KPI).
+KNOWN_DEVIATIONS: dict[tuple[str, str, Kpi], str] = {
+    ("Buildings", "980", "annual_cooling"): (
+        "Buildings' own Case980 gives 3.418 MWh, 3 % below the lower limit of the standard (3.52 MWh); "
+        "trano reproduces the library's model."
+    ),
+}
 
 
 def acceptance_band(reference: KpiReference) -> tuple[float, float]:
@@ -45,7 +53,13 @@ class Comparison(BaseModel):
 
     @property
     def status(self) -> Status:
-        return "pass" if self.lower <= self.value <= self.upper else "fail"
+        if self.lower <= self.value <= self.upper:
+            return "pass"
+        return "known" if self.known_deviation else "fail"
+
+    @property
+    def known_deviation(self) -> str | None:
+        return KNOWN_DEVIATIONS.get((self.library, self.case, self.kpi))
 
 
 def compare(kpis: KpiResults, reference: ReferenceData) -> list[Comparison]:
@@ -85,9 +99,12 @@ def render_markdown(results: dict[str, dict[str, CaseResult]], reference: Refere
         for case_id in sorted(cases, key=lambda name: (len(name), name)):
             for comparison in compare(cases[case_id].kpis, reference):
                 band = f"{comparison.lower:.3f} to {comparison.upper:.3f}"
+                status = comparison.status
+                if status == "known":
+                    status = f"known deviation: {comparison.known_deviation}"
                 lines.append(
                     f"| {comparison.case} | {comparison.kpi} | {comparison.value:.3f} {comparison.unit} "
-                    f"| {band} | {comparison.mean:.3f} | {comparison.status} |"
+                    f"| {band} | {comparison.mean:.3f} | {status} |"
                 )
         lines.append("")
     return "\n".join(lines)

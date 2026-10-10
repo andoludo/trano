@@ -21,6 +21,14 @@ class Material(BaseModel):
     density: float = Field(..., title="Density [kg/m3]", alias="rho")
     longwave_emissivity: float = Field(0.85, title="Longwave emissivity [1]", alias="epsLw")
     shortwave_emissivity: float = Field(0.65, title="Shortwave emissivity [1]", alias="epsSw")
+    number_of_states: int = Field(
+        3,
+        ge=1,
+        title="Number of states of a 0.2 m reference layer [1]",
+        description="Spatial discretization of the layers (Buildings): states of a 0.2 m concrete layer, "
+        "scaled with the thickness and diffusivity of each layer; 3 is the library default.",
+        alias="nStaRef",
+    )
 
     def __hash__(self) -> int:
         return hash(self.name)
