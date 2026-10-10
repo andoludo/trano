@@ -352,6 +352,28 @@
   
 
       
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../validation/bestest/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Validation
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -802,6 +824,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#ideal-heating-and-cooling-with-scheduled-set-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ideal heating and cooling with scheduled set points
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1103,6 +1136,125 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/bestest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ASHRAE 140 (BESTEST)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/bestest_cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A walk through the BESTEST cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1184,6 +1336,17 @@
     <span class="md-ellipsis">
       
         Outputs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ideal-heating-and-cooling-with-scheduled-set-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ideal heating and cooling with scheduled set points
       
     </span>
   </a>
@@ -1485,6 +1648,26 @@
 <p><img alt="Envelope components using IDEAS" src="../img/ideal_heating_2.jpg" /></p>
 <p>Opening the building envelope component, we notice three distinct spaces defined in the model.</p>
 <p><img alt="Envelope components using IDEAS" src="../img/ideal_heating_3.jpg" /></p>
+<h2 id="ideal-heating-and-cooling-with-scheduled-set-points">Ideal heating and cooling with scheduled set points</h2>
+<p>When a zone needs both heating and cooling towards given set points, with no control element to
+describe, the <code>ideal_heating_cooling</code> emission replaces the ideal radiator and its control. It
+holds a PI controller per mode, delivering up to the given capacities to the zone air. The set
+points are day schedules repeated every day: rows of time since midnight in seconds and set point in
+kelvin, a single row for a constant set point.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">emissions</span><span class="p">:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">ideal_heating_cooling</span><span class="p">:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">      </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HVAC:001</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="nt">heating_setpoint_schedule</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;[0,</span><span class="nv"> </span><span class="s">283.15;</span><span class="nv"> </span><span class="s">25200,</span><span class="nv"> </span><span class="s">283.15;</span><span class="nv"> </span><span class="s">28800,</span><span class="nv"> </span><span class="s">293.15;</span><span class="nv"> </span><span class="s">82800,</span><span class="nv"> </span><span class="s">293.15;</span><span class="nv"> </span><span class="s">82800,</span><span class="nv"> </span><span class="s">283.15;</span><span class="nv"> </span><span class="s">86400,</span><span class="nv"> </span><span class="s">283.15]&quot;</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="nt">cooling_setpoint_schedule</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;[0,</span><span class="nv"> </span><span class="s">300.15]&quot;</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">        </span><span class="nt">maximum_heating_power</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">        </span><span class="nt">maximum_cooling_power</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10000</span>
+</span></code></pre></div>
+<p>The schedule above heats to 20 °C from 08:00 to 23:00 with a set-back to 10 °C at night, ramping up
+between 07:00 and 08:00, and cools above 27 °C at all hours. A capacity of zero switches a mode off.
+The element outputs the heating and cooling powers (<code>QHea_flow</code>, <code>QCoo_flow</code>) and their integrals
+(<code>EHea</code>, <code>ECoo</code>) for post-processing. This is the system of the ASHRAE 140 (BESTEST) cases
+in <code>validation/bestest</code>.</p>
 
 
 

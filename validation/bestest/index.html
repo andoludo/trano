@@ -1,0 +1,4195 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Automated building energy simulation tool with Modelica">
+      
+      
+      
+      
+        <link rel="prev" href="../../reference/parameters/">
+      
+      
+        <link rel="next" href="../bestest_cases/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../img/trano.webp">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ASHRAE 140 (BESTEST) - Trano</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ashrae-140-bestest-validation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Trano" class="md-header__button md-logo" aria-label="Trano" data-md-component="logo">
+      
+  <img src="../../img/trano.webp" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Trano
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ASHRAE 140 (BESTEST)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 2C5.13 2 2 5.13 2 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7M6 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H6zm13-8h-2l-3.2 9h1.9l.7-2h3.2l.7 2h1.9zm-2.15 5.65L18 15l1.15 3.65z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="amber" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="amber" data-md-color-accent="amber"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/andoludo/trano" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    trano
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Trano
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting-started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorials/first_model_and_simulation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../how-to%20guides/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  How-to Guides
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../explanation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Explanation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/components/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Validation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Trano" class="md-nav__button md-logo" aria-label="Trano" data-md-component="logo">
+      
+  <img src="../../img/trano.webp" alt="logo">
+
+    </a>
+    Trano
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/andoludo/trano" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    trano
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trano
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting-started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting-started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/first_model_and_simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First model and simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/model_with_another_library/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model with another library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/multizone_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/multi-zone_with_ideal_heating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zone with ideal heating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/multi-zone_with_hydronic_heating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zone with hydronic heating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/zone_with_ventilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zone with ventilation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/zone_with_photovoltaics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model with photovoltaics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/rc_model_predictive_control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RC models for MPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to%20guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explanation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ASHRAE 140 (BESTEST)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ASHRAE 140 (BESTEST)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#buildings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Buildings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IDEAS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iso_13790" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        iso_13790
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reduced_order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reduced_order
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bestest_cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A walk through the BESTEST cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#buildings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Buildings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IDEAS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iso_13790" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        iso_13790
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reduced_order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reduced_order
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Trano
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="./" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Validation
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ashrae-140-bestest-validation">ASHRAE 140 (BESTEST) validation</h1>
+<p>The building models trano generates are validated against the 27 cases of section 5.2 of ASHRAE
+Standard 140-2020 (the BESTEST single-zone cases): a 8 m x 6 m x 2.7 m zone in Denver with light
+or heavy constructions, 12 m2 of double glazing, 0.414 air changes per hour of infiltration and
+200 W of internal gains, with variants for the insulation, the glazing, the window orientation,
+overhangs and side fins, an unconditioned sun-space, free-floating temperatures, a dual set point
+ideal system with set-backs and night ventilation.</p>
+<p>Each case is a trano YAML file (<code>validation/bestest/cases/</code>), simulated for a year with each
+library. The annual heating and cooling loads must fall inside the acceptance limits of the
+standard; the peak loads and the free-floating temperatures must fall inside the spread of the
+reference programs (BSIMAC, CSE, DeST, EnergyPlus, ESP-r, TRNSYS) widened by 5 % of the largest
+peak or 1 K. Buildings and IDEAS are gating libraries: <code>pytest -m bestest</code> fails when one of
+their cases leaves its band, except for the deviations listed below with their reason. The
+reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
+method applied hour by hour and the reduced-order zone still deviates on several cases, so
+neither gates. Cases a library cannot describe (shading with IDEAS, which OpenModelica cannot
+compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the two simplified zones)
+are left out. The tables are rendered from the last results with
+<code>python -m validation.bestest report --docs</code>. <a href="../bestest_cases/">A walk through the BESTEST cases</a> explains a few
+cases in detail: what they are, what is expected, how the YAML describes them and how the results
+compare.</p>
+<h2 id="buildings">Buildings</h2>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>KPI</th>
+<th>trano</th>
+<th>Band</th>
+<th>Reference mean</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>600</td>
+<td>annual_heating</td>
+<td>4.449 MWh</td>
+<td>3.750 to 4.980</td>
+<td>4.213</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>annual_cooling</td>
+<td>5.973 MWh</td>
+<td>5.000 to 6.830</td>
+<td>5.856</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>peak_heating</td>
+<td>3.215 kW</td>
+<td>2.852 to 3.527</td>
+<td>3.183</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>peak_cooling</td>
+<td>6.187 kW</td>
+<td>5.098 to 6.805</td>
+<td>6.024</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>610</td>
+<td>annual_heating</td>
+<td>4.475 MWh</td>
+<td>3.610 to 5.270</td>
+<td>4.311</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>610</td>
+<td>annual_cooling</td>
+<td>4.810 MWh</td>
+<td>2.740 to 6.030</td>
+<td>4.256</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>610</td>
+<td>peak_heating</td>
+<td>3.216 kW</td>
+<td>2.853 to 3.528</td>
+<td>3.168</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>610</td>
+<td>peak_cooling</td>
+<td>6.082 kW</td>
+<td>5.009 to 6.754</td>
+<td>5.861</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>annual_heating</td>
+<td>4.563 MWh</td>
+<td>3.670 to 5.380</td>
+<td>4.413</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>annual_cooling</td>
+<td>4.087 MWh</td>
+<td>2.760 to 5.190</td>
+<td>4.090</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>peak_heating</td>
+<td>3.248 kW</td>
+<td>2.869 to 3.554</td>
+<td>3.186</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>peak_cooling</td>
+<td>4.700 kW</td>
+<td>3.715 to 5.037</td>
+<td>4.526</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>630</td>
+<td>annual_heating</td>
+<td>4.746 MWh</td>
+<td>3.690 to 6.120</td>
+<td>4.822</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>630</td>
+<td>annual_cooling</td>
+<td>3.320 MWh</td>
+<td>1.080 to 4.420</td>
+<td>2.814</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>630</td>
+<td>peak_heating</td>
+<td>3.250 kW</td>
+<td>2.870 to 3.557</td>
+<td>3.203</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>630</td>
+<td>peak_cooling</td>
+<td>4.250 kW</td>
+<td>3.315 to 4.423</td>
+<td>3.963</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>annual_heating</td>
+<td>2.715 MWh</td>
+<td>1.580 to 3.760</td>
+<td>2.612</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>annual_cooling</td>
+<td>5.725 MWh</td>
+<td>4.440 to 6.860</td>
+<td>5.636</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>peak_heating</td>
+<td>4.356 kW</td>
+<td>3.806 to 4.891</td>
+<td>4.369</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>peak_cooling</td>
+<td>6.138 kW</td>
+<td>5.044 to 6.750</td>
+<td>5.973</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650</td>
+<td>annual_heating</td>
+<td>0.000 MWh</td>
+<td>0.000 to 0.000</td>
+<td>0.000</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650</td>
+<td>annual_cooling</td>
+<td>4.802 MWh</td>
+<td>3.460 to 5.880</td>
+<td>4.644</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650</td>
+<td>peak_heating</td>
+<td>0.000 kW</td>
+<td>0.000 to 0.000</td>
+<td>0.000</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650</td>
+<td>peak_cooling</td>
+<td>5.949 kW</td>
+<td>4.731 to 6.604</td>
+<td>5.813</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>annual_heating</td>
+<td>3.620 MWh</td>
+<td>2.680 to 4.820</td>
+<td>3.713</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>annual_cooling</td>
+<td>3.315 MWh</td>
+<td>1.910 to 4.330</td>
+<td>3.172</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>peak_heating</td>
+<td>2.728 kW</td>
+<td>2.472 to 3.103</td>
+<td>2.801</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>peak_cooling</td>
+<td>3.629 kW</td>
+<td>3.146 to 4.130</td>
+<td>3.565</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>annual_heating</td>
+<td>6.473 MWh</td>
+<td>4.000 to 7.960</td>
+<td>5.681</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>annual_cooling</td>
+<td>6.361 MWh</td>
+<td>5.050 to 7.670</td>
+<td>6.402</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>peak_heating</td>
+<td>4.294 kW</td>
+<td>3.444 to 4.432</td>
+<td>3.943</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>peak_cooling</td>
+<td>6.560 kW</td>
+<td>5.493 to 7.271</td>
+<td>6.445</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>annual_heating</td>
+<td>2.227 MWh</td>
+<td>1.210 to 3.080</td>
+<td>2.056</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>annual_cooling</td>
+<td>6.136 MWh</td>
+<td>5.130 to 7.700</td>
+<td>6.264</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>peak_heating</td>
+<td>2.013 kW</td>
+<td>1.672 to 2.232</td>
+<td>1.984</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>peak_cooling</td>
+<td>6.518 kW</td>
+<td>5.408 to 7.404</td>
+<td>6.446</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>annual_heating</td>
+<td>4.932 MWh</td>
+<td>4.080 to 5.750</td>
+<td>4.762</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>annual_cooling</td>
+<td>8.946 MWh</td>
+<td>7.700 to 10.140</td>
+<td>8.886</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>peak_heating</td>
+<td>3.225 kW</td>
+<td>2.863 to 3.543</td>
+<td>3.183</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>peak_cooling</td>
+<td>6.932 kW</td>
+<td>5.713 to 7.517</td>
+<td>6.743</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>annual_heating</td>
+<td>2.768 MWh</td>
+<td>1.700 to 3.810</td>
+<td>2.656</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>annual_cooling</td>
+<td>8.754 MWh</td>
+<td>7.490 to 10.580</td>
+<td>8.912</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>peak_heating</td>
+<td>2.047 kW</td>
+<td>1.688 to 2.245</td>
+<td>2.001</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>peak_cooling</td>
+<td>7.080 kW</td>
+<td>5.855 to 7.918</td>
+<td>6.979</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>annual_heating</td>
+<td>1.718 MWh</td>
+<td>1.040 to 2.280</td>
+<td>1.627</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>annual_cooling</td>
+<td>2.395 MWh</td>
+<td>2.350 to 2.600</td>
+<td>2.467</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>peak_heating</td>
+<td>2.668 kW</td>
+<td>2.304 to 2.917</td>
+<td>2.591</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>peak_cooling</td>
+<td>2.974 kW</td>
+<td>2.387 to 3.545</td>
+<td>2.975</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>910</td>
+<td>annual_heating</td>
+<td>1.887 MWh</td>
+<td>1.560 to 2.300</td>
+<td>1.971</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>910</td>
+<td>annual_cooling</td>
+<td>1.615 MWh</td>
+<td>0.860 to 2.000</td>
+<td>1.374</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>910</td>
+<td>peak_heating</td>
+<td>2.676 kW</td>
+<td>2.329 to 2.939</td>
+<td>2.648</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>910</td>
+<td>peak_cooling</td>
+<td>2.280 kW</td>
+<td>1.945 to 2.858</td>
+<td>2.305</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>annual_heating</td>
+<td>3.324 MWh</td>
+<td>2.550 to 4.200</td>
+<td>3.326</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>annual_cooling</td>
+<td>2.663 MWh</td>
+<td>2.430 to 3.080</td>
+<td>2.786</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>peak_heating</td>
+<td>2.743 kW</td>
+<td>2.367 to 3.040</td>
+<td>2.710</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>peak_cooling</td>
+<td>3.223 kW</td>
+<td>2.536 to 3.655</td>
+<td>3.127</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>930</td>
+<td>annual_heating</td>
+<td>3.745 MWh</td>
+<td>2.750 to 5.350</td>
+<td>4.064</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>930</td>
+<td>annual_cooling</td>
+<td>2.177 MWh</td>
+<td>1.240 to 2.640</td>
+<td>1.898</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>930</td>
+<td>peak_heating</td>
+<td>2.753 kW</td>
+<td>2.389 to 3.116</td>
+<td>2.751</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>930</td>
+<td>peak_cooling</td>
+<td>2.869 kW</td>
+<td>2.182 to 3.205</td>
+<td>2.656</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>annual_heating</td>
+<td>1.100 MWh</td>
+<td>0.220 to 1.910</td>
+<td>1.109</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>annual_cooling</td>
+<td>2.329 MWh</td>
+<td>2.240 to 3.140</td>
+<td>2.401</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>peak_heating</td>
+<td>3.274 kW</td>
+<td>2.858 to 4.076</td>
+<td>3.377</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>peak_cooling</td>
+<td>2.974 kW</td>
+<td>2.387 to 3.545</td>
+<td>2.993</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950</td>
+<td>annual_heating</td>
+<td>0.000 MWh</td>
+<td>0.000 to 0.000</td>
+<td>0.000</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950</td>
+<td>annual_cooling</td>
+<td>0.717 MWh</td>
+<td>0.430 to 1.520</td>
+<td>0.634</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950</td>
+<td>peak_heating</td>
+<td>0.000 kW</td>
+<td>0.000 to 0.000</td>
+<td>0.000</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950</td>
+<td>peak_cooling</td>
+<td>2.385 kW</td>
+<td>1.935 to 2.507</td>
+<td>2.268</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>annual_heating</td>
+<td>2.588 MWh</td>
+<td>2.000 to 3.400</td>
+<td>2.693</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>annual_cooling</td>
+<td>0.950 MWh</td>
+<td>0.620 to 1.810</td>
+<td>0.896</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>peak_heating</td>
+<td>2.104 kW</td>
+<td>1.970 to 2.415</td>
+<td>2.195</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>peak_cooling</td>
+<td>1.475 kW</td>
+<td>1.264 to 1.554</td>
+<td>1.393</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>maximum_temperature</td>
+<td>48.036 degC</td>
+<td>47.100 to 54.200</td>
+<td>49.920</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>minimum_temperature</td>
+<td>4.160 degC</td>
+<td>3.200 to 9.000</td>
+<td>5.800</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>mean_temperature</td>
+<td>26.693 degC</td>
+<td>25.800 to 30.500</td>
+<td>28.060</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>annual_heating</td>
+<td>0.441 MWh</td>
+<td>-0.610 to 1.280</td>
+<td>0.407</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>annual_cooling</td>
+<td>3.415 MWh</td>
+<td>3.520 to 4.490</td>
+<td>3.710</td>
+<td>known deviation: Buildings' own Case980 gives 3.418 MWh, 3 % below the lower limit of the standard (3.52 MWh); trano reproduces the library's model.</td>
+</tr>
+<tr>
+<td>980</td>
+<td>peak_heating</td>
+<td>1.538 kW</td>
+<td>1.169 to 1.778</td>
+<td>1.489</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>peak_cooling</td>
+<td>3.296 kW</td>
+<td>2.747 to 3.851</td>
+<td>3.348</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>annual_heating</td>
+<td>2.371 MWh</td>
+<td>1.680 to 3.090</td>
+<td>2.398</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>annual_cooling</td>
+<td>6.140 MWh</td>
+<td>5.950 to 7.260</td>
+<td>6.351</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>peak_heating</td>
+<td>2.666 kW</td>
+<td>2.313 to 2.924</td>
+<td>2.631</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>peak_cooling</td>
+<td>3.863 kW</td>
+<td>2.997 to 4.436</td>
+<td>3.824</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>annual_heating</td>
+<td>0.983 MWh</td>
+<td>-0.150 to 2.020</td>
+<td>0.974</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>annual_cooling</td>
+<td>6.789 MWh</td>
+<td>6.580 to 8.410</td>
+<td>7.145</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>peak_heating</td>
+<td>1.598 kW</td>
+<td>1.284 to 1.797</td>
+<td>1.565</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>peak_cooling</td>
+<td>3.973 kW</td>
+<td>3.104 to 4.435</td>
+<td>3.986</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>maximum_temperature</td>
+<td>63.318 degC</td>
+<td>61.400 to 69.400</td>
+<td>64.600</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>minimum_temperature</td>
+<td>-12.847 degC</td>
+<td>-14.800 to -8.900</td>
+<td>-12.700</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>mean_temperature</td>
+<td>24.664 degC</td>
+<td>23.300 to 27.100</td>
+<td>25.250</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650FF</td>
+<td>maximum_temperature</td>
+<td>62.135 degC</td>
+<td>60.100 to 67.800</td>
+<td>63.067</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650FF</td>
+<td>minimum_temperature</td>
+<td>-16.922 degC</td>
+<td>-18.800 to -15.700</td>
+<td>-17.333</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650FF</td>
+<td>mean_temperature</td>
+<td>18.733 degC</td>
+<td>16.600 to 19.900</td>
+<td>18.300</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>maximum_temperature</td>
+<td>68.913 degC</td>
+<td>68.800 to 79.500</td>
+<td>73.017</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>minimum_temperature</td>
+<td>-7.313 degC</td>
+<td>-9.100 to -4.700</td>
+<td>-6.867</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>mean_temperature</td>
+<td>30.137 degC</td>
+<td>29.200 to 34.300</td>
+<td>31.850</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>maximum_temperature</td>
+<td>43.840 degC</td>
+<td>42.300 to 47.000</td>
+<td>44.583</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>minimum_temperature</td>
+<td>1.107 degC</td>
+<td>-0.400 to 3.200</td>
+<td>1.250</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>mean_temperature</td>
+<td>24.932 degC</td>
+<td>23.500 to 26.700</td>
+<td>25.233</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950FF</td>
+<td>maximum_temperature</td>
+<td>36.790 degC</td>
+<td>35.100 to 38.100</td>
+<td>36.583</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950FF</td>
+<td>minimum_temperature</td>
+<td>-12.046 degC</td>
+<td>-14.400 to -11.500</td>
+<td>-12.983</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950FF</td>
+<td>mean_temperature</td>
+<td>15.243 degC</td>
+<td>13.400 to 16.000</td>
+<td>14.733</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>maximum_temperature</td>
+<td>48.663 degC</td>
+<td>47.500 to 53.800</td>
+<td>50.500</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>minimum_temperature</td>
+<td>9.634 degC</td>
+<td>6.300 to 13.500</td>
+<td>10.350</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>mean_temperature</td>
+<td>30.470 degC</td>
+<td>29.500 to 34.300</td>
+<td>31.800</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ideas">IDEAS</h2>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>KPI</th>
+<th>trano</th>
+<th>Band</th>
+<th>Reference mean</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>600</td>
+<td>annual_heating</td>
+<td>4.541 MWh</td>
+<td>3.750 to 4.980</td>
+<td>4.213</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>annual_cooling</td>
+<td>6.265 MWh</td>
+<td>5.000 to 6.830</td>
+<td>5.856</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>peak_heating</td>
+<td>3.314 kW</td>
+<td>2.852 to 3.527</td>
+<td>3.183</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>peak_cooling</td>
+<td>6.545 kW</td>
+<td>5.098 to 6.805</td>
+<td>6.024</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>annual_heating</td>
+<td>4.727 MWh</td>
+<td>3.670 to 5.380</td>
+<td>4.413</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>annual_cooling</td>
+<td>4.235 MWh</td>
+<td>2.760 to 5.190</td>
+<td>4.090</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>peak_heating</td>
+<td>3.373 kW</td>
+<td>2.869 to 3.554</td>
+<td>3.186</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>peak_cooling</td>
+<td>4.908 kW</td>
+<td>3.715 to 5.037</td>
+<td>4.526</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>annual_heating</td>
+<td>2.769 MWh</td>
+<td>1.580 to 3.760</td>
+<td>2.612</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>annual_cooling</td>
+<td>6.009 MWh</td>
+<td>4.440 to 6.860</td>
+<td>5.636</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>peak_heating</td>
+<td>4.370 kW</td>
+<td>3.806 to 4.891</td>
+<td>4.369</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>peak_cooling</td>
+<td>6.491 kW</td>
+<td>5.044 to 6.750</td>
+<td>5.973</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650</td>
+<td>annual_heating</td>
+<td>0.000 MWh</td>
+<td>0.000 to 0.000</td>
+<td>0.000</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650</td>
+<td>annual_cooling</td>
+<td>5.067 MWh</td>
+<td>3.460 to 5.880</td>
+<td>4.644</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650</td>
+<td>peak_heating</td>
+<td>0.000 kW</td>
+<td>0.000 to 0.000</td>
+<td>0.000</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650</td>
+<td>peak_cooling</td>
+<td>6.324 kW</td>
+<td>4.731 to 6.604</td>
+<td>5.813</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>annual_heating</td>
+<td>3.723 MWh</td>
+<td>2.680 to 4.820</td>
+<td>3.713</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>annual_cooling</td>
+<td>3.438 MWh</td>
+<td>1.910 to 4.330</td>
+<td>3.172</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>peak_heating</td>
+<td>2.759 kW</td>
+<td>2.472 to 3.103</td>
+<td>2.801</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>peak_cooling</td>
+<td>3.873 kW</td>
+<td>3.146 to 4.130</td>
+<td>3.565</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>annual_heating</td>
+<td>6.119 MWh</td>
+<td>4.000 to 7.960</td>
+<td>5.681</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>annual_cooling</td>
+<td>6.683 MWh</td>
+<td>5.050 to 7.670</td>
+<td>6.402</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>peak_heating</td>
+<td>4.166 kW</td>
+<td>3.444 to 4.432</td>
+<td>3.943</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>peak_cooling</td>
+<td>6.899 kW</td>
+<td>5.493 to 7.271</td>
+<td>6.445</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>annual_heating</td>
+<td>2.359 MWh</td>
+<td>1.210 to 3.080</td>
+<td>2.056</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>annual_cooling</td>
+<td>6.642 MWh</td>
+<td>5.130 to 7.700</td>
+<td>6.264</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>peak_heating</td>
+<td>2.144 kW</td>
+<td>1.672 to 2.232</td>
+<td>1.984</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>peak_cooling</td>
+<td>6.964 kW</td>
+<td>5.408 to 7.404</td>
+<td>6.446</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>annual_heating</td>
+<td>5.024 MWh</td>
+<td>4.080 to 5.750</td>
+<td>4.762</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>annual_cooling</td>
+<td>9.271 MWh</td>
+<td>7.700 to 10.140</td>
+<td>8.886</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>peak_heating</td>
+<td>3.329 kW</td>
+<td>2.863 to 3.543</td>
+<td>3.183</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>peak_cooling</td>
+<td>7.282 kW</td>
+<td>5.713 to 7.517</td>
+<td>6.743</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>annual_heating</td>
+<td>2.927 MWh</td>
+<td>1.700 to 3.810</td>
+<td>2.656</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>annual_cooling</td>
+<td>9.316 MWh</td>
+<td>7.490 to 10.580</td>
+<td>8.912</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>peak_heating</td>
+<td>2.185 kW</td>
+<td>1.688 to 2.245</td>
+<td>2.001</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>peak_cooling</td>
+<td>7.527 kW</td>
+<td>5.855 to 7.918</td>
+<td>6.979</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>annual_heating</td>
+<td>1.763 MWh</td>
+<td>1.040 to 2.280</td>
+<td>1.627</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>annual_cooling</td>
+<td>2.599 MWh</td>
+<td>2.350 to 2.600</td>
+<td>2.467</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>peak_heating</td>
+<td>2.765 kW</td>
+<td>2.304 to 2.917</td>
+<td>2.591</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>peak_cooling</td>
+<td>3.171 kW</td>
+<td>2.387 to 3.545</td>
+<td>2.975</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>annual_heating</td>
+<td>3.493 MWh</td>
+<td>2.550 to 4.200</td>
+<td>3.326</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>annual_cooling</td>
+<td>2.820 MWh</td>
+<td>2.430 to 3.080</td>
+<td>2.786</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>peak_heating</td>
+<td>2.861 kW</td>
+<td>2.367 to 3.040</td>
+<td>2.710</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>peak_cooling</td>
+<td>3.388 kW</td>
+<td>2.536 to 3.655</td>
+<td>3.127</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>annual_heating</td>
+<td>1.126 MWh</td>
+<td>0.220 to 1.910</td>
+<td>1.109</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>annual_cooling</td>
+<td>2.524 MWh</td>
+<td>2.240 to 3.140</td>
+<td>2.401</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>peak_heating</td>
+<td>3.253 kW</td>
+<td>2.858 to 4.076</td>
+<td>3.377</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>peak_cooling</td>
+<td>3.170 kW</td>
+<td>2.387 to 3.545</td>
+<td>2.993</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950</td>
+<td>annual_heating</td>
+<td>0.000 MWh</td>
+<td>0.000 to 0.000</td>
+<td>0.000</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950</td>
+<td>annual_cooling</td>
+<td>0.741 MWh</td>
+<td>0.430 to 1.520</td>
+<td>0.634</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950</td>
+<td>peak_heating</td>
+<td>0.000 kW</td>
+<td>0.000 to 0.000</td>
+<td>0.000</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950</td>
+<td>peak_cooling</td>
+<td>2.519 kW</td>
+<td>1.935 to 2.507</td>
+<td>2.268</td>
+<td>known deviation: 2.517 kW against a band ending at 2.507 kW (the spread of the reference programs plus 5 % of the largest peak): 0.4 % above a tolerance that is a convention, not a limit of the standard.</td>
+</tr>
+<tr>
+<td>960</td>
+<td>annual_heating</td>
+<td>2.695 MWh</td>
+<td>2.000 to 3.400</td>
+<td>2.693</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>annual_cooling</td>
+<td>0.950 MWh</td>
+<td>0.620 to 1.810</td>
+<td>0.896</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>peak_heating</td>
+<td>2.217 kW</td>
+<td>1.970 to 2.415</td>
+<td>2.195</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>peak_cooling</td>
+<td>1.510 kW</td>
+<td>1.264 to 1.554</td>
+<td>1.393</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>maximum_temperature</td>
+<td>51.309 degC</td>
+<td>47.100 to 54.200</td>
+<td>49.920</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>minimum_temperature</td>
+<td>4.133 degC</td>
+<td>3.200 to 9.000</td>
+<td>5.800</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>960</td>
+<td>mean_temperature</td>
+<td>28.027 degC</td>
+<td>25.800 to 30.500</td>
+<td>28.060</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>annual_heating</td>
+<td>0.480 MWh</td>
+<td>-0.610 to 1.280</td>
+<td>0.407</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>annual_cooling</td>
+<td>3.798 MWh</td>
+<td>3.520 to 4.490</td>
+<td>3.710</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>peak_heating</td>
+<td>1.663 kW</td>
+<td>1.169 to 1.778</td>
+<td>1.489</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>peak_cooling</td>
+<td>3.607 kW</td>
+<td>2.747 to 3.851</td>
+<td>3.348</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>annual_heating</td>
+<td>2.464 MWh</td>
+<td>1.680 to 3.090</td>
+<td>2.398</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>annual_cooling</td>
+<td>6.474 MWh</td>
+<td>5.950 to 7.260</td>
+<td>6.351</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>peak_heating</td>
+<td>2.763 kW</td>
+<td>2.313 to 2.924</td>
+<td>2.631</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>peak_cooling</td>
+<td>4.025 kW</td>
+<td>2.997 to 4.436</td>
+<td>3.824</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>annual_heating</td>
+<td>1.063 MWh</td>
+<td>-0.150 to 2.020</td>
+<td>0.974</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>annual_cooling</td>
+<td>7.272 MWh</td>
+<td>6.580 to 8.410</td>
+<td>7.145</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>peak_heating</td>
+<td>1.715 kW</td>
+<td>1.284 to 1.797</td>
+<td>1.565</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>peak_cooling</td>
+<td>4.257 kW</td>
+<td>3.104 to 4.435</td>
+<td>3.986</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>maximum_temperature</td>
+<td>66.086 degC</td>
+<td>61.400 to 69.400</td>
+<td>64.600</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>minimum_temperature</td>
+<td>-13.193 degC</td>
+<td>-14.800 to -8.900</td>
+<td>-12.700</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>mean_temperature</td>
+<td>25.109 degC</td>
+<td>23.300 to 27.100</td>
+<td>25.250</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650FF</td>
+<td>maximum_temperature</td>
+<td>64.789 degC</td>
+<td>60.100 to 67.800</td>
+<td>63.067</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650FF</td>
+<td>minimum_temperature</td>
+<td>-16.889 degC</td>
+<td>-18.800 to -15.700</td>
+<td>-17.333</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>650FF</td>
+<td>mean_temperature</td>
+<td>18.996 degC</td>
+<td>16.600 to 19.900</td>
+<td>18.300</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>maximum_temperature</td>
+<td>72.329 degC</td>
+<td>68.800 to 79.500</td>
+<td>73.017</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>minimum_temperature</td>
+<td>-8.063 degC</td>
+<td>-9.100 to -4.700</td>
+<td>-6.867</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>mean_temperature</td>
+<td>30.991 degC</td>
+<td>29.200 to 34.300</td>
+<td>31.850</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>maximum_temperature</td>
+<td>44.753 degC</td>
+<td>42.300 to 47.000</td>
+<td>44.583</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>minimum_temperature</td>
+<td>0.814 degC</td>
+<td>-0.400 to 3.200</td>
+<td>1.250</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>mean_temperature</td>
+<td>25.256 degC</td>
+<td>23.500 to 26.700</td>
+<td>25.233</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950FF</td>
+<td>maximum_temperature</td>
+<td>37.197 degC</td>
+<td>35.100 to 38.100</td>
+<td>36.583</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950FF</td>
+<td>minimum_temperature</td>
+<td>-12.061 degC</td>
+<td>-14.400 to -11.500</td>
+<td>-12.983</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>950FF</td>
+<td>mean_temperature</td>
+<td>15.341 degC</td>
+<td>13.400 to 16.000</td>
+<td>14.733</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>maximum_temperature</td>
+<td>50.242 degC</td>
+<td>47.500 to 53.800</td>
+<td>50.500</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>minimum_temperature</td>
+<td>9.351 degC</td>
+<td>6.300 to 13.500</td>
+<td>10.350</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>mean_temperature</td>
+<td>31.131 degC</td>
+<td>29.500 to 34.300</td>
+<td>31.800</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table>
+<h2 id="iso_13790">iso_13790</h2>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>KPI</th>
+<th>trano</th>
+<th>Band</th>
+<th>Reference mean</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>600</td>
+<td>annual_heating</td>
+<td>3.122 MWh</td>
+<td>3.750 to 4.980</td>
+<td>4.213</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>600</td>
+<td>annual_cooling</td>
+<td>5.298 MWh</td>
+<td>5.000 to 6.830</td>
+<td>5.856</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>peak_heating</td>
+<td>3.099 kW</td>
+<td>2.852 to 3.527</td>
+<td>3.183</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>peak_cooling</td>
+<td>4.870 kW</td>
+<td>5.098 to 6.805</td>
+<td>6.024</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>620</td>
+<td>annual_heating</td>
+<td>3.920 MWh</td>
+<td>3.670 to 5.380</td>
+<td>4.413</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>annual_cooling</td>
+<td>3.777 MWh</td>
+<td>2.760 to 5.190</td>
+<td>4.090</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>peak_heating</td>
+<td>3.112 kW</td>
+<td>2.869 to 3.554</td>
+<td>3.186</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>peak_cooling</td>
+<td>4.328 kW</td>
+<td>3.715 to 5.037</td>
+<td>4.526</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>annual_heating</td>
+<td>1.879 MWh</td>
+<td>1.580 to 3.760</td>
+<td>2.612</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>annual_cooling</td>
+<td>4.942 MWh</td>
+<td>4.440 to 6.860</td>
+<td>5.636</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>peak_heating</td>
+<td>4.350 kW</td>
+<td>3.806 to 4.891</td>
+<td>4.369</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>peak_cooling</td>
+<td>4.870 kW</td>
+<td>5.044 to 6.750</td>
+<td>5.973</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>660</td>
+<td>annual_heating</td>
+<td>2.660 MWh</td>
+<td>2.680 to 4.820</td>
+<td>3.713</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>660</td>
+<td>annual_cooling</td>
+<td>2.612 MWh</td>
+<td>1.910 to 4.330</td>
+<td>3.172</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>peak_heating</td>
+<td>2.557 kW</td>
+<td>2.472 to 3.103</td>
+<td>2.801</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>peak_cooling</td>
+<td>3.078 kW</td>
+<td>3.146 to 4.130</td>
+<td>3.565</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>670</td>
+<td>annual_heating</td>
+<td>5.029 MWh</td>
+<td>4.000 to 7.960</td>
+<td>5.681</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>annual_cooling</td>
+<td>4.901 MWh</td>
+<td>5.050 to 7.670</td>
+<td>6.402</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>670</td>
+<td>peak_heating</td>
+<td>4.045 kW</td>
+<td>3.444 to 4.432</td>
+<td>3.943</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>670</td>
+<td>peak_cooling</td>
+<td>5.015 kW</td>
+<td>5.493 to 7.271</td>
+<td>6.445</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>680</td>
+<td>annual_heating</td>
+<td>1.242 MWh</td>
+<td>1.210 to 3.080</td>
+<td>2.056</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>annual_cooling</td>
+<td>6.451 MWh</td>
+<td>5.130 to 7.700</td>
+<td>6.264</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>peak_heating</td>
+<td>2.096 kW</td>
+<td>1.672 to 2.232</td>
+<td>1.984</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>peak_cooling</td>
+<td>5.138 kW</td>
+<td>5.408 to 7.404</td>
+<td>6.446</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>685</td>
+<td>annual_heating</td>
+<td>4.137 MWh</td>
+<td>4.080 to 5.750</td>
+<td>4.762</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>annual_cooling</td>
+<td>9.344 MWh</td>
+<td>7.700 to 10.140</td>
+<td>8.886</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>peak_heating</td>
+<td>3.090 kW</td>
+<td>2.863 to 3.543</td>
+<td>3.183</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>peak_cooling</td>
+<td>5.754 kW</td>
+<td>5.713 to 7.517</td>
+<td>6.743</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>annual_heating</td>
+<td>2.256 MWh</td>
+<td>1.700 to 3.810</td>
+<td>2.656</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>annual_cooling</td>
+<td>10.030 MWh</td>
+<td>7.490 to 10.580</td>
+<td>8.912</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>peak_heating</td>
+<td>2.090 kW</td>
+<td>1.688 to 2.245</td>
+<td>2.001</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>peak_cooling</td>
+<td>6.030 kW</td>
+<td>5.855 to 7.918</td>
+<td>6.979</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>annual_heating</td>
+<td>1.803 MWh</td>
+<td>1.040 to 2.280</td>
+<td>1.627</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>annual_cooling</td>
+<td>3.581 MWh</td>
+<td>2.350 to 2.600</td>
+<td>2.467</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900</td>
+<td>peak_heating</td>
+<td>2.880 kW</td>
+<td>2.304 to 2.917</td>
+<td>2.591</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900</td>
+<td>peak_cooling</td>
+<td>3.532 kW</td>
+<td>2.387 to 3.545</td>
+<td>2.975</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>annual_heating</td>
+<td>3.440 MWh</td>
+<td>2.550 to 4.200</td>
+<td>3.326</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>annual_cooling</td>
+<td>3.264 MWh</td>
+<td>2.430 to 3.080</td>
+<td>2.786</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>920</td>
+<td>peak_heating</td>
+<td>2.933 kW</td>
+<td>2.367 to 3.040</td>
+<td>2.710</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>peak_cooling</td>
+<td>3.535 kW</td>
+<td>2.536 to 3.655</td>
+<td>3.127</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>annual_heating</td>
+<td>1.276 MWh</td>
+<td>0.220 to 1.910</td>
+<td>1.109</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>annual_cooling</td>
+<td>3.498 MWh</td>
+<td>2.240 to 3.140</td>
+<td>2.401</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>940</td>
+<td>peak_heating</td>
+<td>4.156 kW</td>
+<td>2.858 to 4.076</td>
+<td>3.377</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>940</td>
+<td>peak_cooling</td>
+<td>3.531 kW</td>
+<td>2.387 to 3.545</td>
+<td>2.993</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>annual_heating</td>
+<td>0.532 MWh</td>
+<td>-0.610 to 1.280</td>
+<td>0.407</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980</td>
+<td>annual_cooling</td>
+<td>5.255 MWh</td>
+<td>3.520 to 4.490</td>
+<td>3.710</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980</td>
+<td>peak_heating</td>
+<td>1.886 kW</td>
+<td>1.169 to 1.778</td>
+<td>1.489</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980</td>
+<td>peak_cooling</td>
+<td>3.733 kW</td>
+<td>2.747 to 3.851</td>
+<td>3.348</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>annual_heating</td>
+<td>2.730 MWh</td>
+<td>1.680 to 3.090</td>
+<td>2.398</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>annual_cooling</td>
+<td>7.937 MWh</td>
+<td>5.950 to 7.260</td>
+<td>6.351</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>985</td>
+<td>peak_heating</td>
+<td>2.871 kW</td>
+<td>2.313 to 2.924</td>
+<td>2.631</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>peak_cooling</td>
+<td>4.204 kW</td>
+<td>2.997 to 4.436</td>
+<td>3.824</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>annual_heating</td>
+<td>1.195 MWh</td>
+<td>-0.150 to 2.020</td>
+<td>0.974</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>annual_cooling</td>
+<td>8.954 MWh</td>
+<td>6.580 to 8.410</td>
+<td>7.145</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>995</td>
+<td>peak_heating</td>
+<td>1.886 kW</td>
+<td>1.284 to 1.797</td>
+<td>1.565</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>995</td>
+<td>peak_cooling</td>
+<td>4.228 kW</td>
+<td>3.104 to 4.435</td>
+<td>3.986</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>maximum_temperature</td>
+<td>54.174 degC</td>
+<td>61.400 to 69.400</td>
+<td>64.600</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>minimum_temperature</td>
+<td>-7.447 degC</td>
+<td>-14.800 to -8.900</td>
+<td>-12.700</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>mean_temperature</td>
+<td>26.564 degC</td>
+<td>23.300 to 27.100</td>
+<td>25.250</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>maximum_temperature</td>
+<td>61.503 degC</td>
+<td>68.800 to 79.500</td>
+<td>73.017</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>minimum_temperature</td>
+<td>-0.611 degC</td>
+<td>-9.100 to -4.700</td>
+<td>-6.867</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>mean_temperature</td>
+<td>33.913 degC</td>
+<td>29.200 to 34.300</td>
+<td>31.850</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>maximum_temperature</td>
+<td>47.038 degC</td>
+<td>42.300 to 47.000</td>
+<td>44.583</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>minimum_temperature</td>
+<td>0.045 degC</td>
+<td>-0.400 to 3.200</td>
+<td>1.250</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>mean_temperature</td>
+<td>26.610 degC</td>
+<td>23.500 to 26.700</td>
+<td>25.233</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>maximum_temperature</td>
+<td>54.832 degC</td>
+<td>47.500 to 53.800</td>
+<td>50.500</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>minimum_temperature</td>
+<td>8.231 degC</td>
+<td>6.300 to 13.500</td>
+<td>10.350</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>mean_temperature</td>
+<td>33.914 degC</td>
+<td>29.500 to 34.300</td>
+<td>31.800</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table>
+<h2 id="reduced_order">reduced_order</h2>
+<table>
+<thead>
+<tr>
+<th>Case</th>
+<th>KPI</th>
+<th>trano</th>
+<th>Band</th>
+<th>Reference mean</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>600</td>
+<td>annual_heating</td>
+<td>4.469 MWh</td>
+<td>3.750 to 4.980</td>
+<td>4.213</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>annual_cooling</td>
+<td>4.267 MWh</td>
+<td>5.000 to 6.830</td>
+<td>5.856</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>600</td>
+<td>peak_heating</td>
+<td>3.020 kW</td>
+<td>2.852 to 3.527</td>
+<td>3.183</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600</td>
+<td>peak_cooling</td>
+<td>4.180 kW</td>
+<td>5.098 to 6.805</td>
+<td>6.024</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>620</td>
+<td>annual_heating</td>
+<td>4.565 MWh</td>
+<td>3.670 to 5.380</td>
+<td>4.413</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>annual_cooling</td>
+<td>2.997 MWh</td>
+<td>2.760 to 5.190</td>
+<td>4.090</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>peak_heating</td>
+<td>3.020 kW</td>
+<td>2.869 to 3.554</td>
+<td>3.186</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>620</td>
+<td>peak_cooling</td>
+<td>3.688 kW</td>
+<td>3.715 to 5.037</td>
+<td>4.526</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>640</td>
+<td>annual_heating</td>
+<td>2.789 MWh</td>
+<td>1.580 to 3.760</td>
+<td>2.612</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>640</td>
+<td>annual_cooling</td>
+<td>4.166 MWh</td>
+<td>4.440 to 6.860</td>
+<td>5.636</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>640</td>
+<td>peak_heating</td>
+<td>2.753 kW</td>
+<td>3.806 to 4.891</td>
+<td>4.369</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>640</td>
+<td>peak_cooling</td>
+<td>4.126 kW</td>
+<td>5.044 to 6.750</td>
+<td>5.973</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>660</td>
+<td>annual_heating</td>
+<td>3.160 MWh</td>
+<td>2.680 to 4.820</td>
+<td>3.713</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>annual_cooling</td>
+<td>2.585 MWh</td>
+<td>1.910 to 4.330</td>
+<td>3.172</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>660</td>
+<td>peak_heating</td>
+<td>2.245 kW</td>
+<td>2.472 to 3.103</td>
+<td>2.801</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>660</td>
+<td>peak_cooling</td>
+<td>2.585 kW</td>
+<td>3.146 to 4.130</td>
+<td>3.565</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>670</td>
+<td>annual_heating</td>
+<td>8.577 MWh</td>
+<td>4.000 to 7.960</td>
+<td>5.681</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>670</td>
+<td>annual_cooling</td>
+<td>3.153 MWh</td>
+<td>5.050 to 7.670</td>
+<td>6.402</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>670</td>
+<td>peak_heating</td>
+<td>4.996 kW</td>
+<td>3.444 to 4.432</td>
+<td>3.943</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>670</td>
+<td>peak_cooling</td>
+<td>4.123 kW</td>
+<td>5.493 to 7.271</td>
+<td>6.445</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>680</td>
+<td>annual_heating</td>
+<td>2.398 MWh</td>
+<td>1.210 to 3.080</td>
+<td>2.056</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>annual_cooling</td>
+<td>5.025 MWh</td>
+<td>5.130 to 7.700</td>
+<td>6.264</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>680</td>
+<td>peak_heating</td>
+<td>1.892 kW</td>
+<td>1.672 to 2.232</td>
+<td>1.984</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>680</td>
+<td>peak_cooling</td>
+<td>4.716 kW</td>
+<td>5.408 to 7.404</td>
+<td>6.446</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>685</td>
+<td>annual_heating</td>
+<td>4.582 MWh</td>
+<td>4.080 to 5.750</td>
+<td>4.762</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>annual_cooling</td>
+<td>6.474 MWh</td>
+<td>7.700 to 10.140</td>
+<td>8.886</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>685</td>
+<td>peak_heating</td>
+<td>3.005 kW</td>
+<td>2.863 to 3.543</td>
+<td>3.183</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>685</td>
+<td>peak_cooling</td>
+<td>4.783 kW</td>
+<td>5.713 to 7.517</td>
+<td>6.743</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>695</td>
+<td>annual_heating</td>
+<td>2.494 MWh</td>
+<td>1.700 to 3.810</td>
+<td>2.656</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>annual_cooling</td>
+<td>6.717 MWh</td>
+<td>7.490 to 10.580</td>
+<td>8.912</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>695</td>
+<td>peak_heating</td>
+<td>1.881 kW</td>
+<td>1.688 to 2.245</td>
+<td>2.001</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>695</td>
+<td>peak_cooling</td>
+<td>5.140 kW</td>
+<td>5.855 to 7.918</td>
+<td>6.979</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900</td>
+<td>annual_heating</td>
+<td>3.876 MWh</td>
+<td>1.040 to 2.280</td>
+<td>1.627</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900</td>
+<td>annual_cooling</td>
+<td>3.558 MWh</td>
+<td>2.350 to 2.600</td>
+<td>2.467</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900</td>
+<td>peak_heating</td>
+<td>3.016 kW</td>
+<td>2.304 to 2.917</td>
+<td>2.591</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900</td>
+<td>peak_cooling</td>
+<td>3.655 kW</td>
+<td>2.387 to 3.545</td>
+<td>2.975</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>920</td>
+<td>annual_heating</td>
+<td>4.129 MWh</td>
+<td>2.550 to 4.200</td>
+<td>3.326</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>annual_cooling</td>
+<td>2.529 MWh</td>
+<td>2.430 to 3.080</td>
+<td>2.786</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>peak_heating</td>
+<td>3.016 kW</td>
+<td>2.367 to 3.040</td>
+<td>2.710</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>920</td>
+<td>peak_cooling</td>
+<td>3.260 kW</td>
+<td>2.536 to 3.655</td>
+<td>3.127</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>940</td>
+<td>annual_heating</td>
+<td>2.356 MWh</td>
+<td>0.220 to 1.910</td>
+<td>1.109</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>940</td>
+<td>annual_cooling</td>
+<td>3.426 MWh</td>
+<td>2.240 to 3.140</td>
+<td>2.401</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>940</td>
+<td>peak_heating</td>
+<td>2.489 kW</td>
+<td>2.858 to 4.076</td>
+<td>3.377</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>940</td>
+<td>peak_cooling</td>
+<td>3.640 kW</td>
+<td>2.387 to 3.545</td>
+<td>2.993</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980</td>
+<td>annual_heating</td>
+<td>2.344 MWh</td>
+<td>-0.610 to 1.280</td>
+<td>0.407</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980</td>
+<td>annual_cooling</td>
+<td>4.957 MWh</td>
+<td>3.520 to 4.490</td>
+<td>3.710</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980</td>
+<td>peak_heating</td>
+<td>1.892 kW</td>
+<td>1.169 to 1.778</td>
+<td>1.489</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980</td>
+<td>peak_cooling</td>
+<td>4.661 kW</td>
+<td>2.747 to 3.851</td>
+<td>3.348</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>985</td>
+<td>annual_heating</td>
+<td>4.070 MWh</td>
+<td>1.680 to 3.090</td>
+<td>2.398</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>985</td>
+<td>annual_cooling</td>
+<td>5.959 MWh</td>
+<td>5.950 to 7.260</td>
+<td>6.351</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>985</td>
+<td>peak_heating</td>
+<td>3.000 kW</td>
+<td>2.313 to 2.924</td>
+<td>2.631</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>985</td>
+<td>peak_cooling</td>
+<td>4.303 kW</td>
+<td>2.997 to 4.436</td>
+<td>3.824</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>annual_heating</td>
+<td>2.450 MWh</td>
+<td>-0.150 to 2.020</td>
+<td>0.974</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>995</td>
+<td>annual_cooling</td>
+<td>6.659 MWh</td>
+<td>6.580 to 8.410</td>
+<td>7.145</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>995</td>
+<td>peak_heating</td>
+<td>1.881 kW</td>
+<td>1.284 to 1.797</td>
+<td>1.565</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>995</td>
+<td>peak_cooling</td>
+<td>5.093 kW</td>
+<td>3.104 to 4.435</td>
+<td>3.986</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>maximum_temperature</td>
+<td>68.891 degC</td>
+<td>61.400 to 69.400</td>
+<td>64.600</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>minimum_temperature</td>
+<td>-13.741 degC</td>
+<td>-14.800 to -8.900</td>
+<td>-12.700</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>600FF</td>
+<td>mean_temperature</td>
+<td>22.650 degC</td>
+<td>23.300 to 27.100</td>
+<td>25.250</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>maximum_temperature</td>
+<td>97.605 degC</td>
+<td>68.800 to 79.500</td>
+<td>73.017</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>minimum_temperature</td>
+<td>-9.231 degC</td>
+<td>-9.100 to -4.700</td>
+<td>-6.867</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>680FF</td>
+<td>mean_temperature</td>
+<td>28.843 degC</td>
+<td>29.200 to 34.300</td>
+<td>31.850</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>maximum_temperature</td>
+<td>61.583 degC</td>
+<td>42.300 to 47.000</td>
+<td>44.583</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>minimum_temperature</td>
+<td>-8.562 degC</td>
+<td>-0.400 to 3.200</td>
+<td>1.250</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>900FF</td>
+<td>mean_temperature</td>
+<td>22.664 degC</td>
+<td>23.500 to 26.700</td>
+<td>25.233</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>maximum_temperature</td>
+<td>95.320 degC</td>
+<td>47.500 to 53.800</td>
+<td>50.500</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>minimum_temperature</td>
+<td>-6.723 degC</td>
+<td>6.300 to 13.500</td>
+<td>10.350</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>980FF</td>
+<td>mean_temperature</td>
+<td>28.816 degC</td>
+<td>29.500 to 34.300</td>
+<td>31.800</td>
+<td>fail</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../reference/parameters/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Parameters">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Parameters
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../bestest_cases/" class="md-footer__link md-footer__link--next" aria-label="Next: A walk through the BESTEST cases">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                A walk through the BESTEST cases
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.footnote.tooltips", "content.tabs.link", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
