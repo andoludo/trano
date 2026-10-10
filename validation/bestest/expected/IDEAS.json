@@ -28,12 +28,12 @@
   },
   "650": {
     "annual_heating": 0.0,
-    "annual_cooling": 5.067,
+    "annual_cooling": 5.0675,
     "peak_heating": 0.0,
     "peak_cooling": 6.3236,
-    "maximum_temperature": 35.024,
-    "minimum_temperature": -16.9072,
-    "mean_temperature": 14.6891
+    "maximum_temperature": 35.0197,
+    "minimum_temperature": -16.889,
+    "mean_temperature": 14.6931
   },
   "660": {
     "annual_heating": 3.7228,
@@ -109,12 +109,12 @@
   },
   "950": {
     "annual_heating": 0.0,
-    "annual_cooling": 0.7401,
+    "annual_cooling": 0.741,
     "peak_heating": 0.0,
-    "peak_cooling": 2.5169,
-    "maximum_temperature": 34.0627,
-    "minimum_temperature": -12.0841,
-    "mean_temperature": 14.7714
+    "peak_cooling": 2.5186,
+    "maximum_temperature": 34.0561,
+    "minimum_temperature": -12.0613,
+    "mean_temperature": 14.7835
   },
   "960": {
     "annual_heating": 2.6951,
@@ -166,9 +166,9 @@
     "annual_cooling": 0.0,
     "peak_heating": 0.0,
     "peak_cooling": 0.0,
-    "maximum_temperature": 64.7871,
-    "minimum_temperature": -16.9072,
-    "mean_temperature": 18.9893
+    "maximum_temperature": 64.7894,
+    "minimum_temperature": -16.889,
+    "mean_temperature": 18.9955
   },
   "680FF": {
     "annual_heating": 0.0,
@@ -193,9 +193,9 @@
     "annual_cooling": 0.0,
     "peak_heating": 0.0,
     "peak_cooling": 0.0,
-    "maximum_temperature": 37.1882,
-    "minimum_temperature": -12.0842,
-    "mean_temperature": 15.3281
+    "maximum_temperature": 37.1972,
+    "minimum_temperature": -12.0613,
+    "mean_temperature": 15.3412
   },
   "980FF": {
     "annual_heating": 0.0,
