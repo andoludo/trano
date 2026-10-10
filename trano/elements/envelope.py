@@ -1,14 +1,14 @@
 import logging
 import math
 from math import sqrt
-from typing import TYPE_CHECKING, Type
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Type
 
-import numpy as np
-from pydantic import BaseModel, field_validator, model_validator, computed_field, Field
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator, Field
 
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
-from trano.elements.types import Azimuth, Tilt, ContainerTypes, TILT_MAPPING
+from trano.elements.types import Azimuth, Tilt, ContainerTypes
 from trano.exceptions import InvalidBuildingStructureError
 
 if TYPE_CHECKING:
@@ -29,6 +29,10 @@ class BaseWall(BaseElement):
 
 
 FULL_TURN = 2 * math.pi
+WINDOW_AREA_TOLERANCE = 0.01
+"""Relative tolerance between a window's surface and its width times height."""
+GROUND_TEMPERATURE = 283.15
+"""[K] Temperature at the outer surface of floors on ground (10 degC, the AixLib reduced-order default)."""
 
 
 def check_azimuth_in_radians(azimuth: float | int) -> float | int:
@@ -56,16 +60,37 @@ class BaseSimpleWall(BaseWall):
     def get_tilt(self, space_name: str) -> Tilt:
         return self.tilt
 
+    @property
+    def opaque_surface(self) -> float:
+        """Area of the element without the windows cut out of it [m2]; the surface itself unless it hosts windows."""
+        return float(self.surface)
+
 
 class BaseInternalElement(BaseSimpleWall):
     # An internal element receives no solar radiation: its orientation is irrelevant.
     azimuth: float | int = Azimuth.south
 
 
-class BaseFloorOnGround(BaseSimpleWall): ...
+class BaseFloorOnGround(BaseSimpleWall):
+    ground_temperature: float = GROUND_TEMPERATURE  # [K] at the outer surface of the floor construction
 
 
-class BaseExternalWall(BaseSimpleWall): ...
+class BaseExternalWall(BaseSimpleWall):
+    """External wall whose ``surface`` is the gross facade area, the windows it hosts included.
+
+    The windows of a space are cut out of the walls facing the same way (see
+    :func:`assign_windows_to_walls`): libraries that take the opaque wall on its own (IDEAS,
+    AixLib, ISO 13790, MPC) get ``opaque_surface``, Buildings gets the gross area and cuts the
+    window out itself.
+    """
+
+    hosted_window_area: float = 0.0  # [m2] windows cut out of this wall, assigned by its space
+
+    @property
+    def opaque_surface(self) -> float:
+        if not self.hosted_window_area:
+            return self.surface  # rendered as written (10, not 10.0)
+        return _ten_digits(float(self.surface) - self.hosted_window_area)
 
 
 class BaseWindow(BaseSimpleWall):
@@ -81,8 +106,15 @@ class BaseWindow(BaseSimpleWall):
             self.height = self.surface / self.width
         elif self.width is None and self.height is not None:
             self.width = self.surface / self.height
-        elif self.width is not None and self.height is not None and int(self.width * self.height) != int(self.surface):
-            raise InvalidBuildingStructureError(f"The surface does not match width * height for {self.name}.")
+        elif (
+            self.width is not None
+            and self.height is not None
+            and not math.isclose(self.width * self.height, self.surface, rel_tol=WINDOW_AREA_TOLERANCE)
+        ):
+            raise InvalidBuildingStructureError(
+                f"The surface of window {self.name} ({self.surface} m2) does not match its width * height "
+                f"({self.width} m * {self.height} m)."
+            )
         else:
             ...
 
@@ -120,13 +152,13 @@ class MergedBaseWall(BaseWall):
                 "azimuth": [],
                 "tilt": [],
                 "name": [],
-                "surface": [],
+                "opaque_surface": [],
             }
             for construction_type in data:
                 data[construction_type] = _get_element(construction_type, base_walls, construction)
             merged_wall = cls(
                 name=f"merged_{'_'.join(data['name'])}",  # type: ignore
-                surfaces=data["surface"],
+                surfaces=data["opaque_surface"],
                 azimuths=data["azimuth"],
                 tilts=data["tilt"],
                 constructions=[construction],
@@ -218,39 +250,29 @@ class Window(BaseWindow): ...
 class WindowedWall(BaseSimpleWall): ...
 
 
-def parallel_resistance(resistances: list[float]) -> float:
-    return 1 / sum([1 / resistance for resistance in resistances])
+ANGLE_TOLERANCE = 1e-2
+"""[rad] Azimuths closer than this face the same way: accepts azimuths rounded to two decimals (1.57 for pi/2)."""
+
+
+def same_angle(first: float, second: float) -> bool:
+    """Whether two azimuths [rad] face the same way, also across a full turn (0 and 2*pi)."""
+    difference = (first - second) % FULL_TURN
+    return min(difference, FULL_TURN - difference) < ANGLE_TOLERANCE
+
+
+def same_orientation(first: BaseSimpleWall, second: BaseSimpleWall) -> bool:
+    return same_angle(first.azimuth, second.azimuth) and first.tilt == second.tilt
 
 
 class WallParameters(BaseModel):
+    """Constructions of one kind, rendered as the arrays of a Buildings MixedAir zone."""
+
     number: int
     surfaces: list[float]
     azimuths: list[float]
-    u_values: list[float]
     layers: list[str]
     tilts: list[Tilt]
-    window_area_by_orientation: list[float]
     type: str
-    average_resistance_external: float = Field(default=0)
-    average_resistance_external_remaining: float = Field(default=0)
-    total_thermal_capacitance: float = Field(default=0)
-    total_thermal_resistance: float = Field(default=0)
-
-    def tilts_to_radians(self) -> list[float]:
-        return [math.radians(TILT_MAPPING[tilt.value]) for tilt in self.tilts]
-
-    @computed_field
-    def average_u_value(self) -> float:
-        if not self.u_values:
-            return 0
-        return sum(self.u_values) / len(self.u_values)
-
-    @staticmethod
-    def _window_area_by_orientation(neighbors: list["BaseElement"], windows: list["BaseSimpleWall"]) -> list[float]:
-        """Window area facing the same orientation as each external wall."""
-        external_walls = [neighbor for neighbor in neighbors if isinstance(neighbor, ExternalWall)]
-        azimuth_surface = {window.azimuth: window.surface for window in windows}
-        return [azimuth_surface.get(external_wall.azimuth, 0) for external_wall in external_walls]
 
     @classmethod
     def from_neighbors(
@@ -259,141 +281,143 @@ class WallParameters(BaseModel):
         neighbors: list["BaseElement"],
         wall: Type["BaseSimpleWall"],
         filter: list[str] | None = None,
-        suffix_type: str | None = None,
     ) -> "WallParameters":
         constructions = [
             neighbor for neighbor in neighbors if isinstance(neighbor, wall) if neighbor.name not in (filter or [])
         ]
-        surfaces = [construction.surface for construction in constructions]
-        total_surface = sum(surfaces)
-        window_area_by_orientation = (
-            cls._window_area_by_orientation(neighbors, constructions) if issubclass(wall, BaseWindow) else []
-        )
         return cls(
             number=len(constructions),
-            surfaces=surfaces,
+            surfaces=[construction.surface for construction in constructions],
             azimuths=[construction.azimuth for construction in constructions],
             layers=[construction.construction.name for construction in constructions],
             tilts=[construction.get_tilt(space_name) for construction in constructions],
-            type=wall.__name__ if not suffix_type else f"{wall.__name__}{suffix_type}",
-            u_values=[construction.construction.u_value for construction in constructions],
-            window_area_by_orientation=window_area_by_orientation,
-            average_resistance_external=np.mean(
-                [construction.construction.resistance_external for construction in constructions]
-            ),
-            average_resistance_external_remaining=np.mean(
-                [construction.construction.resistance_external_remaining for construction in constructions]
-            ),
-            total_thermal_capacitance=total_surface
-            * np.mean([construction.construction.total_thermal_capacitance for construction in constructions]),
-            total_thermal_resistance=total_surface
-            * np.mean([construction.construction.total_thermal_resistance for construction in constructions]),
+            type=wall.__name__,
         )
 
 
-class VerticalWallParameters(WallParameters):
-    @classmethod
-    def from_neighbors_(
-        cls,
-        space_name: str,
-        neighbors: list["BaseElement"],
-        wall: Type["BaseSimpleWall"],
-    ) -> "VerticalWallParameters":
-        neighbors = [n for n in neighbors if hasattr(n, "tilt") and n.tilt == Tilt.wall]
-        return cls.from_neighbors(space_name, neighbors, wall, suffix_type="VerticalOnly")  # type: ignore
+def _ten_digits(value: float) -> float:
+    """Value rounded to ten significant digits: exact for the model, without float noise (7.200000000000001)."""
+    return float(f"{value:.10g}")
 
 
-class RoofWallParameters(WallParameters):
-    @classmethod
-    def from_neighbors_(
-        cls,
-        space_name: str,
-        neighbors: list["BaseElement"],
-        wall: Type["BaseSimpleWall"],
-    ) -> "RoofWallParameters":
-        neighbors = [n for n in neighbors if hasattr(n, "tilt") and n.tilt == Tilt.ceiling]
-        return cls.from_neighbors(space_name, neighbors, wall, suffix_type="Roof")  # type: ignore
+class HostedWindows(BaseModel):
+    """The windows of one orientation and the walls of that orientation they are cut out of."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    host_walls: list[ExternalWall]
+    windows: list[BaseWindow]
+
+    @property
+    def gross_area(self) -> float:
+        """Area of the host walls, windows included (Buildings ``datConExtWin.A``)."""
+        return float(sum(wall.surface for wall in self.host_walls))
+
+    @property
+    def window_area(self) -> float:
+        return float(sum(window.surface for window in self.windows))
 
 
-class ExternalWallParameters(WallParameters):
-    @classmethod
-    def from_neighbors_(
-        cls,
-        space_name: str,
-        neighbors: list["BaseElement"],
-        wall: Type["BaseSimpleWall"],
-    ) -> "RoofWallParameters":
-        return cls.from_neighbors(space_name, neighbors, wall, suffix_type="External")  # type: ignore
+def hosted_windows(boundaries: list["BaseElement"]) -> list[HostedWindows]:
+    """Group the windows by orientation with their host walls, checking that they fit in them.
+
+    The host walls are the walls with the same azimuth and tilt whose construction covers the
+    largest area.
+    """
+    windows = [boundary for boundary in boundaries if isinstance(boundary, BaseWindow)]
+    walls = [boundary for boundary in boundaries if isinstance(boundary, ExternalWall)]
+    groups = [
+        HostedWindows(host_walls=_host_walls(walls, orientation_windows[0]), windows=orientation_windows)
+        for orientation_windows in _group(windows, same_orientation)
+    ]
+    for group in groups:
+        if group.window_area > group.gross_area * (1 + 1e-9):
+            raise InvalidBuildingStructureError(
+                f"The windows {[window.name for window in group.windows]} ({group.window_area} m2) are larger "
+                f"than the walls {[wall.name for wall in group.host_walls]} ({group.gross_area} m2) of the same "
+                "orientation: the wall surface is the gross area, windows included."
+            )
+    return groups
+
+
+def assign_windows_to_walls(boundaries: list["BaseElement"]) -> None:
+    """Cut the windows out of their host walls: sets ``hosted_window_area`` on every external wall.
+
+    The window area of an orientation is spread over its host walls in proportion to their size.
+    """
+    for boundary in boundaries:
+        if isinstance(boundary, BaseExternalWall):
+            boundary.hosted_window_area = 0.0
+    for group in hosted_windows(boundaries):
+        for wall in group.host_walls:
+            wall.hosted_window_area += group.window_area * wall.surface / group.gross_area
 
 
 class WindowedWallParameters(WallParameters):
+    """Walls with windows (Buildings ``datConExtWin``): one entry per orientation and glazing.
+
+    The host walls of the windows are excluded from the opaque walls (``datConExt``). With several
+    glazings on one orientation, the gross wall area is split between the entries in proportion to
+    their window areas, so that it is counted once.
+    """
+
     window_layers: list[str]
     window_width: list[float]
     window_height: list[float]
     included_external_walls: list[str]
 
     @classmethod
-    def from_neighbors(cls, neighbors: list["BaseElement"]) -> "WindowedWallParameters":  # type: ignore
-        windows = [neighbor for neighbor in neighbors if isinstance(neighbor, BaseWindow)]
-        surfaces = []
-        azimuths = []
-        layers = []
-        tilts = []
-        window_layers = []
-        window_width = []
-        window_height = []
-        included_external_walls = []
-        u_values = []
-        window_area_by_orientation: list[float] = []
-        for window in windows:
-            wall = get_common_wall_properties(neighbors, window)
-            surfaces.append(wall.surface)
-            azimuths.append(wall.azimuth)
-            layers.append(wall.construction.name)
-            tilts.append(wall.tilt)
-            window_layers.append(window.construction.name)
-            window_width.append(window.width)
-            window_height.append(window.height)
-            included_external_walls.append(wall.name)
-            u_values.append(wall.construction.u_value)
+    def from_neighbors(cls, neighbors: list["BaseElement"]) -> "WindowedWallParameters":  # type: ignore[override]
+        entries: dict[str, list[Any]] = {
+            key: []
+            for key in ("surfaces", "azimuths", "layers", "tilts", "window_layers", "window_width", "window_height")
+        }
+        included_external_walls: list[str] = []
+        for group in hosted_windows(neighbors):
+            host_walls = group.host_walls
+            included_external_walls += [wall.name for wall in host_walls if wall.name is not None]
+            gross_area, window_area = group.gross_area, group.window_area
+            for glazing_windows in _group(group.windows, lambda a, b: a.construction == b.construction):
+                area = sum(window.surface for window in glazing_windows)
+                height = sum(window.surface * window.height for window in glazing_windows) / area
+                entries["surfaces"].append(_ten_digits(gross_area * area / window_area))
+                entries["azimuths"].append(host_walls[0].azimuth)
+                entries["layers"].append(host_walls[0].construction.name)
+                entries["tilts"].append(host_walls[0].tilt)
+                entries["window_layers"].append(glazing_windows[0].construction.name)
+                entries["window_height"].append(_ten_digits(height))
+                entries["window_width"].append(_ten_digits(area / height))
         return cls(
-            number=len(windows),
-            surfaces=surfaces,
-            azimuths=azimuths,
-            layers=layers,
-            u_values=u_values,
-            tilts=tilts,
+            number=len(entries["surfaces"]),
             type="WindowedWall",
-            window_layers=window_layers,
-            window_width=window_width,
-            window_height=window_height,
             included_external_walls=included_external_walls,
-            window_area_by_orientation=window_area_by_orientation,
+            **entries,
         )
 
 
-def get_common_wall_properties(neighbors: list["BaseElement"], window: BaseWindow) -> BaseSimpleWall:
-    walls = [
-        neighbor
-        for neighbor in neighbors
-        if isinstance(neighbor, ExternalWall) and neighbor.azimuth == window.azimuth and Tilt.wall == neighbor.tilt
-    ]
-    similar_properties = (
-        len({w.azimuth for w in walls}) == 1
-        and len({w.tilt for w in walls}) == 1
-        and len({w.construction.name for w in walls}) == 1
-    )
+def _group(elements: list[Any], same: Callable[[Any, Any], bool]) -> list[list[Any]]:
+    """Group elements with an equivalence test, keeping the order of first appearance."""
+    groups: list[list[Any]] = []
+    for element in elements:
+        group = next((group for group in groups if same(group[0], element)), None)
+        if group is None:
+            groups.append([element])
+        else:
+            group.append(element)
+    return groups
 
-    if not similar_properties:
-        logger.warning("The walls have different properties for the same azimuth. Using the one with the marges area.")
-        walls = sorted(walls, key=lambda w: w.surface, reverse=True)[:1]
-    if not walls:
-        raise InvalidBuildingStructureError("No walls found with the same azimuth and tilt as the window.")
 
-    return BaseSimpleWall(
-        surface=sum([w.surface for w in walls]),
-        name=walls[0].name,
-        tilt=walls[0].tilt,
-        azimuth=walls[0].azimuth,
-        construction=walls[0].construction,
-    )
+def _host_walls(walls: list[ExternalWall], window: BaseWindow) -> list[ExternalWall]:
+    """Walls hosting the windows of an orientation: same azimuth and tilt, construction with the largest area."""
+    candidates = [wall for wall in walls if same_orientation(wall, window)]
+    if not candidates:
+        raise InvalidBuildingStructureError(
+            f"No wall found with the same azimuth and tilt as the window {window.name}."
+        )
+    by_construction = _group(candidates, lambda a, b: a.construction == b.construction)
+    if len(by_construction) > 1:
+        logger.warning(
+            "The walls facing the window %s have different constructions; the windows are placed in the "
+            "construction with the largest area.",
+            window.name,
+        )
+    return max(by_construction, key=lambda group: sum(wall.surface for wall in group))

@@ -1,9 +1,11 @@
+from functools import cached_property
 from typing import TYPE_CHECKING, NamedTuple
 
 from networkx.classes.reportviews import NodeView
-from pydantic import BaseModel, ConfigDict, Field, field_validator, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 from trano.elements.common_base import BaseProperties
+from trano.elements.glazing import GlazingProperties
 from trano.elements.jinja import compile_template
 from trano.elements.types import ContainerTypes
 
@@ -30,6 +32,11 @@ class Material(BaseModel):
             return value.lower().replace(":", "_")
         return value
 
+    @property
+    def kind(self) -> str:
+        """Solid, glass or gas: libraries model gas layers as cavities and glass panes without thermal mass."""
+        return "solid"
+
 
 class GlassMaterial(Material):
     solar_transmittance: list[float]
@@ -38,6 +45,10 @@ class GlassMaterial(Material):
     infrared_transmissivity: float
     infrared_absorptivity_outside_facing: float
     infrared_absorptivity_room_facing: float
+
+    @property
+    def kind(self) -> str:
+        return "glass"
 
 
 class StandardGas(NamedTuple):
@@ -59,6 +70,10 @@ UNIVERSAL_GAS_CONSTANT = 8.314462618  # [J/(mol.K)]
 
 
 class Gas(Material):
+    @property
+    def kind(self) -> str:
+        return "gas"
+
     @property
     def molar_mass(self) -> float:
         """Molar mass [kg/mol] giving the gas density at 20 °C and 1 atm (ideal gas law)."""
@@ -98,7 +113,8 @@ class BaseConstruction(BaseModel):
     def total_thermal_resistance(self) -> float:
         return sum([layer.thermal_resistance for layer in self.layers])
 
-    @computed_field
+    @computed_field  # type: ignore
+    @property
     def total_thermal_capacitance(self) -> float:
         return sum([layer.thermal_capacitance for layer in self.layers])
 
@@ -151,6 +167,29 @@ class Glass(BaseConstruction):
 
     def __hash__(self) -> int:
         return hash(self.name)
+
+    @model_validator(mode="after")
+    def _check_layer_sequence(self) -> "Glass":
+        """Glass panes and gas gaps alternate, as every library's glazing model expects."""
+        kinds = [layer.layer_type for layer in self.layers]
+        if (
+            not kinds
+            or kinds != ["glass" if index % 2 == 0 else "gas" for index in range(len(kinds))]
+            or (kinds[-1] != "glass")
+        ):
+            raise ValueError(
+                f"Glazing {self.name} must alternate glass panes and gas gaps, starting and ending with glass, "
+                f"got {kinds}."
+            )
+        return self
+
+    @cached_property
+    def properties(self) -> GlazingProperties:
+        """Solar-optical (Buildings algorithm) and thermal (EN 673, EN 410) properties of the glazing."""
+        return GlazingProperties.from_layers(
+            panes=[layer for layer in self.layers if isinstance(layer, GlassLayer)],
+            gaps=[layer for layer in self.layers if isinstance(layer, GasLayer)],
+        )
 
     @field_validator("name")
     @classmethod

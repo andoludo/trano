@@ -82,6 +82,22 @@ def buildings_free_float_three_zones(
     return network
 
 
+def _low_order_three_zones(library_name: str) -> Network:
+    network = Network(name=f"{library_name}_three_zones", library=Library.from_configuration(library_name))
+    network.add_boiler_plate_spaces(three_spaces())
+    return network
+
+
+@pytest.fixture
+def reduced_order_three_zones() -> Network:
+    return _low_order_three_zones("reduced_order")
+
+
+@pytest.fixture
+def iso_13790_three_zones() -> Network:
+    return _low_order_three_zones("iso_13790")
+
+
 @pytest.fixture
 def ideas_free_float_three_zones(
     ideas_free_float_three_zones_spaces: list,

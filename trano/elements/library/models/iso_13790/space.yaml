@@ -21,9 +21,9 @@
     - DataBus
   - flow: undirected
     medium: data
-    expected_ports: ['y']
+    expected_ports: ['latentGains']
     names:
-    - intLatGai
+    - intLatGaiFlo
     targets:
     - BaseOccupancy
   - flow: convective
@@ -40,28 +40,28 @@
     - Emission
   - flow: undirected
     medium: data
-    expected_ports: ['y1']
+    expected_ports: ['sensibleGains']
     names:
-    - intSenGai
+    - intSenGaiFlo
     targets:
     - BaseOccupancy
   template: |
-      AixLib.ThermalZones.ISO13790.Zone5R1C.ZoneHVAC {{ element.name }}(
+      Trano.ThermalZones.ISO13790ZoneHVAC {{ element.name }}(
       redeclare package Medium = Medium,
       {{ macros.render_parameters(parameters) | safe }},
-      AWal={{ macros.join_list(element.boundary_parameters.vertical_walls.area_per_orientation) }},
-      nOrientations={{ element.boundary_parameters.vertical_walls.number_orientations  }},
-      surAzi={{ macros.join_list(element.boundary_parameters.vertical_walls.azimuths) }},
-      surTil={{ macros.join_list(element.boundary_parameters.vertical_walls.tilts) }},
-      UWal = {{element.boundary_parameters.vertical_walls.average_u_value}},
+      AWal={{ macros.join_list(element.aggregated_envelope.opaque_areas) }},
+      nOrientations={{ element.aggregated_envelope.orientations | length }},
+      surAzi={{ macros.join_list(element.aggregated_envelope.azimuths) }},
+      surTil={{ macros.join_list(element.aggregated_envelope.tilts) }},
+      UWal={{ element.aggregated_envelope.exterior_walls.u_value }},
 
-      AWin={{ macros.join_list(element.boundary_parameters.windows.area_per_orientation) }},
-      UWin={{ element.boundary_parameters.windows.average_u_value }},
-      UFlo={{ element.boundary_parameters.floors.average_u_value }},
+      AWin={{ macros.join_list(element.aggregated_envelope.window_areas) }},
+      UWin={{ element.aggregated_envelope.windows.u_value }},
+      UFlo={{ element.aggregated_envelope.floor_u_value(element.parameters.floor_area) }},
       airRat=0.5,
-      ARoo={{ element.boundary_parameters.roofs.area_per_orientation[0]  }},
-      URoo={{ element.boundary_parameters.roofs.average_u_value }},
+      ARoo={{ element.aggregated_envelope.roof.area }},
+      URoo={{ element.aggregated_envelope.roof.u_value }},
 
       redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Light buiMas,
-      gFac=0.5) "Thermal zone"
+      gFac={{ element.aggregated_envelope.windows.g_value }}) "Thermal zone"
   variant: default

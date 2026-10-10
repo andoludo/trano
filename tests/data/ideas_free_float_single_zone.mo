@@ -38,11 +38,18 @@ package Trano
   Modelica.Blocks.Routing.RealPassThrough co2
     annotation (Placement(transformation(extent={{-94,26},{-68,52}})));
 
+  Modelica.Blocks.Interfaces.RealOutput occupantDensity(unit="1/m2")
+    "Occupants per floor area";
+  Modelica.Blocks.Interfaces.RealOutput relativeGains[3]
+    "Occupancy relative to k (people), machines and lights (none)";
+
 equation
   // Linear steady-state inversion of the CO2 mass balance
   N        = max(0, QVent*(co2.y - ppmOut)*1e-6/gCO2);
   density  = N/AFlo;
   gai2.u[1] = density;
+  occupantDensity = density;
+  relativeGains = {if k > 0 then density/k else 0, 0, 0};
 
   connect(gai2.y, y) annotation (Line(points={{39,-2},{96,-2},{96,0},{110,0}},
     color={0,0,127}));
@@ -89,7 +96,13 @@ annotation (Placement(transformation(extent={{-66,-22},{-46,-2}})));
       Buildings.Controls.OBC.CDL.Reals.Sources.Constant zero(k=0)
     "Heat gain if occupied in room 2"
     annotation (Placement(transformation(extent={{-62,-68},{-42,-48}})));
+      Modelica.Blocks.Interfaces.RealOutput occupantDensity(unit="1/m2")
+        "Occupants per floor area";
+      Modelica.Blocks.Interfaces.RealOutput relativeGains[3]
+        "Occupancy relative to k (people), machines and lights (none)";
     equation
+      occupantDensity = switch2.y;
+      relativeGains = {if k > 0 then switch2.y/k else 0, 0, 0};
       connect(
           occSch2.occupied,switch2. u2) annotation (Line(
       points={{-45,-18},{-28,-18},{-28,-2},{-22,-2}},
@@ -120,28 +133,12 @@ annotation (Placement(transformation(extent={{-66,-22},{-46,-2}})));
     end SimpleOccupancy;
 
     model ISO13790
-
-      Modelica.Blocks.Interfaces.RealOutput y
-        annotation (Placement(transformation(extent={{100,30},{120,50}})));
-      Modelica.Blocks.Interfaces.RealOutput y1
-        annotation (Placement(transformation(extent={{100,-48},{120,-28}})));
-      Modelica.Blocks.Sources.Constant const(k=10)
-        annotation (Placement(transformation(extent={{-44,30},{-24,50}})));
-      Modelica.Blocks.Sources.Constant const1(k=1)
-        annotation (Placement(transformation(extent={{-42,-50},{-22,-30}})));
-    equation
-      connect(const.y, y)
-        annotation (Line(points={{-23,40},{110,40}}, color={0,0,127}));
-      connect(const1.y, y1) annotation (Line(points={{-21,-40},{96,-40},{96,-38},
-              {110,-38}}, color={0,0,127}));
-      annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
-        Ellipse(extent={{10,70},{-26,34}}, lineColor={28,108,200}),
-        Line(points={{-8,34},{-8,-26}}, color={28,108,200}),
-        Line(points={{-8,-26},{-48,-68}}, color={28,108,200}),
-        Line(points={{-8,-26},{34,-70},{32,-70}}, color={28,108,200}),
-        Line(points={{-8,20},{-48,-8}}, color={28,108,200}),
-        Line(points={{-8,20},{44,-8}}, color={28,108,200})}),    Diagram(
-        coordinateSystem(preserveAspectRatio=false)));
+      "Occupancy gains per floor area, split into sensible and latent heat for the ISO 13790 zone"
+      extends SimpleOccupancy;
+      Modelica.Blocks.Interfaces.RealOutput sensibleGains(unit="W/m2") = y[1] + y[2]
+        "Radiant and convective heat gains per floor area";
+      Modelica.Blocks.Interfaces.RealOutput latentGains(unit="W/m2") = y[3]
+        "Latent heat gains per floor area";
     end ISO13790;
   end Occupancy;
 
@@ -174,13 +171,13 @@ constructed by the signals connected to this bus.
 
       partial model PartialBoilerControl
         parameter Modelica.Units.SI.Temperature TSup_nominal=80 + 273.15
-          "Check for temperature at the bottom of the tank";
+          "Supply temperature set point: the boiler starts when the tank top drops 1 K below it";
         parameter Modelica.Units.SI.Temperature threshold_outdoor_air_cutoff=15 +
             273.15 "Output true if outdoor air is below heating cut-off limit";
-        parameter Modelica.Units.SI.Temperature threshold_to_switch_off_boiler=15
-             + 273.15 "Threshold to switch boiler off";
+        parameter Modelica.Units.SI.Temperature threshold_to_switch_off_boiler=
+            TSup_nominal + 5 "Tank bottom temperature above which the boiler switches off";
         Buildings.Controls.OBC.CDL.Reals.GreaterThreshold greThr(t=
-        TSup_nominal + 5) "Check for temperature at the bottom of the tank"
+        threshold_to_switch_off_boiler) "Check for temperature at the bottom of the tank"
           annotation (
       Placement(transformation(extent={{-114,-142},{-94,-122}})));
         Buildings.Controls.OBC.CDL.Conversions.BooleanToReal booToReaPum
@@ -234,7 +231,7 @@ constructed by the signals connected to this bus.
           "Root of the state graph" annotation (Placement(transformation(
           extent={{-134,98},{-114,118}})));
         Buildings.Controls.OBC.CDL.Reals.Sources.Constant dTThr1(k=
-              threshold_to_switch_off_boiler) "Threshold to switch boiler off"
+              TSup_nominal) "Supply temperature set point"
           annotation (Placement(
         transformation(extent={{-208,-22},{-188,-2}})));
       equation
@@ -625,14 +622,12 @@ parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab
         annotation (Placement(transformation(extent={{-10,-10},{10,10}},
             rotation=0,
             origin={94,-86})));
-      Modelica.Blocks.Math.Gain gain(k=Q_flow_nominal)
+      Modelica.Blocks.Sources.RealExpression fuelVolumeFlow(y=boi.VFue_flow)
+        "Fuel volume flow rate of the boiler [m3/s]"
         annotation (Placement(transformation(extent={{-70,-22},{-58,-10}})));
-      Modelica.Blocks.Continuous.Integrator integrator
+      Modelica.Blocks.Continuous.Integrator GasUsage(y(unit="m3"))
+        "Fuel volume consumed [m3]"
         annotation (Placement(transformation(extent={{-46,-26},{-30,-10}})));
-      Modelica.Blocks.Math.Gain gain1(k=2.77778e-7)
-        annotation (Placement(transformation(extent={{-46,-52},{-26,-32}})));
-      Modelica.Blocks.Math.Gain gain2(k=0.9*(1/11))
-        annotation (Placement(transformation(extent={{-26,-80},{-6,-60}})));
       Modelica.Blocks.Routing.RealPassThrough Boiy
         annotation (Placement(transformation(extent={{-122,36},{-104,54}})));
     equation
@@ -711,17 +706,10 @@ parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab
       connect(port_a, senMasFlo4.port_b) annotation (Line(points={{-100,0},{-84,0},{
               -84,-32},{-96,-32},{-96,-114},{110,-114},{110,-86},{104,-86}}, color={
               0,127,255}));
-      connect(gain.y, integrator.u) annotation (Line(points={{-57.4,-16},{-54,-16},{
+      connect(fuelVolumeFlow.y, GasUsage.u) annotation (Line(points={{-57.4,-16},{-54,-16},{
               -54,-18},{-47.6,-18}}, color={0,0,127}));
-      connect(integrator.y, gain1.u) annotation (Line(points={{-29.2,-18},{-30,-18},
-              {-30,-4},{-74,-4},{-74,-12},{-76,-12},{-76,-32},{-48,-32},{-48,-42}},
-            color={0,0,127}));
-      connect(gain1.y, gain2.u) annotation (Line(points={{-25,-42},{-34,-42},{-34,-60},
-              {-60,-60},{-60,-70},{-28,-70}}, color={0,0,127}));
       connect(Boiy.y, boi.y) annotation (Line(points={{-103.1,45},{-84,45},{-84,18},
               {-76,18}}, color={0,0,127}));
-      connect(Boiy.y, gain.u) annotation (Line(points={{-103.1,45},{-84,45},{-84,2},
-              {-82,2},{-82,-16},{-71.2,-16}}, color={0,0,127}));
       annotation (Icon(coordinateSystem(extent={{-100,-120},{100,100}}), graphics={
     Rectangle(fillPattern=FillPattern.Solid, extent={{-80,80},{80,-80}}),
     Rectangle(
@@ -3249,6 +3237,17 @@ end PartialPowerSensor;
     end RoomHeatMassBalanceInf;
   end BaseClasses;
 
+  model ISO13790ZoneHVAC
+    "ISO 13790 zone whose internal gains are given per floor area and scaled by its own floor area"
+    extends AixLib.ThermalZones.ISO13790.Zone5R1C.ZoneHVAC(
+      final intSenGai=intSenGaiFlo*AFlo,
+      final intLatGai=intLatGaiFlo*AFlo);
+    Modelica.Blocks.Interfaces.RealInput intSenGaiFlo(final unit="W/m2")
+      "Internal sensible heat gains per floor area";
+    Modelica.Blocks.Interfaces.RealInput intLatGaiFlo(final unit="W/m2")
+      "Internal latent heat gains per floor area";
+  end ISO13790ZoneHVAC;
+
   model MixedAirInf
     "Model of a room in which the air is completely mixed"
     extends Trano.ThermalZones.BaseClasses.RoomHeatMassBalanceInf(
@@ -3551,68 +3550,71 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 
 package Glazing "Library of building glazing systems"
 extends Modelica.Icons.MaterialPropertiesPackage;
-    record  double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
-          final nLay=3,
+    record double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+      final nLay=3,
       final checkLowPerformanceGlazing=false,
-          mats={ideas_free_float_single_zone.Data.Materials.id_100
+      mats={ideas_free_float_single_zone.Data.Materials.id_100
         (d=0.003),ideas_free_float_single_zone.Data.Materials.Air
         (d=0.0127),ideas_free_float_single_zone.Data.Materials.id_100
-        (d=0.003)    },
-    final SwTrans=[0, 0.721;
-                    10, 0.720;
-                    20, 0.718;
-                    30, 0.711;
-                    40, 0.697;
-                    50, 0.665;
-                    60, 0.596;
-                    70, 0.454;
-                    80, 0.218;
-                    90, 0.000],
-      final SwAbs=[0, 0.082, 0, 0.062;
-                  10, 0.082, 0, 0.062;
-                  20, 0.084, 0, 0.063;
-                  30, 0.086, 0, 0.065;
-                  40, 0.090, 0, 0.067;
-                  50, 0.094, 0, 0.068;
-                  60, 0.101, 0, 0.067;
-                  70, 0.108, 0, 0.061;
-                  80, 0.112, 0, 0.045;
-                  90, 0.000, 0, 0.000],
-      final SwTransDif=0.619,
-      final SwAbsDif={0.093, 0,  0.063},
-      final U_value=2.9,
-      final g_value=0.78
-
+        (d=0.003)      },
+      final SwTrans=[0, 0.419;
+                    10, 0.417;
+                    20, 0.4109;
+                    30, 0.3998;
+                    40, 0.3818;
+                    50, 0.3524;
+                    60, 0.3024;
+                    70, 0.2157;
+                    80, 0.0857;
+                    90, 0.0],
+      final SwAbs=[0, 0.3037, 0.0, 0.1894;
+                  10, 0.3053, 0.0, 0.1899;
+                  20, 0.3101, 0.0, 0.1916;
+                  30, 0.3181, 0.0, 0.1938;
+                  40, 0.329, 0.0, 0.1955;
+                  50, 0.3424, 0.0, 0.1944;
+                  60, 0.3568, 0.0, 0.1854;
+                  70, 0.3661, 0.0, 0.158;
+                  80, 0.336, 0.0, 0.0959;
+                  90, 0.0, 0.0, 0.0],
+      final SwTransDif=0.3204,
+      final SwAbsDif={0.3442, 0.0, 0.1841},
+      final U_value=2.8576,
+      final g_value=0.579
     ) "ideas_free_float_single_zone";
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
+extends Modelica.Icons.MaterialPropertiesPackage;    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.03,
+      c=1200.0,
+      rho=40.0,
+      epsLw=0.85,
+      epsSw=0.65);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.4,
       c=840.0,
       rho=2240.0,
       epsLw=0.85,
       epsSw=0.65);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.12,
+      k=0.12,
       c=1210.0,
       rho=540.0,
       epsLw=0.85,
-      epsSw=0.65);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.85,
-      epsSw=0.65);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
-      epsLw=0.85,
       epsSw=0.65);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
+      k=0.025,
       c=1005.0,
       rho=1.2,
       epsLw=0.85,
-      epsSw=0.65);end Materials;
+      epsSw=0.65,
+      gas=true);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.84,
+      epsLw_a=0.84,
+      epsLw_b=0.84,
+      epsSw=0.65,
+      glass=true);end Materials;
 package Constructions "Library of building envelope constructions"      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
@@ -3680,7 +3682,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     redeclare parameter ideas_free_float_single_zone.Data.Constructions.
     external_wall
     constructionType,
-    A={ 10, 10, 10, 10 },
+    A={ 10, 10, 9.0, 10 },
     final azi={ 1.57, 3.14, -1.57, 0 },
     redeclare package Medium = Medium,
     final inc={IDEAS.Types.Tilt.Wall,IDEAS.Types.Tilt.Wall,IDEAS.Types.Tilt.Wall,IDEAS.Types.Tilt.Wall}) annotation (
@@ -3945,68 +3947,71 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 
 package Glazing "Library of building glazing systems"
 extends Modelica.Icons.MaterialPropertiesPackage;
-    record  double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
-          final nLay=3,
+    record double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+      final nLay=3,
       final checkLowPerformanceGlazing=false,
-          mats={ideas_free_float_single_zone.Data.Materials.id_100
+      mats={ideas_free_float_single_zone.Data.Materials.id_100
         (d=0.003),ideas_free_float_single_zone.Data.Materials.Air
         (d=0.0127),ideas_free_float_single_zone.Data.Materials.id_100
-        (d=0.003)    },
-    final SwTrans=[0, 0.721;
-                    10, 0.720;
-                    20, 0.718;
-                    30, 0.711;
-                    40, 0.697;
-                    50, 0.665;
-                    60, 0.596;
-                    70, 0.454;
-                    80, 0.218;
-                    90, 0.000],
-      final SwAbs=[0, 0.082, 0, 0.062;
-                  10, 0.082, 0, 0.062;
-                  20, 0.084, 0, 0.063;
-                  30, 0.086, 0, 0.065;
-                  40, 0.090, 0, 0.067;
-                  50, 0.094, 0, 0.068;
-                  60, 0.101, 0, 0.067;
-                  70, 0.108, 0, 0.061;
-                  80, 0.112, 0, 0.045;
-                  90, 0.000, 0, 0.000],
-      final SwTransDif=0.619,
-      final SwAbsDif={0.093, 0,  0.063},
-      final U_value=2.9,
-      final g_value=0.78
-
+        (d=0.003)      },
+      final SwTrans=[0, 0.419;
+                    10, 0.417;
+                    20, 0.4109;
+                    30, 0.3998;
+                    40, 0.3818;
+                    50, 0.3524;
+                    60, 0.3024;
+                    70, 0.2157;
+                    80, 0.0857;
+                    90, 0.0],
+      final SwAbs=[0, 0.3037, 0.0, 0.1894;
+                  10, 0.3053, 0.0, 0.1899;
+                  20, 0.3101, 0.0, 0.1916;
+                  30, 0.3181, 0.0, 0.1938;
+                  40, 0.329, 0.0, 0.1955;
+                  50, 0.3424, 0.0, 0.1944;
+                  60, 0.3568, 0.0, 0.1854;
+                  70, 0.3661, 0.0, 0.158;
+                  80, 0.336, 0.0, 0.0959;
+                  90, 0.0, 0.0, 0.0],
+      final SwTransDif=0.3204,
+      final SwAbsDif={0.3442, 0.0, 0.1841},
+      final U_value=2.8576,
+      final g_value=0.579
     ) "ideas_free_float_single_zone";
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.4,
+extends Modelica.Icons.MaterialPropertiesPackage;    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.03,
+      c=1200.0,
+      rho=40.0,
+      epsLw=0.85,
+      epsSw=0.65);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.4,
       c=840.0,
       rho=2240.0,
       epsLw=0.85,
       epsSw=0.65);    record plywood = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.12,
+      k=0.12,
       c=1210.0,
       rho=540.0,
       epsLw=0.85,
-      epsSw=0.65);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
- k=1.0,
-      c=840.0,
-      rho=2500.0,
-      epsLw=0.85,
-      epsSw=0.65);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.03,
-      c=1200.0,
-      rho=40.0,
-      epsLw=0.85,
       epsSw=0.65);    record Air = IDEAS.Buildings.Data.Interfaces.Material (
- k=0.025,
+      k=0.025,
       c=1005.0,
       rho=1.2,
       epsLw=0.85,
-      epsSw=0.65);end Materials;
+      epsSw=0.65,
+      gas=true);    record id_100 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.84,
+      epsLw_a=0.84,
+      epsLw_b=0.84,
+      epsSw=0.65,
+      glass=true);end Materials;
 package Constructions "Library of building envelope constructions"      record external_wall
     "external_wall"
    extends IDEAS.Buildings.Data.Interfaces.Construction(

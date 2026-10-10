@@ -661,6 +661,7 @@ slots:
   surface:
     slot_uri: schema:surface
     range: float
+    description: Area in m2. For an external wall, the gross area of the facade, the windows cut out of it included.
   azimuth:
     slot_uri: schema:azimuth
     range: float

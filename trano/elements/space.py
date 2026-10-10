@@ -1,15 +1,17 @@
 from functools import cached_property
 from math import ceil
-from typing import ClassVar, Optional, Union, TYPE_CHECKING, Annotated, Callable
+from typing import ClassVar, Optional, Union, TYPE_CHECKING
 
 from networkx import Graph
-from pydantic import Field, BaseModel, PrivateAttr, model_validator, AfterValidator
+from pydantic import Field, PrivateAttr, model_validator
 
+from trano.elements.aggregated_envelope import AggregatedEnvelope
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
 from trano.elements.envelope import (
     BaseExternalWall,
     BaseFloorOnGround,
+    BaseSimpleWall,
     BaseInternalElement,
     BaseWindow,
     ExternalWall,
@@ -20,9 +22,7 @@ from trano.elements.envelope import (
     MergedWindows,
     WallParameters,
     WindowedWallParameters,
-    VerticalWallParameters,
-    RoofWallParameters,
-    ExternalWallParameters,
+    assign_windows_to_walls,
 )
 from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUnit
 from trano.elements.types import BaseVariant, ContainerTypes
@@ -71,69 +71,6 @@ def _get_controllable_element(elements: list[System]) -> Optional["System"]:
     return controllable_elements[0]
 
 
-def _round_to(ndigits: int) -> Callable[[float], float]:
-    return lambda v: round(v, ndigits)
-
-
-Precision = Annotated[float, AfterValidator(_round_to(5))]
-
-
-class BoundaryParameter(BaseModel):
-    number_orientations: int = 0
-    area_per_orientation: list[Precision] = Field(default_factory=lambda: [0.0])
-    average_resistance_external: Precision = Field(0.001)
-    average_resistance_external_remaining: Precision = Field(0.001)
-    total_thermal_capacitance: Precision = Field(10000)
-    tilts: list[Precision] = Field(default_factory=lambda: [0.0])
-    azimuths: list[Precision] = Field(default_factory=lambda: [0.0])
-    average_u_value: Precision = 0.001
-    total_thermal_resistance: Precision = 0.001
-
-    model_config = {"validate_assignment": True}  # round on attribute updates too
-
-    @classmethod
-    def from_parameter(cls, parameter: WallParameters) -> "BoundaryParameter":
-        if not parameter.number and parameter.type != "BaseWindow":
-            return cls()
-        return cls(
-            number_orientations=parameter.number,
-            area_per_orientation=(
-                parameter.window_area_by_orientation if parameter.type == "BaseWindow" else parameter.surfaces
-            ),
-            average_resistance_external=parameter.average_resistance_external,
-            average_resistance_external_remaining=parameter.average_resistance_external_remaining,
-            total_thermal_capacitance=parameter.total_thermal_capacitance,
-            tilts=parameter.tilts_to_radians(),
-            azimuths=parameter.azimuths,
-            average_u_value=parameter.average_u_value,
-            tottal_thermal_resistance=parameter.total_thermal_resistance,
-        )
-
-
-class BoundaryParameters(BaseModel):
-    roofs: BoundaryParameter = Field(default_factory=BoundaryParameter)
-    external_boundaries: BoundaryParameter = Field(default_factory=BoundaryParameter)
-    vertical_walls: BoundaryParameter = Field(default_factory=BoundaryParameter)
-    windows: BoundaryParameter = Field(default_factory=BoundaryParameter)
-    floors: BoundaryParameter = Field(default_factory=BoundaryParameter)
-
-    @classmethod
-    def from_boundaries(cls, parameters: list[WallParameters]) -> "BoundaryParameters":
-        data = {}
-        for p in parameters:
-            if p.type == "ExternalWallRoof":
-                data["roofs"] = BoundaryParameter.from_parameter(p)
-            elif p.type == "ExternalWallVerticalOnly":
-                data["vertical_walls"] = BoundaryParameter.from_parameter(p)
-            elif p.type == "ExternalWallExternal":
-                data["external_boundaries"] = BoundaryParameter.from_parameter(p)
-            elif p.type == "FloorOnGround":
-                data["floors"] = BoundaryParameter.from_parameter(p)
-            elif p.type == "BaseWindow":
-                data["windows"] = BoundaryParameter.from_parameter(p)
-        return cls(**data)
-
-
 class BaseSpace(BaseElement):
     counter: ClassVar[int] = 0
     name: str
@@ -145,7 +82,6 @@ class BaseSpace(BaseElement):
     ventilation_outlets: list[System] = Field(default=[])
     occupancy: BaseOccupancy | None = None
     container_type: ContainerTypes = "envelope"
-    boundary_parameters: BoundaryParameters | None = None
     merged_external_boundaries: list[Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]] = (
         Field(default_factory=list)
     )
@@ -183,6 +119,7 @@ class BaseSpace(BaseElement):
 
     def _merged_envelope(self) -> list[EnvelopeComponent]:
         """Array components of the envelope; with the zone template only the surfaces it cannot hold."""
+        assign_windows_to_walls(self.external_boundaries)  # type: ignore[arg-type]
         if self.uses_zone_template:
             return merge_external_boundaries(self.rectangular_zone.external_surfaces)
         return merge_external_boundaries(self.external_boundaries)
@@ -273,48 +210,29 @@ class BaseSpace(BaseElement):
         return None
 
     def get_neighhors(self, graph: Graph) -> None:
+        """Constructions of the Buildings zone, grouped from the envelope elements connected to the space."""
         neighbors = list(graph.neighbors(self))  # type: ignore
-        self.boundaries = []
-        windowed_wall_parameters = WindowedWallParameters.from_neighbors(neighbors)
-        for wall in [ExternalWall, BaseWindow, InternalElement, FloorOnGround]:
-            if wall == ExternalWall:
-                self.boundaries.append(
-                    VerticalWallParameters.from_neighbors_(
-                        self.name,
-                        neighbors,
-                        wall,
-                    )
-                )
-                self.boundaries.append(
-                    RoofWallParameters.from_neighbors_(
-                        self.name,
-                        neighbors,
-                        wall,
-                    )
-                )
-                self.boundaries.append(
-                    ExternalWallParameters.from_neighbors_(
-                        self.name,
-                        neighbors,
-                        wall,
-                    )
-                )
+        windowed_walls = WindowedWallParameters.from_neighbors(neighbors)
+        kinds: list[type[BaseSimpleWall]] = [ExternalWall, InternalElement, FloorOnGround]
+        self.boundaries = [
+            WallParameters.from_neighbors(self.name, neighbors, kind, filter=windowed_walls.included_external_walls)
+            for kind in kinds
+        ]
+        self.boundaries.append(windowed_walls)
 
-            self.boundaries.append(
-                WallParameters.from_neighbors(
-                    self.name,
-                    neighbors,
-                    wall,  # type: ignore
-                    filter=windowed_wall_parameters.included_external_walls,
-                )
-            )
-        self.boundaries += [windowed_wall_parameters]
-        self.boundary_parameters = BoundaryParameters.from_boundaries(self.boundaries)
+    @cached_property
+    def aggregated_envelope(self) -> AggregatedEnvelope:
+        """Envelope per orientation and lumped RC elements for the AixLib reduced-order and ISO 13790 zones."""
+        return AggregatedEnvelope.from_boundaries(self.external_boundaries)
 
     def __add__(self, other: "BaseSpace") -> "BaseSpace":
         self.name = f"merge_{self.name.replace('merge', '')}_{other.name.replace('merge', '')}"
         self.volume: float = self.volume + other.volume
         self.external_boundaries += other.external_boundaries
+        assign_windows_to_walls(self.external_boundaries)  # type: ignore[arg-type]
+        # Views derived from the envelope are cached: drop them so they are rebuilt from the merged envelope.
+        for derived_envelope in ("aggregated_envelope", "rectangular_zone"):
+            self.__dict__.pop(derived_envelope, None)
         return self
 
 

@@ -61,6 +61,13 @@
     - surf_surBou
     targets:
     - BaseInternalElement
+  - flow: interchangeable_port
+    medium: heat
+    multi_connection: true
+    names:
+    - surf_conBou
+    targets:
+    - FloorOnGround
   - flow: undirected
     medium: data
     names:
@@ -154,11 +161,13 @@
                     {%- endif %}
                 {%- endif %}
                 {%- if boundary.type == "FloorOnGround" -%}
+                    {#- The outer surface is held at the ground temperature (floor_on_ground.yaml): no state there. -#}
                     {%- if boundary.number %}
                         nConBou={{ boundary.number }},
                         datConBou(
                         {{ macros.element_parameters(boundary) }},
-                        azi={{ macros.join_list(boundary.azimuths) }}),
+                        azi={{ macros.join_list(boundary.azimuths) }},
+                        each stateAtSurface_a=false),
                     {% else %}
                         nConBou=0,
                     {%- endif %}

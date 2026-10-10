@@ -1,3 +1,4 @@
+# Sensible and latent occupancy gains per floor area; the ISO 13790 zone multiplies them by its floor area.
 - classes:
   - Occupancy
   figures: []
@@ -7,20 +8,20 @@
   ports:
   - flow: undirected
     medium: data
-    expected_ports: ['intLatGai']
+    expected_ports: ['intLatGaiFlo']
     names:
-    - y
+    - latentGains
     targets:
     - Space
   - flow: undirected
     medium: data
-    expected_ports: ['intSenGai']
+    expected_ports: ['intSenGaiFlo']
     names:
-    - y1
+    - sensibleGains
     targets:
     - Space
   template: |2-
 
         {{package_name}}.Trano.Occupancy.ISO13790
-        {{ element.name }}
+        {{ element.name }}({{ macros.render_parameters(parameters) | safe}})
   variant: default

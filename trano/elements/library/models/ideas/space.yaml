@@ -108,6 +108,13 @@
         {{ macros.render_parameters(parameters) | safe}},
         n50=0.822*0.5*{{ element.name }}.n50toAch,
         redeclare package Medium = Medium,
+    {% if element.occupancy %}
+        redeclare IDEAS.Buildings.Components.Occupants.AreaWeightedInput occNum,
+        occTyp(
+          QsenPp={{ element.occupancy.gains_per_person.sensible }},
+          QlatPp={{ element.occupancy.gains_per_person.latent }},
+          radFra={{ element.occupancy.gains_per_person.radiant_fraction | round(6) }}),
+    {% endif %}
         nSurf={{ element.number_merged_external_boundaries }},
         T_start=293.15)
   variant: default
@@ -188,6 +195,13 @@
         {{ macros.render_parameters(parameters) | safe}},
         n50=0.822*0.5*{{ element.name }}.n50toAch,
         redeclare package Medium = Medium,
+    {% if element.occupancy %}
+        redeclare IDEAS.Buildings.Components.Occupants.AreaWeightedInput occNum,
+        occTyp(
+          QsenPp={{ element.occupancy.gains_per_person.sensible }},
+          QlatPp={{ element.occupancy.gains_per_person.latent }},
+          radFra={{ element.occupancy.gains_per_person.radiant_fraction | round(6) }}),
+    {% endif %}
         T_start=293.15,
         aziA={{ zone.azimuth }},
         l={{ zone.length }},

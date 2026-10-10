@@ -63,7 +63,7 @@ def test_rectangular_zone_maps_the_four_orientations() -> None:
     assert east.window is not None
     assert east.window.area == 1
     assert east.window.height == 1
-    assert east.length == pytest.approx((10 + 1) / 2.0)
+    assert east.length == pytest.approx(10 / 2.0)  # the wall surface is gross: the window is already in it
     assert zone.length == 5.0
     assert zone.width == 4.0
     assert zone.ceiling_area == 20.0
@@ -149,4 +149,4 @@ def test_zone_template_model_declares_every_construction_once() -> None:
     assert "IDEAS.Buildings.Components.Window" not in model
     # The data package is rendered once at package level and once in the envelope container.
     assert model.count("record external_wall") == model.count("package Data ")
-    assert model.count("record  double_glazing") == model.count("package Data ")
+    assert model.count("record double_glazing") == model.count("package Data ")

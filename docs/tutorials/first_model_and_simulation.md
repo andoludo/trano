@@ -13,7 +13,7 @@ The described building configuration appears to be a modest residential structur
 
 3. **Space and Dimensions**: It offers a floor area of 100 m² and an average room height of 2.5 m, suggesting a standard layout for living or office space.
 
-4. **Walls and Windows**: The external walls have surfaces oriented towards the north (azimuth of 3.14 rad; azimuths are in radians, 0 being south) and collectively form a well-insulated envelope. There is a single window with dimensions of 1 m², also oriented southward, allowing natural light while maintaining energy efficiency.
+4. **Walls and Windows**: The external walls have surfaces oriented towards the north (azimuth of 3.14 rad; azimuths are in radians, 0 being south) and collectively form a well-insulated envelope. There is a single window with dimensions of 1 m², also oriented southward, allowing natural light while maintaining energy efficiency. A wall's `surface` is the gross area of the facade: the windows facing the same way are cut out of it, so the window area must not be subtracted from the wall.
 
 Overall, the building is designed for energy efficiency, potentially suitable for residential use, with an emphasis on thermal comfort.
 

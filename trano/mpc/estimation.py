@@ -19,7 +19,7 @@ import math
 import re
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import networkx as nx
 from pydantic import BaseModel, ConfigDict, Field
@@ -138,8 +138,7 @@ def _layers_resistance(construction: "Construction | Glass") -> float:
 
 
 def _capacitance_per_area(construction: "Construction | Glass") -> float:
-    # ``total_thermal_capacitance`` is a pydantic computed field (a property at runtime).
-    return cast(float, construction.total_thermal_capacitance)
+    return construction.total_thermal_capacitance
 
 
 def _g_value(glass: "Glass", settings: EstimationSettings) -> float:
@@ -193,7 +192,7 @@ def zone_envelope(space: "Space", settings: EstimationSettings) -> ZoneEnvelope:
 
     rsi, rse = settings.internal_surface_resistance, settings.external_surface_resistance
     for boundary in space.external_boundaries:
-        area = float(boundary.surface)
+        area = boundary.opaque_surface  # windows are cut out of the walls hosting them
         construction = boundary.construction
         resistance = _layers_resistance(construction)
         if isinstance(boundary, BaseWindow):
