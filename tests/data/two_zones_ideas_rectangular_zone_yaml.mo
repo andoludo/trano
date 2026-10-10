@@ -3356,6 +3356,34 @@ end PartialPowerSensor;
     end RoomHeatMassBalanceInf;
   end BaseClasses;
 
+  model ZoneScheduledVentilation
+    "IDEAS zone with a day schedule of outdoor air brought in on top of the infiltration"
+    extends IDEAS.Buildings.Components.Zone(nPorts=nPortsExt + 2);
+    parameter Integer nPortsExt(min=0) = 0 "Fluid ports left to the ventilation system";
+    parameter Real ventilationSchedule[:, 2] = [0, 0]
+      "Day schedule of the outdoor air: time since midnight [s], mass flow rate [kg/s]";
+    IDEAS.Fluid.Sources.MassFlowSource_T souVen(
+      redeclare package Medium = Medium,
+      use_m_flow_in=true,
+      use_T_in=true,
+      nPorts=1) "Outdoor air brought in"
+      annotation (Placement(transformation(extent={{-60,-90},{-40,-70}})));
+    IDEAS.Fluid.Sources.Boundary_pT sinVen(redeclare package Medium = Medium, nPorts=1) "Air taken out"
+      annotation (Placement(transformation(extent={{60,-90},{40,-70}})));
+    Modelica.Blocks.Sources.CombiTimeTable venSch(
+      table=ventilationSchedule,
+      extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic,
+      smoothness=Modelica.Blocks.Types.Smoothness.ConstantSegments) "Scheduled outdoor air flow"
+      annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
+    Modelica.Blocks.Sources.RealExpression TOut(y=sim.Te) "Outdoor dry-bulb temperature"
+      annotation (Placement(transformation(extent={{-100,-100},{-80,-80}})));
+  equation
+    connect(venSch.y[1], souVen.m_flow_in) annotation (Line(points={{-79,-70},{-62,-70},{-62,-72}}, color={0,0,127}));
+    connect(TOut.y, souVen.T_in) annotation (Line(points={{-79,-90},{-70,-90},{-70,-76},{-62,-76}}, color={0,0,127}));
+    connect(souVen.ports[1], ports[nPortsExt + 1]) annotation (Line(points={{-40,-80},{0,-80},{0,-100}}, color={0,127,255}));
+    connect(sinVen.ports[1], ports[nPortsExt + 2]) annotation (Line(points={{40,-80},{0,-80},{0,-100}}, color={0,127,255}));
+  end ZoneScheduledVentilation;
+
   model BoundaryWallOutdoorAir
     "IDEAS boundary wall whose outer surface follows the outdoor dry-bulb temperature (a raised floor over outdoor air)"
     extends IDEAS.Buildings.Components.BoundaryWall(final use_T_in=true);
@@ -3726,22 +3754,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
-      k=0.038,
-      c=920.0,
-      rho=2050.0,
-      epsLw=0.85,
-      epsSw=0.85);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
-      k=0.045,
-      c=900.0,
-      rho=2100.0,
-      epsLw=0.85,
-      epsSw=0.85);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
-      k=0.04,
-      c=950.0,
-      rho=1950.0,
-      epsLw=0.85,
-      epsSw=0.85);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=1.1,
       c=860.0,
       rho=2500.0,
@@ -3749,13 +3762,28 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record material_003 = IDEAS
       epsLw_a=0.84,
       epsLw_b=0.84,
       epsSw=0.65,
-      glass=true);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      glass=true);    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.038,
+      c=920.0,
+      rho=2050.0,
+      epsLw=0.85,
+      epsSw=0.85);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.04,
+      c=950.0,
+      rho=1950.0,
+      epsLw=0.85,
+      epsSw=0.85);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.026,
       c=1005.0,
       rho=1.18,
       epsLw=0.0,
       epsSw=0.0,
-      gas=true);end Materials;
+      gas=true);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.045,
+      c=900.0,
+      rho=2100.0,
+      epsLw=0.85,
+      epsSw=0.85);end Materials;
 package Constructions "Library of building envelope constructions"      record construction_001
     "construction_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
@@ -3832,7 +3860,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     redeclare parameter two_zones_ideas_rectangular_zone.Data.Constructions.construction_001 conTypFlo,
     bouTypCei=IDEAS.Buildings.Components.Interfaces.BoundaryType.None,
     nSurfExt=1) annotation (
-    Placement(transformation(origin = { -100.0, 100.0 },
+    Placement(transformation(origin = { -46.72711944580078, -15.762664794921875 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     IDEAS.Buildings.Components.RectangularZoneTemplate space_002(nPorts = 3,    h=2.7, AZone=120.0, mSenFac=1.0, T_start=294.15,
@@ -3858,14 +3886,14 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     redeclare parameter two_zones_ideas_rectangular_zone.Data.Constructions.construction_001 conTypFlo,
     bouTypCei=IDEAS.Buildings.Components.Interfaces.BoundaryType.None,
     nSurfExt=1) annotation (
-    Placement(transformation(origin = { -72.83306121826172, 76.68952941894531 },
+    Placement(transformation(origin = { -0.35195159912109375, -100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
         inner IDEAS.BoundaryConditions.SimInfoManager sim(
     interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort,
     linIntRad=true,
     linExtRad=true) "Data reader" annotation (
-    Placement(transformation(origin = { 100.0, -41.00251007080078 },
+    Placement(transformation(origin = { -100.0, 6.6490631103515625 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
         IDEAS.Buildings.Components.InternalWall internal_space_002_space_001_construction
@@ -3875,13 +3903,13 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     A = 18.0, inc = IDEAS.Types.Tilt.Wall, azi =
     0) "Partition wall between the two
     rooms" annotation (
-    Placement(transformation(origin = { -32.09626770019531, -100.0 },
+    Placement(transformation(origin = { 100.0, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(space_001.proBusExt[1],internal_space_002_space_001_construction.propsBus_a)
         annotation (Line(
-        points={{ -100.0, 100.0 }    ,{ -66.04813385009766, 100.0 }    ,{ -66.04813385009766, -100.0 }    ,{ -32.09626770019531, -100.0 }    },
+        points={{ -46.72711944580078, -15.762664794921875 }    ,{ 26.63644027709961, -15.762664794921875 }    ,{ 26.63644027709961, 100.0 }    ,{ 100.0, 100.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3889,7 +3917,7 @@ equation
             ;        
         connect(space_002.proBusExt[1],internal_space_002_space_001_construction.propsBus_b)
         annotation (Line(
-        points={{ -72.83306121826172, 76.68952941894531 }    ,{ -52.464664459228516, 76.68952941894531 }    ,{ -52.464664459228516, -100.0 }    ,{ -32.09626770019531, -100.0 }    },
+        points={{ -0.35195159912109375, -100.0 }    ,{ 49.82402420043945, -100.0 }    ,{ 49.82402420043945, 100.0 }    ,{ 100.0, 100.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3903,9 +3931,9 @@ equation
             ;        
         connect(space_002.ports[1],ports_b[2])
             ;        
-        connect(weather.weaDatBus,dataBus)
+        connect(sim.weaDatBus,dataBus)
         annotation (Line(
-        points={{ 100.0, -41.00251007080078 }    ,{ 100.0, -41.00251007080078 }    ,{ 100.0, -41.00251007080078 }    ,{ 100.0, -41.00251007080078 }    },
+        points={{ -100.0, 6.6490631103515625 }    ,{ -100.0, 6.6490631103515625 }    ,{ -100.0, 6.6490631103515625 }    ,{ -100.0, 6.6490631103515625 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4168,22 +4196,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
-      k=0.038,
-      c=920.0,
-      rho=2050.0,
-      epsLw=0.85,
-      epsSw=0.85);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
-      k=0.045,
-      c=900.0,
-      rho=2100.0,
-      epsLw=0.85,
-      epsSw=0.85);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
-      k=0.04,
-      c=950.0,
-      rho=1950.0,
-      epsLw=0.85,
-      epsSw=0.85);    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record glass_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=1.1,
       c=860.0,
       rho=2500.0,
@@ -4191,13 +4204,28 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record material_003 = IDEAS
       epsLw_a=0.84,
       epsLw_b=0.84,
       epsSw=0.65,
-      glass=true);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      glass=true);    record material_003 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.038,
+      c=920.0,
+      rho=2050.0,
+      epsLw=0.85,
+      epsSw=0.85);    record material_002 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.04,
+      c=950.0,
+      rho=1950.0,
+      epsLw=0.85,
+      epsSw=0.85);    record air_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.026,
       c=1005.0,
       rho=1.18,
       epsLw=0.0,
       epsSw=0.0,
-      gas=true);end Materials;
+      gas=true);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.045,
+      c=900.0,
+      rho=2100.0,
+      epsLw=0.85,
+      epsSw=0.85);end Materials;
 package Constructions "Library of building envelope constructions"      record construction_001
     "construction_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
