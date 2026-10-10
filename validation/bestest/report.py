@@ -180,7 +180,12 @@ standard; the peak loads and the free-floating temperatures must fall inside the
 reference programs (BSIMAC, CSE, DeST, EnergyPlus, ESP-r, TRNSYS) widened by 5 % of the largest
 peak or 1 K. Buildings and IDEAS are gating libraries: `pytest -m bestest` fails when one of
 their cases leaves its band, except for the deviations listed below with their reason. The
-tables are rendered from the last results with `python -m validation.bestest report --docs`.
+reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
+method applied hour by hour and the reduced-order zone still deviates on several cases, so
+neither gates. Cases a library cannot describe (shading with IDEAS, which OpenModelica cannot
+compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the two simplified zones)
+are left out. The tables are rendered from the last results with
+`python -m validation.bestest report --docs`.
 
 """
     body = render_markdown(results, reference)
