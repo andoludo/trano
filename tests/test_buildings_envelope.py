@@ -7,7 +7,7 @@ import pytest
 from tests.constructions.constructions import Constructions, GasMaterials, Glasses, GlassMaterials
 from tests.fixtures.three_spaces import three_spaces
 from tests.golden import remove_trano_package
-from trano.elements import ExternalWall, Window
+from trano.elements import ExternalWall, Window, param_from_config
 from trano.elements.construction import GasLayer, Glass, GlassLayer
 from trano.elements.envelope import WallParameters, WindowedWallParameters
 from trano.elements.library.library import Library
@@ -124,3 +124,17 @@ def test_layers_carry_their_discretization() -> None:
     # Buildings' default of 3 states per 0.2 m reference layer, written for every solid layer.
     solids = re.findall(r"Solids\.Generic\((.*?)\)", model, re.DOTALL)
     assert solids and all("nStaRef=3)" in re.sub(r"\s+", "", solid + ")") for solid in solids)
+
+
+def test_scheduled_ventilation_adds_outdoor_air_to_the_infiltration_zone() -> None:
+    parameters = param_from_config("Space")
+    assert parameters is not None
+    network = Network(name="buildings_ventilation", library=Library.from_configuration("Buildings"))
+    space = three_spaces()[0]
+    space.variant = "infiltration"
+    space.parameters = parameters(floor_area=48, average_room_height=2.7, ach=0.5, ventilation_schedule="[0, 0.4]")
+    network.add_boiler_plate_spaces([space])
+    model = network.model()
+
+    assert re.search(r"MixedAirInf\s+space_1\([^;]*ventilationSchedule=\[0, 0\.4\]", model)
+    assert "+ venSch.y[1])" in model and "table=ventilationSchedule" in model

@@ -470,6 +470,10 @@ SpaceParameter:
       alias: ACH
       description: Infiltration [1/h]
       range: float
+    ventilation_schedule:
+      alias: ventilationSchedule
+      description: Day schedule of outdoor air brought into the zone on top of the infiltration, rows of time since midnight [s] and mass flow rate [kg/s], repeated every day (Buildings infiltration variant)
+      range: string
     temperature_initial:
       alias: T_start
       description: Initial temperature [K]

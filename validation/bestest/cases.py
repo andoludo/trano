@@ -37,6 +37,8 @@ INFRARED_EMITTANCE = 0.9
 REFERENCE_STATES = 18  # states per 0.2 m reference layer as in Buildings' BESTEST models; 3 under-resolves heavy walls
 SOUTH, WEST, NORTH, EAST = 0.0, round(math.pi / 2, 6), round(math.pi, 6), round(-math.pi / 2, 6)  # [rad]
 NIGHT_VENTILATION = 1700.0  # [m3/h] from 18:00 to 07:00, no fan heat
+NIGHT_VENTILATION_MASS_FLOW = 1409.0 / 3600  # [kg/s] fan capacity at the altitude of the site, as Buildings' Case650
+NIGHT_VENTILATION_HOURS = (18, 7)  # fan on from the first hour, off from the second
 HEATING_SETPOINT, COOLING_SETPOINT = 20.0, 27.0  # [degC]
 SETBACK = 10.0  # [degC] heating set point from 23:00 to 07:00 in cases 640 and 940
 SINGLE_SETPOINT = (19.9, 20.1)  # [degC] cases 685, 695, 985, 995: 20 degC with a 0.2 K dead band
@@ -70,6 +72,14 @@ class Shading(str, Enum):
     none = "none"
     overhang = "overhang"  # cases 610, 910: 1 m deep, 0.5 m above the window
     overhang_and_fins = "overhang_and_fins"  # cases 630, 930: plus 1 m deep side fins
+
+
+def night_ventilation_schedule() -> str:
+    """Mass flow table of the night ventilation fan: on from 18:00 to 07:00."""
+    on, off = NIGHT_VENTILATION_HOURS
+    flow = NIGHT_VENTILATION_MASS_FLOW
+    rows = [(0, flow), (off * 3600, flow), (off * 3600, 0.0), (on * 3600, 0.0), (on * 3600, flow), (86400, flow)]
+    return "[" + "; ".join(f"{time}, {value:.6g}" for time, value in rows) + "]"
 
 
 def day_schedule(rows: list[tuple[int, float]]) -> str:
@@ -443,10 +453,12 @@ def _sunspace_boundaries(case: Case) -> dict[str, list[dict[str, Any]]]:
 
 def building_description(case: Case) -> dict[str, Any]:
     """The trano YAML content of a case."""
-    unsupported = case.features & {"night_ventilation", "shading"}
+    unsupported = case.features & {"shading"}
     if unsupported:
         raise UnsupportedCaseError(f"Case {case.id} needs {sorted(unsupported)}, not supported by trano yet.")
     zone = _space("ZONE:001", FLOOR_AREA, _zone_boundaries(case), _occupancy(FLOOR_AREA))
+    if case.night_ventilation:
+        zone["parameters"]["ventilation_schedule"] = night_ventilation_schedule()
     if case.hvac is not None:
         zone["emissions"] = [case.hvac.emission]
     spaces = [zone]

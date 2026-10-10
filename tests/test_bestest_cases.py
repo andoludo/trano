@@ -176,3 +176,12 @@ def test_the_sun_space_case_has_a_light_zone_behind_a_heavy_sun_space() -> None:
     assert sunspace["external_boundaries"]["floor_on_grounds"][0]["construction"] == "HEAVY_FLOOR:001"
     assert sunspace["external_boundaries"]["windows"][0]["surface"] == 12.0
     assert "emissions" not in sunspace and "occupancy" not in sunspace
+
+
+def test_the_night_ventilation_cases_bring_in_outdoor_air_from_18_to_7() -> None:
+    schedule = "[0, 0.391389; 25200, 0.391389; 25200, 0; 64800, 0; 64800, 0.391389; 86400, 0.391389]"
+    for case_id in ("650", "950", "650FF", "950FF"):
+        parameters = building_description(CASES[case_id])["spaces"][0]["parameters"]
+        assert parameters["ventilation_schedule"] == schedule
+    assert "ventilation_schedule" not in building_description(CASES["600"])["spaces"][0]["parameters"]
+    assert "ventilationSchedule=[0, 0.391389; 25200" in zone_declaration(case_file("650"))

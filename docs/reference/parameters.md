@@ -487,6 +487,12 @@ temperature_initial:
   description: Initial temperature [K]
   ifabsent: float(294.15)
   range: float
+ventilation_schedule:
+  alias: ventilationSchedule
+  description: Day schedule of outdoor air brought into the zone on top of the infiltration,
+    rows of time since midnight [s] and mass flow rate [kg/s], repeated every day
+    (Buildings infiltration variant)
+  range: string
 volume:
   alias: null
   description: Air volume of the zone [m3]
