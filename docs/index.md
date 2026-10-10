@@ -12,6 +12,27 @@ Trano is **Modelica library agnostic** but is natively designed to work with:
 ✅ **Reduced-order models** (e.g., **[AIXLIB](https://github.com/RWTH-EBC/AixLib)**, **ISO13790**,...)  
 ✅ **your library...**  
 
+## 🧪 Supported libraries and validation
+
+| Library | Version | Zone model | Role |
+|---|---|---|---|
+| [Buildings](https://github.com/lbl-srg/modelica-buildings) | 13.0.0 | `Buildings.ThermalZones.Detailed.MixedAir` | detailed, validated |
+| [IDEAS](https://github.com/open-ideas/IDEAS) | 3.0.0 | `IDEAS.Buildings.Components.Zone` | detailed, validated |
+| [AixLib](https://github.com/RWTH-EBC/AixLib) reduced order (`reduced_order`) | 3.0.1 | `AixLib.ThermalZones.ReducedOrder.ThermalZone` | simplified, informational |
+| ISO 13790 (`iso_13790`) | AixLib 3.0.1 | `ISO13790.Zone5R1C` | simplified, informational |
+| `mpc` | - | RC models (`R1C1`, `R3C2`, `R4C3`, ISO 13790) | control-oriented, CasADi ready |
+
+The HVAC components (radiators, valves, pumps, boilers, heat pumps, air handling units) come from the Buildings
+library for every Modelica library. The Modelica name of every parameter in every library is listed in the
+[parameter reference](https://andoludo.github.io/trano/reference/parameters/).
+
+The models trano generates are **validated against ASHRAE Standard 140 (BESTEST)**: the 27 single-zone cases
+are simulated for a year with every library and compared with the acceptance limits of the standard and the
+spread of the reference programs. Buildings and IDEAS pass every case (see the
+[validation results](https://andoludo.github.io/trano/validation/bestest/) and the
+[walk through the cases](https://andoludo.github.io/trano/validation/bestest_cases/)); the two simplified
+zones are reported for information. Simulations run in the official OpenModelica image.
+
 ## ✨ Key Features
 
 ### 🛠️ **Built for Open-Source BES**

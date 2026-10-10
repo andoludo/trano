@@ -196,7 +196,7 @@
 
 - classes:
   - Space
-  figures: []
+  figures: *buildings_zone_figures
   library: buildings
   requires_occupancy: true
   parameter_processing: *buildings_zone_parameters

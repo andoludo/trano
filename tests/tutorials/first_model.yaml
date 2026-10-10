@@ -1,74 +1,137 @@
+# A single-zone house of 100 m2 (12.5 m by 8 m, 2.5 m high) with a south-facing living room window,
+# brick and insulation walls, an insulated flat roof and a slab on the ground. It is occupied in the
+# morning and in the evening, infiltrates 0.5 air changes per hour and is kept between a heating set
+# point (21 degC by day, 18 degC at night) and a cooling set point (26 degC) by an ideal system.
 material:
-  - id: MATERIAL:001
+  - id: BRICK:001
+    thermal_conductivity: 0.9
+    density: 1900.0
+    specific_heat_capacity: 840.0
+  - id: INSULATION:001
     thermal_conductivity: 0.035
-    density: 2000.0
+    density: 30.0
+    specific_heat_capacity: 1400.0
+  - id: CONCRETE_BLOCK:001
+    thermal_conductivity: 1.1
+    density: 1400.0
+    specific_heat_capacity: 840.0
+  - id: PLASTER:001
+    thermal_conductivity: 0.4
+    density: 1000.0
     specific_heat_capacity: 1000.0
-  - id: MATERIAL:002
-    thermal_conductivity: 0.035
-    density: 2000.0
-    specific_heat_capacity: 1000.0
-  - id: MATERIAL:003
-    thermal_conductivity: 0.035
-    density: 2000.0
+  - id: CONCRETE:001
+    thermal_conductivity: 1.4
+    density: 2100.0
+    specific_heat_capacity: 840.0
+  - id: ROOFING:001
+    thermal_conductivity: 0.23
+    density: 1100.0
     specific_heat_capacity: 1000.0
 
 constructions:
-  - id: CONSTRUCTION:001
+  - id: EXTERNAL_WALL:001
     layers:
-      - material: MATERIAL:001
-        thickness: 0.1
-      - material: MATERIAL:002
-        thickness: 0.1
-      - material: MATERIAL:003
-        thickness: 0.1
+      - material: BRICK:001
+        thickness: 0.09
+      - material: INSULATION:001
+        thickness: 0.12
+      - material: CONCRETE_BLOCK:001
+        thickness: 0.14
+      - material: PLASTER:001
+        thickness: 0.015
+  - id: FLAT_ROOF:001
+    layers:
+      - material: ROOFING:001
+        thickness: 0.01
+      - material: INSULATION:001
+        thickness: 0.16
+      - material: CONCRETE:001
+        thickness: 0.15
+      - material: PLASTER:001
+        thickness: 0.015
+  - id: GROUND_FLOOR:001
+    layers:
+      - material: INSULATION:001
+        thickness: 0.08
+      - material: CONCRETE:001
+        thickness: 0.15
 glass_material:
-  - density: 2500.0
-    id: GLASS:001
+  - id: GLASS:001
+    thermal_conductivity: 1.0
+    density: 2500.0
+    specific_heat_capacity: 840.0
     longwave_emissivity: 0.84
     shortwave_emissivity: 0.67
-    specific_heat_capacity: 840.0
-    thermal_conductivity: 1.0
 gas:
-  - density: 1.2
-    id: AIR:001
+  - id: ARGON:001
+    thermal_conductivity: 0.017
+    density: 1.66
+    specific_heat_capacity: 520.0
     longwave_emissivity: 0.0
     shortwave_emissivity: 0.0
-    specific_heat_capacity: 1006.0
-    thermal_conductivity: 0.0256
 glazings:
-- id: INS2AR2020:001
-  layers:
-  - glass: GLASS:001
-    thickness: 0.006
-  - gas: AIR:001
-    thickness: 0.016
-  - glass: GLASS:001
-    thickness: 0.006
+  - id: DOUBLE_GLAZING:001
+    u_value_frame: 1.4
+    layers:
+      - glass: GLASS:001
+        thickness: 0.004
+      - gas: ARGON:001
+        thickness: 0.016
+      - glass: GLASS:001
+        thickness: 0.004
 spaces:
-  - parameters:
+  - id: LIVING:001
+    variant: infiltration
+    parameters:
       floor_area: 100.0
       average_room_height: 2.5
+      ach: 0.5
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 9, 18, 23}
+    emissions:
+      - ideal_heating_cooling:
+          id: HEATING:001
+          parameters:
+            heating_setpoint_schedule: "[0, 291.15; 25200, 294.15; 82800, 291.15; 86400, 291.15]"
+            cooling_setpoint_schedule: "[0, 299.15]"
+            maximum_heating_power: 8000.0
+            maximum_cooling_power: 4000.0
     external_boundaries:
       external_walls:
+        - surface: 31.25
+          azimuth: 0.0
+          tilt: wall
+          construction: EXTERNAL_WALL:001
+        - surface: 20.0
+          azimuth: 1.5708
+          tilt: wall
+          construction: EXTERNAL_WALL:001
+        - surface: 31.25
+          azimuth: 3.1416
+          tilt: wall
+          construction: EXTERNAL_WALL:001
+        - surface: 20.0
+          azimuth: -1.5708
+          tilt: wall
+          construction: EXTERNAL_WALL:001
         - surface: 100.0
-          azimuth: 3.14
-          tilt: wall
-          construction: CONSTRUCTION:001
-        - surface: 100.0
-          azimuth: 3.14
-          tilt: wall
-          construction: CONSTRUCTION:001
-        - surface: 200.0
-          azimuth: 3.14
-          tilt: wall
-          construction: CONSTRUCTION:001
+          azimuth: 0.0
+          tilt: ceiling
+          construction: FLAT_ROOF:001
       floor_on_grounds:
-        - surface: 1.0
-          construction: CONSTRUCTION:001
+        - surface: 100.0
+          construction: GROUND_FLOOR:001
       windows:
-        - surface: 1.0
-          azimuth: 3.14
+        - surface: 12.0
+          azimuth: 0.0
           tilt: wall
-          construction: INS2AR2020:001
-          width: 1.0
-          height: 1.0
+          construction: DOUBLE_GLAZING:001
+          width: 6.0
+          height: 2.0
+        - surface: 4.0
+          azimuth: 3.1416
+          tilt: wall
+          construction: DOUBLE_GLAZING:001
+          width: 2.0
+          height: 2.0
