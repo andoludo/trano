@@ -719,6 +719,22 @@ classes:
         description: Occupancy table, each entry switching occupancy on or off
         ifabsent: string(3600*{7, 19})
         range: string
+  Overhang:
+    attributes:
+      depth:
+        description: Projection perpendicular to the wall [m]
+        range: float
+        required: true
+      gap:
+        description: Distance between the top of the window and the overhang [m],
+          0 when absent
+        range: float
+      width_left:
+        description: Extension beyond the left edge of the window [m], 0 when absent
+        range: float
+      width_right:
+        description: Extension beyond the right edge of the window [m], 0 when absent
+        range: float
   PIDParameters:
     attributes:
       controller_type:
@@ -878,6 +894,20 @@ classes:
         description: Nominal mass flow rate through the sensor, used for its dynamics
           and its small-flow regularization [kg/s]
         ifabsent: float(0.15)
+        range: float
+  SideFins:
+    attributes:
+      depth:
+        description: Projection perpendicular to the wall [m]
+        range: float
+        required: true
+      gap:
+        description: Distance between the edges of the window and the fins [m], 0
+          when absent
+        range: float
+      height:
+        description: Extension of the fins above the top of the window [m], 0 when
+          absent
         range: float
   Solar:
     class_uri: schema:Solar
@@ -1182,6 +1212,14 @@ classes:
         range: float
       height:
         range: float
+      overhang:
+        description: Horizontal projection above the window
+        inlined: true
+        range: Overhang
+      side_fins:
+        description: Vertical projections on both sides of the window
+        inlined: true
+        range: SideFins
       width:
         range: float
     slots:

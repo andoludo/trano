@@ -185,3 +185,20 @@ def test_the_night_ventilation_cases_bring_in_outdoor_air_from_18_to_7() -> None
         assert parameters["ventilation_schedule"] == schedule
     assert "ventilation_schedule" not in building_description(CASES["600"])["spaces"][0]["parameters"]
     assert "ventilationSchedule=[0, 0.391389; 25200" in zone_declaration(case_file("650"))
+
+
+def test_the_shading_cases_mirror_the_overhang_and_fins_of_the_standard() -> None:
+    south = building_description(CASES["610"])["spaces"][0]["external_boundaries"]["windows"][0]
+    east, west = building_description(CASES["630"])["spaces"][0]["external_boundaries"]["windows"]
+
+    assert south["overhang"] == {"depth": 1.0, "gap": 0.5, "width_left": 0.5, "width_right": 0.5}
+    assert "side_fins" not in south
+    for window in (east, west):
+        assert window["overhang"] == {"depth": 1.0, "gap": 0.5, "width_left": 0.0, "width_right": 0.0}
+        assert window["side_fins"] == {"depth": 1.0, "gap": 0.0, "height": 0.5}
+    assert "ove(wL={ 0.5 }, wR={ 0.5 }, dep={ 1.0 }, gap={ 0.5 })" in zone_declaration(case_file("910"))
+    assert "sidFin(h={ 0.5, 0.5 }, dep={ 1.0, 1.0 }, gap={ 0.0, 0.0 })" in zone_declaration(case_file("930"))
+
+
+def test_every_case_of_section_5_2_is_supported() -> None:
+    assert supported_cases() == list(CASES)

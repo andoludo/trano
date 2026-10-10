@@ -113,10 +113,45 @@ classes:
       frame_fraction:
         description: Share of the window area taken by the frame [1], 0.1 when absent
         range: float
+      overhang:
+        description: Horizontal projection above the window
+        range: Overhang
+        inlined: true
+      side_fins:
+        description: Vertical projections on both sides of the window
+        range: SideFins
+        inlined: true
     slots:
       - surface
       - azimuth
       - tilt
+  Overhang:
+    attributes:
+      depth:
+        description: Projection perpendicular to the wall [m]
+        range: float
+        required: true
+      gap:
+        description: Distance between the top of the window and the overhang [m], 0 when absent
+        range: float
+      width_left:
+        description: Extension beyond the left edge of the window [m], 0 when absent
+        range: float
+      width_right:
+        description: Extension beyond the right edge of the window [m], 0 when absent
+        range: float
+  SideFins:
+    attributes:
+      depth:
+        description: Projection perpendicular to the wall [m]
+        range: float
+        required: true
+      gap:
+        description: Distance between the edges of the window and the fins [m], 0 when absent
+        range: float
+      height:
+        description: Extension of the fins above the top of the window [m], 0 when absent
+        range: float
   ExternalBoundaries:
     attributes:
       external_walls:

@@ -156,6 +156,15 @@
                         wWin={{ macros.join_list(boundary.window_width) }},
                         hWin={{ macros.join_list(boundary.window_height) }},
                         fFra={{ macros.join_list(boundary.window_frame_fraction) }},
+                        {%- if boundary.has_shading %}
+                        ove(wL={{ macros.join_list(boundary.overhang_width_left) }},
+                            wR={{ macros.join_list(boundary.overhang_width_right) }},
+                            dep={{ macros.join_list(boundary.overhang_depth) }},
+                            gap={{ macros.join_list(boundary.overhang_gap) }}),
+                        sidFin(h={{ macros.join_list(boundary.side_fin_height) }},
+                            dep={{ macros.join_list(boundary.side_fin_depth) }},
+                            gap={{ macros.join_list(boundary.side_fin_gap) }}),
+                        {%- endif %}
                         azi={{ macros.join_list(boundary.azimuths) }}),
                     {% else %}
                         nConExtWin=0,

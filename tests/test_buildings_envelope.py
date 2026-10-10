@@ -9,7 +9,7 @@ from tests.fixtures.three_spaces import three_spaces
 from tests.golden import remove_trano_package
 from trano.elements import ExternalWall, Window, param_from_config
 from trano.elements.construction import GasLayer, Glass, GlassLayer
-from trano.elements.envelope import WallParameters, WindowedWallParameters
+from trano.elements.envelope import Overhang, SideFins, WallParameters, WindowedWallParameters
 from trano.elements.library.library import Library
 from trano.elements.types import Azimuth, Tilt
 from trano.exceptions import InvalidBuildingStructureError
@@ -138,3 +138,54 @@ def test_scheduled_ventilation_adds_outdoor_air_to_the_infiltration_zone() -> No
 
     assert re.search(r"MixedAirInf\s+space_1\([^;]*ventilationSchedule=\[0, 0\.4\]", model)
     assert "+ venSch.y[1])" in model and "table=ventilationSchedule" in model
+
+
+def shaded_window(name: str, azimuth: Azimuth, **shading: object) -> Window:
+    return Window(  # two of them fit in the 10 m2 walls of the fixture
+        name=name,
+        surface=4,
+        width=2,
+        height=2,
+        azimuth=azimuth,
+        tilt=Tilt.wall,
+        construction=Glasses.double_glazing,
+        **shading,  # type: ignore[arg-type]
+    )
+
+
+def test_overhang_and_side_fins_reach_the_buildings_window() -> None:
+    overhang = Overhang(depth=1.0, gap=0.5, width_left=0.5, width_right=0.5)
+    fins = SideFins(depth=1.0, gap=0.0, height=0.5)
+    network = Network(name="buildings_shading", library=Library.from_configuration("Buildings"))
+    space = three_spaces()[0]
+    space.external_boundaries = [wall for wall in space.external_boundaries if not isinstance(wall, Window)] + [
+        shaded_window("south", Azimuth.south, overhang=overhang),
+        shaded_window("east", Azimuth.east, side_fins=fins),
+    ]
+    network.add_boiler_plate_spaces([space])
+    model = re.sub(r"\s+", " ", remove_trano_package(network.model()))
+
+    assert "ove(wL={ 0.5, 0.0 }, wR={ 0.5, 0.0 }, dep={ 1.0, 0.0 }, gap={ 0.5, 0.0 })" in model
+    assert "sidFin(h={ 0.0, 0.5 }, dep={ 0.0, 1.0 }, gap={ 0.0, 0.0 })" in model
+
+
+def test_windows_without_shading_keep_the_library_defaults() -> None:
+    network = Network(name="buildings_no_shading", library=Library.from_configuration("Buildings"))
+    network.add_boiler_plate_spaces(three_spaces())
+    model = remove_trano_package(network.model())
+
+    assert "ove(" not in model and "sidFin(" not in model
+
+
+def test_windows_merged_into_one_entry_must_share_their_shading() -> None:
+    windows = [
+        shaded_window("left", Azimuth.south, overhang=Overhang(depth=1.0)),
+        shaded_window("right", Azimuth.south),
+    ]
+    space = three_spaces()[0]
+    space.external_boundaries = [wall for wall in space.external_boundaries if not isinstance(wall, Window)] + windows
+    network = Network(name="buildings_mixed_shading", library=Library.from_configuration("Buildings"))
+    network.add_boiler_plate_spaces([space])
+
+    with pytest.raises(InvalidBuildingStructureError, match="overhang or side fins"):
+        network.model()
