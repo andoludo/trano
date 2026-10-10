@@ -1,5 +1,7 @@
 # Buildings zone definitions. The `infiltration` variant uses Trano's MixedAirInf, a copy of
-# Buildings.ThermalZones.Detailed.MixedAir with an infiltration air flow; everything else is shared.
+# Buildings.ThermalZones.Detailed.MixedAir that brings outdoor air in from the weather data (at its
+# temperature, humidity and pressure, like Buildings' own BESTEST models) at the air change rate plus
+# the scheduled ventilation, and draws the same flow out; everything else is shared.
 - classes:
   - Space
   figures: &buildings_zone_figures

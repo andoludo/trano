@@ -54,4 +54,29 @@ def test_the_scheduled_ventilation_zone_is_part_of_the_trano_package() -> None:
     model = network.model()
 
     assert "extends IDEAS.Buildings.Components.Zone(nPorts=nPortsExt + 2);" in model
+    assert "IDEAS.Fluid.Sources.MassFlowSource_WeatherData souVen(" in model
+    assert "connect(sim.weaDatBus, souVen.weaBus)" in model
     assert "connect(souVen.ports[1], ports[nPortsExt + 1])" in model
+
+
+def test_the_buildings_zone_draws_outdoor_air_from_the_weather_data() -> None:
+    """The wiring mirrors Buildings' own BESTEST models: the outside source feeds the zone through a
+    resistance sized on the design flow, and a mass flow sink extracts the same flow."""
+    space = simple_space_1_fixture()
+    network = Network(name="package", library=Library.from_configuration("Buildings"))
+    network.add_boiler_plate_spaces([space])
+    model = re.sub(r"\s+", " ", network.model())
+
+    assert "Buildings.Fluid.Sources.Outside souInf( redeclare package Medium = Medium, nPorts=1)" in model
+    assert "MassFlowSource_T sinInf( redeclare package Medium = Medium, use_m_flow_in=true, nPorts=1)" in model
+    assert "max(ACH*V*1.2/3600 + max(ventilationSchedule[:, 2]), 1E-4)" in model
+    assert "resInf( redeclare package Medium = Medium, m_flow_nominal=mInf_flow_nominal," in model
+    for connection in (
+        "connect(weaBus, souInf.weaBus)",
+        "connect(souInf.ports[1], resInf.port_a)",
+        "connect(resInf.port_b, air.ports[1])",
+        "connect(sinInf.ports[1], air.ports[2])",
+        "connect(airInfiltration.y, sinInfFlow.u)",
+        "connect(sinInfFlow.y, sinInf.m_flow_in)",
+    ):
+        assert connection in model
