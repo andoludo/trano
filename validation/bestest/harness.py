@@ -66,9 +66,15 @@ def cache_directory(case_id: str, library: str) -> Path:
 
 
 def normalized_model(model: str) -> str:
-    """The model without its annotations (layout coordinates differ between renders) and whitespace."""
-    compact = re.sub(r"\s+", "", model)
-    return re.sub(r"annotation\(.*?\);", "", compact)  # annotations hold no semicolon
+    """The statements of the model, sorted, without annotations and whitespace.
+
+    Layout coordinates differ between renders and the order of the data records (materials,
+    constructions) between processes: neither changes the simulation, so neither changes the hash.
+    """
+    without_annotations = re.sub(r"annotation\s*\(.*?\)\s*;", "", model, flags=re.DOTALL)  # they hold no semicolon
+    pieces = re.split(r";|\b(?=(?:record|package|model|end|equation)\b)", without_annotations)
+    statements = {re.sub(r"\s+", "", piece) for piece in pieces} - {""}
+    return ";".join(sorted(statements))
 
 
 def model_hash(model: str, library: str, options: SimulationOptions) -> str:

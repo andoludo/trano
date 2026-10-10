@@ -78,3 +78,18 @@ def test_known_deviations_are_reported_but_not_failures() -> None:
     assert outside.status == "known" and outside.known_deviation == reason
     assert unknown.status == "fail" and unknown.known_deviation is None
     assert outside.model_copy(update={"value": 1.5}).status == "pass"
+
+
+def test_the_model_hash_ignores_layout_and_the_order_of_records() -> None:
+    from trano.simulate.simulate import SimulationOptions
+    from validation.bestest.harness import model_hash
+
+    options = SimulationOptions(end_time=3600)
+    records = ["record a = X(k=1);", "record b = X(k=2);"]
+    one = "package p\n" + "\n".join(records) + "\nmodel m\n  A a annotation (Placement(x=1));\nend m;\nend p;"
+    other = "package p\n" + "\n".join(records[::-1]) + "\nmodel m\n  A a annotation (Placement(x=99));\nend m;\nend p;"
+    changed = other.replace("k=2", "k=3")
+
+    assert model_hash(one, "Buildings", options) == model_hash(other, "Buildings", options)
+    assert model_hash(one, "Buildings", options) != model_hash(changed, "Buildings", options)
+    assert model_hash(one, "Buildings", options) != model_hash(one, "IDEAS", options)

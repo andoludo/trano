@@ -300,10 +300,12 @@ def merged_construction(nodes: NodeView) -> ConstructionData:
     constructions = {node.construction for node in [node_ for node_ in nodes if isinstance(node_, BaseSimpleWall)]}
     merged_constructions.update(constructions)
     merged_constructions.update(_space_constructions(nodes))
-    wall_constructions = [c for c in merged_constructions if isinstance(c, Construction)]
-    glazing = [c for c in merged_constructions if isinstance(c, Glass)]
+    # Sorted by name: sets iterate in an order that differs between processes, the model must not.
+    by_name = lambda item: item.name  # noqa: E731
+    wall_constructions = sorted((c for c in merged_constructions if isinstance(c, Construction)), key=by_name)
+    glazing = sorted((c for c in merged_constructions if isinstance(c, Glass)), key=by_name)
     materials = {layer.material for construction in merged_constructions for layer in construction.layers}
-    return ConstructionData(constructions=wall_constructions, materials=list(materials), glazing=glazing)
+    return ConstructionData(constructions=wall_constructions, materials=sorted(materials, key=by_name), glazing=glazing)
 
 
 def extract_data(package_name: str, nodes: NodeView, library: "Library") -> MaterialProperties:

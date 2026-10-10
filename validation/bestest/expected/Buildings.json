@@ -153,13 +153,13 @@
     "mean_temperature": 14.6805
   },
   "960": {
-    "annual_heating": 2.5563,
-    "annual_cooling": 0.9733,
-    "peak_heating": 2.0979,
-    "peak_cooling": 1.4874,
-    "maximum_temperature": 48.6474,
-    "minimum_temperature": 4.3449,
-    "mean_temperature": 27.0816
+    "annual_heating": 2.596,
+    "annual_cooling": 0.9497,
+    "peak_heating": 2.108,
+    "peak_cooling": 1.4765,
+    "maximum_temperature": 48.0283,
+    "minimum_temperature": 4.1501,
+    "mean_temperature": 26.6874
   },
   "980": {
     "annual_heating": 0.4439,
