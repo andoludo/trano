@@ -54,6 +54,11 @@ class LibraryData(BaseModel):
     template: str = ""
     component_template: DynamicComponentTemplate | None = None
     variant: str = BaseVariant.default
+    fixed_name: str | None = Field(
+        default=None,
+        description="Name the component must carry in the model, whatever the element is called "
+        "(IDEAS looks for its simulation manager as `sim`).",
+    )
     figures: list[Figure] = Field(default=[])
     ports: Callable[[], list[Port]]
     parameter_processing: Callable[[BaseParameter], dict[str, Any]] = default_parameters

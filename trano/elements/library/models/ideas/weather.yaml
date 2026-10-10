@@ -2,6 +2,7 @@
   - Weather
   figures: []
   library: ideas
+  fixed_name: sim  # the IDEAS components look for an inner `sim`
   parameter_processing:
     function: modify_alias
     parameter:
@@ -19,7 +20,7 @@
       use_counter: false
   template: |2-
 
-        inner IDEAS.BoundaryConditions.SimInfoManager sim(
+        inner IDEAS.BoundaryConditions.SimInfoManager {{ element.name }}(
         interZonalAirFlowType=IDEAS.BoundaryConditions.Types.InterZonalAirFlow.OnePort,
         linIntRad={{ "true" if element.linearize_radiation else "false" }},
         linExtRad={{ "true" if element.linearize_radiation else "false" }}

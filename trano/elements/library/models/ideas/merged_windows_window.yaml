@@ -26,7 +26,7 @@
         final azi={{macros.join_list(element.azimuths)}},
         redeclare package Medium = Medium,
         frac={{ macros.join_list(element.frame_fractions) }},
-        redeclare parameter IDEAS.Buildings.Data.Frames.Wood fraType(U_value={{ element.constructions[0].u_value_frame }}),
+        redeclare parameter IDEAS.Buildings.Data.Frames.Wood fraType(each U_value={{ element.constructions[0].u_value_frame }}),
         {%- if element.overhang and element.side_fins %}
         redeclare IDEAS.Buildings.Components.Shading.Box shaType(
             each hWin={{ element.heights[0] }}, each wWin={{ element.widths[0] }},

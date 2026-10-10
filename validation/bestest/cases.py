@@ -249,7 +249,9 @@ MATERIALS: dict[str, dict[str, Any]] = {
         _material("FOAM_INSULATION:001", 0.040, 1400, 10),
         _material("CONCRETE_BLOCK:001", 0.510, 1000, 1400),
         _material("ROOF_DECK:001", 0.140, 900, 530),
-        _material("FLOOR_INSULATION:001", 0.040, 0, 0),  # no thermal mass: the floor rests on it
+        # The standard gives the floor insulation no thermal mass; a negligible one (100 J/(m3.K), IDEAS'
+        # own BESTEST data) keeps every library's layer discretization defined.
+        _material("FLOOR_INSULATION:001", 0.040, 10, 10),
         _material("TIMBER_FLOOR:001", 0.140, 1200, 650),
         _material("CONCRETE_SLAB:001", 1.130, 1000, 1400),
         _material("CONCRETE_WALL:001", 0.510, 1000, 1400),  # common wall of case 960

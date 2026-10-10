@@ -52,6 +52,7 @@ def test_the_simulation_manager_is_the_inner_sim_with_the_weather_file() -> None
 
     assert re.search(r'inner IDEAS\.BoundaryConditions\.SimInfoManager sim\(.*?filNam="/simulation/site.mos"\)', model)
     assert "pAtmSou" not in model
+    assert "connect(sim.weaDatBus,dataBus)" in model.replace(" ", "") and "weather.weaDatBus" not in model
     assert "linIntRad=true, linExtRad=true" in model
 
 
@@ -76,7 +77,7 @@ def test_windows_carry_their_frame_fraction_and_frame_u_value() -> None:
     model = ideas_model(three_spaces())
 
     assert re.search(
-        r"frac=\{ 0\.1 \}, redeclare parameter IDEAS\.Buildings\.Data\.Frames\.Wood fraType\(U_value=", model
+        r"frac=\{ 0\.1 \}, redeclare parameter IDEAS\.Buildings\.Data\.Frames\.Wood fraType\(each U_value=", model
     )
 
 

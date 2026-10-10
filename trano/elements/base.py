@@ -115,6 +115,8 @@ class BaseElement(BaseElementPort):
             self.medium = library.medium
         if not library_data:
             return False
+        if library_data.fixed_name:
+            self.name = library_data.fixed_name
         if not self.ports:
             self.ports = library_data.ports()
         if not self.template:
