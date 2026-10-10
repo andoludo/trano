@@ -130,11 +130,16 @@ def simulate(
     project_path: Path,
     model_network: Network,
     options: SimulationOptions | None = None,
+    container_name: str = "openmodelica",
 ) -> docker.models.containers.ExecResult:
+    """Simulate the network in a container of the OpenModelica image; results land in ``project_path/results``.
+
+    Simulations run at the same time need distinct ``container_name``s.
+    """
     client_ = client()
     options = options or SimulationOptions()
     with (
-        container(client_, project_path) as container_,
+        container(client_, project_path, container_name=container_name) as container_,
         create_mos_file(model_network, options, project_path) as mos_file_name,
     ):
         results = container_.exec_run(cmd=f"omc /simulation/{mos_file_name}")
@@ -156,8 +161,8 @@ def container(
     client: docker.DockerClient,
     project_path: Path,
     environment: ModelicaEnvironment = MODELICA_ENVIRONMENT,
+    container_name: str = "openmodelica",
 ) -> Generator[docker.models.containers.Container, None, None]:
-    container_name = "openmodelica"
     stop_container(client, container_name)
     container = client.containers.run(
         environment.openmodelica_image,
