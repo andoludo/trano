@@ -40,7 +40,8 @@
     - BaseOccupancy
   template: &reduced_order_zone_template |
     AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone {{ element.name }}(
-        use_moisture_balance=true,
+    {#- A constant outdoor air exchange is dry: AixLib's moisture balance fails on the humidity it brings in. #}
+        use_moisture_balance={{ "false" if element.variant == "infiltration" else "true" }},
         ROM(extWallRC(thermCapExt(each der_T(fixed=true))), intWallRC(thermCapInt(
                 each der_T(fixed=true)))),
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,

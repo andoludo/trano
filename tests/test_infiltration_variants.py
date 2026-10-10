@@ -21,8 +21,10 @@ def infiltration_model(library: str, **parameters: float | str) -> str:
     return re.sub(r"\s+", " ", remove_trano_package(network.model()))
 
 
-def test_reduced_order_zone_uses_a_constant_air_change_rate() -> None:
-    assert "useConstantACHrate=true, baseACH=0.414," in infiltration_model("reduced_order")
+def test_reduced_order_zone_uses_a_constant_dry_air_change_rate() -> None:
+    model = infiltration_model("reduced_order")
+
+    assert "useConstantACHrate=true, baseACH=0.414," in model and "use_moisture_balance=false" in model
 
 
 def test_iso_13790_zone_takes_the_air_change_rate() -> None:

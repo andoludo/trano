@@ -246,3 +246,35 @@ def test_iso_13790_zone_takes_the_aggregated_envelope() -> None:
     assert parameter(declaration, "UWin") == [envelope.windows.u_value]
     assert parameter(declaration, "gFac") == [envelope.windows.g_value]
     assert parameter(declaration, "UFlo")[0] == pytest.approx(envelope.floor.u_value * 10 / floor_area, rel=1e-5)
+
+
+def test_the_mass_class_follows_the_capacity_reached_from_the_room() -> None:
+    from trano.elements.construction import Construction, Layer, Material
+
+    concrete = Material(name="concrete", thermal_conductivity=0.51, specific_heat_capacity=1000, density=1400)
+    board = Material(name="board", thermal_conductivity=0.16, specific_heat_capacity=840, density=950)
+    foam = Material(name="foam", thermal_conductivity=0.04, specific_heat_capacity=1400, density=10)
+    light = Construction(
+        name="light", layers=[Layer(material=foam, thickness=0.066), Layer(material=board, thickness=0.012)]
+    )
+    heavy = Construction(
+        name="heavy", layers=[Layer(material=foam, thickness=0.06), Layer(material=concrete, thickness=0.2)]
+    )
+
+    assert light.internal_heat_capacity == pytest.approx(0.012 * 950 * 840 + 0.066 * 10 * 1400)
+    assert heavy.internal_heat_capacity == pytest.approx(0.1 * 1400 * 1000)  # only the first 0.1 m from the room
+
+
+def test_the_bestest_zones_are_light_and_heavy_for_iso_13790() -> None:
+    from trano.data_models.conversion import convert_network
+    from trano.elements.space import Space
+    from validation.bestest.cases import case_file
+
+    classes = {}
+    for case_id in ("600", "900"):
+        network = convert_network(
+            f"case_{case_id}", case_file(case_id), library=Library.from_configuration("iso_13790")
+        )
+        zone = next(node for node in network.graph.nodes if isinstance(node, Space))
+        classes[case_id] = zone.aggregated_envelope.mass_class(zone.parameters.floor_area)  # type: ignore[union-attr]
+    assert classes == {"600": "Light", "900": "Heavy"}

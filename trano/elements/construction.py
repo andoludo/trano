@@ -13,6 +13,9 @@ if TYPE_CHECKING:
     from trano.elements.library.library import Library
 
 
+EFFECTIVE_DEPTH = 0.1  # [m] depth of the layers taking part in the daily heat storage (ISO 13786)
+
+
 class Material(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     name: str
@@ -125,6 +128,23 @@ class BaseConstruction(BaseModel):
     @property
     def total_thermal_capacitance(self) -> float:
         return sum([layer.thermal_capacitance for layer in self.layers])
+
+    @property
+    def internal_heat_capacity(self) -> float:
+        """Areal heat capacity [J/(m2.K)] of the layers reached from the room within the effective depth.
+
+        The simplified effective thickness of ISO 13786: the layers from the inside (the last layer)
+        down to 0.1 m, the last one counted in proportion. Used to class a zone's thermal mass.
+        """
+        remaining = EFFECTIVE_DEPTH
+        capacity = 0.0
+        for layer in reversed(self.layers):
+            thickness = min(layer.thickness, remaining)
+            capacity += thickness * layer.material.density * layer.material.specific_heat_capacity
+            remaining -= thickness
+            if remaining <= 0:
+                break
+        return capacity
 
     @computed_field
     def u_value(self) -> float:
