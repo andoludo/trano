@@ -17,6 +17,7 @@ from validation.bestest.cases import (
 )
 from validation.bestest.harness import LIBRARIES, cached_results, run_cases
 from validation.bestest.report import DOCS_PAGE, compare, freeze, render_docs, render_markdown, write_report
+from validation.bestest.walkthrough import WALKTHROUGH_PAGE, render_walkthrough
 from validation.bestest.reference import load_reference
 
 REPORT_DIR = Path(__file__).parent.joinpath("_reports")
@@ -81,7 +82,8 @@ def main(argv: list[str] | None = None) -> None:
         if arguments.docs:
             DOCS_PAGE.parent.mkdir(parents=True, exist_ok=True)
             DOCS_PAGE.write_text(render_docs(results))
-            print(f"wrote {DOCS_PAGE}")
+            WALKTHROUGH_PAGE.write_text(render_walkthrough(results))
+            print(f"wrote {DOCS_PAGE} and {WALKTHROUGH_PAGE}")
         else:
             print(render_markdown(results))
     elif arguments.command == "freeze":

@@ -27,3 +27,9 @@ reason; the gating test accepts them and the report shows them. The scheduled wo
 `.github/workflows/bestest.yaml` runs the matrix weekly and on demand and keeps the report as an
 artifact; `docs/validation/bestest.md` is rendered from the cached results with
 `python -m validation.bestest report --docs`.
+
+`report --docs` also renders `docs/validation/bestest_cases.md`, a walk through a few cases
+(`validation/bestest/walkthrough.py`): what each case is, what the reference programs expect, the
+YAML fragments that describe it, the results of every library and the hourly charts of the trace
+days. The prose lives in `FEATURED_CASES`; everything else is rendered from the case files, the
+reference data and the last results.

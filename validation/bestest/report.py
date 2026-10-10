@@ -185,7 +185,9 @@ method applied hour by hour and the reduced-order zone still deviates on several
 neither gates. Cases a library cannot describe (shading with IDEAS, which OpenModelica cannot
 compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the two simplified zones)
 are left out. The tables are rendered from the last results with
-`python -m validation.bestest report --docs`.
+`python -m validation.bestest report --docs`. [A walk through the BESTEST cases](bestest_cases.md) explains a few
+cases in detail: what they are, what is expected, how the YAML describes them and how the results
+compare.
 
 """
     body = render_markdown(results, reference)

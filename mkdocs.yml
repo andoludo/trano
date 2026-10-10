@@ -74,6 +74,7 @@ nav:
       - Parameters: reference/parameters.md
   - Validation:
       - ASHRAE 140 (BESTEST): validation/bestest.md
+      - A walk through the BESTEST cases: validation/bestest_cases.md
 
 markdown_extensions:
     - admonition
