@@ -23,6 +23,7 @@ BoilerParameters:
       description: Coefficients for efficiency curve
       ifabsent: string({0.9})
       range: string
+      short_name: efficiency_curve_coefficients
     diff_pressure:
       alias: dp
       description: Pressure rise values defining the boiler-circuit pump pressure curve [Pa]
@@ -50,22 +51,26 @@ BoilerParameters:
       description: Curve used to compute the efficiency
       ifabsent: string(Buildings.Fluid.Types.EfficiencyCurves.Constant)
       range: string
+      short_name: efficiency_curve
     fraction_of_nominal_flow_rate_where_flow_transitions_to_laminar:
       alias: deltaM
       description: Fraction of nominal flow rate where flow transitions to laminar [1]
       ifabsent: float(0.1)
       range: float
+      short_name: laminar_transition_fraction
       numerical: true
     height_of_tank_without_insulation:
       alias: hTan
       description: Height of tank (without insulation) [m]
       ifabsent: float(2)
       range: float
+      short_name: tank_height
     if_actual_temperature_at_port_is_computed:
       alias: show_T
       description: = true, if actual temperature at port is computed
       ifabsent: string(false)
       range: string
+      short_name: show_temperature
       numerical: true
     nominal_heating_power:
       alias: Q_flow_nominal
@@ -106,16 +111,19 @@ BoilerParameters:
       description: Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature) [K]
       ifabsent: float(353.15)
       range: float
+      short_name: nominal_efficiency_temperature
     thickness_of_insulation:
       alias: dIns
       description: Thickness of insulation [m]
       ifabsent: float(0.1)
       range: float
+      short_name: insulation_thickness
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearizeFlowResistance
-      description: = true, use linear relation between m_flow and dp for any flow rate
-      ifabsent: string(true)
+      description: = true, use linear relation between m_flow and dp for any flow rate of the boiler (the Modelica default is false)
+      ifabsent: string(false)
       range: string
+      short_name: linearized
       numerical: true
     v_flow:
       alias: V_flow
@@ -132,11 +140,13 @@ BoilerParameters:
       description: None
       ifabsent: float(286.15)
       range: float
+      short_name: heat_pump_source_temperature
     temperature_supply_setpoint_heat_pump:
       alias: TSet
       description: None
       ifabsent: float(323.15)
       range: float
+      short_name: heat_pump_supply_setpoint
     cop_nominal:
       description: Heat pump COP at the rating point A7/W35, used by the mpc library [1]
       ifabsent: float(4.5)
@@ -162,6 +172,65 @@ BoilerParameters:
       ifabsent: float(None)
       range: float
       render: false
+    loss_conductance:
+      alias: UA
+      description: Heat loss conductance of the boiler to its room [W/K], 0.05 * nominal heating power / 30 by default
+      range: float
+    water_volume:
+      alias: VWat
+      description: Water volume of the boiler [m3], 1.5e-6 * nominal heating power by default
+      range: float
+    dry_mass:
+      alias: mDry
+      description: Dry mass of the boiler lumped to its water [kg], 1.5e-3 * nominal heating power by default
+      range: float
+    insulation_conductivity:
+      alias: kIns
+      description: Thermal conductivity of the tank insulation [W/(m.K)], 0.04 by default
+      range: float
+    ambient_temperature:
+      alias: TAmbient
+      description: Temperature of the room around the boiler and the tank, for their losses [K], 288.15 by default
+      range: float
+    supply_temperature_setpoint:
+      alias: TempSet
+      description: Supply temperature set point of the boiler without storage [K], 353.15 by default
+      range: float
+      libraries:
+        buildings: &boiler_setpoint {name: TempSet, variants: [without_storage]}
+        ideas: *boiler_setpoint
+        reduced_order: *boiler_setpoint
+        iso_13790: *boiler_setpoint
+    fuel:
+      description: Fuel of the boiler, a record of Buildings.Fluid.Data.Fuels such as NaturalGasLowerHeatingValue (the default), NaturalGasHigherHeatingValue, HeatingOilLowerHeatingValue or WoodAirDriedLowerHeatingValue
+      range: string
+      libraries:
+        buildings: {handled: true}
+        ideas: {handled: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
+    heat_pump_nominal_source_temperature:
+      alias: TEvaHea_nominal
+      description: Source (outdoor air) temperature at the rating point of the air-water heat pump [K], 293.15 by default
+      range: float
+      libraries:
+        buildings: &hp_source_temperature {name: TEvaHea_nominal, variants: [air_water_heat_pump]}
+        ideas: *hp_source_temperature
+        reduced_order: *hp_source_temperature
+        iso_13790: *hp_source_temperature
+    heat_pump_source_mass_flow:
+      alias: mSou_flow_nominal
+      description: Mass flow rate of the source side of the heat pump [kg/s], 1.7 (air) or the one of the performance record (water) by default
+      range: float
+      libraries:
+        buildings: &hp_source_flow {name: mSou_flow_nominal, variants: [air_water_heat_pump, water_water_heat_pump]}
+        ideas: *hp_source_flow
+        reduced_order: *hp_source_flow
+        iso_13790: *hp_source_flow
+    temperature_initial:
+      alias: T_start
+      description: Initial temperature of the boiler and of the tank water [K], 293.15 by default
+      range: float
   classes:
   - Boiler
 ControlLoopsParameters:
@@ -487,6 +556,7 @@ RadiatorParameter:
       description: Air temperature at nominal condition [K]
       ifabsent: float(293.15)
       range: float
+      short_name: air_temperature
     dp_nominal:
       alias: dp_nominal
       description: Pressure drop at nominal mass flow rate [Pa]
@@ -497,65 +567,77 @@ RadiatorParameter:
       description: Dry mass of radiator that will be lumped to water heat capacity [kg]
       func: 'lambda self: 0.0263 * abs(self.nominal_heating_power_positive_for_heating)'
       type: float
+      short_name: dry_mass
     exponent_for_heat_transfer:
       alias: n
       description: Exponent for heat transfer
       ifabsent: float(1.24)
       range: float
+      short_name: heat_transfer_exponent
     fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
       alias: deltaM
       description: Fraction of nominal mass flow rate where transition to turbulent occurs [1]
       ifabsent: float(0.01)
       range: float
+      short_name: turbulent_transition_fraction
       numerical: true
     fraction_radiant_heat_transfer:
       alias: fraRad
       description: Fraction radiant heat transfer [1]
       ifabsent: float(0.3)
       range: float
+      short_name: radiant_fraction
     nominal_heating_power_positive_for_heating:
       alias: Q_flow_nominal
       description: Nominal heating power (positive for heating) [W]
       ifabsent: float(5000)
       range: float
+      short_name: nominal_heating_power
     number_of_elements_used_in_the_discretization:
       alias: nEle
       description: Number of elements used in the discretization [1]
       ifabsent: int(1)
       range: integer
+      short_name: number_of_elements
       numerical: true
     radiative_temperature_at_nominal_condition:
       alias: TRad_nominal
       description: Radiative temperature at nominal condition [K]
       ifabsent: float(293.15)
       range: float
+      short_name: radiative_temperature
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string(true)
       range: string
+      short_name: linearized
       numerical: true
     use_m_flow_f_dp_else_dp_f_m_flow:
       alias: from_dp
       description: = true, use m_flow = f(dp) else dp = f(m_flow)
       ifabsent: string(false)
       range: string
+      short_name: from_dp
       numerical: true
     water_inlet_temperature_at_nominal_condition:
       alias: T_a_nominal
       description: Water inlet temperature at nominal condition [K]
       ifabsent: float(353.15)
       range: float
+      short_name: water_inlet_temperature
     water_outlet_temperature_at_nominal_condition:
       alias: T_b_nominal
       description: Water outlet temperature at nominal condition [K]
       ifabsent: float(333.15)
       range: float
+      short_name: water_outlet_temperature
     water_volume_of_radiator:
       alias: VWat
       description: Water volume of radiator [m3]
       func: lambda self:5.8e-6 * abs(self.nominal_heating_power_positive_for_heating)
       type: float
+      short_name: water_volume
   classes:
   - Radiator
 SpaceParameter:
@@ -723,6 +805,7 @@ SplitValveParameters:
       description: Fraction of nominal mass flow rate where transition to turbulent occurs [1]
       ifabsent: float(0.3)
       range: float
+      short_name: turbulent_transition_fraction
       numerical: true
     m_flow_nominal:
       alias: None
@@ -733,17 +816,20 @@ SplitValveParameters:
       alias: mDyn_flow_nominal
       description: Nominal mass flow rate for dynamic momentum and energy balance [kg/s]
       range: float
+      short_name: dynamic_nominal_mass_flow_rate
       numerical: true
     time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance:
       alias: tau
       description: Time constant at nominal flow for dynamic energy and momentum balance [s]
       range: float
+      short_name: time_constant
       numerical: true
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string(true)
       range: string
+      short_name: linearized
       numerical: true
   classes:
   - SplitValve
@@ -781,6 +867,7 @@ ThreeWayValveParameters:
       description: Fraction of nominal flow rate where linearization starts, if y=1 [1]
       ifabsent: float(0.02)
       range: float
+      short_name: linearization_start_fraction
       numerical: true
     m_flow_nominal:
       alias: m_flow_nominal
@@ -792,6 +879,7 @@ ThreeWayValveParameters:
       description: Range of significant deviation from equal percentage law [1]
       ifabsent: float(0.01)
       range: float
+      short_name: equal_percentage_deviation
     rangeability:
       alias: R
       description: Rangeability, R=50...100 typically [1]
@@ -801,17 +889,33 @@ ThreeWayValveParameters:
       alias: rhoStd
       description: Inlet density for which valve coefficients are defined [kg/m3]
       range: float
+      short_name: standard_density
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string({true, true})
       range: string
+      short_name: linearized
       numerical: true
     valve_leakage:
       alias: l
       description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
       ifabsent: string({0.01,0.01})
       range: string
+    flow_coefficient_type:
+      description: How the flow coefficients of the valve are given, OpPoint (the nominal pressure drop, the library default), Kv, Cv or Av; without it `Kv`, `Cv` and `Av` are ignored
+      range: string
+      libraries:
+        buildings: {handled: true}
+        ideas: {handled: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
+    actuator_stroke_time:
+      alias: strokeTime
+      description: Time the actuator takes to open or close the valve [s], 120 by default
+      range: float
+      libraries:
+        ideas: riseTime
   classes:
   - ThreeWayValve
 ValveParameters:
@@ -819,7 +923,7 @@ ValveParameters:
     av:
       alias: Av
       description: Av (metric) flow coefficient [m2]
-      range: string
+      range: float
     cv:
       alias: Cv
       description: Cv (US) flow coefficient [USG/min/(psi)^(1/2)]
@@ -839,6 +943,7 @@ ValveParameters:
       description: Fraction of nominal flow rate where linearization starts, if y=1 [1]
       ifabsent: float(0.02)
       range: float
+      short_name: linearization_start_fraction
       numerical: true
     k_fixed:
       alias: kFixed
@@ -858,6 +963,7 @@ ValveParameters:
       description: Range of significant deviation from equal percentage law [1]
       ifabsent: float(0.01)
       range: float
+      short_name: equal_percentage_deviation
     rangeability:
       alias: R
       description: Rangeability, R=50...100 typically [1]
@@ -868,20 +974,158 @@ ValveParameters:
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string(true)
       range: string
+      short_name: linearized
       numerical: true
     use_m_flow_f_dp_else_dp_f_m_flow:
       alias: from_dp
       description: = true, use m_flow = f(dp) else dp = f(m_flow)
       ifabsent: string(true)
       range: string
+      short_name: from_dp
       numerical: true
     valve_leakage:
       alias: l
       description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
       ifabsent: float(0.0001)
       range: float
+    flow_coefficient_type:
+      description: How the flow coefficient of the valve is given, OpPoint (the nominal pressure drop, the library default), Kv, Cv or Av; without it `kv`, `cv` and `av` are ignored
+      range: string
+      libraries:
+        buildings: {handled: true}
+        ideas: {handled: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
+    standard_density:
+      alias: rhoStd
+      description: Inlet density for which the flow coefficients are defined [kg/m3], water at 4 degC by default
+      range: float
+    actuator_stroke_time:
+      alias: strokeTime
+      description: Time the actuator takes to open or close the valve [s], 120 by default
+      range: float
+      libraries:
+        ideas: riseTime
   classes:
   - Valve
+VavParameters:
+  attributes:
+    nominal_mass_flow_rate:
+      alias: m_flow_nominal
+      description: Nominal air mass flow rate of the damper [kg/s]
+      ifabsent: string(100*1.2/3600)
+      range: string
+      libraries:
+        buildings: &vav_nominal_mass_flow_rate {name: m_flow_nominal, variants: [default]}
+        ideas: *vav_nominal_mass_flow_rate
+        reduced_order: *vav_nominal_mass_flow_rate
+        iso_13790: *vav_nominal_mass_flow_rate
+    damper_dp_nominal:
+      alias: dpDamper_nominal
+      description: Pressure drop of the fully open damper at the nominal flow [Pa]
+      ifabsent: float(50)
+      range: float
+      libraries:
+        buildings: &vav_damper_dp_nominal {name: dpDamper_nominal, variants: [default]}
+        ideas: *vav_damper_dp_nominal
+        reduced_order: *vav_damper_dp_nominal
+        iso_13790: *vav_damper_dp_nominal
+    fixed_dp_nominal:
+      alias: dpFixed_nominal
+      description: Pressure drop of the duct and the other resistances in series with the damper at the nominal flow [Pa]
+      ifabsent: float(50)
+      range: float
+      libraries:
+        buildings: &vav_fixed_dp_nominal {name: dpFixed_nominal, variants: [default]}
+        ideas: *vav_fixed_dp_nominal
+        reduced_order: *vav_fixed_dp_nominal
+        iso_13790: *vav_fixed_dp_nominal
+    cooling_air_flow_nominal:
+      alias: mCooAir_flow_nominal
+      description: Design air mass flow rate for cooling of the VAV box [kg/s] (complex variant)
+      ifabsent: string(100*1.2/3600)
+      range: string
+      libraries:
+        buildings: &vav_cooling_air_flow_nominal {name: mCooAir_flow_nominal, variants: [complex]}
+        ideas: *vav_cooling_air_flow_nominal
+        reduced_order: *vav_cooling_air_flow_nominal
+        iso_13790: *vav_cooling_air_flow_nominal
+    heating_air_flow_nominal:
+      alias: mHeaAir_flow_nominal
+      description: Design air mass flow rate for heating of the VAV box [kg/s] (complex variant)
+      ifabsent: string(100*1.2/3600)
+      range: string
+      libraries:
+        buildings: &vav_heating_air_flow_nominal {name: mHeaAir_flow_nominal, variants: [complex]}
+        ideas: *vav_heating_air_flow_nominal
+        reduced_order: *vav_heating_air_flow_nominal
+        iso_13790: *vav_heating_air_flow_nominal
+    room_volume:
+      alias: VRoo
+      description: Volume of the room the VAV box serves [m3] (complex variant)
+      ifabsent: float(100)
+      range: float
+      libraries:
+        buildings: &vav_room_volume {name: VRoo, variants: [complex]}
+        ideas: *vav_room_volume
+        reduced_order: *vav_room_volume
+        iso_13790: *vav_room_volume
+    heating_water_inlet_temperature:
+      alias: THeaWatInl_nominal
+      description: Reheat water inlet temperature at the design point [K] (complex variant)
+      ifabsent: float(363.15)
+      range: float
+      libraries:
+        buildings: &vav_heating_water_inlet_temperature {name: THeaWatInl_nominal, variants: [complex]}
+        ideas: *vav_heating_water_inlet_temperature
+        reduced_order: *vav_heating_water_inlet_temperature
+        iso_13790: *vav_heating_water_inlet_temperature
+    heating_water_outlet_temperature:
+      alias: THeaWatOut_nominal
+      description: Reheat water outlet temperature at the design point [K] (complex variant)
+      ifabsent: float(333.15)
+      range: float
+      libraries:
+        buildings: &vav_heating_water_outlet_temperature {name: THeaWatOut_nominal, variants: [complex]}
+        ideas: *vav_heating_water_outlet_temperature
+        reduced_order: *vav_heating_water_outlet_temperature
+        iso_13790: *vav_heating_water_outlet_temperature
+    heating_air_inlet_temperature:
+      alias: THeaAirInl_nominal
+      description: Air inlet temperature of the box at the heating design point [K] (complex variant)
+      ifabsent: float(303.15)
+      range: float
+      libraries:
+        buildings: &vav_heating_air_inlet_temperature {name: THeaAirInl_nominal, variants: [complex]}
+        ideas: *vav_heating_air_inlet_temperature
+        reduced_order: *vav_heating_air_inlet_temperature
+        iso_13790: *vav_heating_air_inlet_temperature
+    heating_air_discharge_temperature:
+      alias: THeaAirDis_nominal
+      description: Discharge air temperature of the box at the heating design point [K] (complex variant)
+      ifabsent: float(298.15)
+      range: float
+      libraries:
+        buildings: &vav_heating_air_discharge_temperature {name: THeaAirDis_nominal, variants: [complex]}
+        ideas: *vav_heating_air_discharge_temperature
+        reduced_order: *vav_heating_air_discharge_temperature
+        iso_13790: *vav_heating_air_discharge_temperature
+  classes:
+  - VAV
+DuctParameters:
+  attributes:
+    nominal_mass_flow_rate:
+      alias: m_flow_nominal
+      description: Nominal air mass flow rate through the duct [kg/s]
+      ifabsent: string(100*1.2/3600)
+      range: string
+    dp_nominal:
+      alias: dp_nominal
+      description: Pressure drop of the duct at the nominal flow [Pa]
+      ifabsent: float(40)
+      range: float
+  classes:
+  - Duct
 WeatherParameters:
   attributes:
     path:
@@ -953,17 +1197,77 @@ AhuParameters:
       description: Nominal mass flow rate [kg/s]
       ifabsent: string(2*100*1.2/3600)
       range: string
+      libraries:
+        buildings: &ahu_flow [{name: mAir_flow_nominal, when_given: true, variants: [default]}, {name: m_flow_nominal, variants: [test, system_d]}]
+        ideas: *ahu_flow
+        reduced_order: *ahu_flow
+        iso_13790: *ahu_flow
     dp_nominal:
       alias: dp_nominal
       description: Nominal pressure raise [Pa]
       ifabsent: string(200)
       range: string
+      libraries:
+        buildings: &ahu_dp {name: dp_nominal, variants: [test, system_d]}
+        ideas: *ahu_dp
+        reduced_order: *ahu_dp
+        iso_13790: *ahu_dp
     heat_exchanger_effectiveness:
       alias: eps
       description: Heat exchanger effectiveness [1]
       ifabsent: string(0.8)
       range: string
+      libraries:
+        buildings: &ahu_eps {name: eps, variants: [test, system_d]}
+        ideas: *ahu_eps
+        reduced_order: *ahu_eps
+        iso_13790: *ahu_eps
 
+    supply_dp_nominal:
+      alias: dpSup_nominal
+      description: Pressure rise of the supply fan [Pa], the nominal pressure rise by default
+      range: float
+      libraries:
+        buildings: &ahu_sup {name: dpSup_nominal, variants: [test, system_d]}
+        ideas: *ahu_sup
+        reduced_order: *ahu_sup
+        iso_13790: *ahu_sup
+    return_dp_nominal:
+      alias: dpRet_nominal
+      description: Pressure rise of the return fan [Pa], the nominal pressure rise by default
+      range: float
+      libraries:
+        buildings: &ahu_ret {name: dpRet_nominal, variants: [test, system_d]}
+        ideas: *ahu_ret
+        reduced_order: *ahu_ret
+        iso_13790: *ahu_ret
+    building_static_pressure:
+      alias: dpBuiStaSet
+      description: Static pressure of the building the supply fan maintains [Pa], 12 by default (default variant)
+      range: float
+      libraries:
+        buildings: &ahu_sta {name: dpBuiStaSet, variants: [default]}
+        ideas: *ahu_sta
+        reduced_order: *ahu_sta
+        iso_13790: *ahu_sta
+    outdoor_air_per_area:
+      alias: ratOAFlo_A
+      description: Outdoor air flow per floor area [m3/(s.m2)], 0.3e-3 by default (default variant, ASHRAE 62.1)
+      range: float
+      libraries:
+        buildings: &ahu_oa_a {name: ratOAFlo_A, variants: [default]}
+        ideas: *ahu_oa_a
+        reduced_order: *ahu_oa_a
+        iso_13790: *ahu_oa_a
+    outdoor_air_per_person:
+      alias: ratOAFlo_P
+      description: Outdoor air flow per person [m3/s], 2.5e-3 by default (default variant, ASHRAE 62.1)
+      range: float
+      libraries:
+        buildings: &ahu_oa_p {name: ratOAFlo_P, variants: [default]}
+        ideas: *ahu_oa_p
+        reduced_order: *ahu_oa_p
+        iso_13790: *ahu_oa_p
   classes:
   - AirHandlingUnit
 ChillerParameters:
@@ -1104,18 +1408,44 @@ PhotovoltaicParameters:
       description: Module area [m2]
       ifabsent: float(20.0)
       range: float
+      alias: A
     efficiency:
       description: Module and inverter efficiency [1]
       ifabsent: float(0.18)
       range: float
+      alias: eta
     azimuth:
       description: Surface azimuth [deg], 0 for south, 90 for west
       ifabsent: float(0.0)
       range: float
+      render: false
     tilt:
       description: Surface tilt [deg], 0 for a roof, 90 for a wall
       ifabsent: float(35.0)
       range: float
+      render: false
+    active_area_fraction:
+      alias: fAct
+      description: Share of the module area covered by active cells [1], 0.9 by default
+      range: float
+    inverter_efficiency:
+      alias: eta_DCAC
+      description: Efficiency of the DC to AC conversion [1], 0.9 by default
+      range: float
+    power_factor:
+      alias: pf
+      description: Power factor of the inverter [1], 0.9 by default
+      range: float
+    tilt_radians:
+      alias: til
+      description: Surface tilt [rad], from the tilt in degrees
+      func: 'lambda self: round(self.tilt * 3.141592653589793 / 180, 6)'
+      type: float
+    azimuth_radians:
+      alias: azi
+      description: Surface azimuth [rad], from the azimuth in degrees
+      func: 'lambda self: round(self.azimuth * 3.141592653589793 / 180, 6)'
+      type: float
   classes:
   - Photovoltaic
 SensorParameters:
@@ -1124,6 +1454,10 @@ SensorParameters:
       alias: m_flow_nominal
       description: Nominal mass flow rate through the sensor, used for its dynamics and its small-flow regularization [kg/s]
       ifabsent: float(0.15)
+      range: float
+    time_constant:
+      alias: tau
+      description: Time constant of the sensor [s], 1 by default; 0 for an ideal sensor
       range: float
   classes:
   - TemperatureSensor

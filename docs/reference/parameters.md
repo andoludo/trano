@@ -8,9 +8,14 @@ Elements: `airhandlingunit`
 
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
-| `m_flow_nominal` | Nominal mass flow rate [kg/s] | `2*100*1.2/3600` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` |
-| `dp_nominal` | Nominal pressure raise [Pa] | `200` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` |
-| `heat_exchanger_effectiveness` | Heat exchanger effectiveness [1] | `0.8` | `eps` | `eps` | `eps` | `eps` | `eps` |
+| `m_flow_nominal` | Nominal mass flow rate [kg/s] | `2*100*1.2/3600` | `mAir_flow_nominal` (when given; default variant); `m_flow_nominal` (test, system_d variant) | `mAir_flow_nominal` (when given; default variant); `m_flow_nominal` (test, system_d variant) | `mAir_flow_nominal` (when given; default variant); `m_flow_nominal` (test, system_d variant) | `mAir_flow_nominal` (when given; default variant); `m_flow_nominal` (test, system_d variant) | `m_flow_nominal` |
+| `dp_nominal` | Nominal pressure raise [Pa] | `200` | `dp_nominal` (test, system_d variant) | `dp_nominal` (test, system_d variant) | `dp_nominal` (test, system_d variant) | `dp_nominal` (test, system_d variant) | `dp_nominal` |
+| `heat_exchanger_effectiveness` | Heat exchanger effectiveness [1] | `0.8` | `eps` (test, system_d variant) | `eps` (test, system_d variant) | `eps` (test, system_d variant) | `eps` (test, system_d variant) | `eps` |
+| `supply_dp_nominal` | Pressure rise of the supply fan [Pa], the nominal pressure rise by default | library default | `dpSup_nominal` (test, system_d variant) | `dpSup_nominal` (test, system_d variant) | `dpSup_nominal` (test, system_d variant) | `dpSup_nominal` (test, system_d variant) | `dpSup_nominal` |
+| `return_dp_nominal` | Pressure rise of the return fan [Pa], the nominal pressure rise by default | library default | `dpRet_nominal` (test, system_d variant) | `dpRet_nominal` (test, system_d variant) | `dpRet_nominal` (test, system_d variant) | `dpRet_nominal` (test, system_d variant) | `dpRet_nominal` |
+| `building_static_pressure` | Static pressure of the building the supply fan maintains [Pa], 12 by default (default variant) | library default | `dpBuiStaSet` (default variant) | `dpBuiStaSet` (default variant) | `dpBuiStaSet` (default variant) | `dpBuiStaSet` (default variant) | `dpBuiStaSet` |
+| `outdoor_air_per_area` | Outdoor air flow per floor area [m3/(s.m2)], 0.3e-3 by default (default variant, ASHRAE 62.1) | library default | `ratOAFlo_A` (default variant) | `ratOAFlo_A` (default variant) | `ratOAFlo_A` (default variant) | `ratOAFlo_A` (default variant) | `ratOAFlo_A` |
+| `outdoor_air_per_person` | Outdoor air flow per person [m3/s], 2.5e-3 by default (default variant, ASHRAE 62.1) | library default | `ratOAFlo_P` (default variant) | `ratOAFlo_P` (default variant) | `ratOAFlo_P` (default variant) | `ratOAFlo_P` (default variant) | `ratOAFlo_P` |
 
 ## BatteryParameters
 
@@ -43,33 +48,43 @@ Elements: `boiler`
 
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
-| `coefficients_for_efficiency_curve` | Coefficients for efficiency curve | `{0.9}` | `a` | `a` | `a` | `a` | `a` |
+| `coefficients_for_efficiency_curve`, `efficiency_curve_coefficients` | Coefficients for efficiency curve | `{0.9}` | `a` | `a` | `a` | `a` | `a` |
 | `diff_pressure` | Pressure rise values defining the boiler-circuit pump pressure curve [Pa] | `5000*{2,1}` | `dp` | `dp` | `dp` | `dp` | `dp` |
 | `dp_nominal` | Pressure difference [Pa] | `5000.0` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` |
 | `dt_boi_nominal` | Nominal temperature difference for the boiler loop [K] | `20.0` | - | - | - | - | - |
 | `dt_rad_nominal` | Nominal temperature difference for the radiator loop [K] | `10.0` | - | - | - | - | - |
-| `effcur` | Curve used to compute the efficiency | `Buildings.Fluid.Types.EfficiencyCurves.Constant` | `effCur` | `effCur` | `effCur` | `effCur` | `effCur` |
-| `fraction_of_nominal_flow_rate_where_flow_transitions_to_laminar` | *numerical.* Fraction of nominal flow rate where flow transitions to laminar [1] | `0.1` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
-| `height_of_tank_without_insulation` | Height of tank (without insulation) [m] | `2.0` | `hTan` | `hTan` | `hTan` | `hTan` | `hTan` |
-| `if_actual_temperature_at_port_is_computed` | *numerical.* = true, if actual temperature at port is computed | `false` | `show_T` | `show_T` | `show_T` | `show_T` | `show_T` |
+| `effcur`, `efficiency_curve` | Curve used to compute the efficiency | `Buildings.Fluid.Types.EfficiencyCurves.Constant` | `effCur` | `effCur` | `effCur` | `effCur` | `effCur` |
+| `fraction_of_nominal_flow_rate_where_flow_transitions_to_laminar`, `laminar_transition_fraction` | *numerical.* Fraction of nominal flow rate where flow transitions to laminar [1] | `0.1` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
+| `height_of_tank_without_insulation`, `tank_height` | Height of tank (without insulation) [m] | `2.0` | `hTan` | `hTan` | `hTan` | `hTan` | `hTan` |
+| `if_actual_temperature_at_port_is_computed`, `show_temperature` | *numerical.* = true, if actual temperature at port is computed | `false` | `show_T` | `show_T` | `show_T` | `show_T` | `show_T` |
 | `nominal_heating_power` | Nominal heating power [W] | `20000.0` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` |
 | `nominal_mass_flow_radiator_loop` | Nominal mass flow rate of the radiator loop [kg/s] | computed | `nominal_mass_flow_radiator_loop` | `nominal_mass_flow_radiator_loop` | `nominal_mass_flow_radiator_loop` | `nominal_mass_flow_radiator_loop` | `nominal_mass_flow_radiator_loop` |
 | `nominal_mass_flow_rate_boiler` | Nominal mass flow rate of the boiler loop [kg/s] | computed | `nominal_mass_flow_rate_boiler` | `nominal_mass_flow_rate_boiler` | `nominal_mass_flow_rate_boiler` | `nominal_mass_flow_rate_boiler` | `nominal_mass_flow_rate_boiler` |
 | `number_of_volume_segments` | *numerical.* Number of volume segments [1] | `4` | `nSeg` | `nSeg` | `nSeg` | `nSeg` | `nSeg` |
 | `sca_fac_rad` | Scaling factor to scale the power (and mass flow rate) of the radiator loop [1] | `1.5` | - | - | - | - | - |
 | `tank_volume` | Tank volume [m3] | `0.2` | `VTan` | `VTan` | `VTan` | `VTan` | `VTan` |
-| `temperature_used_to_compute_nominal_efficiency` | Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature) [K] | `353.15` | `T_nominal` | `T_nominal` | `T_nominal` | `T_nominal` | `T_nominal` |
-| `thickness_of_insulation` | Thickness of insulation [m] | `0.1` | `dIns` | `dIns` | `dIns` | `dIns` | `dIns` |
-| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearizeFlowResistance` | `linearizeFlowResistance` | `linearizeFlowResistance` | `linearizeFlowResistance` | `linearizeFlowResistance` |
+| `temperature_used_to_compute_nominal_efficiency`, `nominal_efficiency_temperature` | Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature) [K] | `353.15` | `T_nominal` | `T_nominal` | `T_nominal` | `T_nominal` | `T_nominal` |
+| `thickness_of_insulation`, `insulation_thickness` | Thickness of insulation [m] | `0.1` | `dIns` | `dIns` | `dIns` | `dIns` | `dIns` |
+| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate`, `linearized` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate of the boiler (the Modelica default is false) | `false` | `linearizeFlowResistance` | `linearizeFlowResistance` | `linearizeFlowResistance` | `linearizeFlowResistance` | `linearizeFlowResistance` |
 | `v_flow` | Volume flow rate values defining the boiler-circuit pump pressure curve [m3/s] | computed | `V_flow` | `V_flow` | `V_flow` | `V_flow` | `V_flow` |
 | `use_storage_tank` | None | `false` | `useStorageTank` | `useStorageTank` | `useStorageTank` | `useStorageTank` | `useStorageTank` |
-| `temperature_heatpump_source` | None | `286.15` | `TSouSet` | `TSouSet` | `TSouSet` | `TSouSet` | `TSouSet` |
-| `temperature_supply_setpoint_heat_pump` | None | `323.15` | `TSet` | `TSet` | `TSet` | `TSet` | `TSet` |
+| `temperature_heatpump_source`, `heat_pump_source_temperature` | None | `286.15` | `TSouSet` | `TSouSet` | `TSouSet` | `TSouSet` | `TSouSet` |
+| `temperature_supply_setpoint_heat_pump`, `heat_pump_supply_setpoint` | None | `323.15` | `TSet` | `TSet` | `TSet` | `TSet` | `TSet` |
 | `cop_nominal` | Heat pump COP at the rating point A7/W35, used by the mpc library [1] | `4.5` | - | - | - | - | - |
 | `cop_outdoor_slope` | Heat pump COP change per kelvin of outdoor temperature, mpc library [1/K] | `0.11` | - | - | - | - | - |
 | `cop_supply_slope` | Heat pump COP change per kelvin of supply temperature, mpc library [1/K] | `-0.075` | - | - | - | - | - |
 | `cop_cross_term` | Heat pump COP cross term outdoor x supply deviation, mpc library [1/K2] | `-0.0025` | - | - | - | - | - |
 | `max_electrical_power` | Maximum electrical power of the heat pump compressor, mpc library [W] (nominal heating power / COP when absent) | library default | - | - | - | - | - |
+| `loss_conductance` | Heat loss conductance of the boiler to its room [W/K], 0.05 * nominal heating power / 30 by default | library default | `UA` | `UA` | `UA` | `UA` | `UA` |
+| `water_volume` | Water volume of the boiler [m3], 1.5e-6 * nominal heating power by default | library default | `VWat` | `VWat` | `VWat` | `VWat` | `VWat` |
+| `dry_mass` | Dry mass of the boiler lumped to its water [kg], 1.5e-3 * nominal heating power by default | library default | `mDry` | `mDry` | `mDry` | `mDry` | `mDry` |
+| `insulation_conductivity` | Thermal conductivity of the tank insulation [W/(m.K)], 0.04 by default | library default | `kIns` | `kIns` | `kIns` | `kIns` | `kIns` |
+| `ambient_temperature` | Temperature of the room around the boiler and the tank, for their losses [K], 288.15 by default | library default | `TAmbient` | `TAmbient` | `TAmbient` | `TAmbient` | `TAmbient` |
+| `supply_temperature_setpoint` | Supply temperature set point of the boiler without storage [K], 353.15 by default | library default | `TempSet` (without_storage variant) | `TempSet` (without_storage variant) | `TempSet` (without_storage variant) | `TempSet` (without_storage variant) | `TempSet` |
+| `fuel` | Fuel of the boiler, a record of Buildings.Fluid.Data.Fuels such as NaturalGasLowerHeatingValue (the default), NaturalGasHigherHeatingValue, HeatingOilLowerHeatingValue or WoodAirDriedLowerHeatingValue | library default | taken another way | taken another way | taken another way | taken another way | `fuel` |
+| `heat_pump_nominal_source_temperature` | Source (outdoor air) temperature at the rating point of the air-water heat pump [K], 293.15 by default | library default | `TEvaHea_nominal` (air_water_heat_pump variant) | `TEvaHea_nominal` (air_water_heat_pump variant) | `TEvaHea_nominal` (air_water_heat_pump variant) | `TEvaHea_nominal` (air_water_heat_pump variant) | `TEvaHea_nominal` |
+| `heat_pump_source_mass_flow` | Mass flow rate of the source side of the heat pump [kg/s], 1.7 (air) or the one of the performance record (water) by default | library default | `mSou_flow_nominal` (air_water_heat_pump, water_water_heat_pump variant) | `mSou_flow_nominal` (air_water_heat_pump, water_water_heat_pump variant) | `mSou_flow_nominal` (air_water_heat_pump, water_water_heat_pump variant) | `mSou_flow_nominal` (air_water_heat_pump, water_water_heat_pump variant) | `mSou_flow_nominal` |
+| `temperature_initial` | Initial temperature of the boiler and of the tank water [K], 293.15 by default | library default | `T_start` | `T_start` | `T_start` | `T_start` | `T_start` |
 
 ## ChillerParameters
 
@@ -95,6 +110,15 @@ Elements: `dhwtank`
 | `supply_offset` | Heat pump supply temperature above the tank temperature [K] | `5.0` | - | - | - | - | `supply_offset` |
 | `daily_draw_off_energy` | Heat drawn by the hot water taps per day [kWh] | `8.0` | - | - | - | - | `daily_draw_off_energy` |
 | `zone` | Space receiving the standing losses of the tank (first space when absent) | library default | - | - | - | - | `zone` |
+
+## DuctParameters
+
+Elements: `duct`
+
+| Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
+|---|---|---|---|---|---|---|---|
+| `nominal_mass_flow_rate` | Nominal air mass flow rate through the duct [kg/s] | `100*1.2/3600` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` |
+| `dp_nominal` | Pressure drop of the duct at the nominal flow [Pa] | `40.0` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` |
 
 ## EmissionControlParameters
 
@@ -183,10 +207,15 @@ Elements: `photovoltaic`
 
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
-| `area` | Module area [m2] | `20.0` | `area` | `area` | `area` | `area` | `area` |
-| `efficiency` | Module and inverter efficiency [1] | `0.18` | `efficiency` | `efficiency` | `efficiency` | `efficiency` | `efficiency` |
-| `azimuth` | Surface azimuth [deg], 0 for south, 90 for west | `0.0` | `azimuth` | `azimuth` | `azimuth` | `azimuth` | `azimuth` |
-| `tilt` | Surface tilt [deg], 0 for a roof, 90 for a wall | `35.0` | `tilt` | `tilt` | `tilt` | `tilt` | `tilt` |
+| `area` | Module area [m2] | `20.0` | `A` | `A` | `A` | `A` | `A` |
+| `efficiency` | Module and inverter efficiency [1] | `0.18` | `eta` | `eta` | `eta` | `eta` | `eta` |
+| `azimuth` | Surface azimuth [deg], 0 for south, 90 for west | `0.0` | - | - | - | - | - |
+| `tilt` | Surface tilt [deg], 0 for a roof, 90 for a wall | `35.0` | - | - | - | - | - |
+| `active_area_fraction` | Share of the module area covered by active cells [1], 0.9 by default | library default | `fAct` | `fAct` | `fAct` | `fAct` | `fAct` |
+| `inverter_efficiency` | Efficiency of the DC to AC conversion [1], 0.9 by default | library default | `eta_DCAC` | `eta_DCAC` | `eta_DCAC` | `eta_DCAC` | `eta_DCAC` |
+| `power_factor` | Power factor of the inverter [1], 0.9 by default | library default | `pf` | `pf` | `pf` | `pf` | `pf` |
+| `tilt_radians` | Surface tilt [rad], from the tilt in degrees | computed | `til` | `til` | `til` | `til` | `til` |
+| `azimuth_radians` | Surface azimuth [rad], from the azimuth in degrees | computed | `azi` | `azi` | `azi` | `azi` | `azi` |
 
 ## PumpParameters
 
@@ -204,20 +233,20 @@ Elements: `radiator`
 
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
-| `air_temperature_at_nominal_condition` | Air temperature at nominal condition [K] | `293.15` | `TAir_nominal` | `TAir_nominal` | `TAir_nominal` | `TAir_nominal` | `TAir_nominal` |
+| `air_temperature_at_nominal_condition`, `air_temperature` | Air temperature at nominal condition [K] | `293.15` | `TAir_nominal` | `TAir_nominal` | `TAir_nominal` | `TAir_nominal` | `TAir_nominal` |
 | `dp_nominal` | Pressure drop at nominal mass flow rate [Pa] | `2000.0` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` |
-| `dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity` | Dry mass of radiator that will be lumped to water heat capacity [kg] | computed | `mDry` | `mDry` | `mDry` | `mDry` | `mDry` |
-| `exponent_for_heat_transfer` | Exponent for heat transfer | `1.24` | `n` | `n` | `n` | `n` | `n` |
-| `fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs` | *numerical.* Fraction of nominal mass flow rate where transition to turbulent occurs [1] | `0.01` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
-| `fraction_radiant_heat_transfer` | Fraction radiant heat transfer [1] | `0.3` | `fraRad` | `fraRad` | `fraRad` | `fraRad` | `fraRad` |
-| `nominal_heating_power_positive_for_heating` | Nominal heating power (positive for heating) [W] | `5000.0` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` |
-| `number_of_elements_used_in_the_discretization` | *numerical.* Number of elements used in the discretization [1] | `1` | `nEle` | `nEle` | `nEle` | `nEle` | `nEle` |
-| `radiative_temperature_at_nominal_condition` | Radiative temperature at nominal condition [K] | `293.15` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` |
-| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
-| `use_m_flow_f_dp_else_dp_f_m_flow` | *numerical.* = true, use m_flow = f(dp) else dp = f(m_flow) | `false` | `from_dp` | `from_dp` | `from_dp` | `from_dp` | `from_dp` |
-| `water_inlet_temperature_at_nominal_condition` | Water inlet temperature at nominal condition [K] | `353.15` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` |
-| `water_outlet_temperature_at_nominal_condition` | Water outlet temperature at nominal condition [K] | `333.15` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` |
-| `water_volume_of_radiator` | Water volume of radiator [m3] | computed | `VWat` | `VWat` | `VWat` | `VWat` | `VWat` |
+| `dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity`, `dry_mass` | Dry mass of radiator that will be lumped to water heat capacity [kg] | computed | `mDry` | `mDry` | `mDry` | `mDry` | `mDry` |
+| `exponent_for_heat_transfer`, `heat_transfer_exponent` | Exponent for heat transfer | `1.24` | `n` | `n` | `n` | `n` | `n` |
+| `fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs`, `turbulent_transition_fraction` | *numerical.* Fraction of nominal mass flow rate where transition to turbulent occurs [1] | `0.01` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
+| `fraction_radiant_heat_transfer`, `radiant_fraction` | Fraction radiant heat transfer [1] | `0.3` | `fraRad` | `fraRad` | `fraRad` | `fraRad` | `fraRad` |
+| `nominal_heating_power_positive_for_heating`, `nominal_heating_power` | Nominal heating power (positive for heating) [W] | `5000.0` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` | `Q_flow_nominal` |
+| `number_of_elements_used_in_the_discretization`, `number_of_elements` | *numerical.* Number of elements used in the discretization [1] | `1` | `nEle` | `nEle` | `nEle` | `nEle` | `nEle` |
+| `radiative_temperature_at_nominal_condition`, `radiative_temperature` | Radiative temperature at nominal condition [K] | `293.15` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` |
+| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate`, `linearized` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
+| `use_m_flow_f_dp_else_dp_f_m_flow`, `from_dp` | *numerical.* = true, use m_flow = f(dp) else dp = f(m_flow) | `false` | `from_dp` | `from_dp` | `from_dp` | `from_dp` | `from_dp` |
+| `water_inlet_temperature_at_nominal_condition`, `water_inlet_temperature` | Water inlet temperature at nominal condition [K] | `353.15` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` |
+| `water_outlet_temperature_at_nominal_condition`, `water_outlet_temperature` | Water outlet temperature at nominal condition [K] | `333.15` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` |
+| `water_volume_of_radiator`, `water_volume` | Water volume of radiator [m3] | computed | `VWat` | `VWat` | `VWat` | `VWat` | `VWat` |
 
 ## SensorParameters
 
@@ -226,6 +255,7 @@ Elements: `temperaturesensor`, `heatmetersensor`
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
 | `nominal_mass_flow_rate` | Nominal mass flow rate through the sensor, used for its dynamics and its small-flow regularization [kg/s] | `0.15` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` |
+| `time_constant` | Time constant of the sensor [s], 1 by default; 0 for an ideal sensor | library default | `tau` | `tau` | `tau` | `tau` | `tau` |
 
 ## SpaceParameter
 
@@ -258,11 +288,11 @@ Elements: `splitvalve`
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
 | `dp_nominal` | Pressure drop at nominal mass flow rate, set to zero or negative number at outflowing ports [Pa] | `{5000,-1,-1}` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` | `dp_nominal` |
-| `fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs` | *numerical.* Fraction of nominal mass flow rate where transition to turbulent occurs [1] | `0.3` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
+| `fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs`, `turbulent_transition_fraction` | *numerical.* Fraction of nominal mass flow rate where transition to turbulent occurs [1] | `0.3` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
 | `m_flow_nominal` | Mass flow rate; set negative at outflowing ports [kg/s] | `0.15*{1,-1,-1}` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` |
-| `nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance` | *numerical.* Nominal mass flow rate for dynamic momentum and energy balance [kg/s] | library default | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` |
-| `time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance` | *numerical.* Time constant at nominal flow for dynamic energy and momentum balance [s] | library default | `tau` | `tau` | `tau` | `tau` | `tau` |
-| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
+| `nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance`, `dynamic_nominal_mass_flow_rate` | *numerical.* Nominal mass flow rate for dynamic momentum and energy balance [kg/s] | library default | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` |
+| `time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance`, `time_constant` | *numerical.* Time constant at nominal flow for dynamic energy and momentum balance [s] | library default | `tau` | `tau` | `tau` | `tau` | `tau` |
+| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate`, `linearized` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
 
 ## ThreeWayValveParameters
 
@@ -276,13 +306,15 @@ Elements: `threewayvalve`
 | `dp_fixed_nominal` | Nominal pressure drop of pipes and other equipment in flow legs at port_1 and port_3 [Pa] | `{2000,0}` | `dpFixed_nominal` | `dpFixed_nominal` | `dpFixed_nominal` | `dpFixed_nominal` | `dpFixed_nominal` |
 | `dp_valve_nominal` | Nominal pressure drop of fully open valve, used if CvData=Buildings.Fluid.Types.CvTypes.OpPoint [Pa] | `6000.0` | `dpValve_nominal` | `dpValve_nominal` | `dpValve_nominal` | `dpValve_nominal` | `dpValve_nominal` |
 | `fra_k` | Fraction Kv(port_3->port_2)/Kv(port_1->port_2) [1] | `0.7` | `fraK` | `fraK` | `fraK` | `fraK` | `fraK` |
-| `fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1` | *numerical.* Fraction of nominal flow rate where linearization starts, if y=1 [1] | `0.02` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
+| `fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1`, `linearization_start_fraction` | *numerical.* Fraction of nominal flow rate where linearization starts, if y=1 [1] | `0.02` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
 | `m_flow_nominal` | Nominal mass flow rate [kg/s] | `0.15` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` |
-| `range_of_significant_deviation_from_equal_percentage_law` | Range of significant deviation from equal percentage law [1] | `0.01` | `delta0` | `delta0` | `delta0` | `delta0` | `delta0` |
+| `range_of_significant_deviation_from_equal_percentage_law`, `equal_percentage_deviation` | Range of significant deviation from equal percentage law [1] | `0.01` | `delta0` | `delta0` | `delta0` | `delta0` | `delta0` |
 | `rangeability` | Rangeability, R=50...100 typically [1] | `50.0` | `R` | `R` | `R` | `R` | `R` |
-| `rho_std` | Inlet density for which valve coefficients are defined [kg/m3] | library default | `rhoStd` | `rhoStd` | `rhoStd` | `rhoStd` | `rhoStd` |
-| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `{true, true}` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
+| `rho_std`, `standard_density` | Inlet density for which valve coefficients are defined [kg/m3] | library default | `rhoStd` | `rhoStd` | `rhoStd` | `rhoStd` | `rhoStd` |
+| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate`, `linearized` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `{true, true}` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
 | `valve_leakage` | Valve leakage, l=Kv(y=0)/Kv(y=1) [1] | `{0.01,0.01}` | `l` | `l` | `l` | `l` | `l` |
+| `flow_coefficient_type` | How the flow coefficients of the valve are given, OpPoint (the nominal pressure drop, the library default), Kv, Cv or Av; without it `Kv`, `Cv` and `Av` are ignored | library default | taken another way | taken another way | taken another way | taken another way | `flow_coefficient_type` |
+| `actuator_stroke_time` | Time the actuator takes to open or close the valve [s], 120 by default | library default | `strokeTime` | `riseTime` | `strokeTime` | `strokeTime` | `strokeTime` |
 
 ## ValveParameters
 
@@ -294,15 +326,35 @@ Elements: `valve`
 | `cv` | Cv (US) flow coefficient [USG/min/(psi)^(1/2)] | library default | `Cv` | `Cv` | `Cv` | `Cv` | `Cv` |
 | `dp_fixed_nominal` | Pressure drop of pipe and other resistances that are in series [Pa] | `5000.0` | `dpFixed_nominal` | `dpFixed_nominal` | `dpFixed_nominal` | `dpFixed_nominal` | `dpFixed_nominal` |
 | `dp_valve_nominal` | Nominal pressure drop of fully open valve, used if CvData=Buildings.Fluid.Types.CvTypes.OpPoint [Pa] | `10000.0` | `dpValve_nominal` | `dpValve_nominal` | `dpValve_nominal` | `dpValve_nominal` | `dpValve_nominal` |
-| `fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1` | *numerical.* Fraction of nominal flow rate where linearization starts, if y=1 [1] | `0.02` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
+| `fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1`, `linearization_start_fraction` | *numerical.* Fraction of nominal flow rate where linearization starts, if y=1 [1] | `0.02` | `deltaM` | `deltaM` | `deltaM` | `deltaM` | `deltaM` |
 | `k_fixed` | Flow coefficient of fixed resistance that may be in series with valve, k=m_flow/sqrt(dp), with unit=(kg.m)^(1/2) | library default | `kFixed` | `kFixed` | `kFixed` | `kFixed` | `kFixed` |
 | `kv` | Kv (metric) flow coefficient [m3/h/(bar)^(1/2)] | library default | `Kv` | `Kv` | `Kv` | `Kv` | `Kv` |
 | `m_flow_nominal` | Nominal mass flow rate [kg/s] | `0.06` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` | `m_flow_nominal` |
-| `range_of_significant_deviation_from_equal_percentage_law` | Range of significant deviation from equal percentage law [1] | `0.01` | `delta0` | `delta0` | `delta0` | `delta0` | `delta0` |
+| `range_of_significant_deviation_from_equal_percentage_law`, `equal_percentage_deviation` | Range of significant deviation from equal percentage law [1] | `0.01` | `delta0` | `delta0` | `delta0` | `delta0` | `delta0` |
 | `rangeability` | Rangeability, R=50...100 typically [1] | `50.0` | `R` | `R` | `R` | `R` | `R` |
-| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
-| `use_m_flow_f_dp_else_dp_f_m_flow` | *numerical.* = true, use m_flow = f(dp) else dp = f(m_flow) | `true` | `from_dp` | `from_dp` | `from_dp` | `from_dp` | `from_dp` |
+| `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate`, `linearized` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
+| `use_m_flow_f_dp_else_dp_f_m_flow`, `from_dp` | *numerical.* = true, use m_flow = f(dp) else dp = f(m_flow) | `true` | `from_dp` | `from_dp` | `from_dp` | `from_dp` | `from_dp` |
 | `valve_leakage` | Valve leakage, l=Kv(y=0)/Kv(y=1) [1] | `0.0001` | `l` | `l` | `l` | `l` | `l` |
+| `flow_coefficient_type` | How the flow coefficient of the valve is given, OpPoint (the nominal pressure drop, the library default), Kv, Cv or Av; without it `kv`, `cv` and `av` are ignored | library default | taken another way | taken another way | taken another way | taken another way | `flow_coefficient_type` |
+| `standard_density` | Inlet density for which the flow coefficients are defined [kg/m3], water at 4 degC by default | library default | `rhoStd` | `rhoStd` | `rhoStd` | `rhoStd` | `rhoStd` |
+| `actuator_stroke_time` | Time the actuator takes to open or close the valve [s], 120 by default | library default | `strokeTime` | `riseTime` | `strokeTime` | `strokeTime` | `strokeTime` |
+
+## VavParameters
+
+Elements: `vav`
+
+| Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
+|---|---|---|---|---|---|---|---|
+| `nominal_mass_flow_rate` | Nominal air mass flow rate of the damper [kg/s] | `100*1.2/3600` | `m_flow_nominal` (default variant) | `m_flow_nominal` (default variant) | `m_flow_nominal` (default variant) | `m_flow_nominal` (default variant) | `m_flow_nominal` |
+| `damper_dp_nominal` | Pressure drop of the fully open damper at the nominal flow [Pa] | `50.0` | `dpDamper_nominal` (default variant) | `dpDamper_nominal` (default variant) | `dpDamper_nominal` (default variant) | `dpDamper_nominal` (default variant) | `dpDamper_nominal` |
+| `fixed_dp_nominal` | Pressure drop of the duct and the other resistances in series with the damper at the nominal flow [Pa] | `50.0` | `dpFixed_nominal` (default variant) | `dpFixed_nominal` (default variant) | `dpFixed_nominal` (default variant) | `dpFixed_nominal` (default variant) | `dpFixed_nominal` |
+| `cooling_air_flow_nominal` | Design air mass flow rate for cooling of the VAV box [kg/s] (complex variant) | `100*1.2/3600` | `mCooAir_flow_nominal` (complex variant) | `mCooAir_flow_nominal` (complex variant) | `mCooAir_flow_nominal` (complex variant) | `mCooAir_flow_nominal` (complex variant) | `mCooAir_flow_nominal` |
+| `heating_air_flow_nominal` | Design air mass flow rate for heating of the VAV box [kg/s] (complex variant) | `100*1.2/3600` | `mHeaAir_flow_nominal` (complex variant) | `mHeaAir_flow_nominal` (complex variant) | `mHeaAir_flow_nominal` (complex variant) | `mHeaAir_flow_nominal` (complex variant) | `mHeaAir_flow_nominal` |
+| `room_volume` | Volume of the room the VAV box serves [m3] (complex variant) | `100.0` | `VRoo` (complex variant) | `VRoo` (complex variant) | `VRoo` (complex variant) | `VRoo` (complex variant) | `VRoo` |
+| `heating_water_inlet_temperature` | Reheat water inlet temperature at the design point [K] (complex variant) | `363.15` | `THeaWatInl_nominal` (complex variant) | `THeaWatInl_nominal` (complex variant) | `THeaWatInl_nominal` (complex variant) | `THeaWatInl_nominal` (complex variant) | `THeaWatInl_nominal` |
+| `heating_water_outlet_temperature` | Reheat water outlet temperature at the design point [K] (complex variant) | `333.15` | `THeaWatOut_nominal` (complex variant) | `THeaWatOut_nominal` (complex variant) | `THeaWatOut_nominal` (complex variant) | `THeaWatOut_nominal` (complex variant) | `THeaWatOut_nominal` |
+| `heating_air_inlet_temperature` | Air inlet temperature of the box at the heating design point [K] (complex variant) | `303.15` | `THeaAirInl_nominal` (complex variant) | `THeaAirInl_nominal` (complex variant) | `THeaAirInl_nominal` (complex variant) | `THeaAirInl_nominal` (complex variant) | `THeaAirInl_nominal` |
+| `heating_air_discharge_temperature` | Discharge air temperature of the box at the heating design point [K] (complex variant) | `298.15` | `THeaAirDis_nominal` (complex variant) | `THeaAirDis_nominal` (complex variant) | `THeaAirDis_nominal` (complex variant) | `THeaAirDis_nominal` (complex variant) | `THeaAirDis_nominal` |
 
 ## WeatherParameters
 

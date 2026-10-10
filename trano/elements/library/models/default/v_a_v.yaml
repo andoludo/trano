@@ -19,10 +19,12 @@
     - y
     targets:
     - Control
-  template: "  {{ library_name }}.Fluid.Actuators.Dampers.PressureIndependent\n  \
-    \  {{ element.name }}(\n    redeclare package Medium = Medium,\n    m_flow_nominal=100*1.2/3600,\n\
-    \    dpDamper_nominal=50,\n    allowFlowReversal=false,\n    dpFixed_nominal=50)\
-    \ \"VAV box for room\" "
+  template: |-
+    {{ library_name }}.Fluid.Actuators.Dampers.PressureIndependent
+        {{ element.name }}(
+        redeclare package Medium = Medium,
+        {{ macros.render_parameters(parameters) | safe }},
+        allowFlowReversal=false) "VAV box for room" 
   variant: default
 - classes:
   - VAV
@@ -82,13 +84,7 @@
       {{ package_name }}.Components.BaseClasses.VAVBox{{ element.name | capitalize }}
          {{ element.name }}(
         redeclare package MediumA = Medium,
-        mCooAir_flow_nominal=100*1.2/3600,
-        mHeaAir_flow_nominal=100*1.2/3600,
-        VRoo=100,
-        allowFlowReversal=false,
-        THeaWatInl_nominal=273.15 + 90,
-        THeaWatOut_nominal=273.15 + 60,
-        THeaAirInl_nominal=273.15 + 30,
-        THeaAirDis_nominal=273.15 + 25
+        {{ macros.render_parameters(parameters) | safe }},
+        allowFlowReversal=false
         )
   variant: complex

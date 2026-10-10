@@ -110,6 +110,9 @@
     {{package_name}}.Components.BaseClasses.Ahu{{ element.name | capitalize}}
         {{ element.name }}
         (redeclare package MediumA = Medium,
+        {%- for key, value in parameters.items() if value is not none %}
+        {{ key }}={{ value | safe }},
+        {%- endfor %}
         {% raw %}
         VRoo={100,100},
         AFlo={20,20},

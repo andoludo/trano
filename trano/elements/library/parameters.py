@@ -65,6 +65,11 @@ class LibraryMapping(BaseModel):
             return cls(**value)
         raise TypeError(f"A library mapping is a name, null or a mapping, not {value!r}")
 
+    @classmethod
+    def parse_all(cls, value: Any) -> tuple["LibraryMapping", ...]:  # noqa: ANN401
+        """A library entry may list several mappings (one per variant): the first that applies wins."""
+        return tuple(cls.parse(item) for item in value) if isinstance(value, list) else (cls.parse(value),)
+
     def applies(self, variant: str | None, given: bool) -> bool:
         if self.name is None or self.handled:
             return False
@@ -79,7 +84,7 @@ class ParameterSpec(BaseModel):
     model_config = ConfigDict(frozen=True)
     name: str
     alias: str | None = None
-    libraries: dict[str, LibraryMapping] = Field(default_factory=dict)
+    libraries: dict[str, tuple[LibraryMapping, ...]] = Field(default_factory=dict)
     short_name: str | None = None
     render: bool = True
     numerical: bool = False
@@ -96,12 +101,12 @@ class ParameterSpec(BaseModel):
         alias = attribute.get("alias")
         alias = None if alias in (None, "None", "null") else alias
         libraries = {
-            str(library).lower(): LibraryMapping.parse(mapping)
+            str(library).lower(): LibraryMapping.parse_all(mapping)
             for library, mapping in (attribute.get("libraries") or {}).items()
         }
         if class_libraries is not None:
             served = {str(library).lower() for library in class_libraries}
-            libraries = {library: LibraryMapping() for library in LIBRARIES if library not in served} | libraries
+            libraries = {library: (LibraryMapping(),) for library in LIBRARIES if library not in served} | libraries
         unknown = set(libraries) - set(LIBRARIES)
         if unknown:
             raise ValueError(f"Parameter {name}: unknown libraries {sorted(unknown)}, expected {LIBRARIES}")
@@ -129,12 +134,17 @@ class ParameterSpec(BaseModel):
         match = _UNIT.search(self.description or "")
         return match.group(1) if match else None
 
-    def mapping(self, library: str | None) -> LibraryMapping:
+    def mappings(self, library: str | None) -> tuple[LibraryMapping, ...]:
         if not self.render:
-            return LibraryMapping()
+            return (LibraryMapping(),)
         if library is not None and library.lower() in self.libraries:
             return self.libraries[library.lower()]
-        return LibraryMapping(name=self.modelica_name)
+        return (LibraryMapping(name=self.modelica_name),)
+
+    def mapping(self, library: str | None, variant: str | None = None, given: bool = True) -> LibraryMapping:
+        """The mapping that applies to the variant, else the first one (what the documentation shows)."""
+        mappings = self.mappings(library)
+        return next((mapping for mapping in mappings if mapping.applies(variant, given)), mappings[0])
 
 
 class SpecifiedParameter(BaseParameter):
@@ -272,7 +282,7 @@ def library_parameters(
             rendered[name] = value
             continue
         given = _given(parameters, name, value)
-        mapping = spec.mapping(library)
+        mapping = spec.mapping(library, variant, given)
         if mapping.applies(variant, given):
             rendered[mapping.name] = value  # type: ignore[index]
         elif given and spec.render and not mapping.handled and library is not None:

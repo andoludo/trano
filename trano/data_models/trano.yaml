@@ -406,11 +406,13 @@ classes:
     attributes:
       control:
         range: Control
+      parameters:
+        range: VavParameters
   Duct:
     is_a: System
     attributes:
-        parameters:
-            range: Parameter
+      parameters:
+        range: DuctParameters
 
   TemperatureSensor:
     is_a: System

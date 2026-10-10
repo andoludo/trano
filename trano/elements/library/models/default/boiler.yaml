@@ -78,7 +78,7 @@
     use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithStorage{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}())\
     \ \"Boiler\" "
   variant: default
 - classes:
@@ -126,7 +126,7 @@
     use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nWaterWaterHeatPump{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}())\
     \ \"Boiler\" "
   variant: water_water_heat_pump
 
@@ -198,7 +198,7 @@
     use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithoutStorage{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasHigherHeatingValue' }}())\
     \ \"Boiler\" "
   variant: without_storage
 
@@ -250,6 +250,6 @@
     use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nAirWaterHeatPump{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.NaturalGasLowerHeatingValue())\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}())\
     \ \"Boiler\" "
   variant: air_water_heat_pump

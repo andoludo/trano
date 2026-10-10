@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from trano.elements.library.parameters import PARAMETERS, ParameterSpec, parameter_specs
+from trano.elements.library.parameters import PARAMETERS, LibraryMapping, ParameterSpec, parameter_specs
 
 COLUMNS = {
     "buildings": "Buildings",
@@ -15,7 +15,10 @@ NOT_APPLICABLE = "-"
 
 
 def _cell(spec: ParameterSpec, library: str) -> str:
-    mapping = spec.mapping(library)
+    return "; ".join(_mapping_cell(mapping) for mapping in spec.mappings(library))
+
+
+def _mapping_cell(mapping: LibraryMapping) -> str:
     if mapping.handled:
         return "taken another way"
     if mapping.name is None:
