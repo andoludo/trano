@@ -528,6 +528,15 @@ classes:
       construction:
         description: Construction
         range: Construction
+      ground_temperature:
+        description: Temperature of the ground under the floor [K], 283.15 when absent
+          (Buildings and the reduced-order zone; IDEAS and ISO 13790 model the ground
+          themselves)
+        range: float
+      perimeter:
+        description: Exposed perimeter of the slab [m] for the ground model of IDEAS,
+          4 times the square root of the surface when absent
+        range: float
       variant:
         description: 'What lies under the floor: the ground at a fixed temperature
           (default) or the outdoor air (outdoor_air, a raised floor)'
@@ -563,10 +572,20 @@ classes:
     is_a: Material
   Glazing:
     attributes:
+      g_value:
+        description: Solar energy transmittance of the glazing [1] for the libraries
+          that take one (IDEAS, reduced order, ISO 13790); computed from the layers
+          (EN 410) when absent
+        range: float
       layers:
         description: Layers
         multivalued: true
         range: GlazingLayer
+      u_value:
+        description: U-value of the glazing [W/(m2.K)] for the libraries that take
+          one (IDEAS, reduced order, ISO 13790); computed from the layers (EN 673)
+          when absent
+        range: float
       u_value_frame:
         description: U-value of the frame [W/(m2.K)]
         ifabsent: float(1.4)
@@ -697,12 +716,25 @@ classes:
         description: Infiltration [1/h]
         ifabsent: float(0.9)
         range: float
+      activity_degree:
+        description: Activity level of the occupants of the reduced-order zone [met],
+          1.2 by default
+        range: float
+      co2_generation_per_person:
+        description: CO2 released per occupant [m3/s], 5.2e-6 by default (CO2 variant)
+        range: float
       data:
         description: Occupancy data sources
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: DataSource
+      equipment_power_density:
+        description: Heat released by the equipment per floor area, all day [W/m2]
+        range: float
+      equipment_radiant_fraction:
+        description: Radiant share of the equipment heat [1], 0.4 by default
+        range: float
       floor_area:
         description: Floor area [m2]
         range: float
@@ -715,10 +747,33 @@ classes:
         description: Heat gain if occupied
         ifabsent: string(1/6/4)
         range: string
+      latent_heat_per_person:
+        description: Latent heat released per occupant [W]
+        range: float
+      lighting_power_density:
+        description: Heat released by the lighting per floor area, all day [W/m2]
+        range: float
+      lighting_radiant_fraction:
+        description: Radiant share of the lighting heat [1], 0.4 by default
+        range: float
       occupancy:
         description: Occupancy table, each entry switching occupancy on or off
         ifabsent: string(3600*{7, 19})
         range: string
+      occupant_density:
+        description: Same as heat_gain_if_occupied
+        range: string
+      outdoor_co2_concentration:
+        description: CO2 concentration of the outdoor air [ppm], 420 by default (CO2
+          variant)
+        range: float
+      radiant_fraction:
+        description: Radiant share of the sensible heat of the occupants [1]
+        range: float
+      sensible_heat_per_person:
+        description: Sensible heat released per occupant [W]; with the latent heat
+          and the radiant fraction it gives the `gain` matrix when that one is absent
+        range: float
   Overhang:
     attributes:
       depth:
@@ -941,14 +996,39 @@ classes:
         description: Average room height [m]
         ifabsent: float(2)
         range: float
+      exterior_convection_coefficient:
+        description: Fixed convective heat transfer coefficient of the outside surfaces
+          [W/(m2.K)]; Buildings switches to a fixed coefficient (10 by default), the
+          reduced-order zone applies it to its walls, windows and roof (20 by default)
+        range: float
       floor_area:
         description: Floor area [m2]
         ifabsent: float(20)
+        range: float
+      ground_heat_transfer_factor:
+        description: Adjustment factor of the heat transfer through the floor to the
+          ground of the ISO 13790 zone [1], 0.5 by default
+        range: float
+      interior_convection_coefficient:
+        description: Fixed convective heat transfer coefficient of the inside surfaces
+          [W/(m2.K)]; Buildings and the ISO 13790 zone switch to a fixed coefficient
+          (3 and 3.45 by default), the reduced-order zone applies it to its walls,
+          windows, floor and roof (2.7 by default)
         range: float
       linearize_emissive_power:
         description: Set to true to linearize emissive power
         ifabsent: string(true)
         range: string
+      n50:
+        description: Air change rate at a 50 Pa pressure difference, the airtightness
+          of the zone [1/h]; gives the infiltration `ach` as n50 / n50_to_ach when
+          `ach` is absent (IDEAS takes it directly)
+        range: float
+      n50_to_ach:
+        description: Ratio between the air change rate at 50 Pa and the infiltration
+          rate [1]
+        ifabsent: float(20)
+        range: float
       nominal_mass_flow_rate:
         description: Nominal mass flow rate [kg/s]
         ifabsent: float(0.01)
@@ -958,10 +1038,23 @@ classes:
           volume [1]
         ifabsent: float(1)
         range: float
+      shading_reduction_factor:
+        description: Factor on the solar gains through the windows for external shading
+          [1]; the ISO 13790 zone applies it always (1 by default), the reduced-order
+          zone when the irradiance exceeds the sunblind threshold (0.7 by default)
+        range: float
+      sunblind_irradiance_threshold:
+        description: Irradiance on a window above which the reduced-order zone applies
+          the shading reduction factor [W/m2], 100 by default
+        range: float
       temperature_initial:
         description: Initial temperature [K]
         ifabsent: float(294.15)
         range: float
+      thermal_mass_class:
+        description: Building mass class of the ISO 13790 zone, light, medium or heavy;
+          derived from the heat capacity of the constructions when absent
+        range: string
       ventilation_schedule:
         description: Day schedule of outdoor air brought into the zone on top of the
           infiltration, rows of time since midnight [s] and mass flow rate [kg/s],
@@ -1192,12 +1285,28 @@ classes:
     - parameters
   WeatherParameters:
     attributes:
+      atmospheric_pressure:
+        description: Atmospheric pressure [Pa] when it is not read from the weather
+          file, 101325 by default
+        range: float
       atmospheric_pressure_source:
         description: Source of the atmospheric pressure, e.g. Buildings.BoundaryConditions.Types.DataSource.File
           to read it from the weather file; the library default (a constant 101325
           Pa) when absent
         ifabsent: string(None)
         range: string
+      building_height:
+        description: Height of the building [m] for the wind speed profile of the
+          IDEAS simulation manager, 10 by default
+        range: float
+      default_n50:
+        description: Air change rate at 50 Pa of the IDEAS zones that do not give
+          their own [1/h], 3 by default
+        range: float
+      outdoor_co2_concentration:
+        description: CO2 concentration of the outdoor air of the IDEAS simulation
+          manager [ppm], 400 by default
+        range: float
       path:
         description: Name of weather data file
         ifabsent: string(None)

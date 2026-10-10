@@ -60,7 +60,7 @@
       ARoo={{ element.aggregated_envelope.roof.area }},
       URoo={{ element.aggregated_envelope.roof.u_value }},
 
-      redeclare replaceable Buildings.ThermalZones.ISO13790.Data.{{ element.aggregated_envelope.mass_class(element.parameters.floor_area) }} buiMas,
+      redeclare replaceable Buildings.ThermalZones.ISO13790.Data.{{ element.mass_class }} buiMas,
       gFac={{ element.aggregated_envelope.windows.g_value }}) "Thermal zone"
   variant: default
 

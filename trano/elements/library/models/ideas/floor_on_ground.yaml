@@ -17,6 +17,9 @@
         redeclare parameter {{ package_name }}.Data.Constructions.
         {{ element.construction.name }} constructionType,
         redeclare package Medium = Medium,
+        {%- if element.perimeter is not none %}
+        PWall={{ element.perimeter }},
+        {%- endif %}
         A={{  element.surface}})
   variant: default
 

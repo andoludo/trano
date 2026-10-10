@@ -5,7 +5,8 @@ from typing import ClassVar, Optional, Union, TYPE_CHECKING
 from networkx import Graph
 from pydantic import Field, PrivateAttr, model_validator
 
-from trano.elements.aggregated_envelope import AggregatedEnvelope
+from trano.elements.aggregated_envelope import MASS_CLASSES, AggregatedEnvelope
+from trano.exceptions import InvalidBuildingStructureError
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
 from trano.elements.envelope import (
@@ -239,6 +240,18 @@ class BaseSpace(BaseElement):
     def aggregated_envelope(self) -> AggregatedEnvelope:
         """Envelope per orientation and lumped RC elements for the AixLib reduced-order and ISO 13790 zones."""
         return AggregatedEnvelope.from_boundaries(self.external_boundaries)
+
+    @property
+    def mass_class(self) -> str:
+        """ISO 13790 mass class (Light, Medium, Heavy): the `thermal_mass_class` parameter, else derived."""
+        given = getattr(self.parameters, "thermal_mass_class", None)
+        if given is None:
+            return self.aggregated_envelope.mass_class(self.parameters.floor_area)  # type: ignore[union-attr]
+        if str(given).capitalize() not in MASS_CLASSES:
+            raise InvalidBuildingStructureError(
+                f"Space {self.name}: thermal_mass_class must be light, medium or heavy, got {given!r}."
+            )
+        return str(given).capitalize()
 
     def __add__(self, other: "BaseSpace") -> "BaseSpace":
         self.name = f"merge_{self.name.replace('merge', '')}_{other.name.replace('merge', '')}"

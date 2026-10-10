@@ -145,11 +145,21 @@ Elements: `occupancy`
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
 | `gain` | Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2] | `[35; 70; 30]` | `gain` | `gain` | `gain` | `gain` | `gain` |
-| `heat_gain_if_occupied` | Heat gain if occupied | `1/6/4` | `k` | `k` | `k` | `k` | `k` |
+| `heat_gain_if_occupied`, `occupant_density` | Heat gain if occupied | `1/6/4` | `k` | `k` | `k` | `k` | `k` |
 | `occupancy` | Occupancy table, each entry switching occupancy on or off | `3600*{7, 19}` | `occupancy` | `occupancy` | `occupancy` | `occupancy` | `occupancy` |
 | `ach` | *deprecated: the infiltration of a zone is the `ach` parameter of its space.* Infiltration [1/h] | `0.9` | `ACH` | `ACH` | `ACH` | `ACH` | `ACH` |
 | `floor_area` | Floor area [m2] | library default | `AFlo` (co2 variant) | `AFlo` (co2 variant) | - | - | - |
 | `data` | Occupancy data sources | library default | `data` | `data` | `data` | `data` | `data` |
+| `sensible_heat_per_person` | Sensible heat released per occupant [W]; with the latent heat and the radiant fraction it gives the `gain` matrix when that one is absent | library default | taken another way | taken another way | taken another way | taken another way | taken another way |
+| `latent_heat_per_person` | Latent heat released per occupant [W] | library default | taken another way | taken another way | taken another way | taken another way | taken another way |
+| `radiant_fraction` | Radiant share of the sensible heat of the occupants [1] | library default | taken another way | taken another way | taken another way | taken another way | taken another way |
+| `lighting_power_density` | Heat released by the lighting per floor area, all day [W/m2] | library default | `lightingPower` | - | taken another way | `lightingPower` | - |
+| `lighting_radiant_fraction` | Radiant share of the lighting heat [1], 0.4 by default | library default | `lightingRadiantFraction` | - | taken another way | `lightingRadiantFraction` | - |
+| `equipment_power_density` | Heat released by the equipment per floor area, all day [W/m2] | library default | `equipmentPower` | - | taken another way | `equipmentPower` | - |
+| `equipment_radiant_fraction` | Radiant share of the equipment heat [1], 0.4 by default | library default | `equipmentRadiantFraction` | - | taken another way | `equipmentRadiantFraction` | - |
+| `activity_degree` | Activity level of the occupants of the reduced-order zone [met], 1.2 by default | library default | - | - | taken another way | - | - |
+| `co2_generation_per_person` | CO2 released per occupant [m3/s], 5.2e-6 by default (CO2 variant) | library default | `gCO2` (co2 variant) | `gCO2` (co2 variant) | - | - | - |
+| `outdoor_co2_concentration` | CO2 concentration of the outdoor air [ppm], 420 by default (CO2 variant) | library default | `ppmOut` (co2 variant) | `ppmOut` (co2 variant) | - | - | - |
 
 ## PIDParameters
 
@@ -232,6 +242,14 @@ Elements: `space`
 | `ventilation_schedule` | Day schedule of outdoor air brought into the zone on top of the infiltration, rows of time since midnight [s] and mass flow rate [kg/s], repeated every day (Buildings infiltration variant) | library default | `ventilationSchedule` (infiltration variant) | taken another way | - | - | `ventilationSchedule` |
 | `temperature_initial` | Initial temperature [K] | `294.15` | `T_start` | `T_start` | `T_start` (when given) | - | `T_start` |
 | `volume` | Air volume of the zone [m3] | computed | - | `V` | `VAir` | `VRoo` | `volume` |
+| `n50` | Air change rate at a 50 Pa pressure difference, the airtightness of the zone [1/h]; gives the infiltration `ach` as n50 / n50_to_ach when `ach` is absent (IDEAS takes it directly) | library default | taken another way | taken another way | taken another way | taken another way | `n50` |
+| `n50_to_ach` | Ratio between the air change rate at 50 Pa and the infiltration rate [1] | `20.0` | taken another way | `n50toAch` (when given) | taken another way | taken another way | `n50toAch` |
+| `interior_convection_coefficient` | Fixed convective heat transfer coefficient of the inside surfaces [W/(m2.K)]; Buildings and the ISO 13790 zone switch to a fixed coefficient (3 and 3.45 by default), the reduced-order zone applies it to its walls, windows, floor and roof (2.7 by default) | library default | `hIntFixed` | - | taken another way | `hInt` | `hIntFixed` |
+| `exterior_convection_coefficient` | Fixed convective heat transfer coefficient of the outside surfaces [W/(m2.K)]; Buildings switches to a fixed coefficient (10 by default), the reduced-order zone applies it to its walls, windows and roof (20 by default) | library default | `hExtFixed` | - | taken another way | - | `hExtFixed` |
+| `thermal_mass_class` | Building mass class of the ISO 13790 zone, light, medium or heavy; derived from the heat capacity of the constructions when absent | library default | - | - | - | taken another way | `thermal_mass_class` |
+| `ground_heat_transfer_factor` | Adjustment factor of the heat transfer through the floor to the ground of the ISO 13790 zone [1], 0.5 by default | library default | - | - | - | `b` | `b` |
+| `shading_reduction_factor` | Factor on the solar gains through the windows for external shading [1]; the ISO 13790 zone applies it always (1 by default), the reduced-order zone when the irradiance exceeds the sunblind threshold (0.7 by default) | library default | - | - | taken another way | `shaRedFac` | `shaRedFac` |
+| `sunblind_irradiance_threshold` | Irradiance on a window above which the reduced-order zone applies the shading reduction factor [W/m2], 100 by default | library default | - | - | taken another way | - | `maxIrr` |
 
 ## SplitValveParameters
 
@@ -294,3 +312,7 @@ Elements: `weather`
 |---|---|---|---|---|---|---|---|
 | `path` | Name of weather data file | library default | `filNam` | `filNam` | `filNam` | `filNam` | `filNam` |
 | `atmospheric_pressure_source` | Source of the atmospheric pressure, e.g. Buildings.BoundaryConditions.Types.DataSource.File to read it from the weather file; the library default (a constant 101325 Pa) when absent | library default | `pAtmSou` | - | `pAtmSou` | `pAtmSou` | `pAtmSou` |
+| `atmospheric_pressure` | Atmospheric pressure [Pa] when it is not read from the weather file, 101325 by default | library default | `pAtm` | - | `pAtm` | `pAtm` | `pAtm` |
+| `outdoor_co2_concentration` | CO2 concentration of the outdoor air of the IDEAS simulation manager [ppm], 400 by default | library default | - | `ppmCO2` | - | - | - |
+| `building_height` | Height of the building [m] for the wind speed profile of the IDEAS simulation manager, 10 by default | library default | - | `H` | - | - | - |
+| `default_n50` | Air change rate at 50 Pa of the IDEAS zones that do not give their own [1/h], 3 by default | library default | - | `n50` | - | - | - |

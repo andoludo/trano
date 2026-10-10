@@ -124,6 +124,12 @@
     {%- endif %} {{ element.name }}(
             redeclare package Medium = Medium,
             {{ macros.render_parameters(parameters) | safe}},
+            {%- if element.parameters.interior_convection_coefficient is not none %}
+            intConMod=Buildings.HeatTransfer.Types.InteriorConvection.Fixed,
+            {%- endif %}
+            {%- if element.parameters.exterior_convection_coefficient is not none %}
+            extConMod=Buildings.HeatTransfer.Types.ExteriorConvection.Fixed,
+            {%- endif %}
             {%- if element.number_ventilation_ports != 0 -%}
             nPorts = {{ element.number_ventilation_ports }},
             {%- endif %}

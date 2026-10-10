@@ -36,6 +36,17 @@
     targets:
     - BaseOccupancy
   template: &reduced_order_zone_template |
+    {%- set zone = element.parameters %}
+    {%- set occ = element.occupancy.parameters if element.occupancy else none %}
+    {%- set hInt = zone.interior_convection_coefficient if zone.interior_convection_coefficient is not none else 2.7 %}
+    {%- set hExt = zone.exterior_convection_coefficient if zone.exterior_convection_coefficient is not none else 20.0 %}
+    {%- set shading = zone.shading_reduction_factor if zone.shading_reduction_factor is not none else 0.7 %}
+    {%- set maxIrr = zone.sunblind_irradiance_threshold if zone.sunblind_irradiance_threshold is not none else 100 %}
+    {%- set activity = occ.activity_degree if occ and occ.activity_degree is not none else 1.2 %}
+    {%- set lighting = occ.lighting_power_density if occ and occ.lighting_power_density is not none else 0 %}
+    {%- set lightingRad = occ.lighting_radiant_fraction if occ and occ.lighting_radiant_fraction is not none else 0.4 %}
+    {%- set equipment = occ.equipment_power_density if occ and occ.equipment_power_density is not none else 0 %}
+    {%- set equipmentRad = occ.equipment_radiant_fraction if occ and occ.equipment_radiant_fraction is not none else 0.4 %}
     AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone {{ element.name }}(
     {#- A constant outdoor air exchange is dry: AixLib's moisture balance fails on the humidity it brings in. #}
         use_moisture_balance={{ "false" if element.variant == "infiltration" else "true" }},
@@ -58,13 +69,13 @@
         AWin={{ macros.join_list(element.aggregated_envelope.window_areas) }},
         ATransparent={{ macros.join_list(element.aggregated_envelope.window_areas) }},
         RWin={{ element.aggregated_envelope.windows.resistance }},
-        hConWin=2.7,
+        hConWin={{ hInt }},
         gWin={{ element.aggregated_envelope.windows.g_value }},
         UWin={{ element.aggregated_envelope.windows.u_value }},
         ratioWinConRad=0.09,
 
         AExt={{ macros.join_list(element.aggregated_envelope.opaque_areas) }},
-        hConExt=2.7,
+        hConExt={{ hInt }},
         nExt=1,
         RExt={ {{- element.aggregated_envelope.exterior_walls.resistance -}} },
         RExtRem={{ element.aggregated_envelope.exterior_walls.resistance_remaining }},
@@ -77,14 +88,14 @@
         CInt={1402628013.98},
 
         AFloor={{ element.aggregated_envelope.floor.area }},
-        hConFloor=2.7,
+        hConFloor={{ hInt }},
         nFloor=1,
         RFloor={ {{- element.aggregated_envelope.floor.resistance -}} },
         RFloorRem={{ element.aggregated_envelope.floor.resistance_remaining }},
         CFloor={ {{- element.aggregated_envelope.floor.capacitance -}} },
 
         ARoof={{ element.aggregated_envelope.roof.area }},
-        hConRoof=2.7,
+        hConRoof={{ hInt }},
         nRoof=1,
         RRoof={ {{- element.aggregated_envelope.roof.resistance -}} },
         RRoofRem={{ element.aggregated_envelope.roof.resistance_remaining }},
@@ -97,10 +108,10 @@
     
         aExt=0.7,
         TSoil={{ element.aggregated_envelope.ground_temperature }},
-        hConWallOut=20.0,
+        hConWallOut={{ hExt }},
         hRadWall=5,
-        hConWinOut=20.0,
-        hConRoofOut=20,
+        hConWinOut={{ hExt }},
+        hConRoofOut={{ hExt }},
         hRadRoof=5,
         tiltExtWalls={{ macros.join_list(element.aggregated_envelope.tilts) }},
         aziExtWalls={{ macros.join_list(element.aggregated_envelope.azimuths) }},
@@ -116,12 +127,12 @@
         fixedHeatFlowRatePersons=0,
         ratioConvectiveHeatPeople=0.5,
     {% endif %}
-        activityDegree=1.2,
+        activityDegree={{ activity }},
         internalGainsMoistureNoPeople=0.5,
-        internalGainsMachinesSpecific=0,
-        ratioConvectiveHeatMachines=0.6,
-        lightingPowerSpecific=0,
-        ratioConvectiveHeatLighting=0.6,
+        internalGainsMachinesSpecific={{ equipment }},
+        ratioConvectiveHeatMachines={{ (1 - equipmentRad) | round(6) }},
+        lightingPowerSpecific={{ lighting }},
+        ratioConvectiveHeatLighting={{ (1 - lightingRad) | round(6) }},
     {%- if element.variant == "infiltration" and element.parameters.ach is not none %}
         useConstantACHrate=true,
         baseACH={{ element.parameters.ach }},
@@ -136,8 +147,8 @@
         withAHU=false,
         minAHU=0,
         maxAHU=12,
-        maxIrr = {{ macros.join_list([100] * (element.aggregated_envelope.orientations | length)) }},
-        shadingFactor = {{ macros.join_list([0.7] * (element.aggregated_envelope.orientations | length)) }},
+        maxIrr = {{ macros.join_list([maxIrr] * (element.aggregated_envelope.orientations | length)) }},
+        shadingFactor = {{ macros.join_list([shading] * (element.aggregated_envelope.orientations | length)) }},
         hHeat=167500,
         lHeat=0,
         KRHeat=1000,

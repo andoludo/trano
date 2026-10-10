@@ -241,11 +241,16 @@ OccupancyParameters:
       description: Gain to convert from occupancy (per person) to radiant, convective and latent heat in [W/m2]
       ifabsent: string([35; 70; 30])
       range: string
+      default_from: >-
+        f"[{self.sensible_heat_per_person * (0.5 if self.radiant_fraction is None else self.radiant_fraction):g};
+        {self.sensible_heat_per_person * (1 - (0.5 if self.radiant_fraction is None else self.radiant_fraction)):g};
+        {self.latent_heat_per_person or 0:g}]" if self.sensible_heat_per_person is not None else None
     heat_gain_if_occupied:
       alias: k
       description: Heat gain if occupied
       ifabsent: string(1/6/4)
       range: string
+      short_name: occupant_density
     occupancy:
       alias: occupancy
       description: Occupancy table, each entry switching occupancy on or off
@@ -274,6 +279,95 @@ OccupancyParameters:
       multivalued: true
       inlined: true
       inlined_as_list: true
+    sensible_heat_per_person:
+      description: Sensible heat released per occupant [W]; with the latent heat and the radiant fraction it gives the `gain` matrix when that one is absent
+      range: float
+      libraries:
+        buildings: {handled: true}
+        ideas: {handled: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
+        mpc: {handled: true}
+    latent_heat_per_person:
+      description: Latent heat released per occupant [W]
+      range: float
+      libraries:
+        buildings: {handled: true}
+        ideas: {handled: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
+        mpc: {handled: true}
+    radiant_fraction:
+      description: Radiant share of the sensible heat of the occupants [1]
+      range: float
+      libraries:
+        buildings: {handled: true}
+        ideas: {handled: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
+        mpc: {handled: true}
+    lighting_power_density:
+      alias: lightingPower
+      description: Heat released by the lighting per floor area, all day [W/m2]
+      range: float
+      libraries:
+        ideas: null
+        reduced_order: {handled: true}
+        mpc: null
+    lighting_radiant_fraction:
+      alias: lightingRadiantFraction
+      description: Radiant share of the lighting heat [1], 0.4 by default
+      range: float
+      libraries:
+        ideas: null
+        reduced_order: {handled: true}
+        mpc: null
+    equipment_power_density:
+      alias: equipmentPower
+      description: Heat released by the equipment per floor area, all day [W/m2]
+      range: float
+      libraries:
+        ideas: null
+        reduced_order: {handled: true}
+        mpc: null
+    equipment_radiant_fraction:
+      alias: equipmentRadiantFraction
+      description: Radiant share of the equipment heat [1], 0.4 by default
+      range: float
+      libraries:
+        ideas: null
+        reduced_order: {handled: true}
+        mpc: null
+    activity_degree:
+      alias: activityDegree
+      description: Activity level of the occupants of the reduced-order zone [met], 1.2 by default
+      range: float
+      libraries:
+        buildings: null
+        ideas: null
+        reduced_order: {handled: true}
+        iso_13790: null
+        mpc: null
+    co2_generation_per_person:
+      alias: gCO2
+      description: CO2 released per occupant [m3/s], 5.2e-6 by default (CO2 variant)
+      range: float
+      libraries:
+        buildings: {name: gCO2, variants: [co2]}
+        ideas: {name: gCO2, variants: [co2]}
+        reduced_order: null
+        iso_13790: null
+        mpc: null
+    outdoor_co2_concentration:
+      alias: ppmOut
+      description: CO2 concentration of the outdoor air [ppm], 420 by default (CO2 variant)
+      range: float
+      libraries:
+        buildings: {name: ppmOut, variants: [co2]}
+        ideas: {name: ppmOut, variants: [co2]}
+        reduced_order: null
+        iso_13790: null
+        mpc: null
   classes:
   - Occupancy
 PIDParameters:
@@ -515,6 +609,7 @@ SpaceParameter:
       alias: ACH
       description: Infiltration [1/h]
       range: float
+      default_from: self.n50 / self.n50_to_ach if self.n50 is not None else None
       libraries:
         buildings: {name: ACH, variants: [infiltration]}
         ideas: {handled: true}
@@ -547,6 +642,73 @@ SpaceParameter:
         ideas: V
         reduced_order: VAir
         iso_13790: VRoo
+    n50:
+      description: Air change rate at a 50 Pa pressure difference, the airtightness of the zone [1/h]; gives the infiltration `ach` as n50 / n50_to_ach when `ach` is absent (IDEAS takes it directly)
+      range: float
+      libraries:
+        buildings: {handled: true}
+        ideas: {handled: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
+    n50_to_ach:
+      alias: n50toAch
+      description: Ratio between the air change rate at 50 Pa and the infiltration rate [1]
+      ifabsent: float(20)
+      range: float
+      libraries:
+        buildings: {handled: true}
+        ideas: {name: n50toAch, when_given: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
+    interior_convection_coefficient:
+      alias: hIntFixed
+      description: Fixed convective heat transfer coefficient of the inside surfaces [W/(m2.K)]; Buildings and the ISO 13790 zone switch to a fixed coefficient (3 and 3.45 by default), the reduced-order zone applies it to its walls, windows, floor and roof (2.7 by default)
+      range: float
+      libraries:
+        ideas: null
+        reduced_order: {handled: true}
+        iso_13790: hInt
+    exterior_convection_coefficient:
+      alias: hExtFixed
+      description: Fixed convective heat transfer coefficient of the outside surfaces [W/(m2.K)]; Buildings switches to a fixed coefficient (10 by default), the reduced-order zone applies it to its walls, windows and roof (20 by default)
+      range: float
+      libraries:
+        ideas: null
+        reduced_order: {handled: true}
+        iso_13790: null
+    thermal_mass_class:
+      description: Building mass class of the ISO 13790 zone, light, medium or heavy; derived from the heat capacity of the constructions when absent
+      range: string
+      libraries:
+        buildings: null
+        ideas: null
+        reduced_order: null
+        iso_13790: {handled: true}
+    ground_heat_transfer_factor:
+      alias: b
+      description: Adjustment factor of the heat transfer through the floor to the ground of the ISO 13790 zone [1], 0.5 by default
+      range: float
+      libraries:
+        buildings: null
+        ideas: null
+        reduced_order: null
+    shading_reduction_factor:
+      alias: shaRedFac
+      description: Factor on the solar gains through the windows for external shading [1]; the ISO 13790 zone applies it always (1 by default), the reduced-order zone when the irradiance exceeds the sunblind threshold (0.7 by default)
+      range: float
+      libraries:
+        buildings: null
+        ideas: null
+        reduced_order: {handled: true}
+    sunblind_irradiance_threshold:
+      alias: maxIrr
+      description: Irradiance on a window above which the reduced-order zone applies the shading reduction factor [W/m2], 100 by default
+      range: float
+      libraries:
+        buildings: null
+        ideas: null
+        reduced_order: {handled: true}
+        iso_13790: null
   classes:
   - Space
 SplitValveParameters:
@@ -736,6 +898,39 @@ WeatherParameters:
       range: string
       libraries:
         ideas: null
+    atmospheric_pressure:
+      alias: pAtm
+      description: Atmospheric pressure [Pa] when it is not read from the weather file, 101325 by default
+      range: float
+      libraries:
+        ideas: null
+    outdoor_co2_concentration:
+      alias: ppmCO2
+      description: CO2 concentration of the outdoor air of the IDEAS simulation manager [ppm], 400 by default
+      range: float
+      libraries:
+        buildings: null
+        reduced_order: null
+        iso_13790: null
+        mpc: null
+    building_height:
+      alias: H
+      description: Height of the building [m] for the wind speed profile of the IDEAS simulation manager, 10 by default
+      range: float
+      libraries:
+        buildings: null
+        reduced_order: null
+        iso_13790: null
+        mpc: null
+    default_n50:
+      alias: n50
+      description: Air change rate at 50 Pa of the IDEAS zones that do not give their own [1/h], 3 by default
+      range: float
+      libraries:
+        buildings: null
+        reduced_order: null
+        iso_13790: null
+        mpc: null
   classes:
   - Weather
 DataSource:

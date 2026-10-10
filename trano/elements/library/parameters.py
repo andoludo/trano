@@ -9,6 +9,8 @@ Every attribute of the YAML is a field of a pydantic model. Besides the LinkML k
 - ``render``: ``false`` for a parameter trano uses itself, never written to a Modelica model.
 - ``numerical``: ``true`` for a simulation setting rather than a physical property.
 - ``deprecated``: a message logged when the parameter is given.
+- ``default_from``: an expression of ``self`` giving the value when the parameter is absent (the
+  air change rate from the airtightness, the occupancy gains from the gains per person).
 
 A parameter class may list the ``libraries`` it serves (the mpc elements): the others do not take
 any of its parameters.
@@ -34,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 PRIORITY = ["DataSource"]
 LIBRARIES = ("buildings", "ideas", "iso_13790", "reduced_order", "mpc")
-SPEC_KEYS = ("alias", "libraries", "short_name", "render", "numerical", "deprecated")
+SPEC_KEYS = ("alias", "libraries", "short_name", "render", "numerical", "deprecated", "default_from")
 _UNIT = re.compile(r"\[([^\]]+)\]\s*$")
 
 
@@ -82,6 +84,7 @@ class ParameterSpec(BaseModel):
     render: bool = True
     numerical: bool = False
     deprecated: str | None = None
+    default_from: str | None = None
     computed: bool = False
     description: str | None = None
     default: Any = None
@@ -110,6 +113,7 @@ class ParameterSpec(BaseModel):
             render=attribute.get("render", True),
             numerical=attribute.get("numerical", False),
             deprecated=attribute.get("deprecated"),
+            default_from=attribute.get("default_from"),
             computed="func" in attribute,
             description=attribute.get("description"),
             default=_get_default(attribute) if "range" in attribute else None,
@@ -153,6 +157,16 @@ class SpecifiedParameter(BaseParameter):
             if spec.deprecated and (spec.name in data or spec.alias in data):
                 logger.warning("Parameter %s is deprecated: %s", spec.name, spec.deprecated)
         return data
+
+    @model_validator(mode="after")
+    def _derive_defaults(self) -> "SpecifiedParameter":
+        """Fill an absent parameter from the ones it derives from; the derived value counts as given."""
+        for spec in self.__parameter_specs__.values():
+            if spec.default_from and not _given(self, spec.name, getattr(self, spec.name, None)):
+                value = eval(spec.default_from, {"self": self})  # noqa: S307
+                if value is not None:
+                    setattr(self, spec.name, value)
+        return self
 
     @classmethod
     def specs(cls) -> dict[str, ParameterSpec]:

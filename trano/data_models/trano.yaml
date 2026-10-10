@@ -85,6 +85,14 @@ classes:
           (outdoor_air, a raised floor)
         ifabsent: string('default')
         range: FloorOnGroundVariant
+      ground_temperature:
+        description: >-
+          Temperature of the ground under the floor [K], 283.15 when absent (Buildings and the
+          reduced-order zone; IDEAS and ISO 13790 model the ground themselves)
+        range: float
+      perimeter:
+        description: Exposed perimeter of the slab [m] for the ground model of IDEAS, 4 times the square root of the surface when absent
+        range: float
     slots:
       - surface
   InternalWall:
@@ -253,6 +261,12 @@ classes:
         description: U-value of the frame [W/(m2.K)]
         range: float
         ifabsent: float(1.4)
+      u_value:
+        description: U-value of the glazing [W/(m2.K)] for the libraries that take one (IDEAS, reduced order, ISO 13790); computed from the layers (EN 673) when absent
+        range: float
+      g_value:
+        description: Solar energy transmittance of the glazing [1] for the libraries that take one (IDEAS, reduced order, ISO 13790); computed from the layers (EN 410) when absent
+        range: float
       layers:
         description: Layers
         range: GlazingLayer

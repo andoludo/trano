@@ -109,7 +109,9 @@
         {%- endif %}
     {%- endif %}
         {{ macros.render_parameters(parameters) | safe}},
-        {%- if element.variant == "infiltration" and element.parameters.ach is not none %}
+        {%- if element.variant == "infiltration" and element.parameters.n50 is not none %}
+        n50={{ element.parameters.n50 }},
+        {%- elif element.variant == "infiltration" and element.parameters.ach is not none %}
         n50={{ element.parameters.ach }}*{{ element.name }}.n50toAch,
         {%- endif %}
         redeclare package Medium = Medium,
