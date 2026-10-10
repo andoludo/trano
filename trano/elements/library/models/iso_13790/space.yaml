@@ -1,12 +1,12 @@
 - classes:
   - Space
   library: iso_13790
-  parameter_processing:
+  parameter_processing: &iso_zone_parameter_processing
     function: modify_alias
     parameter:
       floor_area: AFlo
       volume: VRoo
-  ports:
+  ports: &iso_zone_ports
   - flow: undirected
     medium: weather_data
     names:
@@ -45,7 +45,7 @@
     - intSenGaiFlo
     targets:
     - BaseOccupancy
-  template: |
+  template: &iso_zone_template |
       Trano.ThermalZones.ISO13790ZoneHVAC {{ element.name }}(
       redeclare package Medium = Medium,
       {{ macros.render_parameters(parameters) | safe }},
@@ -58,10 +58,19 @@
       AWin={{ macros.join_list(element.aggregated_envelope.window_areas) }},
       UWin={{ element.aggregated_envelope.windows.u_value }},
       UFlo={{ element.aggregated_envelope.floor_u_value(element.parameters.floor_area) }},
-      airRat=0.5,
+      airRat={{ element.parameters.ach if element.variant == "infiltration" and element.parameters.ach is not none else 0.5 }},
       ARoo={{ element.aggregated_envelope.roof.area }},
       URoo={{ element.aggregated_envelope.roof.u_value }},
 
       redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Light buiMas,
       gFac={{ element.aggregated_envelope.windows.g_value }}) "Thermal zone"
   variant: default
+
+# Infiltration from the YAML air change rate (0.5 1/h otherwise).
+- classes:
+  - Space
+  library: iso_13790
+  parameter_processing: *iso_zone_parameter_processing
+  ports: *iso_zone_ports
+  template: *iso_zone_template
+  variant: infiltration

@@ -338,7 +338,6 @@ GLAZINGS: dict[Glazing, dict[str, Any]] = {
 
 # Features of the standard a library cannot model with trano yet; its cases with them are skipped.
 UNSUPPORTED_FEATURES: dict[str, frozenset[str]] = {
-    "IDEAS": frozenset({"night_ventilation"}),
     "reduced_order": frozenset({"night_ventilation", "shading", "sunspace"}),
     "iso_13790": frozenset({"night_ventilation", "shading", "sunspace"}),
 }

@@ -102,10 +102,17 @@
     - Control
     - DataBus
   template: &ideas_zone_template |-
+    {%- set ventilated = element.variant == "infiltration" and element.parameters.ventilation_schedule is not none %}
+    {%- if ventilated %}
+    {{ package_name }}.Trano.ThermalZones.ZoneScheduledVentilation {{ element.name }}(
+        nPortsExt = {{ element.number_ventilation_ports }},
+        ventilationSchedule={{ element.parameters.ventilation_schedule }},
+    {%- else %}
     IDEAS.Buildings.Components.Zone {{ element.name }}(
             {%- if element.number_ventilation_ports != 0 -%}
         nPorts = {{ element.number_ventilation_ports }},
         {%- endif %}
+    {%- endif %}
         {{ macros.render_parameters(parameters) | safe}},
         {%- if element.variant == "infiltration" and element.parameters.ach is not none %}
         n50={{ element.parameters.ach }}*{{ element.name }}.n50toAch,
