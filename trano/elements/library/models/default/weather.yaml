@@ -15,6 +15,7 @@
     targets:
     - Space
     - Boundary
+    - FloorOnGround
     use_counter: false
   template: |2-
 

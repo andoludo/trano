@@ -612,6 +612,13 @@ WeatherParameters:
       description: Name of weather data file
       ifabsent: string(None)
       range: string
+    atmospheric_pressure_source:
+      alias: pAtmSou
+      description: >-
+        Source of the atmospheric pressure, e.g. Buildings.BoundaryConditions.Types.DataSource.File to read it
+        from the weather file; the library default (a constant 101325 Pa) when absent
+      ifabsent: string(None)
+      range: string
   classes:
   - Weather
 DataSource:

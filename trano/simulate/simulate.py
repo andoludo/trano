@@ -120,6 +120,17 @@ class SimulationOptions(BaseModel):
     end_time: int = Field(default=2 * 3600 * 24 * 7)
     check_only: bool = Field(default=False)
     tolerance: float = Field(default=1e-4)
+    number_of_intervals: int | None = Field(
+        default=None, gt=0, description="Output points over the simulation; OpenModelica's default when unset."
+    )
+
+    @property
+    def simulate_arguments(self) -> str:
+        """The keyword arguments of OpenModelica's ``simulate`` command."""
+        arguments = [f"startTime = {self.start_time}", f"stopTime = {self.end_time}", f"tolerance = {self.tolerance}"]
+        if self.number_of_intervals is not None:
+            arguments.append(f"numberOfIntervals = {self.number_of_intervals}")
+        return ", ".join(arguments)
 
 
 class SimulationLibraryOptions(SimulationOptions):
@@ -205,9 +216,7 @@ def create_mos_file(
             ""
             if options.check_only
             else f"""
-    simulate({{{{model_name}}}}.building,startTime = {options.start_time},
-    stopTime = {options.end_time},
-    tolerance = {options.tolerance});"""
+    simulate({{{{model_name}}}}.building, {options.simulate_arguments});"""
         )
         template = STRING_ENVIRONMENT.from_string(
             f"""

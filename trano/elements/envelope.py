@@ -96,6 +96,7 @@ class BaseExternalWall(BaseSimpleWall):
 class BaseWindow(BaseSimpleWall):
     width: float | None = None
     height: float | None = None
+    frame_fraction: float = 0.1  # [1] share of the window area taken by the frame (the Buildings default)
 
     @model_validator(mode="after")
     def width_validator(self) -> "BaseWindow":
@@ -363,13 +364,23 @@ class WindowedWallParameters(WallParameters):
     window_layers: list[str]
     window_width: list[float]
     window_height: list[float]
+    window_frame_fraction: list[float]
     included_external_walls: list[str]
 
     @classmethod
     def from_neighbors(cls, neighbors: list["BaseElement"]) -> "WindowedWallParameters":  # type: ignore[override]
         entries: dict[str, list[Any]] = {
             key: []
-            for key in ("surfaces", "azimuths", "layers", "tilts", "window_layers", "window_width", "window_height")
+            for key in (
+                "surfaces",
+                "azimuths",
+                "layers",
+                "tilts",
+                "window_layers",
+                "window_width",
+                "window_height",
+                "window_frame_fraction",
+            )
         }
         included_external_walls: list[str] = []
         for group in hosted_windows(neighbors):
@@ -386,6 +397,9 @@ class WindowedWallParameters(WallParameters):
                 entries["window_layers"].append(glazing_windows[0].construction.name)
                 entries["window_height"].append(_ten_digits(height))
                 entries["window_width"].append(_ten_digits(area / height))
+                entries["window_frame_fraction"].append(
+                    _ten_digits(sum(window.surface * window.frame_fraction for window in glazing_windows) / area)
+                )
         return cls(
             number=len(entries["surfaces"]),
             type="WindowedWall",

@@ -79,6 +79,12 @@ classes:
       construction:
         description: Construction
         range: Construction
+      variant:
+        description: >-
+          What lies under the floor: the ground at a fixed temperature (default) or the outdoor air
+          (outdoor_air, a raised floor)
+        ifabsent: string('default')
+        range: FloorOnGroundVariant
     slots:
       - surface
   InternalWall:
@@ -103,6 +109,9 @@ classes:
       width:
         range: float
       height:
+        range: float
+      frame_fraction:
+        description: Share of the window area taken by the frame [1], 0.1 when absent
         range: float
     slots:
       - surface
@@ -686,6 +695,10 @@ enums:
       default:
       infiltration:
       rectangular_zone:
+  FloorOnGroundVariant:
+    permissible_values:
+      default:
+      outdoor_air:
   OccupancyVariant:
     permissible_values:
       default:

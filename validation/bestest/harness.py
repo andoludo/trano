@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -16,6 +17,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from trano.data_models.conversion import convert_network
+from trano.elements.base import BaseElement
 from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.simulate.simulate import SimulationOptions, simulate
@@ -29,6 +31,7 @@ logger = logging.getLogger(__name__)
 CACHE_ROOT = Path(__file__).resolve().parents[2].joinpath(".cache", "bestest")
 SECONDS_PER_YEAR = 365 * 24 * 3600
 TOLERANCE = 1e-6
+HOURS_PER_YEAR = 365 * 24  # one output point per hour: the KPIs are hourly statistics
 LIBRARIES = ("Buildings", "IDEAS", "iso_13790", "reduced_order")
 # Result variable holding the zone air temperature, per library.
 TEMPERATURE_VARIABLE = {
@@ -51,6 +54,7 @@ def network_for(case: Case, library: str) -> Network:
     directory.mkdir(parents=True, exist_ok=True)
     path = directory.joinpath(f"case_{case.id}.yaml")
     path.write_text(render_case(case))
+    reset_element_names()
     return convert_network(f"case_{case.id}", path, library=Library.from_configuration(library))
 
 
@@ -58,12 +62,27 @@ def cache_directory(case_id: str, library: str) -> Path:
     return CACHE_ROOT.joinpath(library, case_id)
 
 
+def normalized_model(model: str) -> str:
+    """The model without its annotations (layout coordinates differ between renders) and whitespace."""
+    compact = re.sub(r"\s+", "", model)
+    return re.sub(r"annotation\(.*?\);", "", compact)  # annotations hold no semicolon
+
+
 def model_hash(model: str, library: str, options: SimulationOptions) -> str:
     digest = hashlib.sha256()
-    for part in (library, options.model_dump_json(), model):
+    for part in (library, options.model_dump_json(), normalized_model(model)):
         digest.update(part.encode())
         digest.update(b"\0")
     return digest.hexdigest()
+
+
+def reset_element_names() -> None:
+    """Restart the numbering of auto-named elements so that the same case renders the same names."""
+    classes = [BaseElement]
+    while classes:
+        cls = classes.pop()
+        cls.name_counter = 0
+        classes += cls.__subclasses__()
 
 
 def _cached(directory: Path, expected_hash: str) -> CaseResult | None:
@@ -91,13 +110,16 @@ def run_case(
 ) -> CaseResult:
     """Simulate the case (unless cached) and return its KPIs."""
     case = CASES[case_id]
-    network = network_for(case, library)
-    options = SimulationOptions(start_time=0, end_time=end_time, tolerance=TOLERANCE)
+    options = SimulationOptions(
+        start_time=0, end_time=end_time, tolerance=TOLERANCE, number_of_intervals=end_time // 3600
+    )
     directory = cache_directory(case_id, library)
-    expected_hash = model_hash(network.model(), library, options)
+    expected_hash = model_hash(network_for(case, library).model(), library, options)
     if not force and (cached := _cached(directory, expected_hash)) is not None:
         logger.info("Case %s with %s read from the cache", case_id, library)
         return cached
+    # A network renders its model once: the simulation gets a fresh one.
+    network = network_for(case, library)
     started = time.monotonic()
     outcome = simulate(directory, network, options=options, container_name=container_name)
     wall_time = time.monotonic() - started

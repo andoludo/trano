@@ -2646,9 +2646,12 @@ end PartialPowerSensor;
         annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
       Buildings.Fluid.Sources.Boundary_pT sinInf(
         redeclare package Medium = Medium,
-        nPorts=1) "Pressure boundary closing the infiltration mass balance"
+        use_p_in=true,
+        nPorts=1) "Pressure boundary closing the infiltration mass balance, at the outdoor pressure"
         annotation (Placement(transformation(extent={{2,-194},{20,-176}})));
-      Modelica.Blocks.Sources.RealExpression airInfiltration(y=ACH*V*1.2/3600)
+      Modelica.Blocks.Sources.RealExpression airInfiltration(
+        y=ACH*V*Medium.density(Medium.setState_pTX(weaBus.pAtm, heaPorAir.T, Medium.X_default))/3600)
+        "Infiltration mass flow rate at the density of the zone air"
         annotation (Placement(transformation(extent={{-60,-188},{-40,-168}})));
     protected
       final parameter Modelica.Units.SI.TransmissionCoefficient tauIRSha_air[
@@ -3060,6 +3063,7 @@ end PartialPowerSensor;
           smooth=Smooth.None));
           connect(souInf.ports[1], air.ports[1]);
     connect(sinInf.ports[1], air.ports[2]);
+    connect(weaBus.pAtm, sinInf.p_in);
       for i in 1:nPorts loop
         connect(ports[i],air. ports[i+2])
                                       annotation (Line(
@@ -3236,6 +3240,16 @@ end PartialPowerSensor;
         defaultComponentName="roo");
     end RoomHeatMassBalanceInf;
   end BaseClasses;
+
+  model OutdoorAirBoundary
+    "Holds a construction surface at the outdoor air temperature (a raised floor over ambient air)"
+    Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather data";
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_b port "Surface held at the outdoor air temperature";
+    Buildings.HeatTransfer.Sources.PrescribedTemperature preTem;
+  equation
+    connect(weaBus.TDryBul, preTem.T);
+    connect(preTem.port, port);
+  end OutdoorAirBoundary;
 
   model ISO13790ZoneHVAC
     "ISO 13790 zone whose internal gains are given per floor area and scaled by its own floor area"
@@ -3693,10 +3707,11 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     glaSys={ construction_011 },
                     wWin={ 1.0 },
                     hWin={ 1.0 },
+                    fFra={ 0.1 },
                     azi={ 3.14 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { 81.85470581054688, -100.0 },
+    Placement(transformation(origin = { 35.64466857910156, -46.79552459716797 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3706,25 +3721,25 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     
         Buildings.HeatTransfer.Sources.FixedTemperature flooronground_0(T=283.15)
     "Ground under the floor" annotation (
-    Placement(transformation(origin = { 96.85470581054688, -70.0 },
+    Placement(transformation(origin = { 50.64466857910156, -16.79552459716797 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
         house_multiple_construction_one_azimuth.Components.BaseClasses.OccupancyOccupancy_1
     occupancy_1(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { 66.85470581054688, -100.0 },
+    Placement(transformation(origin = { 20.644668579101562, -46.79552459716797 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             weather(filNam=Modelica.Utilities.Files.loadResource
     ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
  annotation (
-    Placement(transformation(origin = { 62.724029541015625, 100.0 },
+    Placement(transformation(origin = { 81.70130920410156, -49.16911697387695 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(schema_space_001.surf_conBou[1],flooronground_0.port)
         annotation (Line(
-        points={{ 81.85470581054688, -100.0 }    ,{ 89.35470581054688, -100.0 }    ,{ 89.35470581054688, -70.0 }    ,{ 96.85470581054688, -70.0 }    },
+        points={{ 35.64466857910156, -46.79552459716797 }    ,{ 43.14466857910156, -46.79552459716797 }    ,{ 43.14466857910156, -16.79552459716797 }    ,{ 50.64466857910156, -16.79552459716797 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3732,7 +3747,7 @@ equation
             ;        
         connect(schema_space_001.qGai_flow,occupancy_1.y)
         annotation (Line(
-        points={{ 81.85470581054688, -100.0 }    ,{ 74.35470581054688, -100.0 }    ,{ 74.35470581054688, -100.0 }    ,{ 66.85470581054688, -100.0 }    },
+        points={{ 35.64466857910156, -46.79552459716797 }    ,{ 28.144668579101562, -46.79552459716797 }    ,{ 28.144668579101562, -46.79552459716797 }    ,{ 20.644668579101562, -46.79552459716797 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3740,7 +3755,7 @@ equation
             ;        
         connect(schema_space_001.weaBus,weather.weaBus)
         annotation (Line(
-        points={{ 81.85470581054688, -100.0 }    ,{ 72.28936767578125, -100.0 }    ,{ 72.28936767578125, 100.0 }    ,{ 62.724029541015625, 100.0 }    },
+        points={{ 35.64466857910156, -46.79552459716797 }    ,{ 58.67298889160156, -46.79552459716797 }    ,{ 58.67298889160156, -49.16911697387695 }    ,{ 81.70130920410156, -49.16911697387695 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3754,7 +3769,7 @@ equation
             ;        
         connect(weather.weaBus,dataBus)
         annotation (Line(
-        points={{ 62.724029541015625, 100.0 }    ,{ 62.724029541015625, 100.0 }    ,{ 62.724029541015625, 100.0 }    ,{ 62.724029541015625, 100.0 }    },
+        points={{ 81.70130920410156, -49.16911697387695 }    ,{ 81.70130920410156, -49.16911697387695 }    ,{ 81.70130920410156, -49.16911697387695 }    ,{ 81.70130920410156, -49.16911697387695 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,

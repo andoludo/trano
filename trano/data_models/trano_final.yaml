@@ -527,6 +527,11 @@ classes:
       construction:
         description: Construction
         range: Construction
+      variant:
+        description: 'What lies under the floor: the ground at a fixed temperature
+          (default) or the outdoor air (outdoor_air, a raised floor)'
+        ifabsent: string('default')
+        range: FloorOnGroundVariant
     slots:
     - surface
   Gas:
@@ -1104,6 +1109,12 @@ classes:
     - parameters
   WeatherParameters:
     attributes:
+      atmospheric_pressure_source:
+        description: Source of the atmospheric pressure, e.g. Buildings.BoundaryConditions.Types.DataSource.File
+          to read it from the weather file; the library default (a constant 101325
+          Pa) when absent
+        ifabsent: string(None)
+        range: string
       path:
         description: Name of weather data file
         ifabsent: string(None)
@@ -1113,6 +1124,9 @@ classes:
       construction:
         description: Glazing
         range: Glazing
+      frame_fraction:
+        description: Share of the window area taken by the frame [1], 0.1 when absent
+        range: float
       height:
         range: float
       width:
@@ -1146,6 +1160,10 @@ enums:
       PController: null
       default: null
       onoff: null
+  FloorOnGroundVariant:
+    permissible_values:
+      default: null
+      outdoor_air: null
   OccupancyVariant:
     permissible_values:
       co2: null

@@ -124,3 +124,10 @@ def test_configure_script_installs_only_missing_libraries() -> None:
 def test_modelica_version_is_the_newest_installed() -> None:
     assert ModelicaEnvironment(modelica=["4.0.0+maint.om", "4.1.0+maint.om"]).modelica_version == "4.1.0"
     assert ModelicaEnvironment(modelica=["4.1.0+maint.om", "4.0.0+maint.om"]).modelica_version == "4.1.0"
+
+
+def test_simulate_arguments_only_set_the_output_points_when_asked() -> None:
+    options = SimulationOptions(start_time=0, end_time=3600, tolerance=1e-6)
+    assert options.simulate_arguments == "startTime = 0, stopTime = 3600, tolerance = 1e-06"
+    hourly = options.model_copy(update={"number_of_intervals": 8760})
+    assert hourly.simulate_arguments.endswith(", numberOfIntervals = 8760")

@@ -102,4 +102,4 @@ def test_internal_gain_is_200_w_split_60_40() -> None:
     occupancy = building_description(CASES["600FF"])["spaces"][0]["occupancy"]["parameters"]
 
     assert occupancy["gain"] == "[120/48; 80/48; 0]"
-    assert occupancy["occupancy"] == "3600*{0, 24}"
+    assert occupancy["occupancy"] == "{1, 86400}"  # an entry at 0 would switch the schedule off

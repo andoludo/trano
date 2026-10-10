@@ -1,7 +1,27 @@
-# The floor construction is part of the zone (datConBou); this boundary holds its outer surface
-# at the ground temperature. Without it the zone's surf_conBou port is left open and the floor
-# is adiabatic. A prescribed surface temperature cannot also be an initialized state, so the zone
-# renders these constructions with stateAtSurface_a=false (as Buildings' OnlyConstructionBoundary).
+# The floor construction is part of the zone (datConBou); these boundaries hold its outer surface
+# at the ground temperature (default) or at the outdoor air temperature (`outdoor_air`, a raised
+# floor over ambient air as in ASHRAE 140). Without a boundary the zone's surf_conBou port is left
+# open and the floor is adiabatic. A prescribed surface temperature cannot also be an initialized
+# state, so the zone renders these constructions with stateAtSurface_a=false (as Buildings'
+# OnlyConstructionBoundary).
+- classes:
+  - FloorOnGround
+  figures: []
+  library: buildings
+  parameter_processing:
+    function: default_parameters
+  ports: &buildings_floor_port
+  - flow: interchangeable_port
+    medium: heat
+    names:
+    - port
+    targets:
+    - Space
+  template: |2-
+        Buildings.HeatTransfer.Sources.FixedTemperature {{ element.name }}(T={{ element.ground_temperature }})
+        "Ground under the floor"
+  variant: default
+
 - classes:
   - FloorOnGround
   figures: []
@@ -15,7 +35,13 @@
     - port
     targets:
     - Space
+  - flow: undirected
+    medium: weather_data
+    names:
+    - weaBus
+    targets:
+    - Weather
   template: |2-
-        Buildings.HeatTransfer.Sources.FixedTemperature {{ element.name }}(T={{ element.ground_temperature }})
-        "Ground under the floor"
-  variant: default
+        Trano.ThermalZones.OutdoorAirBoundary {{ element.name }}
+        "Outdoor air under the raised floor"
+  variant: outdoor_air

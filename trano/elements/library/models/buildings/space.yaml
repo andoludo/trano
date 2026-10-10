@@ -155,6 +155,7 @@
                         glaSys={{ macros.join_list(boundary.window_layers) }},
                         wWin={{ macros.join_list(boundary.window_width) }},
                         hWin={{ macros.join_list(boundary.window_height) }},
+                        fFra={{ macros.join_list(boundary.window_frame_fraction) }},
                         azi={{ macros.join_list(boundary.azimuths) }}),
                     {% else %}
                         nConExtWin=0,

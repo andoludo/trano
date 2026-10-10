@@ -265,24 +265,25 @@ class Network:  # : PLR0904, #TODO: fix this
             self.edge_attributes += self.connect_edges(edge)
 
     def set_weather_path_to_container_path(self, project_path: Path) -> None:
+        """Copy local weather files next to the model and point the readers at them inside the container.
+
+        A Modelica resource (``modelica://Buildings/...``) lives in the library installed in the
+        container and is left untouched.
+        """
         for node in self.graph.nodes:
-            if (
-                isinstance(node, Weather) and hasattr(node.parameters, "path") and node.parameters.path is not None  # type: ignore
-            ):
-                # TODO: type ognore needs to be fixed
-                old_path = Path(node.parameters.path).resolve()  # type: ignore
-                if not old_path.exists():
-                    parents = [Path.cwd(), *Path.cwd().parents]
-                    for parent in parents:
-                        old_path = next(parent.rglob(old_path.name), None)  # type: ignore
-                        if old_path and old_path.exists():
-                            break
-                    if not old_path or not old_path.exists():
-                        raise FileNotFoundError(f"File {old_path} not found")
-                new_path = project_path.joinpath(old_path.name)
-                shutil.copy(old_path, new_path)
-                # TODO: this is not correct
-                node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore
+            if not (isinstance(node, Weather) and getattr(node.parameters, "path", None)):
+                continue
+            path = str(node.parameters.path)  # type: ignore[union-attr]
+            if "modelica://" in path:
+                continue
+            old_path = Path(path).resolve()
+            if not old_path.exists():  # a file name relative to the project: look for it below the working directory
+                found = next(Path.cwd().rglob(old_path.name), None)
+                if found is None:
+                    raise FileNotFoundError(f"File {old_path} not found")
+                old_path = found
+            shutil.copy(old_path, project_path.joinpath(old_path.name))
+            node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore[union-attr]
 
     def _prepare_nodes(self, include_container: bool, data_bus: DataBus | None) -> DataBus | None:
         """Process and position every node, adding a data bus if none exists."""
@@ -363,3 +364,7 @@ class Network:  # : PLR0904, #TODO: fix this
         self.add_node(weather)
         for space in spaces:
             self.connect_system(space, weather)
+            # Envelope elements with their own weather connection (a floor over outdoor air).
+            for boundary in space.external_boundaries:
+                if boundary.connects_to(self.library, Weather):
+                    self.graph.add_edge(boundary, weather)

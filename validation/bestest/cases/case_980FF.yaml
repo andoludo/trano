@@ -103,6 +103,7 @@ glazings:
 weather:
   parameters:
     path: Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_CO_Denver.Intl.AP.725650_TMY3.mos")
+    atmospheric_pressure_source: Buildings.BoundaryConditions.Types.DataSource.File
 spaces:
 - id: ZONE:001
   variant: infiltration
@@ -136,6 +137,7 @@ spaces:
     floor_on_grounds:
     - surface: 48.0
       construction: HEAVY_FLOOR:001
+      variant: outdoor_air
     windows:
     - surface: 12.0
       azimuth: 0.0
@@ -143,8 +145,9 @@ spaces:
       construction: DOUBLE_CLEAR:001
       width: 6.0
       height: 2.0
+      frame_fraction: 0.001
   occupancy:
     parameters:
-      occupancy: 3600*{0, 24}
+      occupancy: '{1, 86400}'
       gain: '[120/48; 80/48; 0]'
       heat_gain_if_occupied: '1'

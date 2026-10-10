@@ -21,6 +21,8 @@ from pydantic import BaseModel, Field
 
 CASES_DIR = Path(__file__).parent.joinpath("cases")
 WEATHER = 'Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_CO_Denver.Intl.AP.725650_TMY3.mos")'
+PRESSURE_FROM_FILE = "Buildings.BoundaryConditions.Types.DataSource.File"
+FRAME_FRACTION = 0.001  # the windows have no frame; a tiny one keeps the window model regular
 
 LENGTH, WIDTH, HEIGHT = 8.0, 6.0, 2.7  # [m]
 FLOOR_AREA = LENGTH * WIDTH  # [m2]
@@ -303,6 +305,11 @@ def _wall(surface: float, azimuth: float, construction: str, tilt: str = "wall")
     return {"surface": round(surface, 6), "azimuth": azimuth, "tilt": tilt, "construction": construction}
 
 
+def _floor(surface: float, construction: str) -> dict[str, Any]:
+    """A raised floor over outdoor air: the standard specifies no ground coupling."""
+    return {"surface": surface, "construction": construction, "variant": "outdoor_air"}
+
+
 def _window(azimuth: float, glazing: str) -> dict[str, Any]:
     return {
         "surface": WINDOW_AREA,
@@ -311,6 +318,7 @@ def _window(azimuth: float, glazing: str) -> dict[str, Any]:
         "construction": glazing,
         "width": WINDOW_AREA / WINDOW_HEIGHT,
         "height": WINDOW_HEIGHT,
+        "frame_fraction": FRAME_FRACTION,
     }
 
 
@@ -319,7 +327,8 @@ def _occupancy(floor_area: float) -> dict[str, Any]:
     radiant, convective = INTERNAL_GAIN * RADIANT_FRACTION, INTERNAL_GAIN * (1 - RADIANT_FRACTION)
     return {
         "parameters": {
-            "occupancy": "3600*{0, 24}",
+            # Occupied all day: an entry at zero is read as "never occupied" by the schedule block.
+            "occupancy": "{1, 86400}",
             "gain": f"[{radiant:g}/{floor_area:g}; {convective:g}/{floor_area:g}; 0]",
             "heat_gain_if_occupied": "1",
         }
@@ -369,7 +378,7 @@ def _zone_boundaries(case: Case) -> dict[str, list[dict[str, Any]]]:
         windows += [_window(EAST, glazing), _window(WEST, glazing)]
     return {
         "external_walls": walls,
-        "floor_on_grounds": [{"surface": FLOOR_AREA, "construction": floor_construction(case.mass)}],
+        "floor_on_grounds": [_floor(FLOOR_AREA, floor_construction(case.mass))],
         "windows": windows,
     }
 
@@ -384,7 +393,7 @@ def _sunspace_boundaries(case: Case) -> dict[str, list[dict[str, Any]]]:
             _wall(SUNSPACE_DEPTH * HEIGHT, WEST, wall),
             _wall(area, SOUTH, roof_construction(case), tilt="ceiling"),
         ],
-        "floor_on_grounds": [{"surface": round(area, 6), "construction": floor_construction(Mass.heavy)}],
+        "floor_on_grounds": [_floor(round(area, 6), floor_construction(Mass.heavy))],
         "windows": [_window(SOUTH, GLAZINGS[case.glazing]["id"])],
     }
 
@@ -426,7 +435,7 @@ def building_description(case: Case) -> dict[str, Any]:
         ],
         "constructions": [CONSTRUCTIONS[id_] for id_ in used_constructions],
         "glazings": [glazing],
-        "weather": {"parameters": {"path": WEATHER}},
+        "weather": {"parameters": {"path": WEATHER, "atmospheric_pressure_source": PRESSURE_FROM_FILE}},
         "spaces": spaces,
     }
     if internal_walls:
