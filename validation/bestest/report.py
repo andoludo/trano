@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from validation.bestest.harness import CaseResult
 from validation.bestest.kpi import KpiResults
-from validation.bestest.reference import KPIS, Kpi, KpiReference, ReferenceData, load_reference
+from validation.bestest.reference import KPIS, UNITS, Kpi, KpiReference, ReferenceData, load_reference
 
 TEMPERATURE_TOLERANCE = 1.0  # [K] added around the spread of the reference programs
 PEAK_TOLERANCE = 0.05  # share of the largest reference peak, added around the spread of the programs
@@ -122,3 +122,62 @@ def write_report(results: dict[str, dict[str, CaseResult]], directory: Path) -> 
             indent=2,
         )
     )
+
+
+EXPECTED_DIR = Path(__file__).parent.joinpath("expected")
+REGRESSION_TOLERANCE = 0.02  # relative change of a frozen value that counts as a regression
+DOCS_PAGE = Path(__file__).parents[2].joinpath("docs", "validation", "bestest.md")
+
+
+def freeze(library: str, results: dict[str, CaseResult]) -> Path:
+    """Write the KPI values of a library as the frozen values its future results are held to."""
+    EXPECTED_DIR.mkdir(parents=True, exist_ok=True)
+    path = EXPECTED_DIR.joinpath(f"{library}.json")
+    frozen = {
+        case_id: {kpi: round(result.kpis.value(kpi), 4) for kpi in KPIS}
+        for case_id, result in sorted(results.items(), key=lambda item: (len(item[0]), item[0]))
+    }
+    path.write_text(json.dumps(frozen, indent=2) + "\n")
+    return path
+
+
+def frozen_values(library: str) -> dict[str, dict[str, float]]:
+    path = EXPECTED_DIR.joinpath(f"{library}.json")
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text())  # type: ignore[no-any-return]
+
+
+def regressions(library: str, case_id: str, kpis: KpiResults) -> list[str]:
+    """KPIs that moved by more than the tolerance from their frozen value (absolute 0.01 near zero)."""
+    frozen = frozen_values(library).get(case_id, {})
+    moved = []
+    for kpi, expected in frozen.items():
+        value = kpis.value(kpi)  # type: ignore[arg-type]
+        if abs(value - expected) > max(REGRESSION_TOLERANCE * abs(expected), 0.01):
+            moved.append(f"{kpi}: {value:.3f} was {expected:.3f} {UNITS[kpi]}")  # type: ignore[index]
+    return moved
+
+
+def render_docs(results: dict[str, dict[str, CaseResult]], reference: ReferenceData | None = None) -> str:
+    """The documentation page: what is validated, how, and the tables of the report."""
+    intro = """# ASHRAE 140 (BESTEST) validation
+
+The building models trano generates are validated against the 27 cases of section 5.2 of ASHRAE
+Standard 140-2020 (the BESTEST single-zone cases): a 8 m x 6 m x 2.7 m zone in Denver with light
+or heavy constructions, 12 m2 of double glazing, 0.414 air changes per hour of infiltration and
+200 W of internal gains, with variants for the insulation, the glazing, the window orientation,
+overhangs and side fins, an unconditioned sun-space, free-floating temperatures, a dual set point
+ideal system with set-backs and night ventilation.
+
+Each case is a trano YAML file (`validation/bestest/cases/`), simulated for a year with each
+library. The annual heating and cooling loads must fall inside the acceptance limits of the
+standard; the peak loads and the free-floating temperatures must fall inside the spread of the
+reference programs (BSIMAC, CSE, DeST, EnergyPlus, ESP-r, TRNSYS) widened by 5 % of the largest
+peak or 1 K. Buildings and IDEAS are gating libraries: `pytest -m bestest` fails when one of
+their cases leaves its band, except for the deviations listed below with their reason. The
+tables are rendered from the last results with `python -m validation.bestest report --docs`.
+
+"""
+    body = render_markdown(results, reference)
+    return intro + body[body.index("\n") + 1 :].lstrip("\n")

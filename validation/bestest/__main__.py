@@ -16,7 +16,7 @@ from validation.bestest.cases import (
     write_cases,
 )
 from validation.bestest.harness import LIBRARIES, cached_results, run_cases
-from validation.bestest.report import compare, render_markdown, write_report
+from validation.bestest.report import DOCS_PAGE, compare, freeze, render_docs, render_markdown, write_report
 from validation.bestest.reference import load_reference
 
 REPORT_DIR = Path(__file__).parent.joinpath("_reports")
@@ -54,6 +54,9 @@ def main(argv: list[str] | None = None) -> None:
     run.add_argument("--force", action="store_true", help="ignore cached results")
     report = commands.add_parser("report", help="render the cached results")
     report.add_argument("--directory", type=Path, default=REPORT_DIR)
+    report.add_argument("--docs", action="store_true", help="also write the documentation page")
+    freeze_ = commands.add_parser("freeze", help="freeze the cached results as the values the next ones are held to")
+    freeze_.add_argument("--library", choices=LIBRARIES, default="Buildings")
     arguments = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
@@ -73,9 +76,16 @@ def main(argv: list[str] | None = None) -> None:
                     f"[{comparison.lower:.3f}, {comparison.upper:.3f}] {comparison.status}"
                 )
     elif arguments.command == "report":
-        results = {library: cached_results(library) for library in LIBRARIES}
-        write_report({library: cases for library, cases in results.items() if cases}, arguments.directory)
-        print(render_markdown({library: cases for library, cases in results.items() if cases}))
+        results = {library: cases for library in LIBRARIES if (cases := cached_results(library))}
+        write_report(results, arguments.directory)
+        if arguments.docs:
+            DOCS_PAGE.parent.mkdir(parents=True, exist_ok=True)
+            DOCS_PAGE.write_text(render_docs(results))
+            print(f"wrote {DOCS_PAGE}")
+        else:
+            print(render_markdown(results))
+    elif arguments.command == "freeze":
+        print(freeze(arguments.library, cached_results(arguments.library)))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,87 @@
+name: BESTEST
+
+# ASHRAE 140 validation: a year of simulation per case and library, so it runs on a schedule and
+# on demand, not on every push. Results are cached by the generated model, so unchanged cases are
+# read back instead of simulated again.
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      cases:
+        description: "Case ids to run (all when empty)"
+        required: false
+        default: ""
+
+env:
+  TRANO_MODELICA_LIBRARIES: ${{ github.workspace }}/.cache/omlibs
+
+jobs:
+  bestest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 720
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [Buildings, IDEAS]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Restore the Modelica libraries
+        id: libraries
+        uses: actions/cache@v4
+        with:
+          path: .cache/omlibs
+          key: omlibs-${{ hashFiles('trano/simulate/simulate.py') }}
+
+      - name: Install the Modelica libraries
+        if: steps.libraries.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p .cache/omlibs .cache/omlibs-install
+          cat > .cache/omlibs-install/install.mos <<'MOS'
+          updatePackageIndex(); getErrorString();
+          installPackage(Modelica, "4.1.0+maint.om", exactMatch=true); getErrorString();
+          installPackage(Modelica, "4.0.0+maint.om", exactMatch=true); getErrorString();
+          installPackage(Buildings, "13.0.0"); getErrorString();
+          installPackage(IDEAS, "3.0.0"); getErrorString();
+          installPackage(AixLib, "3.0.1"); getErrorString();
+          MOS
+          docker run --rm -v "$PWD/.cache/omlibs:/root/.openmodelica/libraries" \
+            -v "$PWD/.cache/omlibs-install:/install" \
+            openmodelica/openmodelica:v1.26.9-ompython omc /install/install.mos
+
+      - name: Restore the results of the previous runs
+        uses: actions/cache@v4
+        with:
+          path: .cache/bestest
+          key: bestest-${{ matrix.library }}-${{ github.run_id }}
+          restore-keys: bestest-${{ matrix.library }}-
+
+      - name: Simulate the cases
+        run: uv run python -m validation.bestest run ${{ github.event.inputs.cases }} --library ${{ matrix.library }} --workers 2
+
+      - name: Compare with the reference
+        run: uv run pytest -m bestest -k ${{ matrix.library }}
+
+      - name: Render the report
+        if: always()
+        run: uv run python -m validation.bestest report
+
+      - name: Keep the report and the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bestest-${{ matrix.library }}
+          path: |
+            validation/bestest/_reports
+            .cache/bestest/${{ matrix.library }}/*/result.json
+            .cache/bestest/${{ matrix.library }}/*/omc.log

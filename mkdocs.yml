@@ -72,6 +72,8 @@ nav:
   - Reference:
       - Components: reference/components.md
       - Parameters: reference/parameters.md
+  - Validation:
+      - ASHRAE 140 (BESTEST): validation/bestest.md
 
 markdown_extensions:
     - admonition

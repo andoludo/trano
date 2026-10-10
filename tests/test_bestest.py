@@ -9,7 +9,7 @@ import pytest
 from validation.bestest.cases import CASES, UnsupportedCaseError, building_description, check_support
 from validation.bestest.harness import run_case
 from validation.bestest.reference import load_reference
-from validation.bestest.report import compare
+from validation.bestest.report import compare, regressions
 
 # Libraries whose cases must pass; a case not yet supported by the generator is skipped with the
 # feature it waits for, and the deviations listed in ``report.KNOWN_DEVIATIONS`` are accepted.
@@ -43,3 +43,5 @@ def test_case_matches_the_reference(case_id: str, library: str) -> None:
         if c.status == "fail"
     ]
     assert not failures, "\n".join(failures)
+    # The frozen values catch drifts that stay inside the bands: refreeze them on purpose.
+    assert not (moved := regressions(library, case_id, result.kpis)), "\n".join(moved)
