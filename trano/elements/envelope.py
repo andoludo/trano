@@ -4,7 +4,7 @@ from math import sqrt
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Type
 
-from pydantic import BaseModel, field_validator, model_validator, Field
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator, Field
 
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
@@ -60,6 +60,11 @@ class BaseSimpleWall(BaseWall):
     def get_tilt(self, space_name: str) -> Tilt:
         return self.tilt
 
+    @property
+    def opaque_surface(self) -> float:
+        """Area of the element without the windows cut out of it [m2]; the surface itself unless it hosts windows."""
+        return float(self.surface)
+
 
 class BaseInternalElement(BaseSimpleWall):
     # An internal element receives no solar radiation: its orientation is irrelevant.
@@ -70,7 +75,22 @@ class BaseFloorOnGround(BaseSimpleWall):
     ground_temperature: float = GROUND_TEMPERATURE  # [K] at the outer surface of the floor construction
 
 
-class BaseExternalWall(BaseSimpleWall): ...
+class BaseExternalWall(BaseSimpleWall):
+    """External wall whose ``surface`` is the gross facade area, the windows it hosts included.
+
+    The windows of a space are cut out of the walls facing the same way (see
+    :func:`assign_windows_to_walls`): libraries that take the opaque wall on its own (IDEAS,
+    AixLib, ISO 13790, MPC) get ``opaque_surface``, Buildings gets the gross area and cuts the
+    window out itself.
+    """
+
+    hosted_window_area: float = 0.0  # [m2] windows cut out of this wall, assigned by its space
+
+    @property
+    def opaque_surface(self) -> float:
+        if not self.hosted_window_area:
+            return self.surface  # rendered as written (10, not 10.0)
+        return _ten_digits(float(self.surface) - self.hosted_window_area)
 
 
 class BaseWindow(BaseSimpleWall):
@@ -132,13 +152,13 @@ class MergedBaseWall(BaseWall):
                 "azimuth": [],
                 "tilt": [],
                 "name": [],
-                "surface": [],
+                "opaque_surface": [],
             }
             for construction_type in data:
                 data[construction_type] = _get_element(construction_type, base_walls, construction)
             merged_wall = cls(
                 name=f"merged_{'_'.join(data['name'])}",  # type: ignore
-                surfaces=data["surface"],
+                surfaces=data["opaque_surface"],
                 azimuths=data["azimuth"],
                 tilts=data["tilt"],
                 constructions=[construction],
@@ -280,21 +300,64 @@ def _ten_digits(value: float) -> float:
     return float(f"{value:.10g}")
 
 
-def gross_wall_area(host_walls: list[ExternalWall]) -> float:
-    """Area of the opaque construction and its windows together (Buildings ``datConExtWin.A``).
+class HostedWindows(BaseModel):
+    """The windows of one orientation and the walls of that orientation they are cut out of."""
 
-    The wall ``surface`` of the YAML description is taken as the gross area, windows included.
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    host_walls: list[ExternalWall]
+    windows: list[BaseWindow]
+
+    @property
+    def gross_area(self) -> float:
+        """Area of the host walls, windows included (Buildings ``datConExtWin.A``)."""
+        return float(sum(wall.surface for wall in self.host_walls))
+
+    @property
+    def window_area(self) -> float:
+        return float(sum(window.surface for window in self.windows))
+
+
+def hosted_windows(boundaries: list["BaseElement"]) -> list[HostedWindows]:
+    """Group the windows by orientation with their host walls, checking that they fit in them.
+
+    The host walls are the walls with the same azimuth and tilt whose construction covers the
+    largest area.
     """
-    return sum(wall.surface for wall in host_walls)
+    windows = [boundary for boundary in boundaries if isinstance(boundary, BaseWindow)]
+    walls = [boundary for boundary in boundaries if isinstance(boundary, ExternalWall)]
+    groups = [
+        HostedWindows(host_walls=_host_walls(walls, orientation_windows[0]), windows=orientation_windows)
+        for orientation_windows in _group(windows, same_orientation)
+    ]
+    for group in groups:
+        if group.window_area > group.gross_area * (1 + 1e-9):
+            raise InvalidBuildingStructureError(
+                f"The windows {[window.name for window in group.windows]} ({group.window_area} m2) are larger "
+                f"than the walls {[wall.name for wall in group.host_walls]} ({group.gross_area} m2) of the same "
+                "orientation: the wall surface is the gross area, windows included."
+            )
+    return groups
+
+
+def assign_windows_to_walls(boundaries: list["BaseElement"]) -> None:
+    """Cut the windows out of their host walls: sets ``hosted_window_area`` on every external wall.
+
+    The window area of an orientation is spread over its host walls in proportion to their size.
+    """
+    for boundary in boundaries:
+        if isinstance(boundary, BaseExternalWall):
+            boundary.hosted_window_area = 0.0
+    for group in hosted_windows(boundaries):
+        for wall in group.host_walls:
+            wall.hosted_window_area += group.window_area * wall.surface / group.gross_area
 
 
 class WindowedWallParameters(WallParameters):
     """Walls with windows (Buildings ``datConExtWin``): one entry per orientation and glazing.
 
-    The windows of one orientation are hosted by the walls of that orientation whose construction
-    covers the largest area; these walls are excluded from the opaque walls (``datConExt``). With
-    several glazings on one orientation, the gross wall area is split between the entries in
-    proportion to their window areas, so that it is counted once.
+    The host walls of the windows are excluded from the opaque walls (``datConExt``). With several
+    glazings on one orientation, the gross wall area is split between the entries in proportion to
+    their window areas, so that it is counted once.
     """
 
     window_layers: list[str]
@@ -304,24 +367,16 @@ class WindowedWallParameters(WallParameters):
 
     @classmethod
     def from_neighbors(cls, neighbors: list["BaseElement"]) -> "WindowedWallParameters":  # type: ignore[override]
-        windows = [neighbor for neighbor in neighbors if isinstance(neighbor, BaseWindow)]
-        walls = [neighbor for neighbor in neighbors if isinstance(neighbor, ExternalWall)]
         entries: dict[str, list[Any]] = {
             key: []
             for key in ("surfaces", "azimuths", "layers", "tilts", "window_layers", "window_width", "window_height")
         }
         included_external_walls: list[str] = []
-        for orientation_windows in _group(windows, same_orientation):
-            host_walls = _host_walls(walls, orientation_windows[0])
+        for group in hosted_windows(neighbors):
+            host_walls = group.host_walls
             included_external_walls += [wall.name for wall in host_walls if wall.name is not None]
-            gross_area = gross_wall_area(host_walls)
-            window_area = sum(window.surface for window in orientation_windows)
-            if window_area > gross_area * (1 + 1e-9):
-                raise InvalidBuildingStructureError(
-                    f"The windows {[window.name for window in orientation_windows]} ({window_area} m2) are larger "
-                    f"than the walls {[wall.name for wall in host_walls]} ({gross_area} m2) of the same orientation."
-                )
-            for glazing_windows in _group(orientation_windows, lambda a, b: a.construction == b.construction):
+            gross_area, window_area = group.gross_area, group.window_area
+            for glazing_windows in _group(group.windows, lambda a, b: a.construction == b.construction):
                 area = sum(window.surface for window in glazing_windows)
                 height = sum(window.surface * window.height for window in glazing_windows) / area
                 entries["surfaces"].append(_ten_digits(gross_area * area / window_area))

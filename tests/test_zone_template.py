@@ -63,7 +63,7 @@ def test_rectangular_zone_maps_the_four_orientations() -> None:
     assert east.window is not None
     assert east.window.area == 1
     assert east.window.height == 1
-    assert east.length == pytest.approx((10 + 1) / 2.0)
+    assert east.length == pytest.approx(10 / 2.0)  # the wall surface is gross: the window is already in it
     assert zone.length == 5.0
     assert zone.width == 4.0
     assert zone.ceiling_area == 20.0

@@ -55,17 +55,13 @@ class Face(BaseModel):
     key: FaceKey
     boundary_type: BoundaryType = "None"
     construction: Construction | None = None
-    area: float = 0.0
+    area: float = 0.0  # [m2] gross area of the face, its window included
     window: TemplateWindow | None = None
 
     @property
     def length(self) -> float | None:
         """Horizontal length of a vertical face, derived from its gross area and the zone height."""
         return None
-
-    @property
-    def gross_area(self) -> float:
-        return self.area + (self.window.area if self.window else 0.0)
 
 
 class VerticalFace(Face):
@@ -75,7 +71,8 @@ class VerticalFace(Face):
     def length(self) -> float | None:
         if self.boundary_type == "None":
             return None
-        return self.gross_area / self.height
+        # The face area is the gross area, windows included: IDEAS cuts the window out of l * h itself.
+        return self.area / self.height
 
 
 def _largest_group(elements: Iterable[BaseSimpleWall]) -> tuple[list[BaseSimpleWall], list[BaseSimpleWall]]:
@@ -160,7 +157,7 @@ class RectangularZone(BaseModel):
     @property
     def ceiling_area(self) -> float:
         ceiling = self.face("Cei")
-        return ceiling.gross_area if ceiling.boundary_type != "None" else self.floor_area
+        return ceiling.area if ceiling.boundary_type != "None" else self.floor_area
 
     def face(self, key: FaceKey) -> Face:
         return next(face for face in self.faces if face.key == key)

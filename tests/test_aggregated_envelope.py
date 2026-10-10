@@ -16,6 +16,7 @@ from tests.golden import remove_trano_package
 from tests.test_yaml_values import NUMBER
 from trano.elements import ExternalWall, FloorOnGround, Window
 from trano.elements.aggregated_envelope import AggregatedEnvelope
+from trano.elements.envelope import assign_windows_to_walls
 from trano.elements.construction import Construction, Layer
 from trano.elements.library.library import Library
 from trano.elements.space import Space
@@ -50,6 +51,12 @@ def window(name: str, surface: float, azimuth: float = Azimuth.south) -> Window:
     return Window(name=name, surface=surface, azimuth=azimuth, tilt=Tilt.wall, construction=Glasses.double_glazing)
 
 
+def envelope_of(*boundaries: ExternalWall | Window | FloorOnGround) -> AggregatedEnvelope:
+    """The space cuts the windows out of their walls before the envelope is aggregated."""
+    assign_windows_to_walls(list(boundaries))
+    return AggregatedEnvelope.from_boundaries(list(boundaries))
+
+
 def test_exterior_walls_are_lumped_in_kelvin_per_watt() -> None:
     walls = AggregatedEnvelope.from_boundaries(
         [wall("south", 40), wall("west", 60, Azimuth.west, construction=INSULATED)]
@@ -65,19 +72,18 @@ def test_exterior_walls_are_lumped_in_kelvin_per_watt() -> None:
 
 
 def test_surfaces_facing_the_same_way_form_one_orientation() -> None:
-    envelope = AggregatedEnvelope.from_boundaries(
-        [
-            wall("west_rounded", 10, Azimuth.west),
-            wall("west_exact", 15, math.pi / 2),
-            wall("south", 20),
-            window("south_window", 4),
-            window("east_window", 2, Azimuth.east),
-        ]
+    envelope = envelope_of(
+        wall("west_rounded", 10, Azimuth.west),
+        wall("west_exact", 15, math.pi / 2),
+        wall("south", 20),
+        wall("east", 5, Azimuth.east),
+        window("south_window", 4),
+        window("east_window", 2, Azimuth.east),
     )
 
-    # One entry per orientation, sorted by azimuth: east, south, west.
+    # One entry per orientation, sorted by azimuth: east, south, west; the windows cut out of their walls.
     assert envelope.azimuths == [-1.57, 0.0, 1.57]
-    assert envelope.opaque_areas == [0.0, 20.0, 25.0]
+    assert envelope.opaque_areas == [3.0, 16.0, 25.0]
     assert envelope.window_areas == [2.0, 4.0, 0.0]
     assert envelope.tilts == [pytest.approx(math.pi / 2, rel=1e-5)] * 3
 
@@ -103,21 +109,19 @@ def test_roofs_are_only_part_of_the_roof() -> None:
 
 
 def test_weighting_factors_are_the_conductance_shares_of_the_orientations() -> None:
-    envelope = AggregatedEnvelope.from_boundaries(
-        [
-            wall("south", 30),
-            wall("north", 10, Azimuth.north),
-            wall("west", 10, Azimuth.west, construction=INSULATED),
-            window("south_window", 3),
-            window("north_window", 1, Azimuth.north),
-        ]
+    envelope = envelope_of(
+        wall("south", 30),
+        wall("north", 10, Azimuth.north),
+        wall("west", 10, Azimuth.west, construction=INSULATED),
+        window("south_window", 3),
+        window("north_window", 1, Azimuth.north),
     )
     south, west, north = (
         area / (0.13 + resistance + 0.04)
         for area, resistance in [
-            (30, CONCRETE_RESISTANCE),
+            (30 - 3, CONCRETE_RESISTANCE),  # opaque part: the window is cut out
             (10, INSULATED_RESISTANCE),
-            (10, CONCRETE_RESISTANCE),
+            (10 - 1, CONCRETE_RESISTANCE),
         ]
     )
 
@@ -130,8 +134,11 @@ def test_weighting_factors_are_the_conductance_shares_of_the_orientations() -> N
 
 def test_windows_are_lumped_from_their_glazing() -> None:
     glazing = Glasses.double_glazing.properties
-    windows = AggregatedEnvelope.from_boundaries(
-        [wall("south", 30), window("south_window", 3), window("west_window", 2, Azimuth.west)]
+    windows = envelope_of(
+        wall("south", 30),
+        wall("west", 10, Azimuth.west),
+        window("south_window", 3),
+        window("west_window", 2, Azimuth.west),
     ).windows
 
     assert windows.area == 5
@@ -207,12 +214,13 @@ def test_reduced_order_zone_takes_the_aggregated_envelope() -> None:
     assert parameter(declaration, "nOrientations") == [4]
     # Orientations sorted by azimuth: east, south, west, north; windows east and south.
     assert parameter(declaration, "aziExtWalls") == [-1.57, 0, 1.57, 3.14]
-    assert parameter(declaration, "AExt") == [10, 10, 10, 10]
+    # Walls of 10 m2 everywhere; the 5 m2 windows are cut out of the east and south walls.
+    assert parameter(declaration, "AExt") == [5, 5, 10, 10]
     assert parameter(declaration, "AWin") == [5, 5, 0, 0]
     assert parameter(declaration, "ATransparent") == [5, 5, 0, 0]
     assert parameter(declaration, "RExt") == [envelope.exterior_walls.resistance]
     assert parameter(declaration, "RExt")[0] == pytest.approx(
-        space.external_boundaries[0].construction.total_thermal_resistance / 2 / 40, rel=1e-5
+        space.external_boundaries[0].construction.total_thermal_resistance / 2 / 30, rel=1e-5
     )
     assert parameter(declaration, "CExt") == [envelope.exterior_walls.capacitance]
     assert parameter(declaration, "RWin") == [envelope.windows.resistance]
@@ -232,7 +240,7 @@ def test_iso_13790_zone_takes_the_aggregated_envelope() -> None:
 
     assert parameter(declaration, "nOrientations") == [4]
     assert parameter(declaration, "surAzi") == [-1.57, 0, 1.57, 3.14]
-    assert parameter(declaration, "AWal") == [10, 10, 10, 10]
+    assert parameter(declaration, "AWal") == [5, 5, 10, 10]
     assert parameter(declaration, "AWin") == [5, 5, 0, 0]
     assert parameter(declaration, "UWal") == [envelope.exterior_walls.u_value]
     assert parameter(declaration, "UWin") == [envelope.windows.u_value]

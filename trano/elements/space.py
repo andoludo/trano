@@ -11,6 +11,7 @@ from trano.elements.construction import Construction, Glass
 from trano.elements.envelope import (
     BaseExternalWall,
     BaseFloorOnGround,
+    BaseSimpleWall,
     BaseInternalElement,
     BaseWindow,
     ExternalWall,
@@ -21,6 +22,7 @@ from trano.elements.envelope import (
     MergedWindows,
     WallParameters,
     WindowedWallParameters,
+    assign_windows_to_walls,
 )
 from trano.elements.system import BaseOccupancy, Emission, System, AirHandlingUnit
 from trano.elements.types import BaseVariant, ContainerTypes
@@ -117,6 +119,7 @@ class BaseSpace(BaseElement):
 
     def _merged_envelope(self) -> list[EnvelopeComponent]:
         """Array components of the envelope; with the zone template only the surfaces it cannot hold."""
+        assign_windows_to_walls(self.external_boundaries)  # type: ignore[arg-type]
         if self.uses_zone_template:
             return merge_external_boundaries(self.rectangular_zone.external_surfaces)
         return merge_external_boundaries(self.external_boundaries)
@@ -210,14 +213,10 @@ class BaseSpace(BaseElement):
         """Constructions of the Buildings zone, grouped from the envelope elements connected to the space."""
         neighbors = list(graph.neighbors(self))  # type: ignore
         windowed_walls = WindowedWallParameters.from_neighbors(neighbors)
+        kinds: list[type[BaseSimpleWall]] = [ExternalWall, InternalElement, FloorOnGround]
         self.boundaries = [
-            WallParameters.from_neighbors(
-                self.name,
-                neighbors,
-                wall,  # type: ignore
-                filter=windowed_walls.included_external_walls,
-            )
-            for wall in [ExternalWall, InternalElement, FloorOnGround]
+            WallParameters.from_neighbors(self.name, neighbors, kind, filter=windowed_walls.included_external_walls)
+            for kind in kinds
         ]
         self.boundaries.append(windowed_walls)
 
@@ -230,6 +229,7 @@ class BaseSpace(BaseElement):
         self.name = f"merge_{self.name.replace('merge', '')}_{other.name.replace('merge', '')}"
         self.volume: float = self.volume + other.volume
         self.external_boundaries += other.external_boundaries
+        assign_windows_to_walls(self.external_boundaries)  # type: ignore[arg-type]
         # Views derived from the envelope are cached: drop them so they are rebuilt from the merged envelope.
         for derived_envelope in ("aggregated_envelope", "rectangular_zone"):
             self.__dict__.pop(derived_envelope, None)

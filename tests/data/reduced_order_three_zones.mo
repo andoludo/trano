@@ -3611,12 +3611,12 @@ AZone=20.0, VAir=40.0,
     UWin=2.8576,
     ratioWinConRad=0.09,
 
-    AExt={ 10.0, 10.0, 10.0, 10.0 },
+    AExt={ 5.0, 5.0, 10.0, 10.0 },
     hConExt=2.7,
     nExt=1,
-    RExt={0.0205357},
-    RExtRem=0.0205357,
-    CExt={17704800.0},
+    RExt={0.027381},
+    RExtRem=0.027381,
+    CExt={13278600.0},
 
     AInt=0,
     hConInt=2.27,
@@ -3652,7 +3652,7 @@ AZone=20.0, VAir=40.0,
     hRadRoof=5,
     tiltExtWalls={ 1.5708, 1.5708, 1.5708, 1.5708 },
     aziExtWalls={ -1.57, 0.0, 1.57, 3.14 },
-    wfWall={ 0.25, 0.25, 0.25, 0.25 },
+    wfWall={ 0.166667, 0.166667, 0.333333, 0.333333 },
     wfWin={ 0.5, 0.5, 0.0, 0.0 },
     wfGro=0,
     specificPeople=1/6/4,
@@ -3691,7 +3691,7 @@ TThresholdHeater=273.15 + 15,
 TThresholdCooler=273.15 + 22,
     withIdealThresholds=false))
  annotation (
-    Placement(transformation(origin = { 38.2728271484375, -42.661521911621094 },
+    Placement(transformation(origin = { 37.0740966796875, -1.553924560546875 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3703,7 +3703,7 @@ TThresholdCooler=273.15 + 22,
     
         reduced_order_three_zones.Trano.Occupancy.SimpleOccupancy
     occupancy_0(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { 23.2728271484375, -42.661521911621094 },
+    Placement(transformation(origin = { 22.0740966796875, -1.553924560546875 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone space_2(
@@ -3728,12 +3728,12 @@ AZone=20.0, VAir=40.0,
     UWin=2.8576,
     ratioWinConRad=0.09,
 
-    AExt={ 10.0, 10.0, 10.0 },
+    AExt={ 5.0, 10.0, 5.0 },
     hConExt=2.7,
     nExt=1,
-    RExt={0.027381},
-    RExtRem=0.027381,
-    CExt={13278600.0},
+    RExt={0.0410714},
+    RExtRem=0.0410714,
+    CExt={8852400.0},
 
     AInt=0,
     hConInt=2.27,
@@ -3769,7 +3769,7 @@ AZone=20.0, VAir=40.0,
     hRadRoof=5,
     tiltExtWalls={ 1.5708, 1.5708, 1.5708 },
     aziExtWalls={ 0.0, 1.57, 3.14 },
-    wfWall={ 0.333333, 0.333333, 0.333333 },
+    wfWall={ 0.25, 0.5, 0.25 },
     wfWin={ 0.5, 0.0, 0.5 },
     wfGro=0,
     specificPeople=1/6/4,
@@ -3808,7 +3808,7 @@ TThresholdHeater=273.15 + 15,
 TThresholdCooler=273.15 + 22,
     withIdealThresholds=false))
  annotation (
-    Placement(transformation(origin = { 20.26605224609375, 69.46517944335938 },
+    Placement(transformation(origin = { -79.17137145996094, -60.36997985839844 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3819,7 +3819,7 @@ TThresholdCooler=273.15 + 22,
     
         reduced_order_three_zones.Trano.Occupancy.SimpleOccupancy
     occupancy_1(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { 5.26605224609375, 69.46517944335938 },
+    Placement(transformation(origin = { -94.17137145996094, -60.36997985839844 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone space_3(
@@ -3844,12 +3844,12 @@ AZone=20.0, VAir=40.0,
     UWin=2.8576,
     ratioWinConRad=0.09,
 
-    AExt={ 10.0, 10.0, 10.0 },
+    AExt={ 5.0, 10.0, 10.0 },
     hConExt=2.7,
     nExt=1,
-    RExt={0.027381},
-    RExtRem=0.027381,
-    CExt={13278600.0},
+    RExt={0.0328571},
+    RExtRem=0.0328571,
+    CExt={11065500.0},
 
     AInt=0,
     hConInt=2.27,
@@ -3885,7 +3885,7 @@ AZone=20.0, VAir=40.0,
     hRadRoof=5,
     tiltExtWalls={ 1.5708, 1.5708, 1.5708 },
     aziExtWalls={ -1.57, 1.57, 3.14 },
-    wfWall={ 0.333333, 0.333333, 0.333333 },
+    wfWall={ 0.2, 0.4, 0.4 },
     wfWin={ 1.0, 0.0, 0.0 },
     wfGro=0,
     specificPeople=1/6/4,
@@ -3924,7 +3924,7 @@ TThresholdHeater=273.15 + 15,
 TThresholdCooler=273.15 + 22,
     withIdealThresholds=false))
  annotation (
-    Placement(transformation(origin = { 41.14356994628906, -11.192192077636719 },
+    Placement(transformation(origin = { -19.380599975585938, -61.013004302978516 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3934,7 +3934,7 @@ TThresholdCooler=273.15 + 22,
     
         reduced_order_three_zones.Trano.Occupancy.SimpleOccupancy
     occupancy_2(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { 26.143569946289062, -11.192192077636719 },
+    Placement(transformation(origin = { -34.38059997558594, -61.013004302978516 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     
@@ -3944,13 +3944,13 @@ TThresholdCooler=273.15 + 22,
             weather_0(filNam=Modelica.Utilities.Files.loadResource
     ("modelica://AixLib/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
  annotation (
-    Placement(transformation(origin = { -27.739593505859375, 92.40632629394531 },
+    Placement(transformation(origin = { 47.77569580078125, 78.13204956054688 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(space_1.intGains,occupancy_0.relativeGains)
         annotation (Line(
-        points={{ 38.2728271484375, -42.661521911621094 }    ,{ 30.7728271484375, -42.661521911621094 }    ,{ 30.7728271484375, -42.661521911621094 }    ,{ 23.2728271484375, -42.661521911621094 }    },
+        points={{ 37.0740966796875, -1.553924560546875 }    ,{ 29.5740966796875, -1.553924560546875 }    ,{ 29.5740966796875, -1.553924560546875 }    ,{ 22.0740966796875, -1.553924560546875 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3958,7 +3958,7 @@ equation
             ;        
         connect(space_1.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ 38.2728271484375, -42.661521911621094 }    ,{ 5.2666168212890625, -42.661521911621094 }    ,{ 5.2666168212890625, 92.40632629394531 }    ,{ -27.739593505859375, 92.40632629394531 }    },
+        points={{ 37.0740966796875, -1.553924560546875 }    ,{ 42.424896240234375, -1.553924560546875 }    ,{ 42.424896240234375, 78.13204956054688 }    ,{ 47.77569580078125, 78.13204956054688 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3966,7 +3966,7 @@ equation
             ;        
         connect(space_2.intGains,occupancy_1.relativeGains)
         annotation (Line(
-        points={{ 20.26605224609375, 69.46517944335938 }    ,{ 12.76605224609375, 69.46517944335938 }    ,{ 12.76605224609375, 69.46517944335938 }    ,{ 5.26605224609375, 69.46517944335938 }    },
+        points={{ -79.17137145996094, -60.36997985839844 }    ,{ -86.67137145996094, -60.36997985839844 }    ,{ -86.67137145996094, -60.36997985839844 }    ,{ -94.17137145996094, -60.36997985839844 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3974,7 +3974,7 @@ equation
             ;        
         connect(space_2.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ 20.26605224609375, 69.46517944335938 }    ,{ -3.7367706298828125, 69.46517944335938 }    ,{ -3.7367706298828125, 92.40632629394531 }    ,{ -27.739593505859375, 92.40632629394531 }    },
+        points={{ -79.17137145996094, -60.36997985839844 }    ,{ -15.697837829589844, -60.36997985839844 }    ,{ -15.697837829589844, 78.13204956054688 }    ,{ 47.77569580078125, 78.13204956054688 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3982,7 +3982,7 @@ equation
             ;        
         connect(space_3.intGains,occupancy_2.relativeGains)
         annotation (Line(
-        points={{ 41.14356994628906, -11.192192077636719 }    ,{ 33.64356994628906, -11.192192077636719 }    ,{ 33.64356994628906, -11.192192077636719 }    ,{ 26.143569946289062, -11.192192077636719 }    },
+        points={{ -19.380599975585938, -61.013004302978516 }    ,{ -26.880599975585938, -61.013004302978516 }    ,{ -26.880599975585938, -61.013004302978516 }    ,{ -34.38059997558594, -61.013004302978516 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3990,7 +3990,7 @@ equation
             ;        
         connect(space_3.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ 41.14356994628906, -11.192192077636719 }    ,{ 6.701988220214844, -11.192192077636719 }    ,{ 6.701988220214844, 92.40632629394531 }    ,{ -27.739593505859375, 92.40632629394531 }    },
+        points={{ -19.380599975585938, -61.013004302978516 }    ,{ 14.197547912597656, -61.013004302978516 }    ,{ 14.197547912597656, 78.13204956054688 }    ,{ 47.77569580078125, 78.13204956054688 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4004,7 +4004,7 @@ equation
             ;        
         connect(weather_0.weaBus,dataBus)
         annotation (Line(
-        points={{ -27.739593505859375, 92.40632629394531 }    ,{ -27.739593505859375, 92.40632629394531 }    ,{ -27.739593505859375, 92.40632629394531 }    ,{ -27.739593505859375, 92.40632629394531 }    },
+        points={{ 47.77569580078125, 78.13204956054688 }    ,{ 47.77569580078125, 78.13204956054688 }    ,{ 47.77569580078125, 78.13204956054688 }    ,{ 47.77569580078125, 78.13204956054688 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,

@@ -104,13 +104,16 @@ def group_by_orientation(
         if orientation is None:
             orientation = Orientation(azimuth=element.azimuth, tilt=tilt_radians(element.tilt))
             orientations.append(orientation)
-        conductance = element.surface * _u_value(element, interior_resistance, EXTERIOR_RESISTANCE)
         if is_window:
             orientation.window_area += element.surface
-            orientation.window_conductance += conductance
+            orientation.window_conductance += element.surface * _u_value(
+                element, interior_resistance, EXTERIOR_RESISTANCE
+            )
         else:
-            orientation.opaque_area += element.surface
-            orientation.opaque_conductance += conductance
+            orientation.opaque_area += element.opaque_surface
+            orientation.opaque_conductance += element.opaque_surface * _u_value(
+                element, interior_resistance, EXTERIOR_RESISTANCE
+            )
     return sorted(orientations, key=lambda orientation: (orientation.tilt, orientation.azimuth))
 
 
@@ -127,7 +130,10 @@ def weighting_factors(conductances: Sequence[float]) -> list[float]:
 
 
 class LumpedElement(BaseModel):
-    """Opaque elements lumped into one element: two equal resistances around one capacitance."""
+    """Opaque elements lumped into one element: two equal resistances around one capacitance.
+
+    Walls count without the windows cut out of them (``opaque_surface``).
+    """
 
     area: float = 0.0  # [m2]
     resistance: float = EMPTY_RESISTANCE  # [K/W] interior surface to capacitance
@@ -139,14 +145,16 @@ class LumpedElement(BaseModel):
     def from_elements(
         cls, elements: Sequence[BaseSimpleWall], interior_resistance: float, exterior_resistance: float
     ) -> LumpedElement:
-        area = sum(element.surface for element in elements)
+        area = sum(element.opaque_surface for element in elements)
         if area <= 0:
             return cls()
         # Each element's half resistance is r/2 per square metre: in parallel, 1/R = sum(A / (r/2)).
-        half_conductance = sum(element.surface / (_resistance(element.construction) / 2) for element in elements)
-        capacitance = sum(element.surface * element.construction.total_thermal_capacitance for element in elements)
+        half_conductance = sum(element.opaque_surface / (_resistance(element.construction) / 2) for element in elements)
+        capacitance = sum(
+            element.opaque_surface * element.construction.total_thermal_capacitance for element in elements
+        )
         conductance = sum(
-            element.surface * _u_value(element, interior_resistance, exterior_resistance) for element in elements
+            element.opaque_surface * _u_value(element, interior_resistance, exterior_resistance) for element in elements
         )
         return cls(
             area=significant(area),

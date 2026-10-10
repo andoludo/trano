@@ -192,7 +192,7 @@ def zone_envelope(space: "Space", settings: EstimationSettings) -> ZoneEnvelope:
 
     rsi, rse = settings.internal_surface_resistance, settings.external_surface_resistance
     for boundary in space.external_boundaries:
-        area = float(boundary.surface)
+        area = boundary.opaque_surface  # windows are cut out of the walls hosting them
         construction = boundary.construction
         resistance = _layers_resistance(construction)
         if isinstance(boundary, BaseWindow):

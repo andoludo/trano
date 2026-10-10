@@ -3592,7 +3592,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     Trano.ThermalZones.ISO13790ZoneHVAC space_1(
 redeclare package Medium = Medium,
 AFlo=20.0, VRoo=40.0,
-AWal={ 10.0, 10.0, 10.0, 10.0 },
+AWal={ 5.0, 5.0, 10.0, 10.0 },
 nOrientations=4,
 surAzi={ -1.57, 0.0, 1.57, 3.14 },
 surTil={ 1.5708, 1.5708, 1.5708, 1.5708 },
@@ -3608,7 +3608,7 @@ URoo=0.0,
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Light buiMas,
 gFac=0.579037) "Thermal zone"
  annotation (
-    Placement(transformation(origin = { 53.37461853027344, 88.99794006347656 },
+    Placement(transformation(origin = { -54.09383010864258, -83.87821960449219 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3620,13 +3620,13 @@ gFac=0.579037) "Thermal zone"
     
         iso_13790_three_zones.Trano.Occupancy.ISO13790
     occupancy_0(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { 38.37461853027344, 88.99794006347656 },
+    Placement(transformation(origin = { -69.09383010864258, -83.87821960449219 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     Trano.ThermalZones.ISO13790ZoneHVAC space_2(
 redeclare package Medium = Medium,
 AFlo=20.0, VRoo=40.0,
-AWal={ 10.0, 10.0, 10.0 },
+AWal={ 5.0, 10.0, 5.0 },
 nOrientations=3,
 surAzi={ 0.0, 1.57, 3.14 },
 surTil={ 1.5708, 1.5708, 1.5708 },
@@ -3642,7 +3642,7 @@ URoo=0.0,
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Light buiMas,
 gFac=0.579037) "Thermal zone"
  annotation (
-    Placement(transformation(origin = { -22.781570434570312, -33.727195739746094 },
+    Placement(transformation(origin = { 15.926719665527344, 27.278831481933594 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3653,13 +3653,13 @@ gFac=0.579037) "Thermal zone"
     
         iso_13790_three_zones.Trano.Occupancy.ISO13790
     occupancy_1(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { -37.78157043457031, -33.727195739746094 },
+    Placement(transformation(origin = { 0.9267196655273438, 27.278831481933594 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     Trano.ThermalZones.ISO13790ZoneHVAC space_3(
 redeclare package Medium = Medium,
 AFlo=20.0, VRoo=40.0,
-AWal={ 10.0, 10.0, 10.0 },
+AWal={ 5.0, 10.0, 10.0 },
 nOrientations=3,
 surAzi={ -1.57, 1.57, 3.14 },
 surTil={ 1.5708, 1.5708, 1.5708 },
@@ -3675,7 +3675,7 @@ URoo=0.0,
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Light buiMas,
 gFac=0.579037) "Thermal zone"
  annotation (
-    Placement(transformation(origin = { 64.92265319824219, -63.886146545410156 },
+    Placement(transformation(origin = { 29.969985961914062, -72.7062759399414 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3685,7 +3685,7 @@ gFac=0.579037) "Thermal zone"
     
         iso_13790_three_zones.Trano.Occupancy.ISO13790
     occupancy_2(gain=[35; 70; 30], k=1/6/4, occupancy=3600*{7, 19}, ACH=0.9) annotation (
-    Placement(transformation(origin = { 49.92265319824219, -63.886146545410156 },
+    Placement(transformation(origin = { 14.969985961914062, -72.7062759399414 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     
@@ -3695,13 +3695,13 @@ gFac=0.579037) "Thermal zone"
             weather_0(filNam=Modelica.Utilities.Files.loadResource
     ("modelica://AixLib/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
  annotation (
-    Placement(transformation(origin = { -83.25221252441406, 25.837600708007812 },
+    Placement(transformation(origin = { 78.18753051757812, -4.6370391845703125 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(space_1.intLatGaiFlo,occupancy_0.latentGains)
         annotation (Line(
-        points={{ 53.37461853027344, 88.99794006347656 }    ,{ 45.87461853027344, 88.99794006347656 }    ,{ 45.87461853027344, 88.99794006347656 }    ,{ 38.37461853027344, 88.99794006347656 }    },
+        points={{ -54.09383010864258, -83.87821960449219 }    ,{ -61.59383010864258, -83.87821960449219 }    ,{ -61.59383010864258, -83.87821960449219 }    ,{ -69.09383010864258, -83.87821960449219 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3709,7 +3709,7 @@ equation
             ;        
         connect(space_1.intSenGaiFlo,occupancy_0.sensibleGains)
         annotation (Line(
-        points={{ 53.37461853027344, 88.99794006347656 }    ,{ 45.87461853027344, 88.99794006347656 }    ,{ 45.87461853027344, 88.99794006347656 }    ,{ 38.37461853027344, 88.99794006347656 }    },
+        points={{ -54.09383010864258, -83.87821960449219 }    ,{ -61.59383010864258, -83.87821960449219 }    ,{ -61.59383010864258, -83.87821960449219 }    ,{ -69.09383010864258, -83.87821960449219 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3717,7 +3717,7 @@ equation
             ;        
         connect(space_1.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ 53.37461853027344, 88.99794006347656 }    ,{ -14.938796997070312, 88.99794006347656 }    ,{ -14.938796997070312, 25.837600708007812 }    ,{ -83.25221252441406, 25.837600708007812 }    },
+        points={{ -54.09383010864258, -83.87821960449219 }    ,{ 12.046850204467773, -83.87821960449219 }    ,{ 12.046850204467773, -4.6370391845703125 }    ,{ 78.18753051757812, -4.6370391845703125 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3725,7 +3725,7 @@ equation
             ;        
         connect(space_2.intLatGaiFlo,occupancy_1.latentGains)
         annotation (Line(
-        points={{ -22.781570434570312, -33.727195739746094 }    ,{ -30.281570434570312, -33.727195739746094 }    ,{ -30.281570434570312, -33.727195739746094 }    ,{ -37.78157043457031, -33.727195739746094 }    },
+        points={{ 15.926719665527344, 27.278831481933594 }    ,{ 8.426719665527344, 27.278831481933594 }    ,{ 8.426719665527344, 27.278831481933594 }    ,{ 0.9267196655273438, 27.278831481933594 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3733,7 +3733,7 @@ equation
             ;        
         connect(space_2.intSenGaiFlo,occupancy_1.sensibleGains)
         annotation (Line(
-        points={{ -22.781570434570312, -33.727195739746094 }    ,{ -30.281570434570312, -33.727195739746094 }    ,{ -30.281570434570312, -33.727195739746094 }    ,{ -37.78157043457031, -33.727195739746094 }    },
+        points={{ 15.926719665527344, 27.278831481933594 }    ,{ 8.426719665527344, 27.278831481933594 }    ,{ 8.426719665527344, 27.278831481933594 }    ,{ 0.9267196655273438, 27.278831481933594 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3741,7 +3741,7 @@ equation
             ;        
         connect(space_2.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ -22.781570434570312, -33.727195739746094 }    ,{ -53.01689147949219, -33.727195739746094 }    ,{ -53.01689147949219, 25.837600708007812 }    ,{ -83.25221252441406, 25.837600708007812 }    },
+        points={{ 15.926719665527344, 27.278831481933594 }    ,{ 47.057125091552734, 27.278831481933594 }    ,{ 47.057125091552734, -4.6370391845703125 }    ,{ 78.18753051757812, -4.6370391845703125 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3749,7 +3749,7 @@ equation
             ;        
         connect(space_3.intLatGaiFlo,occupancy_2.latentGains)
         annotation (Line(
-        points={{ 64.92265319824219, -63.886146545410156 }    ,{ 57.42265319824219, -63.886146545410156 }    ,{ 57.42265319824219, -63.886146545410156 }    ,{ 49.92265319824219, -63.886146545410156 }    },
+        points={{ 29.969985961914062, -72.7062759399414 }    ,{ 22.469985961914062, -72.7062759399414 }    ,{ 22.469985961914062, -72.7062759399414 }    ,{ 14.969985961914062, -72.7062759399414 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3757,7 +3757,7 @@ equation
             ;        
         connect(space_3.intSenGaiFlo,occupancy_2.sensibleGains)
         annotation (Line(
-        points={{ 64.92265319824219, -63.886146545410156 }    ,{ 57.42265319824219, -63.886146545410156 }    ,{ 57.42265319824219, -63.886146545410156 }    ,{ 49.92265319824219, -63.886146545410156 }    },
+        points={{ 29.969985961914062, -72.7062759399414 }    ,{ 22.469985961914062, -72.7062759399414 }    ,{ 22.469985961914062, -72.7062759399414 }    ,{ 14.969985961914062, -72.7062759399414 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3765,7 +3765,7 @@ equation
             ;        
         connect(space_3.weaBus,weather_0.weaBus)
         annotation (Line(
-        points={{ 64.92265319824219, -63.886146545410156 }    ,{ -9.164779663085938, -63.886146545410156 }    ,{ -9.164779663085938, 25.837600708007812 }    ,{ -83.25221252441406, 25.837600708007812 }    },
+        points={{ 29.969985961914062, -72.7062759399414 }    ,{ 54.078758239746094, -72.7062759399414 }    ,{ 54.078758239746094, -4.6370391845703125 }    ,{ 78.18753051757812, -4.6370391845703125 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3779,7 +3779,7 @@ equation
             ;        
         connect(weather_0.weaBus,dataBus)
         annotation (Line(
-        points={{ -83.25221252441406, 25.837600708007812 }    ,{ -83.25221252441406, 25.837600708007812 }    ,{ -83.25221252441406, 25.837600708007812 }    ,{ -83.25221252441406, 25.837600708007812 }    },
+        points={{ 78.18753051757812, -4.6370391845703125 }    ,{ 78.18753051757812, -4.6370391845703125 }    ,{ 78.18753051757812, -4.6370391845703125 }    ,{ 78.18753051757812, -4.6370391845703125 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,

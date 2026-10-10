@@ -3550,7 +3550,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 
 package Glazing "Library of building glazing systems"
 extends Modelica.Icons.MaterialPropertiesPackage;
-    record double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+    record simple_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
       final nLay=3,
       final checkLowPerformanceGlazing=false,
       mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.id_100
@@ -3582,7 +3582,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
       final U_value=2.8576,
       final g_value=0.579
     ) "ideas_rectangular_zone_with_external_surfaces";
-    record simple_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+    record double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
       final nLay=3,
       final checkLowPerformanceGlazing=false,
       mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.id_100
@@ -3617,15 +3617,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
-      k=1.4,
-      c=840.0,
-      rho=2240.0,
-      epsLw=0.85,
-      epsSw=0.65);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.03,
       c=1200.0,
       rho=40.0,
+      epsLw=0.85,
+      epsSw=0.65);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.4,
+      c=840.0,
+      rho=2240.0,
       epsLw=0.85,
       epsSw=0.65);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.89,
@@ -3716,12 +3716,12 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     redeclare package Medium = Medium,
     T_start=293.15,
     aziA=0.0,
-    l=7.0,
-    w=2.857142857142857,
+    l=6.0,
+    w=3.3333333333333335,
     ACei=20.0,
     bouTypA=IDEAS.Buildings.Components.Interfaces.BoundaryType.OuterWall,
     redeclare parameter ideas_rectangular_zone_with_external_surfaces.Data.Constructions.external_wall conTypA,
-    lA=7.0,
+    lA=6.0,
     hasWinA=true,
     A_winA=2.0,
     redeclare ideas_rectangular_zone_with_external_surfaces.Data.Glazing.double_glazing glazingA,
@@ -3736,7 +3736,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     redeclare parameter ideas_rectangular_zone_with_external_surfaces.Data.Constructions.external_wall conTypFlo,
     bouTypCei=IDEAS.Buildings.Components.Interfaces.BoundaryType.None,
     nSurfExt=3) annotation (
-    Placement(transformation(origin = { -100.0, 100.0 },
+    Placement(transformation(origin = { 100.0, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -3748,7 +3748,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     final azi={ 0 },
     redeclare package Medium = Medium,
     final inc={IDEAS.Types.Tilt.Wall}) annotation (
-    Placement(transformation(origin = { -85.0, 100.0 },
+    Placement(transformation(origin = { 115.0, 100.0 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
         IDEAS.Buildings.Components.OuterWall[1]
@@ -3760,7 +3760,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     final azi={ 0 },
     redeclare package Medium = Medium,
     final inc={0.785}) annotation (
-    Placement(transformation(origin = { -85.0, 110.0 },
+    Placement(transformation(origin = { 115.0, 110.0 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
         IDEAS.Buildings.Components.Window[1]
@@ -3771,7 +3771,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     final azi={ 0 },
     redeclare package Medium = Medium,
     final inc={IDEAS.Types.Tilt.Wall}) annotation (
-    Placement(transformation(origin = { -85.0, 120.0 },
+    Placement(transformation(origin = { 115.0, 120.0 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
             inner IDEAS.BoundaryConditions.SimInfoManager
@@ -3779,13 +3779,13 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
   IDEAS.BoundaryConditions.Types.
   InterZonalAirFlow.OnePort) "Data reader"
 annotation (Placement(transformation(extent={{-96,76},{-76,96}})));     annotation (
-    Placement(transformation(origin = { 100.0, -100.0 },
+    Placement(transformation(origin = { -100.0, -100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(space_1.proBusExt[1],merged_door[1].propsBus_a)
         annotation (Line(
-        points={{ -100.0, 100.0 }    ,{ -92.5, 100.0 }    ,{ -92.5, 100.0 }    ,{ -85.0, 100.0 }    },
+        points={{ 100.0, 100.0 }    ,{ 107.5, 100.0 }    ,{ 107.5, 100.0 }    ,{ 115.0, 100.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3793,7 +3793,7 @@ equation
             ;        
         connect(space_1.proBusExt[2],merged_roof[1].propsBus_a)
         annotation (Line(
-        points={{ -100.0, 100.0 }    ,{ -92.5, 100.0 }    ,{ -92.5, 110.0 }    ,{ -85.0, 110.0 }    },
+        points={{ 100.0, 100.0 }    ,{ 107.5, 100.0 }    ,{ 107.5, 110.0 }    ,{ 115.0, 110.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3801,7 +3801,7 @@ equation
             ;        
         connect(space_1.proBusExt[3],merged_window_south_bis[1].propsBus_a)
         annotation (Line(
-        points={{ -100.0, 100.0 }    ,{ -92.5, 100.0 }    ,{ -92.5, 120.0 }    ,{ -85.0, 120.0 }    },
+        points={{ 100.0, 100.0 }    ,{ 107.5, 100.0 }    ,{ 107.5, 120.0 }    ,{ 115.0, 120.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3813,7 +3813,7 @@ equation
             ;        
         connect(weather_0.weaDatBus,dataBus)
         annotation (Line(
-        points={{ 100.0, -100.0 }    ,{ 100.0, -100.0 }    ,{ 100.0, -100.0 }    ,{ 100.0, -100.0 }    },
+        points={{ -100.0, -100.0 }    ,{ -100.0, -100.0 }    ,{ -100.0, -100.0 }    ,{ -100.0, -100.0 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -4013,7 +4013,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 
 package Glazing "Library of building glazing systems"
 extends Modelica.Icons.MaterialPropertiesPackage;
-    record double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+    record simple_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
       final nLay=3,
       final checkLowPerformanceGlazing=false,
       mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.id_100
@@ -4045,7 +4045,7 @@ extends Modelica.Icons.MaterialPropertiesPackage;
       final U_value=2.8576,
       final g_value=0.579
     ) "ideas_rectangular_zone_with_external_surfaces";
-    record simple_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
+    record double_glazing = IDEAS.Buildings.Data.Interfaces.Glazing (
       final nLay=3,
       final checkLowPerformanceGlazing=false,
       mats={ideas_rectangular_zone_with_external_surfaces.Data.Materials.id_100
@@ -4080,15 +4080,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;
 end Glazing;
 
 package Materials "Library of construction materials"
-extends Modelica.Icons.MaterialPropertiesPackage;    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
-      k=1.4,
-      c=840.0,
-      rho=2240.0,
-      epsLw=0.85,
-      epsSw=0.65);    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
+extends Modelica.Icons.MaterialPropertiesPackage;    record insulation_board = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.03,
       c=1200.0,
       rho=40.0,
+      epsLw=0.85,
+      epsSw=0.65);    record concrete = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.4,
+      c=840.0,
+      rho=2240.0,
       epsLw=0.85,
       epsSw=0.65);    record brick = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.89,

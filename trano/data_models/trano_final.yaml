@@ -1302,6 +1302,8 @@ slots:
     multivalued: false
     range: SplitValve
   surface:
+    description: Area in m2. For an external wall, the gross area of the facade, the
+      windows cut out of it included.
     range: float
     slot_uri: schema:surface
   temperature_sensor:
