@@ -4,9 +4,7 @@
   library: ideas
   fixed_name: sim  # the IDEAS components look for an inner `sim`
   parameter_processing:
-    function: modify_alias
-    parameter:
-      path: filNam
+    function: default_parameters
   ports:
     - flow: undirected
       medium: weather_data

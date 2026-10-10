@@ -53,9 +53,7 @@
   library: buildings
   requires_occupancy: true
   parameter_processing: &buildings_zone_parameters
-    function: exclude_parameters
-    parameter:
-    - volume
+    function: default_parameters
   ports: &buildings_zone_ports
   - flow: interchangeable_port
     medium: heat

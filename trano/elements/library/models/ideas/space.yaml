@@ -50,12 +50,7 @@
         template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_m'
   library: ideas
   parameter_processing: &ideas_zone_parameters
-    function: modify_alias
-    parameter:
-      average_room_height: hZone
-      volume: V
-      sensible_thermal_mass_scaling_factor: mSenFac
-      temperature_initial: T_start
+    function: default_parameters
   ports: &ideas_zone_ports
   - bus_connection: true
     flow: undirected

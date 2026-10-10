@@ -3,10 +3,7 @@
   library: reduced_order
   requires_occupancy: true
   parameter_processing: &reduced_order_zone_parameter_processing
-    function: modify_alias
-    parameter:
-      volume: "VAir"
-      floor_area: "AZone"
+    function: default_parameters
   ports: &reduced_order_zone_ports
   - flow: convective
     medium: heat
@@ -42,6 +39,10 @@
     AixLib.ThermalZones.ReducedOrder.ThermalZone.ThermalZone {{ element.name }}(
     {#- A constant outdoor air exchange is dry: AixLib's moisture balance fails on the humidity it brings in. #}
         use_moisture_balance={{ "false" if element.variant == "infiltration" else "true" }},
+        {#- The air exchange of the record only exists when the natural air exchange is switched on. #}
+        {%- if element.variant == "infiltration" %}
+        use_NaturalAirExchange=true,
+        {%- endif %}
         ROM(extWallRC(thermCapExt(each der_T(fixed=true))), intWallRC(thermCapInt(
                 each der_T(fixed=true)))),
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,

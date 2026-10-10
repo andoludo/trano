@@ -38,11 +38,13 @@ BoilerParameters:
       description: Nominal temperature difference for the boiler loop [K]
       ifabsent: float(20)
       range: float
+      render: false
     dt_rad_nominal:
       alias: dTRad_nominal
       description: Nominal temperature difference for the radiator loop [K]
       ifabsent: float(10)
       range: float
+      render: false
     effcur:
       alias: effCur
       description: Curve used to compute the efficiency
@@ -53,6 +55,7 @@ BoilerParameters:
       description: Fraction of nominal flow rate where flow transitions to laminar [1]
       ifabsent: float(0.1)
       range: float
+      numerical: true
     height_of_tank_without_insulation:
       alias: hTan
       description: Height of tank (without insulation) [m]
@@ -63,6 +66,7 @@ BoilerParameters:
       description: = true, if actual temperature at port is computed
       ifabsent: string(false)
       range: string
+      numerical: true
     nominal_heating_power:
       alias: Q_flow_nominal
       description: Nominal heating power [W]
@@ -85,11 +89,13 @@ BoilerParameters:
       description: Number of volume segments [1]
       ifabsent: int(4)
       range: integer
+      numerical: true
     sca_fac_rad:
       alias: scaFacRad
       description: Scaling factor to scale the power (and mass flow rate) of the radiator loop [1]
       ifabsent: float(1.5)
       range: float
+      render: false
     tank_volume:
       alias: VTan
       description: Tank volume [m3]
@@ -110,6 +116,7 @@ BoilerParameters:
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string(true)
       range: string
+      numerical: true
     v_flow:
       alias: V_flow
       description: Volume flow rate values defining the boiler-circuit pump pressure curve [m3/s]
@@ -134,22 +141,27 @@ BoilerParameters:
       description: Heat pump COP at the rating point A7/W35, used by the mpc library [1]
       ifabsent: float(4.5)
       range: float
+      render: false
     cop_outdoor_slope:
       description: Heat pump COP change per kelvin of outdoor temperature, mpc library [1/K]
       ifabsent: float(0.11)
       range: float
+      render: false
     cop_supply_slope:
       description: Heat pump COP change per kelvin of supply temperature, mpc library [1/K]
       ifabsent: float(-0.075)
       range: float
+      render: false
     cop_cross_term:
       description: Heat pump COP cross term outdoor x supply deviation, mpc library [1/K2]
       ifabsent: float(-0.0025)
       range: float
+      render: false
     max_electrical_power:
       description: Maximum electrical power of the heat pump compressor, mpc library [W] (nominal heating power / COP when absent)
       ifabsent: float(None)
       range: float
+      render: false
   classes:
   - Boiler
 ControlLoopsParameters:
@@ -244,10 +256,17 @@ OccupancyParameters:
       description: Infiltration [1/h]
       ifabsent: float(0.9)
       range: float
+      deprecated: the infiltration of a zone is the `ach` parameter of its space
     floor_area:
       alias: AFlo
       description: Floor area [m2]
       range: float
+      libraries:
+        buildings: {name: AFlo, variants: [co2]}
+        ideas: {name: AFlo, variants: [co2]}
+        reduced_order: null
+        iso_13790: null
+        mpc: null
     data:
       alias: data
       description: Occupancy data sources
@@ -313,6 +332,8 @@ PumpParameters:
       alias: constInput
       description: Constant input set point
       range: float
+      render: false
+      deprecated: it never reached the pump model and has no effect
     dp_nominal:
       alias: dp_nominal
       description: Nominal pressure raise [Pa]
@@ -392,6 +413,7 @@ RadiatorParameter:
       description: Fraction of nominal mass flow rate where transition to turbulent occurs [1]
       ifabsent: float(0.01)
       range: float
+      numerical: true
     fraction_radiant_heat_transfer:
       alias: fraRad
       description: Fraction radiant heat transfer [1]
@@ -407,6 +429,7 @@ RadiatorParameter:
       description: Number of elements used in the discretization [1]
       ifabsent: int(1)
       range: integer
+      numerical: true
     radiative_temperature_at_nominal_condition:
       alias: TRad_nominal
       description: Radiative temperature at nominal condition [K]
@@ -417,11 +440,13 @@ RadiatorParameter:
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string(true)
       range: string
+      numerical: true
     use_m_flow_f_dp_else_dp_f_m_flow:
       alias: from_dp
       description: = true, use m_flow = f(dp) else dp = f(m_flow)
       ifabsent: string(false)
       range: string
+      numerical: true
     water_inlet_temperature_at_nominal_condition:
       alias: T_a_nominal
       description: Water inlet temperature at nominal condition [K]
@@ -446,44 +471,82 @@ SpaceParameter:
       description: Average room height [m]
       ifabsent: float(2)
       range: float
+      libraries:
+        ideas: hZone
+        reduced_order: null
+        iso_13790: null
     floor_area:
       alias: AFlo
       description: Floor area [m2]
       ifabsent: float(20)
       range: float
+      libraries:
+        ideas: {handled: true}
+        reduced_order: AZone
+        iso_13790: AFlo
     linearize_emissive_power:
       alias: linearizeRadiation
       description: Set to true to linearize emissive power
       ifabsent: string(true)
       range: string
+      numerical: true
+      libraries:
+        ideas: null
+        reduced_order: null
+        iso_13790: null
     nominal_mass_flow_rate:
       alias: m_flow_nominal
       description: Nominal mass flow rate [kg/s]
       ifabsent: float(0.01)
       range: float
+      libraries:
+        ideas: {name: m_flow_nominal, when_given: true}
+        reduced_order: null
+        iso_13790: null
     sensible_thermal_mass_scaling_factor:
       alias: mSenFac
       description: Factor for scaling the sensible thermal mass of the zone air volume [1]
       ifabsent: float(1)
       range: float
+      libraries:
+        reduced_order: {name: mSenFac, when_given: true}
+        iso_13790: null
     ach:
       alias: ACH
       description: Infiltration [1/h]
       range: float
+      libraries:
+        buildings: {name: ACH, variants: [infiltration]}
+        ideas: {handled: true}
+        reduced_order: {handled: true}
+        iso_13790: {handled: true}
     ventilation_schedule:
       alias: ventilationSchedule
       description: Day schedule of outdoor air brought into the zone on top of the infiltration, rows of time since midnight [s] and mass flow rate [kg/s], repeated every day (Buildings infiltration variant)
       range: string
+      libraries:
+        buildings: {name: ventilationSchedule, variants: [infiltration]}
+        ideas: {handled: true}
+        reduced_order: null
+        iso_13790: null
     temperature_initial:
       alias: T_start
       description: Initial temperature [K]
       ifabsent: float(294.15)
       range: float
+      libraries:
+        reduced_order: {name: T_start, when_given: true}
+        iso_13790: null
     volume:
       alias: null
       description: Air volume of the zone [m3]
       func: lambda self:self.floor_area * self.average_room_height
       type: float
+      libraries:
+        buildings: null
+        ideas: V
+        reduced_order: VAir
+        iso_13790: VRoo
   classes:
   - Space
 SplitValveParameters:
@@ -498,6 +561,7 @@ SplitValveParameters:
       description: Fraction of nominal mass flow rate where transition to turbulent occurs [1]
       ifabsent: float(0.3)
       range: float
+      numerical: true
     m_flow_nominal:
       alias: None
       description: Mass flow rate; set negative at outflowing ports [kg/s]
@@ -507,15 +571,18 @@ SplitValveParameters:
       alias: mDyn_flow_nominal
       description: Nominal mass flow rate for dynamic momentum and energy balance [kg/s]
       range: float
+      numerical: true
     time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance:
       alias: tau
       description: Time constant at nominal flow for dynamic energy and momentum balance [s]
       range: float
+      numerical: true
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string(true)
       range: string
+      numerical: true
   classes:
   - SplitValve
 ThreeWayValveParameters:
@@ -552,6 +619,7 @@ ThreeWayValveParameters:
       description: Fraction of nominal flow rate where linearization starts, if y=1 [1]
       ifabsent: float(0.02)
       range: float
+      numerical: true
     m_flow_nominal:
       alias: m_flow_nominal
       description: Nominal mass flow rate [kg/s]
@@ -576,6 +644,7 @@ ThreeWayValveParameters:
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string({true, true})
       range: string
+      numerical: true
     valve_leakage:
       alias: l
       description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
@@ -608,6 +677,7 @@ ValveParameters:
       description: Fraction of nominal flow rate where linearization starts, if y=1 [1]
       ifabsent: float(0.02)
       range: float
+      numerical: true
     k_fixed:
       alias: kFixed
       description: Flow coefficient of fixed resistance that may be in series with valve, k=m_flow/sqrt(dp), with unit=(kg.m)^(1/2)
@@ -636,11 +706,13 @@ ValveParameters:
       description: = true, use linear relation between m_flow and dp for any flow rate
       ifabsent: string(true)
       range: string
+      numerical: true
     use_m_flow_f_dp_else_dp_f_m_flow:
       alias: from_dp
       description: = true, use m_flow = f(dp) else dp = f(m_flow)
       ifabsent: string(true)
       range: string
+      numerical: true
     valve_leakage:
       alias: l
       description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
@@ -662,6 +734,8 @@ WeatherParameters:
         from the weather file; the library default (a constant 101325 Pa) when absent
       ifabsent: string(None)
       range: string
+      libraries:
+        ideas: null
   classes:
   - Weather
 DataSource:
@@ -698,6 +772,7 @@ AhuParameters:
   classes:
   - AirHandlingUnit
 ChillerParameters:
+  libraries: [mpc]
   attributes:
     nominal_cooling_power:
       description: Nominal cooling power [W]
@@ -718,6 +793,7 @@ ChillerParameters:
   classes:
   - Chiller
 DhwTankParameters:
+  libraries: [mpc]
   attributes:
     volume:
       description: Water volume of the tank [m3]
@@ -750,6 +826,7 @@ DhwTankParameters:
   classes:
   - DhwTank
 BatteryParameters:
+  libraries: [mpc]
   attributes:
     capacity:
       description: Usable energy capacity [kWh]
@@ -786,6 +863,7 @@ BatteryParameters:
   classes:
   - Battery
 EvChargerParameters:
+  libraries: [mpc]
   attributes:
     battery_capacity:
       description: Battery capacity of the vehicle [kWh]

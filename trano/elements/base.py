@@ -137,7 +137,9 @@ class BaseElement(BaseElementPort):
         if self.libraries_data:
             library_data = self.get_library_data(library)
             if library_data and self.parameters:
-                return library_data.parameter_processing(self.parameters)
+                return library_data.parameter_processing(
+                    self.parameters, library=library.name, variant=library_data.variant
+                )
         return {}
 
     def set_position(self, layout: dict[str, Any], global_: bool = True) -> None:

@@ -53,16 +53,7 @@
           {{ element.name }}.Boiy.y
   library: default
   parameter_processing:
-    function: exclude_parameters
-    parameter:
-    - dt_boi_nominal
-    - dt_rad_nominal
-    - sca_fac_rad
-    - cop_nominal
-    - cop_outdoor_slope
-    - cop_supply_slope
-    - cop_cross_term
-    - max_electrical_power
+    function: default_parameters
   ports:
   - flow: inlet
     medium: fluid
@@ -110,16 +101,7 @@
 
   library: default
   parameter_processing:
-    function: exclude_parameters
-    parameter:
-    - dt_boi_nominal
-    - dt_rad_nominal
-    - sca_fac_rad
-    - cop_nominal
-    - cop_outdoor_slope
-    - cop_supply_slope
-    - cop_cross_term
-    - max_electrical_power
+    function: default_parameters
   ports:
   - flow: inlet
     medium: fluid
@@ -191,16 +173,7 @@
       \ | capitalize}};\n     "
   library: default
   parameter_processing:
-    function: exclude_parameters
-    parameter:
-    - dt_boi_nominal
-    - dt_rad_nominal
-    - sca_fac_rad
-    - cop_nominal
-    - cop_outdoor_slope
-    - cop_supply_slope
-    - cop_cross_term
-    - max_electrical_power
+    function: default_parameters
   ports:
   - flow: inlet
     medium: fluid
@@ -252,16 +225,7 @@
 
   library: default
   parameter_processing:
-    function: exclude_parameters
-    parameter:
-    - dt_boi_nominal
-    - dt_rad_nominal
-    - sca_fac_rad
-    - cop_nominal
-    - cop_outdoor_slope
-    - cop_supply_slope
-    - cop_cross_term
-    - max_electrical_power
+    function: default_parameters
   ports:
   - flow: inlet
     medium: fluid

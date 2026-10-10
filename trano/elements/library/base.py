@@ -4,7 +4,6 @@ from collections.abc import Callable
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
-from trano.elements.common_base import BaseParameter
 from trano.elements.connection import Port
 from trano.elements.data_bus.controller_bus import ControllerBus
 from trano.elements.figure import Figure
@@ -66,7 +65,7 @@ class LibraryData(BaseModel):
     )
     figures: list[Figure] = Field(default=[])
     ports: Callable[[], list[Port]]
-    parameter_processing: Callable[[BaseParameter], dict[str, Any]] = default_parameters
+    parameter_processing: Callable[..., dict[str, Any]] = default_parameters
     library: list[str]
     classes: list[str]
 
@@ -82,7 +81,7 @@ class LibraryData(BaseModel):
 
     @field_validator("parameter_processing", mode="before")
     @classmethod
-    def _parameters_processing_validator(cls, value: dict[str, Any]) -> Callable[[BaseParameter], dict[str, Any]]:
+    def _parameters_processing_validator(cls, value: dict[str, Any]) -> Callable[..., dict[str, Any]]:
         if value.get("parameter"):
             function_name = value["function"]
             parameter_processing = partial(

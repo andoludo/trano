@@ -3,10 +3,7 @@
   library: iso_13790
   requires_occupancy: true
   parameter_processing: &iso_zone_parameter_processing
-    function: modify_alias
-    parameter:
-      floor_area: AFlo
-      volume: VRoo
+    function: default_parameters
   ports: &iso_zone_ports
   - flow: undirected
     medium: weather_data

@@ -86,9 +86,9 @@
         mHeaAir_flow_nominal=100*1.2/3600,
         VRoo=100,
         allowFlowReversal=false,
-        THeaWatInl_nominal=90,
-        THeaWatOut_nominal=60,
-        THeaAirInl_nominal=30,
-        THeaAirDis_nominal=25
+        THeaWatInl_nominal=273.15 + 90,
+        THeaWatOut_nominal=273.15 + 60,
+        THeaAirInl_nominal=273.15 + 30,
+        THeaAirDis_nominal=273.15 + 25
         )
   variant: complex
