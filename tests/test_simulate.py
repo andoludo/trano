@@ -80,6 +80,21 @@ YAML_SIMULATIONS: list[tuple[str, str, str | None, bool]] = [
         True,
     ),
     ("house_infiltration_boiler", "house_infiltration_boiler.yaml", None, False),
+    ("house_infiltration_boiler", "house_infiltration_boiler.yaml", "IDEAS", False),
+    ("house_infiltration_air_water_heat_pump", "house_infiltration_air_water_heat_pump.yaml", None, False),
+    ("house_infiltration_air_water_heat_pump", "house_infiltration_air_water_heat_pump.yaml", "IDEAS", False),
+    (
+        "multizone_air_handling_unit_space_connected",
+        "multizone_air_handling_unit_space_connected.yaml",
+        None,
+        False,
+    ),
+    (
+        "multizone_air_handling_unit_space_connected",
+        "multizone_air_handling_unit_space_connected.yaml",
+        "IDEAS",
+        False,
+    ),
     ("single_zone_hydronic_occupancy_from_data", "single_zone_hydronic_occupancy_from_data.yaml", None, True),
     ("two_zones_ideas_rectangular_zone", "two_zones_ideas_rectangular_zone.yaml", "IDEAS", False),
 ]
