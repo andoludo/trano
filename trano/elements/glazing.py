@@ -274,6 +274,8 @@ class GlazingProperties:
     pane_resistances: tuple[float, ...]  # [m2.K/W] conduction through each pane, outside first
     gap_resistances: tuple[float, ...]  # [m2.K/W] each gas gap (EN 673)
     interior_coefficient: float  # [W/(m2.K)]
+    u_value_override: float | None = None  # [W/(m2.K)] given in the description instead of computed
+    g_value_override: float | None = None  # [1]
 
     @classmethod
     def from_layers(cls, panes: Sequence[Pane], gaps: Sequence[Gap]) -> GlazingProperties:
@@ -319,6 +321,8 @@ class GlazingProperties:
 
     @property
     def u_value(self) -> float:
+        if self.u_value_override is not None:
+            return self.u_value_override
         """Center-of-glass U-value [W/(m2.K)] with the EN 673 surface coefficients."""
         return 1 / (1 / EXTERIOR_SURFACE_COEFFICIENT + self.internal_resistance + 1 / self.interior_coefficient)
 
@@ -348,6 +352,8 @@ class GlazingProperties:
     @property
     def g_value(self) -> float:
         """Total solar energy transmittance at normal incidence (EN 410) [1]."""
+        if self.g_value_override is not None:
+            return self.g_value_override
         return self.solar_transmittance + self.secondary_heat_transfer
 
     @property

@@ -16,6 +16,10 @@ package Trano
 
   parameter Boolean firstEntryOccupied=true
     "Set to true if first entry in occupancy denotes a changed from unoccupied to occupied";
+  parameter Real lightingPower = 0 "Heat released by the lighting per floor area, all day (W/m2)";
+  parameter Real lightingRadiantFraction = 0.4 "Radiant share of the lighting heat";
+  parameter Real equipmentPower = 0 "Heat released by the equipment per floor area, all day (W/m2)";
+  parameter Real equipmentRadiantFraction = 0.4 "Radiant share of the equipment heat";
 
   // ---- Added parameters for CO2-based occupancy ----
   parameter Real AFlo =  24       "Zone floor area (m2)";
@@ -51,8 +55,8 @@ equation
   occupantDensity = density;
   relativeGains = {if k > 0 then density/k else 0, 0, 0};
 
-  connect(gai2.y, y) annotation (Line(points={{39,-2},{96,-2},{96,0},{110,0}},
-    color={0,0,127}));
+  y = gai2.y + {lightingPower*lightingRadiantFraction + equipmentPower*equipmentRadiantFraction,
+    lightingPower*(1 - lightingRadiantFraction) + equipmentPower*(1 - equipmentRadiantFraction), 0};
   annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
     Ellipse(extent={{10,70},{-26,34}}, lineColor={28,108,200}),
     Line(points={{-8,34},{-8,-26}}, color={28,108,200}),
@@ -77,6 +81,10 @@ end OccupancyCo2;
 
   parameter Boolean firstEntryOccupied = true
     "Set to true if first entry in occupancy denotes a changed from unoccupied to occupied";
+  parameter Real lightingPower = 0 "Heat released by the lighting per floor area, all day (W/m2)";
+  parameter Real lightingRadiantFraction = 0.4 "Radiant share of the lighting heat";
+  parameter Real equipmentPower = 0 "Heat released by the equipment per floor area, all day (W/m2)";
+  parameter Real equipmentRadiantFraction = 0.4 "Radiant share of the equipment heat";
 
   Buildings.Controls.SetPoints.OccupancySchedule
                                    occSch2(firstEntryOccupied=firstEntryOccupied,
@@ -119,9 +127,8 @@ annotation (Placement(transformation(extent={{-66,-22},{-46,-2}})));
       connect(
           zero.y, switch2.u3)
     annotation (Line(points={{-40,-58},{-22,-58},{-22,-10}}, color={0,0,127}));
-      connect(
-          gai2.y, y) annotation (Line(points={{39,-2},{96,-2},{96,0},{110,0}},
-        color={0,0,127}));
+  y = gai2.y + {lightingPower*lightingRadiantFraction + equipmentPower*equipmentRadiantFraction,
+    lightingPower*(1 - lightingRadiantFraction) + equipmentPower*(1 - equipmentRadiantFraction), 0};
       annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={
         Ellipse(extent={{10,70},{-26,34}}, lineColor={28,108,200}),
         Line(points={{-8,34},{-8,-26}}, color={28,108,200}),
@@ -381,6 +388,11 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
   parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
     "Specific heat conductivity of insulation";
   parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+  parameter Modelica.Units.SI.ThermalConductance UA=0.05*Q_flow_nominal/30 "Heat loss conductance of the boiler to its room";
+  parameter Modelica.Units.SI.Volume VWat=1.5E-6*Q_flow_nominal "Water volume of the boiler";
+  parameter Modelica.Units.SI.Mass mDry=1.5E-3*Q_flow_nominal "Dry mass of the boiler lumped to its water";
+  parameter Modelica.Units.SI.Temperature TAmbient=288.15 "Temperature of the room around the boiler and the tank";
+  parameter Modelica.Units.SI.Temperature T_start=293.15 "Initial temperature of the boiler and the tank water";
 
   Buildings.Fluid.Boilers.BoilerPolynomial boi(
     a=a,
@@ -388,12 +400,18 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
     redeclare package Medium = MediumW,
     Q_flow_nominal=Q_flow_nominal,
     m_flow_nominal=nominal_mass_flow_rate_boiler,
-    fue=Buildings.Fluid.Data.Fuels.NaturalGasHigherHeatingValue(),
+    fue=fue,
     dp_nominal=dp_nominal,
+    UA=UA,
+    VWat=VWat,
+    mDry=mDry,
+    T_nominal=T_nominal,
+    deltaM=deltaM,
+    linearizeFlowResistance=linearizeFlowResistance,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-    T_start=293.15) "Boiler"
+    T_start=T_start) "Boiler"
     annotation (Placement(transformation(extent={{-24,-10},{-4,10}})));
-  Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=288.15)
+  Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=TAmbient)
     "Ambient temperature in boiler room"
     annotation (Placement(transformation(extent={{20,60},{40,80}})));
   Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium =
@@ -518,6 +536,11 @@ parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab
       parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
         "Specific heat conductivity of insulation";
       parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+      parameter Modelica.Units.SI.ThermalConductance UA=0.05*Q_flow_nominal/30 "Heat loss conductance of the boiler to its room";
+      parameter Modelica.Units.SI.Volume VWat=1.5E-6*Q_flow_nominal "Water volume of the boiler";
+      parameter Modelica.Units.SI.Mass mDry=1.5E-3*Q_flow_nominal "Dry mass of the boiler lumped to its water";
+      parameter Modelica.Units.SI.Temperature TAmbient=288.15 "Temperature of the room around the boiler and the tank";
+      parameter Modelica.Units.SI.Temperature T_start=293.15 "Initial temperature of the boiler and the tank water";
 
       Buildings.Fluid.Movers.SpeedControlled_y pumBoi(
         redeclare package Medium = MediumW,
@@ -534,15 +557,23 @@ parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab
         m_flow_nominal=nominal_mass_flow_rate_boiler,
         fue=fue,
         dp_nominal=dp_nominal,
+        UA=UA,
+        VWat=VWat,
+        mDry=mDry,
+        T_nominal=T_nominal,
+        deltaM=deltaM,
+        linearizeFlowResistance=linearizeFlowResistance,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
-        T_start=293.15) "Boiler"
+        T_start=T_start) "Boiler"
         annotation (Placement(transformation(extent={{-74,0},{-54,20}})));
-      Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=288.15)
+      Buildings.HeatTransfer.Sources.FixedTemperature TAmb(T=TAmbient)
         "Ambient temperature in boiler room"
         annotation (Placement(transformation(extent={{-14,74},{6,94}})));
       Buildings.Fluid.Storage.StratifiedEnhanced tan1(
         m_flow_nominal=nominal_mass_flow_radiator_loop,
         dIns=dIns,
+        kIns=kIns,
+        T_start=T_start,
         redeclare package Medium = MediumW,
         hTan=hTan,
         nSeg=nSeg,
@@ -775,6 +806,11 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
   parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
     "Specific heat conductivity of insulation";
   parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+  parameter Modelica.Units.SI.ThermalConductance UA=0.05*Q_flow_nominal/30 "Heat loss conductance of the boiler to its room";
+  parameter Modelica.Units.SI.Volume VWat=1.5E-6*Q_flow_nominal "Water volume of the boiler";
+  parameter Modelica.Units.SI.Mass mDry=1.5E-3*Q_flow_nominal "Dry mass of the boiler lumped to its water";
+  parameter Modelica.Units.SI.Temperature TAmbient=288.15 "Temperature of the room around the boiler and the tank";
+  parameter Modelica.Units.SI.Temperature T_start=293.15 "Initial temperature of the boiler and the tank water";
 
 
 
@@ -827,6 +863,8 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
     VTan=VTan,
     hTan=hTan,
     dIns=dIns,
+    kIns=kIns,
+    T_start=T_start,
     nSeg=nSeg) if useStorageTank
     annotation (Placement(transformation(extent={{-90,20},{-50,60}})));
           Modelica.Blocks.Routing.RealPassThrough pumpDemandSignal
@@ -924,6 +962,11 @@ annotation (Dialog(tab="Storage tank", group="Properties"));
   parameter Modelica.Units.SI.ThermalConductivity kIns=0.04
     "Specific heat conductivity of insulation";
   parameter Integer nSeg(min=2) = 2 "Number of volume segments";
+  parameter Modelica.Units.SI.ThermalConductance UA=0.05*Q_flow_nominal/30 "Heat loss conductance of the boiler to its room";
+  parameter Modelica.Units.SI.Volume VWat=1.5E-6*Q_flow_nominal "Water volume of the boiler";
+  parameter Modelica.Units.SI.Mass mDry=1.5E-3*Q_flow_nominal "Dry mass of the boiler lumped to its water";
+  parameter Modelica.Units.SI.Temperature TAmbient=288.15 "Temperature of the room around the boiler and the tank";
+  parameter Modelica.Units.SI.Temperature T_start=293.15 "Initial temperature of the boiler and the tank water";
 
   parameter Modelica.Units.SI.Temperature TSet=323.15;
   parameter Modelica.Units.SI.Temperature TSouSet=278.15;
@@ -933,14 +976,16 @@ annotation (Dialog(tab="Storage tank", group="Properties"));
                                                   per
 "Reverse heat pump performance data"
 annotation (Placement(transformation(extent={{-90,76},{-70,96}})));
-  parameter Modelica.Units.SI.MassFlowRate mSou_flow_nominal=per.hea.mSou_flow
-    "Source heat exchanger nominal mass flow rate";
+  parameter Modelica.Units.SI.MassFlowRate mSou_flow_nominal=1.7
+    "Source side air mass flow rate";
+  parameter Modelica.Units.SI.Temperature TEvaHea_nominal=293.15
+    "Source side air temperature at the heating rating point";
   parameter Modelica.Units.SI.MassFlowRate mLoa_flow_nominal=per.hea.mLoa_flow
     "Load heat exchanger nominal mass flow rate";
   Buildings.Fluid.Sources.MassFlowSource_T
                    souPum(
 redeclare package Medium = Buildings.Media.Air,
-m_flow=1.7,
+m_flow=mSou_flow_nominal,
     use_T_in=true,
 nPorts=1) "Source side water pump" annotation (Placement(transformation(
         extent={{-10,-10},{10,10}},
@@ -972,6 +1017,8 @@ MediumW, m_flow_nominal=0.3)
     VTan=VTan,
     hTan=hTan,
     dIns=dIns,
+    kIns=kIns,
+    T_start=T_start,
     nSeg=nSeg) if useStorageTank
     annotation (Placement(transformation(extent={{-90,20},{-50,60}})));
   Buildings.Fluid.HeatPumps.ModularReversible.AirToWaterTableData2D
@@ -980,7 +1027,7 @@ airToWaterTableData2D(
 use_intSafCtr=false,
 QHea_flow_nominal=Q_flow_nominal,
 TConHea_nominal=TSet,
-    TEvaHea_nominal=293.15,
+    TEvaHea_nominal=TEvaHea_nominal,
     TConCoo_nominal=303.15,
     TEvaCoo_nominal=283.15,
 redeclare
@@ -1070,6 +1117,8 @@ model PartialSystemD
       "Medium model" annotation (choicesAllMatching=true);
     parameter Real m_flow_nominal=2*100*1.2/3600;
     parameter Real dp_nominal=200;
+    parameter Real dpSup_nominal=dp_nominal "Pressure rise of the supply fan";
+    parameter Real dpRet_nominal=dp_nominal "Pressure rise of the return fan";
     parameter Real eps=0.8;
   Buildings.Fluid.Movers.FlowControlled_dp
                            fanSup(
@@ -1077,7 +1126,7 @@ model PartialSystemD
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
     redeclare package Medium = Medium,
-    dp_nominal=dp_nominal,
+    dp_nominal=dpSup_nominal,
     m_flow_nominal=m_flow_nominal) "Supply fan"
     annotation (Placement(transformation(extent={{4,6},{24,26}})));
   Buildings.Fluid.Movers.FlowControlled_dp
@@ -1086,7 +1135,7 @@ model PartialSystemD
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
     redeclare package Medium = Medium,
-    dp_nominal=dp_nominal,
+    dp_nominal=dpRet_nominal,
     m_flow_nominal=m_flow_nominal) "Return fan"
     annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
   Buildings.Fluid.HeatExchangers.ConstantEffectiveness
@@ -1185,6 +1234,8 @@ end PartialSystemD;
             "Medium model" annotation (choicesAllMatching=true);
         parameter Real m_flow_nominal=2*100*1.2/3600;
     parameter Real dp_nominal=200;
+    parameter Real dpSup_nominal=dp_nominal "Pressure rise of the supply fan";
+    parameter Real dpRet_nominal=dp_nominal "Pressure rise of the return fan";
     parameter Real eps=0.8;
         Buildings.Fluid.Movers.FlowControlled_dp
                                  fanSup(
@@ -1192,7 +1243,7 @@ end PartialSystemD;
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=dp_nominal,
+          dp_nominal=dpSup_nominal,
           m_flow_nominal=m_flow_nominal) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
@@ -1201,7 +1252,7 @@ end PartialSystemD;
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
           redeclare package Medium = Medium,
-          dp_nominal=dp_nominal,
+          dp_nominal=dpRet_nominal,
           m_flow_nominal=m_flow_nominal) "Return fan"
           annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
         Buildings.Fluid.HeatExchangers.ConstantEffectiveness
@@ -2477,6 +2528,12 @@ end PartialPowerSensor;
       parameter Modelica.Units.SI.Length hRoo "Average room height";
       parameter Real ACH(unit="1/h") = 1.0
       "Air change rate (1/h)"annotation(Dialog(group="Air Infiltration"));
+      parameter Real ventilationSchedule[:, 2] = [0, 0]
+      "Day schedule of outdoor air brought in on top of the infiltration: time since midnight [s], mass flow rate [kg/s]"
+      annotation(Dialog(group="Air Infiltration"));
+      final parameter Modelica.Units.SI.MassFlowRate mInf_flow_nominal=
+        max(ACH*V*1.2/3600 + max(ventilationSchedule[:, 2]), 1E-4)
+        "Design outdoor air mass flow rate, sizing the resistance of the infiltration path";
 
       Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a heaPorAir
         "Heat port to air volume" annotation (Placement(transformation(extent={{-270,30},
@@ -2735,29 +2792,37 @@ end PartialPowerSensor;
         "Radiation model for room-side window shade"
         annotation (Placement(transformation(extent={{-60,90},{-40,110}})));
 
-      Buildings.Fluid.Sources.MassFlowSource_T souInf(
+      Buildings.Fluid.Sources.Outside souInf(
+        redeclare package Medium = Medium,
+        nPorts=1)
+        "Outdoor air brought in, at the temperature, humidity and pressure of the weather data"
+        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
+      Buildings.Fluid.Sources.MassFlowSource_T sinInf(
         redeclare package Medium = Medium,
         use_m_flow_in=true,
-        use_T_in=true,
-        nPorts=1) "Outdoor-air infiltration source (mass flow at outdoor T)"
-        annotation (Placement(transformation(extent={{4,-170},{18,-156}})));
-      Buildings.Fluid.Sources.Boundary_pT sinInf(
-        redeclare package Medium = Medium,
-        use_p_in=true,
-        nPorts=1) "Pressure boundary closing the infiltration mass balance, at the outdoor pressure"
+        nPorts=1) "Sink drawing the infiltration and the scheduled ventilation out of the zone"
         annotation (Placement(transformation(extent={{2,-194},{20,-176}})));
       Buildings.Fluid.FixedResistances.PressureDrop resInf(
         redeclare package Medium = Medium,
-        m_flow_nominal=m_flow_nominal,
+        m_flow_nominal=mInf_flow_nominal,
         dp_nominal=5,
         from_dp=true,
         linearized=true)
-        "Decouples the room pressure state from the outdoor pressure of the boundary"
-        annotation (Placement(transformation(extent={{30,-194},{48,-176}})));
+        "Decouples the room pressure state from the outdoor pressure of the weather data"
+        annotation (Placement(transformation(extent={{30,-170},{48,-156}})));
+      Modelica.Blocks.Sources.CombiTimeTable venSch(
+        table=ventilationSchedule,
+        extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic,
+        smoothness=Modelica.Blocks.Types.Smoothness.ConstantSegments)
+        "Scheduled outdoor air flow"
+        annotation (Placement(transformation(extent={{-90,-210},{-70,-190}})));
       Modelica.Blocks.Sources.RealExpression airInfiltration(
-        y=ACH*V*Medium.density(Medium.setState_pTX(weaBus.pAtm, heaPorAir.T, Medium.X_default))/3600)
-        "Infiltration mass flow rate at the density of the zone air"
+        y=ACH*V*Medium.density(Medium.setState_pTX(weaBus.pAtm, heaPorAir.T, Medium.X_default))/3600 + venSch.y[1])
+        "Outdoor air mass flow rate: infiltration at the density of the zone air, plus the scheduled ventilation"
         annotation (Placement(transformation(extent={{-60,-188},{-40,-168}})));
+      Modelica.Blocks.Math.Gain sinInfFlow(final k=-1)
+        "Mass flow rate drawn out of the zone by the sink"
+        annotation (Placement(transformation(extent={{-30,-188},{-10,-168}})));
     protected
       final parameter Modelica.Units.SI.TransmissionCoefficient tauIRSha_air[
         NConExtWin]=datConExtWin.glaSys.shade.tauIR_a
@@ -3166,10 +3231,10 @@ end PartialPowerSensor;
           points={{-80,-68.4167},{-64,-68.4167},{-64,-68},{-40,-68}},
           color={191,0,0},
           smooth=Smooth.None));
-          connect(souInf.ports[1], air.ports[1]);
-    connect(sinInf.ports[1], resInf.port_a);
-    connect(resInf.port_b, air.ports[2]);
-    connect(weaBus.pAtm, sinInf.p_in);
+      connect(weaBus, souInf.weaBus);
+      connect(souInf.ports[1], resInf.port_a);
+      connect(resInf.port_b, air.ports[1]);
+      connect(sinInf.ports[1], air.ports[2]);
       for i in 1:nPorts loop
         connect(ports[i],air. ports[i+2])
                                       annotation (Line(
@@ -3256,17 +3321,8 @@ end PartialPowerSensor;
       connect(conExtWinRad.QTraDir_flow, solRadExc.JInDirConExtWin) annotation (
           Line(points={{299,-23},{18,-23},{18,51.6667},{-79.5833,51.6667}}, color={
               0,0,127}));
-      connect(weaBus.TDryBul, souInf.T_in) annotation (Line(
-          points={{180.05,160.05},{100,160.05},{100,-146},{2.6,-146},{2.6,-160.2}},
-          color={255,204,51},
-          thickness=0.5), Text(
-          string="%first",
-          index=-1,
-          extent={{-3,6},{-3,6}},
-          horizontalAlignment=TextAlignment.Right));
-
-      connect(airInfiltration.y, souInf.m_flow_in) annotation (Line(points={{-39,-178},
-              {-8,-178},{-8,-163.6},{2.6,-163.6}}, color={0,0,127}));
+      connect(airInfiltration.y, sinInfFlow.u) annotation (Line(points={{-39,-178},{-32,-178}}, color={0,0,127}));
+      connect(sinInfFlow.y, sinInf.m_flow_in) annotation (Line(points={{-9,-178},{-4,-178},{-4,-177.8},{2,-177.8}}, color={0,0,127}));
       annotation (
         Diagram(coordinateSystem(preserveAspectRatio=false,extent={{-260,-220},{460,
                 200}})),
@@ -3346,6 +3402,40 @@ end PartialPowerSensor;
         defaultComponentName="roo");
     end RoomHeatMassBalanceInf;
   end BaseClasses;
+
+  model ZoneScheduledVentilation
+    "IDEAS zone with a day schedule of outdoor air brought in on top of the infiltration"
+    extends IDEAS.Buildings.Components.Zone(nPorts=nPortsExt + 2);
+    parameter Integer nPortsExt(min=0) = 0 "Fluid ports left to the ventilation system";
+    parameter Real ventilationSchedule[:, 2] = [0, 0]
+      "Day schedule of the outdoor air: time since midnight [s], mass flow rate [kg/s]";
+    IDEAS.Fluid.Sources.MassFlowSource_WeatherData souVen(
+      redeclare package Medium = Medium,
+      use_m_flow_in=true,
+      nPorts=1) "Outdoor air brought in, at the temperature and humidity of the weather data"
+      annotation (Placement(transformation(extent={{-60,-90},{-40,-70}})));
+    IDEAS.Fluid.Sources.Boundary_pT sinVen(redeclare package Medium = Medium, nPorts=1) "Air taken out"
+      annotation (Placement(transformation(extent={{60,-90},{40,-70}})));
+    Modelica.Blocks.Sources.CombiTimeTable venSch(
+      table=ventilationSchedule,
+      extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic,
+      smoothness=Modelica.Blocks.Types.Smoothness.ConstantSegments) "Scheduled outdoor air flow"
+      annotation (Placement(transformation(extent={{-100,-80},{-80,-60}})));
+  equation
+    connect(venSch.y[1], souVen.m_flow_in) annotation (Line(points={{-79,-70},{-62,-70},{-62,-72}}, color={0,0,127}));
+    connect(sim.weaDatBus, souVen.weaBus) annotation (Line(points={{-80,-80},{-60,-80}}, color={255,204,51}, thickness=0.5));
+    connect(souVen.ports[1], ports[nPortsExt + 1]) annotation (Line(points={{-40,-80},{0,-80},{0,-100}}, color={0,127,255}));
+    connect(sinVen.ports[1], ports[nPortsExt + 2]) annotation (Line(points={{40,-80},{0,-80},{0,-100}}, color={0,127,255}));
+  end ZoneScheduledVentilation;
+
+  model BoundaryWallOutdoorAir
+    "IDEAS boundary wall whose outer surface follows the outdoor dry-bulb temperature (a raised floor over outdoor air)"
+    extends IDEAS.Buildings.Components.BoundaryWall(final use_T_in=true);
+    Modelica.Blocks.Sources.RealExpression TOut(y=sim.Te) "Outdoor dry-bulb temperature"
+      annotation (Placement(transformation(extent={{-90,-50},{-70,-30}})));
+  equation
+    connect(TOut.y, T) annotation (Line(points={{-69,-40},{-60,-40},{-60,-30},{-110,-30}}, color={0,0,127}));
+  end BoundaryWallOutdoorAir;
 
   model OutdoorAirBoundary
     "Holds a construction surface at the outdoor air temperature (a raised floor over ambient air)"
@@ -3842,11 +3932,10 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
                     glaSys={ ins3ar2020_001 },
                     wWin={ 2.236067977 },
                     hWin={ 2.236067977 },
-                    fFra={ 0.1 },
-                    azi={ 0.0 }),
+                    fFra={ 0.1 },                    azi={ 0.0 }),
         nConPar=0,
         energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) annotation (
-    Placement(transformation(origin = { 28.347152709960938, 81.96755981445312 },
+    Placement(transformation(origin = { 42.524749755859375, 1.3547286987304688 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
     
@@ -3855,24 +3944,24 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
     
         Buildings.HeatTransfer.Sources.FixedTemperature flooronground_0(T=283.15)
     "Ground under the floor" annotation (
-    Placement(transformation(origin = { 43.34715270996094, 101.96755981445312 },
+    Placement(transformation(origin = { 57.524749755859375, 21.35472869873047 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
         single_zone_hydronic_occupancy_from_data.Components.BaseClasses.OccupancyOccupancy_1
     occupancy_1(gain=[40; 75; 40], k=1/7/3, occupancy=3600*{9, 17}, ACH=0.9) annotation (
-    Placement(transformation(origin = { 13.347152709960938, 81.96755981445312 },
+    Placement(transformation(origin = { 27.524749755859375, 1.3547286987304688 },
     extent = {{ 3, -3}, {-3, 3}}
 )));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3
-            weather(filNam=../tests/resources/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos, pAtmSou=None)
+            weather(filNam=../tests/resources/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos)
  annotation (
-    Placement(transformation(origin = { -30.475685119628906, 69.159423828125 },
+    Placement(transformation(origin = { -100.0, -78.36392211914062 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
 equation        
         connect(space_001.surf_conBou[1],flooronground_0.port)
         annotation (Line(
-        points={{ 28.347152709960938, 81.96755981445312 }    ,{ 35.84715270996094, 81.96755981445312 }    ,{ 35.84715270996094, 101.96755981445312 }    ,{ 43.34715270996094, 101.96755981445312 }    },
+        points={{ 42.524749755859375, 1.3547286987304688 }    ,{ 50.024749755859375, 1.3547286987304688 }    ,{ 50.024749755859375, 21.35472869873047 }    ,{ 57.524749755859375, 21.35472869873047 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3880,7 +3969,7 @@ equation
             ;        
         connect(space_001.qGai_flow,occupancy_1.y)
         annotation (Line(
-        points={{ 28.347152709960938, 81.96755981445312 }    ,{ 20.847152709960938, 81.96755981445312 }    ,{ 20.847152709960938, 81.96755981445312 }    ,{ 13.347152709960938, 81.96755981445312 }    },
+        points={{ 42.524749755859375, 1.3547286987304688 }    ,{ 35.024749755859375, 1.3547286987304688 }    ,{ 35.024749755859375, 1.3547286987304688 }    ,{ 27.524749755859375, 1.3547286987304688 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3888,7 +3977,7 @@ equation
             ;        
         connect(space_001.weaBus,weather.weaBus)
         annotation (Line(
-        points={{ 28.347152709960938, 81.96755981445312 }    ,{ -1.0642662048339844, 81.96755981445312 }    ,{ -1.0642662048339844, 69.159423828125 }    ,{ -30.475685119628906, 69.159423828125 }    },
+        points={{ 42.524749755859375, 1.3547286987304688 }    ,{ -28.737625122070312, 1.3547286987304688 }    ,{ -28.737625122070312, -78.36392211914062 }    ,{ -100.0, -78.36392211914062 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,
@@ -3902,7 +3991,7 @@ equation
             ;        
         connect(weather.weaBus,dataBus)
         annotation (Line(
-        points={{ -30.475685119628906, 69.159423828125 }    ,{ -30.475685119628906, 69.159423828125 }    ,{ -30.475685119628906, 69.159423828125 }    ,{ -30.475685119628906, 69.159423828125 }    },
+        points={{ -100.0, -78.36392211914062 }    ,{ -100.0, -78.36392211914062 }    ,{ -100.0, -78.36392211914062 }    ,{ -100.0, -78.36392211914062 }    },
         color={255,204,51},
         thickness=0.1,pattern =
         LinePattern.Solid,

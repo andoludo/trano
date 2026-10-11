@@ -100,15 +100,15 @@ parameters:
 
 | KPI | Band | Buildings | IDEAS | ISO 13790 | reduced order |
 |---|---|---|---|---|---|
-| annual heating [MWh] | 3.750 to 4.980 | 4.449 ✓ | 4.541 ✓ | 3.122 ✗ | 4.469 ✓ |
-| annual cooling [MWh] | 5.000 to 6.830 | 5.973 ✓ | 6.265 ✓ | 5.298 ✓ | 4.267 ✗ |
-| peak heating [kW] | 2.852 to 3.527 | 3.215 ✓ | 3.314 ✓ | 3.099 ✓ | 3.020 ✓ |
-| peak cooling [kW] | 5.098 to 6.805 | 6.187 ✓ | 6.545 ✓ | 4.870 ✗ | 4.180 ✗ |
+| annual heating [MWh] | 3.750 to 4.980 | 4.449 ✓ | 4.541 ✓ | 3.122 ✗ | 5.873 ✗ |
+| annual cooling [MWh] | 5.000 to 6.830 | 5.973 ✓ | 6.265 ✓ | 5.298 ✓ | 3.883 ✗ |
+| peak heating [kW] | 2.852 to 3.527 | 3.215 ✓ | 3.314 ✓ | 3.099 ✓ | 3.731 ✗ |
+| peak cooling [kW] | 5.098 to 6.805 | 6.187 ✓ | 6.545 ✓ | 4.870 ✗ | 4.113 ✗ |
 
 - Buildings: 4 of 4 KPIs inside their band.
 - IDEAS: 4 of 4 KPIs inside their band.
 - ISO 13790: 2 of 4 KPIs inside their band, outside: annual heating 3.122 MWh against 3.750 to 4.980; peak cooling 4.870 kW against 5.098 to 6.805.
-- reduced order: 2 of 4 KPIs inside their band, outside: annual cooling 4.267 MWh against 5.000 to 6.830; peak cooling 4.180 kW against 5.098 to 6.805.
+- reduced order: 0 of 4 KPIs inside their band, outside: annual heating 5.873 MWh against 3.750 to 4.980; annual cooling 3.883 MWh against 5.000 to 6.830; peak heating 3.731 kW against 2.852 to 3.527; peak cooling 4.113 kW against 5.098 to 6.805.
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="100%" role="img" aria-label="Case 600: hourly load on 1 February" style="font-family: sans-serif; font-size: 12px; max-width: 720px">
 <title>Case 600: hourly load on 1 February</title>
@@ -139,8 +139,8 @@ parameters:
 <polyline fill="none" stroke="#9aa5b1" stroke-width="1.0" points="56.0,31.3 84.2,29.2 112.3,27.3 140.5,25.8 168.7,25.2 196.9,25.2 225.0,24.9 253.2,39.5 281.4,81.9 309.6,96.9 337.7,136.9 365.9,201.0 394.1,239.4 422.3,247.3 450.4,224.2 478.6,186.3 506.8,134.7 535.0,97.5 563.1,94.2 591.3,67.0 619.5,46.9 647.7,34.0 675.8,26.1 704.0,22.4"><title>EnergyPlus</title></polyline>
 <polyline fill="none" stroke="#9aa5b1" stroke-width="1.0" points="56.0,33.4 84.2,29.2 112.3,26.7 140.5,24.3 168.7,23.1 196.9,22.7 225.0,21.8 253.2,33.1 281.4,72.8 309.6,96.9 337.7,136.0 365.9,199.4 394.1,240.0 422.3,251.9 450.4,230.9 478.6,195.8 506.8,145.4 535.0,100.6 563.1,93.8 591.3,66.4 619.5,45.0 647.7,32.8 675.8,24.9 704.0,21.5"><title>ESP-r</title></polyline>
 <polyline fill="none" stroke="#9aa5b1" stroke-width="1.0" points="56.0,30.7 84.2,27.6 112.3,25.5 140.5,23.4 168.7,22.4 196.9,22.1 225.0,21.8 253.2,43.5 281.4,87.7 309.6,101.8 337.7,138.7 365.9,195.5 394.1,231.8 422.3,237.3 450.4,217.7 478.6,183.3 506.8,132.3 535.0,96.9 563.1,85.9 591.3,65.5 619.5,45.9 647.7,32.5 675.8,24.0 704.0,20.0"><title>TRNSYS</title></polyline>
-<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" points="56.0,32.1 84.2,28.9 112.3,27.3 140.5,25.6 168.7,24.5 196.9,24.5 225.0,24.5 253.2,37.4 281.4,77.1 309.6,96.9 337.7,135.9 365.9,199.5 394.1,235.3 422.3,246.8 450.4,227.0 478.6,191.1 506.8,141.8 535.0,99.1 563.1,95.5 591.3,68.7 619.5,46.8 647.7,34.6 675.8,26.2 704.0,22.5"><title>Buildings</title></polyline>
-<polyline fill="none" stroke="#d62728" stroke-width="2.5" points="56.0,29.7 84.2,27.4 112.3,25.6 140.5,23.8 168.7,22.6 196.9,22.7 225.0,22.6 253.2,34.8 281.4,75.4 309.6,96.9 337.7,136.4 365.9,201.1 394.1,240.2 422.3,252.5 450.4,231.5 478.6,195.4 506.8,145.2 535.0,99.5 563.1,95.4 591.3,66.6 619.5,44.1 647.7,32.4 675.8,24.3 704.0,20.7"><title>IDEAS</title></polyline>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" points="56.0,32.1 84.2,28.9 112.3,27.3 140.5,25.6 168.7,24.5 196.9,24.5 225.0,24.5 253.2,37.4 281.4,77.1 309.6,96.9 337.7,135.9 365.9,199.5 394.1,235.3 422.3,246.8 450.4,227.0 478.6,191.1 506.8,141.8 535.0,99.0 563.1,95.5 591.3,68.7 619.5,46.8 647.7,34.6 675.8,26.2 704.0,22.5"><title>Buildings</title></polyline>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" points="56.0,29.7 84.2,27.4 112.3,25.6 140.5,23.8 168.7,22.6 196.9,22.7 225.0,22.6 253.2,34.8 281.4,75.4 309.6,96.9 337.7,136.4 365.9,201.0 394.1,240.2 422.3,252.5 450.4,231.5 478.6,195.4 506.8,145.2 535.0,99.5 563.1,95.4 591.3,66.6 619.5,44.1 647.7,32.4 675.8,24.3 704.0,20.7"><title>IDEAS</title></polyline>
 <line x1="358.0" x2="382.0" y1="10" y2="10" stroke="#9aa5b1" stroke-width="1.0"/>
 <text x="388.0" y="14">reference programs</text>
 <line x1="521.0" x2="545.0" y1="10" y2="10" stroke="#1f77b4" stroke-width="2.5"/>
@@ -189,14 +189,14 @@ parameters:
 
 | KPI | Band | Buildings | IDEAS | ISO 13790 | reduced order |
 |---|---|---|---|---|---|
-| maximum temperature [degC] | 61.400 to 69.400 | 63.318 ✓ | 66.086 ✓ | 54.174 ✗ | 68.891 ✓ |
-| minimum temperature [degC] | -14.800 to -8.900 | -12.847 ✓ | -13.193 ✓ | -7.447 ✗ | -13.741 ✓ |
-| mean temperature [degC] | 23.300 to 27.100 | 24.664 ✓ | 25.109 ✓ | 26.564 ✓ | 22.650 ✗ |
+| maximum temperature [degC] | 61.400 to 69.400 | 63.318 ✓ | 66.086 ✓ | 54.174 ✗ | 62.110 ✓ |
+| minimum temperature [degC] | -14.800 to -8.900 | -12.847 ✓ | -13.193 ✓ | -7.447 ✗ | -14.177 ✓ |
+| mean temperature [degC] | 23.300 to 27.100 | 24.664 ✓ | 25.109 ✓ | 26.564 ✓ | 20.451 ✗ |
 
 - Buildings: 3 of 3 KPIs inside their band.
 - IDEAS: 3 of 3 KPIs inside their band.
 - ISO 13790: 1 of 3 KPIs inside their band, outside: maximum temperature 54.174 degC against 61.400 to 69.400; minimum temperature -7.447 degC against -14.800 to -8.900.
-- reduced order: 2 of 3 KPIs inside their band, outside: mean temperature 22.650 degC against 23.300 to 27.100.
+- reduced order: 2 of 3 KPIs inside their band, outside: mean temperature 20.451 degC against 23.300 to 27.100.
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="100%" role="img" aria-label="Case 600FF: zone temperature on 1 February" style="font-family: sans-serif; font-size: 12px; max-width: 720px">
 <title>Case 600FF: zone temperature on 1 February</title>
@@ -280,15 +280,15 @@ layers:
 
 | KPI | Band | Buildings | IDEAS | ISO 13790 | reduced order |
 |---|---|---|---|---|---|
-| annual heating [MWh] | 1.040 to 2.280 | 1.718 ✓ | 1.763 ✓ | 1.803 ✓ | 3.876 ✗ |
-| annual cooling [MWh] | 2.350 to 2.600 | 2.395 ✓ | 2.599 ✓ | 3.581 ✗ | 3.558 ✗ |
-| peak heating [kW] | 2.304 to 2.917 | 2.668 ✓ | 2.765 ✓ | 2.880 ✓ | 3.016 ✗ |
-| peak cooling [kW] | 2.387 to 3.545 | 2.974 ✓ | 3.171 ✓ | 3.532 ✓ | 3.655 ✗ |
+| annual heating [MWh] | 1.040 to 2.280 | 1.718 ✓ | 1.763 ✓ | 1.803 ✓ | 5.263 ✗ |
+| annual cooling [MWh] | 2.350 to 2.600 | 2.395 ✓ | 2.599 ✓ | 3.581 ✗ | 3.184 ✗ |
+| peak heating [kW] | 2.304 to 2.917 | 2.668 ✓ | 2.765 ✓ | 2.880 ✓ | 3.726 ✗ |
+| peak cooling [kW] | 2.387 to 3.545 | 2.974 ✓ | 3.171 ✓ | 3.532 ✓ | 3.631 ✗ |
 
 - Buildings: 4 of 4 KPIs inside their band.
 - IDEAS: 4 of 4 KPIs inside their band.
 - ISO 13790: 3 of 4 KPIs inside their band, outside: annual cooling 3.581 MWh against 2.350 to 2.600.
-- reduced order: 0 of 4 KPIs inside their band, outside: annual heating 3.876 MWh against 1.040 to 2.280; annual cooling 3.558 MWh against 2.350 to 2.600; peak heating 3.016 kW against 2.304 to 2.917; peak cooling 3.655 kW against 2.387 to 3.545.
+- reduced order: 0 of 4 KPIs inside their band, outside: annual heating 5.263 MWh against 1.040 to 2.280; annual cooling 3.184 MWh against 2.350 to 2.600; peak heating 3.726 kW against 2.304 to 2.917; peak cooling 3.631 kW against 2.387 to 3.545.
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="100%" role="img" aria-label="Case 900: hourly load on 1 February" style="font-family: sans-serif; font-size: 12px; max-width: 720px">
 <title>Case 900: hourly load on 1 February</title>
@@ -317,7 +317,7 @@ layers:
 <polyline fill="none" stroke="#9aa5b1" stroke-width="1.0" points="56.0,107.7 84.2,93.6 112.3,79.4 140.5,63.9 168.7,52.5 196.9,42.6 225.0,34.1 253.2,59.6 281.4,134.6 309.6,208.1 337.7,246.3 365.9,246.3 394.1,246.3 422.3,246.3 450.4,253.4 478.6,250.6 506.8,246.3 535.0,246.3 563.1,246.3 591.3,246.3 619.5,246.3 647.7,246.3 675.8,220.9 704.0,189.7"><title>EnergyPlus</title></polyline>
 <polyline fill="none" stroke="#9aa5b1" stroke-width="1.0" points="56.0,117.6 84.2,96.4 112.3,80.8 140.5,66.7 168.7,53.9 196.9,44.0 225.0,32.7 253.2,45.5 281.4,114.8 309.6,192.6 337.7,244.9 365.9,246.3 394.1,246.3 422.3,246.3 450.4,254.8 478.6,257.6 506.8,246.3 535.0,246.3 563.1,246.3 591.3,246.3 619.5,246.3 647.7,246.3 675.8,239.3 704.0,206.7"><title>ESP-r</title></polyline>
 <polyline fill="none" stroke="#9aa5b1" stroke-width="1.0" points="56.0,100.6 84.2,83.7 112.3,68.1 140.5,51.1 168.7,39.8 196.9,29.9 225.0,20.0 253.2,53.9 281.4,136.0 309.6,211.0 337.7,246.3 365.9,246.3 394.1,246.3 422.3,246.3 450.4,247.7 478.6,246.3 506.8,246.3 535.0,246.3 563.1,246.3 591.3,246.3 619.5,246.3 647.7,232.2 675.8,202.5 704.0,172.8"><title>TRNSYS</title></polyline>
-<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" points="56.0,105.9 84.2,86.0 112.3,72.4 140.5,58.6 168.7,46.7 196.9,37.1 225.0,28.7 253.2,47.9 281.4,118.7 309.6,205.2 337.7,246.3 365.9,246.3 394.1,246.3 422.3,246.3 450.4,258.0 478.6,257.2 506.8,246.3 535.0,246.3 563.1,246.3 591.3,246.3 619.5,246.3 647.7,246.3 675.8,230.5 704.0,195.6"><title>Buildings</title></polyline>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" points="56.0,105.9 84.2,86.0 112.3,72.4 140.5,58.6 168.7,46.7 196.9,37.1 225.0,28.7 253.2,47.9 281.4,118.8 309.6,205.0 337.7,246.3 365.9,246.3 394.1,246.3 422.3,246.3 450.4,258.0 478.6,257.1 506.8,246.3 535.0,246.3 563.1,246.3 591.3,246.3 619.5,246.3 647.7,246.3 675.8,230.6 704.0,195.6"><title>Buildings</title></polyline>
 <polyline fill="none" stroke="#d62728" stroke-width="2.5" points="56.0,96.6 84.2,79.3 112.3,65.1 140.5,50.6 168.7,38.5 196.9,29.6 225.0,20.8 253.2,41.3 281.4,116.2 309.6,200.8 337.7,246.2 365.9,246.3 394.1,246.3 422.3,246.4 450.4,270.1 478.6,280.0 506.8,252.4 535.0,246.3 563.1,246.3 591.3,246.3 619.5,246.3 647.7,246.3 675.8,240.1 704.0,201.7"><title>IDEAS</title></polyline>
 <line x1="358.0" x2="382.0" y1="10" y2="10" stroke="#9aa5b1" stroke-width="1.0"/>
 <text x="388.0" y="14">reference programs</text>
@@ -363,15 +363,15 @@ The heating set point becomes a day schedule with the set-back: pairs of time si
 
 | KPI | Band | Buildings | IDEAS | ISO 13790 | reduced order |
 |---|---|---|---|---|---|
-| annual heating [MWh] | 1.580 to 3.760 | 2.715 ✓ | 2.769 ✓ | 1.879 ✓ | 2.789 ✓ |
-| annual cooling [MWh] | 4.440 to 6.860 | 5.725 ✓ | 6.009 ✓ | 4.942 ✓ | 4.166 ✗ |
-| peak heating [kW] | 3.806 to 4.891 | 4.356 ✓ | 4.370 ✓ | 4.350 ✓ | 2.753 ✗ |
-| peak cooling [kW] | 5.044 to 6.750 | 6.138 ✓ | 6.491 ✓ | 4.870 ✗ | 4.126 ✗ |
+| annual heating [MWh] | 1.580 to 3.760 | 2.715 ✓ | 2.769 ✓ | 1.879 ✓ | 3.765 ✗ |
+| annual cooling [MWh] | 4.440 to 6.860 | 5.725 ✓ | 6.009 ✓ | 4.942 ✓ | 3.791 ✗ |
+| peak heating [kW] | 3.806 to 4.891 | 4.356 ✓ | 4.370 ✓ | 4.350 ✓ | 3.445 ✗ |
+| peak cooling [kW] | 5.044 to 6.750 | 6.138 ✓ | 6.491 ✓ | 4.870 ✗ | 4.103 ✗ |
 
 - Buildings: 4 of 4 KPIs inside their band.
 - IDEAS: 4 of 4 KPIs inside their band.
 - ISO 13790: 3 of 4 KPIs inside their band, outside: peak cooling 4.870 kW against 5.044 to 6.750.
-- reduced order: 1 of 4 KPIs inside their band, outside: annual cooling 4.166 MWh against 4.440 to 6.860; peak heating 2.753 kW against 3.806 to 4.891; peak cooling 4.126 kW against 5.044 to 6.750.
+- reduced order: 0 of 4 KPIs inside their band, outside: annual heating 3.765 MWh against 1.580 to 3.760; annual cooling 3.791 MWh against 4.440 to 6.860; peak heating 3.445 kW against 3.806 to 4.891; peak cooling 4.103 kW against 5.044 to 6.750.
 
 ## Case 650: 600 with night ventilation and no heating
 
@@ -562,7 +562,7 @@ occupancy:
 | annual cooling [MWh] | 0.620 to 1.810 | 0.950 ✓ | 0.950 ✓ |
 | peak heating [kW] | 1.970 to 2.415 | 2.104 ✓ | 2.217 ✓ |
 | peak cooling [kW] | 1.264 to 1.554 | 1.475 ✓ | 1.510 ✓ |
-| maximum temperature [degC] | 47.100 to 54.200 | 48.036 ✓ | 51.309 ✓ |
+| maximum temperature [degC] | 47.100 to 54.200 | 48.036 ✓ | 51.310 ✓ |
 | minimum temperature [degC] | 3.200 to 9.000 | 4.160 ✓ | 4.133 ✓ |
 | mean temperature [degC] | 25.800 to 30.500 | 26.693 ✓ | 28.027 ✓ |
 

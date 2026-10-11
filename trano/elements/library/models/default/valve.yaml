@@ -25,8 +25,14 @@
     - y
     targets:
     - Control
-  template: "    {{ library_name }}.Fluid.Actuators.Valves.TwoWayEqualPercentage\n\
-    \            {{ element.name }}(\n                {{ macros.render_parameters(parameters)\
-    \ | safe}},\n    redeclare package Medium = MediumW\n\n    ) \"Radiator valve\"\
-    \ "
+  template: |-
+    {{ library_name }}.Fluid.Actuators.Valves.TwoWayEqualPercentage
+            {{ element.name }}(
+                {{ macros.render_parameters(parameters) | safe}},
+    {%- if element.parameters.flow_coefficient_type %}
+    CvData={{ library_name }}.Fluid.Types.CvTypes.{{ element.parameters.flow_coefficient_type }},
+    {%- endif %}
+    redeclare package Medium = MediumW
+
+    ) "Radiator valve" 
   variant: default

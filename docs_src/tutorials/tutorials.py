@@ -20,6 +20,7 @@ Be succinct and to the point and stay with the fact:
 sys.path.append(str(Path(__file__).parents[2]))
 from docs_src.utils import (  # noqa: E402
     CleanedText,
+    Text,
     CommentCodeObject,
     CommentObject,
     DisplayObject,
@@ -45,8 +46,13 @@ key parameters."""
             ),
             TitleText(content="Input configuration file"),
             CleanedText(
-                content="""The following file describe a simple configuration file describing a one zone building 
-                with only the building envelope."""
+                content="""The following file describes a single-zone house: 100 m2 of floor with a large south-facing
+                window, brick and insulation walls, an insulated flat roof and a slab on the ground, occupied in the
+                morning and in the evening, with 0.5 air changes per hour of infiltration and an ideal heating and
+                cooling system keeping it between 21 degC by day (18 degC at night) and 26 degC. Azimuths are in
+                radians, 0 being south; a wall's surface is the gross area of the facade, the windows facing the
+                same way are cut out of it. Every parameter is optional and takes the default of the library
+                otherwise."""
             ),
             CommentObject(
                 question=QUESTION_CONFIG_BEFORE,
@@ -75,8 +81,8 @@ key parameters."""
             CleanedText(
                 content="""If one opens the main building components, the generated components is subdivided into 
                 different sub-components
-                as shown below. As the configuration file contains only the building envelope information, only the
-                envelope sub-component is generated"""
+                as shown below: the envelope holds the walls, the roof, the floor and the windows, the emission
+                holds the ideal heating and cooling system."""
             ),
             DisplayImage(title="Building components", path="./img/first_simulation_2.jpg"),
             CleanedText(
@@ -98,9 +104,12 @@ key parameters."""
             ),
             CleanedText(
                 content="""Once the simulation is completed some key parameters are displayed in a report file such as
-                displayed below."""
+                displayed below. The first figure shows the air temperature of the zone over two weeks of January,
+                held at the set point by day, falling towards the night set back, with the solar gains through the
+                south window easing the heating on sunny afternoons; the second shows the heat flows of the
+                occupants and of the ideal system."""
             ),
-            DisplayObject(object=tutorial_path.joinpath("first_simulation.html")),
+            DisplayObject(object=tutorial_path.joinpath("first_model.html")),
         ],
     ),
     Tutorial(
@@ -110,6 +119,17 @@ key parameters."""
                 content="""Switching between libraries is easy with Trano. 
                 This tutorial shows how to generate the model using the IDEAS library from the same yaml 
                 file as previously used."""
+            ),
+            TitleText(content="Supported libraries"),
+            Text(
+                content="""The same YAML file generates a model for each of the libraries trano supports: `Buildings`
+(13.0.0) and `IDEAS` (3.0.0) for detailed zones, `reduced_order` (the AixLib 3.0.1 reduced-order zone) and
+`iso_13790` (the ISO 13790 zone of AixLib) for simplified zones, and `mpc` for control-oriented RC models.
+Buildings and IDEAS are validated against ASHRAE Standard 140 (BESTEST), see the
+[validation results](../validation/bestest.md) and the [walk through the cases](../validation/bestest_cases.md);
+the simplified zones are reported there for information. The [parameter reference](../reference/parameters.md)
+lists, for every parameter, the Modelica name it is rendered under in each library and the parameters a library
+does not take."""
             ),
             TitleText(content="Generate Modelica model"),
             CleanedText(

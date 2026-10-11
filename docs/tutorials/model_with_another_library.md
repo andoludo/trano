@@ -1,6 +1,17 @@
 # Model with another library
 Switching libraries is seamless with Trano. This tutorial demonstrates how to generate a model using the IDEAS library from the same YAML file previously utilized.
 
+
+## Supported libraries
+
+The same YAML file generates a model for each of the libraries trano supports: `Buildings` (13.0.0) and
+`IDEAS` (3.0.0) for detailed zones, `reduced_order` (the AixLib 3.0.1 reduced-order zone) and `iso_13790`
+(the ISO 13790 zone of AixLib) for simplified zones, and `mpc` for control-oriented RC models. Buildings and
+IDEAS are validated against ASHRAE Standard 140 (BESTEST), see the [validation results](../validation/bestest.md)
+and the [walk through the cases](../validation/bestest_cases.md); the simplified zones are reported there for
+information. The [parameter reference](../reference/parameters.md) lists, for every parameter, the Modelica name
+it is rendered under in each library and the parameters a library does not take.
+
 ## Generate Modelica model
 
 The only difference from the previous tutorial is that the library is specified in the command as shown below.

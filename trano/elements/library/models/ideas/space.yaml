@@ -50,12 +50,7 @@
         template: '{{ element.emissions[0].control.name }}.emissionControl.conHea.u_m'
   library: ideas
   parameter_processing: &ideas_zone_parameters
-    function: modify_alias
-    parameter:
-      average_room_height: hZone
-      volume: V
-      sensible_thermal_mass_scaling_factor: mSenFac
-      temperature_initial: T_start
+    function: default_parameters
   ports: &ideas_zone_ports
   - bus_connection: true
     flow: undirected
@@ -114,7 +109,9 @@
         {%- endif %}
     {%- endif %}
         {{ macros.render_parameters(parameters) | safe}},
-        {%- if element.variant == "infiltration" and element.parameters.ach is not none %}
+        {%- if element.variant == "infiltration" and element.parameters.n50 is not none %}
+        n50={{ element.parameters.n50 }},
+        {%- elif element.variant == "infiltration" and element.parameters.ach is not none %}
         n50={{ element.parameters.ach }}*{{ element.name }}.n50toAch,
         {%- endif %}
         redeclare package Medium = Medium,

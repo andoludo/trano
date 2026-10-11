@@ -171,6 +171,8 @@ def _build_constructions(data: dict[str, Any], materials: dict[str, Any]) -> dic
             name=glazing["id"],
             layers=glazing_layers,
             u_value_frame=glazing["u_value_frame"],
+            u_value_given=glazing.get("u_value"),
+            g_value_given=glazing.get("g_value"),
         )
     return constructions
 

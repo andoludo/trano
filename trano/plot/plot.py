@@ -17,6 +17,25 @@ from trano.elements import BaseElement, NamedFigure
 
 logger = logging.getLogger(__name__)
 FIGURE_COUNT = 1
+SECONDS_PER_DAY = 86400.0
+KELVIN = 273.15
+TIME_AXIS = "Time [days]"
+
+
+def _is_temperature(label: str) -> bool:
+    return "[K]" in label
+
+
+def readable_label(label: str) -> str:
+    """The label of a series in the units of the plots: temperatures in degC."""
+    return label.replace("[K]", "[degC]")
+
+
+def readable_series(line_data: pd.DataFrame, label: str) -> tuple[pd.Series, pd.Series]:
+    """Time in days and, for a temperature, the values in degC."""
+    time = pd.Series(line_data.loc[0]) / SECONDS_PER_DAY
+    values = pd.Series(line_data.loc[1])
+    return time, values - KELVIN if _is_temperature(label) else values
 
 
 def plot(data: Reader, figure: NamedFigure, show: bool = False) -> pyFigure:
@@ -33,19 +52,21 @@ def plot(data: Reader, figure: NamedFigure, show: bool = False) -> pyFigure:
             except (KeyError, IndexError):
                 logger.warning(f"Key {line.key} not found in data")
                 continue
+            time, values = readable_series(line_data, line.label)
             (p,) = axis.plot(
-                line_data.loc[1],
+                time,
+                values,
                 linestyle=line.line_style,
                 linewidth=line.line_width,
                 color=line.color,
-                label=line.label,
+                label=readable_label(line.label),
             )
             plots.append(p)
-            axis.set_ylabel(figure_axis.label)
+            axis.set_ylabel(readable_label(figure_axis.label))
             axis.yaxis.label.set_color(p.get_color())
             axis.tick_params(axis="y", colors=p.get_color(), **tkw)
 
-    ax.set_xlabel("Simulation time [-]")
+    ax.set_xlabel(TIME_AXIS)
     ax.tick_params(axis="x", **tkw)
     ax.legend(handles=plots)
     plt.xticks(rotation=45)  # Rotate the tick labels
@@ -70,21 +91,22 @@ def plot_plot_ly_many(data: Reader, figures: list[NamedFigure], show: bool = Fal
                 if line_data.empty:
                     continue
 
+                time, values = readable_series(line_data, line.label)
                 fig.add_trace(
                     go.Scatter(
-                        x=line_data.loc[0],
-                        y=line_data.loc[1],
+                        x=time,
+                        y=values,
                         mode="lines",
-                        name=f"{figure.name} - {line.label}",
+                        name=f"{figure.name} - {readable_label(line.label)}",
                     ),
                     secondary_y=bool(axis),
                 )
     if not fig.data:
         return None
     fig.update_layout(
-        xaxis_title="Simulation time [-]",
-        yaxis_title=figure.left_axis.label,
-        yaxis2_title=figure.right_axis.label,
+        xaxis_title=TIME_AXIS,
+        yaxis_title=readable_label(figure.left_axis.label),
+        yaxis2_title=readable_label(figure.right_axis.label),
         legend_title="Legend",
         autosize=False,
         width=1000,
@@ -116,21 +138,22 @@ def plot_plot_ly(data: Reader, figure: NamedFigure, show: bool = False) -> plotl
             if line_data.empty:
                 continue
 
+            time, values = readable_series(line_data, line.label)
             fig.add_trace(
                 go.Scatter(
-                    x=line_data.loc[0],
-                    y=line_data.loc[1],
+                    x=time,
+                    y=values,
                     mode="lines",
-                    name=line.label,
+                    name=readable_label(line.label),
                 ),
                 secondary_y=bool(axis),
             )
     if not fig.data:
         return None
     fig.update_layout(
-        xaxis_title="Simulation time [-]",
-        yaxis_title=figure.left_axis.label,
-        yaxis2_title=figure.right_axis.label,
+        xaxis_title=TIME_AXIS,
+        yaxis_title=readable_label(figure.left_axis.label),
+        yaxis2_title=readable_label(figure.right_axis.label),
         legend_title="Legend",
         autosize=False,
         width=1000,

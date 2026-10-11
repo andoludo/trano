@@ -13,8 +13,10 @@
     medium: fluid
     names:
     - port_b
-  template: "  {{ library_name }}.Fluid.FixedResistances.PressureDrop\n    {{ element.name\
-    \ }}(\n    m_flow_nominal=100*1.2/3600,\n    redeclare package Medium = Medium,\n\
-    \    allowFlowReversal = false,\n    dp_nominal=40) \"Pressure drop for return\
-    \ duct\" "
+  template: |-
+    {{ library_name }}.Fluid.FixedResistances.PressureDrop
+        {{ element.name }}(
+        {{ macros.render_parameters(parameters) | safe }},
+        redeclare package Medium = Medium,
+        allowFlowReversal = false) "Pressure drop for return duct" 
   variant: default

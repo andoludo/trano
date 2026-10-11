@@ -1,3 +1,4 @@
+from dataclasses import replace
 from functools import cached_property
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -192,6 +193,8 @@ class Glass(BaseConstruction):
     name: str
     layers: list[GlassLayer | GasLayer]  # type: ignore
     u_value_frame: float
+    u_value_given: float | None = None  # [W/(m2.K)] given in the description instead of computed from the layers
+    g_value_given: float | None = None  # [1]
 
     def __hash__(self) -> int:
         return hash(self.name)
@@ -214,10 +217,11 @@ class Glass(BaseConstruction):
     @cached_property
     def properties(self) -> GlazingProperties:
         """Solar-optical (Buildings algorithm) and thermal (EN 673, EN 410) properties of the glazing."""
-        return GlazingProperties.from_layers(
+        properties = GlazingProperties.from_layers(
             panes=[layer for layer in self.layers if isinstance(layer, GlassLayer)],
             gaps=[layer for layer in self.layers if isinstance(layer, GasLayer)],
         )
+        return replace(properties, u_value_override=self.u_value_given, g_value_override=self.g_value_given)
 
     @field_validator("name")
     @classmethod
