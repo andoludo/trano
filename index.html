@@ -489,6 +489,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#supported-libraries-and-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Supported libraries and validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#key-features" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1253,6 +1264,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#supported-libraries-and-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Supported libraries and validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#key-features" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1341,6 +1363,58 @@
 ✅ <strong>Validated detailed Modelica libraries</strong> (e.g., <strong><a href="https://github.com/lbl-srg/modelica-buildings">Buildings</a></strong>, <strong><a href="https://github.com/open-ideas/IDEAS">IDEAS</a></strong>,...)<br />
 ✅ <strong>Reduced-order models</strong> (e.g., <strong><a href="https://github.com/RWTH-EBC/AixLib">AIXLIB</a></strong>, <strong>ISO13790</strong>,...)<br />
 ✅ <strong>your library...</strong>  </p>
+<h2 id="supported-libraries-and-validation">🧪 Supported libraries and validation</h2>
+<table>
+<thead>
+<tr>
+<th>Library</th>
+<th>Version</th>
+<th>Zone model</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/lbl-srg/modelica-buildings">Buildings</a></td>
+<td>13.0.0</td>
+<td><code>Buildings.ThermalZones.Detailed.MixedAir</code></td>
+<td>detailed, validated</td>
+</tr>
+<tr>
+<td><a href="https://github.com/open-ideas/IDEAS">IDEAS</a></td>
+<td>3.0.0</td>
+<td><code>IDEAS.Buildings.Components.Zone</code></td>
+<td>detailed, validated</td>
+</tr>
+<tr>
+<td><a href="https://github.com/RWTH-EBC/AixLib">AixLib</a> reduced order (<code>reduced_order</code>)</td>
+<td>3.0.1</td>
+<td><code>AixLib.ThermalZones.ReducedOrder.ThermalZone</code></td>
+<td>simplified, informational</td>
+</tr>
+<tr>
+<td>ISO 13790 (<code>iso_13790</code>)</td>
+<td>AixLib 3.0.1</td>
+<td><code>ISO13790.Zone5R1C</code></td>
+<td>simplified, informational</td>
+</tr>
+<tr>
+<td><code>mpc</code></td>
+<td>-</td>
+<td>RC models (<code>R1C1</code>, <code>R3C2</code>, <code>R4C3</code>, ISO 13790)</td>
+<td>control-oriented, CasADi ready</td>
+</tr>
+</tbody>
+</table>
+<p>The HVAC components (radiators, valves, pumps, boilers, heat pumps, air handling units) come from the Buildings
+library for every Modelica library. The Modelica name of every parameter in every library is listed in the
+<a href="https://andoludo.github.io/trano/reference/parameters/">parameter reference</a>.</p>
+<p>The models trano generates are <strong>validated against ASHRAE Standard 140 (BESTEST)</strong>: the 27 single-zone cases
+are simulated for a year with every library and compared with the acceptance limits of the standard and the
+spread of the reference programs. Buildings and IDEAS pass every case (see the
+<a href="https://andoludo.github.io/trano/validation/bestest/">validation results</a> and the
+<a href="https://andoludo.github.io/trano/validation/bestest_cases/">walk through the cases</a>); the two simplified
+zones are reported for information. Simulations run in the official OpenModelica image.</p>
 <h2 id="key-features">✨ Key Features</h2>
 <h3 id="built-for-open-source-bes">🛠️ <strong>Built for Open-Source BES</strong></h3>
 <ul>
