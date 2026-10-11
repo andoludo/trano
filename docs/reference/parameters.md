@@ -134,7 +134,7 @@ Elements: `emissioncontrol`
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
 | `schedule` | Schedule of switching times that toggles the heating set point between the occupied set point and the setback value | `3600*{7, 19}` | `schedule` | `schedule` | `schedule` | `schedule` | `schedule` |
-| `temperature_heating_setpoint` | Room air temperature heating set point during occupied period [K] | `297.0` | `THeaSet` | `THeaSet` | `THeaSet` | `THeaSet` | `THeaSet` |
+| `temperature_heating_setpoint` | Room air temperature heating set point during occupied period [K], 21 degC by default (the design indoor temperature of dwellings) | `294.15` | `THeaSet` | `THeaSet` | `THeaSet` | `THeaSet` | `THeaSet` |
 | `temperature_heating_setback` | Room air temperature heating set point during the setback period (e.g. at night) [K] | `289.0` | `THeaSetBack` | `THeaSetBack` | `THeaSetBack` | `THeaSetBack` | `THeaSetBack` |
 | `controller_gain` | Gain of controller [1] | `5.0` | `k` | `k` | `k` | `k` | `k` |
 | `data` | Occupancy data sources | library default | `data` | `data` | `data` | `data` | `data` |

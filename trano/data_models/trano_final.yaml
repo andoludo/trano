@@ -588,8 +588,8 @@ classes:
         range: float
       temperature_heating_setpoint:
         description: Room air temperature heating set point during occupied period
-          [K]
-        ifabsent: float(297)
+          [K], 21 degC by default (the design indoor temperature of dwellings)
+        ifabsent: float(294.15)
         range: float
   EvCharger:
     attributes:
