@@ -27,6 +27,11 @@ package Components
         {{  v |safe }}
     {% endfor %}
     {% endif %}
+    {% if dynamic_components.solar %}
+    {% for v in  dynamic_components.solar %}
+        {{  v |safe }}
+    {% endfor %}
+    {% endif %}
   end BaseClasses;
 end Components;
 {% if data.is_package %}
