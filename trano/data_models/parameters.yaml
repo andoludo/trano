@@ -137,13 +137,13 @@ BoilerParameters:
       range: string
     temperature_heatpump_source:
       alias: TSouSet
-      description: None
+      description: Constant source temperature of the heat pump [K], used when heat_pump_source_outdoor_air is false (and by the water-water heat pump)
       ifabsent: float(286.15)
       range: float
       short_name: heat_pump_source_temperature
     temperature_supply_setpoint_heat_pump:
       alias: TSet
-      description: None
+      description: Supply temperature set point of the heat pump [K]; for the air-water heat pump, the supply temperature of the heating curve at the design outdoor temperature
       ifabsent: float(323.15)
       range: float
       short_name: heat_pump_supply_setpoint
@@ -211,7 +211,7 @@ BoilerParameters:
         iso_13790: {handled: true}
     heat_pump_nominal_source_temperature:
       alias: TEvaHea_nominal
-      description: Source (outdoor air) temperature at the rating point of the air-water heat pump [K], 293.15 by default
+      description: Source (outdoor air) temperature at the rating point of the air-water heat pump [K], where it delivers the nominal heating power at the supply temperature set point; the design outdoor temperature by default
       range: float
       libraries:
         buildings: &hp_source_temperature {name: TEvaHea_nominal, variants: [air_water_heat_pump]}
@@ -220,13 +220,76 @@ BoilerParameters:
         iso_13790: *hp_source_temperature
     heat_pump_source_mass_flow:
       alias: mSou_flow_nominal
-      description: Mass flow rate of the source side of the heat pump [kg/s], 1.7 (air) or the one of the performance record (water) by default
+      description: Mass flow rate of the source side of the heat pump [kg/s], the one of the performance data scaled to the nominal heating power by default
       range: float
       libraries:
         buildings: &hp_source_flow {name: mSou_flow_nominal, variants: [air_water_heat_pump, water_water_heat_pump]}
         ideas: *hp_source_flow
         reduced_order: *hp_source_flow
         iso_13790: *hp_source_flow
+    heat_pump_source_outdoor_air:
+      alias: useOutdoorAirSource
+      description: Whether the evaporator of the air-water heat pump takes the outdoor air of the weather data (true by default) or the constant temperature_heatpump_source
+      range: string
+      libraries:
+        buildings: &hp_air_water_only {name: useOutdoorAirSource, variants: [air_water_heat_pump]}
+        ideas: *hp_air_water_only
+        reduced_order: *hp_air_water_only
+        iso_13790: *hp_air_water_only
+    design_outdoor_temperature:
+      alias: TOutDes
+      description: Design outdoor temperature of the heating curve of the air-water heat pump [K], 265.15 (-8 degC, Uccle, NBN EN 12831) by default
+      range: float
+      libraries:
+        buildings: &hp_design_outdoor {name: TOutDes, variants: [air_water_heat_pump]}
+        ideas: *hp_design_outdoor
+        reduced_order: *hp_design_outdoor
+        iso_13790: *hp_design_outdoor
+    heating_limit_temperature:
+      alias: TOutHeaLim
+      description: Outdoor temperature above which the air-water heat pump does not heat [K], 289.15 by default
+      range: float
+      libraries:
+        buildings: &hp_heating_limit {name: TOutHeaLim, variants: [air_water_heat_pump]}
+        ideas: *hp_heating_limit
+        reduced_order: *hp_heating_limit
+        iso_13790: *hp_heating_limit
+    minimum_supply_temperature:
+      alias: TSupMin
+      description: Supply temperature of the heating curve of the air-water heat pump at the heating limit [K], 303.15 by default
+      range: float
+      libraries:
+        buildings: &hp_minimum_supply {name: TSupMin, variants: [air_water_heat_pump]}
+        ideas: *hp_minimum_supply
+        reduced_order: *hp_minimum_supply
+        iso_13790: *hp_minimum_supply
+    buffer_temperature_band:
+      alias: dTHys
+      description: Width of the buffer temperature band switching the air-water heat pump on and off around the supply set point [K], 5 by default
+      range: float
+      libraries:
+        buildings: &hp_band {name: dTHys, variants: [air_water_heat_pump]}
+        ideas: *hp_band
+        reduced_order: *hp_band
+        iso_13790: *hp_band
+    compressor_minimum_on_time:
+      alias: minOnTime
+      description: Minimum time the compressor of the air-water heat pump runs once started [s], 300 by default
+      range: float
+      libraries:
+        buildings: &hp_min_on {name: minOnTime, variants: [air_water_heat_pump]}
+        ideas: *hp_min_on
+        reduced_order: *hp_min_on
+        iso_13790: *hp_min_on
+    compressor_minimum_off_time:
+      alias: minOffTime
+      description: Minimum time the compressor of the air-water heat pump stays off once stopped [s], 300 by default
+      range: float
+      libraries:
+        buildings: &hp_min_off {name: minOffTime, variants: [air_water_heat_pump]}
+        ideas: *hp_min_off
+        reduced_order: *hp_min_off
+        iso_13790: *hp_min_off
     temperature_initial:
       alias: T_start
       description: Initial temperature of the boiler and of the tank water [K], 293.15 by default

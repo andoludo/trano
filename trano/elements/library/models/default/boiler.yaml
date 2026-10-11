@@ -210,18 +210,75 @@
   component_template:
     bus:
       real_inputs:
+      # heat demand of the heating circuit (simple boiler control); always on when nothing drives it
       - component: pumpDemandSignal
         name: y
         port: u
+        default: 1.0
         target:
           main: |-
             element.name
-      real_outputs: []
+      real_outputs:
+      - component: PEle
+        name: power
+        port: y
+        power:
+          energy: "Electricity"
+        target:
+          main: |-
+            element.name
+      - component: QHea
+        name: heat_flow
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: EEle
+        name: electric_energy
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: EHea
+        name: heat_energy
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: supTemp
+        name: supply_temperature
+        port: T
+        target:
+          main: |-
+            element.name
+      - component: retTemp
+        name: return_temperature
+        port: T
+        target:
+          main: |-
+            element.name
+      - component: TBuf
+        name: buffer_temperature
+        port: T
+        target:
+          main: |-
+            element.name
+      - component: ySet
+        name: compressor_speed
+        port: y
+        target:
+          main: |-
+            element.name
     category: boiler
-    template: "\n    model AirWaterHeatPump{{ element.name | capitalize}}\n    extends\
-      \ {{ package_name }}.Trano.Fluid.Boilers.PartialAirWaterHeatPump;\n    {{bus_template}}\n\
-      \    equation\n    {{bus_ports | safe}}\n     end AirWaterHeatPump{{ element.name\
-      \ | capitalize}};\n     "
+    # the outdoor temperature comes from the weather data on the data bus
+    template: |-
+      model AirWaterHeatPump{{ element.name | capitalize}}
+      extends {{ package_name }}.Trano.Fluid.Boilers.PartialAirWaterHeatPump;
+      {{bus_template}}
+      equation
+      {{bus_ports | safe}}
+      connect(dataBus.TDryBul, TOut.u);
+      end AirWaterHeatPump{{ element.name | capitalize}};
 
   library: default
   parameter_processing:
