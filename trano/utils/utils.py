@@ -14,5 +14,6 @@ def is_success(
 ) -> bool:
     logger.debug(f"Simulation results: {results.output.decode()}")
     if options and options.check_only:
-        return "true" in results.output.decode()
+        # every loadModel prints "true": only the checkModel verdict tells whether the model is valid
+        return "completed successfully" in results.output.decode()
     return "The simulation finished successfully" in results.output.decode()
