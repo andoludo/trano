@@ -784,12 +784,14 @@ classes:
         range: float
       cooling_setpoint_schedule:
         description: Day schedule of the cooling set point, rows of time since midnight
-          [s] and set point [K], repeated every day; one row for a constant set point
+          [s] and set point [K], repeated every day; linear between rows, repeat a
+          time for a step; one row for a constant set point
         ifabsent: string([0, 300.15])
         range: string
       heating_setpoint_schedule:
         description: Day schedule of the heating set point, rows of time since midnight
-          [s] and set point [K], repeated every day; one row for a constant set point
+          [s] and set point [K], repeated every day; linear between rows, repeat a
+          time for a step; one row for a constant set point
         ifabsent: string([0, 293.15])
         range: string
       maximum_cooling_power:

@@ -163,8 +163,8 @@ Elements: `idealheatingcooling`
 |---|---|---|---|---|---|---|---|
 | `controller_gain` | Gain of the heating and cooling PI controllers, output fraction of the capacity per kelvin of error [1/K] | `0.1` | `k` | `k` | `k` | `k` | `k` |
 | `controller_integral_time` | Integral time of the heating and cooling PI controllers [s] | `300.0` | `Ti` | `Ti` | `Ti` | `Ti` | `Ti` |
-| `cooling_setpoint_schedule` | Day schedule of the cooling set point, rows of time since midnight [s] and set point [K], repeated every day; one row for a constant set point | `[0, 300.15]` | `TSetCoo` | `TSetCoo` | `TSetCoo` | `TSetCoo` | `TSetCoo` |
-| `heating_setpoint_schedule` | Day schedule of the heating set point, rows of time since midnight [s] and set point [K], repeated every day; one row for a constant set point | `[0, 293.15]` | `TSetHea` | `TSetHea` | `TSetHea` | `TSetHea` | `TSetHea` |
+| `cooling_setpoint_schedule` | Day schedule of the cooling set point, rows of time since midnight [s] and set point [K], repeated every day; linear between rows, repeat a time for a step; one row for a constant set point | `[0, 300.15]` | `TSetCoo` | `TSetCoo` | `TSetCoo` | `TSetCoo` | `TSetCoo` |
+| `heating_setpoint_schedule` | Day schedule of the heating set point, rows of time since midnight [s] and set point [K], repeated every day; linear between rows, repeat a time for a step; one row for a constant set point | `[0, 293.15]` | `TSetHea` | `TSetHea` | `TSetHea` | `TSetHea` | `TSetHea` |
 | `maximum_cooling_power` | Cooling capacity; zero switches cooling off [W] | `1000000.0` | `QCoo_flow_max` | `QCoo_flow_max` | `QCoo_flow_max` | `QCoo_flow_max` | `QCoo_flow_max` |
 | `maximum_heating_power` | Heating capacity; zero switches heating off [W] | `1000000.0` | `QHea_flow_max` | `QHea_flow_max` | `QHea_flow_max` | `QHea_flow_max` | `QHea_flow_max` |
 | `radiative_fraction` | Fraction of the heat flow exchanged with the radiative temperature of the zone, the rest with its air [1] | `0.0` | `frad` | `frad` | `frad` | `frad` | `frad` |

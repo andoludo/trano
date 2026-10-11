@@ -93,7 +93,7 @@ spaces:
       - ideal_heating_cooling:
           id: HEATING:001
           parameters:
-            heating_setpoint_schedule: "[0, 291.15; 25200, 294.15; 82800, 291.15; 86400, 291.15]"
+            heating_setpoint_schedule: "[0, 291.15; 25200, 291.15; 25200, 294.15; 82800, 294.15; 82800, 291.15; 86400, 291.15]"
             cooling_setpoint_schedule: "[0, 299.15]"
             maximum_heating_power: 8000.0
             maximum_cooling_power: 4000.0
