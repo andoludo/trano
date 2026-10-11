@@ -157,7 +157,7 @@ class SpecifiedParameter(BaseParameter):
     def _accept_short_names(cls, data: Any) -> Any:  # noqa: ANN401
         if not isinstance(data, dict):
             return data
-        data = dict(data)
+        data = {key: value for key, value in data.items() if value != "None"}  # the schema's string(None): absent
         for spec in cls.__parameter_specs__.values():
             if spec.short_name and spec.short_name in data:
                 value = data.pop(spec.short_name)
