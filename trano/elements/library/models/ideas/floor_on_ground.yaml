@@ -20,6 +20,9 @@
         {%- if element.perimeter is not none %}
         PWall={{ element.perimeter }},
         {%- endif %}
+        {%- if element.average_indoor_temperature is not none %}
+        TiAvg={{ element.average_indoor_temperature }},
+        {%- endif %}
         A={{  element.surface}})
   variant: default
 

@@ -677,6 +677,10 @@ classes:
     - tilt
   FloorOnGround:
     attributes:
+      average_indoor_temperature:
+        description: Mean temperature of the room above the slab [K] for the ground
+          model of IDEAS (ISO 13370 heat flow), 295.15 (IDEAS' default) when absent
+        range: float
       construction:
         description: Construction
         range: Construction

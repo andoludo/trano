@@ -93,6 +93,11 @@ classes:
       perimeter:
         description: Exposed perimeter of the slab [m] for the ground model of IDEAS, 4 times the square root of the surface when absent
         range: float
+      average_indoor_temperature:
+        description: >-
+          Mean temperature of the room above the slab [K] for the ground model of IDEAS (ISO 13370 heat
+          flow), 295.15 (IDEAS' default) when absent
+        range: float
     slots:
       - surface
   AdiabaticWall:

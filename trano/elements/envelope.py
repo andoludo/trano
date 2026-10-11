@@ -74,6 +74,7 @@ class BaseInternalElement(BaseSimpleWall):
 class BaseFloorOnGround(BaseSimpleWall):
     ground_temperature: float = GROUND_TEMPERATURE  # [K] at the outer surface of the floor construction
     perimeter: float | None = None  # [m] exposed perimeter of the slab (IDEAS), 4 * sqrt(surface) when absent
+    average_indoor_temperature: float | None = None  # [K] mean room temperature of the IDEAS ground model, 295.15 when absent
 
 
 class BaseExternalWall(BaseSimpleWall):
