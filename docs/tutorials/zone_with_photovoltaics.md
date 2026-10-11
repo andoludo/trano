@@ -5,17 +5,17 @@ The following tutorial demonstrates how to add photovoltaic (PV) systems to buil
 ```yaml
 default: !include_default
 material:
-  - id: MATERIAL:001
+  - id: MATERIAL:001  # facing brick
+    thermal_conductivity: 0.6
+    density: 1800.0
+    specific_heat_capacity: 840.0
+  - id: MATERIAL:002  # mineral wool
     thermal_conductivity: 0.035
-    density: 2000.0
-    specific_heat_capacity: 1000.0
-  - id: MATERIAL:002
-    thermal_conductivity: 0.035
-    density: 2000.0
-    specific_heat_capacity: 1000.0
-  - id: MATERIAL:003
-    thermal_conductivity: 0.035
-    density: 2000.0
+    density: 30.0
+    specific_heat_capacity: 1030.0
+  - id: MATERIAL:003  # gypsum plaster
+    thermal_conductivity: 0.5
+    density: 1300.0
     specific_heat_capacity: 1000.0
 
 constructions:
@@ -26,7 +26,7 @@ constructions:
       - material: MATERIAL:002
         thickness: 0.1
       - material: MATERIAL:003
-        thickness: 0.1
+        thickness: 0.015
 spaces:
   - occupancy:
     parameters:
@@ -57,13 +57,20 @@ spaces:
           azimuth: 3.14
           tilt: wall
       floor_on_grounds:
-        - surface: 120
+        - surface: 100.0
           construction: CONCRETESLAB:001
     emissions:
       - radiator:
           id: RADIATOR:003
+          parameters:
+            nominal_heating_power_positive_for_heating: 8000
+            water_inlet_temperature_at_nominal_condition: 318.15
+            water_outlet_temperature_at_nominal_condition: 308.15
+            air_temperature_at_nominal_condition: 293.15
       - valve:
           id: VALVE:003
+          parameters:
+            m_flow_nominal: 0.19
           control:
             emission_control:
   - occupancy:
@@ -95,13 +102,20 @@ spaces:
           azimuth: 3.14
           tilt: wall
       floor_on_grounds:
-        - surface: 60
+        - surface: 70.0
           construction: CONCRETESLAB:001
     emissions:
       - radiator:
           id: RADIATOR:001
+          parameters:
+            nominal_heating_power_positive_for_heating: 5800
+            water_inlet_temperature_at_nominal_condition: 318.15
+            water_outlet_temperature_at_nominal_condition: 308.15
+            air_temperature_at_nominal_condition: 293.15
       - valve:
           id: VALVE:001
+          parameters:
+            m_flow_nominal: 0.14
           control:
             emission_control:
   - occupancy:
@@ -129,13 +143,20 @@ spaces:
           azimuth: 3.14
           tilt: wall
       floor_on_grounds:
-        - surface: 60.0
+        - surface: 50.0
           construction: CONCRETESLAB:001
     emissions:
       - radiator:
           id: RADIATOR:002
+          parameters:
+            nominal_heating_power_positive_for_heating: 4500
+            water_inlet_temperature_at_nominal_condition: 318.15
+            water_outlet_temperature_at_nominal_condition: 308.15
+            air_temperature_at_nominal_condition: 293.15
       - valve:
           id: VALVE:002
+          parameters:
+            m_flow_nominal: 0.11
           control:
             emission_control:
 internal_walls:
@@ -154,9 +175,20 @@ internal_walls:
 systems:
   - boiler:
       id: BOILER:001
-      variant: heat_pump
+      variant: air_water_heat_pump
+      # 14 kW at -8 degC outdoor and 45 degC supply for a 14 kW design heat loss
+      parameters:
+        nominal_heating_power: 14000
+        temperature_supply_setpoint_heat_pump: 318.15
+      control:
+        boiler_control:
+          id: BOILER_CONTROL:001
+          variant: simple
+
   - pump:
       id: PUMP:001
+      parameters:
+        m_flow_nominal: 0.45
       control:
         collector_control:
       outlets:
@@ -173,6 +205,8 @@ systems:
         - BOILER:001
   - three_way_valve:
       id: THREE_WAY_VALVE:001
+      parameters:
+        m_flow_nominal: 0.33
       control:
         three_way_valve_control:
       outlets:
@@ -191,6 +225,8 @@ systems:
         - BOILER:001
   - three_way_valve:
       id: THREE_WAY_VALVE:002
+      parameters:
+        m_flow_nominal: 0.11
       control:
         three_way_valve_control:
       outlets:
