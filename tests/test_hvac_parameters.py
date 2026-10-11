@@ -140,7 +140,7 @@ def test_the_supply_set_point_and_the_source_belong_to_their_variants() -> None:
         name="boiler", variant="without_storage", parameters=P("Boiler")(supply_temperature_setpoint=340)
     )
     assert "TempSet=340.0" in rendered(without_storage)
-    assert "NaturalGasHigherHeatingValue" in rendered(without_storage)
+    assert "NaturalGasLowerHeatingValue" in rendered(without_storage)
     assert "TempSet" not in rendered(
         elements.Boiler(name="boiler", parameters=P("Boiler")(supply_temperature_setpoint=340))
     )

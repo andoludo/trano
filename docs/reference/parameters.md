@@ -75,7 +75,7 @@ Elements: `boiler`
 | `cop_supply_slope` | Heat pump COP change per kelvin of supply temperature, mpc library [1/K] | `-0.075` | - | - | - | - | - |
 | `cop_cross_term` | Heat pump COP cross term outdoor x supply deviation, mpc library [1/K2] | `-0.0025` | - | - | - | - | - |
 | `max_electrical_power` | Maximum electrical power of the heat pump compressor, mpc library [W] (nominal heating power / COP when absent) | library default | - | - | - | - | - |
-| `loss_conductance` | Heat loss conductance of the boiler to its room [W/K], 0.05 * nominal heating power / 30 by default | library default | `UA` | `UA` | `UA` | `UA` | `UA` |
+| `loss_conductance` | Heat loss conductance of the boiler to its room [W/K], 1e-4 * nominal heating power (0.5 % of it at 50 K) by default; BoilerPolynomial of Buildings 13 subtracts this loss twice from the water | library default | `UA` | `UA` | `UA` | `UA` | `UA` |
 | `water_volume` | Water volume of the boiler [m3], 1.5e-6 * nominal heating power by default | library default | `VWat` | `VWat` | `VWat` | `VWat` | `VWat` |
 | `dry_mass` | Dry mass of the boiler lumped to its water [kg], 1.5e-3 * nominal heating power by default | library default | `mDry` | `mDry` | `mDry` | `mDry` | `mDry` |
 | `insulation_conductivity` | Thermal conductivity of the tank insulation [W/(m.K)], 0.04 by default | library default | `kIns` | `kIns` | `kIns` | `kIns` | `kIns` |

@@ -249,8 +249,9 @@ classes:
         description: Same as use_linear_relation_between_m_flow_and_dp_for_any_flow_rate
         range: string
       loss_conductance:
-        description: Heat loss conductance of the boiler to its room [W/K], 0.05 *
-          nominal heating power / 30 by default
+        description: Heat loss conductance of the boiler to its room [W/K], 1e-4 *
+          nominal heating power (0.5 % of it at 50 K) by default; BoilerPolynomial
+          of Buildings 13 subtracts this loss twice from the water
         range: float
       max_electrical_power:
         description: Maximum electrical power of the heat pump compressor, mpc library

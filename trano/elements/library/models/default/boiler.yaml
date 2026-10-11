@@ -28,6 +28,32 @@
         target:
           main: |-
             element.name
+      - component: QFue
+        name: fuel_power
+        port: y
+        power:
+          energy: "Gas"
+        target:
+          main: |-
+            element.name
+      - component: QHea
+        name: heat_flow
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: EFue
+        name: fuel_energy
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: EHea
+        name: heat_energy
+        port: y
+        target:
+          main: |-
+            element.name
     category: boiler
     template: "\n    model BoilerWithStorage{{ element.name | capitalize}}\n    extends\
       \ {{ package_name }}.Trano.Fluid.Boilers.PartialBoilerWithStorage;\n    {{bus_template}}\n\
@@ -135,13 +161,41 @@
   component_template:
     bus:
       real_inputs:
+      # heat demand of the heating circuit (simple boiler control); always on when nothing drives it
       - component: pumpDemandSignal
         name: y
         port: u
+        default: 1.0
         target:
           main: |-
             element.name
       real_outputs:
+        - component: QFue
+          name: fuel_power
+          port: y
+          power:
+            energy: "Gas"
+          target:
+            main: |-
+              element.name
+        - component: QHea
+          name: heat_flow
+          port: y
+          target:
+            main: |-
+              element.name
+        - component: EFue
+          name: fuel_energy
+          port: y
+          target:
+            main: |-
+              element.name
+        - component: EHea
+          name: heat_energy
+          port: y
+          target:
+            main: |-
+              element.name
         - component: GasUsage
           name: gas_usage
           port: y
@@ -198,7 +252,7 @@
     use_counter: false
   template: "\n{{package_name}}.Components.BaseClasses.\nBoilerWithoutStorage{{ element.name\
     \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasHigherHeatingValue' }}())\
+    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}())\
     \ \"Boiler\" "
   variant: without_storage
 

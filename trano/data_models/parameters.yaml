@@ -174,7 +174,7 @@ BoilerParameters:
       render: false
     loss_conductance:
       alias: UA
-      description: Heat loss conductance of the boiler to its room [W/K], 0.05 * nominal heating power / 30 by default
+      description: Heat loss conductance of the boiler to its room [W/K], 1e-4 * nominal heating power (0.5 % of it at 50 K) by default; BoilerPolynomial of Buildings 13 subtracts this loss twice from the water
       range: float
     water_volume:
       alias: VWat
