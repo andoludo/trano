@@ -9,7 +9,7 @@ emissions:
       id: RADIATOR:001
       variant: ideal
       parameters:
-        nominal_heating_power_positive_for_heating: 2500
+        nominal_heating_power_positive_for_heating: 5000
       control:
         emission_control:
           id: EMISSION_CONTROL:001
@@ -40,28 +40,40 @@ In summary, this building configuration describes an energy-efficient, multi-roo
 
 ```yaml
 material:
-  - id: MATERIAL:001
-    thermal_conductivity: 0.045
-    density: 2100.0
-    specific_heat_capacity: 900.0
-  - id: MATERIAL:002
-    thermal_conductivity: 0.04
-    density: 1950.0
-    specific_heat_capacity: 950.0
-  - id: MATERIAL:003
-    thermal_conductivity: 0.038
-    density: 2050.0
-    specific_heat_capacity: 920.0
+  - id: MATERIAL:001  # facing brick
+    thermal_conductivity: 0.9
+    density: 1700.0
+    specific_heat_capacity: 840.0
+  - id: MATERIAL:002  # mineral wool
+    thermal_conductivity: 0.035
+    density: 30.0
+    specific_heat_capacity: 1030.0
+  - id: MATERIAL:003  # concrete block
+    thermal_conductivity: 1.1
+    density: 1400.0
+    specific_heat_capacity: 840.0
+  - id: MATERIAL:004  # concrete
+    thermal_conductivity: 1.7
+    density: 2300.0
+    specific_heat_capacity: 1000.0
 
 constructions:
+  # cavity wall filled with 12 cm of mineral wool, U = 0.26 W/m2K
   - id: CONSTRUCTION:001
     layers:
       - material: MATERIAL:001
+        thickness: 0.09
+      - material: MATERIAL:002
         thickness: 0.12
+      - material: MATERIAL:003
+        thickness: 0.14
+  # concrete slab on 8 cm of insulation
+  - id: SLAB:001
+    layers:
       - material: MATERIAL:002
         thickness: 0.08
-      - material: MATERIAL:003
-        thickness: 0.1
+      - material: MATERIAL:004
+        thickness: 0.15
 
 glass_material:
   - density: 2500.0
@@ -91,97 +103,115 @@ glazings:
 
 spaces:
   - parameters:
-      floor_area: 80.0  # Smaller room
+      floor_area: 80.0  # 10 m x 8 m
       average_room_height: 2.5
     id: SPACE:001
     external_boundaries:
       external_walls:
-        - surface: 90.0
+        - surface: 25.0
           azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
-        - surface: 70.0
+        - surface: 20.0
           azimuth: 1.57
           tilt: wall
           construction: CONSTRUCTION:001
-        - surface: 160.0
+        - surface: 20.0
           azimuth: 4.71
           tilt: wall
           construction: CONSTRUCTION:001
       floor_on_grounds:
         - surface: 80.0
-          construction: CONSTRUCTION:001
+          construction: SLAB:001
       windows:
-        - surface: 1.5
+        - surface: 4.0
           azimuth: 3.14
           tilt: wall
           construction: INS2AR2020:001
-          width: 1.5
-          height: 1.0
+          width: 2.5
+          height: 1.6
+        - surface: 4.0
+          azimuth: 1.57
+          tilt: wall
+          construction: INS2AR2020:001
+          width: 2.5
+          height: 1.6
 
   - parameters:
-      floor_area: 120.0  # Larger room with different shape
+      floor_area: 120.0  # 12 m x 10 m
       average_room_height: 2.7
     id: SPACE:002
     external_boundaries:
       external_walls:
-        - surface: 120.0
+        - surface: 32.4
           azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
-        - surface: 100.0
+        - surface: 27.0
           azimuth: 1.57
           tilt: wall
           construction: CONSTRUCTION:001
-        - surface: 220.0
+        - surface: 32.4
           azimuth: 0.0
           tilt: wall
           construction: CONSTRUCTION:001
       floor_on_grounds:
         - surface: 120.0
-          construction: CONSTRUCTION:001
+          construction: SLAB:001
       windows:
-        - surface: 2.4
+        - surface: 4.0
           azimuth: 3.14
           tilt: wall
           construction: INS2AR2020:001
-          width: 2.0
-          height: 1.2
+          width: 2.5
+          height: 1.6
+        - surface: 10.0
+          azimuth: 0.0
+          tilt: wall
+          construction: INS2AR2020:001
+          width: 5.0
+          height: 2.0
   - parameters:
-      floor_area: 120.0  # Larger room with different shape
+      floor_area: 120.0  # 12 m x 10 m
       average_room_height: 2.7
     id: SPACE:003
     external_boundaries:
       external_walls:
-        - surface: 120.0
+        - surface: 32.4
           azimuth: 3.14
           tilt: wall
           construction: CONSTRUCTION:001
-        - surface: 100.0
+        - surface: 27.0
           azimuth: 1.57
           tilt: wall
           construction: CONSTRUCTION:001
-        - surface: 220.0
+        - surface: 32.4
           azimuth: 0.0
           tilt: wall
           construction: CONSTRUCTION:001
       floor_on_grounds:
         - surface: 120.0
-          construction: CONSTRUCTION:001
+          construction: SLAB:001
       windows:
-        - surface: 2.4
+        - surface: 4.0
           azimuth: 3.14
           tilt: wall
           construction: INS2AR2020:001
-          width: 2.0
-          height: 1.2
+          width: 2.5
+          height: 1.6
+        - surface: 10.0
+          azimuth: 0.0
+          tilt: wall
+          construction: INS2AR2020:001
+          width: 5.0
+          height: 2.0
 
     emissions:
       - radiator:
           id: RADIATOR:001
           variant: ideal
           parameters:
-              nominal_heating_power_positive_for_heating: 2500
+              nominal_heating_power_positive_for_heating: 5000
           control:
             emission_control:
               id: EMISSION_CONTROL:001
@@ -195,7 +225,6 @@ internal_walls:
     space_2: SPACE:001
     construction: CONSTRUCTION:001
     surface: 18.0
-
 ```
             
 
