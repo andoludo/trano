@@ -1,0 +1,27 @@
+# A wall with an adiabatic outer face (a party wall): IDEAS' BoundaryWall without a prescribed
+# temperature or heat flow at its outer surface.
+- classes:
+  - AdiabaticWall
+  figures: []
+  library: ideas
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |2-
+
+        IDEAS.Buildings.Components.BoundaryWall {{ element.name }}(
+        redeclare parameter {{ package_name }}.Data.Constructions.
+        {{ element.construction.name }} constructionType,
+        redeclare package Medium = Medium,
+        use_T_in=false,
+        use_Q_in=false,
+        inc={{ macros.convert_tilt(element.tilt, library_name) }},
+        azi={{ element.azimuth }},
+        A={{ element.surface }})
+  variant: default

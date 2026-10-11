@@ -1,4 +1,16 @@
 classes:
+  AdiabaticWall:
+    attributes:
+      construction:
+        description: Construction
+        range: Construction
+    description: 'Wall whose outer surface exchanges no heat, e.g. a party wall with
+      a neighbouring dwelling heated like this one: the full construction is in the
+      zone (thermal mass) with an adiabatic outer face.'
+    slots:
+    - surface
+    - azimuth
+    - tilt
   AhuControl:
     class_uri: schema:AhuControl
     slots:
@@ -636,6 +648,12 @@ classes:
         range: string
   ExternalBoundaries:
     attributes:
+      adiabatic_walls:
+        description: Walls with an adiabatic outer face, such as party walls with
+          heated neighbours
+        inlined: true
+        multivalued: true
+        range: AdiabaticWall
       external_walls:
         inlined: true
         multivalued: true

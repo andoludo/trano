@@ -1,0 +1,12 @@
+# A wall with an adiabatic outer face (a party wall). Buildings holds it in the boundary constructions
+# of the zone (datConBou, see buildings/space.yaml) with nothing on its outer port, and the lumped
+# zones (reduced order, ISO 13790) count it as internal mass: none of them renders a component.
+- classes:
+  - AdiabaticWall
+  figures: []
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports: []
+  template: ""
+  variant: default

@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from trano.elements.construction import Construction, Glass
 from trano.elements.envelope import (
     GROUND_TEMPERATURE,
+    AdiabaticWall,
     BaseExternalWall,
     BaseFloorOnGround,
     BaseSimpleWall,
@@ -234,7 +235,9 @@ class AggregatedEnvelope(BaseModel):
             if floor_area > 0
             else GROUND_TEMPERATURE
         )
-        opaque = [*walls, *roofs, *floors]
+        # adiabatic walls (party walls) exchange heat with the room only: internal thermal mass
+        adiabatic = [boundary for boundary in boundaries if isinstance(boundary, AdiabaticWall)]
+        opaque = [*walls, *roofs, *floors, *adiabatic]
         internal_capacity = sum(
             element.opaque_surface * element.construction.internal_heat_capacity for element in opaque
         )

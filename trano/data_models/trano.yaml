@@ -95,6 +95,18 @@ classes:
         range: float
     slots:
       - surface
+  AdiabaticWall:
+    description: >-
+      Wall whose outer surface exchanges no heat, e.g. a party wall with a neighbouring dwelling heated
+      like this one: the full construction is in the zone (thermal mass) with an adiabatic outer face.
+    attributes:
+      construction:
+        description: Construction
+        range: Construction
+    slots:
+      - surface
+      - azimuth
+      - tilt
   InternalWall:
     attributes:
       construction:
@@ -172,6 +184,11 @@ classes:
         inlined: true
       windows:
         range: Window
+        multivalued: true
+        inlined: true
+      adiabatic_walls:
+        description: Walls with an adiabatic outer face, such as party walls with heated neighbours
+        range: AdiabaticWall
         multivalued: true
         inlined: true
 
