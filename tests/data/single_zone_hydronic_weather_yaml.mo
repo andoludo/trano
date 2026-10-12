@@ -4153,7 +4153,17 @@ equation
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.006,
         k=1.0,
-        tauSol={ 0.6 },
+        tauSol={ 0.63 },
+        rhoSol_a={ 0.19 },
+        rhoSol_b={ 0.24 },
+        tauIR=0.0,
+        absIR_a=0.84,
+        absIR_b=0.04)
+        ,
+        Buildings.HeatTransfer.Data.Glasses.Generic(
+        x=0.006,
+        k=1.0,
+        tauSol={ 0.83 },
         rhoSol_a={ 0.075 },
         rhoSol_b={ 0.075 },
         tauIR=0.0,
@@ -4163,21 +4173,11 @@ equation
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.006,
         k=1.0,
-        tauSol={ 0.6 },
-        rhoSol_a={ 0.075 },
-        rhoSol_b={ 0.075 },
+        tauSol={ 0.63 },
+        rhoSol_a={ 0.24 },
+        rhoSol_b={ 0.19 },
         tauIR=0.0,
-        absIR_a=0.84,
-        absIR_b=0.84)
-        ,
-        Buildings.HeatTransfer.Data.Glasses.Generic(
-        x=0.006,
-        k=1.0,
-        tauSol={ 0.6 },
-        rhoSol_a={ 0.075 },
-        rhoSol_b={ 0.075 },
-        tauIR=0.0,
-        absIR_a=0.84,
+        absIR_a=0.04,
         absIR_b=0.84)
         
     },

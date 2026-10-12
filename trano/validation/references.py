@@ -112,6 +112,16 @@ def check_layer_references(data: dict[str, Any]) -> Iterator[Issue]:
                                 construction["id"],
                                 f"layer {index} uses the {layer_key} '{layer[layer_key]}', which is not defined.",
                             )
+                    if key == "constructions" and layer.get("material") in known["gas"]:
+                        yield Issue(
+                            "warning",
+                            construction["id"],
+                            f"layer {index} is the gas '{layer['material']}': Buildings models it as still air "
+                            "conducting heat and overestimates its resistance (1.2 m2.K/W for 30 mm of air instead of "
+                            "the 0.18 m2.K/W of an air cavity, EN ISO 6946), while IDEAS models a cavity. Use a "
+                            "material with the equivalent conductivity thickness / 0.18 W/(m.K), such as AIRCAVITY:001 "
+                            "(30 mm) or AIRCAVITY:002 (50 mm) of the default library.",
+                        )
 
 
 def check_references(data: dict[str, Any], graph: ModelGraph) -> Iterator[Issue]:

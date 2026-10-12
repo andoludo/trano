@@ -4417,62 +4417,62 @@ extends Modelica.Icons.MaterialPropertiesPackage;
         (d=0.0038),three_zones_hydronic_container_IDEAS.Data.Materials.air_001
         (d=0.012),three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
         (d=0.0038)      },
-      final SwTrans=[0, 0.362;
-                    10, 0.3603;
-                    20, 0.3548;
-                    30, 0.345;
-                    40, 0.3292;
-                    50, 0.3038;
-                    60, 0.2608;
-                    70, 0.1865;
-                    80, 0.0742;
+      final SwTrans=[0, 0.6928;
+                    10, 0.6918;
+                    20, 0.6885;
+                    30, 0.6812;
+                    40, 0.6659;
+                    50, 0.6336;
+                    60, 0.565;
+                    70, 0.4266;
+                    80, 0.1978;
                     90, 0.0],
-      final SwAbs=[0, 0.3397, 0.0, 0.1961;
-                  10, 0.3413, 0.0, 0.1965;
-                  20, 0.3459, 0.0, 0.1978;
-                  30, 0.3534, 0.0, 0.1992;
-                  40, 0.3635, 0.0, 0.1999;
-                  50, 0.3753, 0.0, 0.1975;
-                  60, 0.387, 0.0, 0.1867;
-                  70, 0.3908, 0.0, 0.1576;
-                  80, 0.3503, 0.0, 0.0939;
+      final SwAbs=[0, 0.1009, 0.0, 0.0793;
+                  10, 0.1016, 0.0, 0.0797;
+                  20, 0.1034, 0.0, 0.081;
+                  30, 0.1066, 0.0, 0.083;
+                  40, 0.1112, 0.0, 0.0853;
+                  50, 0.1174, 0.0, 0.087;
+                  60, 0.1256, 0.0, 0.0861;
+                  70, 0.1361, 0.0, 0.0785;
+                  80, 0.1422, 0.0, 0.0581;
                   90, 0.0, 0.0, 0.0],
-      final SwTransDif=0.2767,
-      final SwAbsDif={0.3756, 0.0, 0.1866},
+      final SwTransDif=0.5715,
+      final SwAbsDif={0.1274, 0.0, 0.0881},
       final U_value=2.8852,
-      final g_value=0.531
+      final g_value=0.7563
     ) "three_zones_hydronic_container_IDEAS";
     record ins2ar2020_001 = IDEAS.Buildings.Data.Interfaces.Glazing (
       final nLay=3,
       final checkLowPerformanceGlazing=false,
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
         (d=0.006),three_zones_hydronic_container_IDEAS.Data.Materials.argon_001
-        (d=0.016),three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
+        (d=0.016),three_zones_hydronic_container_IDEAS.Data.Materials.loweglass_002
         (d=0.006)      },
-      final SwTrans=[0, 0.362;
-                    10, 0.3603;
-                    20, 0.3548;
-                    30, 0.345;
-                    40, 0.3292;
-                    50, 0.3038;
-                    60, 0.2608;
-                    70, 0.1865;
-                    80, 0.0742;
+      final SwTrans=[0, 0.5325;
+                    10, 0.5354;
+                    20, 0.5272;
+                    30, 0.5164;
+                    40, 0.5018;
+                    50, 0.4742;
+                    60, 0.4151;
+                    70, 0.3031;
+                    80, 0.1398;
                     90, 0.0],
-      final SwAbs=[0, 0.3397, 0.0, 0.1961;
-                  10, 0.3413, 0.0, 0.1965;
-                  20, 0.3459, 0.0, 0.1978;
-                  30, 0.3534, 0.0, 0.1992;
-                  40, 0.3635, 0.0, 0.1999;
-                  50, 0.3753, 0.0, 0.1975;
-                  60, 0.387, 0.0, 0.1867;
-                  70, 0.3908, 0.0, 0.1576;
-                  80, 0.3503, 0.0, 0.0939;
+      final SwAbs=[0, 0.1143, 0.0, 0.1099;
+                  10, 0.1145, 0.0, 0.1115;
+                  20, 0.1164, 0.0, 0.1192;
+                  30, 0.12, 0.0, 0.1247;
+                  40, 0.1252, 0.0, 0.126;
+                  50, 0.1316, 0.0, 0.1289;
+                  60, 0.1385, 0.0, 0.1387;
+                  70, 0.1454, 0.0, 0.142;
+                  80, 0.1464, 0.0, 0.0974;
                   90, 0.0, 0.0, 0.0],
-      final SwTransDif=0.2767,
-      final SwAbsDif={0.3756, 0.0, 0.1866},
-      final U_value=2.5987,
-      final g_value=0.5341
+      final SwTransDif=0.4288,
+      final SwAbsDif={0.1405, 0.0, 0.1328},
+      final U_value=1.0984,
+      final g_value=0.6328
     ) "three_zones_hydronic_container_IDEAS";
 end Glazing;
 
@@ -4483,7 +4483,12 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record air_001 = IDEAS.Buil
       rho=1.2,
       epsLw=0.0,
       epsSw=0.0,
-      gas=true);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      gas=true);    record aircavity_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.167,
+      c=1006.0,
+      rho=1.2,
+      epsLw=0.9,
+      epsSw=0.6);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.0174,
       c=522.0,
       rho=1.66,
@@ -4517,7 +4522,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record air_001 = IDEAS.Buil
       c=840.0,
       rho=1120.0,
       epsLw=0.85,
-      epsSw=0.65);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.65);    record loweglass_002 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.84,
+      epsLw_a=0.84,
+      epsLw_b=0.04,
+      epsSw=0.67,
+      glass=true);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.035,
       c=1000.0,
       rho=2000.0,
@@ -4550,7 +4563,7 @@ package Constructions "Library of building envelope constructions"      record c
     "cavitywallpartialfill_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
-        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.air_001
+        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.aircavity_001
         (d=0.03),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
         (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
         (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001
@@ -5574,23 +5587,23 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_4
-            (y=0.0);
+            TColSetControl_7
+            (y=373.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_3
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_1
+            TCooSetControl_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_6
             (y=373.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_2
-            (y=298.15);
+            TAirOutControl_4
+            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
-            TColSetControl_7
-            (y=373.15);
+            TCooSetControl_1
+            (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_7
             (y=true);
@@ -5622,18 +5635,18 @@ connect(dataBus.TZonSpace_003, TRoo[3].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_002, TRoo1[2].ppm);
 connect(dataBus.ppmCO2Space_003, TRoo1[3].ppm);
-connect(dataBus.TAirOutBoiler_001,
-TAirOutControl_4.y);
-connect(dataBus.TCooSetSpace_003,
-TCooSetControl_3.y);
-connect(dataBus.TCooSetSpace_001,
-TCooSetControl_1.y);
-connect(dataBus.TColSetControl_6,
-TColSetControl_6.y);
-connect(dataBus.TCooSetSpace_002,
-TCooSetControl_2.y);
 connect(dataBus.TColSetControl_7,
 TColSetControl_7.y);
+connect(dataBus.TCooSetSpace_003,
+TCooSetControl_3.y);
+connect(dataBus.TCooSetSpace_002,
+TCooSetControl_2.y);
+connect(dataBus.TColSetControl_6,
+TColSetControl_6.y);
+connect(dataBus.TAirOutBoiler_001,
+TAirOutControl_4.y);
+connect(dataBus.TCooSetSpace_001,
+TCooSetControl_1.y);
 connect(dataBus.triggerControl_7,
 triggerControl_7.y);
 connect(dataBus.triggerControl_6,
@@ -5701,62 +5714,62 @@ extends Modelica.Icons.MaterialPropertiesPackage;
         (d=0.0038),three_zones_hydronic_container_IDEAS.Data.Materials.air_001
         (d=0.012),three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
         (d=0.0038)      },
-      final SwTrans=[0, 0.362;
-                    10, 0.3603;
-                    20, 0.3548;
-                    30, 0.345;
-                    40, 0.3292;
-                    50, 0.3038;
-                    60, 0.2608;
-                    70, 0.1865;
-                    80, 0.0742;
+      final SwTrans=[0, 0.6928;
+                    10, 0.6918;
+                    20, 0.6885;
+                    30, 0.6812;
+                    40, 0.6659;
+                    50, 0.6336;
+                    60, 0.565;
+                    70, 0.4266;
+                    80, 0.1978;
                     90, 0.0],
-      final SwAbs=[0, 0.3397, 0.0, 0.1961;
-                  10, 0.3413, 0.0, 0.1965;
-                  20, 0.3459, 0.0, 0.1978;
-                  30, 0.3534, 0.0, 0.1992;
-                  40, 0.3635, 0.0, 0.1999;
-                  50, 0.3753, 0.0, 0.1975;
-                  60, 0.387, 0.0, 0.1867;
-                  70, 0.3908, 0.0, 0.1576;
-                  80, 0.3503, 0.0, 0.0939;
+      final SwAbs=[0, 0.1009, 0.0, 0.0793;
+                  10, 0.1016, 0.0, 0.0797;
+                  20, 0.1034, 0.0, 0.081;
+                  30, 0.1066, 0.0, 0.083;
+                  40, 0.1112, 0.0, 0.0853;
+                  50, 0.1174, 0.0, 0.087;
+                  60, 0.1256, 0.0, 0.0861;
+                  70, 0.1361, 0.0, 0.0785;
+                  80, 0.1422, 0.0, 0.0581;
                   90, 0.0, 0.0, 0.0],
-      final SwTransDif=0.2767,
-      final SwAbsDif={0.3756, 0.0, 0.1866},
+      final SwTransDif=0.5715,
+      final SwAbsDif={0.1274, 0.0, 0.0881},
       final U_value=2.8852,
-      final g_value=0.531
+      final g_value=0.7563
     ) "three_zones_hydronic_container_IDEAS";
     record ins2ar2020_001 = IDEAS.Buildings.Data.Interfaces.Glazing (
       final nLay=3,
       final checkLowPerformanceGlazing=false,
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
         (d=0.006),three_zones_hydronic_container_IDEAS.Data.Materials.argon_001
-        (d=0.016),three_zones_hydronic_container_IDEAS.Data.Materials.glass_001
+        (d=0.016),three_zones_hydronic_container_IDEAS.Data.Materials.loweglass_002
         (d=0.006)      },
-      final SwTrans=[0, 0.362;
-                    10, 0.3603;
-                    20, 0.3548;
-                    30, 0.345;
-                    40, 0.3292;
-                    50, 0.3038;
-                    60, 0.2608;
-                    70, 0.1865;
-                    80, 0.0742;
+      final SwTrans=[0, 0.5325;
+                    10, 0.5354;
+                    20, 0.5272;
+                    30, 0.5164;
+                    40, 0.5018;
+                    50, 0.4742;
+                    60, 0.4151;
+                    70, 0.3031;
+                    80, 0.1398;
                     90, 0.0],
-      final SwAbs=[0, 0.3397, 0.0, 0.1961;
-                  10, 0.3413, 0.0, 0.1965;
-                  20, 0.3459, 0.0, 0.1978;
-                  30, 0.3534, 0.0, 0.1992;
-                  40, 0.3635, 0.0, 0.1999;
-                  50, 0.3753, 0.0, 0.1975;
-                  60, 0.387, 0.0, 0.1867;
-                  70, 0.3908, 0.0, 0.1576;
-                  80, 0.3503, 0.0, 0.0939;
+      final SwAbs=[0, 0.1143, 0.0, 0.1099;
+                  10, 0.1145, 0.0, 0.1115;
+                  20, 0.1164, 0.0, 0.1192;
+                  30, 0.12, 0.0, 0.1247;
+                  40, 0.1252, 0.0, 0.126;
+                  50, 0.1316, 0.0, 0.1289;
+                  60, 0.1385, 0.0, 0.1387;
+                  70, 0.1454, 0.0, 0.142;
+                  80, 0.1464, 0.0, 0.0974;
                   90, 0.0, 0.0, 0.0],
-      final SwTransDif=0.2767,
-      final SwAbsDif={0.3756, 0.0, 0.1866},
-      final U_value=2.5987,
-      final g_value=0.5341
+      final SwTransDif=0.4288,
+      final SwAbsDif={0.1405, 0.0, 0.1328},
+      final U_value=1.0984,
+      final g_value=0.6328
     ) "three_zones_hydronic_container_IDEAS";
 end Glazing;
 
@@ -5767,7 +5780,12 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record air_001 = IDEAS.Buil
       rho=1.2,
       epsLw=0.0,
       epsSw=0.0,
-      gas=true);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      gas=true);    record aircavity_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=0.167,
+      c=1006.0,
+      rho=1.2,
+      epsLw=0.9,
+      epsSw=0.6);    record argon_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.0174,
       c=522.0,
       rho=1.66,
@@ -5801,7 +5819,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record air_001 = IDEAS.Buil
       c=840.0,
       rho=1120.0,
       epsLw=0.85,
-      epsSw=0.65);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.65);    record loweglass_002 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.84,
+      epsLw_a=0.84,
+      epsLw_b=0.04,
+      epsSw=0.67,
+      glass=true);    record material_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.035,
       c=1000.0,
       rho=2000.0,
@@ -5834,7 +5860,7 @@ package Constructions "Library of building envelope constructions"      record c
     "cavitywallpartialfill_001"
    extends IDEAS.Buildings.Data.Interfaces.Construction(
       mats={three_zones_hydronic_container_IDEAS.Data.Materials.brick_001
-        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.air_001
+        (d=0.08),three_zones_hydronic_container_IDEAS.Data.Materials.aircavity_001
         (d=0.03),three_zones_hydronic_container_IDEAS.Data.Materials.rockwool_001
         (d=0.1),three_zones_hydronic_container_IDEAS.Data.Materials.brickhollow_001
         (d=0.14),three_zones_hydronic_container_IDEAS.Data.Materials.gypsum_001

@@ -97,7 +97,7 @@ def test_rc_building_from_yaml(three_zones: dict[RCModelType, RCBuilding]) -> No
     assert [zone.name for zone in building.zones] == ["space_001", "space_002", "space_003"]
     couplings = {(c.zone_a, c.zone_b): c.conductance for c in building.couplings}
     assert couplings == pytest.approx(
-        {("space_001", "space_002"): 7.0847, ("space_002", "space_003"): 4.5035}, rel=1e-4
+        {("space_001", "space_002"): 7.0847, ("space_002", "space_003"): 5.6514}, rel=1e-4
     )
     zone = building.zones[0]
     assert isinstance(zone.parameters, R3C2Parameters)

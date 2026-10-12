@@ -4466,7 +4466,7 @@ ARoo=0.0,
 URoo=0.0,
 
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Heavy buiMas,
-gFac=0.530956) "Thermal zone"
+gFac=0.756333) "Thermal zone"
  annotation (
     Placement(transformation(origin = { 20.11847686767578, -23.822471618652344 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -4489,17 +4489,17 @@ AWal={ 20.0, 25.0, 32.0 },
 nOrientations=3,
 surAzi={ 0.0, 1.57, 3.14 },
 surTil={ 1.5708, 1.5708, 1.5708 },
-UWal=0.208549,
+UWal=0.262963,
 
 AWin={ 5.0, 0.0, 2.0 },
-UWin=2.59868,
+UWin=1.0984,
 UFlo=2.45901,
 airRat=0.5,
 ARoo=0.0,
 URoo=0.0,
 
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Heavy buiMas,
-gFac=0.534066) "Thermal zone"
+gFac=0.632778) "Thermal zone"
  annotation (
     Placement(transformation(origin = { 4.67333984375, 24.47686004638672 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -4532,7 +4532,7 @@ ARoo=0.0,
 URoo=0.0,
 
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Heavy buiMas,
-gFac=0.530956) "Thermal zone"
+gFac=0.756333) "Thermal zone"
  annotation (
     Placement(transformation(origin = { 52.003021240234375, 91.1529541015625 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -5195,23 +5195,23 @@ annotation (Placement(transformation(extent={{-46,30},{-26,50}})));Trano.Control
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_4
-            (y=0.0);
+            TColSetControl_7
+            (y=373.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_3
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_1
+            TCooSetControl_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_6
             (y=373.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_2
-            (y=298.15);
+            TAirOutControl_4
+            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
-            TColSetControl_7
-            (y=373.15);
+            TCooSetControl_1
+            (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_7
             (y=true);
@@ -5236,18 +5236,18 @@ connect(u[3], TRoo[3].u);
 connect(dataBus.TZonSpace_001, TRoo[1].y);
 connect(dataBus.TZonSpace_002, TRoo[2].y);
 connect(dataBus.TZonSpace_003, TRoo[3].y);
-connect(dataBus.TAirOutBoiler_001, 
-    TAirOutControl_4.y);
-connect(dataBus.TCooSetSpace_003, 
-    TCooSetControl_3.y);
-connect(dataBus.TCooSetSpace_001, 
-    TCooSetControl_1.y);
-connect(dataBus.TColSetControl_6, 
-    TColSetControl_6.y);
-connect(dataBus.TCooSetSpace_002, 
-    TCooSetControl_2.y);
 connect(dataBus.TColSetControl_7, 
     TColSetControl_7.y);
+connect(dataBus.TCooSetSpace_003, 
+    TCooSetControl_3.y);
+connect(dataBus.TCooSetSpace_002, 
+    TCooSetControl_2.y);
+connect(dataBus.TColSetControl_6, 
+    TColSetControl_6.y);
+connect(dataBus.TAirOutBoiler_001, 
+    TAirOutControl_4.y);
+connect(dataBus.TCooSetSpace_001, 
+    TCooSetControl_1.y);
 connect(dataBus.triggerControl_7, 
     triggerControl_7.y);
 connect(dataBus.triggerControl_6, 

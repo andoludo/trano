@@ -3891,32 +3891,32 @@ extends Modelica.Icons.MaterialPropertiesPackage;
       final checkLowPerformanceGlazing=false,
       mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.glass_001
         (d=0.006),multizone_air_handling_unit_space_connected_ideas.Data.Materials.argon_001
-        (d=0.016),multizone_air_handling_unit_space_connected_ideas.Data.Materials.glass_001
+        (d=0.016),multizone_air_handling_unit_space_connected_ideas.Data.Materials.loweglass_002
         (d=0.006)      },
-      final SwTrans=[0, 0.362;
-                    10, 0.3603;
-                    20, 0.3548;
-                    30, 0.345;
-                    40, 0.3292;
-                    50, 0.3038;
-                    60, 0.2608;
-                    70, 0.1865;
-                    80, 0.0742;
+      final SwTrans=[0, 0.5325;
+                    10, 0.5354;
+                    20, 0.5272;
+                    30, 0.5164;
+                    40, 0.5018;
+                    50, 0.4742;
+                    60, 0.4151;
+                    70, 0.3031;
+                    80, 0.1398;
                     90, 0.0],
-      final SwAbs=[0, 0.3397, 0.0, 0.1961;
-                  10, 0.3413, 0.0, 0.1965;
-                  20, 0.3459, 0.0, 0.1978;
-                  30, 0.3534, 0.0, 0.1992;
-                  40, 0.3635, 0.0, 0.1999;
-                  50, 0.3753, 0.0, 0.1975;
-                  60, 0.387, 0.0, 0.1867;
-                  70, 0.3908, 0.0, 0.1576;
-                  80, 0.3503, 0.0, 0.0939;
+      final SwAbs=[0, 0.1143, 0.0, 0.1099;
+                  10, 0.1145, 0.0, 0.1115;
+                  20, 0.1164, 0.0, 0.1192;
+                  30, 0.12, 0.0, 0.1247;
+                  40, 0.1252, 0.0, 0.126;
+                  50, 0.1316, 0.0, 0.1289;
+                  60, 0.1385, 0.0, 0.1387;
+                  70, 0.1454, 0.0, 0.142;
+                  80, 0.1464, 0.0, 0.0974;
                   90, 0.0, 0.0, 0.0],
-      final SwTransDif=0.2767,
-      final SwAbsDif={0.3756, 0.0, 0.1866},
-      final U_value=2.5987,
-      final g_value=0.5341
+      final SwTransDif=0.4288,
+      final SwAbsDif={0.1405, 0.0, 0.1328},
+      final U_value=1.0984,
+      final g_value=0.6328
     ) "multizone_air_handling_unit_space_connected_ideas";
 end Glazing;
 
@@ -3960,7 +3960,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Bu
       c=840.0,
       rho=1120.0,
       epsLw=0.85,
-      epsSw=0.65);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.65);    record loweglass_002 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.84,
+      epsLw_a=0.84,
+      epsLw_b=0.04,
+      epsSw=0.67,
+      glass=true);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.035,
       c=800.0,
       rho=100.0,
@@ -4696,32 +4704,32 @@ extends Modelica.Icons.MaterialPropertiesPackage;
       final checkLowPerformanceGlazing=false,
       mats={multizone_air_handling_unit_space_connected_ideas.Data.Materials.glass_001
         (d=0.006),multizone_air_handling_unit_space_connected_ideas.Data.Materials.argon_001
-        (d=0.016),multizone_air_handling_unit_space_connected_ideas.Data.Materials.glass_001
+        (d=0.016),multizone_air_handling_unit_space_connected_ideas.Data.Materials.loweglass_002
         (d=0.006)      },
-      final SwTrans=[0, 0.362;
-                    10, 0.3603;
-                    20, 0.3548;
-                    30, 0.345;
-                    40, 0.3292;
-                    50, 0.3038;
-                    60, 0.2608;
-                    70, 0.1865;
-                    80, 0.0742;
+      final SwTrans=[0, 0.5325;
+                    10, 0.5354;
+                    20, 0.5272;
+                    30, 0.5164;
+                    40, 0.5018;
+                    50, 0.4742;
+                    60, 0.4151;
+                    70, 0.3031;
+                    80, 0.1398;
                     90, 0.0],
-      final SwAbs=[0, 0.3397, 0.0, 0.1961;
-                  10, 0.3413, 0.0, 0.1965;
-                  20, 0.3459, 0.0, 0.1978;
-                  30, 0.3534, 0.0, 0.1992;
-                  40, 0.3635, 0.0, 0.1999;
-                  50, 0.3753, 0.0, 0.1975;
-                  60, 0.387, 0.0, 0.1867;
-                  70, 0.3908, 0.0, 0.1576;
-                  80, 0.3503, 0.0, 0.0939;
+      final SwAbs=[0, 0.1143, 0.0, 0.1099;
+                  10, 0.1145, 0.0, 0.1115;
+                  20, 0.1164, 0.0, 0.1192;
+                  30, 0.12, 0.0, 0.1247;
+                  40, 0.1252, 0.0, 0.126;
+                  50, 0.1316, 0.0, 0.1289;
+                  60, 0.1385, 0.0, 0.1387;
+                  70, 0.1454, 0.0, 0.142;
+                  80, 0.1464, 0.0, 0.0974;
                   90, 0.0, 0.0, 0.0],
-      final SwTransDif=0.2767,
-      final SwAbsDif={0.3756, 0.0, 0.1866},
-      final U_value=2.5987,
-      final g_value=0.5341
+      final SwTransDif=0.4288,
+      final SwAbsDif={0.1405, 0.0, 0.1328},
+      final U_value=1.0984,
+      final g_value=0.6328
     ) "multizone_air_handling_unit_space_connected_ideas";
 end Glazing;
 
@@ -4765,7 +4773,15 @@ extends Modelica.Icons.MaterialPropertiesPackage;    record argon_001 = IDEAS.Bu
       c=840.0,
       rho=1120.0,
       epsLw=0.85,
-      epsSw=0.65);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
+      epsSw=0.65);    record loweglass_002 = IDEAS.Buildings.Data.Interfaces.Material (
+      k=1.0,
+      c=840.0,
+      rho=2500.0,
+      epsLw=0.84,
+      epsLw_a=0.84,
+      epsLw_b=0.04,
+      epsSw=0.67,
+      glass=true);    record rockwool_001 = IDEAS.Buildings.Data.Interfaces.Material (
       k=0.035,
       c=800.0,
       rho=100.0,

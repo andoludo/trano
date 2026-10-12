@@ -4465,7 +4465,7 @@ AZone=100.0, VAir=250.0,
     ATransparent={ 5.0, 0.0, 2.0 },
     RWin=0.0254808,
     hConWin=2.7,
-    gWin=0.530956,
+    gWin=0.756333,
     UWin=2.88519,
     ratioWinConRad=0.09,
 
@@ -4575,17 +4575,17 @@ AZone=70.0, VAir=175.0,
     nOrientations=3,
     AWin={ 5.0, 0.0, 2.0 },
     ATransparent={ 5.0, 0.0, 2.0 },
-    RWin=0.0309398,
+    RWin=0.106026,
     hConWin=2.7,
-    gWin=0.534066,
-    UWin=2.59868,
+    gWin=0.632778,
+    UWin=1.0984,
     ratioWinConRad=0.09,
 
     AExt={ 20.0, 25.0, 32.0 },
     hConExt=2.7,
     nExt=1,
-    RExt={0.0300328},
-    RExtRem=0.0300328,
+    RExt={0.0235897},
+    RExtRem=0.0235897,
     CExt={19230600.0},
 
     AInt=0,
@@ -4689,7 +4689,7 @@ AZone=50.0, VAir=125.0,
     ATransparent={ 5.0 },
     RWin=0.0356731,
     hConWin=2.7,
-    gWin=0.530956,
+    gWin=0.756333,
     UWin=2.88519,
     ratioWinConRad=0.09,
 
@@ -5408,23 +5408,23 @@ annotation (Placement(transformation(extent={{-46,30},{-26,50}})));Trano.Control
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_4
-            (y=0.0);
+            TColSetControl_7
+            (y=373.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_3
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_1
+            TCooSetControl_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_6
             (y=373.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_2
-            (y=298.15);
+            TAirOutControl_4
+            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
-            TColSetControl_7
-            (y=373.15);
+            TCooSetControl_1
+            (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_7
             (y=true);
@@ -5449,18 +5449,18 @@ connect(u[3], TRoo[3].u);
 connect(dataBus.TZonSpace_001, TRoo[1].y);
 connect(dataBus.TZonSpace_002, TRoo[2].y);
 connect(dataBus.TZonSpace_003, TRoo[3].y);
-connect(dataBus.TAirOutBoiler_001, 
-    TAirOutControl_4.y);
-connect(dataBus.TCooSetSpace_003, 
-    TCooSetControl_3.y);
-connect(dataBus.TCooSetSpace_001, 
-    TCooSetControl_1.y);
-connect(dataBus.TColSetControl_6, 
-    TColSetControl_6.y);
-connect(dataBus.TCooSetSpace_002, 
-    TCooSetControl_2.y);
 connect(dataBus.TColSetControl_7, 
     TColSetControl_7.y);
+connect(dataBus.TCooSetSpace_003, 
+    TCooSetControl_3.y);
+connect(dataBus.TCooSetSpace_002, 
+    TCooSetControl_2.y);
+connect(dataBus.TColSetControl_6, 
+    TColSetControl_6.y);
+connect(dataBus.TAirOutBoiler_001, 
+    TAirOutControl_4.y);
+connect(dataBus.TCooSetSpace_001, 
+    TCooSetControl_1.y);
 connect(dataBus.triggerControl_7, 
     triggerControl_7.y);
 connect(dataBus.triggerControl_6, 

@@ -1,5 +1,12 @@
+# Default library of materials, glazings and constructions, included in a model with `default: !include_default`.
+#
+# Values: EN ISO 10456 (design values of building materials), EN ISO 6946 (air cavities), EN 673 and EN 410
+# (glazings: U-value and g-value). Layers are listed from the outside to the inside. The thermal properties of a
+# construction are those of its layers: thermal bridges (studs, rafters, wall ties) are not included. U-values in
+# the comments: layers with the surface resistances of a wall (0.17 m2.K/W), without the ground under the floors.
 constructions:
-- id: FLOORONGROUND:001
+# --- floors on the ground ---
+- id: FLOORONGROUND:001  # insulated slab on the ground, U = 0.31 W/(m2.K)
   layers:
   - material: CONCRETE:001
     thickness: 0.2
@@ -9,13 +16,32 @@ constructions:
     thickness: 0.08
   - material: CONCRETE:001
     thickness: 0.015
-- id: CONCRETESLAB:001
+- id: FLOORONGROUNDUNINSULATED:001  # slab on the ground without insulation (before 1980), U = 3.0 W/(m2.K)
+  layers:
+  - material: CONCRETE:001
+    thickness: 0.15
+  - material: SCREED:001
+    thickness: 0.06
+  - material: TILE:001
+    thickness: 0.01
+- id: INSULATEDFLOORHEATING:001  # slab with floor heating screed, U = 0.32 W/(m2.K)
+  layers:
+  - material: CONCRETE:001
+    thickness: 0.1
+  - material: PUR:001
+    thickness: 0.07
+  - material: SCREED:001
+    thickness: 0.05
+  - material: TILE:001
+    thickness: 0.01
+# --- floors and ceilings between storeys ---
+- id: CONCRETESLAB:001  # 0.25 m concrete slab
   layers:
   - material: CONCRETE:001
     thickness: 0.125
   - material: CONCRETE:001
     thickness: 0.125
-- id: TABS:001
+- id: TABS:001  # concrete slab with thermally activated core and a floating screed
   layers:
   - material: CONCRETE:001
     thickness: 0.125
@@ -27,17 +53,18 @@ constructions:
     thickness: 0.05
   - material: TILE:001
     thickness: 0.005
-- id: INSULATEDFLOORHEATING:001
+- id: TIMBERFLOOR:001  # timber joist floor: plasterboard ceiling, insulation between the joists, OSB and parquet
   layers:
-  - material: CONCRETE:001
+  - material: GYPSUMBOARD:001
+    thickness: 0.0125
+  - material: GLASSWOOL:001
     thickness: 0.1
-  - material: PUR:001
-    thickness: 0.07
-  - material: SCREED:001
-    thickness: 0.05
-  - material: TILE:001
-    thickness: 0.01
-- id: CAVITYWALL:001
+  - material: OSB:001
+    thickness: 0.022
+  - material: HARDWOOD:001
+    thickness: 0.015
+# --- external walls ---
+- id: CAVITYWALL:001  # filled cavity wall, U = 0.28 W/(m2.K)
   layers:
   - material: BRICK:001
     thickness: 0.08
@@ -47,11 +74,11 @@ constructions:
     thickness: 0.14
   - material: GYPSUM:001
     thickness: 0.015
-- id: CAVITYWALLPARTIALFILL:001
+- id: CAVITYWALLPARTIALFILL:001  # partially filled cavity wall with a 30 mm air cavity, U = 0.26 W/(m2.K)
   layers:
   - material: BRICK:001
     thickness: 0.08
-  - material: AIR:001
+  - material: AIRCAVITY:001
     thickness: 0.03
   - material: ROCKWOOL:001
     thickness: 0.1
@@ -59,6 +86,95 @@ constructions:
     thickness: 0.14
   - material: GYPSUM:001
     thickness: 0.015
+- id: CAVITYWALLEMPTY:001  # cavity wall without insulation (1950-1980), U = 1.0 W/(m2.K)
+  layers:
+  - material: BRICK:001
+    thickness: 0.09
+  - material: AIRCAVITY:002
+    thickness: 0.05
+  - material: BRICKHOLLOW:001
+    thickness: 0.14
+  - material: GYPSUM:001
+    thickness: 0.015
+- id: SOLIDBRICKWALL:001  # solid brick wall without insulation (before 1945), U = 1.8 W/(m2.K)
+  layers:
+  - material: BRICK:001
+    thickness: 0.3
+  - material: GYPSUM:001
+    thickness: 0.015
+- id: ETICSWALL:001  # masonry with external insulation and render, U = 0.19 W/(m2.K)
+  layers:
+  - material: RENDER:001
+    thickness: 0.01
+  - material: EPS:001
+    thickness: 0.16
+  - material: BRICKHOLLOW:001
+    thickness: 0.14
+  - material: GYPSUM:001
+    thickness: 0.015
+- id: AACWALL:001  # autoclaved aerated concrete wall, rendered, U = 0.28 W/(m2.K)
+  layers:
+  - material: RENDER:001
+    thickness: 0.01
+  - material: YTONG:001
+    thickness: 0.3
+  - material: GYPSUM:001
+    thickness: 0.01
+- id: TIMBERFRAMEWALL:001  # timber frame wall with wood fibre sheathing, U = 0.16 W/(m2.K)
+  layers:
+  - material: WOODFIBRE:001
+    thickness: 0.06
+  - material: GLASSWOOL:001
+    thickness: 0.16
+  - material: OSB:001
+    thickness: 0.015
+  - material: GYPSUMBOARD:001
+    thickness: 0.0125
+# --- internal walls ---
+- id: INTERNALWALLMASONRY:001  # plastered hollow brick partition
+  layers:
+  - material: GYPSUM:001
+    thickness: 0.01
+  - material: BRICKHOLLOW:001
+    thickness: 0.14
+  - material: GYPSUM:001
+    thickness: 0.01
+- id: INTERNALWALLLIGHT:001  # plasterboard stud partition with mineral wool
+  layers:
+  - material: GYPSUMBOARD:001
+    thickness: 0.0125
+  - material: GLASSWOOL:001
+    thickness: 0.075
+  - material: GYPSUMBOARD:001
+    thickness: 0.0125
+# --- roofs ---
+- id: PITCHEDROOF:001  # insulated pitched roof under ventilated tiles (the tiles are left out, EN ISO 6946), U = 0.15 W/(m2.K)
+  layers:
+  - material: WOODFIBRE:001
+    thickness: 0.035
+  - material: GLASSWOOL:001
+    thickness: 0.2
+  - material: GYPSUMBOARD:001
+    thickness: 0.0125
+- id: FLATROOF:001  # warm flat roof on a concrete slab, U = 0.17 W/(m2.K)
+  layers:
+  - material: BITUMEN:001
+    thickness: 0.01
+  - material: PIR:001
+    thickness: 0.14
+  - material: CONCRETE:001
+    thickness: 0.2
+  - material: GYPSUM:001
+    thickness: 0.01
+- id: UNINSULATEDROOF:001  # pitched roof without insulation (before 1970): tiles and a plasterboard ceiling, U = 2.6 W/(m2.K)
+  layers:
+  - material: ROOFTILE:001
+    thickness: 0.015
+  - material: PLYWOOD:001
+    thickness: 0.018
+  - material: GYPSUMBOARD:001
+    thickness: 0.0125
+# Gases filling the cavities of glazings, at 10 degC (EN 673).
 gas:
 - density: 5.46
   id: XENON:001
@@ -84,35 +200,97 @@ gas:
   shortwave_emissivity: 0.0
   specific_heat_capacity: 522.0
   thermal_conductivity: 0.0174
+# Panes: solar values at normal incidence (EN 410). The low-e panes carry a soft coating (emissivity 0.04) on one
+# face, which must face the gas cavity: LOWEGLASS:001 is an outer pane (coating on its room face),
+# LOWEGLASS:002 an inner pane (coating on its outside face).
 glass_material:
 - density: 2500.0
-  id: GLASS:001
+  id: GLASS:001  # clear float glass
   longwave_emissivity: 0.84
   shortwave_emissivity: 0.67
   specific_heat_capacity: 840.0
   thermal_conductivity: 1.0
+  solar_transmittance: [0.83]
+  solar_reflectance_outside_facing: [0.075]
+  solar_reflectance_room_facing: [0.075]
+  infrared_transmissivity: 0.0
+  infrared_absorptivity_outside_facing: 0.84
+  infrared_absorptivity_room_facing: 0.84
+- density: 2500.0
+  id: LOWEGLASS:001  # low-e glass, coating on the room face (outer pane)
+  longwave_emissivity: 0.84
+  shortwave_emissivity: 0.67
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 1.0
+  solar_transmittance: [0.63]
+  solar_reflectance_outside_facing: [0.19]
+  solar_reflectance_room_facing: [0.24]
+  infrared_transmissivity: 0.0
+  infrared_absorptivity_outside_facing: 0.84
+  infrared_absorptivity_room_facing: 0.04
+- density: 2500.0
+  id: LOWEGLASS:002  # low-e glass, coating on the outside face (inner pane)
+  longwave_emissivity: 0.84
+  shortwave_emissivity: 0.67
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 1.0
+  solar_transmittance: [0.63]
+  solar_reflectance_outside_facing: [0.24]
+  solar_reflectance_room_facing: [0.19]
+  infrared_transmissivity: 0.0
+  infrared_absorptivity_outside_facing: 0.04
+  infrared_absorptivity_room_facing: 0.84
+# Center-of-glass values (EN 673, EN 410) in the comments.
 glazings:
-- id: INS2AR2020:001
+- id: INS2AR2020:001  # double glazing, low-e, argon: U = 1.1 W/(m2.K), g = 0.63
   layers:
   - glass: GLASS:001
     thickness: 0.006
   - gas: ARGON:001
     thickness: 0.016
+  - glass: LOWEGLASS:002
+    thickness: 0.006
+- id: INS3AR2020:001  # triple glazing, two low-e coatings, argon: U = 0.58 W/(m2.K), g = 0.47
+  layers:
+  - glass: LOWEGLASS:001
+    thickness: 0.006
+  - gas: ARGON:001
+    thickness: 0.016
   - glass: GLASS:001
     thickness: 0.006
-- id: INS3AR2020:001
+  - gas: ARGON:001
+    thickness: 0.016
+  - glass: LOWEGLASS:002
+    thickness: 0.006
+- id: INS2KR2020:001  # double glazing, low-e, krypton: U = 0.96 W/(m2.K), g = 0.63
   layers:
   - glass: GLASS:001
-    thickness: 0.006
-  - gas: ARGON:001
-    thickness: 0.016
+    thickness: 0.004
+  - gas: KRYPTON:001
+    thickness: 0.012
+  - glass: LOWEGLASS:002
+    thickness: 0.004
+- id: INS3KR2020:001  # triple glazing, two low-e coatings, krypton: U = 0.45 W/(m2.K), g = 0.47
+  layers:
+  - glass: LOWEGLASS:001
+    thickness: 0.004
+  - gas: KRYPTON:001
+    thickness: 0.012
   - glass: GLASS:001
-    thickness: 0.006
-  - gas: ARGON:001
-    thickness: 0.016
+    thickness: 0.004
+  - gas: KRYPTON:001
+    thickness: 0.012
+  - glass: LOWEGLASS:002
+    thickness: 0.004
+- id: INS2AIR2000:001  # double glazing, low-e, air (1995-2010): U = 1.4 W/(m2.K), g = 0.63
+  layers:
   - glass: GLASS:001
-    thickness: 0.006
-- id: EPCDOUBLE:001
+    thickness: 0.004
+  - gas: AIR:001
+    thickness: 0.015
+  - glass: LOWEGLASS:002
+    thickness: 0.004
+- id: EPCDOUBLE:001  # clear double glazing, air (1970-1995): U = 2.9 W/(m2.K), g = 0.76
   layers:
   - glass: GLASS:001
     thickness: 0.0038
@@ -120,65 +298,18 @@ glazings:
     thickness: 0.012
   - glass: GLASS:001
     thickness: 0.0038
-- id: EPCSINGLE:001
+- id: EPCSINGLE:001  # single glazing: U = 5.8 W/(m2.K), g = 0.86
   layers:
   - glass: GLASS:001
     thickness: 0.0038
 material:
+# --- masonry, concrete and stone ---
 - density: 1920.0
   id: BRICK:001
   longwave_emissivity: 0.88
   shortwave_emissivity: 0.55
   specific_heat_capacity: 800.0
   thermal_conductivity: 0.89
-- density: 2700.0
-  id: SLATE:001
-  longwave_emissivity: 0.97
-  shortwave_emissivity: 0.9
-  specific_heat_capacity: 1260.0
-  thermal_conductivity: 1.44
-- density: 640.0
-  id: GYPSUMBOARD:001
-  longwave_emissivity: 0.85
-  shortwave_emissivity: 0.65
-  specific_heat_capacity: 1150.0
-  thermal_conductivity: 0.16
-- density: 2240.0
-  id: CONCRETE:001
-  longwave_emissivity: 0.88
-  shortwave_emissivity: 0.55
-  specific_heat_capacity: 900.0
-  thermal_conductivity: 1.4
-- density: 2100.0
-  id: TILE:001
-  longwave_emissivity: 0.88
-  shortwave_emissivity: 0.55
-  specific_heat_capacity: 840.0
-  thermal_conductivity: 1.4
-- density: 1120.0
-  id: GYPSUM:001
-  longwave_emissivity: 0.85
-  shortwave_emissivity: 0.65
-  specific_heat_capacity: 840.0
-  thermal_conductivity: 0.38
-- density: 2000.0
-  id: SCREED:001
-  longwave_emissivity: 0.88
-  shortwave_emissivity: 0.55
-  specific_heat_capacity: 1000.0
-  thermal_conductivity: 1.3
-- density: 1600.0
-  id: GROUND:001
-  longwave_emissivity: 0.88
-  shortwave_emissivity: 0.68
-  specific_heat_capacity: 1250.0
-  thermal_conductivity: 2.0
-- density: 540.0
-  id: PLYWOOD:001
-  longwave_emissivity: 0.86
-  shortwave_emissivity: 0.44
-  specific_heat_capacity: 1880.0
-  thermal_conductivity: 0.15
 - density: 850.0
   id: BRICKHOLLOW:001
   longwave_emissivity: 0.88
@@ -186,37 +317,126 @@ material:
   specific_heat_capacity: 880.0
   thermal_conductivity: 0.3
 - density: 350.0
-  id: YTONG:001
+  id: YTONG:001  # autoclaved aerated concrete
   longwave_emissivity: 0.8
   shortwave_emissivity: 0.8
   specific_heat_capacity: 1000.0
   thermal_conductivity: 0.09
-- density: 24.0
-  id: EPS:001
-  longwave_emissivity: 0.8
-  shortwave_emissivity: 0.8
-  specific_heat_capacity: 1500.0
-  thermal_conductivity: 0.035
-- density: 1.23
-  id: NONE:001
-  longwave_emissivity: 0.8
-  shortwave_emissivity: 0.8
-  specific_heat_capacity: 1008.0
-  thermal_conductivity: 1000.0
-- density: 120.0
-  id: CELLULARGLASS:001
+- density: 2240.0
+  id: CONCRETE:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 900.0
+  thermal_conductivity: 1.4
+- density: 2400.0
+  id: REINFORCEDCONCRETE:001  # 2 % steel
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 1000.0
+  thermal_conductivity: 2.5
+- density: 2000.0
+  id: SCREED:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 1000.0
+  thermal_conductivity: 1.3
+- density: 2100.0
+  id: TILE:001  # ceramic floor tile
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.55
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 1.4
+- density: 2000.0
+  id: ROOFTILE:001  # clay roof tile
+  longwave_emissivity: 0.9
+  shortwave_emissivity: 0.6
   specific_heat_capacity: 800.0
-  thermal_conductivity: 0.042
-- density: 40.0
-  id: PF:001
-  specific_heat_capacity: 1400.0
-  thermal_conductivity: 0.02
+  thermal_conductivity: 1.0
+- density: 2700.0
+  id: SLATE:001  # natural slate
+  longwave_emissivity: 0.97
+  shortwave_emissivity: 0.9
+  specific_heat_capacity: 1000.0
+  thermal_conductivity: 2.2
+- density: 1800.0
+  id: RENDER:001  # cement-sand render
+  longwave_emissivity: 0.9
+  shortwave_emissivity: 0.6
+  specific_heat_capacity: 1000.0
+  thermal_conductivity: 1.0
+- density: 1600.0
+  id: GROUND:001
+  longwave_emissivity: 0.88
+  shortwave_emissivity: 0.68
+  specific_heat_capacity: 1250.0
+  thermal_conductivity: 2.0
+# --- boards and finishes ---
+- density: 1120.0
+  id: GYPSUM:001  # gypsum plaster
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 840.0
+  thermal_conductivity: 0.38
+- density: 640.0
+  id: GYPSUMBOARD:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 1150.0
+  thermal_conductivity: 0.16
+- density: 1100.0
+  id: BITUMEN:001  # roofing membrane
+  longwave_emissivity: 0.9
+  shortwave_emissivity: 0.9
+  specific_heat_capacity: 1000.0
+  thermal_conductivity: 0.23
+# --- wood ---
+- density: 500.0
+  id: SOFTWOOD:001  # also cross-laminated timber
+  longwave_emissivity: 0.9
+  shortwave_emissivity: 0.6
+  specific_heat_capacity: 1600.0
+  thermal_conductivity: 0.13
+- density: 700.0
+  id: HARDWOOD:001  # also parquet
+  longwave_emissivity: 0.9
+  shortwave_emissivity: 0.6
+  specific_heat_capacity: 1600.0
+  thermal_conductivity: 0.18
+- density: 540.0
+  id: PLYWOOD:001
+  longwave_emissivity: 0.86
+  shortwave_emissivity: 0.44
+  specific_heat_capacity: 1880.0
+  thermal_conductivity: 0.15
+- density: 650.0
+  id: OSB:001
+  longwave_emissivity: 0.9
+  shortwave_emissivity: 0.6
+  specific_heat_capacity: 1700.0
+  thermal_conductivity: 0.13
+# --- insulation ---
 - density: 100.0
   id: ROCKWOOL:001
   longwave_emissivity: 0.8
   shortwave_emissivity: 0.8
   specific_heat_capacity: 800.0
   thermal_conductivity: 0.035
+- density: 60.0
+  id: GLASSWOOL:001
+  specific_heat_capacity: 800.0
+  thermal_conductivity: 0.035
+- density: 24.0
+  id: EPS:001
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 1500.0
+  thermal_conductivity: 0.035
+- density: 30.0
+  id: XPS:001
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 1500.0
+  thermal_conductivity: 0.03
 - density: 40.0
   id: PUR:001
   longwave_emissivity: 0.8
@@ -224,16 +444,44 @@ material:
   specific_heat_capacity: 1500.0
   thermal_conductivity: 0.025
 - density: 30.0
-  id: XPS:001
-  longwave_emissivity: 0.8
-  shortwave_emissivity: 0.8
-  specific_heat_capacity: 1500.0
-  thermal_conductivity: 0.03
-- density: 30.0
   id: PIR:001
   specific_heat_capacity: 1500.0
   thermal_conductivity: 0.025
-- density: 60.0
-  id: GLASSWOOL:001
+- density: 40.0
+  id: PF:001  # phenolic foam
+  specific_heat_capacity: 1400.0
+  thermal_conductivity: 0.02
+- density: 120.0
+  id: CELLULARGLASS:001
   specific_heat_capacity: 800.0
-  thermal_conductivity: 0.035
+  thermal_conductivity: 0.042
+- density: 160.0
+  id: WOODFIBRE:001  # wood fibre board
+  specific_heat_capacity: 2100.0
+  thermal_conductivity: 0.04
+- density: 50.0
+  id: CELLULOSE:001  # blown cellulose
+  specific_heat_capacity: 2000.0
+  thermal_conductivity: 0.039
+# --- air cavities in opaque constructions ---
+# An unventilated vertical air cavity transfers heat by convection and radiation: its resistance is 0.18 m2.K/W
+# from 25 mm on (EN ISO 6946), not the 1.2 m2.K/W of 30 mm of still air. These are equivalent conductivities
+# for one thickness each: use AIRCAVITY:001 with 0.03 m and AIRCAVITY:002 with 0.05 m.
+- density: 1.2
+  id: AIRCAVITY:001  # 30 mm, R = 0.18 m2.K/W
+  longwave_emissivity: 0.9
+  shortwave_emissivity: 0.6
+  specific_heat_capacity: 1006.0
+  thermal_conductivity: 0.167
+- density: 1.2
+  id: AIRCAVITY:002  # 50 mm, R = 0.18 m2.K/W
+  longwave_emissivity: 0.9
+  shortwave_emissivity: 0.6
+  specific_heat_capacity: 1006.0
+  thermal_conductivity: 0.278
+- density: 1.23
+  id: NONE:001  # placeholder layer without thermal resistance or mass
+  longwave_emissivity: 0.8
+  shortwave_emissivity: 0.8
+  specific_heat_capacity: 1008.0
+  thermal_conductivity: 1000.0

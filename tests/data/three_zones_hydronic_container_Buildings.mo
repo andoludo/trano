@@ -4410,7 +4410,7 @@ equation
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.0038,
         k=1.0,
-        tauSol={ 0.6 },
+        tauSol={ 0.83 },
         rhoSol_a={ 0.075 },
         rhoSol_b={ 0.075 },
         tauIR=0.0,
@@ -4420,7 +4420,7 @@ equation
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.0038,
         k=1.0,
-        tauSol={ 0.6 },
+        tauSol={ 0.83 },
         rhoSol_a={ 0.075 },
         rhoSol_b={ 0.075 },
         tauIR=0.0,
@@ -4449,7 +4449,7 @@ equation
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.006,
         k=1.0,
-        tauSol={ 0.6 },
+        tauSol={ 0.83 },
         rhoSol_a={ 0.075 },
         rhoSol_b={ 0.075 },
         tauIR=0.0,
@@ -4459,11 +4459,11 @@ equation
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.006,
         k=1.0,
-        tauSol={ 0.6 },
-        rhoSol_a={ 0.075 },
-        rhoSol_b={ 0.075 },
+        tauSol={ 0.63 },
+        rhoSol_a={ 0.24 },
+        rhoSol_b={ 0.19 },
         tauIR=0.0,
-        absIR_a=0.84,
+        absIR_a=0.04,
         absIR_b=0.84)
         
     },
@@ -4526,7 +4526,7 @@ equation
         d=1920.0,
         nStaRef=3),Buildings.HeatTransfer.Data.Solids.Generic(
         x=0.03,
-        k=0.0256,
+        k=0.167,
         c=1006.0,
         d=1.2,
         nStaRef=3),Buildings.HeatTransfer.Data.Solids.Generic(
@@ -5581,23 +5581,23 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TAirOutControl_4
-            (y=0.0);
+            TColSetControl_7
+            (y=373.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_3
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_1
+            TCooSetControl_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_6
             (y=373.15);
 Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_2
-            (y=298.15);
+            TAirOutControl_4
+            (y=0.0);
 Modelica.Blocks.Sources.RealExpression
-            TColSetControl_7
-            (y=373.15);
+            TCooSetControl_1
+            (y=298.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_7
             (y=true);
@@ -5629,18 +5629,18 @@ connect(dataBus.TZonSpace_003, TRoo[3].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
 connect(dataBus.ppmCO2Space_002, TRoo1[2].ppm);
 connect(dataBus.ppmCO2Space_003, TRoo1[3].ppm);
-connect(dataBus.TAirOutBoiler_001,
-TAirOutControl_4.y);
-connect(dataBus.TCooSetSpace_003,
-TCooSetControl_3.y);
-connect(dataBus.TCooSetSpace_001,
-TCooSetControl_1.y);
-connect(dataBus.TColSetControl_6,
-TColSetControl_6.y);
-connect(dataBus.TCooSetSpace_002,
-TCooSetControl_2.y);
 connect(dataBus.TColSetControl_7,
 TColSetControl_7.y);
+connect(dataBus.TCooSetSpace_003,
+TCooSetControl_3.y);
+connect(dataBus.TCooSetSpace_002,
+TCooSetControl_2.y);
+connect(dataBus.TColSetControl_6,
+TColSetControl_6.y);
+connect(dataBus.TAirOutBoiler_001,
+TAirOutControl_4.y);
+connect(dataBus.TCooSetSpace_001,
+TCooSetControl_1.y);
 connect(dataBus.triggerControl_7,
 triggerControl_7.y);
 connect(dataBus.triggerControl_6,
