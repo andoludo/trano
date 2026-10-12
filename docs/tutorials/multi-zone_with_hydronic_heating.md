@@ -243,6 +243,11 @@ systems:
       id: BOILER:001
       control:
         boiler_control:
+          id: BOILER_CONTROL:001
+          # the tank is charged to 70-75 degC: below the 90 degC set point of the three-way valves, which
+          # divert the water to the return and cannot cool the supply of the radiators
+          parameters:
+            tsup_nominal: 343.15
   - pump:
       id: PUMP:001
       control:
@@ -337,3 +342,11 @@ Since the IDEAS library was utilized, the figure below illustrates the content o
 
 ![hydronic_4](./img/hydronic_4.jpg)
 
+## Results
+
+Two January weeks simulated with IDEAS: the zone temperatures against their set point and the
+outdoor temperature, the heat the radiators give the rooms and the gas the boiler burns as it charges its
+storage tank in cycles (all on the data bus of the model). The rooms are heated to 21 degC from 7 to 19 h and
+fall back to 16 degC at night.
+
+{!tutorials/figures/three_zones_hydronic_heating.html!}

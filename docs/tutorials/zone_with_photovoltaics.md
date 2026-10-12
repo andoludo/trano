@@ -277,3 +277,9 @@ Opening the solar component reveals the defined PVs assigned to the model.
 
 ![Envelope components using IDEAS](./img/pv_2.jpg)
 
+## Results
+
+Two January weeks simulated with Buildings: the zone temperatures, the heat of the radiators and of
+the heat pump, and the electricity the heat pump draws against the production of the PV arrays.
+
+{!tutorials/figures/multizones_with_pv.html!}

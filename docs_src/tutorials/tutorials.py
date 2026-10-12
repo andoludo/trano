@@ -30,6 +30,15 @@ from docs_src.utils import (  # noqa: E402
 )
 
 tutorial_path = Path(__file__).parents[2].joinpath("tests", "tutorials")
+# Result figures written by docs_src/tutorials/figures.py and included in the pages (markdown_include).
+# The page residential_renovation.md is written by hand; its figures come from the same script.
+FIGURE = "{{!tutorials/figures/{name}.html!}}"
+HYDRONIC_RESULTS = """Two January weeks simulated with IDEAS: the zone temperatures against their set point and the
+outdoor temperature, the heat the radiators give the rooms and the gas the boiler burns as it charges its
+storage tank in cycles (all on the data bus of the model). The rooms are heated to 21 degC from 7 to 19 h and
+fall back to 16 degC at night."""
+PV_RESULTS = """Two January weeks simulated with Buildings: the zone temperatures, the heat of the radiators and of
+the heat pump, and the electricity the heat pump draws against the production of the PV arrays."""
 TUTORIALS = [
     Tutorial(
         title="First model and simulation",
@@ -103,13 +112,13 @@ key parameters."""
                 object=tutorial_path.joinpath("test_tutorials.py"),
             ),
             CleanedText(
-                content="""Once the simulation is completed some key parameters are displayed in a report file such as
-                displayed below. The first figure shows the air temperature of the zone over two weeks of January,
-                held at the set point by day, falling towards the night set back, with the solar gains through the
-                south window easing the heating on sunny afternoons; the second shows the heat flows of the
-                occupants and of the ideal system."""
+                content="""Once the simulation is complete, trano writes a report next to the configuration file
+                (`first_model.html`). The figure below shows the air temperature of the zone over the two weeks of
+                January: the ideal system holds it at the 21 degC set point by day and lets it fall towards 18 degC
+                at night, and the solar gains through the south window ease the heating on sunny afternoons. The
+                lower panel shows the heat the ideal system releases."""
             ),
-            DisplayObject(object=tutorial_path.joinpath("first_model.html")),
+            Text(content=FIGURE.format(name="first_model")),
         ],
     ),
     Tutorial(
@@ -219,7 +228,7 @@ does not take."""
       id: RADIATOR:001
       variant: ideal
       parameters:
-          nominal_heating_power_positive_for_heating: 2500
+          nominal_heating_power_positive_for_heating: 5000
       control:
         emission_control:
           id: EMISSION_CONTROL:001
@@ -547,6 +556,9 @@ does not take."""
                     IDEAS sub components are used."""
             ),
             DisplayImage(title="hydronic_4", path="./img/hydronic_4.jpg"),
+            TitleText(content="Results"),
+            Text(content=HYDRONIC_RESULTS),
+            Text(content=FIGURE.format(name="three_zones_hydronic_heating")),
         ],
     ),
     Tutorial(
@@ -596,6 +608,9 @@ does not take."""
             DisplayImage(title="Envelope components using IDEAS", path="./img/pv_1.jpg"),
             CleanedText(content="""Opening the solar component, one can find the defined PVs assigned on the model."""),
             DisplayImage(title="Envelope components using IDEAS", path="./img/pv_2.jpg"),
+            TitleText(content="Results"),
+            Text(content=PV_RESULTS),
+            Text(content=FIGURE.format(name="multizones_with_pv")),
         ],
     ),
 ]
