@@ -85,15 +85,18 @@ jobs:
           mkdir -p .cache/aixlib-check
           cat > .cache/aixlib-check/check.mos <<'MOS'
           updatePackageIndex(); getErrorString();
-          getAvailablePackageVersions(SDF, ""); getErrorString();
-          installPackage(SDF, "0.4.5", exactMatch=true); getErrorString();
-          installPackage(SDF, "0.4.4", exactMatch=true); getErrorString();
+          installPackage(SDF, "0.4.3", exactMatch=true); getErrorString();
           getAvailableLibraryVersions(SDF); getErrorString();
           installPackage(AixLib, "3.0.1", exactMatch=true); getErrorString();
           getAvailableLibraryVersions(AixLib); getErrorString();
           MOS
+          cat > .cache/aixlib-check/check.sh <<'SH'
+          omc /check/check.mos
+          ls /root/.openmodelica/cache
+          python3 -c "import zipfile, glob; [print(z, zipfile.ZipFile(z).namelist()[:15]) for z in glob.glob('/root/.openmodelica/cache/SDF*.zip')]"
+          SH
           docker run --rm -v "$PWD/.cache/aixlib-check:/check" \
-            openmodelica/openmodelica:v1.26.9-ompython omc /check/check.mos
+            openmodelica/openmodelica:v1.26.9-ompython bash /check/check.sh
 
   create-revision-and-tag:
     if: startsWith(github.ref, 'refs/heads/master')
