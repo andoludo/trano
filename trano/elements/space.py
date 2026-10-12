@@ -1,5 +1,6 @@
 from functools import cached_property
 from math import ceil
+from collections.abc import Sequence
 from typing import ClassVar, Optional, Union, TYPE_CHECKING
 
 from networkx import Graph
@@ -10,6 +11,7 @@ from trano.exceptions import InvalidBuildingStructureError
 from trano.elements.base import BaseElement
 from trano.elements.construction import Construction, Glass
 from trano.elements.envelope import (
+    AdiabaticWall,
     BaseExternalWall,
     BaseFloorOnGround,
     BaseSimpleWall,
@@ -38,7 +40,7 @@ if TYPE_CHECKING:
 
 MAX_X_SPACES = 3
 
-ExternalBoundary = Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]
+ExternalBoundary = Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "AdiabaticWall"]
 EnvelopeComponent = Union[ExternalBoundary, "MergedBaseWall"]
 
 
@@ -56,9 +58,13 @@ class SpaceVariant(BaseVariant):
     rectangular_zone: str = "rectangular_zone"
 
 
-def merge_external_boundaries(boundaries: list[ExternalBoundary]) -> list[EnvelopeComponent]:
+def merge_external_boundaries(boundaries: Sequence[ExternalBoundary]) -> list[EnvelopeComponent]:
     """Lump the walls (and windows) sharing a construction into array components."""
-    external_walls = [boundary for boundary in boundaries if boundary.type in ["ExternalWall", "ExternalDoor"]]
+    external_walls: list[BaseExternalWall | BaseWindow | BaseFloorOnGround] = [
+        boundary
+        for boundary in boundaries
+        if isinstance(boundary, BaseExternalWall) and boundary.type in ["ExternalWall", "ExternalDoor"]
+    ]
     windows = [boundary for boundary in boundaries if boundary.type == "Window"]
     merged_external_walls = MergedExternalWall.from_base_elements(external_walls)
     merged_windows = MergedWindows.from_base_windows(windows)  # type: ignore
@@ -85,7 +91,7 @@ def _get_controllable_element(elements: list[System]) -> Optional["System"]:
 class BaseSpace(BaseElement):
     counter: ClassVar[int] = 0
     name: str
-    external_boundaries: list[Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround"]]
+    external_boundaries: list[Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "AdiabaticWall"]]
     internal_elements: list["BaseInternalElement"] = Field(default=[])
     boundaries: list[WallParameters] | None = None
     emissions: list[System] = Field(default=[])
@@ -93,9 +99,9 @@ class BaseSpace(BaseElement):
     ventilation_outlets: list[System] = Field(default=[])
     occupancy: BaseOccupancy | None = None
     container_type: ContainerTypes = "envelope"
-    merged_external_boundaries: list[Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "MergedBaseWall"]] = (
-        Field(default_factory=list)
-    )
+    merged_external_boundaries: list[
+        Union["BaseExternalWall", "BaseWindow", "BaseFloorOnGround", "AdiabaticWall", "MergedBaseWall"]
+    ] = Field(default_factory=list)
     _merged_for_variant: str | None = PrivateAttr(default=None)
 
     def model_post_init(self, __context) -> None:  # type: ignore # noqa: ANN001
@@ -147,8 +153,13 @@ class BaseSpace(BaseElement):
     @cached_property
     def rectangular_zone(self) -> RectangularZone:
         """Envelope mapped onto IDEAS' RectangularZoneTemplate (variant `rectangular_zone`)."""
+        if any(isinstance(boundary, AdiabaticWall) for boundary in self.external_boundaries):
+            raise InvalidBuildingStructureError(
+                f"Space {self.name}: the rectangular_zone variant does not take adiabatic walls; "
+                "use the default or infiltration variant."
+            )
         return RectangularZone.from_boundaries(
-            self.external_boundaries,
+            [boundary for boundary in self.external_boundaries if not isinstance(boundary, AdiabaticWall)],
             height=self.parameters.average_room_height,  # type: ignore[union-attr]
             floor_area=self.parameters.floor_area,  # type: ignore[union-attr]
         )
@@ -234,6 +245,10 @@ class BaseSpace(BaseElement):
             WallParameters.from_neighbors(self.name, neighbors, kind, filter=windowed_walls.included_external_walls)
             for kind in kinds
         ]
+        # Adiabatic walls are boundary constructions of the zone like the floors, after them so that the
+        # floors keep the first outer ports; nothing is connected to theirs, which leaves them adiabatic.
+        floors = next(boundary for boundary in self.boundaries if boundary.type == FloorOnGround.__name__)
+        floors.extend(WallParameters.from_neighbors(self.name, neighbors, AdiabaticWall))
         self.boundaries.append(windowed_walls)
 
     @cached_property

@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler"]
+DynamicTemplateCategories = Literal["ventilation", "control", "fluid", "boiler", "solar"]
 SystemContainerTypes = Literal["envelope", "distribution", "emission", "production", "ventilation"]
 ContainerTypes = Literal[SystemContainerTypes, "bus", "solar"]
 Pattern = Literal["Solid", "Dot", "Dash", "DashDot"]

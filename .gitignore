@@ -1,6 +1,8 @@
 /.venv*/
 /System Volume Information/
 *.html
+# figures of the documentation, written by docs_src/tutorials/figures.py
+!docs/tutorials/figures/*.html
 # The report templates are package source files, not generated output
 !/trano/reporting/templates/*.html
 *.mat

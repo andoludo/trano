@@ -5,7 +5,7 @@ constructions:
     thickness: 0.18
   - material: BRICK_HOLLOW:001
     thickness: 0.09
-  - material: AIR:001
+  - material: CAVITY_AIR:001
     thickness: 0.02
   - material: MINERAL_WOOL:001
     thickness: 0.05
@@ -18,7 +18,7 @@ constructions:
   - material: CERAMIC_TILE:001
     thickness: 0.025
   - material: MINERAL_WOOL:001
-    thickness: 0.029
+    thickness: 0.2
   - material: GYPSUM_PLASTER:001
     thickness: 0.02
 - id: DOOR:001
@@ -94,18 +94,24 @@ material:
   shortwave_emissivity: 0.65
   specific_heat_capacity: 840
   thermal_conductivity: 1.4
-- density: 975
+- density: 1300
   id: GYPSUM_PLASTER:001
   longwave_emissivity: 0.85
   shortwave_emissivity: 0.65
-  specific_heat_capacity: 840
-  thermal_conductivity: 1.4
-- density: 975
+  specific_heat_capacity: 1000
+  thermal_conductivity: 0.5
+- density: 900
   id: GYPSUM:001
   longwave_emissivity: 0.85
   shortwave_emissivity: 0.65
-  specific_heat_capacity: 840
-  thermal_conductivity: 0.6
+  specific_heat_capacity: 1000
+  thermal_conductivity: 0.25
+- density: 1.2
+  id: CAVITY_AIR:001
+  longwave_emissivity: 0.85
+  shortwave_emissivity: 0.65
+  specific_heat_capacity: 1006
+  thermal_conductivity: 0.118
 - density: 600
   id: WOOD:001
   longwave_emissivity: 0.85
@@ -170,7 +176,10 @@ spaces:
       - radiator:
           id: RADIATOR:001
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 500
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
       - valve:
           id: VALVE:001
           control:
@@ -180,7 +189,7 @@ spaces:
               parameters:
                 schedule: 3600*{14,23}
                 temperature_heating_setpoint: 294.15
-                temperature_heating_setback: 278.15
+                temperature_heating_setback: 289.15
   - id: LIVINGROOM:001
     variant: infiltration
     occupancy:
@@ -215,7 +224,10 @@ spaces:
       - radiator:
           id: RADIATOR:002
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 1700
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
       - valve:
           id: VALVE:002
           control:
@@ -225,7 +237,7 @@ spaces:
               parameters:
                 schedule: 3600*{9, 20}
                 temperature_heating_setpoint: 294.15
-                temperature_heating_setback: 278.15
+                temperature_heating_setback: 289.15
   - id: KITCHEN:001
     variant: infiltration
     occupancy:
@@ -252,7 +264,10 @@ spaces:
       - radiator:
           id: RADIATOR:003
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 600
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
       - valve:
           id: VALVE:003
           control:
@@ -262,7 +277,7 @@ spaces:
               parameters:
                 schedule: 3600*{8, 22}
                 temperature_heating_setpoint: 295.15
-                temperature_heating_setback: 278.15
+                temperature_heating_setback: 289.15
 
   - id: BATHROOM:001
     variant: infiltration
@@ -276,6 +291,24 @@ spaces:
       floor_on_grounds:
         - surface: 5.71
           construction: FLOOR:001
+    emissions:
+      - radiator:
+          id: RADIATOR:006
+          parameters:
+            nominal_heating_power_positive_for_heating: 400
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
+      - valve:
+          id: VALVE:006
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:006
+              variant: PController
+              parameters:
+                schedule: 3600*{6,22}
+                temperature_heating_setpoint: 295.15
+                temperature_heating_setback: 289.15
 
 # second floor
 
@@ -310,7 +343,10 @@ spaces:
       - radiator:
           id: RADIATOR:004
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 700
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
       - valve:
           id: VALVE:004
           control:
@@ -320,7 +356,7 @@ spaces:
               parameters:
                 schedule: 3600*{8,23}
                 temperature_heating_setpoint: 294.15
-                temperature_heating_setback: 278.15
+                temperature_heating_setback: 289.15
   - id: BEDROOM_3:001
     variant: infiltration
     occupancy:
@@ -343,7 +379,10 @@ spaces:
       - radiator:
           id: RADIATOR:005
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 400
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
       - valve:
           id: VALVE:005
           control:
@@ -353,7 +392,7 @@ spaces:
               parameters:
                 schedule: 3600*{8,23}
                 temperature_heating_setpoint: 291.15
-                temperature_heating_setback: 278.15
+                temperature_heating_setback: 289.15
 
 
 systems:
@@ -363,6 +402,9 @@ systems:
         boiler_control:
           id: BOILER_CONTROL:001
           variant: simple
+      # modulating 8 kW boiler for a 2.6 kW design loss; 80 degC supply for radiators rated at 75/65 degC
+      parameters:
+        nominal_heating_power: 8000
       variant: without_storage
       inlets:
         - SPLIT_VALVE:002
@@ -391,6 +433,7 @@ systems:
         - RADIATOR:003
         - RADIATOR:004
         - RADIATOR:005
+        - RADIATOR:006
   - split_valve:
       id: SPLIT_VALVE:002
       inlets:
@@ -399,6 +442,7 @@ systems:
         - VALVE:003
         - VALVE:004
         - VALVE:005
+        - VALVE:006
       outlets:
         - BOILER:001
 internal_walls:

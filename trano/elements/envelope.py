@@ -74,6 +74,7 @@ class BaseInternalElement(BaseSimpleWall):
 class BaseFloorOnGround(BaseSimpleWall):
     ground_temperature: float = GROUND_TEMPERATURE  # [K] at the outer surface of the floor construction
     perimeter: float | None = None  # [m] exposed perimeter of the slab (IDEAS), 4 * sqrt(surface) when absent
+    average_indoor_temperature: float | None = None  # [K] room temperature of the IDEAS ground model (295.15)
 
 
 class BaseExternalWall(BaseSimpleWall):
@@ -213,6 +214,21 @@ class FloorOnGround(BaseFloorOnGround):
     component_size: float = 3
 
 
+class AdiabaticWall(BaseSimpleWall):
+    """Wall with an adiabatic outer face, such as a party wall with a dwelling heated like this one.
+
+    The whole construction belongs to the zone: it stores heat and exchanges it with the room on
+    its inner face only. IDEAS renders an adiabatic ``BoundaryWall``; Buildings adds it to the
+    boundary constructions of the zone (``datConBou``) and leaves their outer port open; the
+    lumped zones (reduced order, ISO 13790) count it as internal thermal mass.
+    """
+
+    azimuth: float | int = Azimuth.south
+    tilt: Tilt = Tilt.wall
+    include_in_layout: bool = False
+    component_size: float = 3
+
+
 class SpaceTilt(BaseModel):
     space_name: str
     tilt: Tilt | None = None
@@ -339,6 +355,14 @@ class WallParameters(BaseModel):
             tilts=[construction.get_tilt(space_name) for construction in constructions],
             type=wall.__name__,
         )
+
+    def extend(self, other: "WallParameters") -> None:
+        """Append the constructions of ``other`` after these ones."""
+        self.number += other.number
+        self.surfaces += other.surfaces
+        self.azimuths += other.azimuths
+        self.layers += other.layers
+        self.tilts += other.tilts
 
 
 def _ten_digits(value: float) -> float:

@@ -11,7 +11,7 @@ from trano.data_models.conversion import convert_network
 from trano.elements import FloorOnGround, param_from_config
 from trano.elements.library.library import Library
 from trano.elements.system import Occupancy, Weather
-from trano.exceptions import InvalidBuildingStructureError
+from trano.exceptions import InvalidBuildingStructureError, InvalidModelError
 from trano.topology import Network
 
 SpaceParameters = param_from_config("Space")
@@ -204,6 +204,19 @@ def test_the_ground_temperature_and_perimeter_of_a_floor_come_from_the_yaml(tmp_
     floor = {"construction: CONCRETESLAB:001": "perimeter: 30"}
     assert "PWall=30.0, A=50.0" in yaml_model(tmp_path, "IDEAS", **floor)
     assert "PWall" not in yaml_model(tmp_path, "IDEAS")
+
+
+def test_the_indoor_temperature_of_the_ideas_ground_model_comes_from_the_yaml(tmp_path: Path) -> None:
+    floor = {"construction: CONCRETESLAB:001": "average_indoor_temperature: 293.15"}
+    assert "TiAvg=293.15, A=50.0" in yaml_model(tmp_path, "IDEAS", **floor)
+    assert "TiAvg" not in yaml_model(tmp_path, "IDEAS")
+    assert "TiAvg" not in yaml_model(tmp_path, "Buildings", **floor)
+
+
+def test_the_indoor_temperature_of_the_ground_model_is_a_temperature(tmp_path: Path) -> None:
+    floor = {"construction: CONCRETESLAB:001": "average_indoor_temperature: warm"}
+    with pytest.raises((InvalidModelError, ValueError)):
+        yaml_model(tmp_path, "IDEAS", **floor)
 
 
 def test_the_glazing_u_and_g_values_can_be_given(tmp_path: Path) -> None:

@@ -1,4 +1,16 @@
 classes:
+  AdiabaticWall:
+    attributes:
+      construction:
+        description: Construction
+        range: Construction
+    description: 'Wall whose outer surface exchanges no heat, e.g. a party wall with
+      a neighbouring dwelling heated like this one: the full construction is in the
+      zone (thermal mass) with an adiabatic outer face.'
+    slots:
+    - surface
+    - azimuth
+    - tilt
   AhuControl:
     class_uri: schema:AhuControl
     slots:
@@ -123,10 +135,22 @@ classes:
         description: Temperature of the room around the boiler and the tank, for their
           losses [K], 288.15 by default
         range: float
+      buffer_temperature_band:
+        description: Width of the buffer temperature band switching the air-water
+          heat pump on and off around the supply set point [K], 5 by default
+        range: float
       coefficients_for_efficiency_curve:
         description: Coefficients for efficiency curve
         ifabsent: string({0.9})
         range: string
+      compressor_minimum_off_time:
+        description: Minimum time the compressor of the air-water heat pump stays
+          off once stopped [s], 300 by default
+        range: float
+      compressor_minimum_on_time:
+        description: Minimum time the compressor of the air-water heat pump runs once
+          started [s], 300 by default
+        range: float
       cop_cross_term:
         description: Heat pump COP cross term outdoor x supply deviation, mpc library
           [1/K2]
@@ -146,6 +170,10 @@ classes:
         description: Heat pump COP change per kelvin of supply temperature, mpc library
           [1/K]
         ifabsent: float(-0.075)
+        range: float
+      design_outdoor_temperature:
+        description: Design outdoor temperature of the heating curve of the air-water
+          heat pump [K], 265.15 (-8 degC, Uccle, NBN EN 12831) by default
         range: float
       diff_pressure:
         description: Pressure rise values defining the boiler-circuit pump pressure
@@ -190,17 +218,26 @@ classes:
         range: string
       heat_pump_nominal_source_temperature:
         description: Source (outdoor air) temperature at the rating point of the air-water
-          heat pump [K], 293.15 by default
+          heat pump [K], where it delivers the nominal heating power at the supply
+          temperature set point; the design outdoor temperature by default
         range: float
       heat_pump_source_mass_flow:
-        description: Mass flow rate of the source side of the heat pump [kg/s], 1.7
-          (air) or the one of the performance record (water) by default
+        description: Mass flow rate of the source side of the heat pump [kg/s], the
+          one of the performance data scaled to the nominal heating power by default
         range: float
+      heat_pump_source_outdoor_air:
+        description: Whether the evaporator of the air-water heat pump takes the outdoor
+          air of the weather data (true by default) or the constant temperature_heatpump_source
+        range: string
       heat_pump_source_temperature:
         description: Same as temperature_heatpump_source
         range: float
       heat_pump_supply_setpoint:
         description: Same as temperature_supply_setpoint_heat_pump
+        range: float
+      heating_limit_temperature:
+        description: Outdoor temperature above which the air-water heat pump does
+          not heat [K], 289.15 by default
         range: float
       height_of_tank_without_insulation:
         description: Height of tank (without insulation) [m]
@@ -224,13 +261,18 @@ classes:
         description: Same as use_linear_relation_between_m_flow_and_dp_for_any_flow_rate
         range: string
       loss_conductance:
-        description: Heat loss conductance of the boiler to its room [W/K], 0.05 *
-          nominal heating power / 30 by default
+        description: Heat loss conductance of the boiler to its room [W/K], 1e-4 *
+          nominal heating power (0.5 % of it at 50 K) by default; BoilerPolynomial
+          of Buildings 13 subtracts this loss twice from the water
         range: float
       max_electrical_power:
         description: Maximum electrical power of the heat pump compressor, mpc library
           [W] (nominal heating power / COP when absent)
         ifabsent: float(None)
+        range: float
+      minimum_supply_temperature:
+        description: Supply temperature of the heating curve of the air-water heat
+          pump at the heating limit [K], 303.15 by default
         range: float
       nominal_efficiency_temperature:
         description: Same as temperature_used_to_compute_nominal_efficiency
@@ -263,7 +305,8 @@ classes:
         ifabsent: float(0.2)
         range: float
       temperature_heatpump_source:
-        description: None
+        description: Constant source temperature of the heat pump [K], used when heat_pump_source_outdoor_air
+          is false (and by the water-water heat pump)
         ifabsent: float(286.15)
         range: float
       temperature_initial:
@@ -271,7 +314,9 @@ classes:
           293.15 by default
         range: float
       temperature_supply_setpoint_heat_pump:
-        description: None
+        description: Supply temperature set point of the heat pump [K]; for the air-water
+          heat pump, the supply temperature of the heating curve at the design outdoor
+          temperature
         ifabsent: float(323.15)
         range: float
       temperature_used_to_compute_nominal_efficiency:
@@ -555,8 +600,8 @@ classes:
         range: float
       temperature_heating_setpoint:
         description: Room air temperature heating set point during occupied period
-          [K]
-        ifabsent: float(297)
+          [K], 21 degC by default (the design indoor temperature of dwellings)
+        ifabsent: float(294.15)
         range: float
   EvCharger:
     attributes:
@@ -603,6 +648,12 @@ classes:
         range: string
   ExternalBoundaries:
     attributes:
+      adiabatic_walls:
+        description: Walls with an adiabatic outer face, such as party walls with
+          heated neighbours
+        inlined: true
+        multivalued: true
+        range: AdiabaticWall
       external_walls:
         inlined: true
         multivalued: true
@@ -626,6 +677,10 @@ classes:
     - tilt
   FloorOnGround:
     attributes:
+      average_indoor_temperature:
+        description: Mean temperature of the room above the slab [K] for the ground
+          model of IDEAS (ISO 13370 heat flow), 295.15 (IDEAS' default) when absent
+        range: float
       construction:
         description: Construction
         range: Construction
@@ -729,12 +784,14 @@ classes:
         range: float
       cooling_setpoint_schedule:
         description: Day schedule of the cooling set point, rows of time since midnight
-          [s] and set point [K], repeated every day; one row for a constant set point
+          [s] and set point [K], repeated every day; linear between rows, repeat a
+          time for a step; one row for a constant set point
         ifabsent: string([0, 300.15])
         range: string
       heating_setpoint_schedule:
         description: Day schedule of the heating set point, rows of time since midnight
-          [s] and set point [K], repeated every day; one row for a constant set point
+          [s] and set point [K], repeated every day; linear between rows, repeat a
+          time for a step; one row for a constant set point
         ifabsent: string([0, 293.15])
         range: string
       maximum_cooling_power:

@@ -81,17 +81,17 @@ The described configuration represents a multi-room building designed for occupa
 ```yaml
 default: !include_default
 material:
-  - id: MATERIAL:001
+  - id: MATERIAL:001  # facing brick
+    thermal_conductivity: 0.6
+    density: 1800.0
+    specific_heat_capacity: 840.0
+  - id: MATERIAL:002  # mineral wool
     thermal_conductivity: 0.035
-    density: 2000.0
-    specific_heat_capacity: 1000.0
-  - id: MATERIAL:002
-    thermal_conductivity: 0.035
-    density: 2000.0
-    specific_heat_capacity: 1000.0
-  - id: MATERIAL:003
-    thermal_conductivity: 0.035
-    density: 2000.0
+    density: 30.0
+    specific_heat_capacity: 1030.0
+  - id: MATERIAL:003  # gypsum plaster
+    thermal_conductivity: 0.5
+    density: 1300.0
     specific_heat_capacity: 1000.0
 
 constructions:
@@ -102,7 +102,7 @@ constructions:
       - material: MATERIAL:002
         thickness: 0.1
       - material: MATERIAL:003
-        thickness: 0.1
+        thickness: 0.015
 spaces:
   - occupancy:
     parameters:
@@ -182,7 +182,7 @@ spaces:
     emissions:
       - radiator:
           parameters:
-            nominal_heating_power_positive_for_heating: 5000
+            nominal_heating_power_positive_for_heating: 4000
           id: RADIATOR:001
       - valve:
           id: VALVE:001
@@ -211,10 +211,12 @@ spaces:
           tilt: wall
           construction: CONSTRUCTION:001
       floor_on_grounds:
-        - surface: 60.0
+        - surface: 50.0
           construction: CONCRETESLAB:001
     emissions:
       - radiator:
+          parameters:
+            nominal_heating_power_positive_for_heating: 4000
           id: RADIATOR:002
       - valve:
           id: VALVE:002
@@ -235,11 +237,17 @@ internal_walls:
     surface: 22
 systems:
   - boiler:
+      # 12 kW for a design heat loss of 9.5 kW at -8 degC
       parameters:
-        nominal_heating_power: 20000
+        nominal_heating_power: 12000
       id: BOILER:001
       control:
         boiler_control:
+          id: BOILER_CONTROL:001
+          # the tank is charged to 70-75 degC: below the 90 degC set point of the three-way valves, which
+          # divert the water to the return and cannot cool the supply of the radiators
+          parameters:
+            tsup_nominal: 343.15
   - pump:
       id: PUMP:001
       control:
@@ -287,7 +295,6 @@ systems:
         - THREE_WAY_VALVE:002
       outlets:
         - RADIATOR:002
-
 ```
             
 
@@ -335,3 +342,11 @@ Since the IDEAS library was utilized, the figure below illustrates the content o
 
 ![hydronic_4](./img/hydronic_4.jpg)
 
+## Results
+
+Two January weeks simulated with IDEAS: the zone temperatures against their set point and the
+outdoor temperature, the heat the radiators give the rooms and the gas the boiler burns as it charges its
+storage tank in cycles (all on the data bus of the model). The rooms are heated to 21 degC from 7 to 19 h and
+fall back to 16 degC at night.
+
+{!tutorials/figures/three_zones_hydronic_heating.html!}

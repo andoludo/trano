@@ -246,6 +246,7 @@ def create_mos_file(
             f"""
     getVersion();
     loadModel(Modelica, {{"{environment.modelica_version}"}});
+    loadModel(IDEAS, {{"{environment.ideas}"}});
     loadFile("/simulation/{{{{model_file}}}}");
     checkModel({{{{model_name}}}}.building);{simulation}
     """

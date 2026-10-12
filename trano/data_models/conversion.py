@@ -14,6 +14,7 @@ from trano.data.include import Loader
 from trano.exceptions import InvalidModelError
 from trano.data_models.converter import converter
 from trano.elements import (
+    AdiabaticWall,
     Boundary,
     ExternalWall,
     FloorOnGround,
@@ -216,8 +217,8 @@ def _build_occupancy(
 
 def _build_external_boundaries(
     external_boundaries: dict[str, Any], constructions: dict[str, Construction | Glass]
-) -> list[ExternalWall | Window | FloorOnGround]:
-    boundaries: list[ExternalWall | Window | FloorOnGround] = [
+) -> list[ExternalWall | Window | FloorOnGround | AdiabaticWall]:
+    boundaries: list[ExternalWall | Window | FloorOnGround | AdiabaticWall] = [
         ExternalWall(**(external_wall | {"construction": constructions[external_wall["construction"]]}))
         for external_wall in external_boundaries.get("external_walls", [])
     ]
@@ -228,6 +229,10 @@ def _build_external_boundaries(
     boundaries.extend(
         FloorOnGround(**(floor_on_ground | {"construction": constructions[floor_on_ground["construction"]]}))
         for floor_on_ground in external_boundaries.get("floor_on_grounds", [])
+    )
+    boundaries.extend(
+        AdiabaticWall(**(adiabatic_wall | {"construction": constructions[adiabatic_wall["construction"]]}))
+        for adiabatic_wall in external_boundaries.get("adiabatic_walls") or []
     )
     return boundaries
 

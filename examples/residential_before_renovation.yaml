@@ -1,0 +1,429 @@
+# Semi-detached house built before 1970, before renovation
+#
+# Reference case of trano: one YAML generates the model of either library,
+#   trano create-model examples/residential_before_renovation.yaml IDEAS      (or Buildings)
+# Semi-detached two-storey house in Uccle (Belgium), 110 m2 heated in six zones: living (with the hall)
+# and kitchen on the ground floor, three bedrooms and the bathroom upstairs. Street facade north,
+# garden facade south, gable west, party wall east (adiabatic: the neighbour is heated alike).
+# Four occupants; 21 degC in the living spaces, 18 degC in the bedrooms, 22 degC in the bathroom,
+# 16 degC setback.
+#
+# Design heat loss (EN 12831 at -8 degC): 10.7 kW. Gas boiler, radiators, natural ventilation by infiltration (n50 = 12 1/h).
+#
+# Library-specific parameters (all else is shared): the floors on ground give IDEAS the exposed
+# perimeter of the slab and the mean room temperature (ISO 13370 ground model) and Buildings the
+# temperature under the slab that gives the same heat flow.
+# Sizing, assumptions and results: docs/validation/residential_reference_cases.md (written by
+# examples/residential_cases.py).
+
+material:
+  - {id: BRICK_FACING:001, thermal_conductivity: 0.9, density: 1700, specific_heat_capacity: 840}
+  - {id: BRICK_INNER:001, thermal_conductivity: 0.7, density: 1600, specific_heat_capacity: 840}
+  # unventilated air layers as equivalent conductivities (EN ISO 6946): 5 cm cavity R = 0.18 m2K/W,
+  # 10 cm between the ceiling joists R = 0.16 m2K/W
+  - {id: CAVITY_AIR_5CM:001, thermal_conductivity: 0.278, density: 1.2, specific_heat_capacity: 1006}
+  - {id: JOIST_AIR_10CM:001, thermal_conductivity: 0.625, density: 1.2, specific_heat_capacity: 1006}
+  - {id: PLASTER:001, thermal_conductivity: 0.5, density: 1300, specific_heat_capacity: 1000}
+  - {id: GYPSUM_BOARD:001, thermal_conductivity: 0.25, density: 900, specific_heat_capacity: 1000}
+  - {id: TIMBER:001, thermal_conductivity: 0.13, density: 500, specific_heat_capacity: 1600}
+  - {id: TILE:001, thermal_conductivity: 1.3, density: 2300, specific_heat_capacity: 840}
+  - {id: SCREED:001, thermal_conductivity: 1.4, density: 2000, specific_heat_capacity: 1000}
+  - {id: CONCRETE:001, thermal_conductivity: 1.7, density: 2300, specific_heat_capacity: 1000}
+
+gas:
+  - {id: AIR:001, thermal_conductivity: 0.0256, density: 1.23, specific_heat_capacity: 1006,
+     longwave_emissivity: 0.0, shortwave_emissivity: 0.0}
+  - {id: ARGON:001, thermal_conductivity: 0.0168, density: 1.70, specific_heat_capacity: 519,
+     longwave_emissivity: 0.0, shortwave_emissivity: 0.0}
+glass_material:
+  # 4 mm float glass; the low-e panes carry a coating (emissivity 0.04) on the face given
+  - id: GLASS:001
+    thermal_conductivity: 1.0
+    density: 2500
+    specific_heat_capacity: 840
+    solar_transmittance: [0.83]
+    solar_reflectance_outside_facing: [0.075]
+    solar_reflectance_room_facing: [0.075]
+    infrared_transmissivity: 0.0
+    infrared_absorptivity_outside_facing: 0.84
+    infrared_absorptivity_room_facing: 0.84
+  - id: GLASS_LOWE_ROOM_SIDE:001
+    thermal_conductivity: 1.0
+    density: 2500
+    specific_heat_capacity: 840
+    solar_transmittance: [0.62]
+    solar_reflectance_outside_facing: [0.2]
+    solar_reflectance_room_facing: [0.2]
+    infrared_transmissivity: 0.0
+    infrared_absorptivity_outside_facing: 0.84
+    infrared_absorptivity_room_facing: 0.04
+  - id: GLASS_LOWE_OUTSIDE_SIDE:001
+    thermal_conductivity: 1.0
+    density: 2500
+    specific_heat_capacity: 840
+    solar_transmittance: [0.62]
+    solar_reflectance_outside_facing: [0.2]
+    solar_reflectance_room_facing: [0.2]
+    infrared_transmissivity: 0.0
+    infrared_absorptivity_outside_facing: 0.04
+    infrared_absorptivity_room_facing: 0.84
+
+constructions:
+  # cavity wall without insulation, U = 1.47 W/m2K
+  - id: EXTERNAL_WALL:001
+    layers:
+      - {material: BRICK_FACING:001, thickness: 0.09}
+      - {material: CAVITY_AIR_5CM:001, thickness: 0.05}
+      - {material: BRICK_INNER:001, thickness: 0.14}
+      - {material: PLASTER:001, thickness: 0.015}
+  # ceiling under the cold attic without insulation, U = 1.70 W/m2K
+  - id: ROOF:001
+    layers:
+      - {material: TIMBER:001, thickness: 0.022}
+      - {material: JOIST_AIR_10CM:001, thickness: 0.1}
+      - {material: GYPSUM_BOARD:001, thickness: 0.015}
+  # slab on ground without insulation
+  - id: GROUND_FLOOR:001
+    layers:
+      - {material: CONCRETE:001, thickness: 0.12}
+      - {material: SCREED:001, thickness: 0.06}
+      - {material: TILE:001, thickness: 0.01}
+  # half of the 19 cm brick party wall: its mid-plane is adiabatic (the neighbour is heated alike)
+  - id: PARTY_WALL:001
+    layers:
+      - {material: BRICK_INNER:001, thickness: 0.095}
+      - {material: PLASTER:001, thickness: 0.015}
+  - id: INTERNAL_WALL:001
+    layers:
+      - {material: PLASTER:001, thickness: 0.01}
+      - {material: BRICK_INNER:001, thickness: 0.09}
+      - {material: PLASTER:001, thickness: 0.01}
+  # timber floor between the storeys: boards on joists, plasterboard ceiling
+  - id: INTERMEDIATE_FLOOR:001
+    layers:
+      - {material: TIMBER:001, thickness: 0.022}
+      - {material: JOIST_AIR_10CM:001, thickness: 0.1}
+      - {material: GYPSUM_BOARD:001, thickness: 0.015}
+
+glazings:
+  # old double glazing 4-12-4 air in wooden frames (Uw about 2.7 W/m2K)
+  - id: WINDOW:001
+    u_value_frame: 2.2
+    layers:
+      - {glass: GLASS:001, thickness: 0.004}
+      - {gas: AIR:001, thickness: 0.012}
+      - {glass: GLASS:001, thickness: 0.004}
+
+weather:
+  parameters:
+    path: 'Modelica.Utilities.Files.loadResource("modelica://IDEAS/Resources/weatherdata/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos")'
+
+spaces:
+  - id: LIVING:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 8, 17, 23}
+    parameters:
+      floor_area: 40.0
+      average_room_height: 2.6
+      n50: 12.0
+    external_boundaries:
+      external_walls:
+        - {surface: 19.24, azimuth: 0.0, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 14.04, azimuth: 1.5708, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 7.8, azimuth: 3.1416, tilt: wall, construction: EXTERNAL_WALL:001}
+      windows:
+        - {surface: 6.5, azimuth: 0.0, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+        - {surface: 1.5, azimuth: 1.5708, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+        - {surface: 0.6, azimuth: 3.1416, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+      adiabatic_walls:
+        - {surface: 21.84, azimuth: -1.5708, tilt: wall, construction: PARTY_WALL:001}
+      floor_on_grounds:
+        - surface: 40.0
+          construction: GROUND_FLOOR:001
+          # library-specific: IDEAS (ISO 13370 ground model) takes the exposed perimeter and the
+          # mean room temperature, Buildings the temperature under the slab that gives the heat flow
+          # of that ground model averaged over the heating season (October to April)
+          perimeter: 15.8
+          average_indoor_temperature: 293.15
+          ground_temperature: 291.14
+    emissions:
+      - radiator:
+          id: RADIATOR_LIVING:001
+          parameters:
+            nominal_heating_power_positive_for_heating: 3900
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
+      - valve:
+          id: VALVE_LIVING:001
+          parameters:
+            m_flow_nominal: 0.093
+          control:
+            emission_control:
+              id: EMISSION_CONTROL_LIVING:001
+              variant: PController
+              parameters:
+                schedule: 3600*{7, 23}
+                temperature_heating_setpoint: 294.15
+                temperature_heating_setback: 289.15
+  - id: KITCHEN:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{7, 8, 17, 20}
+    parameters:
+      floor_area: 15.0
+      average_room_height: 2.6
+      n50: 12.0
+    external_boundaries:
+      external_walls:
+        - {surface: 11.44, azimuth: 3.1416, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 8.84, azimuth: 1.5708, tilt: wall, construction: EXTERNAL_WALL:001}
+      windows:
+        - {surface: 1.5, azimuth: 3.1416, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+        - {surface: 1.0, azimuth: 1.5708, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+      floor_on_grounds:
+        - surface: 15.0
+          construction: GROUND_FLOOR:001
+          # library-specific: IDEAS (ISO 13370 ground model) takes the exposed perimeter and the
+          # mean room temperature, Buildings the temperature under the slab that gives the heat flow
+          # of that ground model averaged over the heating season (October to April)
+          perimeter: 7.8
+          average_indoor_temperature: 293.15
+          ground_temperature: 290.71
+    emissions:
+      - radiator:
+          id: RADIATOR_KITCHEN:001
+          parameters:
+            nominal_heating_power_positive_for_heating: 1800
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
+      - valve:
+          id: VALVE_KITCHEN:001
+          parameters:
+            m_flow_nominal: 0.043
+          control:
+            emission_control:
+              id: EMISSION_CONTROL_KITCHEN:001
+              variant: PController
+              parameters:
+                schedule: 3600*{7, 23}
+                temperature_heating_setpoint: 294.15
+                temperature_heating_setback: 289.15
+  - id: BEDROOM_1:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{0, 7, 22, 24}
+    parameters:
+      floor_area: 18.5
+      average_room_height: 2.5
+      n50: 12.0
+    external_boundaries:
+      external_walls:
+        - {surface: 11.0, azimuth: 0.0, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 10.5, azimuth: 1.5708, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 18.5, azimuth: 0, tilt: ceiling, construction: ROOF:001}
+      windows:
+        - {surface: 2.2, azimuth: 0.0, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+    emissions:
+      - radiator:
+          id: RADIATOR_BEDROOM_1:001
+          parameters:
+            nominal_heating_power_positive_for_heating: 2500
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
+      - valve:
+          id: VALVE_BEDROOM_1:001
+          parameters:
+            m_flow_nominal: 0.060
+          control:
+            emission_control:
+              id: EMISSION_CONTROL_BEDROOM_1:001
+              variant: PController
+              parameters:
+                schedule: 3600*{6, 23}
+                temperature_heating_setpoint: 291.15
+                temperature_heating_setback: 289.15
+  - id: BEDROOM_2:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{0, 7, 21, 24}
+    parameters:
+      floor_area: 18.5
+      average_room_height: 2.5
+      n50: 12.0
+    external_boundaries:
+      external_walls:
+        - {surface: 11.0, azimuth: 3.1416, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 10.5, azimuth: 1.5708, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 18.5, azimuth: 0, tilt: ceiling, construction: ROOF:001}
+      windows:
+        - {surface: 2.0, azimuth: 3.1416, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+        - {surface: 0.8, azimuth: 1.5708, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+    emissions:
+      - radiator:
+          id: RADIATOR_BEDROOM_2:001
+          parameters:
+            nominal_heating_power_positive_for_heating: 2500
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
+      - valve:
+          id: VALVE_BEDROOM_2:001
+          parameters:
+            m_flow_nominal: 0.060
+          control:
+            emission_control:
+              id: EMISSION_CONTROL_BEDROOM_2:001
+              variant: PController
+              parameters:
+                schedule: 3600*{6, 23}
+                temperature_heating_setpoint: 291.15
+                temperature_heating_setback: 289.15
+  - id: BEDROOM_3:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{0, 7, 21, 24}
+    parameters:
+      floor_area: 9.6
+      average_room_height: 2.5
+      n50: 12.0
+    external_boundaries:
+      external_walls:
+        - {surface: 7.5, azimuth: 3.1416, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 9.6, azimuth: 0, tilt: ceiling, construction: ROOF:001}
+      windows:
+        - {surface: 1.2, azimuth: 3.1416, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+      adiabatic_walls:
+        - {surface: 8.0, azimuth: -1.5708, tilt: wall, construction: PARTY_WALL:001}
+    emissions:
+      - radiator:
+          id: RADIATOR_BEDROOM_3:001
+          parameters:
+            nominal_heating_power_positive_for_heating: 1200
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
+      - valve:
+          id: VALVE_BEDROOM_3:001
+          parameters:
+            m_flow_nominal: 0.029
+          control:
+            emission_control:
+              id: EMISSION_CONTROL_BEDROOM_3:001
+              variant: PController
+              parameters:
+                schedule: 3600*{6, 23}
+                temperature_heating_setpoint: 291.15
+                temperature_heating_setback: 289.15
+  - id: BATHROOM:001
+    variant: infiltration
+    occupancy:
+      parameters:
+        occupancy: 3600*{6, 8, 20, 22}
+    parameters:
+      floor_area: 9.0
+      average_room_height: 2.5
+      n50: 12.0
+    external_boundaries:
+      external_walls:
+        - {surface: 7.5, azimuth: 0.0, tilt: wall, construction: EXTERNAL_WALL:001}
+        - {surface: 9.0, azimuth: 0, tilt: ceiling, construction: ROOF:001}
+      windows:
+        - {surface: 0.8, azimuth: 0.0, tilt: wall, construction: WINDOW:001, frame_fraction: 0.25}
+      adiabatic_walls:
+        - {surface: 7.5, azimuth: -1.5708, tilt: wall, construction: PARTY_WALL:001}
+    emissions:
+      - radiator:
+          id: RADIATOR_BATHROOM:001
+          parameters:
+            nominal_heating_power_positive_for_heating: 1300
+            water_inlet_temperature_at_nominal_condition: 348.15
+            water_outlet_temperature_at_nominal_condition: 338.15
+            air_temperature_at_nominal_condition: 293.15
+      - valve:
+          id: VALVE_BATHROOM:001
+          parameters:
+            m_flow_nominal: 0.031
+          control:
+            emission_control:
+              id: EMISSION_CONTROL_BATHROOM:001
+              variant: PController
+              parameters:
+                schedule: 3600*{6, 9, 19, 22}
+                temperature_heating_setpoint: 295.15
+                temperature_heating_setback: 289.15
+
+internal_walls:
+  - {space_1: BEDROOM_1:001, space_2: LIVING:001, construction: INTERMEDIATE_FLOOR:001, surface: 18.5, space_1_tilt: floor, space_2_tilt: ceiling}
+  - {space_1: BATHROOM:001, space_2: LIVING:001, construction: INTERMEDIATE_FLOOR:001, surface: 9.0, space_1_tilt: floor, space_2_tilt: ceiling}
+  - {space_1: BEDROOM_3:001, space_2: LIVING:001, construction: INTERMEDIATE_FLOOR:001, surface: 9.6, space_1_tilt: floor, space_2_tilt: ceiling}
+  - {space_1: BEDROOM_2:001, space_2: KITCHEN:001, construction: INTERMEDIATE_FLOOR:001, surface: 15.0, space_1_tilt: floor, space_2_tilt: ceiling}
+  - {space_1: BEDROOM_2:001, space_2: LIVING:001, construction: INTERMEDIATE_FLOOR:001, surface: 3.5, space_1_tilt: floor, space_2_tilt: ceiling}
+  - {space_1: LIVING:001, space_2: KITCHEN:001, construction: INTERNAL_WALL:001, surface: 20.3}
+  - {space_1: BEDROOM_1:001, space_2: BEDROOM_2:001, construction: INTERNAL_WALL:001, surface: 11.0}
+  - {space_1: BEDROOM_1:001, space_2: BATHROOM:001, construction: INTERNAL_WALL:001, surface: 10.5}
+  - {space_1: BATHROOM:001, space_2: BEDROOM_3:001, construction: INTERNAL_WALL:001, surface: 7.5}
+  - {space_1: BEDROOM_2:001, space_2: BEDROOM_3:001, construction: INTERNAL_WALL:001, surface: 8.0}
+
+systems:
+  - boiler:
+      id: GENERATOR:001
+      control:
+        boiler_control:
+          id: GENERATOR_CONTROL:001
+          variant: simple
+      # non-condensing gas boiler (efficiency 0.85 on the lower heating value), 75 degC supply
+      parameters:
+        nominal_heating_power: 16000
+        supply_temperature_setpoint: 348.15
+        coefficients_for_efficiency_curve: "{0.85}"
+      variant: without_storage
+      inlets:
+        - SPLIT_VALVE:001
+  - pump:
+      id: PUMP:001
+      parameters:
+        m_flow_nominal: 0.347
+      control:
+        collector_control:
+      inlets:
+        - GENERATOR:001
+  - three_way_valve:
+      id: THREE_WAY_VALVE:001
+      parameters:
+        m_flow_nominal: 0.347
+      control:
+        three_way_valve_control:
+      inlets:
+        - SPLIT_VALVE:001
+        - PUMP:001
+      outlets:
+        - TEMPERATURE_SENSOR:001
+  - temperature_sensor:
+      id: TEMPERATURE_SENSOR:001
+      outlets:
+        - RADIATOR_LIVING:001
+        - RADIATOR_KITCHEN:001
+        - RADIATOR_BEDROOM_1:001
+        - RADIATOR_BEDROOM_2:001
+        - RADIATOR_BEDROOM_3:001
+        - RADIATOR_BATHROOM:001
+  - split_valve:
+      id: SPLIT_VALVE:001
+      inlets:
+        - VALVE_LIVING:001
+        - VALVE_KITCHEN:001
+        - VALVE_BEDROOM_1:001
+        - VALVE_BEDROOM_2:001
+        - VALVE_BEDROOM_3:001
+        - VALVE_BATHROOM:001
+      outlets:
+        - GENERATOR:001

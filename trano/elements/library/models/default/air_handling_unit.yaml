@@ -162,6 +162,33 @@
   component_template:
     bus:
       real_inputs: []
+      real_outputs:
+      - component: PFan
+        name: power
+        port: y
+        power:
+          energy: "Electricity"
+        target:
+          main: |-
+            element.name
+      - component: EFan
+        name: electric_energy
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: QRec
+        name: recovered_heat_flow
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: TSup
+        name: supply_temperature
+        port: T
+        target:
+          main: |-
+            element.name
     category: ventilation
     template: "\n    model SystemD{{ element.name | capitalize}}\n    extends {{ package_name\
       \ }}.Trano.Fluid.Ventilation.PartialSystemD;\n    {{bus_template}}\n    equation\n\

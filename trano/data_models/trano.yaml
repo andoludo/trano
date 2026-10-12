@@ -93,8 +93,25 @@ classes:
       perimeter:
         description: Exposed perimeter of the slab [m] for the ground model of IDEAS, 4 times the square root of the surface when absent
         range: float
+      average_indoor_temperature:
+        description: >-
+          Mean temperature of the room above the slab [K] for the ground model of IDEAS (ISO 13370 heat
+          flow), 295.15 (IDEAS' default) when absent
+        range: float
     slots:
       - surface
+  AdiabaticWall:
+    description: >-
+      Wall whose outer surface exchanges no heat, e.g. a party wall with a neighbouring dwelling heated
+      like this one: the full construction is in the zone (thermal mass) with an adiabatic outer face.
+    attributes:
+      construction:
+        description: Construction
+        range: Construction
+    slots:
+      - surface
+      - azimuth
+      - tilt
   InternalWall:
     attributes:
       construction:
@@ -172,6 +189,11 @@ classes:
         inlined: true
       windows:
         range: Window
+        multivalued: true
+        inlined: true
+      adiabatic_walls:
+        description: Walls with an adiabatic outer face, such as party walls with heated neighbours
+        range: AdiabaticWall
         multivalued: true
         inlined: true
 

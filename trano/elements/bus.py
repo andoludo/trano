@@ -96,7 +96,12 @@ def get_power_ports(nodes: list[NodeView]) -> list[BaseInputOutput]:
             continue
         if node.component_template and node.component_template.bus:
             node_ports = node.component_template.bus.list_ports(node)
-            power_ports += [p for p in node_ports["RealOutput"] if p.power is not None]
+            # the data bus draws the electrical load of the building from these; fuel is not on the grid
+            power_ports += [
+                port
+                for port in node_ports["RealOutput"]
+                if port.power is not None and port.power.energy == "Electricity"
+            ]
     return power_ports
 
 

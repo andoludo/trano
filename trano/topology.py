@@ -91,6 +91,7 @@ class Network:  # : PLR0904, #TODO: fix this
             "ventilation": [],
             "control": [],
             "boiler": [],
+            "solar": [],
         }
 
     @property

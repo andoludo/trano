@@ -11,6 +11,7 @@ from trano.elements.control import (
     VAVControl,
 )
 from trano.elements.envelope import (
+    AdiabaticWall,
     BaseInternalElement,
     BaseSimpleWall,
     BaseWall,
@@ -56,6 +57,7 @@ from trano.elements.types import DynamicTemplateCategories
 
 __all__ = [
     "VAV",
+    "AdiabaticWall",
     "AhuControl",
     "AirHandlingUnit",
     "BaseBoundary",

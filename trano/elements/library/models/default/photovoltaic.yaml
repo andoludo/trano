@@ -1,5 +1,35 @@
+# PV array (Buildings PVSimpleOriented) wrapped to put its production on the data bus. The array
+# feeds the grid through its terminal; its weather comes from the data bus (the weather bus is part of it).
 - classes:
   - Photovoltaic
+  component_template:
+    bus:
+      real_outputs:
+      - component: PPv
+        name: pv_power
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: EPv
+        name: pv_energy
+        port: y
+        target:
+          main: |-
+            element.name
+    category: solar
+    template: |-
+      model Photovoltaic{{ element.name | capitalize }}
+      extends Buildings.Electrical.AC.OnePhase.Sources.PVSimpleOriented;
+      Modelica.Blocks.Routing.RealPassThrough PPv "Electrical power produced [W]";
+      Modelica.Blocks.Continuous.Integrator EPv(k=1/3.6E6) "Electrical energy produced [kWh]";
+      {{bus_template}}
+      equation
+      connect(dataBus, weaBus);
+      connect(P, PPv.u);
+      connect(P, EPv.u);
+      {{bus_ports | safe}}
+      end Photovoltaic{{ element.name | capitalize }};
   figures: []
   library: default
   parameter_processing:
@@ -15,10 +45,10 @@
     medium: data
     multi_connection: true
     names:
-    - weaBus
+    - dataBus
     targets:
     - DataBus
     use_counter: false
   template: |
-    Buildings.Electrical.AC.OnePhase.Sources.PVSimpleOriented {{ element.name }}({{ macros.render_parameters(parameters) | safe }})
+    {{ package_name }}.Components.BaseClasses.Photovoltaic{{ element.name | capitalize }} {{ element.name }}({{ macros.render_parameters(parameters) | safe }})
   variant: default

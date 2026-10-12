@@ -80,3 +80,21 @@ def test_multizones_with_pv() -> None:
         path_to_yaml_configuration_folder / "multizones_with_pv.yaml",
         library="iso_13790",
     )
+
+
+@pytest.mark.simulate
+@pytest.mark.parametrize("library", ["Buildings", "IDEAS"])
+def test_multizones_with_pv_simulates(tmp_path: Path, library: str) -> None:
+    """The heat pump of the PV tutorial heats the zones and the PV produces (one hour of simulation)."""
+    from trano.data_models.conversion import convert_network
+    from trano.elements.library.library import Library
+    from trano.simulate.simulate import SimulationOptions, simulate
+    from trano.utils.utils import is_success
+
+    network = convert_network(
+        "multizones_with_pv",
+        path_to_yaml_configuration_folder / "multizones_with_pv.yaml",
+        library=Library.from_configuration(library),
+    )
+    options = SimulationOptions(end_time=3600)
+    assert is_success(simulate(tmp_path, network, options=options), options=options)
