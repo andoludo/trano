@@ -17,7 +17,7 @@ from typing import Any
 import networkx as nx
 
 from trano.validation.graph import Component, ModelGraph
-from trano.validation.issues import Issue
+from trano.validation.issues import HydronicLayoutWarning, Issue
 from trano.validation.parameters import parameter_classes
 
 WATER_SPECIFIC_HEAT = 4184.0  # J/(kg.K)
@@ -100,28 +100,16 @@ def derived_three_way_valve_set_point(graph: ModelGraph, flow: nx.DiGraph, valve
     return round(max(supplies) + SETPOINT_MARGIN, 2)
 
 
-def derive_defaults(data: dict[str, Any], graph: ModelGraph) -> list[Issue]:
-    """Set the derived defaults in the model and report each one as a warning."""
+def derive_defaults(data: dict[str, Any], graph: ModelGraph) -> None:
+    """Raise the set point of the diverting three-way valves above the boiler supply (the workaround).
+
+    `check_three_way_valve_layouts` reports it in the warning on the layout of each such valve.
+    """
     flow = graph.flow_graph()
-    issues = []
     for valve in [component for component in graph.components.values() if component.kind == "three_way_valve"]:
         set_point = derived_three_way_valve_set_point(graph, flow, valve)
-        if set_point is None:
-            continue
-        valve.control.setdefault("parameters", {})["supply_temperature_setpoint"] = set_point
-        issues.append(
-            Issue(
-                "warning",
-                valve.id,
-                f"its pump is upstream, so it diverts water to the return and "
-                "cannot lower the supply temperature; its control set point is "
-                f"raised from {THREE_WAY_VALVE_SETPOINT} K to {set_point} K, above "
-                "the boiler supply, so that it does not cut the emitters off. "
-                "To limit the supply temperature, place the pump after the valve "
-                "and its temperature sensor (mixing circuit).",
-            )
-        )
-    return issues
+        if set_point is not None:
+            valve.control.setdefault("parameters", {})["supply_temperature_setpoint"] = set_point
 
 
 def check_supply_temperatures(graph: ModelGraph) -> Iterator[Issue]:
@@ -145,22 +133,48 @@ def check_supply_temperatures(graph: ModelGraph) -> Iterator[Issue]:
             )
 
 
-def check_explicit_valve_set_points(graph: ModelGraph, flow: nx.DiGraph) -> Iterator[Issue]:
-    """A diverting valve given a set point below the supply closes and starves the emitters."""
+def _upstream_pumps(graph: ModelGraph, flow: nx.DiGraph, node: str) -> list[str]:
+    ancestors = nx.ancestors(flow, node)  # type: ignore[no-untyped-call]
+    return sorted(id_ for id_ in ancestors if graph.components.get(id_, None) and graph.components[id_].kind == "pump")
+
+
+def _layout_consequence(graph: ModelGraph, flow: nx.DiGraph, valve: Component) -> str:
+    supplies = [supply for boiler in _upstream_boilers(graph, flow, valve.id) if (supply := highest_supply(boiler))]
+    derived = derived_three_way_valve_set_point(graph, flow, valve)
+    explicit = _three_way_valve_set_point(valve)
+    if derived is not None:
+        return (
+            f"WORKAROUND APPLIED: the boiler supply reaches about {max(supplies)} K, above the "
+            f"{THREE_WAY_VALVE_SETPOINT} K set point of the valve, which would close it and leave the rooms cold; the "
+            "set point is raised to "
+            f"{derived} K so that the valve stays open, and the radiators get the boiler water unmixed."
+        )
+    if explicit is not None and supplies and max(supplies) > explicit:
+        return (
+            f"With its set point of {explicit} K below the boiler supply (about {max(supplies)} K), this valve "
+            "WILL CLOSE and the rooms will go cold."
+        )
+    return "As long as the supply stays below its set point, the valve stays open and controls nothing."
+
+
+def check_three_way_valve_layouts(graph: ModelGraph, flow: nx.DiGraph) -> Iterator[Issue]:
+    """A temperature-controlled three-way valve fed by a pump: it diverts instead of mixing."""
     for valve in (component for component in graph.components.values() if component.kind == "three_way_valve"):
-        set_point = _three_way_valve_set_point(valve)
-        if set_point is None or is_mixing(graph, flow, valve):
+        if valve.control_kind != "three_way_valve_control" or is_mixing(graph, flow, valve):
             continue
-        supplies = [supply for boiler in _upstream_boilers(graph, flow, valve.id) if (supply := highest_supply(boiler))]
-        if supplies and max(supplies) > set_point:
-            yield Issue(
-                "warning",
-                valve.id,
-                f"its pump is upstream, so it can only cut the flow to the emitters: "
-                f"with a supply up to {max(supplies)} K above its set point "
-                f"({set_point} K) it closes and the rooms go cold. Raise the set point "
-                "above the supply, or place the pump after the valve (mixing circuit).",
-            )
+        pumps = ", ".join(_upstream_pumps(graph, flow, valve.id)) or "the generator"
+        yield Issue(
+            "warning",
+            valve.id,
+            f"WRONG HYDRONIC LAYOUT. {pumps} pushes the water into this temperature-controlled three-way valve, so "
+            "the valve sends the water back to the boiler through port_3 instead of mixing the return water in: "
+            "it can reduce the flow to the radiators but never lower their supply temperature. "
+            f"{_layout_consequence(graph, flow, valve)} "
+            "FIX: place the pump after the valve and its temperature sensor (boiler -> three_way_valve -> "
+            "temperature_sensor -> pump -> radiators, the return split valve in the inlets of the valve), as in "
+            "the tutorial 'Hydronic heating with mixing circuits'.",
+            category=HydronicLayoutWarning,
+        )
 
 
 def _radiator_flow(radiator: Component) -> float | None:
@@ -219,6 +233,6 @@ def check_valve_authorities(graph: ModelGraph) -> Iterator[Issue]:
 def check_hydronics(graph: ModelGraph) -> Iterator[Issue]:
     flow = graph.flow_graph()
     yield from check_supply_temperatures(graph)
-    yield from check_explicit_valve_set_points(graph, flow)
+    yield from check_three_way_valve_layouts(graph, flow)
     yield from check_pump_flows(graph, flow)
     yield from check_valve_authorities(graph)

@@ -18,7 +18,7 @@ import yaml
 from trano.data.include import Loader
 from trano.data_models.conversion import convert_network
 from trano.exceptions import InvalidModelError
-from trano.validation.issues import ModelWarning
+from trano.validation.issues import HydronicLayoutWarning, ModelWarning
 
 MODELS = Path(__file__).parent / "models"
 Model = dict[str, Any]
@@ -496,7 +496,7 @@ WARNINGS: list[tuple[str, Model, Change, str, str]] = [
             {"id": "THREE_WAY_VALVE_CONTROL:001", "parameters": {"supply_temperature_setpoint": 343.15}},
         ),
         "THREE_WAY_VALVE:001",
-        "it closes and the rooms go cold",
+        "WILL CLOSE and the rooms will go cold",
     ),
     (
         "T4 undersized pump",
@@ -546,16 +546,25 @@ def test_diverting_valve_set_point_is_raised_above_the_boiler_supply(tmp_path: P
     """Pump upstream of the valve and a boiler at 80 degC (tank top at 95 degC): the 90 degC set point would close
     the valve, as simulated (rooms at 16 degC in three_zones_hydronic.yaml), so it is raised to 100 degC."""
     path = _write(HYDRONIC, parameters(_boiler_control, tsup_nominal=353.15), tmp_path, "diverting")
-    with pytest.warns(ModelWarning, match="THREE_WAY_VALVE:001: its pump is upstream"):
+    with pytest.warns(HydronicLayoutWarning, match="THREE_WAY_VALVE:001: WRONG HYDRONIC LAYOUT.*WORKAROUND APPLIED"):
         model = convert_network("diverting", path).model()
     assert _three_way_valve_set_points(model) == ["373.15"]
 
 
 def test_valve_set_point_is_kept_when_the_supply_stays_below_it(tmp_path: Path) -> None:
-    with warnings.catch_warnings():
-        warnings.simplefilter("error", ModelWarning)
+    """The base model (boiler at 70 degC, tank top at 85 degC) keeps the 90 degC set point, but its layout is still
+    reported: the valve stays open and controls nothing."""
+    with pytest.warns(HydronicLayoutWarning, match="WRONG HYDRONIC LAYOUT.*controls nothing") as found:
         model = convert_network("kept", _write(HYDRONIC, unchanged, tmp_path, "kept")).model()
     assert _three_way_valve_set_points(model) == ["363.15"]
+    assert not [warning for warning in found if "WORKAROUND APPLIED" in str(warning.message)]
+
+
+def test_wrong_hydronic_layout_can_be_made_an_error(tmp_path: Path) -> None:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", HydronicLayoutWarning)
+        with pytest.raises(HydronicLayoutWarning, match="THREE_WAY_VALVE:001: WRONG HYDRONIC LAYOUT"):
+            convert_network("strict", _write(HYDRONIC, unchanged, tmp_path, "strict"))
 
 
 def test_mixing_valve_keeps_its_set_point(tmp_path: Path) -> None:
@@ -566,7 +575,7 @@ def test_mixing_valve_keeps_its_set_point(tmp_path: Path) -> None:
         _boiler_control(model).setdefault("parameters", {})["tsup_nominal"] = 368.15
 
     with warnings.catch_warnings():
-        warnings.filterwarnings("error", message=".*pump is upstream", category=ModelWarning)
+        warnings.simplefilter("error", HydronicLayoutWarning)
         model = convert_network("mixing", _write(HYDRONIC, mixing_at_95, tmp_path, "mixing")).model()
     assert _three_way_valve_set_points(model) == ["363.15"]
 
@@ -579,3 +588,24 @@ def test_given_valve_set_point_is_used(tmp_path: Path) -> None:
     )
     model = convert_network("given", _write(HYDRONIC, change, tmp_path, "given")).model()
     assert _three_way_valve_set_points(model) == ["373.15"]
+
+
+TUTORIALS = Path(__file__).parent / "tutorials"
+
+
+def test_mixing_circuit_tutorial_translates_without_warning() -> None:
+    """The pump after each three-way valve: the layout the warning points to translates without any warning."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ModelWarning)
+        model = convert_network("mixing", TUTORIALS / "three_zones_hydronic_mixing.yaml").model()
+    connections = re.sub(r"\s", "", model)
+    for circuit in ("001", "002"):
+        assert f"connect(three_way_valve_{circuit}.port_2,temperature_sensor_{circuit}.port_a)" in connections
+        assert f"connect(temperature_sensor_{circuit}.port_b,pump_{circuit}.port_a)" in connections
+    assert _three_way_valve_set_points(model) == ["343.15", "343.15"]
+
+
+@pytest.mark.parametrize("tutorial", ["three_zones_hydronic_heating.yaml", "multizones_with_pv.yaml"])
+def test_tutorials_with_the_pump_before_the_valves_warn(tutorial: str) -> None:
+    with pytest.warns(HydronicLayoutWarning, match="WRONG HYDRONIC LAYOUT"):
+        convert_network("diverting", TUTORIALS / tutorial)

@@ -81,3 +81,22 @@ def test_a_model_that_fails_to_build_reports_why(project: Path, monkeypatch: pyt
     )
     assert not is_success(results)
     assert "T_a_nominal must be higher than T_b_nominal" in results.output.decode()
+
+
+@pytest.mark.simulate
+def test_mixing_circuit_holds_the_radiator_supply_below_the_boiler_supply(project: Path) -> None:
+    """The tutorial with the pump after each three-way valve: with the tank above 90 degC, the valves mix the return
+    water in and hold the radiator supply at their 70 degC set point (PI controller, small overshoots)."""
+    tutorial = Path(__file__).parent / "tutorials" / "three_zones_hydronic_mixing.yaml"
+    results = _simulate(yaml.load(tutorial.read_text(), Loader=Loader), project, "mixing")  # noqa: S506
+    assert is_success(results)
+    reader = Reader(str(next(project.joinpath("results").glob("*.mat"))), "dymola")
+    time, tank = reader.values("building.bus1.dataBus.TStoTopBoiler_001")
+    hot = (time > 86400) & (tank > 273.15 + 75)
+    assert tank[hot].max() > 273.15 + 90
+    for circuit in ("001", "002"):
+        _, supply = reader.values(f"building.distribution1.temperature_sensor_{circuit}.T")
+        assert abs(np.median(supply[hot]) - (273.15 + 70)) < 1
+        assert supply[hot].max() < 273.15 + 75
+    for room in ("001", "002", "003"):
+        assert _occupied(reader, f"building.bus1.dataBus.TZonSpace_{room}").mean() > 273.15 + 20

@@ -13,7 +13,7 @@ from typing import Any
 from trano.exceptions import InvalidModelError
 from trano.validation.graph import build_graph
 from trano.validation.hydronics import check_hydronics, derive_defaults
-from trano.validation.issues import Issue, ModelWarning
+from trano.validation.issues import Issue
 from trano.validation.parameters import check_parameters
 from trano.validation.references import check_references
 from trano.validation.topology import check_controls, check_edges, check_spaces, check_topology
@@ -61,16 +61,13 @@ def validate_semantics(data: dict[str, Any], is_rc: bool = False) -> None:
     issues = check(data, is_rc=is_rc)
     for issue in issues:
         if issue.level == "warning":
-            warnings.warn(str(issue), ModelWarning, stacklevel=2)
+            warnings.warn(str(issue), issue.category, stacklevel=2)
     errors = [issue for issue in issues if issue.level == "error"]
     if errors:
         raise InvalidModelError("Invalid model:\n" + "\n".join(f"- {error}" for error in errors))
 
 
 def apply_derived_defaults(data: dict[str, Any], is_rc: bool = False) -> None:
-    """Complete a valid model with the defaults that depend on its topology, and report each one."""
-    if is_rc:
-        return
-    graph, _ = build_graph(data)
-    for issue in derive_defaults(data, graph):
-        warnings.warn(str(issue), ModelWarning, stacklevel=2)
+    """Complete a valid model with the defaults that depend on its topology (reported by `check`)."""
+    if not is_rc:
+        derive_defaults(data, build_graph(data)[0])

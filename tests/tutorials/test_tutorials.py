@@ -65,6 +65,15 @@ def test_three_zones_hydronic_heating() -> None:
     )
 
 
+def test_three_zones_hydronic_mixing() -> None:
+    from trano.main import create_model
+
+    create_model(
+        path_to_yaml_configuration_folder / "three_zones_hydronic_mixing.yaml",
+        library="IDEAS",
+    )
+
+
 def test_ventilation() -> None:
     from trano.main import create_model
 
