@@ -223,12 +223,14 @@ def _load_aixlib(model: str, environment: ModelicaEnvironment) -> str:
     """The statement loading AixLib for the models using it (reduced-order and ISO 13790 zones).
 
     The `uses` annotation of the generated package does not list AixLib, so OpenModelica does not
-    load it with the model.
+    load it with the model. The configured version is preferred; the package manager may have
+    installed another compatible one (AixLib is not installed with an exact match), which
+    "default" (the newest installed) then loads.
     """
     if "AixLib." not in model:
         return ""
     return f"""
-    loadModel(AixLib, {{"{environment.aixlib}"}});"""
+    loadModel(AixLib, {{"{environment.aixlib}", "default"}});"""
 
 
 @contextmanager

@@ -169,7 +169,7 @@ def test_aixlib_is_loaded_for_the_models_using_it(tmp_path: Path, model: str, lo
         network, SimulationOptions(), tmp_path, environment=environment, model=f"package given {model} end given;"
     ) as mos:
         script = tmp_path.joinpath(mos).read_text()
-    assert (f'loadModel(AixLib, {{"{environment.aixlib}"}});' in script) is loads_aixlib
+    assert (f'loadModel(AixLib, {{"{environment.aixlib}", "default"}});' in script) is loads_aixlib
     assert script.index("loadModel(IDEAS") < script.index("loadFile(")
 
 
