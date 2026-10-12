@@ -194,7 +194,7 @@ Elements: `occupancy`
 
 ## PIDParameters
 
-Elements: `threewayvalvecontrol`, `collectorcontrol`
+Elements: `collectorcontrol`
 
 | Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
 |---|---|---|---|---|---|---|---|
@@ -300,6 +300,23 @@ Elements: `splitvalve`
 | `nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance`, `dynamic_nominal_mass_flow_rate` | *numerical.* Nominal mass flow rate for dynamic momentum and energy balance [kg/s] | library default | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` | `mDyn_flow_nominal` |
 | `time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance`, `time_constant` | *numerical.* Time constant at nominal flow for dynamic energy and momentum balance [s] | library default | `tau` | `tau` | `tau` | `tau` | `tau` |
 | `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate`, `linearized` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
+
+## ThreeWayValveControlParameters
+
+Elements: `threewayvalvecontrol`
+
+| Parameter | Description | Default | Buildings | IDEAS | AixLib reduced order | ISO 13790 | mpc |
+|---|---|---|---|---|---|---|---|
+| `controller_type` | Type of controller | `Buildings.Controls.OBC.CDL.Types.SimpleController.P` | `controllerType` | `controllerType` | `controllerType` | `controllerType` | `controllerType` |
+| `k` | Gain of controller [1] | `1.0` | `k` | `k` | `k` | `k` | `k` |
+| `nd` | The higher Nd, the more ideal the derivative block [1] | `10.0` | `Nd` | `Nd` | `Nd` | `Nd` | `Nd` |
+| `ni` | Ni*Ti is time constant of anti-windup compensation [1] | `0.9` | `Ni` | `Ni` | `Ni` | `Ni` | `Ni` |
+| `r` | Typical range of control error, used for scaling the control error | `1.0` | `r` | `r` | `r` | `r` | `r` |
+| `td` | Time constant of derivative block [s] | `0.1` | `Td` | `Td` | `Td` | `Td` | `Td` |
+| `ti` | Time constant of integrator block [s] | `0.5` | `Ti` | `Ti` | `Ti` | `Ti` | `Ti` |
+| `y_max` | Upper limit of output [1] | `1.0` | `yMax` | `yMax` | `yMax` | `yMax` | `yMax` |
+| `y_min` | Lower limit of output [1] | `0.0` | `yMin` | `yMin` | `yMin` | `yMin` | `yMin` |
+| `supply_temperature_setpoint` | Temperature the valve holds after it, at its temperature sensor [K]. Only a valve with its pump downstream (mixing circuit) can lower the supply temperature; with the pump upstream it can only cut the flow. 363.15 (90 degC) by default, raised 5 K above the highest supply of a storage boiler feeding a valve with its pump upstream (the top of the tank, 15 K above the boiler set point) so that the valve does not close. | library default | - | - | - | - | - |
 
 ## ThreeWayValveParameters
 

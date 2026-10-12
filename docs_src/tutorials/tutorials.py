@@ -378,6 +378,15 @@ does not take."""
             - RADIATOR:002
 
     ```
+
+    !!! note "Three-way valves and the supply temperature"
+        Here the pump is upstream of the three-way valves: the pump feeds `port_1` and `port_3` returns to the
+        boiler, so each valve *diverts* water to the return. Such a valve can reduce the flow to the radiators but
+        cannot lower their supply temperature. When the supply exceeds the set point of its control, the valve
+        closes and the rooms go cold. Trano therefore raises the set point of such a valve above the supply of a
+        storage boiler (its tank is charged about 15 K above `tsup_nominal`) and says so in a warning. To hold a
+        supply temperature below the boiler's, place the pump after the valve and its temperature sensor (a mixing
+        circuit) and set `supply_temperature_setpoint` on the `three_way_valve_control`.
             """
             ),
             TitleText(content="Input configuration file"),

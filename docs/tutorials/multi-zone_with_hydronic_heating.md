@@ -73,6 +73,15 @@ The previous tutorials provided idealized examples. In this tutorial, we will si
             - RADIATOR:002
     ```
 
+!!! note "Three-way valves and the supply temperature"
+    Here the pump is upstream of the three-way valves: the pump feeds `port_1` and `port_3` returns to the
+    boiler, so each valve *diverts* water to the return. Such a valve can reduce the flow to the radiators but
+    cannot lower their supply temperature. When the supply exceeds the set point of its control, the valve
+    closes and the rooms go cold. Trano therefore raises the set point of such a valve above the supply of a
+    storage boiler (its tank is charged about 15 K above `tsup_nominal`) and says so in a warning. To hold a
+    supply temperature below the boiler's, place the pump after the valve and its temperature sensor (a mixing
+    circuit) and set `supply_temperature_setpoint` on the `three_way_valve_control`.
+
 ## Input configuration file
 
 The described configuration represents a multi-room building designed for occupancy, featuring a combination of thermal insulation materials with consistent thermal properties. It includes three distinct spaces (rooms) with varying floor areas and heating systems. Each space has specific external wall construction types and window placements to optimize energy efficiency and natural light. The building also has a centralized heating system with a boiler, radiators, and temperature control elements to manage indoor climate effectively. Overall, it appears to be a residential or small commercial building with an emphasis on energy efficiency and heating performance.
