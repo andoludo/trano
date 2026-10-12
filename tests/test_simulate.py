@@ -173,6 +173,32 @@ def test_aixlib_is_loaded_for_the_models_using_it(tmp_path: Path, model: str, lo
     assert script.index("loadModel(IDEAS") < script.index("loadFile(")
 
 
+def test_sdf_is_extracted_from_the_downloaded_archive(tmp_path: Path) -> None:
+    import subprocess
+    import sys
+    import zipfile
+
+    from trano.simulate.simulate import EXTRACT_SDF
+
+    cache, libraries = tmp_path / "cache", tmp_path / "libraries"
+    cache.mkdir()
+    libraries.mkdir()
+    # Like the published archives: files only, no directory entries.
+    with zipfile.ZipFile(cache / "SDF-Modelica-0.4.5.zip", "w") as archive:
+        archive.writestr("SDF/package.mo", "package SDF end SDF;")
+        archive.writestr("SDF/Examples/InterpolationMethods.mo", "within SDF.Examples;")
+    script = tmp_path / "extract_sdf.py"
+    script.write_text(EXTRACT_SDF)
+    command = [sys.executable, str(script), str(cache), str(libraries), "0.4.5"]
+    subprocess.run(command, check=True)  # noqa: S603
+    installed = libraries / "SDF 0.4.5"
+    assert (installed / "package.mo").read_text() == "package SDF end SDF;"
+    assert (installed / "Examples" / "InterpolationMethods.mo").exists()
+    (installed / "package.mo").write_text("installed")
+    subprocess.run(command, check=True)  # noqa: S603
+    assert (installed / "package.mo").read_text() == "installed", "an installed SDF is left as is"
+
+
 def test_installed_libraries_are_mounted_from_the_environment_variable(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

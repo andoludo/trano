@@ -48,6 +48,25 @@ def client() -> docker.DockerClient:
 
 LIBRARIES_VARIABLE = "TRANO_MODELICA_LIBRARIES"
 CONTAINER_LIBRARIES = "/root/.openmodelica/libraries"  # where OpenModelica's package manager installs
+CONTAINER_CACHE = "/root/.openmodelica/cache"  # where it keeps the downloaded archives
+EXTRACT_SDF = """
+import sys
+import zipfile
+from pathlib import Path
+
+cache, libraries, version = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
+archive, target = cache / f"SDF-Modelica-{version}.zip", libraries / f"SDF {version}"
+if archive.exists() and not (target / "package.mo").exists():
+    with zipfile.ZipFile(archive) as files:
+        for name in files.namelist():
+            if name.startswith("SDF/") and not name.endswith("/"):
+                path = target / name.removeprefix("SDF/")
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(files.read(name))
+"""
+"""Install SDF from the archive the package manager downloaded: OpenModelica 1.26.9 fails to extract
+it (the archive has no directory entries), which aborts the installation of AixLib, its dependent.
+Arguments: the archive cache, the library directory and the SDF version."""
 
 
 class ModelicaEnvironment(BaseModel):
@@ -73,6 +92,7 @@ class ModelicaEnvironment(BaseModel):
     buildings: str = Field(default="13.0.0")
     ideas: str = Field(default="3.0.0")
     aixlib: str = Field(default="3.0.1")
+    sdf: str = Field(default="0.4.5", description="Version of SDF, the dependency of AixLib installed by hand.")
 
     @property
     def modelica_version(self) -> str:
@@ -208,8 +228,15 @@ def container(
         name=container_name,
     )
     (project_path / "configure.mos").write_text(environment.configure_script())
+    (project_path / "extract_sdf.py").write_text(EXTRACT_SDF)
     container.exec_run(cmd="chmod -R 777 /results")
     container.exec_run(cmd="chmod -R 777 /simulation")
+    container.exec_run(cmd="omc /simulation/configure.mos")
+    # AixLib fails to install on its SDF dependency: install SDF by hand, then configure again,
+    # which installs what is still missing and only checks the rest.
+    container.exec_run(
+        cmd=f"python3 /simulation/extract_sdf.py {CONTAINER_CACHE} {CONTAINER_LIBRARIES} {environment.sdf}"
+    )
     container.exec_run(cmd="omc /simulation/configure.mos")
     yield container
     container.exec_run(

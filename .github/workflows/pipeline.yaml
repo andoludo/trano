@@ -79,40 +79,6 @@ jobs:
       - name: Simulate the AixLib models (OpenModelica in Docker)
         run: uv run pytest -m simulate -k "reduced_order or iso_13790"
 
-      - name: Show the AixLib versions of the package manager
-        if: failure()
-        run: |
-          mkdir -p .cache/aixlib-check
-          cat > .cache/aixlib-check/sdf.mos <<'MOS'
-          updatePackageIndex(); getErrorString();
-          installPackage(SDF, "0.4.5", exactMatch=true); getErrorString();
-          MOS
-          cat > .cache/aixlib-check/aixlib.mos <<'MOS'
-          getAvailableLibraryVersions(SDF); getErrorString();
-          installPackage(AixLib, "3.0.1", exactMatch=true); getErrorString();
-          getAvailableLibraryVersions(AixLib); getErrorString();
-          loadModel(Modelica, {"4.1.0"}); getErrorString();
-          loadModel(AixLib, {"3.0.1"}); getErrorString();
-          MOS
-          cat > .cache/aixlib-check/check.sh <<'SH'
-          omc /check/sdf.mos
-          python3 - <<'PY'
-          import zipfile
-          from pathlib import Path
-          target = Path("/root/.openmodelica/libraries/SDF 0.4.5")
-          with zipfile.ZipFile("/root/.openmodelica/cache/SDF-Modelica-0.4.5.zip") as archive:
-              for name in archive.namelist():
-                  if name.startswith("SDF/") and not name.endswith("/"):
-                      path = target / name.removeprefix("SDF/")
-                      path.parent.mkdir(parents=True, exist_ok=True)
-                      path.write_bytes(archive.read(name))
-          print("extracted", (target / "package.mo").exists())
-          PY
-          omc /check/aixlib.mos
-          SH
-          docker run --rm -v "$PWD/.cache/aixlib-check:/check" \
-            openmodelica/openmodelica:v1.26.9-ompython bash /check/check.sh
-
   create-revision-and-tag:
     if: startsWith(github.ref, 'refs/heads/master')
     needs: [tests]
