@@ -290,3 +290,7 @@ class Control(BaseElement):
     Placement(transformation(origin = {{ macros.join_list(element.container_position) }},
     extent = {% raw %}{{5, -5}, {-5, 5}}
     {% endraw %})));"""
+
+    def bus_input_default(self, name: str) -> float | None:
+        """The value of the bus input `name` when nothing on the bus provides it; None for the template's."""
+        return None

@@ -3,7 +3,7 @@ from typing import Any
 
 import yaml
 
-TRANO_KEYS = ("alias", "libraries", "short_name", "render", "numerical", "deprecated", "default_from")
+TRANO_KEYS = ("alias", "libraries", "short_name", "render", "numerical", "deprecated", "default_from", "positive")
 
 
 def _linkml_attributes(attributes: dict[str, Any]) -> dict[str, Any]:

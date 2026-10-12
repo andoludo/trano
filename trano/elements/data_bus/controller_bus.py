@@ -61,10 +61,12 @@ def _append_to_port(
     evaluated_element: str,
     element: "BaseElement",
 ) -> dict[str, list[BaseInputOutput]]:
+    default = element.bus_input_default(input_.name) if hasattr(element, "bus_input_default") else None
     ports[type(input_).__name__].append(
         type(input_)(
             **(
                 input_.model_dump()
+                | ({"default": default} if default is not None else {})
                 | {
                     "target": Target(
                         **(

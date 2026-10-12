@@ -13,7 +13,11 @@ class VAVControl(Control):
     ahu: BaseElement | None = None
 
 
-class ThreeWayValveControl(Control): ...
+class ThreeWayValveControl(Control):
+    def bus_input_default(self, name: str) -> float | None:
+        """The supply temperature set point, when given, instead of the template's 90 degC."""
+        setpoint = getattr(self.parameters, "supply_temperature_setpoint", None)
+        return float(setpoint) if name == "TColSet" and setpoint is not None else None
 
 
 class EmissionControl(Control): ...

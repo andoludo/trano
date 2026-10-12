@@ -1,22 +1,30 @@
 BoilerControlParameters:
+  description: Parameters of the control of a boiler or heat pump
   attributes:
     threshold_outdoor_air_cutoff:
       alias: threshold_outdoor_air_cutoff
       description: Outdoor air temperature threshold; output is true when the outdoor air is below this heating cut-off limit [K]
       ifabsent: float(288.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
     threshold_to_switch_off_boiler:
       alias: threshold_to_switch_off_boiler
       description: Tank bottom temperature above which the boiler switches off; defaults to tsup_nominal + 5 K [K]
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
     tsup_nominal:
       alias: TSup_nominal
       description: Supply temperature set point; the boiler starts when the tank top drops 1 K below it [K]
       ifabsent: float(353.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
   classes:
   - BoilerControl
 BoilerParameters:
+  description: Parameters of a boiler or heat pump and of its storage tank
   attributes:
     coefficients_for_efficiency_curve:
       alias: a
@@ -34,17 +42,22 @@ BoilerParameters:
       description: Pressure difference [Pa]
       ifabsent: float(5000)
       range: float
+      minimum_value: 0
     dt_boi_nominal:
       alias: dTBoi_nominal
       description: Nominal temperature difference for the boiler loop [K]
       ifabsent: float(20)
       range: float
+      minimum_value: 0
+      positive: true
       render: false
     dt_rad_nominal:
       alias: dTRad_nominal
       description: Nominal temperature difference for the radiator loop [K]
       ifabsent: float(10)
       range: float
+      minimum_value: 0
+      positive: true
       render: false
     effcur:
       alias: effCur
@@ -57,6 +70,8 @@ BoilerParameters:
       description: Fraction of nominal flow rate where flow transitions to laminar [1]
       ifabsent: float(0.1)
       range: float
+      minimum_value: 0
+      maximum_value: 1
       short_name: laminar_transition_fraction
       numerical: true
     height_of_tank_without_insulation:
@@ -64,6 +79,8 @@ BoilerParameters:
       description: Height of tank (without insulation) [m]
       ifabsent: float(2)
       range: float
+      minimum_value: 0
+      positive: true
       short_name: tank_height
     if_actual_temperature_at_port_is_computed:
       alias: show_T
@@ -77,6 +94,8 @@ BoilerParameters:
       description: Nominal heating power [W]
       ifabsent: float(20000)
       range: float
+      minimum_value: 0
+      positive: true
     nominal_mass_flow_radiator_loop:
       alias: null
       description: Nominal mass flow rate of the radiator loop [kg/s]
@@ -94,29 +113,37 @@ BoilerParameters:
       description: Number of volume segments [1]
       ifabsent: int(4)
       range: integer
+      minimum_value: 1
       numerical: true
     sca_fac_rad:
       alias: scaFacRad
       description: Scaling factor to scale the power (and mass flow rate) of the radiator loop [1]
       ifabsent: float(1.5)
       range: float
+      minimum_value: 0
+      positive: true
       render: false
     tank_volume:
       alias: VTan
       description: Tank volume [m3]
       ifabsent: float(0.2)
       range: float
+      minimum_value: 0
+      positive: true
     temperature_used_to_compute_nominal_efficiency:
       alias: T_nominal
       description: Temperature used to compute nominal efficiency (only used if efficiency curve depends on temperature) [K]
       ifabsent: float(353.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       short_name: nominal_efficiency_temperature
     thickness_of_insulation:
       alias: dIns
       description: Thickness of insulation [m]
       ifabsent: float(0.1)
       range: float
+      minimum_value: 0
       short_name: insulation_thickness
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearizeFlowResistance
@@ -140,17 +167,22 @@ BoilerParameters:
       description: Constant source temperature of the heat pump [K], used when heat_pump_source_outdoor_air is false (and by the water-water heat pump)
       ifabsent: float(286.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       short_name: heat_pump_source_temperature
     temperature_supply_setpoint_heat_pump:
       alias: TSet
       description: Supply temperature set point of the heat pump [K]; for the air-water heat pump, the supply temperature of the heating curve at the design outdoor temperature
       ifabsent: float(323.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       short_name: heat_pump_supply_setpoint
     cop_nominal:
       description: Heat pump COP at the rating point A7/W35, used by the mpc library [1]
       ifabsent: float(4.5)
       range: float
+      minimum_value: 0
       render: false
     cop_outdoor_slope:
       description: Heat pump COP change per kelvin of outdoor temperature, mpc library [1/K]
@@ -169,33 +201,41 @@ BoilerParameters:
       render: false
     max_electrical_power:
       description: Maximum electrical power of the heat pump compressor, mpc library [W] (nominal heating power / COP when absent)
-      ifabsent: float(None)
       range: float
+      minimum_value: 0
       render: false
     loss_conductance:
       alias: UA
       description: Heat loss conductance of the boiler to its room [W/K], 1e-4 * nominal heating power (0.5 % of it at 50 K) by default; BoilerPolynomial of Buildings 13 subtracts this loss twice from the water
       range: float
+      minimum_value: 0
     water_volume:
       alias: VWat
       description: Water volume of the boiler [m3], 1.5e-6 * nominal heating power by default
       range: float
+      minimum_value: 0
     dry_mass:
       alias: mDry
       description: Dry mass of the boiler lumped to its water [kg], 1.5e-3 * nominal heating power by default
       range: float
+      minimum_value: 0
     insulation_conductivity:
       alias: kIns
       description: Thermal conductivity of the tank insulation [W/(m.K)], 0.04 by default
       range: float
+      minimum_value: 0
     ambient_temperature:
       alias: TAmbient
       description: Temperature of the room around the boiler and the tank, for their losses [K], 288.15 by default
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
     supply_temperature_setpoint:
       alias: TempSet
       description: Supply temperature set point of the boiler without storage [K], 353.15 by default
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &boiler_setpoint {name: TempSet, variants: [without_storage]}
         ideas: *boiler_setpoint
@@ -213,6 +253,8 @@ BoilerParameters:
       alias: TEvaHea_nominal
       description: Source (outdoor air) temperature at the rating point of the air-water heat pump [K], where it delivers the nominal heating power at the supply temperature set point; the design outdoor temperature by default
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &hp_source_temperature {name: TEvaHea_nominal, variants: [air_water_heat_pump]}
         ideas: *hp_source_temperature
@@ -222,6 +264,7 @@ BoilerParameters:
       alias: mSou_flow_nominal
       description: Mass flow rate of the source side of the heat pump [kg/s], the one of the performance data scaled to the nominal heating power by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: &hp_source_flow {name: mSou_flow_nominal, variants: [air_water_heat_pump, water_water_heat_pump]}
         ideas: *hp_source_flow
@@ -240,6 +283,8 @@ BoilerParameters:
       alias: TOutDes
       description: Design outdoor temperature of the heating curve of the air-water heat pump [K], 265.15 (-8 degC, Uccle, NBN EN 12831) by default
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &hp_design_outdoor {name: TOutDes, variants: [air_water_heat_pump]}
         ideas: *hp_design_outdoor
@@ -249,6 +294,8 @@ BoilerParameters:
       alias: TOutHeaLim
       description: Outdoor temperature above which the air-water heat pump does not heat [K], 289.15 by default
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &hp_heating_limit {name: TOutHeaLim, variants: [air_water_heat_pump]}
         ideas: *hp_heating_limit
@@ -258,6 +305,8 @@ BoilerParameters:
       alias: TSupMin
       description: Supply temperature of the heating curve of the air-water heat pump at the heating limit [K], 303.15 by default
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &hp_minimum_supply {name: TSupMin, variants: [air_water_heat_pump]}
         ideas: *hp_minimum_supply
@@ -267,6 +316,7 @@ BoilerParameters:
       alias: dTHys
       description: Width of the buffer temperature band switching the air-water heat pump on and off around the supply set point [K], 5 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: &hp_band {name: dTHys, variants: [air_water_heat_pump]}
         ideas: *hp_band
@@ -276,6 +326,7 @@ BoilerParameters:
       alias: minOnTime
       description: Minimum time the compressor of the air-water heat pump runs once started [s], 300 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: &hp_min_on {name: minOnTime, variants: [air_water_heat_pump]}
         ideas: *hp_min_on
@@ -285,6 +336,7 @@ BoilerParameters:
       alias: minOffTime
       description: Minimum time the compressor of the air-water heat pump stays off once stopped [s], 300 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: &hp_min_off {name: minOffTime, variants: [air_water_heat_pump]}
         ideas: *hp_min_off
@@ -294,48 +346,61 @@ BoilerParameters:
       alias: T_start
       description: Initial temperature of the boiler and of the tank water [K], 293.15 by default
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
   classes:
   - Boiler
 ControlLoopsParameters:
+  description: Parameters of the control loops of an air handling unit
   attributes:
     dt_hys:
       alias: dTHys
       description: Delta between the temperature hysteresis high and low limit [K]
       ifabsent: float(0.25)
       range: float
+      minimum_value: 0
     k_coo_con:
       alias: kCooCon
       description: Gain of controller for cooling control loop [1]
       ifabsent: float(0.1)
       range: float
+      minimum_value: 0
     k_hea_con:
       alias: kHeaCon
       description: Gain of controller for heating control loop [1]
       ifabsent: float(0.1)
       range: float
+      minimum_value: 0
     loo_hys:
       alias: looHys
       description: Threshold value to check if the controller output is near zero [1]
       ifabsent: float(0.01)
       range: float
+      minimum_value: 0
     ti_coo_con:
       alias: TiCooCon
       description: Time constant of integrator block for cooling control loop [s]
       ifabsent: float(900)
       range: float
+      minimum_value: 0
+      positive: true
     ti_hea_con:
       alias: TiHeaCon
       description: Time constant of integrator block for heating control loop [s]
       ifabsent: float(900)
       range: float
+      minimum_value: 0
+      positive: true
     tim_che:
       alias: timChe
       description: Threshold time to check the zone temperature status [s]
       ifabsent: float(30)
       range: float
+      minimum_value: 0
   classes:
 
 EmissionControlParameters:
+  description: "Parameters of the control of an emitter: schedule, set points and control loop"
   attributes:
     schedule:
       alias: schedule
@@ -347,16 +412,21 @@ EmissionControlParameters:
       description: Room air temperature heating set point during occupied period [K], 21 degC by default (the design indoor temperature of dwellings)
       ifabsent: float(294.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
     temperature_heating_setback:
       alias: THeaSetBack
       description: Room air temperature heating set point during the setback period (e.g. at night) [K]
       ifabsent: float(289)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
     controller_gain:
       alias: k
       description: Gain of controller [1]
       ifabsent: float(5)
       range: float
+      minimum_value: 0
     data:
       alias: data
       description: Occupancy data sources
@@ -367,6 +437,7 @@ EmissionControlParameters:
   classes:
   - EmissionControl
 OccupancyParameters:
+  description: Occupancy schedule and heat gains of the occupants of a space
   attributes:
     gain:
       alias: gain
@@ -393,11 +464,13 @@ OccupancyParameters:
       description: Infiltration [1/h]
       ifabsent: float(0.9)
       range: float
+      minimum_value: 0
       deprecated: the infiltration of a zone is the `ach` parameter of its space
     floor_area:
       alias: AFlo
       description: Floor area [m2]
       range: float
+      minimum_value: 0
       libraries:
         buildings: {name: AFlo, variants: [co2]}
         ideas: {name: AFlo, variants: [co2]}
@@ -414,6 +487,7 @@ OccupancyParameters:
     sensible_heat_per_person:
       description: Sensible heat released per occupant [W]; with the latent heat and the radiant fraction it gives the `gain` matrix when that one is absent
       range: float
+      minimum_value: 0
       libraries:
         buildings: {handled: true}
         ideas: {handled: true}
@@ -423,6 +497,7 @@ OccupancyParameters:
     latent_heat_per_person:
       description: Latent heat released per occupant [W]
       range: float
+      minimum_value: 0
       libraries:
         buildings: {handled: true}
         ideas: {handled: true}
@@ -432,6 +507,8 @@ OccupancyParameters:
     radiant_fraction:
       description: Radiant share of the sensible heat of the occupants [1]
       range: float
+      minimum_value: 0
+      maximum_value: 1
       libraries:
         buildings: {handled: true}
         ideas: {handled: true}
@@ -442,6 +519,7 @@ OccupancyParameters:
       alias: lightingPower
       description: Heat released by the lighting per floor area, all day [W/m2]
       range: float
+      minimum_value: 0
       libraries:
         ideas: null
         reduced_order: {handled: true}
@@ -450,6 +528,8 @@ OccupancyParameters:
       alias: lightingRadiantFraction
       description: Radiant share of the lighting heat [1], 0.4 by default
       range: float
+      minimum_value: 0
+      maximum_value: 1
       libraries:
         ideas: null
         reduced_order: {handled: true}
@@ -458,6 +538,7 @@ OccupancyParameters:
       alias: equipmentPower
       description: Heat released by the equipment per floor area, all day [W/m2]
       range: float
+      minimum_value: 0
       libraries:
         ideas: null
         reduced_order: {handled: true}
@@ -466,6 +547,8 @@ OccupancyParameters:
       alias: equipmentRadiantFraction
       description: Radiant share of the equipment heat [1], 0.4 by default
       range: float
+      minimum_value: 0
+      maximum_value: 1
       libraries:
         ideas: null
         reduced_order: {handled: true}
@@ -474,6 +557,7 @@ OccupancyParameters:
       alias: activityDegree
       description: Activity level of the occupants of the reduced-order zone [met], 1.2 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: null
         ideas: null
@@ -484,6 +568,7 @@ OccupancyParameters:
       alias: gCO2
       description: CO2 released per occupant [m3/s], 5.2e-6 by default (CO2 variant)
       range: float
+      minimum_value: 0
       libraries:
         buildings: {name: gCO2, variants: [co2]}
         ideas: {name: gCO2, variants: [co2]}
@@ -494,6 +579,7 @@ OccupancyParameters:
       alias: ppmOut
       description: CO2 concentration of the outdoor air [ppm], 420 by default (CO2 variant)
       range: float
+      minimum_value: 0
       libraries:
         buildings: {name: ppmOut, variants: [co2]}
         ideas: {name: ppmOut, variants: [co2]}
@@ -503,7 +589,8 @@ OccupancyParameters:
   classes:
   - Occupancy
 PIDParameters:
-  attributes:
+  description: Parameters of a PID controller
+  attributes: &pid_attributes
     controller_type:
       alias: controllerType
       description: Type of controller
@@ -514,16 +601,19 @@ PIDParameters:
       description: Gain of controller [1]
       ifabsent: float(1)
       range: float
+      minimum_value: 0
     nd:
       alias: Nd
       description: The higher Nd, the more ideal the derivative block [1]
       ifabsent: float(10)
       range: float
+      minimum_value: 0
     ni:
       alias: Ni
       description: Ni*Ti is time constant of anti-windup compensation [1]
       ifabsent: float(0.9)
       range: float
+      minimum_value: 0
     r:
       alias: r
       description: Typical range of control error, used for scaling the control error
@@ -534,11 +624,14 @@ PIDParameters:
       description: Time constant of derivative block [s]
       ifabsent: float(0.1)
       range: float
+      minimum_value: 0
     ti:
       alias: Ti
       description: Time constant of integrator block [s]
       ifabsent: float(0.5)
       range: float
+      minimum_value: 0
+      positive: true
     y_max:
       alias: yMax
       description: Upper limit of output [1]
@@ -550,9 +643,9 @@ PIDParameters:
       ifabsent: float(0)
       range: float
   classes:
-  - ThreeWayValveControl
   - CollectorControl
 PumpParameters:
+  description: Parameters of a circulation pump
   attributes:
     constant_input_set_point:
       alias: constInput
@@ -565,15 +658,20 @@ PumpParameters:
       description: Nominal pressure raise [Pa]
       ifabsent: float(30000)
       range: float
+      minimum_value: 0
+      positive: true
     m_flow_nominal:
       alias: m_flow_nominal
       description: Nominal mass flow rate [kg/s]
       ifabsent: float(0.15)
       range: float
+      minimum_value: 0
+      positive: true
 
   classes:
   - Pump
 IdealHeatingCoolingParameter:
+  description: Parameters of an ideal heating and cooling device
   attributes:
     controller_gain:
       alias: k
@@ -585,6 +683,8 @@ IdealHeatingCoolingParameter:
       description: Integral time of the heating and cooling PI controllers [s]
       ifabsent: float(300)
       range: float
+      minimum_value: 0
+      positive: true
     cooling_setpoint_schedule:
       alias: TSetCoo
       description: Day schedule of the cooling set point, rows of time since midnight [s] and set point [K], repeated every day; linear between rows, repeat a time for a step; one row for a constant set point
@@ -600,31 +700,39 @@ IdealHeatingCoolingParameter:
       description: Cooling capacity; zero switches cooling off [W]
       ifabsent: float(1000000)
       range: float
+      minimum_value: 0
     maximum_heating_power:
       alias: QHea_flow_max
       description: Heating capacity; zero switches heating off [W]
       ifabsent: float(1000000)
       range: float
+      minimum_value: 0
     radiative_fraction:
       alias: frad
       description: Fraction of the heat flow exchanged with the radiative temperature of the zone, the rest with its air [1]
       ifabsent: float(0)
       range: float
+      minimum_value: 0
+      maximum_value: 1
   classes:
   - IdealHeatingCooling
 RadiatorParameter:
+  description: Parameters of a radiator (EN 442-2) or an ideal heater
   attributes:
     air_temperature_at_nominal_condition:
       alias: TAir_nominal
       description: Air temperature at nominal condition [K]
       ifabsent: float(293.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       short_name: air_temperature
     dp_nominal:
       alias: dp_nominal
       description: Pressure drop at nominal mass flow rate [Pa]
       ifabsent: float(2000)
       range: float
+      minimum_value: 0
     dry_mass_of_radiator_that_will_be_lumped_to_water_heat_capacity:
       alias: mDry
       description: Dry mass of radiator that will be lumped to water heat capacity [kg]
@@ -636,12 +744,16 @@ RadiatorParameter:
       description: Exponent for heat transfer
       ifabsent: float(1.24)
       range: float
+      minimum_value: 0
+      positive: true
       short_name: heat_transfer_exponent
     fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
       alias: deltaM
       description: Fraction of nominal mass flow rate where transition to turbulent occurs [1]
       ifabsent: float(0.01)
       range: float
+      minimum_value: 0
+      maximum_value: 1
       short_name: turbulent_transition_fraction
       numerical: true
     fraction_radiant_heat_transfer:
@@ -649,18 +761,23 @@ RadiatorParameter:
       description: Fraction radiant heat transfer [1]
       ifabsent: float(0.3)
       range: float
+      minimum_value: 0
+      maximum_value: 1
       short_name: radiant_fraction
     nominal_heating_power_positive_for_heating:
       alias: Q_flow_nominal
       description: Nominal heating power (positive for heating) [W]
       ifabsent: float(5000)
       range: float
+      minimum_value: 0
+      positive: true
       short_name: nominal_heating_power
     number_of_elements_used_in_the_discretization:
       alias: nEle
       description: Number of elements used in the discretization [1]
       ifabsent: int(1)
       range: integer
+      minimum_value: 1
       short_name: number_of_elements
       numerical: true
     radiative_temperature_at_nominal_condition:
@@ -668,6 +785,8 @@ RadiatorParameter:
       description: Radiative temperature at nominal condition [K]
       ifabsent: float(293.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       short_name: radiative_temperature
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
@@ -688,12 +807,16 @@ RadiatorParameter:
       description: Water inlet temperature at nominal condition [K]
       ifabsent: float(353.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       short_name: water_inlet_temperature
     water_outlet_temperature_at_nominal_condition:
       alias: T_b_nominal
       description: Water outlet temperature at nominal condition [K]
       ifabsent: float(333.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       short_name: water_outlet_temperature
     water_volume_of_radiator:
       alias: VWat
@@ -704,12 +827,15 @@ RadiatorParameter:
   classes:
   - Radiator
 SpaceParameter:
+  description: Geometry, air exchange and initial state of a space
   attributes:
     average_room_height:
       alias: hRoo
       description: Average room height [m]
       ifabsent: float(2)
       range: float
+      minimum_value: 0
+      positive: true
       libraries:
         ideas: hZone
         reduced_order: null
@@ -719,6 +845,8 @@ SpaceParameter:
       description: Floor area [m2]
       ifabsent: float(20)
       range: float
+      minimum_value: 0
+      positive: true
       libraries:
         ideas: {handled: true}
         reduced_order: AZone
@@ -738,6 +866,7 @@ SpaceParameter:
       description: Nominal mass flow rate [kg/s]
       ifabsent: float(0.01)
       range: float
+      minimum_value: 0
       libraries:
         ideas: {name: m_flow_nominal, when_given: true}
         reduced_order: null
@@ -747,6 +876,7 @@ SpaceParameter:
       description: Factor for scaling the sensible thermal mass of the zone air volume [1]
       ifabsent: float(1)
       range: float
+      minimum_value: 0
       libraries:
         reduced_order: {name: mSenFac, when_given: true}
         iso_13790: null
@@ -754,6 +884,7 @@ SpaceParameter:
       alias: ACH
       description: Infiltration [1/h]
       range: float
+      minimum_value: 0
       default_from: self.n50 / self.n50_to_ach if self.n50 is not None else None
       libraries:
         buildings: {name: ACH, variants: [infiltration]}
@@ -774,6 +905,8 @@ SpaceParameter:
       description: Initial temperature [K]
       ifabsent: float(294.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         reduced_order: {name: T_start, when_given: true}
         iso_13790: null
@@ -790,6 +923,7 @@ SpaceParameter:
     n50:
       description: Air change rate at a 50 Pa pressure difference, the airtightness of the zone [1/h]; gives the infiltration `ach` as n50 / n50_to_ach when `ach` is absent (IDEAS takes it directly)
       range: float
+      minimum_value: 0
       libraries:
         buildings: {handled: true}
         ideas: {handled: true}
@@ -800,6 +934,7 @@ SpaceParameter:
       description: Ratio between the air change rate at 50 Pa and the infiltration rate [1]
       ifabsent: float(20)
       range: float
+      minimum_value: 0
       libraries:
         buildings: {handled: true}
         ideas: {name: n50toAch, when_given: true}
@@ -809,6 +944,7 @@ SpaceParameter:
       alias: hIntFixed
       description: Fixed convective heat transfer coefficient of the inside surfaces [W/(m2.K)]; Buildings and the ISO 13790 zone switch to a fixed coefficient (3 and 3.45 by default), the reduced-order zone applies it to its walls, windows, floor and roof (2.7 by default)
       range: float
+      minimum_value: 0
       libraries:
         ideas: null
         reduced_order: {handled: true}
@@ -817,6 +953,7 @@ SpaceParameter:
       alias: hExtFixed
       description: Fixed convective heat transfer coefficient of the outside surfaces [W/(m2.K)]; Buildings switches to a fixed coefficient (10 by default), the reduced-order zone applies it to its walls, windows and roof (20 by default)
       range: float
+      minimum_value: 0
       libraries:
         ideas: null
         reduced_order: {handled: true}
@@ -833,6 +970,7 @@ SpaceParameter:
       alias: b
       description: Adjustment factor of the heat transfer through the floor to the ground of the ISO 13790 zone [1], 0.5 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: null
         ideas: null
@@ -841,6 +979,8 @@ SpaceParameter:
       alias: shaRedFac
       description: Factor on the solar gains through the windows for external shading [1]; the ISO 13790 zone applies it always (1 by default), the reduced-order zone when the irradiance exceeds the sunblind threshold (0.7 by default)
       range: float
+      minimum_value: 0
+      maximum_value: 1
       libraries:
         buildings: null
         ideas: null
@@ -849,6 +989,7 @@ SpaceParameter:
       alias: maxIrr
       description: Irradiance on a window above which the reduced-order zone applies the shading reduction factor [W/m2], 100 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: null
         ideas: null
@@ -856,7 +997,26 @@ SpaceParameter:
         iso_13790: null
   classes:
   - Space
+ThreeWayValveControlParameters:
+  description: Parameters of the control of a three-way valve, its PID controller and its set point
+  attributes:
+    <<: *pid_attributes
+    supply_temperature_setpoint:
+      alias: TColSet
+      description: >-
+        Temperature the valve holds after it, at its temperature sensor [K]. Only a valve with its pump
+        downstream (mixing circuit) can lower the supply temperature; with the pump upstream it can only cut
+        the flow. 363.15 (90 degC) by default, raised 5 K above the highest supply of a storage boiler feeding a
+        valve with its pump upstream (the top of the tank, 15 K above the boiler set point) so that the valve
+        does not close.
+      range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
+      render: false
+  classes:
+  - ThreeWayValveControl
 SplitValveParameters:
+  description: Parameters of a split valve (return junction)
   attributes:
     dp_nominal:
       alias: dp_nominal
@@ -868,6 +1028,8 @@ SplitValveParameters:
       description: Fraction of nominal mass flow rate where transition to turbulent occurs [1]
       ifabsent: float(0.3)
       range: float
+      minimum_value: 0
+      maximum_value: 1
       short_name: turbulent_transition_fraction
       numerical: true
     m_flow_nominal:
@@ -879,12 +1041,14 @@ SplitValveParameters:
       alias: mDyn_flow_nominal
       description: Nominal mass flow rate for dynamic momentum and energy balance [kg/s]
       range: float
+      minimum_value: 0
       short_name: dynamic_nominal_mass_flow_rate
       numerical: true
     time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance:
       alias: tau
       description: Time constant at nominal flow for dynamic energy and momentum balance [s]
       range: float
+      minimum_value: 0
       short_name: time_constant
       numerical: true
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
@@ -897,19 +1061,23 @@ SplitValveParameters:
   classes:
   - SplitValve
 ThreeWayValveParameters:
+  description: Parameters of a three-way valve
   attributes:
     Av:
       alias: Av
       description: Av (metric) flow coefficient [m2]
       range: float
+      minimum_value: 0
     Cv:
       alias: Cv
       description: Cv (US) flow coefficient [USG/min/(psi)^(1/2)]
       range: float
+      minimum_value: 0
     Kv:
       alias: Kv
       description: Kv (metric) flow coefficient [m3/h/(bar)^(1/2)]
       range: float
+      minimum_value: 0
     dp_fixed_nominal:
       alias: dpFixed_nominal
       description: Nominal pressure drop of pipes and other equipment in flow legs at port_1 and port_3 [Pa]
@@ -920,16 +1088,23 @@ ThreeWayValveParameters:
       description: Nominal pressure drop of fully open valve, used if CvData=Buildings.Fluid.Types.CvTypes.OpPoint [Pa]
       ifabsent: float(6000)
       range: float
+      minimum_value: 0
+      positive: true
     fra_k:
       alias: fraK
       description: Fraction Kv(port_3->port_2)/Kv(port_1->port_2) [1]
       ifabsent: float(0.7)
       range: float
+      minimum_value: 0
+      maximum_value: 1
+      positive: true
     fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
       alias: deltaM
       description: Fraction of nominal flow rate where linearization starts, if y=1 [1]
       ifabsent: float(0.02)
       range: float
+      minimum_value: 0
+      maximum_value: 1
       short_name: linearization_start_fraction
       numerical: true
     m_flow_nominal:
@@ -937,21 +1112,26 @@ ThreeWayValveParameters:
       description: Nominal mass flow rate [kg/s]
       ifabsent: float(0.15)
       range: float
+      minimum_value: 0
+      positive: true
     range_of_significant_deviation_from_equal_percentage_law:
       alias: delta0
       description: Range of significant deviation from equal percentage law [1]
       ifabsent: float(0.01)
       range: float
+      minimum_value: 0
       short_name: equal_percentage_deviation
     rangeability:
       alias: R
       description: Rangeability, R=50...100 typically [1]
       ifabsent: float(50)
       range: float
+      minimum_value: 1
     rho_std:
       alias: rhoStd
       description: Inlet density for which valve coefficients are defined [kg/m3]
       range: float
+      minimum_value: 0
       short_name: standard_density
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
@@ -977,35 +1157,44 @@ ThreeWayValveParameters:
       alias: strokeTime
       description: Time the actuator takes to open or close the valve [s], 120 by default
       range: float
+      minimum_value: 0
       libraries:
         ideas: riseTime
   classes:
   - ThreeWayValve
 ValveParameters:
+  description: Parameters of a two-way radiator valve
   attributes:
     av:
       alias: Av
       description: Av (metric) flow coefficient [m2]
       range: float
+      minimum_value: 0
     cv:
       alias: Cv
       description: Cv (US) flow coefficient [USG/min/(psi)^(1/2)]
       range: float
+      minimum_value: 0
     dp_fixed_nominal:
       alias: dpFixed_nominal
       description: Pressure drop of pipe and other resistances that are in series [Pa]
       ifabsent: float(5000)
       range: float
+      minimum_value: 0
     dp_valve_nominal:
       alias: dpValve_nominal
       description: Nominal pressure drop of fully open valve, used if CvData=Buildings.Fluid.Types.CvTypes.OpPoint [Pa]
       ifabsent: float(10000)
       range: float
+      minimum_value: 0
+      positive: true
     fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
       alias: deltaM
       description: Fraction of nominal flow rate where linearization starts, if y=1 [1]
       ifabsent: float(0.02)
       range: float
+      minimum_value: 0
+      maximum_value: 1
       short_name: linearization_start_fraction
       numerical: true
     k_fixed:
@@ -1016,22 +1205,27 @@ ValveParameters:
       alias: Kv
       description: Kv (metric) flow coefficient [m3/h/(bar)^(1/2)]
       range: float
+      minimum_value: 0
     m_flow_nominal:
       alias: m_flow_nominal
       description: Nominal mass flow rate [kg/s]
       ifabsent: float(0.06)
       range: float
+      minimum_value: 0
+      positive: true
     range_of_significant_deviation_from_equal_percentage_law:
       alias: delta0
       description: Range of significant deviation from equal percentage law [1]
       ifabsent: float(0.01)
       range: float
+      minimum_value: 0
       short_name: equal_percentage_deviation
     rangeability:
       alias: R
       description: Rangeability, R=50...100 typically [1]
       ifabsent: float(50)
       range: float
+      minimum_value: 1
     use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
       alias: linearized
       description: = true, use linear relation between m_flow and dp for any flow rate
@@ -1051,6 +1245,8 @@ ValveParameters:
       description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
       ifabsent: float(0.0001)
       range: float
+      minimum_value: 0
+      maximum_value: 1
     flow_coefficient_type:
       description: How the flow coefficient of the valve is given, OpPoint (the nominal pressure drop, the library default), Kv, Cv or Av; without it `kv`, `cv` and `av` are ignored
       range: string
@@ -1063,15 +1259,18 @@ ValveParameters:
       alias: rhoStd
       description: Inlet density for which the flow coefficients are defined [kg/m3], water at 4 degC by default
       range: float
+      minimum_value: 0
     actuator_stroke_time:
       alias: strokeTime
       description: Time the actuator takes to open or close the valve [s], 120 by default
       range: float
+      minimum_value: 0
       libraries:
         ideas: riseTime
   classes:
   - Valve
 VavParameters:
+  description: Parameters of a VAV box
   attributes:
     nominal_mass_flow_rate:
       alias: m_flow_nominal
@@ -1088,6 +1287,7 @@ VavParameters:
       description: Pressure drop of the fully open damper at the nominal flow [Pa]
       ifabsent: float(50)
       range: float
+      minimum_value: 0
       libraries:
         buildings: &vav_damper_dp_nominal {name: dpDamper_nominal, variants: [default]}
         ideas: *vav_damper_dp_nominal
@@ -1098,6 +1298,7 @@ VavParameters:
       description: Pressure drop of the duct and the other resistances in series with the damper at the nominal flow [Pa]
       ifabsent: float(50)
       range: float
+      minimum_value: 0
       libraries:
         buildings: &vav_fixed_dp_nominal {name: dpFixed_nominal, variants: [default]}
         ideas: *vav_fixed_dp_nominal
@@ -1128,6 +1329,7 @@ VavParameters:
       description: Volume of the room the VAV box serves [m3] (complex variant)
       ifabsent: float(100)
       range: float
+      minimum_value: 0
       libraries:
         buildings: &vav_room_volume {name: VRoo, variants: [complex]}
         ideas: *vav_room_volume
@@ -1138,6 +1340,8 @@ VavParameters:
       description: Reheat water inlet temperature at the design point [K] (complex variant)
       ifabsent: float(363.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &vav_heating_water_inlet_temperature {name: THeaWatInl_nominal, variants: [complex]}
         ideas: *vav_heating_water_inlet_temperature
@@ -1148,6 +1352,8 @@ VavParameters:
       description: Reheat water outlet temperature at the design point [K] (complex variant)
       ifabsent: float(333.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &vav_heating_water_outlet_temperature {name: THeaWatOut_nominal, variants: [complex]}
         ideas: *vav_heating_water_outlet_temperature
@@ -1158,6 +1364,8 @@ VavParameters:
       description: Air inlet temperature of the box at the heating design point [K] (complex variant)
       ifabsent: float(303.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &vav_heating_air_inlet_temperature {name: THeaAirInl_nominal, variants: [complex]}
         ideas: *vav_heating_air_inlet_temperature
@@ -1168,6 +1376,8 @@ VavParameters:
       description: Discharge air temperature of the box at the heating design point [K] (complex variant)
       ifabsent: float(298.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
       libraries:
         buildings: &vav_heating_air_discharge_temperature {name: THeaAirDis_nominal, variants: [complex]}
         ideas: *vav_heating_air_discharge_temperature
@@ -1176,6 +1386,7 @@ VavParameters:
   classes:
   - VAV
 DuctParameters:
+  description: Parameters of an air duct
   attributes:
     nominal_mass_flow_rate:
       alias: m_flow_nominal
@@ -1187,9 +1398,11 @@ DuctParameters:
       description: Pressure drop of the duct at the nominal flow [Pa]
       ifabsent: float(40)
       range: float
+      minimum_value: 0
   classes:
   - Duct
 WeatherParameters:
+  description: Weather file of the site
   attributes:
     path:
       alias: filNam
@@ -1209,12 +1422,14 @@ WeatherParameters:
       alias: pAtm
       description: Atmospheric pressure [Pa] when it is not read from the weather file, 101325 by default
       range: float
+      minimum_value: 0
       libraries:
         ideas: null
     outdoor_co2_concentration:
       alias: ppmCO2
       description: CO2 concentration of the outdoor air of the IDEAS simulation manager [ppm], 400 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: null
         reduced_order: null
@@ -1224,6 +1439,7 @@ WeatherParameters:
       alias: H
       description: Height of the building [m] for the wind speed profile of the IDEAS simulation manager, 10 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: null
         reduced_order: null
@@ -1233,6 +1449,7 @@ WeatherParameters:
       alias: n50
       description: Air change rate at 50 Pa of the IDEAS zones that do not give their own [1/h], 3 by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: null
         reduced_order: null
@@ -1254,6 +1471,7 @@ DataSource:
       range: string
       required: true
 AhuParameters:
+  description: Parameters of an air handling unit
   attributes:
     m_flow_nominal:
       alias: m_flow_nominal
@@ -1290,6 +1508,7 @@ AhuParameters:
       alias: dpSup_nominal
       description: Pressure rise of the supply fan [Pa], the nominal pressure rise by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: &ahu_sup {name: dpSup_nominal, variants: [test, system_d]}
         ideas: *ahu_sup
@@ -1299,6 +1518,7 @@ AhuParameters:
       alias: dpRet_nominal
       description: Pressure rise of the return fan [Pa], the nominal pressure rise by default
       range: float
+      minimum_value: 0
       libraries:
         buildings: &ahu_ret {name: dpRet_nominal, variants: [test, system_d]}
         ideas: *ahu_ret
@@ -1317,6 +1537,7 @@ AhuParameters:
       alias: ratOAFlo_A
       description: Outdoor air flow per floor area [m3/(s.m2)], 0.3e-3 by default (default variant, ASHRAE 62.1)
       range: float
+      minimum_value: 0
       libraries:
         buildings: &ahu_oa_a {name: ratOAFlo_A, variants: [default]}
         ideas: *ahu_oa_a
@@ -1326,6 +1547,7 @@ AhuParameters:
       alias: ratOAFlo_P
       description: Outdoor air flow per person [m3/s], 2.5e-3 by default (default variant, ASHRAE 62.1)
       range: float
+      minimum_value: 0
       libraries:
         buildings: &ahu_oa_p {name: ratOAFlo_P, variants: [default]}
         ideas: *ahu_oa_p
@@ -1334,53 +1556,67 @@ AhuParameters:
   classes:
   - AirHandlingUnit
 ChillerParameters:
+  description: Parameters of a chiller (mpc library only)
   libraries: [mpc]
   attributes:
     nominal_cooling_power:
       description: Nominal cooling power [W]
       ifabsent: float(10000)
       range: float
+      minimum_value: 0
+      positive: true
     eer_nominal:
       description: EER at 35 degC outdoor temperature [1]
       ifabsent: float(3.5)
       range: float
+      minimum_value: 0
     eer_outdoor_slope:
       description: EER change per kelvin of outdoor temperature [1/K]
       ifabsent: float(-0.06)
       range: float
     max_electrical_power:
       description: Maximum electrical power of the compressor [W] (nominal cooling power / EER when absent)
-      ifabsent: float(None)
       range: float
+      minimum_value: 0
   classes:
   - Chiller
 DhwTankParameters:
+  description: Parameters of a domestic hot water tank (mpc library only)
   libraries: [mpc]
   attributes:
     volume:
       description: Water volume of the tank [m3]
       ifabsent: float(0.2)
       range: float
+      minimum_value: 0
+      positive: true
     set_temperature:
       description: Upper comfort bound of the tank temperature [K]
       ifabsent: float(328.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
     min_temperature:
       description: Lower comfort bound of the tank temperature [K]
       ifabsent: float(318.15)
       range: float
+      minimum_value: 223.15
+      maximum_value: 423.15
     loss_coefficient:
       description: Standing loss coefficient of the tank [W/K]
       ifabsent: float(2.0)
       range: float
+      minimum_value: 0
     supply_offset:
       description: Heat pump supply temperature above the tank temperature [K]
       ifabsent: float(5.0)
       range: float
+      minimum_value: 0
     daily_draw_off_energy:
       description: Heat drawn by the hot water taps per day [kWh]
       ifabsent: float(8.0)
       range: float
+      minimum_value: 0
     zone:
       description: Space receiving the standing losses of the tank (first space when absent)
       ifabsent: string(None)
@@ -1388,77 +1624,107 @@ DhwTankParameters:
   classes:
   - DhwTank
 BatteryParameters:
+  description: Parameters of an electric battery (mpc library only)
   libraries: [mpc]
   attributes:
     capacity:
       description: Usable energy capacity [kWh]
       ifabsent: float(10.0)
       range: float
+      minimum_value: 0
+      positive: true
     max_charge_power:
       description: Maximum charging power [W]
       ifabsent: float(5000)
       range: float
+      minimum_value: 0
     max_discharge_power:
       description: Maximum discharging power [W]
       ifabsent: float(5000)
       range: float
+      minimum_value: 0
     charge_efficiency:
       description: Charging efficiency [1]
       ifabsent: float(0.95)
       range: float
+      minimum_value: 0
+      maximum_value: 1
     discharge_efficiency:
       description: Discharging efficiency [1]
       ifabsent: float(0.95)
       range: float
+      minimum_value: 0
+      maximum_value: 1
     min_soc:
       description: Lower bound of the state of charge [1]
       ifabsent: float(0.1)
       range: float
+      minimum_value: 0
+      maximum_value: 1
     max_soc:
       description: Upper bound of the state of charge [1]
       ifabsent: float(0.9)
       range: float
+      minimum_value: 0
+      maximum_value: 1
     initial_soc:
       description: Initial state of charge [1]
       ifabsent: float(0.5)
       range: float
+      minimum_value: 0
+      maximum_value: 1
   classes:
   - Battery
 EvChargerParameters:
+  description: Parameters of an electric vehicle charger (mpc library only)
   libraries: [mpc]
   attributes:
     battery_capacity:
       description: Battery capacity of the vehicle [kWh]
       ifabsent: float(60.0)
       range: float
+      minimum_value: 0
+      positive: true
     max_charge_power:
       description: Maximum charging power [W]
       ifabsent: float(7400)
       range: float
+      minimum_value: 0
     charge_efficiency:
       description: Charging efficiency [1]
       ifabsent: float(0.9)
       range: float
+      minimum_value: 0
+      maximum_value: 1
     initial_soc:
       description: Initial state of charge [1]
       ifabsent: float(0.5)
       range: float
+      minimum_value: 0
+      maximum_value: 1
     arrival_hour:
       description: Hour of the day the vehicle plugs in [h]
       ifabsent: float(18)
       range: float
+      minimum_value: 0
+      maximum_value: 24
     departure_hour:
       description: Hour of the day the vehicle leaves [h]
       ifabsent: float(7)
       range: float
+      minimum_value: 0
+      maximum_value: 24
     energy_per_day:
       description: Energy consumed by driving per day [kWh]
       ifabsent: float(10.0)
       range: float
+      minimum_value: 0
     target_soc:
       description: State of charge required at departure [1]
       ifabsent: float(0.8)
       range: float
+      minimum_value: 0
+      maximum_value: 1
     weekend_present:
       description: The vehicle stays plugged in during the weekend
       ifabsent: string(true)
@@ -1466,39 +1732,54 @@ EvChargerParameters:
   classes:
   - EvCharger
 PhotovoltaicParameters:
+  description: Parameters of photovoltaic panels
   attributes:
     area:
       description: Module area [m2]
       ifabsent: float(20.0)
       range: float
+      minimum_value: 0
+      positive: true
       alias: A
     efficiency:
       description: Module and inverter efficiency [1]
       ifabsent: float(0.18)
       range: float
+      minimum_value: 0
+      maximum_value: 1
       alias: eta
     azimuth:
       description: Surface azimuth [deg], 0 for south, 90 for west
       ifabsent: float(0.0)
       range: float
+      minimum_value: -360
+      maximum_value: 360
       render: false
     tilt:
       description: Surface tilt [deg], 0 for a roof, 90 for a wall
       ifabsent: float(35.0)
       range: float
+      minimum_value: 0
+      maximum_value: 90
       render: false
     active_area_fraction:
       alias: fAct
       description: Share of the module area covered by active cells [1], 0.9 by default
       range: float
+      minimum_value: 0
+      maximum_value: 1
     inverter_efficiency:
       alias: eta_DCAC
       description: Efficiency of the DC to AC conversion [1], 0.9 by default
       range: float
+      minimum_value: 0
+      maximum_value: 1
     power_factor:
       alias: pf
       description: Power factor of the inverter [1], 0.9 by default
       range: float
+      minimum_value: 0
+      maximum_value: 1
     tilt_radians:
       alias: til
       description: Surface tilt [rad], from the tilt in degrees
@@ -1512,16 +1793,20 @@ PhotovoltaicParameters:
   classes:
   - Photovoltaic
 SensorParameters:
+  description: Parameters of a water temperature sensor or heat meter
   attributes:
     nominal_mass_flow_rate:
       alias: m_flow_nominal
       description: Nominal mass flow rate through the sensor, used for its dynamics and its small-flow regularization [kg/s]
       ifabsent: float(0.15)
       range: float
+      minimum_value: 0
+      positive: true
     time_constant:
       alias: tau
       description: Time constant of the sensor [s], 1 by default; 0 for an ideal sensor
       range: float
+      minimum_value: 0
   classes:
   - TemperatureSensor
   - HeatMeterSensor

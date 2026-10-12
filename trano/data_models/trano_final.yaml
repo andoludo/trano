@@ -1,20 +1,27 @@
 classes:
   AdiabaticWall:
-    attributes:
-      construction:
-        description: Construction
-        range: Construction
     description: 'Wall whose outer surface exchanges no heat, e.g. a party wall with
       a neighbouring dwelling heated like this one: the full construction is in the
       zone (thermal mass) with an adiabatic outer face.'
+    slot_usage:
+      construction:
+        range: Construction
     slots:
+    - construction
     - surface
     - azimuth
     - tilt
   AhuControl:
-    class_uri: schema:AhuControl
+    description: Control of an air handling unit
     slots:
     - id
+  AhuControlEntry:
+    description: Control of an air handling unit
+    slot_usage:
+      ahu_control:
+        required: true
+    slots:
+    - ahu_control
   AhuParameters:
     attributes:
       building_static_pressure:
@@ -36,108 +43,174 @@ classes:
       outdoor_air_per_area:
         description: Outdoor air flow per floor area [m3/(s.m2)], 0.3e-3 by default
           (default variant, ASHRAE 62.1)
+        minimum_value: 0
         range: float
       outdoor_air_per_person:
         description: Outdoor air flow per person [m3/s], 2.5e-3 by default (default
           variant, ASHRAE 62.1)
+        minimum_value: 0
         range: float
       return_dp_nominal:
         description: Pressure rise of the return fan [Pa], the nominal pressure rise
           by default
+        minimum_value: 0
         range: float
       supply_dp_nominal:
         description: Pressure rise of the supply fan [Pa], the nominal pressure rise
           by default
+        minimum_value: 0
         range: float
+    description: Parameters of an air handling unit
   AirHandlingUnit:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: AirHandlingUnitVariant
+    description: Air handling unit supplying air to the spaces and extracting it from
+      them
+    is_a: System
+    slot_usage:
       control:
-        range: Control
+        range: AhuControlEntry
       parameters:
         range: AhuParameters
-    is_a: System
+    slots:
+    - parameters
+    - control
   Battery:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Electric battery (mpc library only)
+    is_a: System
+    slot_usage:
       parameters:
         range: BatteryParameters
-    is_a: System
+    slots:
+    - parameters
   BatteryParameters:
     attributes:
       capacity:
         description: Usable energy capacity [kWh]
         ifabsent: float(10.0)
+        minimum_value: 0
         range: float
       charge_efficiency:
         description: Charging efficiency [1]
         ifabsent: float(0.95)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       discharge_efficiency:
         description: Discharging efficiency [1]
         ifabsent: float(0.95)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       initial_soc:
         description: Initial state of charge [1]
         ifabsent: float(0.5)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       max_charge_power:
         description: Maximum charging power [W]
         ifabsent: float(5000)
+        minimum_value: 0
         range: float
       max_discharge_power:
         description: Maximum discharging power [W]
         ifabsent: float(5000)
+        minimum_value: 0
         range: float
       max_soc:
         description: Upper bound of the state of charge [1]
         ifabsent: float(0.9)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       min_soc:
         description: Lower bound of the state of charge [1]
         ifabsent: float(0.1)
+        maximum_value: 1
+        minimum_value: 0
         range: float
+    description: Parameters of an electric battery (mpc library only)
   Boiler:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: BoilerVariant
+    description: Heat generator with its storage tank and pump (boiler or heat pump,
+      by variant)
+    is_a: System
+    slot_usage:
       control:
-        range: Control
+        range: BoilerControlEntry
       parameters:
         range: BoilerParameters
-    is_a: System
+    slots:
+    - parameters
+    - control
   BoilerControl:
     attributes:
       parameters:
+        description: Parameters of the boiler control
         multivalued: false
         range: BoilerControlParameters
       variant:
+        description: Control law of the generator
         ifabsent: string('default')
         range: BoilerControlVariant
-    class_uri: schema:BoilerControl
+    description: Control of a boiler or heat pump charging its storage tank
     slots:
     - id
+  BoilerControlEntry:
+    description: Control of a boiler or heat pump
+    slot_usage:
+      boiler_control:
+        required: true
+    slots:
+    - boiler_control
   BoilerControlParameters:
     attributes:
       threshold_outdoor_air_cutoff:
         description: Outdoor air temperature threshold; output is true when the outdoor
           air is below this heating cut-off limit [K]
         ifabsent: float(288.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       threshold_to_switch_off_boiler:
         description: Tank bottom temperature above which the boiler switches off;
           defaults to tsup_nominal + 5 K [K]
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       tsup_nominal:
         description: Supply temperature set point; the boiler starts when the tank
           top drops 1 K below it [K]
         ifabsent: float(353.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
+    description: Parameters of the control of a boiler or heat pump
   BoilerParameters:
     attributes:
       ambient_temperature:
         description: Temperature of the room around the boiler and the tank, for their
           losses [K], 288.15 by default
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       buffer_temperature_band:
         description: Width of the buffer temperature band switching the air-water
           heat pump on and off around the supply set point [K], 5 by default
+        minimum_value: 0
         range: float
       coefficients_for_efficiency_curve:
         description: Coefficients for efficiency curve
@@ -146,10 +219,12 @@ classes:
       compressor_minimum_off_time:
         description: Minimum time the compressor of the air-water heat pump stays
           off once stopped [s], 300 by default
+        minimum_value: 0
         range: float
       compressor_minimum_on_time:
         description: Minimum time the compressor of the air-water heat pump runs once
           started [s], 300 by default
+        minimum_value: 0
         range: float
       cop_cross_term:
         description: Heat pump COP cross term outdoor x supply deviation, mpc library
@@ -160,6 +235,7 @@ classes:
         description: Heat pump COP at the rating point A7/W35, used by the mpc library
           [1]
         ifabsent: float(4.5)
+        minimum_value: 0
         range: float
       cop_outdoor_slope:
         description: Heat pump COP change per kelvin of outdoor temperature, mpc library
@@ -174,6 +250,8 @@ classes:
       design_outdoor_temperature:
         description: Design outdoor temperature of the heating curve of the air-water
           heat pump [K], 265.15 (-8 degC, Uccle, NBN EN 12831) by default
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       diff_pressure:
         description: Pressure rise values defining the boiler-circuit pump pressure
@@ -183,18 +261,22 @@ classes:
       dp_nominal:
         description: Pressure difference [Pa]
         ifabsent: float(5000)
+        minimum_value: 0
         range: float
       dry_mass:
         description: Dry mass of the boiler lumped to its water [kg], 1.5e-3 * nominal
           heating power by default
+        minimum_value: 0
         range: float
       dt_boi_nominal:
         description: Nominal temperature difference for the boiler loop [K]
         ifabsent: float(20)
+        minimum_value: 0
         range: float
       dt_rad_nominal:
         description: Nominal temperature difference for the radiator loop [K]
         ifabsent: float(10)
+        minimum_value: 0
         range: float
       effcur:
         description: Curve used to compute the efficiency
@@ -210,6 +292,8 @@ classes:
         description: Fraction of nominal flow rate where flow transitions to laminar
           [1]
         ifabsent: float(0.1)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       fuel:
         description: Fuel of the boiler, a record of Buildings.Fluid.Data.Fuels such
@@ -220,10 +304,13 @@ classes:
         description: Source (outdoor air) temperature at the rating point of the air-water
           heat pump [K], where it delivers the nominal heating power at the supply
           temperature set point; the design outdoor temperature by default
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       heat_pump_source_mass_flow:
         description: Mass flow rate of the source side of the heat pump [kg/s], the
           one of the performance data scaled to the nominal heating power by default
+        minimum_value: 0
         range: float
       heat_pump_source_outdoor_air:
         description: Whether the evaporator of the air-water heat pump takes the outdoor
@@ -238,10 +325,13 @@ classes:
       heating_limit_temperature:
         description: Outdoor temperature above which the air-water heat pump does
           not heat [K], 289.15 by default
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       height_of_tank_without_insulation:
         description: Height of tank (without insulation) [m]
         ifabsent: float(2)
+        minimum_value: 0
         range: float
       if_actual_temperature_at_port_is_computed:
         description: = true, if actual temperature at port is computed
@@ -250,6 +340,7 @@ classes:
       insulation_conductivity:
         description: Thermal conductivity of the tank insulation [W/(m.K)], 0.04 by
           default
+        minimum_value: 0
         range: float
       insulation_thickness:
         description: Same as thickness_of_insulation
@@ -264,15 +355,18 @@ classes:
         description: Heat loss conductance of the boiler to its room [W/K], 1e-4 *
           nominal heating power (0.5 % of it at 50 K) by default; BoilerPolynomial
           of Buildings 13 subtracts this loss twice from the water
+        minimum_value: 0
         range: float
       max_electrical_power:
         description: Maximum electrical power of the heat pump compressor, mpc library
           [W] (nominal heating power / COP when absent)
-        ifabsent: float(None)
+        minimum_value: 0
         range: float
       minimum_supply_temperature:
         description: Supply temperature of the heating curve of the air-water heat
           pump at the heating limit [K], 303.15 by default
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       nominal_efficiency_temperature:
         description: Same as temperature_used_to_compute_nominal_efficiency
@@ -280,15 +374,18 @@ classes:
       nominal_heating_power:
         description: Nominal heating power [W]
         ifabsent: float(20000)
+        minimum_value: 0
         range: float
       number_of_volume_segments:
         description: Number of volume segments [1]
         ifabsent: int(4)
+        minimum_value: 1
         range: integer
       sca_fac_rad:
         description: Scaling factor to scale the power (and mass flow rate) of the
           radiator loop [1]
         ifabsent: float(1.5)
+        minimum_value: 0
         range: float
       show_temperature:
         description: Same as if_actual_temperature_at_port_is_computed
@@ -296,6 +393,8 @@ classes:
       supply_temperature_setpoint:
         description: Supply temperature set point of the boiler without storage [K],
           353.15 by default
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       tank_height:
         description: Same as height_of_tank_without_insulation
@@ -303,30 +402,40 @@ classes:
       tank_volume:
         description: Tank volume [m3]
         ifabsent: float(0.2)
+        minimum_value: 0
         range: float
       temperature_heatpump_source:
         description: Constant source temperature of the heat pump [K], used when heat_pump_source_outdoor_air
           is false (and by the water-water heat pump)
         ifabsent: float(286.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       temperature_initial:
         description: Initial temperature of the boiler and of the tank water [K],
           293.15 by default
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       temperature_supply_setpoint_heat_pump:
         description: Supply temperature set point of the heat pump [K]; for the air-water
           heat pump, the supply temperature of the heating curve at the design outdoor
           temperature
         ifabsent: float(323.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       temperature_used_to_compute_nominal_efficiency:
         description: Temperature used to compute nominal efficiency (only used if
           efficiency curve depends on temperature) [K]
         ifabsent: float(353.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       thickness_of_insulation:
         description: Thickness of insulation [m]
         ifabsent: float(0.1)
+        minimum_value: 0
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: = true, use linear relation between m_flow and dp for any flow
@@ -340,70 +449,93 @@ classes:
       water_volume:
         description: Water volume of the boiler [m3], 1.5e-6 * nominal heating power
           by default
+        minimum_value: 0
         range: float
+    description: Parameters of a boiler or heat pump and of its storage tank
   Building:
     attributes:
       constructions:
+        description: Opaque constructions, in addition to the default ones
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Construction
       default:
+        description: Library of materials, glazings and constructions, usually `!include_default`
         range: Default
       gas:
+        description: Gases of the glazing cavities, in addition to the default ones
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Gas
       glass_material:
+        description: Glasses of the glazing panes, in addition to the default ones
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: GlassMaterial
       glazings:
+        description: Glazings of the windows, in addition to the default ones
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Glazing
       internal_walls:
+        description: Walls, floors and ceilings between two spaces
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: InternalWall
       material:
+        description: Opaque materials, in addition to the default ones
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Material
       solar:
+        description: Solar components of the building
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Solar
       spaces:
+        description: The thermal zones of the building
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Space
+        required: true
       systems:
+        description: The heating, cooling and ventilation components outside the spaces
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Systems
       weather:
+        description: Weather data of the site
         range: Weather
-    description: A holder for Space objects
+    description: A building model, the root of a Trano YAML or JSON file
     tree_root: true
   Chiller:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Chiller (mpc library only)
+    is_a: System
+    slot_usage:
       parameters:
         range: ChillerParameters
-    is_a: System
+    slots:
+    - parameters
   ChillerParameters:
     attributes:
       eer_nominal:
         description: EER at 35 degC outdoor temperature [1]
         ifabsent: float(3.5)
+        minimum_value: 0
         range: float
       eer_outdoor_slope:
         description: EER change per kelvin of outdoor temperature [1/K]
@@ -412,26 +544,64 @@ classes:
       max_electrical_power:
         description: Maximum electrical power of the compressor [W] (nominal cooling
           power / EER when absent)
-        ifabsent: float(None)
+        minimum_value: 0
         range: float
       nominal_cooling_power:
         description: Nominal cooling power [W]
         ifabsent: float(10000)
+        minimum_value: 0
         range: float
+    description: Parameters of a chiller (mpc library only)
   CollectorControl:
-    class_uri: schema:CollectorControl
+    description: Control of a pump from the opening of the valves it serves
     slots:
     - id
+  CollectorControlEntry:
+    description: Control of a pump
+    slot_usage:
+      collector_control:
+        required: true
+    slots:
+    - collector_control
   Construction:
     attributes:
       layers:
-        description: Layers
+        description: Layers from the outside to the inside
         multivalued: true
         range: Layer
+        required: true
+    description: Opaque construction of walls, floors and roofs, as layers from the
+      outside to the inside
     slots:
     - id
   Control:
-    class_uri: schema:Control
+    description: Any control (exactly one key); each component takes the control of
+      its own kind
+    exactly_one_of:
+    - slot_conditions:
+        emission_control:
+          name: emission_control
+          required: true
+    - slot_conditions:
+        boiler_control:
+          name: boiler_control
+          required: true
+    - slot_conditions:
+        collector_control:
+          name: collector_control
+          required: true
+    - slot_conditions:
+        three_way_valve_control:
+          name: three_way_valve_control
+          required: true
+    - slot_conditions:
+        vav_control:
+          name: vav_control
+          required: true
+    - slot_conditions:
+        ahu_control:
+          name: ahu_control
+          required: true
     slots:
     - emission_control
     - boiler_control
@@ -444,32 +614,40 @@ classes:
       dt_hys:
         description: Delta between the temperature hysteresis high and low limit [K]
         ifabsent: float(0.25)
+        minimum_value: 0
         range: float
       k_coo_con:
         description: Gain of controller for cooling control loop [1]
         ifabsent: float(0.1)
+        minimum_value: 0
         range: float
       k_hea_con:
         description: Gain of controller for heating control loop [1]
         ifabsent: float(0.1)
+        minimum_value: 0
         range: float
       loo_hys:
         description: Threshold value to check if the controller output is near zero
           [1]
         ifabsent: float(0.01)
+        minimum_value: 0
         range: float
       ti_coo_con:
         description: Time constant of integrator block for cooling control loop [s]
         ifabsent: float(900)
+        minimum_value: 0
         range: float
       ti_hea_con:
         description: Time constant of integrator block for heating control loop [s]
         ifabsent: float(900)
+        minimum_value: 0
         range: float
       tim_che:
         description: Threshold time to check the zone temperature status [s]
         ifabsent: float(30)
+        minimum_value: 0
         range: float
+    description: Parameters of the control loops of an air handling unit
   DataSource:
     attributes:
       component:
@@ -484,83 +662,132 @@ classes:
   Default:
     attributes:
       constructions:
+        description: Opaque constructions
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Construction
       gas:
+        description: Gases of the glazing cavities
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Gas
       glass_material:
+        description: Glasses of the glazing panes
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: GlassMaterial
       glazings:
+        description: Glazings of the windows
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Glazing
       material:
+        description: Opaque materials
         inlined: true
         inlined_as_list: true
         multivalued: true
         range: Material
+    description: Library of materials, glazings and constructions available to every
+      model
   DhwTank:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Domestic hot water tank (mpc library only)
+    is_a: System
+    slot_usage:
       parameters:
         range: DhwTankParameters
-    is_a: System
+    slots:
+    - parameters
   DhwTankParameters:
     attributes:
       daily_draw_off_energy:
         description: Heat drawn by the hot water taps per day [kWh]
         ifabsent: float(8.0)
+        minimum_value: 0
         range: float
       loss_coefficient:
         description: Standing loss coefficient of the tank [W/K]
         ifabsent: float(2.0)
+        minimum_value: 0
         range: float
       min_temperature:
         description: Lower comfort bound of the tank temperature [K]
         ifabsent: float(318.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       set_temperature:
         description: Upper comfort bound of the tank temperature [K]
         ifabsent: float(328.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       supply_offset:
         description: Heat pump supply temperature above the tank temperature [K]
         ifabsent: float(5.0)
+        minimum_value: 0
         range: float
       volume:
         description: Water volume of the tank [m3]
         ifabsent: float(0.2)
+        minimum_value: 0
         range: float
       zone:
         description: Space receiving the standing losses of the tank (first space
           when absent)
         ifabsent: string(None)
         range: string
+    description: Parameters of a domestic hot water tank (mpc library only)
   Duct:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Air duct
+    is_a: System
+    slot_usage:
       parameters:
         range: DuctParameters
-    is_a: System
+    slots:
+    - parameters
   DuctParameters:
     attributes:
       dp_nominal:
         description: Pressure drop of the duct at the nominal flow [Pa]
         ifabsent: float(40)
+        minimum_value: 0
         range: float
       nominal_mass_flow_rate:
         description: Nominal air mass flow rate through the duct [kg/s]
         ifabsent: string(100*1.2/3600)
         range: string
+    description: Parameters of an air duct
   Emission:
-    class_uri: schema:Emission
+    description: 'One emission component of a space (exactly one key per entry). Water
+      emitters are listed as [radiator, valve]: the water flows from the radiator
+      to its valve.'
+    exactly_one_of:
+    - slot_conditions:
+        radiator:
+          name: radiator
+          required: true
+    - slot_conditions:
+        valve:
+          name: valve
+          required: true
+    - slot_conditions:
+        ideal_heating_cooling:
+          name: ideal_heating_cooling
+          required: true
     slots:
     - radiator
     - valve
@@ -568,19 +795,30 @@ classes:
   EmissionControl:
     attributes:
       parameters:
+        description: Parameters of the emission control
         multivalued: false
         range: EmissionControlParameters
       variant:
+        description: Control law of the emitter
         ifabsent: string('default')
         range: EmissionControlVariant
-    class_uri: schema:EmissionControl
+    description: Control of the emitter of a space (radiator valve or ideal heater)
+      from its air temperature
     slots:
     - id
+  EmissionControlEntry:
+    description: Control of a radiator, valve or ideal heater
+    slot_usage:
+      emission_control:
+        required: true
+    slots:
+    - emission_control
   EmissionControlParameters:
     attributes:
       controller_gain:
         description: Gain of controller [1]
         ifabsent: float(5)
+        minimum_value: 0
         range: float
       data:
         description: Occupancy data sources
@@ -597,55 +835,83 @@ classes:
         description: Room air temperature heating set point during the setback period
           (e.g. at night) [K]
         ifabsent: float(289)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       temperature_heating_setpoint:
         description: Room air temperature heating set point during occupied period
           [K], 21 degC by default (the design indoor temperature of dwellings)
         ifabsent: float(294.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
+    description: 'Parameters of the control of an emitter: schedule, set points and
+      control loop'
   EvCharger:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Electric vehicle charger (mpc library only)
+    is_a: System
+    slot_usage:
       parameters:
         range: EvChargerParameters
-    is_a: System
+    slots:
+    - parameters
   EvChargerParameters:
     attributes:
       arrival_hour:
         description: Hour of the day the vehicle plugs in [h]
         ifabsent: float(18)
+        maximum_value: 24
+        minimum_value: 0
         range: float
       battery_capacity:
         description: Battery capacity of the vehicle [kWh]
         ifabsent: float(60.0)
+        minimum_value: 0
         range: float
       charge_efficiency:
         description: Charging efficiency [1]
         ifabsent: float(0.9)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       departure_hour:
         description: Hour of the day the vehicle leaves [h]
         ifabsent: float(7)
+        maximum_value: 24
+        minimum_value: 0
         range: float
       energy_per_day:
         description: Energy consumed by driving per day [kWh]
         ifabsent: float(10.0)
+        minimum_value: 0
         range: float
       initial_soc:
         description: Initial state of charge [1]
         ifabsent: float(0.5)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       max_charge_power:
         description: Maximum charging power [W]
         ifabsent: float(7400)
+        minimum_value: 0
         range: float
       target_soc:
         description: State of charge required at departure [1]
         ifabsent: float(0.8)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       weekend_present:
         description: The vehicle stays plugged in during the weekend
         ifabsent: string(true)
         range: string
+    description: Parameters of an electric vehicle charger (mpc library only)
   ExternalBoundaries:
     attributes:
       adiabatic_walls:
@@ -655,23 +921,31 @@ classes:
         multivalued: true
         range: AdiabaticWall
       external_walls:
+        description: Opaque walls in contact with the outdoor air
         inlined: true
         multivalued: true
         range: ExternalWall
       floor_on_grounds:
+        description: Floors in contact with the ground
         inlined: true
         multivalued: true
         range: FloorOnGround
       windows:
+        description: Windows, each in an external wall of the same orientation
         inlined: true
         multivalued: true
         range: Window
+    description: The envelope elements of a space in contact with the outdoor air
+      or the ground
   ExternalWall:
-    attributes:
+    description: Opaque wall between the space and the outdoor air
+    slot_usage:
+      azimuth:
+        required: true
       construction:
-        description: Construction
         range: Construction
     slots:
+    - construction
     - surface
     - azimuth
     - tilt
@@ -680,51 +954,80 @@ classes:
       average_indoor_temperature:
         description: Mean temperature of the room above the slab [K] for the ground
           model of IDEAS (ISO 13370 heat flow), 295.15 (IDEAS' default) when absent
+        maximum_value: 343.15
+        minimum_value: 223.15
         range: float
-      construction:
-        description: Construction
-        range: Construction
       ground_temperature:
         description: Temperature of the ground under the floor [K], 283.15 when absent
           (Buildings and the reduced-order zone; IDEAS and ISO 13790 model the ground
           themselves)
+        maximum_value: 343.15
+        minimum_value: 223.15
         range: float
       perimeter:
         description: Exposed perimeter of the slab [m] for the ground model of IDEAS,
           4 times the square root of the surface when absent
+        minimum_value: 0
         range: float
       variant:
         description: 'What lies under the floor: the ground at a fixed temperature
           (default) or the outdoor air (outdoor_air, a raised floor)'
         ifabsent: string('default')
         range: FloorOnGroundVariant
+    description: Slab between the space and the ground (or the outdoor air for a raised
+      floor)
+    slot_usage:
+      construction:
+        range: Construction
     slots:
+    - construction
     - surface
   Gas:
+    description: Gas filling the cavity between two panes of a glazing
     is_a: Material
   GlassMaterial:
     attributes:
       infrared_absorptivity_outside_facing:
+        description: Infrared absorptivity of the outside face [1]
         ifabsent: float(0.84)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       infrared_absorptivity_room_facing:
+        description: Infrared absorptivity of the room face [1]
         ifabsent: float(0.84)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       infrared_transmissivity:
+        description: Infrared transmissivity of the pane [1]
         ifabsent: float(0.0)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       solar_reflectance_outside_facing:
+        description: Solar reflectance of the outside face [1]
         ifabsent: float(0.075)
+        maximum_value: 1
+        minimum_value: 0
         multivalued: true
         range: float
       solar_reflectance_room_facing:
+        description: Solar reflectance of the room face [1]
         ifabsent: float(0.075)
+        maximum_value: 1
+        minimum_value: 0
         multivalued: true
         range: float
       solar_transmittance:
+        description: Solar transmittance of the pane at the angles of incidence of
+          the library [1]
         ifabsent: float(0.6)
+        maximum_value: 1
+        minimum_value: 0
         multivalued: true
         range: float
+    description: Glass of the panes of a glazing
     is_a: Material
   Glazing:
     attributes:
@@ -732,39 +1035,63 @@ classes:
         description: Solar energy transmittance of the glazing [1] for the libraries
           that take one (IDEAS, reduced order, ISO 13790); computed from the layers
           (EN 410) when absent
+        maximum_value: 1
+        minimum_value: 0
         range: float
       layers:
-        description: Layers
+        description: Glass and gas layers from the outside to the inside
         multivalued: true
         range: GlazingLayer
+        required: true
       u_value:
         description: U-value of the glazing [W/(m2.K)] for the libraries that take
           one (IDEAS, reduced order, ISO 13790); computed from the layers (EN 673)
           when absent
+        minimum_value: 0
         range: float
       u_value_frame:
         description: U-value of the frame [W/(m2.K)]
         ifabsent: float(1.4)
+        minimum_value: 0
         range: float
+    description: Glazing of the windows, as alternating glass and gas layers
     slots:
     - id
   GlazingLayer:
     attributes:
       gas:
-        description: Gas
+        description: Gas of a cavity layer
         range: Gas
       glass:
-        description: Glass
+        description: Glass of a pane layer
         range: GlassMaterial
       thickness:
         description: Thickness [m]
+        minimum_value: 0
         range: float
+        required: true
+    description: A pane (glass) or a cavity (gas) of a glazing
   HeatMeterSensor:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Heat meter between a boiler and a pump, reading the return temperature
+      of the temperature sensor listed in its inlets
+    is_a: System
+    slot_usage:
       parameters:
         range: SensorParameters
-    is_a: System
+    slots:
+    - parameters
   IdealHeatingCooling:
+    attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Ideal heating and cooling of a space
     is_a: System
     slot_usage:
       parameters:
@@ -781,6 +1108,7 @@ classes:
       controller_integral_time:
         description: Integral time of the heating and cooling PI controllers [s]
         ifabsent: float(300)
+        minimum_value: 0
         range: float
       cooling_setpoint_schedule:
         description: Day schedule of the cooling set point, rows of time since midnight
@@ -797,72 +1125,107 @@ classes:
       maximum_cooling_power:
         description: Cooling capacity; zero switches cooling off [W]
         ifabsent: float(1000000)
+        minimum_value: 0
         range: float
       maximum_heating_power:
         description: Heating capacity; zero switches heating off [W]
         ifabsent: float(1000000)
+        minimum_value: 0
         range: float
       radiative_fraction:
         description: Fraction of the heat flow exchanged with the radiative temperature
           of the zone, the rest with its air [1]
         ifabsent: float(0)
+        maximum_value: 1
+        minimum_value: 0
         range: float
+    description: Parameters of an ideal heating and cooling device
   InternalWall:
     attributes:
-      construction:
-        range: Construction
       space_1:
+        description: First space on either side of the wall
         range: Space
+        required: true
       space_1_tilt:
+        description: Tilt of the wall seen from the first space (wall, ceiling or
+          floor)
+        pattern: ^(wall|ceiling|floor)$
         range: string
       space_2:
+        description: Second space on either side of the wall
         range: Space
+        required: true
       space_2_tilt:
+        description: Tilt of the wall seen from the second space (wall, ceiling or
+          floor)
+        pattern: ^(wall|ceiling|floor)$
         range: string
+    description: Wall, floor or ceiling between two spaces of the building
+    slot_usage:
+      construction:
+        range: Construction
     slots:
+    - construction
     - surface
   Layer:
     attributes:
       material:
-        description: Material
+        description: Material of the layer
         range: Material
+        required: true
       thickness:
         description: Thickness [m]
+        minimum_value: 0
         range: float
+        required: true
+    description: A layer of an opaque construction, from the outside to the inside
   Material:
     attributes:
       density:
         description: Density [kg/m3]
+        minimum_value: 0
         range: float
+        required: true
       longwave_emissivity:
         description: Longwave emissivity [1]
         ifabsent: float(0.85)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       number_of_states:
         description: Spatial discretization of the layers (Buildings), number of states
           of a 0.2 m concrete reference layer scaled with the thickness and diffusivity
           of each layer [1]
         ifabsent: int(3)
+        minimum_value: 1
         range: integer
       shortwave_emissivity:
         description: Shortwave emissivity [1]
         ifabsent: float(0.85)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       specific_heat_capacity:
         description: Specific thermal capacity [J/(kg.K)]
+        minimum_value: 0
         range: float
+        required: true
       thermal_conductivity:
         description: Thermal conductivity [W/(m.K)]
+        minimum_value: 0
         range: float
+        required: true
+    description: Opaque material of a construction layer
     slots:
     - id
   Occupancy:
     attributes:
       variant:
+        description: Occupancy model; co2 adds the CO2 emitted by the occupants, none
+          means no occupants at all
         ifabsent: string('default')
         range: OccupancyVariant
-    class_uri: schema:Occupancy
-    description: Represents Occupancy
+    description: The occupants of a space, their schedule and their heat gains
     slot_usage:
       parameters:
         range: OccupancyParameters
@@ -873,13 +1236,16 @@ classes:
       ach:
         description: Infiltration [1/h]
         ifabsent: float(0.9)
+        minimum_value: 0
         range: float
       activity_degree:
         description: Activity level of the occupants of the reduced-order zone [met],
           1.2 by default
+        minimum_value: 0
         range: float
       co2_generation_per_person:
         description: CO2 released per occupant [m3/s], 5.2e-6 by default (CO2 variant)
+        minimum_value: 0
         range: float
       data:
         description: Occupancy data sources
@@ -889,12 +1255,16 @@ classes:
         range: DataSource
       equipment_power_density:
         description: Heat released by the equipment per floor area, all day [W/m2]
+        minimum_value: 0
         range: float
       equipment_radiant_fraction:
         description: Radiant share of the equipment heat [1], 0.4 by default
+        maximum_value: 1
+        minimum_value: 0
         range: float
       floor_area:
         description: Floor area [m2]
+        minimum_value: 0
         range: float
       gain:
         description: Gain to convert from occupancy (per person) to radiant, convective
@@ -907,12 +1277,16 @@ classes:
         range: string
       latent_heat_per_person:
         description: Latent heat released per occupant [W]
+        minimum_value: 0
         range: float
       lighting_power_density:
         description: Heat released by the lighting per floor area, all day [W/m2]
+        minimum_value: 0
         range: float
       lighting_radiant_fraction:
         description: Radiant share of the lighting heat [1], 0.4 by default
+        maximum_value: 1
+        minimum_value: 0
         range: float
       occupancy:
         description: Occupancy table, each entry switching occupancy on or off
@@ -924,23 +1298,30 @@ classes:
       outdoor_co2_concentration:
         description: CO2 concentration of the outdoor air [ppm], 420 by default (CO2
           variant)
+        minimum_value: 0
         range: float
       radiant_fraction:
         description: Radiant share of the sensible heat of the occupants [1]
+        maximum_value: 1
+        minimum_value: 0
         range: float
       sensible_heat_per_person:
         description: Sensible heat released per occupant [W]; with the latent heat
           and the radiant fraction it gives the `gain` matrix when that one is absent
+        minimum_value: 0
         range: float
+    description: Occupancy schedule and heat gains of the occupants of a space
   Overhang:
     attributes:
       depth:
         description: Projection perpendicular to the wall [m]
+        minimum_value: 0
         range: float
         required: true
       gap:
         description: Distance between the top of the window and the overhang [m],
           0 when absent
+        minimum_value: 0
         range: float
       width_left:
         description: Extension beyond the left edge of the window [m], 0 when absent
@@ -948,6 +1329,7 @@ classes:
       width_right:
         description: Extension beyond the right edge of the window [m], 0 when absent
         range: float
+    description: Horizontal shading projection above a window
   PIDParameters:
     attributes:
       controller_type:
@@ -957,14 +1339,17 @@ classes:
       k:
         description: Gain of controller [1]
         ifabsent: float(1)
+        minimum_value: 0
         range: float
       nd:
         description: The higher Nd, the more ideal the derivative block [1]
         ifabsent: float(10)
+        minimum_value: 0
         range: float
       ni:
         description: Ni*Ti is time constant of anti-windup compensation [1]
         ifabsent: float(0.9)
+        minimum_value: 0
         range: float
       r:
         description: Typical range of control error, used for scaling the control
@@ -974,10 +1359,12 @@ classes:
       td:
         description: Time constant of derivative block [s]
         ifabsent: float(0.1)
+        minimum_value: 0
         range: float
       ti:
         description: Time constant of integrator block [s]
         ifabsent: float(0.5)
+        minimum_value: 0
         range: float
       y_max:
         description: Upper limit of output [1]
@@ -987,55 +1374,88 @@ classes:
         description: Lower limit of output [1]
         ifabsent: float(0)
         range: float
+    description: Parameters of a PID controller
   Parameter:
-    class_uri: schema:Parameter
-    description: Represents Parameters
+    abstract: true
+    description: Base of the parameter sets of the components
     slots:
     - name
   Photovoltaic:
-    attributes:
+    description: Photovoltaic panels on the building
+    slot_usage:
       parameters:
         range: PhotovoltaicParameters
     slots:
     - id
     - name
+    - parameters
   PhotovoltaicParameters:
     attributes:
       active_area_fraction:
         description: Share of the module area covered by active cells [1], 0.9 by
           default
+        maximum_value: 1
+        minimum_value: 0
         range: float
       area:
         description: Module area [m2]
         ifabsent: float(20.0)
+        minimum_value: 0
         range: float
       azimuth:
         description: Surface azimuth [deg], 0 for south, 90 for west
         ifabsent: float(0.0)
+        maximum_value: 360
+        minimum_value: -360
         range: float
       efficiency:
         description: Module and inverter efficiency [1]
         ifabsent: float(0.18)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       inverter_efficiency:
         description: Efficiency of the DC to AC conversion [1], 0.9 by default
+        maximum_value: 1
+        minimum_value: 0
         range: float
       power_factor:
         description: Power factor of the inverter [1], 0.9 by default
+        maximum_value: 1
+        minimum_value: 0
         range: float
       tilt:
         description: Surface tilt [deg], 0 for a roof, 90 for a wall
         ifabsent: float(35.0)
+        maximum_value: 90
+        minimum_value: 0
         range: float
+    description: Parameters of photovoltaic panels
   PowerSensor:
+    attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Electric power of the ideal radiators feeding it
     is_a: System
   Pump:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Circulation pump of a water circuit, driven by the opening of the
+      valves it serves
+    is_a: System
+    slot_usage:
       control:
-        range: Control
+        range: CollectorControlEntry
       parameters:
         range: PumpParameters
-    is_a: System
+    slots:
+    - parameters
+    - control
   PumpParameters:
     attributes:
       constant_input_set_point:
@@ -1044,21 +1464,31 @@ classes:
       dp_nominal:
         description: Nominal pressure raise [Pa]
         ifabsent: float(30000)
+        minimum_value: 0
         range: float
       m_flow_nominal:
         description: Nominal mass flow rate [kg/s]
         ifabsent: float(0.15)
+        minimum_value: 0
         range: float
+    description: Parameters of a circulation pump
   Radiator:
     attributes:
-      control:
-        range: Control
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: RadiatorVariant
+    description: Water radiator (variant default, followed by a valve in the emissions
+      of its space) or ideal heater driven by its control (variants ideal and idealbus)
     is_a: System
     slot_usage:
+      control:
+        range: EmissionControlEntry
       parameters:
         range: RadiatorParameter
     slots:
     - parameters
+    - control
   RadiatorParameter:
     attributes:
       air_temperature:
@@ -1067,23 +1497,31 @@ classes:
       air_temperature_at_nominal_condition:
         description: Air temperature at nominal condition [K]
         ifabsent: float(293.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       dp_nominal:
         description: Pressure drop at nominal mass flow rate [Pa]
         ifabsent: float(2000)
+        minimum_value: 0
         range: float
       exponent_for_heat_transfer:
         description: Exponent for heat transfer
         ifabsent: float(1.24)
+        minimum_value: 0
         range: float
       fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs:
         description: Fraction of nominal mass flow rate where transition to turbulent
           occurs [1]
         ifabsent: float(0.01)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       fraction_radiant_heat_transfer:
         description: Fraction radiant heat transfer [1]
         ifabsent: float(0.3)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       from_dp:
         description: Same as use_m_flow_f_dp_else_dp_f_m_flow
@@ -1100,6 +1538,7 @@ classes:
       nominal_heating_power_positive_for_heating:
         description: Nominal heating power (positive for heating) [W]
         ifabsent: float(5000)
+        minimum_value: 0
         range: float
       number_of_elements:
         description: Same as number_of_elements_used_in_the_discretization
@@ -1107,6 +1546,7 @@ classes:
       number_of_elements_used_in_the_discretization:
         description: Number of elements used in the discretization [1]
         ifabsent: int(1)
+        minimum_value: 1
         range: integer
       radiant_fraction:
         description: Same as fraction_radiant_heat_transfer
@@ -1117,6 +1557,8 @@ classes:
       radiative_temperature_at_nominal_condition:
         description: Radiative temperature at nominal condition [K]
         ifabsent: float(293.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       turbulent_transition_fraction:
         description: Same as fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs
@@ -1136,6 +1578,8 @@ classes:
       water_inlet_temperature_at_nominal_condition:
         description: Water inlet temperature at nominal condition [K]
         ifabsent: float(353.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       water_outlet_temperature:
         description: Same as water_outlet_temperature_at_nominal_condition
@@ -1143,46 +1587,65 @@ classes:
       water_outlet_temperature_at_nominal_condition:
         description: Water outlet temperature at nominal condition [K]
         ifabsent: float(333.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
+    description: Parameters of a radiator (EN 442-2) or an ideal heater
   SensorParameters:
     attributes:
       nominal_mass_flow_rate:
         description: Nominal mass flow rate through the sensor, used for its dynamics
           and its small-flow regularization [kg/s]
         ifabsent: float(0.15)
+        minimum_value: 0
         range: float
       time_constant:
         description: Time constant of the sensor [s], 1 by default; 0 for an ideal
           sensor
+        minimum_value: 0
         range: float
+    description: Parameters of a water temperature sensor or heat meter
   SideFins:
     attributes:
       depth:
         description: Projection perpendicular to the wall [m]
+        minimum_value: 0
         range: float
         required: true
       gap:
         description: Distance between the edges of the window and the fins [m], 0
           when absent
+        minimum_value: 0
         range: float
       height:
         description: Extension of the fins above the top of the window [m], 0 when
           absent
         range: float
+    description: Vertical shading projections on both sides of a window
   Solar:
-    class_uri: schema:Solar
+    description: One solar component of the building (exactly one key per entry)
+    exactly_one_of:
+    - slot_conditions:
+        photovoltaic:
+          name: photovoltaic
+          required: true
     slots:
     - photovoltaic
   Space:
     attributes:
       variant:
+        description: Zone model, default or with infiltration (rectangular_zone for
+          IDEAS only)
         ifabsent: string('default')
         range: SpaceVariant
-    class_uri: schema:Space
-    description: Represents a Space
+    description: 'A thermal zone: its geometry, envelope, occupancy and the emitters
+      and ventilation components serving it'
     slot_usage:
+      external_boundaries:
+        required: true
       parameters:
         range: SpaceParameter
+        required: true
     slots:
     - id
     - name
@@ -1196,29 +1659,35 @@ classes:
     attributes:
       ach:
         description: Infiltration [1/h]
+        minimum_value: 0
         range: float
       average_room_height:
         description: Average room height [m]
         ifabsent: float(2)
+        minimum_value: 0
         range: float
       exterior_convection_coefficient:
         description: Fixed convective heat transfer coefficient of the outside surfaces
           [W/(m2.K)]; Buildings switches to a fixed coefficient (10 by default), the
           reduced-order zone applies it to its walls, windows and roof (20 by default)
+        minimum_value: 0
         range: float
       floor_area:
         description: Floor area [m2]
         ifabsent: float(20)
+        minimum_value: 0
         range: float
       ground_heat_transfer_factor:
         description: Adjustment factor of the heat transfer through the floor to the
           ground of the ISO 13790 zone [1], 0.5 by default
+        minimum_value: 0
         range: float
       interior_convection_coefficient:
         description: Fixed convective heat transfer coefficient of the inside surfaces
           [W/(m2.K)]; Buildings and the ISO 13790 zone switch to a fixed coefficient
           (3 and 3.45 by default), the reduced-order zone applies it to its walls,
           windows, floor and roof (2.7 by default)
+        minimum_value: 0
         range: float
       linearize_emissive_power:
         description: Set to true to linearize emissive power
@@ -1228,33 +1697,42 @@ classes:
         description: Air change rate at a 50 Pa pressure difference, the airtightness
           of the zone [1/h]; gives the infiltration `ach` as n50 / n50_to_ach when
           `ach` is absent (IDEAS takes it directly)
+        minimum_value: 0
         range: float
       n50_to_ach:
         description: Ratio between the air change rate at 50 Pa and the infiltration
           rate [1]
         ifabsent: float(20)
+        minimum_value: 0
         range: float
       nominal_mass_flow_rate:
         description: Nominal mass flow rate [kg/s]
         ifabsent: float(0.01)
+        minimum_value: 0
         range: float
       sensible_thermal_mass_scaling_factor:
         description: Factor for scaling the sensible thermal mass of the zone air
           volume [1]
         ifabsent: float(1)
+        minimum_value: 0
         range: float
       shading_reduction_factor:
         description: Factor on the solar gains through the windows for external shading
           [1]; the ISO 13790 zone applies it always (1 by default), the reduced-order
           zone when the irradiance exceeds the sunblind threshold (0.7 by default)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       sunblind_irradiance_threshold:
         description: Irradiance on a window above which the reduced-order zone applies
           the shading reduction factor [W/m2], 100 by default
+        minimum_value: 0
         range: float
       temperature_initial:
         description: Initial temperature [K]
         ifabsent: float(294.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       thermal_mass_class:
         description: Building mass class of the ISO 13790 zone, light, medium or heavy;
@@ -1265,11 +1743,21 @@ classes:
           infiltration, rows of time since midnight [s] and mass flow rate [kg/s],
           repeated every day (Buildings infiltration variant)
         range: string
+    description: Geometry, air exchange and initial state of a space
   SplitValve:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Junction joining the returns of the emitters (port_1) with the bypass
+      of a three-way valve (port_3)
+    is_a: System
+    slot_usage:
       parameters:
         range: SplitValveParameters
-    is_a: System
+    slots:
+    - parameters
   SplitValveParameters:
     attributes:
       dp_nominal:
@@ -1284,6 +1772,8 @@ classes:
         description: Fraction of nominal mass flow rate where transition to turbulent
           occurs [1]
         ifabsent: float(0.3)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       linearized:
         description: Same as use_linear_relation_between_m_flow_and_dp_for_any_flow_rate
@@ -1295,6 +1785,7 @@ classes:
       nominal_mass_flow_rate_for_dynamic_momentum_and_energy_balance:
         description: Nominal mass flow rate for dynamic momentum and energy balance
           [kg/s]
+        minimum_value: 0
         range: float
       time_constant:
         description: Same as time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance
@@ -1302,6 +1793,7 @@ classes:
       time_constant_at_nominal_flow_for_dynamic_energy_and_momentum_balance:
         description: Time constant at nominal flow for dynamic energy and momentum
           balance [s]
+        minimum_value: 0
         range: float
       turbulent_transition_fraction:
         description: Same as fraction_of_nominal_mass_flow_rate_where_transition_to_turbulent_occurs
@@ -1311,18 +1803,66 @@ classes:
           rate
         ifabsent: string(true)
         range: string
+    description: Parameters of a split valve (return junction)
   System:
-    attributes:
-      variant:
-        ifabsent: string('default')
-        range: SystemVariant
-    class_uri: schema:System
+    abstract: true
+    description: Base of the heating, cooling and ventilation components. The flow
+      goes from each component to its outlets and from its inlets to it.
     slots:
     - id
     - inlets
     - outlets
   Systems:
-    class_uri: schema:Systems
+    description: One system component of the building (exactly one key per entry)
+    exactly_one_of:
+    - slot_conditions:
+        split_valve:
+          name: split_valve
+          required: true
+    - slot_conditions:
+        three_way_valve:
+          name: three_way_valve
+          required: true
+    - slot_conditions:
+        boiler:
+          name: boiler
+          required: true
+    - slot_conditions:
+        pump:
+          name: pump
+          required: true
+    - slot_conditions:
+        temperature_sensor:
+          name: temperature_sensor
+          required: true
+    - slot_conditions:
+        heat_meter_sensor:
+          name: heat_meter_sensor
+          required: true
+    - slot_conditions:
+        air_handling_unit:
+          name: air_handling_unit
+          required: true
+    - slot_conditions:
+        power_sensor:
+          name: power_sensor
+          required: true
+    - slot_conditions:
+        chiller:
+          name: chiller
+          required: true
+    - slot_conditions:
+        dhw_tank:
+          name: dhw_tank
+          required: true
+    - slot_conditions:
+        battery:
+          name: battery
+          required: true
+    - slot_conditions:
+        ev_charger:
+          name: ev_charger
+          required: true
     slots:
     - split_valve
     - three_way_valve
@@ -1338,34 +1878,124 @@ classes:
     - ev_charger
   TemperatureSensor:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Water temperature sensor
+    is_a: System
+    slot_usage:
       parameters:
         range: SensorParameters
-    is_a: System
+    slots:
+    - parameters
   ThreeWayValve:
     attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: 'Three-way valve: supply (port_1), outlet to the emitters (port_2)
+      and bypass to the return (port_3), driven by the temperature measured by the
+      temperature sensor that follows it'
+    is_a: System
+    slot_usage:
       control:
-        range: Control
+        range: ThreeWayValveControlEntry
       parameters:
         range: ThreeWayValveParameters
-    is_a: System
+    slots:
+    - parameters
+    - control
   ThreeWayValveControl:
-    class_uri: schema:CollectorControl
+    description: Control of a three-way valve from the temperature after it
+    slot_usage:
+      parameters:
+        range: ThreeWayValveControlParameters
     slots:
     - id
+    - parameters
+  ThreeWayValveControlEntry:
+    description: Control of a three-way valve
+    slot_usage:
+      three_way_valve_control:
+        required: true
+    slots:
+    - three_way_valve_control
+  ThreeWayValveControlParameters:
+    attributes:
+      controller_type:
+        description: Type of controller
+        ifabsent: string(Buildings.Controls.OBC.CDL.Types.SimpleController.P)
+        range: string
+      k:
+        description: Gain of controller [1]
+        ifabsent: float(1)
+        minimum_value: 0
+        range: float
+      nd:
+        description: The higher Nd, the more ideal the derivative block [1]
+        ifabsent: float(10)
+        minimum_value: 0
+        range: float
+      ni:
+        description: Ni*Ti is time constant of anti-windup compensation [1]
+        ifabsent: float(0.9)
+        minimum_value: 0
+        range: float
+      r:
+        description: Typical range of control error, used for scaling the control
+          error
+        ifabsent: float(1)
+        range: float
+      supply_temperature_setpoint:
+        description: Temperature the valve holds after it, at its temperature sensor
+          [K]. Only a valve with its pump downstream (mixing circuit) can lower the
+          supply temperature; with the pump upstream it can only cut the flow. 363.15
+          (90 degC) by default, raised 5 K above the highest supply of a storage boiler
+          feeding a valve with its pump upstream (the top of the tank, 15 K above
+          the boiler set point) so that the valve does not close.
+        maximum_value: 423.15
+        minimum_value: 223.15
+        range: float
+      td:
+        description: Time constant of derivative block [s]
+        ifabsent: float(0.1)
+        minimum_value: 0
+        range: float
+      ti:
+        description: Time constant of integrator block [s]
+        ifabsent: float(0.5)
+        minimum_value: 0
+        range: float
+      y_max:
+        description: Upper limit of output [1]
+        ifabsent: float(1)
+        range: float
+      y_min:
+        description: Lower limit of output [1]
+        ifabsent: float(0)
+        range: float
+    description: Parameters of the control of a three-way valve, its PID controller
+      and its set point
   ThreeWayValveParameters:
     attributes:
       Av:
         description: Av (metric) flow coefficient [m2]
+        minimum_value: 0
         range: float
       Cv:
         description: Cv (US) flow coefficient [USG/min/(psi)^(1/2)]
+        minimum_value: 0
         range: float
       Kv:
         description: Kv (metric) flow coefficient [m3/h/(bar)^(1/2)]
+        minimum_value: 0
         range: float
       actuator_stroke_time:
         description: Time the actuator takes to open or close the valve [s], 120 by
           default
+        minimum_value: 0
         range: float
       dp_fixed_nominal:
         description: Nominal pressure drop of pipes and other equipment in flow legs
@@ -1376,6 +2006,7 @@ classes:
         description: Nominal pressure drop of fully open valve, used if CvData=Buildings.Fluid.Types.CvTypes.OpPoint
           [Pa]
         ifabsent: float(6000)
+        minimum_value: 0
         range: float
       equal_percentage_deviation:
         description: Same as range_of_significant_deviation_from_equal_percentage_law
@@ -1388,11 +2019,15 @@ classes:
       fra_k:
         description: Fraction Kv(port_3->port_2)/Kv(port_1->port_2) [1]
         ifabsent: float(0.7)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1:
         description: Fraction of nominal flow rate where linearization starts, if
           y=1 [1]
         ifabsent: float(0.02)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       linearization_start_fraction:
         description: Same as fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1
@@ -1403,17 +2038,21 @@ classes:
       m_flow_nominal:
         description: Nominal mass flow rate [kg/s]
         ifabsent: float(0.15)
+        minimum_value: 0
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
         description: Range of significant deviation from equal percentage law [1]
         ifabsent: float(0.01)
+        minimum_value: 0
         range: float
       rangeability:
         description: Rangeability, R=50...100 typically [1]
         ifabsent: float(50)
+        minimum_value: 1
         range: float
       rho_std:
         description: Inlet density for which valve coefficients are defined [kg/m3]
+        minimum_value: 0
         range: float
       standard_density:
         description: Same as rho_std
@@ -1427,44 +2066,66 @@ classes:
         description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
         ifabsent: string({0.01,0.01})
         range: string
+    description: Parameters of a three-way valve
   VAV:
     attributes:
-      control:
-        range: Control
-      parameters:
-        range: VavParameters
-    is_a: System
-  Valve:
-    attributes:
-      control:
-        range: Control
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: VavVariant
+    description: Variable air volume box of a space
     is_a: System
     slot_usage:
+      control:
+        range: VavControlEntry
+      parameters:
+        range: VavParameters
+    slots:
+    - parameters
+    - control
+  Valve:
+    attributes:
+      variant:
+        description: Model of the component
+        ifabsent: string('default')
+        range: DefaultVariant
+    description: Two-way valve of a radiator, driven by the emission control of its
+      space
+    is_a: System
+    slot_usage:
+      control:
+        range: EmissionControlEntry
       parameters:
         range: ValveParameters
     slots:
     - parameters
+    - control
   ValveParameters:
     attributes:
       actuator_stroke_time:
         description: Time the actuator takes to open or close the valve [s], 120 by
           default
+        minimum_value: 0
         range: float
       av:
         description: Av (metric) flow coefficient [m2]
+        minimum_value: 0
         range: float
       cv:
         description: Cv (US) flow coefficient [USG/min/(psi)^(1/2)]
+        minimum_value: 0
         range: float
       dp_fixed_nominal:
         description: Pressure drop of pipe and other resistances that are in series
           [Pa]
         ifabsent: float(5000)
+        minimum_value: 0
         range: float
       dp_valve_nominal:
         description: Nominal pressure drop of fully open valve, used if CvData=Buildings.Fluid.Types.CvTypes.OpPoint
           [Pa]
         ifabsent: float(10000)
+        minimum_value: 0
         range: float
       equal_percentage_deviation:
         description: Same as range_of_significant_deviation_from_equal_percentage_law
@@ -1478,6 +2139,8 @@ classes:
         description: Fraction of nominal flow rate where linearization starts, if
           y=1 [1]
         ifabsent: float(0.02)
+        maximum_value: 1
+        minimum_value: 0
         range: float
       from_dp:
         description: Same as use_m_flow_f_dp_else_dp_f_m_flow
@@ -1488,6 +2151,7 @@ classes:
         range: string
       kv:
         description: Kv (metric) flow coefficient [m3/h/(bar)^(1/2)]
+        minimum_value: 0
         range: float
       linearization_start_fraction:
         description: Same as fraction_of_nominal_flow_rate_where_linearization_starts_if_y_1
@@ -1498,18 +2162,22 @@ classes:
       m_flow_nominal:
         description: Nominal mass flow rate [kg/s]
         ifabsent: float(0.06)
+        minimum_value: 0
         range: float
       range_of_significant_deviation_from_equal_percentage_law:
         description: Range of significant deviation from equal percentage law [1]
         ifabsent: float(0.01)
+        minimum_value: 0
         range: float
       rangeability:
         description: Rangeability, R=50...100 typically [1]
         ifabsent: float(50)
+        minimum_value: 1
         range: float
       standard_density:
         description: Inlet density for which the flow coefficients are defined [kg/m3],
           water at 4 degC by default
+        minimum_value: 0
         range: float
       use_linear_relation_between_m_flow_and_dp_for_any_flow_rate:
         description: = true, use linear relation between m_flow and dp for any flow
@@ -1523,15 +2191,26 @@ classes:
       valve_leakage:
         description: Valve leakage, l=Kv(y=0)/Kv(y=1) [1]
         ifabsent: float(0.0001)
+        maximum_value: 1
+        minimum_value: 0
         range: float
+    description: Parameters of a two-way radiator valve
   VavControl:
     attributes:
       variant:
+        description: Control law of the VAV box
         ifabsent: string('default')
         range: VavControlVariant
-    class_uri: schema:VavControl
+    description: Control of a VAV box
     slots:
     - id
+  VavControlEntry:
+    description: Control of a VAV box
+    slot_usage:
+      vav_control:
+        required: true
+    slots:
+    - vav_control
   VavParameters:
     attributes:
       cooling_air_flow_nominal:
@@ -1542,16 +2221,20 @@ classes:
       damper_dp_nominal:
         description: Pressure drop of the fully open damper at the nominal flow [Pa]
         ifabsent: float(50)
+        minimum_value: 0
         range: float
       fixed_dp_nominal:
         description: Pressure drop of the duct and the other resistances in series
           with the damper at the nominal flow [Pa]
         ifabsent: float(50)
+        minimum_value: 0
         range: float
       heating_air_discharge_temperature:
         description: Discharge air temperature of the box at the heating design point
           [K] (complex variant)
         ifabsent: float(298.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       heating_air_flow_nominal:
         description: Design air mass flow rate for heating of the VAV box [kg/s] (complex
@@ -1562,16 +2245,22 @@ classes:
         description: Air inlet temperature of the box at the heating design point
           [K] (complex variant)
         ifabsent: float(303.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       heating_water_inlet_temperature:
         description: Reheat water inlet temperature at the design point [K] (complex
           variant)
         ifabsent: float(363.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       heating_water_outlet_temperature:
         description: Reheat water outlet temperature at the design point [K] (complex
           variant)
         ifabsent: float(333.15)
+        maximum_value: 423.15
+        minimum_value: 223.15
         range: float
       nominal_mass_flow_rate:
         description: Nominal air mass flow rate of the damper [kg/s]
@@ -1580,18 +2269,41 @@ classes:
       room_volume:
         description: Volume of the room the VAV box serves [m3] (complex variant)
         ifabsent: float(100)
+        minimum_value: 0
         range: float
+    description: Parameters of a VAV box
   VentilationInlet:
-    class_uri: schema:VentilationInlet
+    description: One component supplying air to a space (exactly one key per entry),
+      in the order of the flow
+    exactly_one_of:
+    - slot_conditions:
+        duct:
+          name: duct
+          required: true
+    - slot_conditions:
+        vav:
+          name: vav
+          required: true
     slots:
     - duct
     - vav
   VentilationOutlet:
-    class_uri: schema:VentilationOutlet
+    description: One component extracting air from a space (exactly one key per entry),
+      in the order of the flow
+    exactly_one_of:
+    - slot_conditions:
+        duct:
+          name: duct
+          required: true
+    - slot_conditions:
+        vav:
+          name: vav
+          required: true
     slots:
     - duct
     - vav
   Weather:
+    description: Weather data of the site, read from a TMY3 (.mos) file
     slot_usage:
       parameters:
         range: WeatherParameters
@@ -1602,6 +2314,7 @@ classes:
       atmospheric_pressure:
         description: Atmospheric pressure [Pa] when it is not read from the weather
           file, 101325 by default
+        minimum_value: 0
         range: float
       atmospheric_pressure_source:
         description: Source of the atmospheric pressure, e.g. Buildings.BoundaryConditions.Types.DataSource.File
@@ -1612,28 +2325,33 @@ classes:
       building_height:
         description: Height of the building [m] for the wind speed profile of the
           IDEAS simulation manager, 10 by default
+        minimum_value: 0
         range: float
       default_n50:
         description: Air change rate at 50 Pa of the IDEAS zones that do not give
           their own [1/h], 3 by default
+        minimum_value: 0
         range: float
       outdoor_co2_concentration:
         description: CO2 concentration of the outdoor air of the IDEAS simulation
           manager [ppm], 400 by default
+        minimum_value: 0
         range: float
       path:
         description: Name of weather data file
         ifabsent: string(None)
         range: string
+    description: Weather file of the site
   Window:
     attributes:
-      construction:
-        description: Glazing
-        range: Glazing
       frame_fraction:
         description: Share of the window area taken by the frame [1], 0.1 when absent
+        maximum_value: 1
+        minimum_value: 0
         range: float
       height:
+        description: Height of the window [m]; width x height must equal the surface
+        minimum_value: 0
         range: float
       overhang:
         description: Horizontal projection above the window
@@ -1644,51 +2362,94 @@ classes:
         inlined: true
         range: SideFins
       width:
+        description: Width of the window [m]; width x height must equal the surface
+        minimum_value: 0
         range: float
+    description: Glazed opening in an external wall of the same orientation
+    slot_usage:
+      azimuth:
+        required: true
+      construction:
+        description: Glazing of the window (an id of the glazings, not of the constructions)
+        range: Glazing
     slots:
+    - construction
     - surface
     - azimuth
     - tilt
-default_curi_maps:
-- semweb_context
 default_prefix: trano
 default_range: string
-description: This is the project description.
+description: 'Schema of the YAML/JSON building models that Trano translates into Modelica:
+  the spaces and their
+
+  envelope (walls, windows, floors, internal walls), the constructions and materials,
+  and the heating,
+
+  cooling and ventilation systems with their controls. Temperatures are in kelvin,
+  angles in radians and
+
+  every other quantity in SI units.'
 enums:
+  AirHandlingUnitVariant:
+    description: Air handling unit models
+    permissible_values:
+      default: null
+      system_d: null
+      test: null
   BoilerControlVariant:
+    description: Control laws of the generators
     permissible_values:
       complex: null
       default: null
       simple: null
-  ControlType:
+  BoilerVariant:
+    description: Boiler and heat pump models
     permissible_values:
-      Ahu: null
-      Boiler: null
-      Collector: null
-      Emission: null
-      ThreeWayValve: null
-      VAV: null
+      air_water_heat_pump: null
+      default:
+        description: Gas boiler with a storage tank
+      water_water_heat_pump: null
+      without_storage:
+        description: Gas boiler without storage tank
+  DefaultVariant:
+    description: Variants of the components that have a single model
+    permissible_values:
+      default: null
   EmissionControlVariant:
+    description: Control laws of the emitters
     permissible_values:
       MonitoredSetpoint: null
       PController: null
       default: null
       onoff: null
   FloorOnGroundVariant:
+    description: What lies under a floor on ground
     permissible_values:
       default: null
       outdoor_air: null
   OccupancyVariant:
+    description: Occupancy models
     permissible_values:
       co2: null
       default: null
       none: null
+  RadiatorVariant:
+    description: Radiator models
+    permissible_values:
+      default:
+        description: Water radiator
+      ideal:
+        description: Ideal heater driven by its control
+      idealbus:
+        description: Ideal heater driven by its control through the data bus
   SpaceVariant:
+    description: Zone models
     permissible_values:
       default: null
       infiltration: null
       rectangular_zone: null
   SystemVariant:
+    description: Every variant of every component class (each class accepts a subset)
     permissible_values:
       air_water_heat_pump: null
       complex: null
@@ -1700,10 +2461,16 @@ enums:
       water_water_heat_pump: null
       without_storage: null
   VavControlVariant:
+    description: Control laws of the VAV boxes
     permissible_values:
       constant: null
       default: null
-id: https://w3id.org/my-org/trano
+  VavVariant:
+    description: VAV box models
+    permissible_values:
+      complex: null
+      default: null
+id: https://github.com/andoludo/trano/schema
 imports:
 - linkml:types
 license: MIT
@@ -1713,22 +2480,20 @@ prefixes:
   CONTROL: http://example.org/CONTROL/
   MATERIAL: http://example.org/MATERIAL/
   OCCUPANCY: http://example.org/OCCUPANCY/
-  PATO: http://purl.obolibrary.org/obo/PATO_
   SPACE: http://example.org/SPACE/
   SYSTEM: http://example.org/SYSTEM/
-  biolink: https://w3id.org/biolink/
-  example: https://example.org/
   linkml: https://w3id.org/linkml/
-  schema: http://schema.org/
-  trano: https://w3id.org/my-org/trano/
+  trano: https://github.com/andoludo/trano/schema/
 see_also:
-- https://my-org.github.io/trano
+- https://github.com/andoludo/trano
 slots:
   ahu_control:
+    description: Control of an air handling unit
     inlined: true
     multivalued: false
     range: AhuControl
   air_handling_unit:
+    description: An air handling unit
     inlined: true
     multivalued: false
     range: AirHandlingUnit
@@ -1738,147 +2503,176 @@ slots:
     maximum_value: 6.2832
     minimum_value: -6.2832
     range: float
-    slot_uri: schema:azimuth
   battery:
+    description: An electric battery (mpc library only)
     inlined: true
     multivalued: false
     range: Battery
   boiler:
+    description: A boiler or heat pump
     inlined: true
     multivalued: false
     range: Boiler
   boiler_control:
+    description: Control of a boiler or heat pump
     inlined: true
     multivalued: false
     range: BoilerControl
-    slot_uri: schema:boiler_control
   chiller:
+    description: A chiller (mpc library only)
     inlined: true
     multivalued: false
     range: Chiller
   collector_control:
+    description: Control of a pump
     inlined: true
     multivalued: false
     range: CollectorControl
-    slot_uri: schema:collector_control
+  construction:
+    description: Construction of the envelope element (an id of the constructions)
+    range: Construction
+    required: true
+  control:
+    description: Control of the component; each component class takes the control
+      of its own kind
+    inlined: true
+    range: Control
   dhw_tank:
+    description: A domestic hot water tank (mpc library only)
     inlined: true
     multivalued: false
     range: DhwTank
   duct:
+    description: An air duct
     inlined: true
     multivalued: false
     range: Duct
   emission_control:
+    description: Control of an emitter
     inlined: true
     multivalued: false
     range: EmissionControl
-    slot_uri: schema:emission_control
   emissions:
+    description: The emitters of the space, water radiators followed by their valve
     inlined: true
     multivalued: true
     range: Emission
-    slot_uri: schema:emissions
   ev_charger:
+    description: An electric vehicle charger (mpc library only)
     inlined: true
     multivalued: false
     range: EvCharger
   external_boundaries:
+    description: Envelope elements of the space in contact with the outdoor air or
+      the ground
     multivalued: false
     range: ExternalBoundaries
-    slot_uri: schema:external_boundaries
   heat_meter_sensor:
+    description: A heat meter
     inlined: true
     multivalued: false
     range: HeatMeterSensor
   id:
     description: A unique identifier for a thing
     identifier: true
-    slot_uri: schema:identifier
   ideal_heating_cooling:
+    description: An ideal heating and cooling device
     inlined: true
     multivalued: false
     range: IdealHeatingCooling
   inlets:
+    description: Ids of the components the flow comes from
     multivalued: true
     range: System
-    slot_uri: schema:inlets
   name:
     description: A human-readable name for a thing
-    slot_uri: schema:name
   occupancy:
+    description: 'Occupancy of the space; `{variant: none}` for a space without occupants'
     multivalued: false
     range: Occupancy
-    slot_uri: schema:occupancy
   outlets:
+    description: Ids of the components the flow goes to
     multivalued: true
     range: System
-    slot_uri: schema:inlets
   parameters:
+    description: Parameters of the object; each class takes its own parameter set
     multivalued: false
     range: Parameter
-    slot_uri: schema:parameters
   photovoltaic:
+    description: Photovoltaic panels
     inlined: true
     multivalued: false
     range: Photovoltaic
   power_sensor:
+    description: An electric power sensor of ideal heaters
     inlined: true
     multivalued: false
     range: PowerSensor
   pump:
+    description: A circulation pump
     inlined: true
     multivalued: false
     range: Pump
   radiator:
+    description: A radiator or ideal heater
     inlined: true
     multivalued: false
     range: Radiator
   split_valve:
+    description: A junction of the return water
     inlined: true
     multivalued: false
     range: SplitValve
   surface:
     description: Area in m2. For an external wall, the gross area of the facade, the
       windows cut out of it included.
+    minimum_value: 0
     range: float
-    slot_uri: schema:surface
+    required: true
   temperature_sensor:
+    description: A water temperature sensor
     inlined: true
     multivalued: false
     range: TemperatureSensor
   three_way_valve:
+    description: A three-way valve
     inlined: true
     multivalued: false
     range: ThreeWayValve
   three_way_valve_control:
+    description: Control of a three-way valve
     inlined: true
     multivalued: false
     range: ThreeWayValveControl
-    slot_uri: schema:three_way_valve_control
   tilt:
+    description: 'Tilt of the surface: wall, ceiling, floor or pitched_roof_20/30/35/40/45,
+      or an angle from the horizontal in degrees'
+    pattern: ^(wall|ceiling|floor|pitched_roof_(20|30|35|40|45)|-?[0-9]+(\.[0-9]+)?)$
     range: string
-    slot_uri: schema:tilt
   valve:
+    description: The valve of the radiator listed before it
     inlined: true
     multivalued: false
     range: Valve
   vav:
+    description: A VAV box
     inlined: true
     multivalued: false
     range: VAV
   vav_control:
+    description: Control of a VAV box
     inlined: true
     multivalued: false
     range: VavControl
   ventilation_inlets:
+    description: The components supplying air to the space, in the order of the flow
     inlined: true
     multivalued: true
     range: VentilationInlet
-    slot_uri: schema:ventilation_inlets
   ventilation_outlets:
+    description: The components extracting air from the space, in the order of the
+      flow
     inlined: true
     multivalued: true
     range: VentilationOutlet
-    slot_uri: schema:ventilation_outlets
-title: trano
+title: Trano building model

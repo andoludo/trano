@@ -7,11 +7,8 @@ from tests.constructions.constructions import Constructions
 from trano.elements import ExternalWall
 from trano.elements.types import Tilt
 from trano.exceptions import (
-    IncompatiblePortsError,
     InvalidBuildingStructureError,
     InvalidModelError,
-    WrongSystemFlowError,
-    SystemsNotConnectedError,
     UnknownLibraryError,
 )
 from trano.main import create_model
@@ -23,9 +20,8 @@ def get_path(file_name: str) -> Path:
 
 def test_single_zone_air_handling_unit_wrong_flow(schema: Path) -> None:
     house = get_path("single_zone_air_handling_unit_wrong_flow.yaml")
-    network = convert_network("single_zone_air_handling_unit_wrong_flow", house)
-    with pytest.raises(WrongSystemFlowError):
-        network.model()
+    with pytest.raises(InvalidModelError, match="DUCT:002: is not on a closed air circuit"):
+        convert_network("single_zone_air_handling_unit_wrong_flow", house)
 
 
 @pytest.mark.parametrize(
@@ -41,29 +37,19 @@ def test_single_zone_air_handling_unit_wrong_flow(schema: Path) -> None:
 )
 def test_unexpected_configuration(schema: Path, file_name: str) -> None:
     house = get_path(f"{file_name}.yaml")
-    with pytest.raises((ValueError, KeyError, IncompatiblePortsError, TypeError)):
-        network = convert_network(file_name, house)
-        network.model()
+    with pytest.raises(InvalidModelError):
+        convert_network(file_name, house)
 
 
-@pytest.mark.parametrize(
-    "file_name",
-    [
-        "single_zone_hydronic_random_id",
-    ],
-)
-def test_unexpected_configuration_should_fail_but_pass_(schema: Path, file_name: str) -> None:
-    # TODO: this is to be checked
-    house = get_path(f"{file_name}.yaml")
-    network = convert_network(file_name, house)
-    network.model()
+def test_ids_without_a_prefix_are_accepted(schema: Path) -> None:
+    """`RANDOM_ID1` is the id of a radiator: an id needs no `PREFIX:` part, only to be declared."""
+    assert convert_network("single_zone_hydronic_random_id", get_path("single_zone_hydronic_random_id.yaml")).model()
 
 
 def test_single_zone_hydronic_incomplete_system(schema: Path) -> None:
     house = get_path("single_zone_hydronic_incomplete_system.yaml")
-    network = convert_network("single_zone_hydronic_incomplete_system", house)
-    with pytest.raises(SystemsNotConnectedError):
-        network.model()
+    with pytest.raises(InvalidModelError, match="VALVE:003: has 2 inlets and 0 outlets"):
+        convert_network("single_zone_hydronic_incomplete_system", house)
 
 
 def test_unknown_library() -> None:
