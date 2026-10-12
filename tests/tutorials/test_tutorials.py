@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -11,11 +12,14 @@ path_to_yaml_configuration_folder = Path(__file__).parent
 
 
 @pytest.mark.simulate
-def test_first_simulation() -> None:
+def test_first_simulation(tmp_path: Path) -> None:
     from trano.main import simulate_model
 
+    # the simulation writes its results and report next to the configuration file (and opens up the permissions
+    # of that folder for the container): work on a copy so that the repository stays untouched
+    model = shutil.copy(path_to_yaml_configuration_folder / "first_model.yaml", tmp_path)
     simulate_model(
-        path_to_yaml_configuration_folder / "first_model.yaml",
+        str(model),
         library="Buildings",
         start=0,
         end=2 * 3600 * 24 * 7,
@@ -61,6 +65,15 @@ def test_three_zones_hydronic_heating() -> None:
 
     create_model(
         path_to_yaml_configuration_folder / "three_zones_hydronic_heating.yaml",
+        library="IDEAS",
+    )
+
+
+def test_three_zones_hydronic_mixing() -> None:
+    from trano.main import create_model
+
+    create_model(
+        path_to_yaml_configuration_folder / "three_zones_hydronic_mixing.yaml",
         library="IDEAS",
     )
 

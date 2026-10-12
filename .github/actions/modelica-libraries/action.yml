@@ -1,0 +1,40 @@
+name: Modelica libraries
+description: >-
+  Restore the Modelica libraries of trano (Modelica, Buildings, IDEAS, AixLib and its SDF dependency) from
+  the cache into .cache/omlibs, or install them there with trano's own container setup
+  (trano.simulate.simulate.container), so that CI installs exactly what the simulations expect. Set
+  TRANO_MODELICA_LIBRARIES to that directory: the simulations then mount the libraries instead of
+  installing them at every container start. Run after `uv sync`.
+
+runs:
+  using: composite
+  steps:
+    - name: Pull the OpenModelica image
+      shell: bash
+      run: docker pull openmodelica/openmodelica:v1.26.9-ompython
+
+    - name: Restore the Modelica libraries
+      id: libraries
+      uses: actions/cache@v4
+      with:
+        path: .cache/omlibs
+        key: omlibs-trano-${{ hashFiles('trano/simulate/simulate.py') }}
+
+    - name: Install the Modelica libraries
+      if: steps.libraries.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        TRANO_MODELICA_LIBRARIES: ${{ github.workspace }}/.cache/omlibs
+      run: |
+        mkdir -p .cache/omlibs
+        uv run python - <<'PYTHON'
+        import tempfile
+        from pathlib import Path
+
+        from trano.simulate.simulate import client, container
+
+        # starting a container installs the missing libraries into the mounted directory
+        with tempfile.TemporaryDirectory() as project, container(client(), Path(project), container_name="libraries"):
+            pass
+        PYTHON
+        ls .cache/omlibs

@@ -73,6 +73,45 @@ The previous tutorials provided idealized examples. In this tutorial, we will si
             - RADIATOR:002
     ```
 
+## Why the layout of this tutorial is wrong
+
+!!! warning "The pump of this tutorial is before the three-way valves"
+    This tutorial wires the hydronic system as `boiler -> pump -> three-way valves -> sensors -> radiators`.
+    That layout does not work as a supply temperature control, and Trano reports it with a
+    `HydronicLayoutWarning` ("WRONG HYDRONIC LAYOUT") on each three-way valve. It is kept as it is so that
+    existing models keep working; build new models as in
+    [Hydronic heating with mixing circuits](hydronic_mixing_circuits.md).
+
+**What the three-way valves are meant to do.** Each valve has a controller that measures the water after the
+valve (`TEMPERATURE_SENSOR`) and should hold it at a set point, 90 degC by default, by mixing the hot water of
+the boiler with the cooler return water of the radiators.
+
+**What they do here.** The pump pushes the water into port_1 of the valves. The water inside a valve is then at
+a higher pressure than the return, so port_3 sends water *back to the boiler* instead of drawing return water
+in. Closing the valve diverts hot water to the return; the water that still reaches the radiators is as hot as
+the boiler supply. The valve can reduce the flow to the radiators, never lower their temperature.
+
+**What goes wrong.** The boiler charges its storage tank until the bottom of the tank is 5 K above
+`tsup_nominal`, so the top of the tank, which feeds the radiators, ends about 15 K above it: about 95 degC with
+the default 80 degC. Above the 90 degC set point, the controller closes the valve to cool the water; that does
+not cool it, so it keeps closing until the valve is shut. Almost no water reaches the radiators, the sensor sits
+in still hot water and keeps reading "too hot", and the valve never reopens. In simulation, the rooms of
+`tests/models/three_zones_hydronic.yaml` averaged 16 degC instead of 21 degC. This tutorial avoids it only
+because its boiler is set to 70 degC (`tsup_nominal: 343.15`): the tank stays below 90 degC, the valves stay
+fully open and in fact control nothing.
+
+**The workaround Trano applies.** When the supply of a storage boiler can exceed the set point of such a valve,
+Trano raises the set point of the valve 5 K above the expected top of the tank (100 degC for the default
+80 degC boiler) and says so in the warning ("WORKAROUND APPLIED"). The valve then stays open and the rooms are
+heated again (21 degC in simulation), but the radiators receive the boiler water unmixed: nothing limits their
+supply temperature, the radiator valves alone control the rooms. To make it an error instead, filter the
+warning: `warnings.simplefilter("error", HydronicLayoutWarning)` (from `trano.validation.issues`).
+
+**The fix.** Put one pump after each three-way valve and its sensor, and list the return split valve in the
+inlets of the valve: the pump then draws the return water into the valve, which mixes and holds its set point
+(`supply_temperature_setpoint` of `three_way_valve_control`) whatever the boiler supply. See
+[Hydronic heating with mixing circuits](hydronic_mixing_circuits.md).
+
 ## Input configuration file
 
 The described configuration represents a multi-room building designed for occupancy, featuring a combination of thermal insulation materials with consistent thermal properties. It includes three distinct spaces (rooms) with varying floor areas and heating systems. Each space has specific external wall construction types and window placements to optimize energy efficiency and natural light. The building also has a centralized heating system with a boiler, radiators, and temperature control elements to manage indoor climate effectively. Overall, it appears to be a residential or small commercial building with an emphasis on energy efficiency and heating performance.

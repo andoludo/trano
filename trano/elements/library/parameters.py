@@ -11,6 +11,8 @@ Every attribute of the YAML is a field of a pydantic model. Besides the LinkML k
 - ``deprecated``: a message logged when the parameter is given.
 - ``default_from``: an expression of ``self`` giving the value when the parameter is absent (the
   air change rate from the airtightness, the occupancy gains from the gains per person).
+- ``positive``: ``true`` for a quantity that must be strictly positive (a power, an area, a nominal
+  flow), checked when the model is validated; LinkML's ``minimum_value`` is inclusive.
 
 A parameter class may list the ``libraries`` it serves (the mpc elements): the others do not take
 any of its parameters.
@@ -36,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 PRIORITY = ["DataSource"]
 LIBRARIES = ("buildings", "ideas", "iso_13790", "reduced_order", "mpc")
-SPEC_KEYS = ("alias", "libraries", "short_name", "render", "numerical", "deprecated", "default_from")
+SPEC_KEYS = ("alias", "libraries", "short_name", "render", "numerical", "deprecated", "default_from", "positive")
 _UNIT = re.compile(r"\[([^\]]+)\]\s*$")
 
 

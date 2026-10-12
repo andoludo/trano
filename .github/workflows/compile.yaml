@@ -1,0 +1,48 @@
+name: Compile
+
+# The tests of the pipeline compare the generated Modelica with golden files: they prove that the text did
+# not change, not that it is valid Modelica. This workflow checks every model of the repository in
+# OpenModelica (checkModel) with Buildings and IDEAS, on every push. See tests/test_compile_models.py.
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  TRANO_MODELICA_LIBRARIES: ${{ github.workspace }}/.cache/omlibs
+
+jobs:
+  compile:
+    if: ${{ ! contains(github.event.head_commit.message, 'Auto-increment') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    name: compile (${{ matrix.shard }}/6)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install graphviz
+        run: |
+          sudo apt update
+          sudo apt install graphviz
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Modelica libraries
+        uses: ./.github/actions/modelica-libraries
+
+      - name: Check the models
+        env:
+          TRANO_COMPILE_SHARD: ${{ matrix.shard }}/6
+        run: uv run pytest -m compile -rA --durations=10

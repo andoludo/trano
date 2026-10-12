@@ -7,12 +7,10 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from linkml.validator import validate_file  # type: ignore
 from pydantic import BaseModel
 
 from trano.data.include import Loader
-from trano.exceptions import InvalidModelError
-from trano.data_models.converter import converter
+from trano.data_models.converter import converter, delete_none
 from trano.elements import (
     AdiabaticWall,
     Boundary,
@@ -43,6 +41,8 @@ from trano.elements.types import Tilt
 from trano.elements.utils import import_element_function
 from trano.elements.library.library import Library
 from trano.topology import Network
+from trano.validation.schema import validate_schema
+from trano.validation.semantic import apply_derived_defaults, validate_semantics
 
 SpaceParameter = param_from_config("Space")
 DATA_MODEL_PATH = Path(__file__).parent.joinpath("trano_final.yaml")
@@ -58,14 +58,14 @@ class Component(BaseModel):
     component_instance: Any
 
 
-def validate_model(data: Any, suffix: str) -> None:  # noqa: ANN401
-    with tempfile.NamedTemporaryFile(mode="w+", suffix=suffix, delete=False) as f2:
-        enriched_path = Path(f2.name)
-        enriched_path.write_text(json.dumps(data))
-        report = validate_file(enriched_path, DATA_MODEL_PATH, "Building")
-        if report.results:
-            messages = "\n".join(f"- {result.message}" for result in report.results)
-            raise InvalidModelError(f"Invalid model:\n{messages}")
+def validate_model(data: dict[str, Any], suffix: str | None = None) -> None:
+    """Validate the model as written by the user against the Trano schema.
+
+    It runs before the data is loaded into the schema's Python classes, which would otherwise fail first
+    with a bare `TypeError` on an unknown key or a `ValueError` naming a temporary file on a duplicate id.
+    Keys left empty (None) count as absent, as they do when the data is loaded.
+    """
+    validate_schema(delete_none(data))
 
 
 def _instantiate_component(component_: dict[str, Any]) -> Component:
@@ -109,7 +109,8 @@ class EnrichedModel(BaseModel):
     data: Any
 
 
-def load_and_enrich_model(model_path: Path) -> EnrichedModel:
+def load_and_enrich_model(model_path: Path, is_rc: bool = False) -> EnrichedModel:
+    """Load the model, validate it and enrich it with the schema defaults; `is_rc` for the mpc library."""
     if model_path.suffix == ".yaml":
         load_function = partial(yaml.load, Loader=Loader)
         dump_function = yaml.safe_dump
@@ -121,6 +122,9 @@ def load_and_enrich_model(model_path: Path) -> EnrichedModel:
     data = load_function(model_path.read_text())
     data = assign_space_id(data)
     _parse(data)
+    validate_model(data)
+    validate_semantics(data, is_rc=is_rc)
+    apply_derived_defaults(data, is_rc=is_rc)
     with tempfile.NamedTemporaryFile(
         mode="w+",
         suffix=model_path.suffix,
@@ -340,8 +344,7 @@ def convert_network(name: str, model_path: Path, library: Library | None = None)
     network = Network(name=name, library=library)
     system_counter: Counter[str] = Counter()
 
-    enriched_model = load_and_enrich_model(model_path)
-    validate_model(enriched_model.data, model_path.suffix)
+    enriched_model = load_and_enrich_model(model_path, is_rc=network.library.is_rc)
     data = _merge_default(enriched_model.data)
     materials = _build_materials(data)
     constructions = _build_constructions(data, materials)

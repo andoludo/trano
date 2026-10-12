@@ -5418,13 +5418,13 @@ Modelica.Blocks.Sources.RealExpression
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_6
-            (y=363.15);
+            (y=373.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_2
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_7
-            (y=363.15);
+            (y=373.15);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_7
             (y=true);

@@ -11,8 +11,13 @@ from trano.data_models.converter import converter
 from trano.scripts.schema import create_final_schema
 from trano.simulate.simulate import SimulationOptions, simulate
 from trano.utils.utils import is_success
+import yaml
 from jsf import JSF
 from linkml.generators.jsonschemagen import JsonSchemaGenerator
+from linkml.generators.owlgen import OwlSchemaGenerator
+from linkml.generators.pydanticgen import PydanticGenerator
+from linkml.generators.pythongen import PythonGenerator
+from linkml.linter.linter import Linter
 
 
 @pytest.fixture
@@ -98,3 +103,26 @@ def test_simulate_simplified_yaml() -> None:
             options=SimulationOptions(end_time=3600),
         )
         assert is_success(results)
+
+
+SCHEMA_DIRECTORY = Path(__file__).parents[1].joinpath("trano", "data_models")
+FINAL_SCHEMA = SCHEMA_DIRECTORY.joinpath("trano_final.yaml")
+
+
+def test_final_schema_is_generated_from_its_sources(tmp_path: Path) -> None:
+    """trano_final.yaml is trano.yaml and parameters.yaml merged: regenerate it after changing them."""
+    generated = tmp_path / "trano_final.yaml"
+    create_final_schema(SCHEMA_DIRECTORY / "parameters.yaml", generated, SCHEMA_DIRECTORY / "trano.yaml")
+    assert yaml.safe_load(generated.read_text()) == yaml.safe_load(FINAL_SCHEMA.read_text())
+
+
+def test_final_schema_lints_without_errors() -> None:
+    """The remaining warnings are names fixed by Modelica (k, r, Kv, Cv, Av) or by existing models."""
+    problems = list(Linter({"extends": "recommended"}).lint(str(FINAL_SCHEMA)))
+    assert [problem.message for problem in problems if str(problem.level) == "error"] == []
+    assert {problem.rule_name for problem in problems} <= {"standard_naming"}
+
+
+@pytest.mark.parametrize("generator", [JsonSchemaGenerator, PydanticGenerator, PythonGenerator, OwlSchemaGenerator])
+def test_final_schema_generates(generator: type) -> None:
+    assert generator(str(FINAL_SCHEMA)).serialize()

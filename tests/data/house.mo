@@ -4206,7 +4206,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
     extent = {{ 5, -5}, {-5, 5}}
 )));
         house.Components.BaseClasses.EmissionControlControl_007
-    control_007(schedule=3600*{7, 19}, THeaSet=294.15, THeaSetBack=16.0, k=5.0) annotation (
+    control_007(schedule=3600*{7, 19}, THeaSet=294.15, THeaSetBack=289.15, k=5.0) annotation (
     Placement(transformation(origin = { -100.0, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
@@ -4227,7 +4227,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
     extent = {{ 5, -5}, {-5, 5}}
 )));
         house.Components.BaseClasses.EmissionControlControl_006
-    control_006(schedule=3600*{7, 19}, THeaSet=294.15, THeaSetBack=1.0, k=5.0) annotation (
+    control_006(schedule=3600*{7, 19}, THeaSet=294.15, THeaSetBack=274.15, k=5.0) annotation (
     Placement(transformation(origin = { 26.608238220214844, -79.79854583740234 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
@@ -4248,7 +4248,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
     extent = {{ 5, -5}, {-5, 5}}
 )));
         house.Components.BaseClasses.EmissionControlControl_005
-    control_005(schedule=3600*{7, 19}, THeaSet=294.15, THeaSetBack=1.0, k=5.0) annotation (
+    control_005(schedule=3600*{7, 19}, THeaSet=294.15, THeaSetBack=274.15, k=5.0) annotation (
     Placement(transformation(origin = { -76.36212921142578, -54.554168701171875 },
     extent = {{ 5, -5}, {-5, 5}}
 )));
@@ -5426,13 +5426,13 @@ Modelica.Blocks.Sources.RealExpression
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_003
-            (y=363.15);
+            (y=373.15);
 Modelica.Blocks.Sources.RealExpression
             TAirOutControl_001
             (y=0.0);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_004
-            (y=363.15);
+            (y=373.15);
 Modelica.Blocks.Sources.RealExpression
             TCooSetControl_007
             (y=298.15);

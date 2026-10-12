@@ -85,7 +85,7 @@ spaces:
             emission_control:
               id: CONTROL:007
               parameters:
-                temperature_heating_setback: 16.0
+                temperature_heating_setback: 289.15  # 16 degC
   - id: schema:Space:002
     occupancy:
       parameters:
@@ -121,7 +121,7 @@ spaces:
             emission_control:
               id: CONTROL:006
               parameters:
-                temperature_heating_setback: 1.0
+                temperature_heating_setback: 274.15  # 1 degC
 
   - id: schema:Space:003
     occupancy:
@@ -157,7 +157,7 @@ spaces:
             emission_control:
               id: CONTROL:005
               parameters:
-                temperature_heating_setback: 1.0
+                temperature_heating_setback: 274.15  # 1 degC
 
 
 systems:

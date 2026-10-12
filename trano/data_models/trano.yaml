@@ -1,22 +1,18 @@
 ---
-id: https://w3id.org/my-org/trano
+id: https://github.com/andoludo/trano/schema
 name: trano
-title: trano
+title: Trano building model
 description: |-
-  This is the project description.
+  Schema of the YAML/JSON building models that Trano translates into Modelica: the spaces and their
+  envelope (walls, windows, floors, internal walls), the constructions and materials, and the heating,
+  cooling and ventilation systems with their controls. Temperatures are in kelvin, angles in radians and
+  every other quantity in SI units.
 license: MIT
 see_also:
-  - https://my-org.github.io/trano
-default_curi_maps:
-  - semweb_context
+  - https://github.com/andoludo/trano
 prefixes:
-  trano: https://w3id.org/my-org/trano/
+  trano: https://github.com/andoludo/trano/schema/
   linkml: https://w3id.org/linkml/
-  biolink: https://w3id.org/biolink/
-  schema: http://schema.org/
-
-  PATO: http://purl.obolibrary.org/obo/PATO_
-  example: https://example.org/
   SYSTEM: http://example.org/SYSTEM/
   MATERIAL: http://example.org/MATERIAL/
   CONSTRUCTION: http://example.org/CONSTRUCTION/
@@ -32,28 +28,36 @@ imports:
 
 classes:
   Weather:
+    description: Weather data of the site, read from a TMY3 (.mos) file
     slots:
       - parameters
     slot_usage:
       parameters:
         range: WeatherParameters
   Photovoltaic:
+    description: Photovoltaic panels on the building
     slots:
       - id
       - name
-    attributes:
+      - parameters
+    slot_usage:
       parameters:
         range: PhotovoltaicParameters
   Space:
+    description: >-
+      A thermal zone: its geometry, envelope, occupancy and the emitters and ventilation components
+      serving it
     attributes:
       variant:
+        description: Zone model, default or with infiltration (rectangular_zone for IDEAS only)
         ifabsent: string('default')
         range: SpaceVariant
-    description: >-
-      Represents a Space
     slot_usage:
       parameters:
         range: SpaceParameter
+        required: true
+      external_boundaries:
+        required: true
     slots:
       - id
       - name
@@ -63,22 +67,22 @@ classes:
       - emissions
       - ventilation_inlets
       - ventilation_outlets
-    class_uri: schema:Space
 
   ExternalWall:
-    attributes:
-      construction:
-        description: Construction
-        range: Construction
+    description: Opaque wall between the space and the outdoor air
     slots:
+      - construction
       - surface
       - azimuth
       - tilt
-  FloorOnGround:
-    attributes:
+    slot_usage:
       construction:
-        description: Construction
         range: Construction
+      azimuth:
+        required: true
+  FloorOnGround:
+    description: Slab between the space and the ground (or the outdoor air for a raised floor)
+    attributes:
       variant:
         description: >-
           What lies under the floor: the ground at a fixed temperature (default) or the outdoor air
@@ -90,54 +94,78 @@ classes:
           Temperature of the ground under the floor [K], 283.15 when absent (Buildings and the
           reduced-order zone; IDEAS and ISO 13790 model the ground themselves)
         range: float
+        minimum_value: 223.15
+        maximum_value: 343.15
       perimeter:
         description: Exposed perimeter of the slab [m] for the ground model of IDEAS, 4 times the square root of the surface when absent
         range: float
+        minimum_value: 0
       average_indoor_temperature:
         description: >-
           Mean temperature of the room above the slab [K] for the ground model of IDEAS (ISO 13370 heat
           flow), 295.15 (IDEAS' default) when absent
         range: float
+        minimum_value: 223.15
+        maximum_value: 343.15
     slots:
+      - construction
       - surface
+    slot_usage:
+      construction:
+        range: Construction
   AdiabaticWall:
     description: >-
       Wall whose outer surface exchanges no heat, e.g. a party wall with a neighbouring dwelling heated
       like this one: the full construction is in the zone (thermal mass) with an adiabatic outer face.
-    attributes:
-      construction:
-        description: Construction
-        range: Construction
     slots:
+      - construction
       - surface
       - azimuth
       - tilt
-  InternalWall:
-    attributes:
+    slot_usage:
       construction:
         range: Construction
-      space_1:
-        range: Space
-      space_1_tilt:
-        range: string
-      space_2:
-        range: Space
-      space_2_tilt:
-        range: string
-    slots:
-      - surface
-  Window:
+  InternalWall:
+    description: Wall, floor or ceiling between two spaces of the building
     attributes:
+      space_1:
+        description: First space on either side of the wall
+        range: Space
+        required: true
+      space_1_tilt:
+        description: Tilt of the wall seen from the first space (wall, ceiling or floor)
+        range: string
+        pattern: "^(wall|ceiling|floor)$"
+      space_2:
+        description: Second space on either side of the wall
+        range: Space
+        required: true
+      space_2_tilt:
+        description: Tilt of the wall seen from the second space (wall, ceiling or floor)
+        range: string
+        pattern: "^(wall|ceiling|floor)$"
+    slots:
+      - construction
+      - surface
+    slot_usage:
       construction:
-        description: Glazing
-        range: Glazing
+        range: Construction
+  Window:
+    description: Glazed opening in an external wall of the same orientation
+    attributes:
       width:
+        description: Width of the window [m]; width x height must equal the surface
         range: float
+        minimum_value: 0
       height:
+        description: Height of the window [m]; width x height must equal the surface
         range: float
+        minimum_value: 0
       frame_fraction:
         description: Share of the window area taken by the frame [1], 0.1 when absent
         range: float
+        minimum_value: 0
+        maximum_value: 1
       overhang:
         description: Horizontal projection above the window
         range: Overhang
@@ -147,18 +175,28 @@ classes:
         range: SideFins
         inlined: true
     slots:
+      - construction
       - surface
       - azimuth
       - tilt
+    slot_usage:
+      construction:
+        range: Glazing
+        description: Glazing of the window (an id of the glazings, not of the constructions)
+      azimuth:
+        required: true
   Overhang:
+    description: Horizontal shading projection above a window
     attributes:
       depth:
         description: Projection perpendicular to the wall [m]
         range: float
         required: true
+        minimum_value: 0
       gap:
         description: Distance between the top of the window and the overhang [m], 0 when absent
         range: float
+        minimum_value: 0
       width_left:
         description: Extension beyond the left edge of the window [m], 0 when absent
         range: float
@@ -166,28 +204,35 @@ classes:
         description: Extension beyond the right edge of the window [m], 0 when absent
         range: float
   SideFins:
+    description: Vertical shading projections on both sides of a window
     attributes:
       depth:
         description: Projection perpendicular to the wall [m]
         range: float
         required: true
+        minimum_value: 0
       gap:
         description: Distance between the edges of the window and the fins [m], 0 when absent
         range: float
+        minimum_value: 0
       height:
         description: Extension of the fins above the top of the window [m], 0 when absent
         range: float
   ExternalBoundaries:
+    description: The envelope elements of a space in contact with the outdoor air or the ground
     attributes:
       external_walls:
+        description: Opaque walls in contact with the outdoor air
         range: ExternalWall
         multivalued: true
         inlined: true
       floor_on_grounds:
+        description: Floors in contact with the ground
         range: FloorOnGround
         multivalued: true
         inlined: true
       windows:
+        description: Windows, each in an external wall of the same orientation
         range: Window
         multivalued: true
         inlined: true
@@ -198,84 +243,126 @@ classes:
         inlined: true
 
   Material:
+    description: Opaque material of a construction layer
     slots:
       - id
     attributes:
       thermal_conductivity:
         description: Thermal conductivity [W/(m.K)]
         range: float
+        required: true
+        minimum_value: 0
       specific_heat_capacity:
         description: Specific thermal capacity [J/(kg.K)]
         range: float
+        required: true
+        minimum_value: 0
       density:
         description: Density [kg/m3]
         range: float
+        required: true
+        minimum_value: 0
       longwave_emissivity:
         description: Longwave emissivity [1]
         range: float
         ifabsent: float(0.85)
+        minimum_value: 0
+        maximum_value: 1
       shortwave_emissivity:
         description: Shortwave emissivity [1]
         range: float
         ifabsent: float(0.85)
+        minimum_value: 0
+        maximum_value: 1
       number_of_states:
         description: Spatial discretization of the layers (Buildings), number of states of a 0.2 m concrete reference layer scaled with the thickness and diffusivity of each layer [1]
         range: integer
         ifabsent: int(3)
+        minimum_value: 1
   Gas:
+    description: Gas filling the cavity between two panes of a glazing
     is_a: Material
   GlassMaterial:
+    description: Glass of the panes of a glazing
     is_a: Material
     attributes:
       solar_transmittance:
+        description: Solar transmittance of the pane at the angles of incidence of the library [1]
         range: float
         multivalued: true
         ifabsent: float(0.6)
+        minimum_value: 0
+        maximum_value: 1
       solar_reflectance_outside_facing:
+        description: Solar reflectance of the outside face [1]
         range: float
         multivalued: true
         ifabsent: float(0.075)
+        minimum_value: 0
+        maximum_value: 1
       solar_reflectance_room_facing:
+        description: Solar reflectance of the room face [1]
         range: float
         multivalued: true
         ifabsent: float(0.075)
+        minimum_value: 0
+        maximum_value: 1
       infrared_transmissivity:
+        description: Infrared transmissivity of the pane [1]
         range: float
         ifabsent: float(0.0)
+        minimum_value: 0
+        maximum_value: 1
       infrared_absorptivity_outside_facing:
+        description: Infrared absorptivity of the outside face [1]
         range: float
         ifabsent: float(0.84)
+        minimum_value: 0
+        maximum_value: 1
       infrared_absorptivity_room_facing:
+        description: Infrared absorptivity of the room face [1]
         range: float
         ifabsent: float(0.84)
+        minimum_value: 0
+        maximum_value: 1
   GlazingLayer:
+    description: A pane (glass) or a cavity (gas) of a glazing
     attributes:
       gas:
-        description: Gas
+        description: Gas of a cavity layer
         range: Gas
       glass:
-        description: Glass
+        description: Glass of a pane layer
         range: GlassMaterial
       thickness:
         description: Thickness [m]
         range: float
+        required: true
+        minimum_value: 0
   Layer:
+    description: A layer of an opaque construction, from the outside to the inside
     attributes:
       material:
-        description: Material
+        description: Material of the layer
         range: Material
+        required: true
       thickness:
         description: Thickness [m]
         range: float
+        required: true
+        minimum_value: 0
   Construction:
+    description: Opaque construction of walls, floors and roofs, as layers from the outside to the inside
     slots:
       - id
     attributes:
       layers:
-        description: Layers
+        description: Layers from the outside to the inside
         range: Layer
         multivalued: true
+        required: true
   Glazing:
+    description: Glazing of the windows, as alternating glass and gas layers
     slots:
       - id
     attributes:
@@ -283,49 +370,51 @@ classes:
         description: U-value of the frame [W/(m2.K)]
         range: float
         ifabsent: float(1.4)
+        minimum_value: 0
       u_value:
         description: U-value of the glazing [W/(m2.K)] for the libraries that take one (IDEAS, reduced order, ISO 13790); computed from the layers (EN 673) when absent
         range: float
+        minimum_value: 0
       g_value:
         description: Solar energy transmittance of the glazing [1] for the libraries that take one (IDEAS, reduced order, ISO 13790); computed from the layers (EN 410) when absent
         range: float
+        minimum_value: 0
+        maximum_value: 1
       layers:
-        description: Layers
+        description: Glass and gas layers from the outside to the inside
         range: GlazingLayer
         multivalued: true
+        required: true
   Parameter:
-    description: >-
-      Represents Parameters
+    description: Base of the parameter sets of the components
+    abstract: true
     slots:
       - name
-    class_uri: schema:Parameter
   Occupancy:
+    description: The occupants of a space, their schedule and their heat gains
     attributes:
       variant:
+        description: Occupancy model; co2 adds the CO2 emitted by the occupants, none means no occupants at all
         range: OccupancyVariant
         ifabsent: string('default')
-    description: >-
-      Represents Occupancy
     slots:
       - parameters
     slot_usage:
       parameters:
         range: OccupancyParameters
-    class_uri: schema:Occupancy
 
   System:
-    attributes:
-      variant:
-        range: SystemVariant
-        ifabsent: string('default')
+    description: >-
+      Base of the heating, cooling and ventilation components. The flow goes from each component to
+      its outlets and from its inlets to it.
+    abstract: true
     slots:
       - id
       - inlets
       - outlets
-    class_uri: schema:System
   Systems:
+    description: One system component of the building (exactly one key per entry)
     slots:
-#      - valve
       - split_valve
       - three_way_valve
       - boiler
@@ -338,183 +427,355 @@ classes:
       - dhw_tank
       - battery
       - ev_charger
-    class_uri: schema:Systems
+    exactly_one_of:
+      - slot_conditions: {split_valve: {name: split_valve, required: true}}
+      - slot_conditions: {three_way_valve: {name: three_way_valve, required: true}}
+      - slot_conditions: {boiler: {name: boiler, required: true}}
+      - slot_conditions: {pump: {name: pump, required: true}}
+      - slot_conditions: {temperature_sensor: {name: temperature_sensor, required: true}}
+      - slot_conditions: {heat_meter_sensor: {name: heat_meter_sensor, required: true}}
+      - slot_conditions: {air_handling_unit: {name: air_handling_unit, required: true}}
+      - slot_conditions: {power_sensor: {name: power_sensor, required: true}}
+      - slot_conditions: {chiller: {name: chiller, required: true}}
+      - slot_conditions: {dhw_tank: {name: dhw_tank, required: true}}
+      - slot_conditions: {battery: {name: battery, required: true}}
+      - slot_conditions: {ev_charger: {name: ev_charger, required: true}}
   Solar:
+    description: One solar component of the building (exactly one key per entry)
     slots:
       - photovoltaic
-    class_uri: schema:Solar
+    exactly_one_of:
+      - slot_conditions: {photovoltaic: {name: photovoltaic, required: true}}
   Emission:
+    description: >-
+      One emission component of a space (exactly one key per entry). Water emitters are listed as
+      [radiator, valve]: the water flows from the radiator to its valve.
     slots:
       - radiator
       - valve
       - ideal_heating_cooling
-    class_uri: schema:Emission
+    exactly_one_of:
+      - slot_conditions: {radiator: {name: radiator, required: true}}
+      - slot_conditions: {valve: {name: valve, required: true}}
+      - slot_conditions: {ideal_heating_cooling: {name: ideal_heating_cooling, required: true}}
 
   VentilationInlet:
+    description: One component supplying air to a space (exactly one key per entry), in the order of the flow
     slots:
       - duct
       - vav
-    class_uri: schema:VentilationInlet
+    exactly_one_of:
+      - slot_conditions: {duct: {name: duct, required: true}}
+      - slot_conditions: {vav: {name: vav, required: true}}
   VentilationOutlet:
+    description: One component extracting air from a space (exactly one key per entry), in the order of the flow
     slots:
       - duct
       - vav
-    class_uri: schema:VentilationOutlet
+    exactly_one_of:
+      - slot_conditions: {duct: {name: duct, required: true}}
+      - slot_conditions: {vav: {name: vav, required: true}}
   SplitValve:
+    description: Junction joining the returns of the emitters (port_1) with the bypass of a three-way valve (port_3)
     is_a: System
     attributes:
-      parameters:
-        range: SplitValveParameters
-  Radiator:
-    is_a: System
-    attributes:
-      control:
-        range: Control #TODO: create radiator control
-
-
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
     slots:
       - parameters
     slot_usage:
       parameters:
-        range: RadiatorParameter
-  IdealHeatingCooling:
+        range: SplitValveParameters
+  Radiator:
+    description: >-
+      Water radiator (variant default, followed by a valve in the emissions of its space) or ideal
+      heater driven by its control (variants ideal and idealbus)
     is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: RadiatorVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+      - control
+    slot_usage:
+      parameters:
+        range: RadiatorParameter
+      control:
+        range: EmissionControlEntry
+  IdealHeatingCooling:
+    description: Ideal heating and cooling of a space
+    is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
     slots:
       - parameters
     slot_usage:
       parameters:
         range: IdealHeatingCoolingParameter
   Valve:
+    description: Two-way valve of a radiator, driven by the emission control of its space
     is_a: System
     attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+      - control
+    slot_usage:
+      parameters:
+        range: ValveParameters
       control:
-        range: Control
+        range: EmissionControlEntry
+  ThreeWayValve:
+    description: >-
+      Three-way valve: supply (port_1), outlet to the emitters (port_2) and bypass to the return
+      (port_3), driven by the temperature measured by the temperature sensor that follows it
+    is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+      - control
+    slot_usage:
+      parameters:
+        range: ThreeWayValveParameters
+      control:
+        range: ThreeWayValveControlEntry
+  Boiler:
+    description: Heat generator with its storage tank and pump (boiler or heat pump, by variant)
+    is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: BoilerVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+      - control
+    slot_usage:
+      parameters:
+        range: BoilerParameters
+      control:
+        range: BoilerControlEntry
+  AirHandlingUnit:
+    description: Air handling unit supplying air to the spaces and extracting it from them
+    is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: AirHandlingUnitVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+      - control
+    slot_usage:
+      parameters:
+        range: AhuParameters
+      control:
+        range: AhuControlEntry
+
+  Pump:
+    description: Circulation pump of a water circuit, driven by the opening of the valves it serves
+    is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+      - control
+    slot_usage:
+      parameters:
+        range: PumpParameters
+      control:
+        range: CollectorControlEntry
+  VAV:
+    description: Variable air volume box of a space
+    is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: VavVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+      - control
+    slot_usage:
+      parameters:
+        range: VavParameters
+      control:
+        range: VavControlEntry
+  Duct:
+    description: Air duct
+    is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
     slots:
       - parameters
     slot_usage:
       parameters:
-        range: ValveParameters
-  ThreeWayValve:
-    is_a: System
-    attributes:
-      parameters:
-        range: ThreeWayValveParameters
-      control:
-        range: Control
-  Boiler:
-    is_a: System
-    attributes:
-      parameters:
-        range: BoilerParameters
-      control:
-        range: Control
-  AirHandlingUnit:
-    is_a: System
-    attributes:
-      parameters:
-        range: AhuParameters
-      control:
-        range: Control
-
-  Pump:
-    is_a: System
-    attributes:
-      parameters:
-        range: PumpParameters
-      control:
-        range: Control
-  VAV:
-    is_a: System
-    attributes:
-      control:
-        range: Control
-      parameters:
-        range: VavParameters
-  Duct:
-    is_a: System
-    attributes:
-      parameters:
         range: DuctParameters
 
   TemperatureSensor:
+    description: Water temperature sensor
     is_a: System
     attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+    slot_usage:
       parameters:
         range: SensorParameters
 
   PowerSensor:
-    is_a: System
-  Chiller:
+    description: Electric power of the ideal radiators feeding it
     is_a: System
     attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+  Chiller:
+    description: Chiller (mpc library only)
+    is_a: System
+    attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+    slot_usage:
       parameters:
         range: ChillerParameters
   DhwTank:
+    description: Domestic hot water tank (mpc library only)
     is_a: System
     attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+    slot_usage:
       parameters:
         range: DhwTankParameters
   Battery:
+    description: Electric battery (mpc library only)
     is_a: System
     attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+    slot_usage:
       parameters:
         range: BatteryParameters
   EvCharger:
+    description: Electric vehicle charger (mpc library only)
     is_a: System
     attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+    slot_usage:
       parameters:
         range: EvChargerParameters
   HeatMeterSensor:
+    description: >-
+      Heat meter between a boiler and a pump, reading the return temperature of the temperature sensor
+      listed in its inlets
     is_a: System
     attributes:
+      variant:
+        description: Model of the component
+        range: DefaultVariant
+        ifabsent: string('default')
+    slots:
+      - parameters
+    slot_usage:
       parameters:
         range: SensorParameters
 
   EmissionControl:
-
+    description: Control of the emitter of a space (radiator valve or ideal heater) from its air temperature
     slots:
       - id
     attributes:
       variant:
+        description: Control law of the emitter
         ifabsent: string('default')
         range: EmissionControlVariant
       parameters:
+        description: Parameters of the emission control
         range: EmissionControlParameters
         multivalued: false
-    class_uri: schema:EmissionControl
   BoilerControl:
+    description: Control of a boiler or heat pump charging its storage tank
     slots:
       - id
     attributes:
       variant:
+        description: Control law of the generator
         ifabsent: string('default')
         range: BoilerControlVariant
       parameters:
+        description: Parameters of the boiler control
         range: BoilerControlParameters
         multivalued: false
-    class_uri: schema:BoilerControl
   CollectorControl:
+    description: Control of a pump from the opening of the valves it serves
     slots:
       - id
-    class_uri: schema:CollectorControl
   ThreeWayValveControl:
+    description: Control of a three-way valve from the temperature after it
     slots:
       - id
-    class_uri: schema:CollectorControl
+      - parameters
+    slot_usage:
+      parameters:
+        range: ThreeWayValveControlParameters
   VavControl:
+    description: Control of a VAV box
     attributes:
       variant:
+        description: Control law of the VAV box
         range: VavControlVariant
         ifabsent: string('default')
     slots:
       - id
-    class_uri: schema:VavControl
   AhuControl:
+    description: Control of an air handling unit
     slots:
       - id
-    class_uri: schema:AhuControl
 
   Control:
+    description: Any control (exactly one key); each component takes the control of its own kind
     slots:
       - emission_control
       - boiler_control
@@ -522,84 +783,149 @@ classes:
       - three_way_valve_control
       - vav_control
       - ahu_control
-    class_uri: schema:Control
+    exactly_one_of:
+      - slot_conditions: {emission_control: {name: emission_control, required: true}}
+      - slot_conditions: {boiler_control: {name: boiler_control, required: true}}
+      - slot_conditions: {collector_control: {name: collector_control, required: true}}
+      - slot_conditions: {three_way_valve_control: {name: three_way_valve_control, required: true}}
+      - slot_conditions: {vav_control: {name: vav_control, required: true}}
+      - slot_conditions: {ahu_control: {name: ahu_control, required: true}}
+  EmissionControlEntry:
+    description: Control of a radiator, valve or ideal heater
+    slots:
+      - emission_control
+    slot_usage:
+      emission_control:
+        required: true
+  BoilerControlEntry:
+    description: Control of a boiler or heat pump
+    slots:
+      - boiler_control
+    slot_usage:
+      boiler_control:
+        required: true
+  CollectorControlEntry:
+    description: Control of a pump
+    slots:
+      - collector_control
+    slot_usage:
+      collector_control:
+        required: true
+  ThreeWayValveControlEntry:
+    description: Control of a three-way valve
+    slots:
+      - three_way_valve_control
+    slot_usage:
+      three_way_valve_control:
+        required: true
+  VavControlEntry:
+    description: Control of a VAV box
+    slots:
+      - vav_control
+    slot_usage:
+      vav_control:
+        required: true
+  AhuControlEntry:
+    description: Control of an air handling unit
+    slots:
+      - ahu_control
+    slot_usage:
+      ahu_control:
+        required: true
   Default:
+    description: Library of materials, glazings and constructions available to every model
     attributes:
       material:
+        description: Opaque materials
         range: Material
         inlined: true
         inlined_as_list: true
         multivalued: true
       gas:
+        description: Gases of the glazing cavities
         range: Gas
         inlined: true
         inlined_as_list: true
         multivalued: true
       glass_material:
+        description: Glasses of the glazing panes
         range: GlassMaterial
         inlined: true
         inlined_as_list: true
         multivalued: true
       glazings:
+        description: Glazings of the windows
         range: Glazing
         inlined: true
         inlined_as_list: true
         multivalued: true
       constructions:
+        description: Opaque constructions
         range: Construction
         inlined: true
         inlined_as_list: true
         multivalued: true
   Building:
     tree_root: true
-    description: >-
-      A holder for Space objects
+    description: A building model, the root of a Trano YAML or JSON file
     attributes:
       default:
+        description: Library of materials, glazings and constructions, usually `!include_default`
         range: Default
       material:
+        description: Opaque materials, in addition to the default ones
         range: Material
         inlined: true
         inlined_as_list: true
         multivalued: true
       gas:
+        description: Gases of the glazing cavities, in addition to the default ones
         range: Gas
         inlined: true
         inlined_as_list: true
         multivalued: true
       glass_material:
+        description: Glasses of the glazing panes, in addition to the default ones
         range: GlassMaterial
         inlined: true
         inlined_as_list: true
         multivalued: true
       glazings:
+        description: Glazings of the windows, in addition to the default ones
         range: Glazing
         inlined: true
         inlined_as_list: true
         multivalued: true
       constructions:
+        description: Opaque constructions, in addition to the default ones
         range: Construction
         inlined: true
         inlined_as_list: true
         multivalued: true
       internal_walls:
+        description: Walls, floors and ceilings between two spaces
         range: InternalWall
         inlined: true
         inlined_as_list: true
         multivalued: true
       spaces:
+        description: The thermal zones of the building
         range: Space
         inlined: true
         inlined_as_list: true
         multivalued: true
+        required: true
       systems:
+        description: The heating, cooling and ventilation components outside the spaces
         range: Systems
         inlined: true
         inlined_as_list: true
         multivalued: true
       weather:
+        description: Weather data of the site
         range: Weather
       solar:
+        description: Solar components of the building
         range: Solar
         inlined: true
         inlined_as_list: true
@@ -610,190 +936,215 @@ classes:
 slots:
   id:
     identifier: true
-    slot_uri: schema:identifier
     description: A unique identifier for a thing
   name:
-    slot_uri: schema:name
     description: A human-readable name for a thing
   parameters:
-    slot_uri: schema:parameters
+    description: Parameters of the object; each class takes its own parameter set
     range: Parameter
     multivalued: false
+  control:
+    description: Control of the component; each component class takes the control of its own kind
+    range: Control
+    inlined: true
+  construction:
+    description: Construction of the envelope element (an id of the constructions)
+    range: Construction
+    required: true
   inlets:
-    slot_uri: schema:inlets
+    description: Ids of the components the flow comes from
     range: System
     multivalued: true
   outlets:
-    slot_uri: schema:inlets
+    description: Ids of the components the flow goes to
     range: System
     multivalued: true
   occupancy:
-    slot_uri: schema:occupancy
+    description: "Occupancy of the space; `{variant: none}` for a space without occupants"
     range: Occupancy
     multivalued: false
   radiator:
+    description: A radiator or ideal heater
     range: Radiator
     multivalued: false
     inlined: true
   valve:
+    description: The valve of the radiator listed before it
     range: Valve
     multivalued: false
     inlined: true
   ideal_heating_cooling:
+    description: An ideal heating and cooling device
     range: IdealHeatingCooling
     multivalued: false
     inlined: true
   three_way_valve:
+    description: A three-way valve
     range: ThreeWayValve
     multivalued: false
     inlined: true
   temperature_sensor:
+    description: A water temperature sensor
     range: TemperatureSensor
     multivalued: false
     inlined: true
   power_sensor:
+    description: An electric power sensor of ideal heaters
     range: PowerSensor
     multivalued: false
     inlined: true
   chiller:
+    description: A chiller (mpc library only)
     range: Chiller
     multivalued: false
     inlined: true
   dhw_tank:
+    description: A domestic hot water tank (mpc library only)
     range: DhwTank
     multivalued: false
     inlined: true
   battery:
+    description: An electric battery (mpc library only)
     range: Battery
     multivalued: false
     inlined: true
   ev_charger:
+    description: An electric vehicle charger (mpc library only)
     range: EvCharger
     multivalued: false
     inlined: true
   heat_meter_sensor:
+    description: A heat meter
     range: HeatMeterSensor
     multivalued: false
     inlined: true
   photovoltaic:
+    description: Photovoltaic panels
     range: Photovoltaic
     multivalued: false
     inlined: true
   split_valve:
+    description: A junction of the return water
     range: SplitValve
     multivalued: false
     inlined: true
 
   boiler:
+    description: A boiler or heat pump
     range: Boiler
     multivalued: false
     inlined: true
 
   air_handling_unit:
+    description: An air handling unit
     range: AirHandlingUnit
     multivalued: false
     inlined: true
 
   pump:
+    description: A circulation pump
     range: Pump
     multivalued: false
     inlined: true
 
   duct:
+    description: An air duct
     range: Duct
     multivalued: false
     inlined: true
   vav:
+    description: A VAV box
     range: VAV
     multivalued: false
     inlined: true
 
   vav_control:
+    description: Control of a VAV box
     range: VavControl
     multivalued: false
     inlined: true
   ahu_control:
+    description: Control of an air handling unit
     range: AhuControl
     multivalued: false
     inlined: true
 
   emissions:
-    slot_uri: schema:emissions
+    description: The emitters of the space, water radiators followed by their valve
     range: Emission
     multivalued: true
     inlined: true
   ventilation_inlets:
-    slot_uri: schema:ventilation_inlets
+    description: The components supplying air to the space, in the order of the flow
     range: VentilationInlet
     multivalued: true
     inlined: true
   ventilation_outlets:
-    slot_uri: schema:ventilation_outlets
+    description: The components extracting air from the space, in the order of the flow
     range: VentilationOutlet
     multivalued: true
     inlined: true
   emission_control:
-    slot_uri: schema:emission_control
+    description: Control of an emitter
     range: EmissionControl
     multivalued: false
     inlined: true
   three_way_valve_control:
-    slot_uri: schema:three_way_valve_control
+    description: Control of a three-way valve
     range: ThreeWayValveControl
     multivalued: false
     inlined: true
   collector_control:
-    slot_uri: schema:collector_control
+    description: Control of a pump
     range: CollectorControl
     multivalued: false
     inlined: true
   boiler_control:
-    slot_uri: schema:boiler_control
+    description: Control of a boiler or heat pump
     range: BoilerControl
     multivalued: false
     inlined: true
   external_boundaries:
-    slot_uri: schema:external_boundaries
+    description: Envelope elements of the space in contact with the outdoor air or the ground
     range: ExternalBoundaries
     multivalued: false
   surface:
-    slot_uri: schema:surface
     range: float
+    required: true
+    minimum_value: 0
     description: Area in m2. For an external wall, the gross area of the facade, the windows cut out of it included.
   azimuth:
-    slot_uri: schema:azimuth
     range: float
     description: Orientation of the surface in radians, 0 south, pi/2 west, pi north, -pi/2 east.
     minimum_value: -6.2832
     maximum_value: 6.2832
   tilt:
-    slot_uri: schema:tilt
     range: string
+    description: >-
+      Tilt of the surface: wall, ceiling, floor or pitched_roof_20/30/35/40/45, or an angle from the
+      horizontal in degrees
+    pattern: "^(wall|ceiling|floor|pitched_roof_(20|30|35|40|45)|-?[0-9]+(\\.[0-9]+)?)$"
 
 enums:
-  ControlType:
-    permissible_values:
-      Ahu:
-      Boiler:
-      Collector:
-      Emission:
-      VAV:
-      ThreeWayValve:
   SpaceVariant:
+    description: Zone models
     permissible_values:
       default:
       infiltration:
       rectangular_zone:
   FloorOnGroundVariant:
+    description: What lies under a floor on ground
     permissible_values:
       default:
       outdoor_air:
   OccupancyVariant:
+    description: Occupancy models
     permissible_values:
       default:
       co2:
       none:  # the space has no occupancy at all; an empty `occupancy:` gets the default one
   SystemVariant:
+    description: Every variant of every component class (each class accepts a subset)
     permissible_values:
       default:
       air_water_heat_pump:
@@ -804,18 +1155,54 @@ enums:
       test:
       water_water_heat_pump:
       without_storage:
+  DefaultVariant:
+    description: Variants of the components that have a single model
+    permissible_values:
+      default:
+  BoilerVariant:
+    description: Boiler and heat pump models
+    permissible_values:
+      default:
+        description: Gas boiler with a storage tank
+      air_water_heat_pump:
+      water_water_heat_pump:
+      without_storage:
+        description: Gas boiler without storage tank
+  RadiatorVariant:
+    description: Radiator models
+    permissible_values:
+      default:
+        description: Water radiator
+      ideal:
+        description: Ideal heater driven by its control
+      idealbus:
+        description: Ideal heater driven by its control through the data bus
+  AirHandlingUnitVariant:
+    description: Air handling unit models
+    permissible_values:
+      default:
+      system_d:
+      test:
+  VavVariant:
+    description: VAV box models
+    permissible_values:
+      default:
+      complex:
   EmissionControlVariant:
+    description: Control laws of the emitters
     permissible_values:
       default:
       MonitoredSetpoint:
       onoff:
       PController:
   BoilerControlVariant:
+    description: Control laws of the generators
     permissible_values:
       default:
       complex:
       simple:
   VavControlVariant:
+    description: Control laws of the VAV boxes
     permissible_values:
       default:
       constant:
