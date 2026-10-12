@@ -91,6 +91,7 @@ testpaths = ["tests"]
 markers = [
     "simulate: slow integration tests that require Docker and the OpenModelica image",
     "bestest: year-long ASHRAE 140 validation simulations (Docker, hours); run with -m bestest",
+    "compile: OpenModelica checks of every model of the repository (Docker, about a minute per model)",
 ]
 addopts = "-ra"
 

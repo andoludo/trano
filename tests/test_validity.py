@@ -79,3 +79,15 @@ def test_yaml_azimuth_in_degrees_is_rejected(schema: Path, tmp_path: Path) -> No
     house.write_text(model)
     with pytest.raises(InvalidModelError, match=r"(?i)azimuth"):
         convert_network("single_zone_hydronic_degrees", house)
+
+
+def test_the_model_of_trano_verify_translates() -> None:
+    """`trano verify` translates and simulates this model: it failed on its azimuths in degrees, then on a window
+    whose width x height did not match its surface."""
+    assert convert_network("verification", Path(__file__).parents[1] / "trano" / "verification.yaml").model()
+
+
+def test_an_ahu_control_without_vav_box_is_rejected() -> None:
+    house = get_path("single_zone_air_handling_unit_without_vav_duct_only.yaml")
+    with pytest.raises(InvalidModelError, match="AHU:001: its ahu_control drives the VAV boxes"):
+        convert_network("without_vav", house)

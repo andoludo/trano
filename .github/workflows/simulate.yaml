@@ -1,0 +1,41 @@
+name: Simulate
+
+# The simulation tests (pytest -m simulate): the fixture networks and the models simulated for an hour or a
+# few days, the tutorials, and the physical regressions of tests/test_hydronic_physics.py (the three-way
+# valves hold their set point, the rooms stay warm). Too slow for every push: nightly and on demand.
+on:
+  schedule:
+    - cron: "41 1 * * *"
+  workflow_dispatch:
+
+env:
+  TRANO_MODELICA_LIBRARIES: ${{ github.workspace }}/.cache/omlibs
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install graphviz
+        run: |
+          sudo apt update
+          sudo apt install graphviz
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Modelica libraries
+        uses: ./.github/actions/modelica-libraries
+
+      - name: Simulate
+        run: uv run pytest -m simulate -rA --durations=20

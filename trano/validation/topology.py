@@ -156,6 +156,23 @@ def check_topology(graph: ModelGraph) -> Iterator[Issue]:
             yield from _check_degree(graph, flow, component)
     for medium in CIRCUIT_SOURCES:
         yield from _check_circuits(graph, flow, medium)
+    yield from _check_ahu_controls(graph, flow)
+
+
+def _check_ahu_controls(graph: ModelGraph, flow: nx.DiGraph) -> Iterator[Issue]:
+    """The ahu_control sets the air flow of the VAV boxes downstream of its air handling unit: it needs one."""
+    for ahu in graph.components.values():
+        if ahu.kind != "air_handling_unit" or ahu.control_kind != "ahu_control" or ahu.id not in flow:
+            continue
+        downstream = nx.descendants(flow, ahu.id)  # type: ignore[no-untyped-call]
+        if not any(graph.components[node].kind == "vav" for node in downstream if node in graph.components):
+            yield Issue(
+                "error",
+                ahu.id,
+                "its ahu_control drives the VAV boxes of the spaces it serves, but there is none downstream. Add a "
+                "vav to the ventilation_inlets of its spaces, or use an air handling unit without ahu_control "
+                "(variant system_d or test).",
+            )
 
 
 def _check_orphans(graph: ModelGraph, flow: nx.DiGraph) -> Iterator[Issue]:

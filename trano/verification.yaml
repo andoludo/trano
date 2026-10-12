@@ -105,7 +105,7 @@ spaces:
           tilt: wall
           construction: INS2AR2020:001
           width: 2.0
-          height: 1.2
+          height: 1.0  # 2.0 m * 1.0 m = the 2.0 m2 surface
 
 internal_walls:
   - space_1: SPACE:002

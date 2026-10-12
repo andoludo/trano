@@ -1,0 +1,37 @@
+name: Modelica libraries
+description: >-
+  Restore the Modelica libraries of trano (Modelica, Buildings, IDEAS, AixLib) from the cache, or install
+  them with OpenModelica's package manager, into .cache/omlibs. Set TRANO_MODELICA_LIBRARIES to that
+  directory so that the simulations mount them instead of installing them at every container start.
+  Same cache key as the BESTEST workflow, so the workflows share the libraries.
+
+runs:
+  using: composite
+  steps:
+    - name: Pull the OpenModelica image
+      shell: bash
+      run: docker pull openmodelica/openmodelica:v1.26.9-ompython
+
+    - name: Restore the Modelica libraries
+      id: libraries
+      uses: actions/cache@v4
+      with:
+        path: .cache/omlibs
+        key: omlibs-${{ hashFiles('trano/simulate/simulate.py') }}
+
+    - name: Install the Modelica libraries
+      if: steps.libraries.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p .cache/omlibs .cache/omlibs-install
+        cat > .cache/omlibs-install/install.mos <<'MOS'
+        updatePackageIndex(); getErrorString();
+        installPackage(Modelica, "4.1.0+maint.om", exactMatch=true); getErrorString();
+        installPackage(Modelica, "4.0.0+maint.om", exactMatch=true); getErrorString();
+        installPackage(Buildings, "13.0.0"); getErrorString();
+        installPackage(IDEAS, "3.0.0"); getErrorString();
+        installPackage(AixLib, "3.0.1"); getErrorString();
+        MOS
+        docker run --rm -v "$PWD/.cache/omlibs:/root/.openmodelica/libraries" \
+          -v "$PWD/.cache/omlibs-install:/install" \
+          openmodelica/openmodelica:v1.26.9-ompython omc /install/install.mos
