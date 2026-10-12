@@ -159,6 +159,20 @@ def test_a_rendered_model_is_simulated_as_given(tmp_path: Path) -> None:
         assert "simulate(given.building, startTime = 0, stopTime = 3600, tolerance = 0.0001);" in script
 
 
+@pytest.mark.parametrize(
+    ("model", "loads_aixlib"), [("AixLib.ThermalZones.ReducedOrder", True), ("Buildings.Fluid", False)]
+)
+def test_aixlib_is_loaded_for_the_models_using_it(tmp_path: Path, model: str, loads_aixlib: bool) -> None:
+    network = Network(name="given", library=Library.from_configuration("Buildings"))
+    environment = ModelicaEnvironment()
+    with create_mos_file(
+        network, SimulationOptions(), tmp_path, environment=environment, model=f"package given {model} end given;"
+    ) as mos:
+        script = tmp_path.joinpath(mos).read_text()
+    assert (f'loadModel(AixLib, {{"{environment.aixlib}"}});' in script) is loads_aixlib
+    assert script.index("loadModel(IDEAS") < script.index("loadFile(")
+
+
 def test_installed_libraries_are_mounted_from_the_environment_variable(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

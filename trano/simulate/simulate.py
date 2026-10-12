@@ -219,6 +219,18 @@ def container(
     container.remove()
 
 
+def _load_aixlib(model: str, environment: ModelicaEnvironment) -> str:
+    """The statement loading AixLib for the models using it (reduced-order and ISO 13790 zones).
+
+    The `uses` annotation of the generated package does not list AixLib, so OpenModelica does not
+    load it with the model.
+    """
+    if "AixLib." not in model:
+        return ""
+    return f"""
+    loadModel(AixLib, {{"{environment.aixlib}"}});"""
+
+
 @contextmanager
 def create_mos_file(
     network: Network,
@@ -246,7 +258,7 @@ def create_mos_file(
             f"""
     getVersion();
     loadModel(Modelica, {{"{environment.modelica_version}"}});
-    loadModel(IDEAS, {{"{environment.ideas}"}});
+    loadModel(IDEAS, {{"{environment.ideas}"}});{_load_aixlib(model, environment)}
     loadFile("/simulation/{{{{model_file}}}}");
     checkModel({{{{model_name}}}}.building);{simulation}
     """
