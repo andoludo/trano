@@ -4466,7 +4466,7 @@ ARoo=0.0,
 URoo=0.0,
 
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Heavy buiMas,
-gFac=0.530956) "Thermal zone"
+gFac=0.756333) "Thermal zone"
  annotation (
     Placement(transformation(origin = { 29.698760986328125, -95.30694580078125 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -4489,17 +4489,17 @@ AWal={ 20.0, 25.0, 32.0 },
 nOrientations=3,
 surAzi={ 0.0, 1.57, 3.14 },
 surTil={ 1.5708, 1.5708, 1.5708 },
-UWal=0.208549,
+UWal=0.262963,
 
 AWin={ 5.0, 0.0, 2.0 },
-UWin=2.59868,
+UWin=1.0984,
 UFlo=2.45901,
 airRat=0.5,
 ARoo=0.0,
 URoo=0.0,
 
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Heavy buiMas,
-gFac=0.534066) "Thermal zone"
+gFac=0.632778) "Thermal zone"
  annotation (
     Placement(transformation(origin = { -33.85528564453125, 37.574859619140625 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -4532,7 +4532,7 @@ ARoo=0.0,
 URoo=0.0,
 
 redeclare replaceable Buildings.ThermalZones.ISO13790.Data.Heavy buiMas,
-gFac=0.530956) "Thermal zone"
+gFac=0.756333) "Thermal zone"
  annotation (
     Placement(transformation(origin = { 51.62455749511719, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -5270,22 +5270,22 @@ Modelica.Blocks.Sources.RealExpression
             TCooSetControl_3
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
+            TCooSetControl_2
+            (y=298.15);
+Modelica.Blocks.Sources.RealExpression
+            TColSetControl_6
+            (y=363.15);
+Modelica.Blocks.Sources.RealExpression
             TCooSetControl_1
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
             TColSetControl_5
             (y=363.15);
-Modelica.Blocks.Sources.RealExpression
-            TColSetControl_6
-            (y=363.15);
-Modelica.Blocks.Sources.RealExpression
-            TCooSetControl_2
-            (y=298.15);
-Modelica.Blocks.Sources.BooleanExpression
-            triggerControl_6
-            (y=true);
 Modelica.Blocks.Sources.BooleanExpression
             triggerControl_5
+            (y=true);
+Modelica.Blocks.Sources.BooleanExpression
+            triggerControl_6
             (y=true);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -5307,18 +5307,18 @@ connect(dataBus.TZonSpace_002, TRoo[2].y);
 connect(dataBus.TZonSpace_003, TRoo[3].y);
 connect(dataBus.TCooSetSpace_003, 
     TCooSetControl_3.y);
+connect(dataBus.TCooSetSpace_002, 
+    TCooSetControl_2.y);
+connect(dataBus.TColSetControl_6, 
+    TColSetControl_6.y);
 connect(dataBus.TCooSetSpace_001, 
     TCooSetControl_1.y);
 connect(dataBus.TColSetControl_5, 
     TColSetControl_5.y);
-connect(dataBus.TColSetControl_6, 
-    TColSetControl_6.y);
-connect(dataBus.TCooSetSpace_002, 
-    TCooSetControl_2.y);
-connect(dataBus.triggerControl_6, 
-    triggerControl_6.y);
 connect(dataBus.triggerControl_5, 
     triggerControl_5.y);
+connect(dataBus.triggerControl_6, 
+    triggerControl_6.y);
 
 
 

@@ -3763,7 +3763,17 @@ package Components
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.006,
         k=1.0,
-        tauSol={ 0.6 },
+        tauSol={ 0.63 },
+        rhoSol_a={ 0.19 },
+        rhoSol_b={ 0.24 },
+        tauIR=0.0,
+        absIR_a=0.84,
+        absIR_b=0.04)
+        ,
+        Buildings.HeatTransfer.Data.Glasses.Generic(
+        x=0.006,
+        k=1.0,
+        tauSol={ 0.83 },
         rhoSol_a={ 0.075 },
         rhoSol_b={ 0.075 },
         tauIR=0.0,
@@ -3773,21 +3783,11 @@ package Components
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.006,
         k=1.0,
-        tauSol={ 0.6 },
-        rhoSol_a={ 0.075 },
-        rhoSol_b={ 0.075 },
+        tauSol={ 0.63 },
+        rhoSol_a={ 0.24 },
+        rhoSol_b={ 0.19 },
         tauIR=0.0,
-        absIR_a=0.84,
-        absIR_b=0.84)
-        ,
-        Buildings.HeatTransfer.Data.Glasses.Generic(
-        x=0.006,
-        k=1.0,
-        tauSol={ 0.6 },
-        rhoSol_a={ 0.075 },
-        rhoSol_b={ 0.075 },
-        tauIR=0.0,
-        absIR_a=0.84,
+        absIR_a=0.04,
         absIR_b=0.84)
         
     },
@@ -3955,7 +3955,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
 )));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             weather(filNam=Modelica.Utilities.Files.loadResource
-    ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
+    ("modelica://IDEAS/Resources/weatherdata/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos"))
  annotation (
     Placement(transformation(origin = { -36.5933723449707, 85.15022277832031 },
     extent = {{ 5, -5}, {-5, 5}}

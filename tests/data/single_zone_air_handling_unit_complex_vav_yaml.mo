@@ -3763,7 +3763,17 @@ package Components
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.006,
         k=1.0,
-        tauSol={ 0.6 },
+        tauSol={ 0.63 },
+        rhoSol_a={ 0.19 },
+        rhoSol_b={ 0.24 },
+        tauIR=0.0,
+        absIR_a=0.84,
+        absIR_b=0.04)
+        ,
+        Buildings.HeatTransfer.Data.Glasses.Generic(
+        x=0.006,
+        k=1.0,
+        tauSol={ 0.83 },
         rhoSol_a={ 0.075 },
         rhoSol_b={ 0.075 },
         tauIR=0.0,
@@ -3773,21 +3783,11 @@ package Components
         Buildings.HeatTransfer.Data.Glasses.Generic(
         x=0.006,
         k=1.0,
-        tauSol={ 0.6 },
-        rhoSol_a={ 0.075 },
-        rhoSol_b={ 0.075 },
+        tauSol={ 0.63 },
+        rhoSol_a={ 0.24 },
+        rhoSol_b={ 0.19 },
         tauIR=0.0,
-        absIR_a=0.84,
-        absIR_b=0.84)
-        ,
-        Buildings.HeatTransfer.Data.Glasses.Generic(
-        x=0.006,
-        k=1.0,
-        tauSol={ 0.6 },
-        rhoSol_a={ 0.075 },
-        rhoSol_b={ 0.075 },
-        tauIR=0.0,
-        absIR_a=0.84,
+        absIR_a=0.04,
         absIR_b=0.84)
         
     },
@@ -3955,7 +3955,7 @@ Modelica.Fluid.Interfaces.FluidPorts_a[0] ports_a(
 )));
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3
             weather(filNam=Modelica.Utilities.Files.loadResource
-    ("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
+    ("modelica://IDEAS/Resources/weatherdata/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos"))
  annotation (
     Placement(transformation(origin = { -75.82231140136719, 100.0 },
     extent = {{ 5, -5}, {-5, 5}}
@@ -4487,46 +4487,46 @@ iconTransformation(origin = {-2, -42}, extent = {{-110, -9}, {-90, 9}})));  Tran
     annotation (Placement(transformation(
   extent={{-120,-18},{-80,22}}), iconTransformation(extent={{-120,62},{-78,98}})));
 Modelica.Blocks.Sources.RealExpression
-            TSupSetVav_control_001
-            (y=293.15);
-Modelica.Blocks.Sources.RealExpression
             TCooSetVav_control_001
             (y=298.15);
 Modelica.Blocks.Sources.RealExpression
-            ppmCO2SetVav_control_001
-            (y=0.0);
+            TSupSetVav_control_001
+            (y=293.15);
 Modelica.Blocks.Sources.RealExpression
             THeaSetVav_control_001
             (y=293.15);
-Modelica.Blocks.Sources.IntegerExpression
-            uAhuOpeModAhu_control_001
-            (y=0);
-Modelica.Blocks.Sources.IntegerExpression
-            oveDamPosVav_control_001
-            (y=0);
+Modelica.Blocks.Sources.RealExpression
+            ppmCO2SetVav_control_001
+            (y=0.0);
 Modelica.Blocks.Sources.IntegerExpression
             uOpeModVav_control_001
             (y=1);
 Modelica.Blocks.Sources.IntegerExpression
+            uAhuOpeModAhu_control_001
+            (y=0);
+Modelica.Blocks.Sources.IntegerExpression
             oveFloSetVav_control_001
             (y=0);
+Modelica.Blocks.Sources.IntegerExpression
+            oveDamPosVav_control_001
+            (y=0);
 Modelica.Blocks.Sources.BooleanExpression
-            u1HotPlaVav_control_001
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1OccVav_control_001
-            (y=false);
-Modelica.Blocks.Sources.BooleanExpression
-            u1SupFanAhu_control_001
+            uHeaOffVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
             u1FanVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
+            u1SupFanAhu_control_001
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
+            u1OccVav_control_001
+            (y=false);
+Modelica.Blocks.Sources.BooleanExpression
             u1WinVav_control_001
             (y=false);
 Modelica.Blocks.Sources.BooleanExpression
-            uHeaOffVav_control_001
+            u1HotPlaVav_control_001
             (y=false);
 
 Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p annotation (
@@ -4545,34 +4545,34 @@ connect(port[1],TRoo[1]. port);
 connect(port_a[1], TRoo1[1].port);
 connect(dataBus.TZonSpace_001, TRoo[1].T);
 connect(dataBus.ppmCO2Space_001, TRoo1[1].ppm);
-connect(dataBus.TSupSetSpace_001,
-TSupSetVav_control_001.y);
 connect(dataBus.TCooSetSpace_001,
 TCooSetVav_control_001.y);
-connect(dataBus.ppmCO2SetSpace_001,
-ppmCO2SetVav_control_001.y);
+connect(dataBus.TSupSetSpace_001,
+TSupSetVav_control_001.y);
 connect(dataBus.THeaSetSpace_001,
 THeaSetVav_control_001.y);
-connect(dataBus.uAhuOpeModAhu_control_001,
-uAhuOpeModAhu_control_001.y);
-connect(dataBus.oveDamPosSpace_001,
-oveDamPosVav_control_001.y);
+connect(dataBus.ppmCO2SetSpace_001,
+ppmCO2SetVav_control_001.y);
 connect(dataBus.uOpeModSpace_001,
 uOpeModVav_control_001.y);
+connect(dataBus.uAhuOpeModAhu_control_001,
+uAhuOpeModAhu_control_001.y);
 connect(dataBus.oveFloSetSpace_001,
 oveFloSetVav_control_001.y);
-connect(dataBus.u1HotPlaSpace_001,
-u1HotPlaVav_control_001.y);
-connect(dataBus.u1OccSpace_001,
-u1OccVav_control_001.y);
-connect(dataBus.u1SupFanAhu_control_001,
-u1SupFanAhu_control_001.y);
-connect(dataBus.u1FanSpace_001,
-u1FanVav_control_001.y);
-connect(dataBus.u1WinSpace_001,
-u1WinVav_control_001.y);
+connect(dataBus.oveDamPosSpace_001,
+oveDamPosVav_control_001.y);
 connect(dataBus.uHeaOffSpace_001,
 uHeaOffVav_control_001.y);
+connect(dataBus.u1FanSpace_001,
+u1FanVav_control_001.y);
+connect(dataBus.u1SupFanAhu_control_001,
+u1SupFanAhu_control_001.y);
+connect(dataBus.u1OccSpace_001,
+u1OccVav_control_001.y);
+connect(dataBus.u1WinSpace_001,
+u1WinVav_control_001.y);
+connect(dataBus.u1HotPlaSpace_001,
+u1HotPlaVav_control_001.y);
 
 
 connect(term_p, loa.terminal) annotation (Line(points={{92,0},{-32,0},{-32,-51},

@@ -519,6 +519,22 @@ WARNINGS: list[tuple[str, Model, Change, str, str]] = [
         "BOILER_CONTROL:001",
         "charged below the supply set point",
     ),
+    (
+        "gas layer in an opaque construction",
+        HYDRONIC,
+        lambda m: m.setdefault("constructions", []).append(
+            {
+                "id": "CAVITY:001",
+                "layers": [
+                    {"material": "BRICK:001", "thickness": 0.09},
+                    {"material": "AIR:001", "thickness": 0.03},
+                    {"material": "BRICK:001", "thickness": 0.09},
+                ],
+            }
+        ),
+        "CAVITY:001",
+        "layer 1 is the gas 'AIR:001'.*AIRCAVITY:001",
+    ),
 ]
 
 
