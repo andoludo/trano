@@ -240,7 +240,8 @@ def create_mos_file(
             ""
             if options.check_only
             else f"""
-    simulate({{{{model_name}}}}.building, {options.simulate_arguments});"""
+    simulate({{{{model_name}}}}.building, {options.simulate_arguments});
+    getErrorString();"""
         )
         template = STRING_ENVIRONMENT.from_string(
             f"""

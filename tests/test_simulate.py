@@ -157,6 +157,8 @@ def test_a_rendered_model_is_simulated_as_given(tmp_path: Path) -> None:
         assert len(models) == 1 and models[0].read_text() == "package given end given;"
         script = tmp_path.joinpath(mos).read_text()
         assert "simulate(given.building, startTime = 0, stopTime = 3600, tolerance = 0.0001);" in script
+        # a model that fails to build reports why (e.g. a Modelica assertion) instead of "Failed to build model"
+        assert "getErrorString();" in script.split("simulate(", 1)[1]
 
 
 def test_installed_libraries_are_mounted_from_the_environment_variable(
