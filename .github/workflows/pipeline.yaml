@@ -85,8 +85,11 @@ jobs:
           mkdir -p .cache/aixlib-check
           cat > .cache/aixlib-check/check.mos <<'MOS'
           updatePackageIndex(); getErrorString();
-          getAvailablePackageVersions(AixLib, ""); getErrorString();
-          installPackage(AixLib, "3.0.1"); getErrorString();
+          getAvailablePackageVersions(SDF, ""); getErrorString();
+          installPackage(SDF, "0.4.5", exactMatch=true); getErrorString();
+          installPackage(SDF, "0.4.4", exactMatch=true); getErrorString();
+          getAvailableLibraryVersions(SDF); getErrorString();
+          installPackage(AixLib, "3.0.1", exactMatch=true); getErrorString();
           getAvailableLibraryVersions(AixLib); getErrorString();
           MOS
           docker run --rm -v "$PWD/.cache/aixlib-check:/check" \
