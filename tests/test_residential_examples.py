@@ -2,7 +2,7 @@
 
 The two cases (examples/residential_before_renovation.yaml, residential_after_renovation.yaml) describe
 the same semi-detached house before and after a deep renovation; see
-docs/explanation/residential_reference_cases.md.
+docs/validation/residential_reference_cases.md.
 """
 
 import tempfile
