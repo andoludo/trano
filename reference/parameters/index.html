@@ -565,6 +565,8 @@
       
         
       
+        
+      
     
     
     
@@ -791,6 +793,34 @@
     
   
     Model with photovoltaics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/residential_renovation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A house before and after renovation
   
 
     
@@ -1319,6 +1349,8 @@
       
         
       
+        
+      
     
     
     
@@ -1405,6 +1437,34 @@
     
   
     A walk through the BESTEST cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/residential_reference_cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Residential reference cases
   
 
     
@@ -2225,7 +2285,7 @@
 </tr>
 <tr>
 <td><code>temperature_heatpump_source</code>, <code>heat_pump_source_temperature</code></td>
-<td>None</td>
+<td>Constant source temperature of the heat pump [K], used when heat_pump_source_outdoor_air is false (and by the water-water heat pump)</td>
 <td><code>286.15</code></td>
 <td><code>TSouSet</code></td>
 <td><code>TSouSet</code></td>
@@ -2235,7 +2295,7 @@
 </tr>
 <tr>
 <td><code>temperature_supply_setpoint_heat_pump</code>, <code>heat_pump_supply_setpoint</code></td>
-<td>None</td>
+<td>Supply temperature set point of the heat pump [K]; for the air-water heat pump, the supply temperature of the heating curve at the design outdoor temperature</td>
 <td><code>323.15</code></td>
 <td><code>TSet</code></td>
 <td><code>TSet</code></td>
@@ -2295,7 +2355,7 @@
 </tr>
 <tr>
 <td><code>loss_conductance</code></td>
-<td>Heat loss conductance of the boiler to its room [W/K], 0.05 * nominal heating power / 30 by default</td>
+<td>Heat loss conductance of the boiler to its room [W/K], 1e-4 * nominal heating power (0.5 % of it at 50 K) by default; BoilerPolynomial of Buildings 13 subtracts this loss twice from the water</td>
 <td>library default</td>
 <td><code>UA</code></td>
 <td><code>UA</code></td>
@@ -2365,7 +2425,7 @@
 </tr>
 <tr>
 <td><code>heat_pump_nominal_source_temperature</code></td>
-<td>Source (outdoor air) temperature at the rating point of the air-water heat pump [K], 293.15 by default</td>
+<td>Source (outdoor air) temperature at the rating point of the air-water heat pump [K], where it delivers the nominal heating power at the supply temperature set point; the design outdoor temperature by default</td>
 <td>library default</td>
 <td><code>TEvaHea_nominal</code> (air_water_heat_pump variant)</td>
 <td><code>TEvaHea_nominal</code> (air_water_heat_pump variant)</td>
@@ -2375,13 +2435,83 @@
 </tr>
 <tr>
 <td><code>heat_pump_source_mass_flow</code></td>
-<td>Mass flow rate of the source side of the heat pump [kg/s], 1.7 (air) or the one of the performance record (water) by default</td>
+<td>Mass flow rate of the source side of the heat pump [kg/s], the one of the performance data scaled to the nominal heating power by default</td>
 <td>library default</td>
 <td><code>mSou_flow_nominal</code> (air_water_heat_pump, water_water_heat_pump variant)</td>
 <td><code>mSou_flow_nominal</code> (air_water_heat_pump, water_water_heat_pump variant)</td>
 <td><code>mSou_flow_nominal</code> (air_water_heat_pump, water_water_heat_pump variant)</td>
 <td><code>mSou_flow_nominal</code> (air_water_heat_pump, water_water_heat_pump variant)</td>
 <td><code>mSou_flow_nominal</code></td>
+</tr>
+<tr>
+<td><code>heat_pump_source_outdoor_air</code></td>
+<td>Whether the evaporator of the air-water heat pump takes the outdoor air of the weather data (true by default) or the constant temperature_heatpump_source</td>
+<td>library default</td>
+<td><code>useOutdoorAirSource</code> (air_water_heat_pump variant)</td>
+<td><code>useOutdoorAirSource</code> (air_water_heat_pump variant)</td>
+<td><code>useOutdoorAirSource</code> (air_water_heat_pump variant)</td>
+<td><code>useOutdoorAirSource</code> (air_water_heat_pump variant)</td>
+<td><code>useOutdoorAirSource</code></td>
+</tr>
+<tr>
+<td><code>design_outdoor_temperature</code></td>
+<td>Design outdoor temperature of the heating curve of the air-water heat pump [K], 265.15 (-8 degC, Uccle, NBN EN 12831) by default</td>
+<td>library default</td>
+<td><code>TOutDes</code> (air_water_heat_pump variant)</td>
+<td><code>TOutDes</code> (air_water_heat_pump variant)</td>
+<td><code>TOutDes</code> (air_water_heat_pump variant)</td>
+<td><code>TOutDes</code> (air_water_heat_pump variant)</td>
+<td><code>TOutDes</code></td>
+</tr>
+<tr>
+<td><code>heating_limit_temperature</code></td>
+<td>Outdoor temperature above which the air-water heat pump does not heat [K], 289.15 by default</td>
+<td>library default</td>
+<td><code>TOutHeaLim</code> (air_water_heat_pump variant)</td>
+<td><code>TOutHeaLim</code> (air_water_heat_pump variant)</td>
+<td><code>TOutHeaLim</code> (air_water_heat_pump variant)</td>
+<td><code>TOutHeaLim</code> (air_water_heat_pump variant)</td>
+<td><code>TOutHeaLim</code></td>
+</tr>
+<tr>
+<td><code>minimum_supply_temperature</code></td>
+<td>Supply temperature of the heating curve of the air-water heat pump at the heating limit [K], 303.15 by default</td>
+<td>library default</td>
+<td><code>TSupMin</code> (air_water_heat_pump variant)</td>
+<td><code>TSupMin</code> (air_water_heat_pump variant)</td>
+<td><code>TSupMin</code> (air_water_heat_pump variant)</td>
+<td><code>TSupMin</code> (air_water_heat_pump variant)</td>
+<td><code>TSupMin</code></td>
+</tr>
+<tr>
+<td><code>buffer_temperature_band</code></td>
+<td>Width of the buffer temperature band switching the air-water heat pump on and off around the supply set point [K], 5 by default</td>
+<td>library default</td>
+<td><code>dTHys</code> (air_water_heat_pump variant)</td>
+<td><code>dTHys</code> (air_water_heat_pump variant)</td>
+<td><code>dTHys</code> (air_water_heat_pump variant)</td>
+<td><code>dTHys</code> (air_water_heat_pump variant)</td>
+<td><code>dTHys</code></td>
+</tr>
+<tr>
+<td><code>compressor_minimum_on_time</code></td>
+<td>Minimum time the compressor of the air-water heat pump runs once started [s], 300 by default</td>
+<td>library default</td>
+<td><code>minOnTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOnTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOnTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOnTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOnTime</code></td>
+</tr>
+<tr>
+<td><code>compressor_minimum_off_time</code></td>
+<td>Minimum time the compressor of the air-water heat pump stays off once stopped [s], 300 by default</td>
+<td>library default</td>
+<td><code>minOffTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOffTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOffTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOffTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOffTime</code></td>
 </tr>
 <tr>
 <td><code>temperature_initial</code></td>
@@ -2607,8 +2737,8 @@
 </tr>
 <tr>
 <td><code>temperature_heating_setpoint</code></td>
-<td>Room air temperature heating set point during occupied period [K]</td>
-<td><code>297.0</code></td>
+<td>Room air temperature heating set point during occupied period [K], 21 degC by default (the design indoor temperature of dwellings)</td>
+<td><code>294.15</code></td>
 <td><code>THeaSet</code></td>
 <td><code>THeaSet</code></td>
 <td><code>THeaSet</code></td>
@@ -2793,7 +2923,7 @@
 </tr>
 <tr>
 <td><code>cooling_setpoint_schedule</code></td>
-<td>Day schedule of the cooling set point, rows of time since midnight [s] and set point [K], repeated every day; one row for a constant set point</td>
+<td>Day schedule of the cooling set point, rows of time since midnight [s] and set point [K], repeated every day; linear between rows, repeat a time for a step; one row for a constant set point</td>
 <td><code>[0, 300.15]</code></td>
 <td><code>TSetCoo</code></td>
 <td><code>TSetCoo</code></td>
@@ -2803,7 +2933,7 @@
 </tr>
 <tr>
 <td><code>heating_setpoint_schedule</code></td>
-<td>Day schedule of the heating set point, rows of time since midnight [s] and set point [K], repeated every day; one row for a constant set point</td>
+<td>Day schedule of the heating set point, rows of time since midnight [s] and set point [K], repeated every day; linear between rows, repeat a time for a step; one row for a constant set point</td>
 <td><code>[0, 293.15]</code></td>
 <td><code>TSetHea</code></td>
 <td><code>TSetHea</code></td>

@@ -1,0 +1,1798 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Automated building energy simulation tool with Modelica">
+      
+      
+      
+      
+        <link rel="prev" href="../zone_with_photovoltaics/">
+      
+      
+        <link rel="next" href="../rc_model_predictive_control/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../img/trano.webp">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>A house before and after renovation - Trano</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#a-house-before-and-after-renovation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Trano" class="md-header__button md-logo" aria-label="Trano" data-md-component="logo">
+      
+  <img src="../../img/trano.webp" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Trano
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              A house before and after renovation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 2C5.13 2 2 5.13 2 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7M6 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H6zm13-8h-2l-3.2 9h1.9l.7-2h3.2l.7 2h1.9zm-2.15 5.65L18 15l1.15 3.65z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="amber" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="amber" data-md-color-accent="amber"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/andoludo/trano" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    trano
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Trano
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting-started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../first_model_and_simulation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../how-to%20guides/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  How-to Guides
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../explanation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Explanation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/components/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../validation/bestest/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Validation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Trano" class="md-nav__button md-logo" aria-label="Trano" data-md-component="logo">
+      
+  <img src="../../img/trano.webp" alt="logo">
+
+    </a>
+    Trano
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/andoludo/trano" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    trano
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trano
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting-started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting-started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../first_model_and_simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First model and simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../model_with_another_library/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model with another library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multizone_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-zone_with_ideal_heating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zone with ideal heating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-zone_with_hydronic_heating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zone with hydronic heating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zone_with_ventilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zone with ventilation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zone_with_photovoltaics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model with photovoltaics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A house before and after renovation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A house before and after renovation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-house" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The house
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The systems
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generating-and-simulating-the-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generating and simulating the models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs-on-the-data-bus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outputs on the data bus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-january-week" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A January week
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-year" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A year
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rc_model_predictive_control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RC models for MPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to%20guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explanation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/bestest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ASHRAE 140 (BESTEST)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/bestest_cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A walk through the BESTEST cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/residential_reference_cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Residential reference cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-house" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The house
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The systems
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generating-and-simulating-the-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generating and simulating the models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outputs-on-the-data-bus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outputs on the data bus
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Results">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-january-week" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A January week
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-year" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A year
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Trano
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../first_model_and_simulation/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Tutorials
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="a-house-before-and-after-renovation">A house before and after renovation</h1>
+<p>This tutorial models a whole house twice: a Belgian semi-detached house built before 1970, and the
+same house after a deep renovation. It brings together what the previous tutorials introduced
+(several zones, a hydronic heating system, ventilation, PV) and shows the outputs trano puts on
+the data bus: zone temperatures, heat, gas and electricity.</p>
+<p>The two configuration files are in the <code>examples</code> folder of the repository:</p>
+<ul>
+<li><a href="https://github.com/andoludo/trano/blob/master/examples/residential_before_renovation.yaml"><code>residential_before_renovation.yaml</code></a>:
+  uninsulated cavity walls and attic floor, old double glazing, a leaky envelope (n50 = 12 1/h),
+  a 16 kW gas boiler on radiators, natural ventilation.</li>
+<li><a href="https://github.com/andoludo/trano/blob/master/examples/residential_after_renovation.yaml"><code>residential_after_renovation.yaml</code></a>:
+  external wall insulation, 22 cm on the attic floor, an insulated slab, triple glazing,
+  n50 = 3 1/h, a 3 kW air-water heat pump on <strong>the same radiators</strong>, balanced ventilation with heat
+  recovery and 4.2 kWp of PV.</li>
+</ul>
+<p>Both are written by <code>examples/residential_cases.py</code> from one description of the house, so that
+they share everything but the envelope, the airtightness and the systems. The sizing and the
+comparison of the two libraries are detailed in the
+<a href="../../validation/residential_reference_cases/">residential reference cases</a>.</p>
+<h2 id="the-house">The house</h2>
+<p>Six zones on two storeys (110 m2): the living room with the hall and the kitchen on the ground
+floor, three bedrooms and the bathroom upstairs. The street facade faces north, the garden south,
+the gable west; the east wall is shared with the neighbour.</p>
+<p>Each zone is a space of the <code>infiltration</code> variant that takes its airtightness, <code>n50</code>, from which
+both libraries derive the same infiltration (n50 / 20). The living room of the renovated house:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LIVING:001</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">variant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">infiltration</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">occupancy</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nt">occupancy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3600*{7, 8, 17, 23}</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">parameters</span><span class="p">:</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">floor_area</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40.0</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">average_room_height</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.6</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="nt">n50</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3.0</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="nt">external_boundaries</span><span class="p">:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">      </span><span class="nt">external_walls</span><span class="p">:</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">surface</span><span class="p">:</span><span class="w"> </span><span class="nv">19.24</span><span class="p p-Indicator">,</span><span class="nt"> azimuth</span><span class="p">:</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="nt"> tilt</span><span class="p">:</span><span class="w"> </span><span class="nv">wall</span><span class="p p-Indicator">,</span><span class="nt"> construction</span><span class="p">:</span><span class="w"> </span><span class="nv">EXTERNAL_WALL</span><span class="p p-Indicator">:</span><span class="nv">001</span><span class="p p-Indicator">}</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">surface</span><span class="p">:</span><span class="w"> </span><span class="nv">14.04</span><span class="p p-Indicator">,</span><span class="nt"> azimuth</span><span class="p">:</span><span class="w"> </span><span class="nv">1.5708</span><span class="p p-Indicator">,</span><span class="nt"> tilt</span><span class="p">:</span><span class="w"> </span><span class="nv">wall</span><span class="p p-Indicator">,</span><span class="nt"> construction</span><span class="p">:</span><span class="w"> </span><span class="nv">EXTERNAL_WALL</span><span class="p p-Indicator">:</span><span class="nv">001</span><span class="p p-Indicator">}</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">surface</span><span class="p">:</span><span class="w"> </span><span class="nv">7.8</span><span class="p p-Indicator">,</span><span class="nt"> azimuth</span><span class="p">:</span><span class="w"> </span><span class="nv">3.1416</span><span class="p p-Indicator">,</span><span class="nt"> tilt</span><span class="p">:</span><span class="w"> </span><span class="nv">wall</span><span class="p p-Indicator">,</span><span class="nt"> construction</span><span class="p">:</span><span class="w"> </span><span class="nv">EXTERNAL_WALL</span><span class="p p-Indicator">:</span><span class="nv">001</span><span class="p p-Indicator">}</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">      </span><span class="nt">windows</span><span class="p">:</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">surface</span><span class="p">:</span><span class="w"> </span><span class="nv">6.5</span><span class="p p-Indicator">,</span><span class="nt"> azimuth</span><span class="p">:</span><span class="w"> </span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="nt"> tilt</span><span class="p">:</span><span class="w"> </span><span class="nv">wall</span><span class="p p-Indicator">,</span><span class="nt"> construction</span><span class="p">:</span><span class="w"> </span><span class="nv">WINDOW</span><span class="p p-Indicator">:</span><span class="nv">001</span><span class="p p-Indicator">,</span><span class="nt"> frame_fraction</span><span class="p">:</span><span class="w"> </span><span class="nv">0.25</span><span class="p p-Indicator">}</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">surface</span><span class="p">:</span><span class="w"> </span><span class="nv">1.5</span><span class="p p-Indicator">,</span><span class="nt"> azimuth</span><span class="p">:</span><span class="w"> </span><span class="nv">1.5708</span><span class="p p-Indicator">,</span><span class="nt"> tilt</span><span class="p">:</span><span class="w"> </span><span class="nv">wall</span><span class="p p-Indicator">,</span><span class="nt"> construction</span><span class="p">:</span><span class="w"> </span><span class="nv">WINDOW</span><span class="p p-Indicator">:</span><span class="nv">001</span><span class="p p-Indicator">,</span><span class="nt"> frame_fraction</span><span class="p">:</span><span class="w"> </span><span class="nv">0.25</span><span class="p p-Indicator">}</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">surface</span><span class="p">:</span><span class="w"> </span><span class="nv">0.6</span><span class="p p-Indicator">,</span><span class="nt"> azimuth</span><span class="p">:</span><span class="w"> </span><span class="nv">3.1416</span><span class="p p-Indicator">,</span><span class="nt"> tilt</span><span class="p">:</span><span class="w"> </span><span class="nv">wall</span><span class="p p-Indicator">,</span><span class="nt"> construction</span><span class="p">:</span><span class="w"> </span><span class="nv">WINDOW</span><span class="p p-Indicator">:</span><span class="nv">001</span><span class="p p-Indicator">,</span><span class="nt"> frame_fraction</span><span class="p">:</span><span class="w"> </span><span class="nv">0.25</span><span class="p p-Indicator">}</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">      </span><span class="nt">adiabatic_walls</span><span class="p">:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">surface</span><span class="p">:</span><span class="w"> </span><span class="nv">21.84</span><span class="p p-Indicator">,</span><span class="nt"> azimuth</span><span class="p">:</span><span class="w"> </span><span class="nv">-1.5708</span><span class="p p-Indicator">,</span><span class="nt"> tilt</span><span class="p">:</span><span class="w"> </span><span class="nv">wall</span><span class="p p-Indicator">,</span><span class="nt"> construction</span><span class="p">:</span><span class="w"> </span><span class="nv">PARTY_WALL</span><span class="p p-Indicator">:</span><span class="nv">001</span><span class="p p-Indicator">}</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">      </span><span class="nt">floor_on_grounds</span><span class="p">:</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">surface</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40.0</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">          </span><span class="nt">construction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GROUND_FLOOR:001</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">          </span><span class="nt">perimeter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15.8</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">          </span><span class="nt">average_indoor_temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">293.15</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">          </span><span class="nt">ground_temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">286.65</span>
+</span></code></pre></div>
+<p>Three parts of this description are worth a closer look.</p>
+<ul>
+<li><strong>The party wall</strong> is an <code>adiabatic_walls</code> entry: a wall whose outer face exchanges no heat
+  because the neighbour is heated alike. Its construction is half of the shared brick wall; it
+  stores heat in the zone but loses none. IDEAS renders it as an adiabatic <code>BoundaryWall</code>,
+  Buildings as a construction of the zone whose outer face is left open.</li>
+<li><strong>The windows</strong> are described by their panes and gaps (<code>glazings</code>). trano computes their U and g
+  values for IDEAS (EN 673, EN 410) from the same layers that Buildings uses.</li>
+<li><strong>The slab on ground</strong> is where the two libraries differ most. IDEAS models the ground below the
+  slab (ISO 13370) from the exposed <code>perimeter</code> and the mean temperature of the room above,
+  <code>average_indoor_temperature</code>; Buildings holds the outer face of the slab at <code>ground_temperature</code>.
+  <code>examples/residential_cases.py</code> chooses that temperature so that both give the same heat flow
+  over the heating season. These are the only library-specific inputs of the files.</li>
+</ul>
+<h2 id="the-systems">The systems</h2>
+<p>Before renovation a gas boiler heats the radiators; after renovation an air-water heat pump does,
+with a balanced ventilation unit that recovers heat from the extract air, and PV on the roof:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">systems</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">boiler</span><span class="p">:</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">      </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GENERATOR:001</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="nt">control</span><span class="p">:</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="nt">boiler_control</span><span class="p">:</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">          </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GENERATOR_CONTROL:001</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">          </span><span class="nt">variant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">simple</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="c1"># air-water heat pump rated 3 kW at -8 degC and 40 degC supply (heating curve down to 30 degC at</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="c1"># 16 degC outdoor), 100 l buffer</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="nt">nominal_heating_power</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">        </span><span class="nt">temperature_supply_setpoint_heat_pump</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">313.15</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">        </span><span class="nt">use_storage_tank</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">        </span><span class="nt">tank_volume</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">        </span><span class="nt">height_of_tank_without_insulation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.8</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="nt">variant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">air_water_heat_pump</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">air_handling_unit</span><span class="p">:</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">      </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AHU:001</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">      </span><span class="nt">variant</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">system_d</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">        </span><span class="nt">m_flow_nominal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.05</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">        </span><span class="nt">heat_exchanger_effectiveness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.8</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="nt">solar</span><span class="p">:</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">photovoltaic</span><span class="p">:</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">      </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PV:001</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">      </span><span class="nt">parameters</span><span class="p">:</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">        </span><span class="nt">area</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">21.0</span>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">        </span><span class="nt">efficiency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.2</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">        </span><span class="nt">azimuth</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0</span>
+</span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">        </span><span class="nt">tilt</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">35.0</span>
+</span></code></pre></div>
+<p>The heat pump runs when a room asks for heat (the <code>simple</code> boiler control watches the radiator
+valves) and the outdoor air is below 16 degC. It charges its buffer to a supply temperature that
+follows a heating curve, from 40 degC at -8 degC outdoor down to 30 degC at 16 degC, and draws its
+heat from the outdoor air of the weather file.</p>
+<h2 id="generating-and-simulating-the-models">Generating and simulating the models</h2>
+<p>One file gives the model of either library:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.main</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_model</span><span class="p">,</span> <span class="n">simulate_model</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">create_model</span><span class="p">(</span><span class="s2">&quot;examples/residential_after_renovation.yaml&quot;</span><span class="p">,</span> <span class="n">library</span><span class="o">=</span><span class="s2">&quot;IDEAS&quot;</span><span class="p">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">create_model</span><span class="p">(</span><span class="s2">&quot;examples/residential_after_renovation.yaml&quot;</span><span class="p">,</span> <span class="n">library</span><span class="o">=</span><span class="s2">&quot;Buildings&quot;</span><span class="p">)</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">simulate_model</span><span class="p">(</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="s2">&quot;examples/residential_after_renovation.yaml&quot;</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">library</span><span class="o">=</span><span class="s2">&quot;Buildings&quot;</span><span class="p">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">end</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
+</span></code></pre></div>
+<h2 id="outputs-on-the-data-bus">Outputs on the data bus</h2>
+<p>Besides the zone temperatures, the systems publish their results on the data bus of the model,
+where controllers, reports and other tools find them:</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Outputs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gas boiler</td>
+<td><code>fuel_power</code> (on the gas bus), <code>fuel_energy</code> [kWh], <code>heat_flow</code>, <code>heat_energy</code> [kWh], <code>gas_usage</code> [m3], supply and return temperatures</td>
+</tr>
+<tr>
+<td>Air-water heat pump</td>
+<td><code>power</code> (on the grid load), <code>electric_energy</code> [kWh], <code>heat_flow</code>, <code>heat_energy</code> [kWh], supply, return and buffer temperatures, <code>compressor_speed</code></td>
+</tr>
+<tr>
+<td>Ventilation unit</td>
+<td><code>power</code> of the fans (on the grid load), <code>electric_energy</code> [kWh], <code>recovered_heat_flow</code>, <code>supply_temperature</code></td>
+</tr>
+<tr>
+<td>PV</td>
+<td><code>pv_power</code>, <code>pv_energy</code> [kWh]</td>
+</tr>
+<tr>
+<td>Pumps</td>
+<td><code>power</code> (on the grid load)</td>
+</tr>
+</tbody>
+</table>
+<p>The figures below are drawn from these signals.</p>
+<h2 id="results">Results</h2>
+<h3 id="a-january-week">A January week</h3>
+<p>The first week of January (Buildings). Before renovation the boiler burns up to 9 kW of gas to bring
+the house back to temperature every morning; the living room and the kitchen are held at 21 degC, the
+bedrooms at 18 degC and the bathroom reaches 22 degC morning and evening.</p>
+<div style="height:600px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.6.0.min.js" integrity="sha256-QaOVwtVY0T02VaHrr6pnoHLCwayMJp4O5n4YyaE3rJk=" crossorigin="anonymous"></script>                <div id="residential_before_week" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("residential_before_week")) {                    Plotly.newPlot(                        "residential_before_week",                        [{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#2a78d6","width":2},"name":"Bathroom","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"i5cE572XM0DwrRQ0apYyQBv9ssvDFDJAg0TsL0i4MUAwlPuenmYxQBPFG754FzFAWKlrdyitNEC68LAfbto1QD6EMrD+2TVArt5pav8yNEBdrEIo7fExQI1LS7d9KjFAIvRvoW7HMEB1\u002f54k24cwQJ64sS62VDBArrr0QI0nMEAmgkAkW\u002fcvQF0C65Dl3C9A0JnXExTYL0B9p8eAOHg0QMNfdZjU1TVAU1vy6Y3WNUCrWSs4GZkzQHpmbr3rrDBArd0gGG7VL0AA7neBUs0vQHPF7RWoyi9AGrz5z+HIL0C9DJjokMcvQCbW1hlsxi9AlhZQ6c4ENEDFC6IMUc81QNBa0pFJ0TVA\u002fmA7aEV2M0DmZKxCucwwQACSOMQTeTBAcOsfrJuuMEDt17oKHuYwQMBy6mHy\u002fDBA+h8wFGOzMEB+\u002ffnFkQwwQGDrVJjG2i9AqmEr5MXQL0DL\u002fbcjcn80QJD+sAsO1TVApQlWU23WNUDWMGOse5szQBqi5y8tqTBABh80a9HUL0AWBgNpA84vQDbQ5yhpyy9A8+kN\u002fKnJL0Aw9RC\u002fSMgvQLpxyujwxi9AKk9gIu4RNEDTotSlDtE1QAIcCE7Q0TVABbJA22JtM0DTgaQA3oUwQGWdnIiKCDBALWR7VpkxMEA2K\u002fpGuUowQG6KW\u002fUVMzBArWWukr\u002fpL0ATlJN32s8vQO1dInUJzS9Alumeb+7LL0AjpTaOs140QIJuiAH40zVAgiXWaNXUNUCjrJvDVGczQDO9+4rSUDBAA5RGYAzNL0DmATbqX8kvQCO0tIVmxy9AunI9igTGL0Cz0F3qScUvQIPKqqSUxC9A4hdJKsX4M0CYiwj9JMY1QNhFjHOL0TVAA6P3+pdTM0Aqt8eumDowQPDuk9I2VjBArvZcUC0ZMECDIfMWW98vQNpB\u002fUPJ0S9AWmsAWOnKL0CdZEbaI8cvQCOXUBT8xS9A7ebZ+inFL0C1yGsCThw0QMBMW6ao0TVApth02U\u002fTNUAdLefXs0szQFb9D19xLjBAEMWXDZbKL0DAPfgwsMgvQBN35KF0xy9AEP5ZjenGL0CNFNUQdcYvQLMucYXyxS9AVurQX\u002f\u002f\u002fM0Dqfq0Fpo01QJ5lP7ik0TVAVvfdVVhvM0Bo\u002ffme828wQCqfSPgf1S9ABoSojQ3XL0AdbZyxENYvQPbat8R20S9AIIhKwSbNL0A9Q5UGt8ovQFNXRa6VyS9AnRYDU3jIL0DS4IU9dTc0QMX6Sviv0jVAbmdsKwLUNUBN9TI3Yl0zQI6wT1VGRjBAFsIx0zHML0DjMMMERcgvQLarjVCwxi9AOhaz5KbFL0CabPkl0MQvQL3pCFkfxC9AKNFFOPblM0DVZvQ75r41QPBye+nvzzVAGrWtwZ9SM0AGrSg7u0MwQOM0OyBf1C9A3e6q44TXL0BtzIUs4tgvQH0WXxYW0i9AU\u002fTCBIrML0CN4KTDfskvQL0YuNiXyC9ATSxlarHHL0D2kAd\u002fAj40QKC3XYLH0jVA9dEhojfUNUBL4lU40WUzQGDHcxibUjBADe0+3UzNL0AwmF7U8sovQM1k3qLIyC9AI0iKSeDGL0BDwLWFzsQvQABW+TPEwy9AwlNuiXHsM0B2Ioi+DMs1QDZBPipp0TVAIvfFooljM0D2zprlyFAwQPqrqK8Zzy9Auv0mxGTPL0CQLkIcOs8vQJB4Vf4Hzi9AgyEvXbfML0D21icX4csvQLMm48kDzC9AM3gmr9zLL0CeBsR2MVM0QFs62Y3f0zVAMEQz92vVNUBQ3bZc8JQzQGU5Vo2HuDBA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#eb6834","width":2},"name":"Bedroom 1","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"eN87ata4M0B1iXpI3okyQIIEc3D92zFA0iFNcedhMUCq\u002fueQpPkwQEV4wiG7ljBA0wT9xn8QMkCl5C6hUuMxQGZCDmHt4jFAfjwhr2zjMUBOx5RowOMxQD1HAyN04zFACKzfHC3jMUBoWotD8+IxQDKV5U+X4jFABRs8OkziMUAwdZHtsOExQJqdeR4+4TFASARahZ\u002fgMUBAEvGZgt8xQL7NVZEo3zFAZu0rUcHeMUCV7wkqu94xQBDeWipToTBAc\u002f0DH1jIL0DdBJcGi8cvQAoogkkHxi9ALQBUzd3EL0AdNtXW6cMvQLA8y+r3wi9A85Ox\u002fK\u002fZMUBqVd59PtkxQLLPMxjJ2jFAErH7z7jcMUArbipllOAxQOLXLT4a5TFAkLn1GRnpMUDl8+5j9eoxQPYurIdY6TFAksz28BjkMUC+faXJWeAxQAYeKBl73zFAmI+RdvTeMUD792\u002fdhN4xQBb+d8Jy3jFAznKJu0beMUDLkF0tXd4xQAJy6tjkoDBAXe1rF7XIL0C9imahn8cvQKPMmOQTxi9AHeLJohzFL0A9OVNMHcQvQDPmCI8Fwy9Ac0LXaFCxMUBr9X\u002foa9oxQPLRN\u002fE02zFAWHIa8wTcMUD4fESnXt4xQJC0N4fQ4TFATTiuSazkMUDqgB2yp+QxQN1ZiRJk4zFAdtQ5Mf\u002fgMUCdeS3G6N4xQCqKbyNT3jFA6qlV2OjdMUAY4N1fTN0xQNg5UMhD3TFAjezK9NHcMUDotS6S2NwxQIOe9tpUhzBAc4AM\u002fDvFL0CtREZFZcQvQLDVcJsYwy9AUzw6pRHCL0C2ayUXfcEvQJqnEvwAwS9AcpHqRfOnMUCjNeOuitgxQHIJ1FLW2TFAaDHYZzDbMUCz\u002f298At0xQMNnLkwq3zFAJVqyJoDhMUBVXQGXMOExQPUPPwZP3zFAvYtlA5PdMUBitIuUYNwxQK7H0ODA2zFAW9ELqcXbMUCav6wlL9sxQD7PK0dj2zFA27sgz6rbMUATMRSeH9wxQJWE1sdJgDBAKtcOYonGL0CNHo+xNMQvQDM8A6trwy9ADSIrGQvDL0BDJj1GysIvQACY4U+Pwi9AUoIyz7y9MUBQZ1cN49kxQFsV6g762jFAG3OqcFfcMUA6g58uv90xQFPacFPY3jFAFk2DsqzfMUBKq\u002fB95d8xQEW11epO3zFAwAGtAmfeMUBthObvwd0xQPuh\u002fwGB3TFA60rfCUHdMUDGipyXk9wxQMoRzb6y3DFAiPMIJKrcMUD2FsIG8twxQF4VPU7KizBAds+FcMfHL0DqfsKQWcQvQJZ\u002fjBEuwy9AepZXD1PCL0DWPRTpnMEvQJYHT3UewS9AiOQNKDawMUBaGNIoMdgxQL77qTbQ2TFAwtEwUHbbMUBrFm6UIt0xQLoxk\u002fa33jFAuIAnHtnfMUCwyB1ueOAxQGXEBLeH3zFAjRdTrTzeMUAGyajJV90xQOvKjPUV3TFAHriQU+jcMUDWO86yTtwxQHtpQ2v52zFAAigT1MvcMUDjOu4DKN0xQH1jsQEbkDBAY\u002flI9YzOL0BAY5JeqscvQKYOK4MUxS9AXV3IxYDDL0AAjfM4psEvQAN8EnvHwC9A1u4WdO6wMUCiYYININkxQEZS5We92jFAIjUTLPbbMUBWAVvBAN0xQErkixKp3TFAcrL8KB\u002feMUDmEudQbN4xQPW39w1l3jFAtdgRlzneMUCwe1hGH94xQLaGWflu3jFAGu7r9mneMUCqfbymwd0xQNJSVLtN3jFA++0wh5XeMUC7lIPaJd8xQCsHggjftDBA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#1baf7a","width":2},"name":"Bedroom 2","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"4v9y8pCqM0BtVuQjam8yQBIwPH6wuTFATSPVAnY7MUCaIlslitEwQErPAhbpbTBADbg+QDQtMkDqKoV+dugxQFv298+R4jFAle5jPsriMUBS3o7BBOMxQLPNLC7v4jFA89EBJcziMUBV9eT3oOIxQFJtnBhQ4jFAOqllnhLiMUBzHYOphuExQE75FV0g4TFAjSimP4rgMUBY6o1Ebt8xQG5OF70D3zFA07vF2ILeMUCjcdewad4xQIK7mcoalzBAU8Z7Ic\u002fHL0AqRAkrgMYvQM0pXiwlxS9A80EyBA3EL0DjQTwdIMMvQJAs1948wi9A1niReBPXMUDg\u002fkdG\u002ftgxQGNbNs9z2jFAxdNA6IzbMUCmOlupq90xQGixzMrH3zFAMHSmVzPhMUCrXJ2E1OExQCD9q1zL4TFAygB9LHTgMUCGfBnSd94xQO10Wjm83TFA1ocuA0zdMUB7e5GX6NwxQOArXGq03DFA7fpPH6fcMUBu4GOXw9wxQIruGL4LgTBAjQ8N3dHGL0DglmzeF8QvQJNXUyPKwi9AZugg0jDCL0Amd7lSc8EvQG1pSLefwC9Avja8bbGtMUD6567Xs9kxQJ0CF9NQ2jFAkpprktraMUDWGkXGhNwxQLhImtxk3jFAhpQeV+nfMUCVgv33YuAxQDbOit0O4DFAnmWNFADfMUDKFLlTgN0xQLjRYLvt3DFA9cNlNq\u002fcMUAmHqYdL9wxQKV\u002fEvwL3DFAkO3pu57bMUBtKuHIpNsxQEAyGLefczBAgO+RG8\u002fCL0Aw\u002fGAV0sEvQFaO8RG7wC9A011tUuK\u002fL0BNFc8wfL8vQPAKQsItvy9AOsUGHCqcMUBAMt2pC9gxQOtv5qou2TFAZobv02DaMUACCeMW29sxQMjBgaoy3TFAzRDNCYfeMUDwG1MRrd4xQI5TZ7TZ3TFA8jFlPI\u002fcMUDuo6xdhNsxQGq8kmny2jFARdsahwXbMUBoYaZ4dtoxQPKh54Cj2jFAVVHj2eDaMUBaD6fTT9sxQNYKIaCKczBAlsqksF3FL0CT01MLasIvQAr3zyu8wS9Ac4zA4H3BL0BQ9TfoYcEvQM2TgjtKwS9A1Z5v0sW2MUAq4n56qdkxQG0CvxeH2jFAthyWZqTbMUCGNx5U7twxQKJ0Qtj\u002f3TFAq4\u002f0PLfeMUDI6qWZ494xQI43wod93jFAFogrqtfdMUACIQS\u002fUN0xQLPei9UP3TFASmU1LuXcMUAwPqlgQNwxQH5ytoBL3DFAduY6YC\u002fcMUBtAIZXaNwxQNYaPaQagTBAUJeGlVjHL0Dg0ICq\u002f8IvQGaeSNvrwS9AZqnwMynBL0BNBOJ8jMAvQAPTOP0lwC9AlYoVBRmvMUAzVN3A7dcxQDCb5G952TFA9tu0IrnaMUAqhcBeCdwxQKDEaBBR3TFAsD7ekx3eMUCgeqVkqd4xQJVhvP803jFALbWzPGTdMUAWPXRdrtwxQAUjW61w3DFAM+t20V7cMUAlfUetztsxQIZ8AxBs2zFAS7CSezDcMUCuhZiUgNwxQNr7TlT7gDBAEETHqx\u002fQL0CG4oi6fsYvQIP70mmfwy9AnVOdyzDCL0A9UCKFesAvQADwNLW2vy9AThqPNZ2vMUAoI1iS19gxQANaKahg2jFAdVcN+YbbMUDtW5m8nNwxQCYnQ3BZ3TFA+wMo3uPdMUDIElPsQN4xQCtBD3ZG3jFAygPCUCfeMUC9yRYKF94xQI1G575w3jFA0x9Iv3PeMUBqDZBPzd0xQFpyR7RF3jFAtppLmXHeMUDwDrI5694xQEoRgmM+rDBA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#eda100","width":2},"name":"Bedroom 3","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"ZcZVpFrOM0B11wrv8cYyQJhRNr0IPjJAvZio6u\u002ffMUCq1\u002fjEi48xQLCT8FCmQjFAclgg8D39MUBgVimvJuMxQL5RUMIM5DFANahrKmjkMUAr+vdXq+QxQD1Sw8t35DFAmqS4hjPkMUCbvVTu6eMxQPJ2sAeC4zFAAv7lJDDjMUCI0BJIhOIxQL4IWK364TFAPhWRKlXhMUAoC2rfNOAxQFUHduK63zFA8CT5Z1bfMUB4edX1Td8xQEW5R3UVxzBAHQpcNcjPL0AqNWcin8svQAYOGw1jyS9AJnlgpgLIL0ANqxYHyMYvQBo83Q6nxS9AVfRojarGMUCQ9vkJVdkxQMJaVd3e2jFAegUo+ATcMUC6FGilON4xQEgd7s1Z4DFAurliob7hMUBqGocKROIxQMspbuj84TFAejrs7IfgMUDeyfXrqN4xQLqUQmjt3TFASugIPG3dMUDQ7ysBAN0xQKsOGG7t3DFAe8pGg+\u002fcMUArEJtrJt0xQPuj5GT3ojBARpdilXPIL0BaYGmBhccvQMp0\u002f8gaxi9A+jPsk0DFL0AAk6PZZsQvQHO38cxswy9A5V7UTM2fMUAeAnsKrNkxQKY9Kxx52jFAHp7adBfbMUDaPEAQ0twxQI4iORez3jFAJff3mTLgMUCNucwLluAxQOvOsrgd4DFAZnDIHwrfMUCzj1rRlt0xQL0EZQoM3TFA9RlBmLjcMUBr\u002f7u8KtwxQG46dn8q3DFAcvoh+tTbMUCLrcxT9NsxQB45Mgz2jzBAk6VBwInFL0AGST+p1MQvQANfIriqwy9AQEahlrbCL0AKohFGQcIvQKMjF7PUwS9AG+kEOT2SMUD2VgUn79cxQKaoiJtQ2TFABqGg+JvaMUAGAowfJNwxQHWyAqd73TFAWIieN8DeMUCNSZoSz94xQFYTIS3t3TFAelclRqHcMUAq02DflNsxQDMqFJEH2zFAIKRwZQ7bMUCe8VKMftoxQDhnHXDI2jFA6IgAoijbMUAqCqmOt9sxQOWcfFvNkDBAfZmluE7HL0C6Mjpl2cUvQMNyC8YkxS9AevgWg9rEL0AAnaCNo8QvQFqYz8tjxC9AANfaOvSgMUCyUsDjsdkxQHD5DbKv2jFA0EJJ\u002fubbMUB1Weh3ON0xQGIYYbI+3jFAfenmvOTeMUB7OKMmAN8xQB53l1SJ3jFAboL\u002fXd\u002fdMUCeMHljVN0xQKXHyXsf3TFAQMnUo9rcMUBS5eEwLNwxQPhgnipa3DFA4FoPe2LcMUDVUHa+utwxQHCw7pntoDBAJqyZVxLGL0CGPUp6GMYvQHYoF0n3xC9ASvKtZhTEL0CwXCSpXcMvQFqlqhPUwi9AFaCZyL6eMUDr9YmG19cxQDWbCXd62TFAHvMj\u002f+vaMUDldurLRtwxQHD54meJ3TFA094iT0veMUAYTieUy94xQP1iMLU53jFApZUl82jdMUD1MdlTttwxQPiaXjuG3DFANa1PYlvcMUD17saDxtsxQNZxK\u002feb2zFAeN\u002fBR2rcMUAA+5g92twxQIYWYxmvozBAqregryDKL0AW2\u002flq\u002fcgvQP3mTtkDxy9AQEHUCELFL0BQGSaQOcMvQLZwnpFMwi9AmO4MtUGiMUBDgoLTx9gxQEp1yHZ02jFALf3BUcHbMUBgWG9t4twxQJB4ZLKV3TFAcA83oxLeMUDNVAqHY94xQAqzq7td3jFAzSruVzjeMUBbpi5II94xQLCM9CJ\u002f3jFALQ1UpnTeMUCGbdDQzd0xQBs9NXBg3jFAyIbYI7jeMUAi+H4eVd8xQCj0JgaX2zBA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#e87ba4","width":2},"name":"Kitchen","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"cBBvCY+YM0DmJoWFRA4zQOoqlr9ryjJAMMwAdQ+AMkBY6fEdvjkyQF4ubbVf8TFAfid0GlGqMUByqzhWqZQ0QAX+6Cr\u002f3jRAcDyCZ1zeNEAOnKG9S940QK7lJ78t3jRASjsRSwveNECesw\u002fg5N00QMMMu7jA3TRAEpjmBKvdNEC2kclpYN00QCK9Hq5b3jRA7iCDVgneNEC1j6lEQ900QL4uuXN\u002f3DRACiKHktzbNEAq86Oc5ds0QCKgBSm6ZDNA8+YRs7dJMUC+6QrlJIowQAuM3WDmGzBA7cNAKtXcL0CDRFbWztcvQGPgG2Yg1C9AEHYFcSHQL0DdsNXl2JszQKKIdWkQ1jRAOrNWwFvXNEDbc+72eNg0QI6zSiZd2TRAltn1nQfaNEBa2O9Tlto0QLg8bEAQ2zRAHr4WpifbNECWuSMXzto0QPjReXMz2zRA3S9kfLzbNEC9OFCgfds0QBYtQb442jRA+2UpnmfaNEAA+OIKldo0QGb6LQ0cQDNAGzLFerYDMUCyJjWOaj4wQB2ftlcQ4y9Aq5yqfB4sMEDz15\u002fNntMvQAZl3bRU0C9ARoKuZmbML0CVnjXpwZUzQBv3GOpF1TRAeOr0uZTWNEBO1MmMr9c0QIVrJOGU2DRAeGVqzkjZNEDTaAeNwtk0QKKMW4An2jRAKgPyoDTaNEDDx\u002fC7+Nk0QOtYbS+y2jRANTiivBXbNED76+Kol9o0QBC3FcZm2TRAe+4EF2DZNEAe5ZgIi9k0QGjhawGrITNASFHDla\u002fGMECbRDHCsgQwQJr6jSQc1S9AqmC44G3RL0BG\u002f\u002f7T0M4vQPDLBUz7zC9Ahh3Q4MbKL0BjajESfpAzQAP+HbRZ1DRABYEW8uHVNEAdL44d+tY0QD0UHNOr1zRADUDYxnnYNEACBpDnz9g0QK39QYbm2DRA1hpIasfYNECFMTfZpdg0QH19hqWI2TRAaIFI0LnZNEDyPmVcL9k0QKaT665S2DRAqAVJDpvYNEDe+xIEAtk0QMi2ET8BFDNAuhx\u002f2EWuMED2BfbC4vIvQB1QCY\u002fZ1C9A0LIrdujRL0DmK8svy88vQIrBurwnzi9AqowhCHrLL0Dbn0lME5MzQJtN7KkR1TRAwu7UKHvWNED2aYm\u002fgtc0QIhJTTk52DRA4xtL48zYNECy62hpMtk0QDbeFRJr2TRAej\u002fQwYLZNEAzRrBZjNk0QHACi7BZ2jRANqbRIK7aNEDrTzh4Ldo0QGAMGZon2TRAGonDImTZNECDdhJbtdk0QDZU3YWGJzNATevwEcDLMEB46PngZAYwQG1YnqO71S9AalhRsz7SL0Dt+674n88vQABqUPXMzS9A4P4qVTHKL0BQbAqKy5YzQBD6QN2U1DRAy3lhViDWNEBWVRXNL9c0QPNv+KsC2DRAaz0gb6LYNEDN9m3NGdk0QJOapXVW2TRAjp2E7GDZNEB4l+wHX9k0QB7\u002fXGRF2jRAwtuIb5HaNEBiiErXEto0QEYf1x6R2DRAg0G8VH\u002fZNEAw9ONq1dk0QE2KDdkFLzNAqsxJJtXhMEAgywRloB4wQFOIPgGf2C9A8OZqHzvTL0BgvUscGc8vQIbzAuLzzS9Afc\u002fhOLzLL0Cikn\u002f2qJ0zQOPX6ac41TRA3hNMFrrWNEBuHTMQrdc0QLtHsl9R2DRAbWlK+t\u002fYNEA+hqaST9k0QEvq5MOS2TRAgFd0XtDZNECzwKM4CNo0QL2xwaba2jRA5ly1JZTbNEBqLx1aANs0QGgCJwBk2jRAKKdXCb\u002faNEDLSfSPMNs0QKql6lKmZDNA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#008300","width":2},"name":"Living","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"8suGB2KGM0BrBB7Ehe0yQOqC1vUkpTJAwNuBgXBYMkAq8C7JihMyQDjmSWLVzjFA7Uk4Bi2NMUASj3xAXm40QFXIsAYh3jRAyEdsV9PdNEAV+Oga0N00QMpkvv6P3TRAuOkH9FrdNEArg\u002fDpLd00QOa3H2kK3TRAgusIQPfcNECb5L3Potw0QBvVYFNx3jRAUlmEqXfdNEAVuxMQttw0QOL3TTmb3DRA8lqDoG7cNEDqKny1d9w0QMqUUzFgPTNAbmC8uQItMUD6jfULFH4wQNJNAwT2GzBA6nwRgyDfL0CmsO6UQNkvQJouryp81S9As+7zAbrRL0B2ePzSuZEzQKqOGMQI1jRAgrlSEjTYNECazG9hcdo0QFZd+Lgx3DRAq67MRXvdNEBe2VHTYN40QLX8nc633jRAiji7WcfdNEB73utQPdw0QK00OQnK3TRARR9SwuHcNEAmgrYjjdw0QMP\u002fVZOP3DRA1l7EsF7cNEDyxJ3Nb9w0QDBSs0epPzNApWygytsuMUCGQHj8DH0wQLsgOGQtGjBAWrHlV4TdL0AT4uaHD9kvQKO2nx4f1S9AppTU8mHQL0C2rXqglJAzQM0KQF1N1jRA7juPwE\u002fXNEBO9ZVuC9k0QGgcYz3J2jRAmxy+xAXcNEAlrAzISdw0QJIUMgRb3DRA+sadNKXbNEADai26u9o0QEofNuDQ2zRAy8c7xcbbNECaf8hbI9s0QEvMYNQy2zRARUsLo8\u002faNEDwl8Td4to0QPL704k1GDNA6zdG6hHeMEBL007kHSEwQH1IFl542C9AYMS32dbUL0DW19djCtIvQEB7UwEQ0C9AXY1jI7LML0Cokxg4WoczQNqJdHCm1DRAqNdd\u002f0HWNEA96ifkp9c0QIJLvxjp2DRATTDikFXaNECylwdYdto0QPhv2\u002fvQ2TRABeLN2x\u002fZNEALqL\u002fbttg0QH1lMQUD2TRASLeIodTZNECDDYvPOdk0QEXdVSaR2TRAS+NyIbjZNEDrXDTYGto0QKrO6PfbBjNA0i1jgk2\u002fMEBykTYXoQowQB0soP6E2C9AzXaHGFrVL0DGH0nqRtMvQHqYLuZr0S9A0zkt3zbOL0B7Y1ZLAI8zQD09ADxS1TRAuyrcMeTWNED6QvK+79c0QGLKuSSc2DRAJbTRHUrZNEAuN1ZqsNk0QM5B7L2s2TRATTfLXGrZNEAbPWRCRdk0QOUCTQ7J2TRAcJYmq3PaNEC20KS929k0QMPYurEs2jRA+rl\u002fbCvaNEColGyCeNo0QLAzbbq7DTNApaN0girDMEBLuVw67AcwQI09f\u002foK1y9Ahh2QKmzTL0CG7mg1CtEvQBZGDkVczy9A+l1W0nDLL0DFKbAwtoIzQOY1vwRN1TRAuLBhlHnWNEDzItIl4Nc0QFBE3Qf62DRAjXZMCsvZNEBlJhBXSto0QOpKkBs02jRASpuerq7ZNEBT84AyXtk0QLYMp5L72TRARoV2lpTaNEBOcDuPCNo0QDOHQNkn2jRA7evgEonaNEB1fW4H0to0QL1lXL4CHDNA6IQ6TYTnMECCKMF4wzIwQMAYvJu83i9AOji6pA\u002fVL0CalJofTdAvQK1MNUaBzy9Avbg\u002fO5jNL0BmNX3Bm4szQIVNs21V1TRAYEB0bsnWNEC2b6ECmNc0QAt2fwQd2DRAxqlqrpjYNEAj\u002fT4U+tg0QPVwLkMo2TRAQnNaE1HZNEBOddkve9k0QAbIc2t12jRAJpMJli\u002fbNEDIeQJuk9o0QJ4G\u002fOU+2zRADvxOiH\u002fbNEDql\u002fsN+Ns0QNBxxu3uSjNA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#8a8985","dash":"dot","width":1.5},"name":"Outdoor","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"Zo\u002fC9SiEHEDm6pjgweQbQMAta3VMcBpA4M73U+PlGUCAZmZmZmYaQIBmZmZmZhpAgGZmZmZmGkCAZmZmZmYaQIBmZmZmZhpAmheQQ4uMGkB6FK5H4foaQIbC9ShcjxtArUfhehQuHEATrkfhepQcQG0bonPyRR1A7R0SVYS8HkCmHFpkO30eQC32oEs31xxAjU7VpiXpG0DTG+zWo3AaQEZ3nhBSKhhAZs3O\u002f\u002f\u002f\u002fFUDzrzx+5noVQKa0sHdUDxRAYMHylIZUE0CTf+SZVjgTQKYpFWcfzhJAU1VVVVWlEkCtkDSl4gwSQHOx5BdLXhFA2vFMHoXrEUAAgNqSX6ASQGZ5vR6FVxJArdaARbbnEkDatIFOG\u002fQTQC1cj8L1qBVAQMhQ2WGaF0BgmQanekEYQCB2Bci95hdA06NwPQrXFkCtR+F6FK4VQO2uOEfh+hRA7f5KP7epFEAa5z67gJgTQGDjyK1HYRNA7VG4HoVrE0CA61G4HgUTQBqF61G4nhJAk6xZpeIMEkDg3whl9JYRQI1QRm\u002fLOhFA09ElCa\u002fKEEBGUPwYc6cQQLMehetRSA9AJjjA\u002f\u002f\u002fXDUCNF3l0kzAPQI0tfi2ytQ9AQOvQo3AVD0CTR+F6FHYQQNOK\u002fWX39BFAGvJBz2b1EkDalbIMccwTQMYHPZtVXxRABoGVQ4u0FECa7Xw\u002fNdYTQA3kw8WOiBNA4CXv33vdE0CaY\u002fRLgT8TQMbBHTsmqBBA2pbyBDRxCUCmUoqG9FsEQA1neoJMywRAzUEhpHA9BUAaNjy9UtYEQE3b+X5qHARAsxxaZDu\u002fAkDmtIFOG6gCQHOx5BdL3gNA5o1vSzfpBUDzUbgehesHQI3rUbgehQlATeqwFtkOC0AarkfhehQNQGYUrkfheg9A5kEd1EE9EEBmyW6Qd7YNQIBUnH34TAtAWrgehetRCUDmUbgehesGQCZFZ0RvywVAWvBgnqj\u002fBUBzkzUfPuMFQBph8Ep+EQdAJi9hZtxsCUCaihcJo+MKQKYgTOUZ8wtAgJmZmZmZDUCAmZmZmZkNQI1uEoPAyg5AE4XrUbgeEUAgMQisHJoSQI3C9ShcjxNAZo\u002fC9ShcFEDzy6\u002fa+V4VQK1H4XoULhZAM8zefmqcFkDAzMzMzMwWQMDMzMzMzBZAwMzMzMzMFkAtsp3vp6YWQLoehetROBZAU7gehevRFUBTqTj78BkVQHr+xgqQCxRAAKwcWmQLE0AN16NwPQoSQEAK16NwPRFAcz0K16NwEECAt3IJ16MPQE00LJSINg5AjaMp9ihcC0CabOf7qbEIQM3aiv1lVwhAplFuyCxoCEDzwTxR\u002f0YIQDPSlIqzjwlAwPUoXI\u002fCCkCNwvUoXI8LQM1Lkhi9rQxATejvj8L1DUCaeaL+jVAPQMBB3tnGSRFAhjqogzo4E0AmhetRuOoTQFo5tMh2OhNAehSuR+H6EkCGGARWDtUSQLMehetROBJAU7gehevREUDtUbgehWsRQJokqGCeKBFAE7zDrUdhEUDa9FofhWsRQEDpAuNJYRFAul+Re6iaEUAA6Ea628QRQABO9QJ30RFAmnA9CtejDUDao3A9CtcEQIDBbJyxZQNAjYCzMUbuDUCTezoDd5ERQHPSaCo77BJAjTsY\u002fGXXFEBm7lpCPigXQPM4RUdyiRhAmpmZmZkZGkAtMzMzM6MbQO3STWIQ+BtA00s3iUGIHECNwvUoXI8dQMBJnlc5jB5AYLpJDAJLH0ANkjhvEtMeQIag3AesfB5AgAxr11xYH0DNbdgtay0gQLaHLViLqiBA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.2f} kW","legend":"legend2","line":{"color":"#2a78d6","width":2},"name":"Radiators","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"WndvTkVzkj9y+m3cBmaxP7pZ64Jwq7A\u002fygMA+Bj\u002frD\u002f2mtPTnNipPxS1S2PqHKg\u002f+YzhEUpK9z\u002fzpdJc9UsJQNdPuMHBzQlA+qFFfsPVB0BLVNPg5MoFQO0lwB59vAVAvujF5M0QBkDPrTUh03kGQJrczm\u002fB+AZAQcjwfRprB0D0W\u002fA2KjMIQHYNXwhkBwhAGNh8lSbLCECNJwJD1WsPQMAiQTh7ihBAbVlFzL\u002f3EEB47rorm74PQE1kp\u002fTyCQFA\u002fJUNMZzt8j9os5i7KTDzP6JHQt\u002fA3fQ\u002f4Ss2qI2t9z8N+23frfn6P4Hy9Pg+BP4\u002f0ImK8ouQDkAyTiHe+3cYQEfscBGnnhlA7sdbMWT2FUB5roKs6p8RQBF8vQ0yBg1ArtCgRoeqCEDu2ahfXzQGQNyFcV37PQVApmax8QshB0CcT+6ta8ILQIbwrGIQiw1AZC6FzeB2DkCJUuiuyS8SQIdj84K1gRJA2nVB4WZqEkA1riQ9MCERQIfW7WlSswJAGLssoL+r9T9Q2UmROEz1P3li0mIlg\u002fc\u002fdXDao0NO+j8ZBrraber8P8CEnxR13\u002f8\u002f4CX9jWKND0ASHoDtyzAZQNiCNGefEBpAsDFPul7bFkDGtXG5V1ITQDLkLeRhgRBAKJl1QwdwDEDI7DvNmpUKQL7DWViTnApAkWGkTa5sDEBQWR8HeBwQQJIm\u002fb0oehBAmdugJRK1EECsaXtJ+4sTQN3nZnN8\u002fBNAcsMWeN5RFEDW7dpzYiYTQHpPYjU4NQVA0YxbJREf+j8RjYQwmqz5P2pPE6RCGf0\u002fyFYmTHJzAEBe8Y20xMoBQChnL+T+yAJAngGKoXB2EEAwFzmC5KEaQC3YHONOSRtASTGay4T1F0DT5kk0K7MUQOAeTN2wvBJAa4YtKUlrEED+R9UABnAPQGyUcuPJmRBAe0\u002f2\u002fw4uEkBgRoZMMJMTQIw0XgMukhNAq5ig+nKqE0Caxjm+klUWQHm+ayu4mBZAmCWH\u002frYeFkA6lSd2UjAUQATUlh6UNQZAsZXud3TV+j\u002fg6\u002fBvaM\u002f5P4Os+j6VDf0\u002f8tC034VB\u002fz+EIWkdqGwAQC+MtrwvEwFArphunj5hD0BqrJtplFEZQO8VtiLqEhpADp2v7yagFkBo\u002fRdXm58TQOJ1IdsiNhJAK24HeLciEUAeKDp5f4kQQFk+zyQSoRBA8mfxWbJQEUBSQ55BDfARQAN3Oq17lRFAc7n9QP+uEUD48maZ94MUQKNFpyG53RRAxncmhFWvFEDP\u002f2SULQsTQFguuYD6uARAigrGpEZV+T+IUjUf\u002fBL5P0zGjCrJEf0\u002fjRhee3QiAECbAlqrBXMBQHbhDesuewJAGwmAtzfMEED1RKUkH6EaQOnMg3V7OBtALMq+CpOgF0BS705KI20UQOazdCYUjhJATsztPqo3EUCtiuevCkEQQNnlYprsXRBAPqCo5EdZEUAW6xyYU04SQDAPF9czARJAUKJTz50NEkD4KLjQdNEUQIb3THma3hRA\u002fl63tOV+FEB33BHAm74SQP4mY3L4KARAq3c1ySJN+D+1dlNMpG32Pxor4d5apvg\u002f4i+R8Wz7\u002fD\u002fivEWngQUBQK1hLkRy7QJANZfsUI5yEED08mPrBtoZQFr++HaaKRpAcYVGIvXCFkCbypxgnwkUQKckJ3mrCBNANrDBQ7JPEkBrIYUuC7oRQD2lfIjufRFAYr1mqdt8EUAe\u002fIorE3gRQIc6qPieghBAgam\u002fqNsiEECrNP9EQMcSQMoH4X9tyRJAHkRUa2E5EkDAv7S0RlEQQDpq5ZVTlQBA"},"type":"scatter","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"%{y:.2f} kW","legend":"legend2","line":{"color":"#eb6834","width":2},"name":"Boiler, gas","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaFLDiZJOC0D2lz4F5e8HQKXakx3Plg9AeKsPSFbJC0AKmZRuHL0KQL4tmvPmUQtA8qCwb+3dC0DyAC3pumAMQDaWJS6pBg1AhicMGUx5DUCQcMvEDwQPQHoj6ayyUw1A6If15j2tD0DIT0JqdS4UQJ4nDb\u002f0gBRAW1ZvTaX5FEASNLNwvqMSQMnYTAAKOglAq0nRGjas9z94OLW\u002fv\u002fz5P7Ixhx28nvw\u002fqvh5\u002fOIFAUCI5xQxBbYCQI6dGZ0eVARAA5dDm0TpDkCijEsJEeQdQIIXCbgVlR1Ak46Wu4MYGEAXkDF6cqETQJXTc4pLbxBA4rEQ1F7nDEAT8jQDCuIKQApZxMq25ApAXq3OK+4ID0ASygny1lIVQLw\u002fLkZ3ORJA9367R0MNE0B2Mh48nqYVQD6jfDCZshZAwsH5gKGGFkASPju5pQUUQLZ8XqBaAwVAkYwIDRV3+T\u002f6WWJwnvf7P04eifXg+AZAfv4Iv8LTAUC+3caTc7QDQI1NvWtKewVAiNOet4TXFEC7pwKzAcYcQNXTmgDzQx1Am8cWntOSGUC415OaxfoVQGa2Y0RF0BJAkgB7uHuxEEAkpIQUblsQQB6Oq5g+shBAPWRWFMWzEkD1q7FAl8sUQKfoLVCLWhRAZ5ahGDCpFEBaS9kwPhwYQAEU34BiiRhA5FrQLf3+GEBgOZgoXlcWQDo5w0R8TP8\u002fz1\u002fkaFGLAEAqepJ3B9AAQD9vTURRdARAFTX1E54pBkBzMh9ueV8HQKrYy5HDaAhAFBgKGZuBEUAX0QNQySsgQIamkis2mx9A6A+7pv7mGkAxSHyAtM4XQBJqB4IRuRVASTBblaRCE0B861rAi3sTQLn3UI0jMxVArk7GI0EjF0Css8XR3n4YQMGaIpFz4BhA5YQOlB4UGEDwLGFPfL0bQBjZMjZ5RBtAba9WWqGnGkDSGmbTuVQXQHq4AroRKvw\u002fxtZYOTTv\u002fD\u002fuffPzaX0BQPKQWs66xgNA8hCRniLABECO\u002fR4VD4AFQE\u002fu6aOmPQZAVfTqWWnmCkBDYbOiIRMdQBapTLtM+B1A2cW7a1RNGUCC6dH9g9AWQNZt4WQjtBVA5AxM4q2PFEA9ZHuPTC4UQHyrW8XUuxRAh++8LrGkFUDHTi7eEkgWQMgmY5QqJxZA6debstHKFUCt+ES1JcUZQEb5YiTyUhlA+qWhpaokGUDG\u002fhKbNBMWQJrpEhAylAZAIRfU7ejVAUBmtvS1z+wAQPRDMpgyFARAallfAy2vBUCFlAShsgQHQILxsmlxBwhAY6AV+ke\u002fEkBygxwSMh4iQDLcL7+wTh9AWkL9hGxsGkCe5KPQ0KkXQBZNyM5u4hVAYMAnBkiBFECEXBDBerUTQHBntoMbhRRAkNCkbmrhFUCJN9DWctIWQLhVRPCahxZAXgVmW\u002foqFkAKcDaySRMaQJabkI3mhBpAiln3s63MGEB34WFzpLMVQIjaJd0NDQhAOStlvQDp9T9L6y7o7Lf7PxgIZU5NowFAcP\u002fwkc9pBEAV9cRmWWgHQEp4XwTDWAhABG9d2MIsEEDgX7sy44QeQO6XgBt5Lh5A40+NtKeHGUBGrdvTWqIXQOKh4K+T5BZA7Op4hkMQFkAbA5gadIEVQK7WqIpAbhVAwZi3gLZyFUDo\u002f3Tq3mQVQCdsT7SoZBRAxlY909rBE0Aam86GUT8YQN14YVIoCRdAu+GB62MIFkAz+9ZLdL4SQBPzYI8gkAVA"},"type":"scatter","xaxis":"x2","yaxis":"y2"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"matches":"x2","showticklabels":false,"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"},"yaxis":{"anchor":"x","domain":[0.53,1.0],"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"xaxis2":{"anchor":"y2","domain":[0.0,1.0],"title":{"text":"Day of the year"},"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"},"yaxis2":{"anchor":"x2","domain":[0.0,0.47],"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"annotations":[{"font":{"size":16},"showarrow":false,"text":"Temperature [degC]","x":0.5,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Heat [kW]","x":0.5,"xanchor":"center","xref":"paper","y":0.47,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#8a8985","size":10},"showarrow":false,"text":"21 degC","x":1.0,"xanchor":"right","xref":"paper","y":21.0,"yanchor":"bottom","yref":"y"},{"font":{"color":"#8a8985","size":10},"showarrow":false,"text":"18 degC","x":1.0,"xanchor":"right","xref":"paper","y":18.0,"yanchor":"bottom","yref":"y"}],"shapes":[{"line":{"color":"#b8b7b1","dash":"dash","width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":21.0,"y1":21.0,"yref":"y"},{"line":{"color":"#b8b7b1","dash":"dash","width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":18.0,"y1":18.0,"yref":"y"}],"title":{"font":{"size":15},"text":"Before renovation: a January week (Buildings)","x":0.0,"xanchor":"left"},"margin":{"l":60,"r":190,"t":70,"b":40},"font":{"family":"Roboto, Helvetica, Arial, sans-serif","size":12,"color":"#8a8985"},"height":600,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","hovermode":"x unified","legend":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":1.0,"yanchor":"top"},"legend2":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":0.47,"yanchor":"top"}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div>
+
+<p>After renovation the heat pump delivers about 2 kW at most and draws less than 1 kW of electricity. The
+house cools slowly at night: the bedrooms barely leave 18-20 degC. The bathroom, heated by its old
+radiator with water at 30-40 degC, struggles to reach its set point in the morning: a known drawback
+of keeping high-temperature radiators with a heat pump and a setback. The PV produces on sunny
+afternoons, out of step with the morning peak of the heat pump.</p>
+<div style="height:900px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.6.0.min.js" integrity="sha256-QaOVwtVY0T02VaHrr6pnoHLCwayMJp4O5n4YyaE3rJk=" crossorigin="anonymous"></script>                <div id="residential_after_week" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("residential_after_week")) {                    Plotly.newPlot(                        "residential_after_week",                        [{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#2a78d6","width":2},"name":"Bathroom","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"wodKGTMbNECjpjAMadszQJ4gEtUa0jNA9WnZTkfJM0BStNAf1cIzQN7buTbjujNA02U+yQZ0NUCDbNuEJtc1QEBHVjx9zzVAqozdQsVTNUBblLC+\u002f3Y0QJ2ZIj3QIDRAfWb6CKb6M0BWipCtXOMzQM7Td7Qs0zNAZrHbYY\u002fHM0CYQ6fGD7ozQCjFK2p1qTNAvozDgJmaM0BDi45Pb\u002f40QIU7yv2uzTVAvd0jbsDVNUB6TB\u002fVjRA1QNtLENyGEjRA\u002fUqzKqutM0Br5MT2tH4zQAvAcLxQXjNAo2cIR6lFM0BQVnU3hC8zQNsO5MWxGjNAy\u002f1PRHTHNEBF6CuWB5M1QCDMw5+cjTVA6kfnhXwgNUC7EV2AW0o0QP2F0CnwJzRAaopopNk3NEBzAcgeNUs0QAoVoNRVSzRA8wtZ6j0cNEBWqDFKotUzQAvwD3hMpjNApTg1LUWJM0CwbGT1u+A0QOu6OIMZzDVA69R7e2\u002fRNUAGa0hk7wc1QH5gDloi+zNA8yEjRSWPM0BSRp9qlVozQNMt1H5wNzNA1ZjWuiAbM0Dqg2MjaQMzQAvqwEv26zJAI\u002f4NrF3ONEDrHUbG56E1QKscyXh9fzVAdRYSxIDjNED9Iu5H5uQzQKDoPKjbqTNAokn7DtqyM0DQdimeaawzQMLbd1iNmDNAsGoBe+91M0B43QGpfEczQKUbcByqJjNAvVrefo0QM0DdQlRP3oU0QD34OuocgzVARcG6qoe5NUC4LsHyhNw0QMpQ08w2ojNAbkKTHw4hM0CeqTr10uQyQOCw413WvDJAWjAcxw2dMkAGwlX8DYMyQIDrUAEfbTJAQzLD1JZiNEBO1cYQRzw1QBaX7ohZITVApjioTkGONED2PnHQWnQzQGtyrUW0ITNAkKETftsiM0CCuU1PoxczQFYlp0Kb7jJABg2MZT7DMkAL3MlJC6AyQDsCwlY2hjJAIFh1PzlyMkCmFGxVxgk0QG7II5Y+GzVAAqf9nYBKNUArbMPO1Y00QEsQbi\u002fSRzNAEmEPsI6+MkDeAZeAxoAyQLNPvL2dWzJADsP2lGdDMkD4gzOJPzAyQIgcGQnbHjJAWoPbz4YTNEAD1ryAOMw0QG6EbtELuDRAPaTbQ9okNED+OrqDficzQOPOoyVNwjJANvuSou6eMkATpVUpqI8yQDv30+iyfzJAwPd7G0dmMkDW1PqEN04yQDvhkVZbOzJAfXjIvyErMkDTOy82+LUzQGOFwLixyjRAWwQnCgT7NEDAt4Qx3TY0QHuLCGOm\u002fjJAUhhnZWhyMkBeLzrAmDEyQLIIRrtXCjJA6o6kN\u002fTtMUDCCkILxtUxQLovORPTwTFA684VjQGwM0AWWhsZzpg0QLIFeb0JvDRACGzgU3UJNEDINae\u002fuvkyQJVlFx2ooDJAcslVq5qIMkC+u63x\u002foAyQHjpO+VPbTJAsJtfNzRNMkC+\u002fBr4Yi8yQPMogWPrGTJALbusr7YJMkCtNEp6bqwzQEOGHyfWrzRAuLEpueDgNECqagCTYBE0QHV3MuTA5DJADvgQm4hfMkDQ0Mn5jCMyQML+5BxH\u002fzFASuZ0l17eMUCoZyODu7wxQPVoNn17ojFAewvGTQeTM0DtKwoAOoE0QHDHYIkPnzRAc91uQmbqM0CtygDKQtUyQC2Uvl2uZTJAAPpzsvA4MkBl4I6qfyUyQMqyjNiNFzJAE3raOigLMkDDBS\u002fUMgIyQOtXeMXT+zFAGzbDL2b2MUCOr1QMfVczQMVkMewHYTRAIH8G4amaNECaDrhmRtwzQNvasdvg2jJA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#eb6834","width":2},"name":"Bedroom 1","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"rmXj1YiPNEDNmNAdCXI0QHpzl4ulbzRAA8gx3hFrNEByqcmbCmc0QGhtDWuwXjRAIpBJRtVYNEAAgbzZ3+wzQOhFjzn\u002fvDNAUzLkLxC2M0Cj5UmTRbczQO3HvyhRrzNAECUfPB+iM0C4ITQr5ZUzQIJflniXizNApuoA4F+DM0AaYu4ohXczQKjJaaT9ZjNA2iugPa9YM0CrrGUJT0ozQNK2V+xgPDNAC1rT0vgrM0CjivDJGyAzQIhSQVScDTNAEmgZnO1aM0Di64mB0XUzQF7GiOW\u002fbjNAe5Z0hVVlM0BTZCvMx1kzQIgRVXgBTTNAW\u002fgOjzVFM0C9i8cEguEyQIoz\u002fwT9ujJA8iNZwfTWMkA4dmBwsUMzQIh5d9R+uzNAK7MFT7EeNEB1rrENoGM0QDuHRAJSfjRA1Yq1TfFDNEDSBnV0t8szQKANOyfMdTNAQ3KqVclGM0AijkhSGCUzQPNx2DKODDNA+Jz+OFj5MkAoFB0GFOcyQBp4PxtC0TJAOOMYr\u002fkcM0CS1OdNDzQzQNDrPLt5KjNAq5SApiQdM0BITOhhSBAzQDadUAHsADNA8guo\u002fRb0MkDzCI+C0o0yQKrTuj\u002fEZjJA5r1fNEpqMkBif5wxg5syQNBDVeUr9DJATuWzpcRUM0CbEDBbhnUzQHoPc2OpajNAjQ8gKE04M0BQzyISOOwyQP0bXmPLuTJARuB2XhycMkDb7xqjxYUyQLpQccl+cDJAw8R+7N9YMkC42XmUuUMyQHPsWUbyLzJAW7XUfjJ8MkDz4BA44ZIyQEZ5utyviDJAkg\u002feO8F6MkB1fgyQmW0yQC5rHFYfYjJAIAXReq5bMkDGD\u002fRNiv8xQED5Wek48DFAdSW0AFX2MUDzFklwFQkyQChfHDUpQTJAXRRl\u002fKGYMkDrfb8circyQE2t+Zr7iDJATfLoX2BJMkBGeV+SZRkyQJtEwjvB+jFAU\u002f9qep\u002fwMUBooo9LHvAxQH3Oapfv7jFA9kZjtfDuMUCyJczeYu4xQN3xQV3d3jFAMh3DNNgfMkDYxzCkszQyQBqhB1RCLTJAnWB9WjwoMkDeP0wYXSMyQFjy9D6THTJAM1p9hcIbMkCt0Uaanu8xQPaspBvu6DFAiu1FmcTuMUDLZPvjUvIxQGs8qzCE9TFAGwkKWIT+MUBtqbySxQQyQPC069uk\u002fjFA8AoYi3ztMUAOdYUL0usxQHu4YhAf7DFA+DVILhPrMUCSN03JVOoxQBWm3TSu6TFAxXslG2\u002fpMUDrUw9\u002fjekxQAVVyuM3zTFALXDG0qLzMUBCuZ\u002fiQfoxQPWlGVBZ6jFAe2JCcY\u002fcMUAgUBn0Ac8xQIWrNeC4wzFAGGWbqHYdMkCaPiL7oukxQHZRPH9s5TFAcrCHHLPoMUCC4FBCle8xQPiE5PXq+jFAuFq+i+4MMkDjs98lsxwyQHgfKtGjDzJA8vrqDDHuMUAThCDAqOkxQIIiV+Xl6TFA4\u002fiGfkDpMUAtoBwbt+gxQIozoHAa6DFAtguxSyroMUCiw4LGQugxQHtKFHUtyTFAnYt6J37sMUBjjX4YM\u002fUxQJONggQh6DFA5li4swvVMUAj88uf2LsxQFIS00B4pzFAXSonV\u002foPMkD7FEONregxQJtuvlm55DFAI4GE1ZzlMUCbgdVVY+YxQDY\u002ftJev5jFAxrIcDNjmMUBCnJNMWOcxQHgQhAuV5zFABgXn2XTnMUBtimlLc+cxQAZtN4oY6DFALebv3PnnMUCD20QgAugxQI2TnnaH5zFA0mszXULoMUCij3ZbNukxQKBxIiyg0DFA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#1baf7a","width":2},"name":"Bedroom 2","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"9qQunBKONEAtjh1m2200QJ6DWNIBajRAjviZZDVkNECt7y1Fu180QOpCLE3BVjRAANpkEbRQNEC2jUcsYuMzQJV0v\u002ftOrzNADnsdjB+eM0AmeLPmNZIzQJW+Zv15iDNAhcvI4gmAM0CwZhAlU3czQL2Q7H25bTNA22HF3YxlM0DiAs+rjlozQBYwej6RSjNAy2wMj388M0BFu27nQC4zQIhq3mo\u002fHzNAGnkZlEQLM0DuaA6ZDPsyQI0yLh3r5DJA0GFnH14yM0D7CasgVE4zQAPAtRYhSDNA26SiBek\u002fM0C1Hw3mpDUzQAh1ltMvKjNAXXN0sbMjM0CdfFq4\u002fb4yQFA9vFNZlDJArsqmfryJMkAlMrnHA4oyQCitp1FFkjJAS0tsTkWfMkALa7JPTawyQOpn7Sg2wTJA8DoA2orNMkCmO7W1+rwyQJspNdihpTJA7vO0PFyVMkBIH153o4YyQMDQi4AIejJAShTv1yttMkDaPnDx+V0yQAvwr2doSjJA65mjREKZMkBKlfu5rrQyQP3CpnXjrzJAWtRuslKnMkBa3fHO2p4yQMtF9dirkzJAZccmTs+KMkDusIrjKyUyQLt7F7Vl\u002fTFAQKk13df2MUDonpt89fkxQN4CUWfdADJAKipMTOIIMkBy6wQthhEyQLijHltEHDJAMyWkTw0hMkCFV73J\u002fREyQPhekeH9ADJA9jO5Emv4MUAdoxlG+\u002fQxQHIRElcI8DFA0x8XTgXtMUBlu7YAXuwxQL0DaRqb1TFA+sQ4fqsLMkBIdV6fSxsyQJjiTnrIDzJArmRLyvECMkAlH\u002f0Q3PcxQPjzZlMU7zFAyyQ7gmrzMUDtt\u002ffJVe0xQJtpjddY5jFAFhuvaTrnMUBK5Hmg3+gxQCMooSEI6zFAgoIqFAXsMUBwVlCV+OsxQHXOCKhn6zFAIkWU7N\u002fpMUDAuWrUwegxQLp1s8gw6TFAG4hRnjToMUBCjqCju+cxQJIkHREF5zFA3hh4iu7mMUC+qAuJ2eYxQI7tMwwvwjFATkYUD1baMUDblPAl\u002ft4xQKoV\u002fitL0TFACOvItvjJMUA16AaH5cQxQNs4tR7vvzFALi+pqLsbMkCzB8Mnc+kxQL6D5azt4zFAcm+HmCrlMUD7y0hIWuYxQNa0zH5Q5zFAlmtkreLnMUD1UvtWH+gxQArO3dHe5zFAhl2KizbnMUB1XpOQbuYxQFgEsG095zFA8rqZI+bmMUCa0tzXROYxQCIWVS3C5TFAHjAmZnDlMUB4kmBzjuUxQGOqA45htzFA3TGJ8uW\u002fMUAwWtGPCLoxQEOwCFM8pTFAKONF2p6VMUAy1CFOxYcxQLO779AEfTFASjQ+NoUPMkB9Rhgk+OUxQDVZycii4jFAeHQ+3sbiMUC7Pm\u002fbGuQxQI0U5dRJ5TFAUs5R7QPmMUCjSm\u002foeuYxQMA6Z1ae5jFAywNy8A\u002fmMUBVzbTxLuUxQGOzYv3B5TFAiMEeJMLlMUAFJ3ndWeUxQFBn1JTM5DFAxdkR7b\u002fkMUCFX8PC5eQxQIKiAw46tDFAAK6uz\u002fK7MUBWeYKth7kxQJLMcDCppzFAglbgOdqSMUDNMTV8QXkxQEtmamYJZTFAo2GiIYYJMkDdl\u002fvYveUxQMop2R9O4jFAmvKo45PiMUDIOImPg+MxQA0ymqHk4zFAZRRypPnjMUAgOdoEfOQxQOMPJiXS5DFAonGcl\u002fjkMUCKP4WPMOUxQPaPSXO\u002f5TFAKtXT0sPlMUDTwYSu3uUxQAKRedpA5TFAmEuorKTlMUBuZ+bCZuYxQDO4IPeHwjFA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#eda100","width":2},"name":"Bedroom 3","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"7X1wZtmINEDzDi3N6Ws0QIrksOI4aTRAjk8FYORkNEAjTNSAoGE0QH6YB5FUWjRABlc2pvxVNEBl2\u002fNUi\u002fkzQLXHFCiC1DNAxUbnNXrLM0BNVFjWTsUzQH6YKLVLvzNA9TfkeKi4M0BKgzMn57AzQB7h4+U5qDNAy\u002fb\u002f1sGgM0DyzZr2tpYzQEX6R\u002fCTiDNAznkQ5eJ7M0DmbVqHWG8zQEi9\u002fCY2YzNAAic20zZVM0D7jeSqUUszQJWVdiW5OjNAxnM9dKV9M0Bi4\u002fCRQJEzQH0FKrrliDNA4h4nQWl\u002fM0DCX\u002fLCVXQzQF7ANIhDaDNAcgY\u002fp1ZhM0CQiTI9VAszQBqePWbc7TJAe9itZzLpMkBOR0PyS+0yQCAKrxph9zJAhoX9qFwEM0CVd4cxVg4zQMhR1OH6EzNAc+bcV2ERM0DSxuww6gUzQOPY1OPY9jJA+nNN4kfpMkDevoEoodwyQGL2PEFu0zJAUnVEjG7MMkBIV0IAIsQyQALWea+JtjJAzn1VFIb8MkBeX8jwVhEzQIXlrtfdCjNAVccMaRgBM0DNFvGIrvcyQPKKC\u002fnG6zJAar9E17HiMkDmfBMhiowyQLJ1kEYfcTJAahrvrQtsMkBgksHwym0yQB31C87XdTJAM1iSS71\u002fMkCtIukGdYcyQBuVbcsviTJA0Bu1WN6FMkC+zMMmn3kyQK0eYCkhbDJAq305tnthMkD6fALyDlgyQIZVBQjjTDJAyHelUUM+MkCud+HnJzEyQIjY\u002fmDzIzJAOORw+4lpMkD7kT3FsXwyQObeYPeRdDJA2Iej3HhpMkAjkeQhL18yQPp0jthgVjJAo1JRh3xSMkByoE2sCAEyQHqJ0TU\u002f8zFA5q0JvBn2MUDzm4\u002f43vkxQFYq2cvt\u002fzFAvdcXOYsGMkDIyVCKBggyQDh9TUaIAjJAKu+A2m\u002f4MUBOVVRYDPExQGbLfw048DFAGl2sKbruMUBrz+g0YO4xQHLRi\u002fG97TFA5q\u002fwdXjuMUC+HG7bbO4xQMamG7wB4TFAzboAk00bMkDjRUWSkysyQKh0SokdJTJAEjo5oFQhMkBWaMymsx0yQErruiU2GTJAM427a+YYMkC70TXsGu4xQMoGaRDE6TFAcIeU+THsMUAI1bV1y+0xQObiOUvh7jFA4vXpaL\u002fvMUCIqtlAge8xQBt8FBBg7jFAvcgM2gPtMUASSKA\u002fgesxQPgcD9XB6zFA46bmSdDqMUCI0SnEQuoxQJL8n\u002f3A6TFA0FX9mLXpMUDg2qPu6ukxQOjlh4k60zFAC2WvX276MUDTnNd6hP8xQIrrBCve8TFAIOIV1GTmMUAYulfWHtsxQLNcY77o0TFAWBTrLJn4MUBtVEaAsecxQPtqfSKu5TFA+FFKuSzmMUD9e3iS6ucxQC2MaFeI6TFAyHx9dZTqMUC9B3z20OoxQO2ND+ts6jFAlV5TALjpMUCL9yQhjegxQOI+P43t6DFAcDvnU4roMUDFCF8cQ+gxQEYy41Tc5zFAcw7mSiroMUCC+OzGY+gxQBUY9AU1zjFAjb9zqfHzMUA6vJvNIPwxQF1Ucq8J8TFAkmaJbTDgMUAw63JWx8kxQCLf14KduDFApdnVtXgHMkASndEFCugxQEJuPa1H5TFAo6EVfgPmMUDulmFxOucxQMra+sp+5zFAym2ZYcPnMUDIhV96POgxQMVdZQl06DFAMyCrMGPoMUA+7s3TVugxQDDn5LwO6TFANvZUEwHpMUCeEITjHukxQB6sFMXH6DFAy9KEktbpMUCblZKj3+oxQI3G3+BX2DFA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#e87ba4","width":2},"name":"Kitchen","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"s9frj2coNEB95\u002fNFkeozQKVocOpD4jNAGwUNzWrZM0AVweZdU9IzQIgdB3AkyTNASlBx\u002f0zCM0AdMh3G+uw0QLrH5l5X5TRAxqoMc\u002fPeNEDtHYNaztw0QPp0W9QW3zRAOG3H3PXcNECIQK6Q0940QG4ZY1QO3TRAzb+\u002fplDeNED1rRgYv9w0QHgUEsLI8jRAjmzo\u002fmnjNEAWfnbbyuI0QDuToImG4DRAjtBIHCbdNEDlD\u002f1Lwds0QEAvfmN0czRAiB13Z5vGM0Be29sw4YkzQGZz5BGmZjNAM99eLeBMM0BDMH9QrDUzQDrBf\u002f2mHzNASpBDousPM0Bj8eT4+n00QABTsjbL2TRAQxHUu7TWNEDQsUe+7dk0QMp83KG92DRAasSeCozZNEAl3idjOdw0QCBkofDe2zRAO4vZvZzaNEAYa3nVmNs0QFqcZMfy5TRAUMFRKp\u002ffNEBOCrCHKN40QNj0oWit3jRAVSDWi1TZNECmIWL0BNo0QDty6xMbYDRAYFM4dGuaM0CY3G0tWFAzQHrD6zVBKTNAffTjz7kLM0AWwbUETfMyQCM6OlEn2zJAjuhXyDbHMkCV3rJQZ0I0QCjZ2b2A0TRAChNKDInTNEAK23fmUNQ0QGDGOj791zRA8HLehLDVNEDmUnvw1dg0QJsx7lVo1zRAw46SdNHXNEANYcBs+Nc0QPayCULV3TRAii0I7iTdNEDAWT8Xm9s0QGj43bI62DRAGv7f3DfWNEBI1p7gMtg0QDC5I\u002fPbQzRA+F+6CidZM0DqlpfTPQIzQOCtcuNT1DJAEww8c\u002fqxMkBeVl5nC5YyQL7PdK48fjJAxb9PdLFsMkAta4\u002f9JAQ0QIU2nXUEuzRAW0NjeNPNNEB+VQaYI9Q0QCALGwOy0zRAaHEFJaPUNEC+slkwktQ0QKY1oGCD1DRAvuFGpEDUNECDj7KnbNQ0QEbhPcag3TRAuFbkZobZNEDl4SBIS9k0QPtS9H852DRAnpm72SjUNEBypHc4aNQ0QA0BsYKKPjRA27jEhiJDM0CtyRB1F+MyQHICXgX8szJAg6xgcACWMkC7s8dI6H0yQFpdV3\u002fVZzJAJoLbjJRXMkC1pL4gouAzQNqz66+ulzRA6rzbUSe2NED+ridxtMI0QICntMwmyTRAdglpzaHMNEAeB\u002frXOdQ0QKvkmLbHzzRAmASTFNXPNEA6QdzNJ9A0QEuCAeqW1jRAW3pMwFDYNEDjYIHEs9c0QJ1Q\u002f29XzTRA6i\u002fdo73SNEAF3DpMa9M0QA2wBlguNDRA\u002fQDNqPkrM0DI2cAeyMMyQGViZTJqkDJAJvP3+8hsMkDeEXrOak4yQE6EgT\u002fENDJALgkKWX8jMkCT\u002fwY3XbszQKMJJM6YxzRAUqj2bQC9NEBSjNs8a8I0QC1XUPpBxzRAg35BDiHPNEDltfoBF880QPUvnlSbzzRAPQpdn6HPNEDduErWLtA0QADDAwhz1TRAmmYMAN7XNEB2ykLHndc0QNXL6elayzRAelcn3hrSNEAbdGaf\u002fNI0QMqPfuANNDRAKJlIOZMwM0BTdaZtacsyQErUwInImTJA\u002fbYvPIFwMkBK+y1Ib0cyQCtUELtTJjJAoM5aRRoeMkAFi9auwLczQCimO0OZwDRApl9SaGK0NED7pKrKgLU0QJVgOAl4sjRAlqD6+\u002fS4NEBNIJKVOLs0QAOE7JeNyjRApoe\u002f4xjGNECCrpQve8k0QHuAyEDr0jRAy6C7ElXVNEDV0TJJvtU0QBIf7\u002fvtzTRAbhNwrrjONEDtC2geCNA0QFVZO05mOTRA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#008300","width":2},"name":"Living","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"u2mrmEQ\u002fNECKHDsIawI0QLVrzF4y+DNAG119v6TsM0DV9VPBkuIzQEDwQVSr1jNAUOx90mTMM0CSYIRnMPQ0QA71UEZf6TRA4kA0Y5jfNEBAUtuYlt00QFVRxF1k3zRAIhJJPvzcNEAbnAKhwN40QH7C5Hjh3DRAi7tRbRHeNEDq4FlKYNw0QMZ0lwl3\u002fTRApegQvwrkNEDto+B+seM0QCI\u002fMOwv4jRAsiSD05HjNEDessUNQ+I0QMP6JlP0OzRAwxlAbrCsM0AFJ+irD34zQEhj3kB8XzNAK1h7S\u002fZHM0Dle7lFOTIzQIXv7fMwHTNANfM\u002fWzcNM0COyOKApnY0QM7piau11zRAhtdBAP7ZNEDCiH41FOI0QFheFOMy5zRAFh6\u002fbfDtNEDWabaA0fs0QILEugyqATVAGxCNbabkNEAOOjEiW+A0QGsdpiFZBzVAcHmaI6rlNEB7eZhBAOQ0QNU1eNjc5DRA+IEpMXTjNECem7K6d+M0QM5HjSZiRjRApvg6rRvFM0BSxgjetpMzQMPKJGH1cTNAUAB2owpVM0C1mc+stzszQJZHgpksIjNAQoTctnsLM0CAJ7YddF40QD0eW4hF1DRA5cnEFOXWNECzVHu8Ydo0QL3Kk2ku4TRANSXjvBLiNED+pOyuJeI0QCVEvcsj4DRAShi5kJjdNEA+aB7R4Ns0QLKEzOlZ7TRAFd\u002fMVo3hNEA+9BCC5t80QC64B8LP3jRA1hcRb2LeNEClhucsf980QHgSHZDRKTRAisF9ChJ6M0DyX+qWBTszQCu8+ntJEzNAizMZ1NjyMkArBmejY9cyQEI4L9xuvzJAFStbnmasMkB+V8d5Sy80QPP79al4xTRA+D+C2WbSNEDFf\u002f10TtU0QAjIAeoW2jRAZa2XveXcNEAtom9A6Ns0QKI0rx+Y2TRAYmIeTKvXNEAq3RY\u002f5NY0QBBgxABH5jRAw22SuTHcNEDqzhZcuNs0QD4SdPY22zRAMkJFPTnbNEDIysvldds0QEqo7LLiHTRA858ruDpQM0AibDPr4wYzQAbdFgRX3jJAAjnr6UPDMkA6yYwG46wyQJVIw9X5lzJAHfAn3weHMkCI9uXXdgA0QBBhAg0ypjRAKMV\u002f9FzLNECdkAhuPs80QBO9TENQ0zRAc2IlZZ\u002fUNEBVaF2+49Q0QBKwaYy51DRAePDlcv3SNEBOOXtDLdI0QDJFV98T3TRAbuem0NbZNEAQ75PVLNk0QChaWiAD2TRAY\u002f3BAyXZNEBC1D4CfNk0QMhrUk+FEzRA3kV80JkoM0A7uXF8XNMyQGDoVVr4pTJAgC8ua6GFMkCKQkCwkGkyQBuAeF2VUTJAmJOsCNw\u002fMkA6KqDXGsozQK30nvsqyDRAdpqD\u002fKrHNECbcO0TC840QGBrsFwK1DRA1WCBtjnWNEArewZRmNY0QMPRyE441jRA6N\u002fViELUNEAq5cIkmtI0QO24gXWB3DRAcOaFwbfZNEAS96npStk0QNqw2Sz72DRAJqidWADZNEAAdMD7itk0QN0BNhqVFjRAxVEPyeUxM0Adi5NDPeAyQM6AQ2nJtDJA80pOz+COMkAzVsibvWcyQEJtmMheRzJApoMqTuQ9MkASZ+jLA8kzQOLbsyDUwzRA6Htz4Wa8NEDow4RvH740QK5tXahBujRADdcMkkm\u002fNED1ra\u002fVj780QLvt7LwszTRASGVzxoHGNECADZt8WMc0QLC6phw51TRAxsj8whrWNEDmSl3bYdY0QLZwP2Aw1jRAi6DVpH\u002fWNEAIOQx5xtc0QLL5tMKyHTRA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.1f} degC","legend":"legend","line":{"color":"#8a8985","dash":"dot","width":1.5},"name":"Outdoor","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"2iaSplSEHEDm6pjgweQbQMAta3VMcBpA4M73U+PlGUCAZmZmZmYaQIBmZmZmZhpAgGZmZmZmGkCAZmZmZmYaQIBmZmZmZhpAs5AtQzSMGkCAFK5H4foaQJPTHuTkjhtArUfhehQuHEATrkfhepQcQLq8xz8WRh1A7R0SVYS8HkDT0zgCPHweQG31PYId1xxAjU7VpiXpG0DzqU80FXAaQNNs5wx6JxhAYIIJOLf+FUDNXEeqDnsVQG1fyB6FDxRAYMHylIZUE0CTf+SZVjgTQKYpFWcfzhJAU1VVVVWlEkCtkDSl4gwSQHOx5BdLXhFA2vFMHoXrEUBAHKAlpaASQGaAeILlVhJA4O9FAAjoEkCaymSYXfQTQC1cj8L1qBVAwOaiPqaaF0BgmQanekEYQCB2Bci95hdAE5LJiCzXFkAznBfYWq4VQE0p9FJF+RRAOhIC3PupFEBa5bq+PZgTQKC7X3hKYBNA7VG4HoVrE0CA61G4HgUTQBqF61G4nhJAk6xZpeIMEkDg3whl9JYRQI1QRm\u002fLOhFA09ElCa\u002fKEEBGUPwYc6cQQE3xOhmCSA9A867R7dHWDUDza3c\u002fqDAPQLOZNeQvtg9ApkwABJMUD0ATd\u002fo2fXcQQBOKOqJB9RFAs3q0lNL1EkDNOXwBiMwTQHoj8yywXxRATTVd0oi0FEA68iBB6tYTQNO7AD6uiRNAJsr1M6rdE0CgcdOjwEATQLowpC2opxBAgDwxfkpwCUDz9Yhtp1gEQGaopctdywRAzUEhpHA9BUAaNjy9UtYEQE3b+X5qHARAsxxaZDu\u002fAkDmtIFOG6gCQHOx5BdL3gNADXLMgHzoBUAAUrgehesHQFrrUbgehQlAAPTw5CAOC0DNrUfhehQNQFoUrkfheg9AZtnW37k\u002fEEAawfXBO7YNQMCbLXAmTgtATbgehetRCUDmUbgehesGQNrYRbb3xwVAjenOTPD\u002fBUCzF49qveIFQEBXin4tEQdA82hl6C9uCUCaM94mxOEKQNrNMxsV8QtAgJmZmZmZDUCAmZmZmZkNQI1uEoPAyg5AE4XrUbgeEUAgMQisHJoSQI3C9ShcjxNAYI\u002fC9ShcFEAtjkfcIV8VQKZH4XoULhZAIO8Y7ZecFkDAzMzMzMwWQMDMzMzMzBZAwMzMzMzMFkCGLkghA6cWQMAehetROBZATbgehevRFUCmBmx1gRkVQADFJArGCxRAADKZ9oQLE0AA16NwPQoSQE0K16NwPRFAgD0K16NwEEDNgqqvTKQPQI19ciuHNg5ApqMp9ihcC0CabOf7qbEIQM3aiv1lVwhAplFuyCxoCEDzwTxR\u002f0YIQDPSlIqzjwlAwPUoXI\u002fCCkCNwvUoXI8LQMBLkhi9rQxAjR5Ho7X1DUDNc\u002fc9i08PQNpL3zelSRFAetMK+l84E0AzJ1pHwOsTQOBQuJk9OhNA08AKDsj7EkAgXSY9mNQSQMYehetROBJAU7gehevREUDmUbgehWsRQNoUkwo6KBFALS4+rh9hEUCz3RlrhmsRQOCWwq1HYRFArV+Re6iaEUAA6Ea628QRQABO9QJ30RFAmnA9CtejDUDao3A9CtcEQIDBbJyxZQNAGjFgHUPuDUDagH\u002fUw5ERQG3SaCo77BJAcx716qXXFEAg4+tKXCgXQHqHyA2OiRhAM0GbahEaGkAtZCsscKMbQHp3YWnA9xtA+u+hghmIHECmNjkfbo8dQM0XCfuLjB5AppT9XE1LH0Bgt5eqftIeQIaCTxpHfB5AgGuiMFFYH0BWZhBRZy0gQMNbf1JxqiBA"},"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"%{y:.2f} kW","legend":"legend2","line":{"color":"#2a78d6","width":2},"name":"Radiators","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"mYuvjuzlnb\u002fVFyioHxV6v4fZz58nBF2\u002fNPnMvG8PTT\u002fToF6fUchgPw981dqvHmo\u002f0LHAxGHowz9bYjtSVhbfP2dsngEJ7+A\u002fOYBBJ11x3j\u002fQ\u002f985bLzYP7oNFb4p6dc\u002fnOJTdASu1z\u002fr99lmL\u002fLXPzQyrueDFNg\u002fV7UnzgAx2D91yQJsL9nYP0DVwOF5D88\u002fJlf6JlyEyD87L7dN2aHXP5410ovUhtw\u002fGrk4jqhw3T+mYH0hvGzZP7aik10PBs4\u002fMA5UmF\u002fttD8Wft5fMoOhP\u002fpgSpW8tpM\u002fU+t3MJ1Pij85rwtNtq+EP2KpUm+siYI\u002f0Rh9vNl2xT81BZtLjUDoPxQWVZX9M+w\u002fmkzYRejv5z\u002f9MIIasj7fP60xYyqhMNU\u002fmsE3rUvpzj8Eb\u002fVAAWfIP\u002fjB1rUMncQ\u002fMoi8UF4Qyj+iTDjZn9fVP\u002fLyTZ1WEtA\u002fMiL1Yh9myz\u002fSMx7xmqbYP1syxrY9st8\u002f0NJNOCJr3z\u002f\u002fE9HPYWHbP8+xUfuEXM8\u002fVvLNi5lttT8gBVRIJkyiP6iMdI9J2JQ\u002f80cQBnvujD9GbWb+XKuGP6ccjaAuzoQ\u002fsm0Sl+j0yj+4TuS143\u002foP5KMFfBESO8\u002fnlJ71hl16z8UXjJlAyrlP0xY85pEZuA\u002fct2hsJpI2T+wT+h0BIDYPxlJ9e5BGdk\u002fDT44kVoT3D9CKvW0l67gP3rsZKpNX9g\u002fXkVwi+LD1j+0VtcuiDjhP57hdgKV3OQ\u002fL2OBBXh95j\u002f8nT+a26\u002fkP\u002fdwC+0qE9c\u002fqFiExCgOvj9S7MOH5japPwYjkTVARZs\u002fctRTNtU7kj+M2R7zW5CLP8y6WsjFmYY\u002foTlNobfSzD+1PyNAtDzvP7QIwI\u002fyFPM\u002fFqDLgzO48T\u002fi91i7rP7sP05dSrNbW+g\u002fojJUoKcx5D8sWPkwVjvjP8v06uJW3uQ\u002f\u002fqaqYhgk5z8I0pjy7xrpP6dMIt4THuQ\u002fWkZqhTua4z+G4WnsgRPqP6tu4a9LM+0\u002funf4iF8i7T963hWYKmXqP7zn9sf1sd0\u002f9ZzAMagKwz\u002fgJEl4vmivP5b1BZT5Y6A\u002fV7F0C97\u002fkz\u002fMNKyrjWuLP5YKEnjk7IQ\u002f\u002f1N95C160T\u002fGfzJrUzLwPwQi8b1ZrvM\u002fzPzUZ+qh8j\u002fsBvegifvvPxPaqNEab+0\u002f0mEdgFlz6z\u002fqrid96mvqP\u002frSdel\u002fC+o\u002fIVHtT6FF6z+8xiGpi67sP\u002fshDVHGbuc\u002fvNf8E93u5j\u002fIfd+xtCDtPx3SaJoSFvA\u002f2eozQbc88D+CqrMOc6ntP1RAhuBNneA\u002fRHXQc8xcxT9MEzdZ0dexP2hsX468wqI\u002fohueAHWblz+oQWxBurKQP1r7iJKtkok\u002fogxDZQLR2D9UagvP8OTyP7bBA1Gok\u002fk\u002f5ITUuzmV9T9flLM\u002fbiLyP3HiCoXNo+8\u002ffzx+uglq7D+iTFmaRm3qP9PEqXvyNeo\u002fHq3uaV6p6z\u002fpuQN4ouXtP5hjekHf6ug\u002fOiat3n5i6D+NLb2MkqnuP248TrHFvPA\u002fTCnecQO28D\u002fLw2k8+zPuP9xyRN1k\u002feA\u002fAFNoIG+VxT+I6BrstsyxP\u002fAnBRKhbqI\u002fYrFAN36UmD+ogEcPRuCTP2PbLXCJKpA\u002fT9KRtYDw2T\u002fvOMaO39byP7vve2iUVvk\u002f8LlFklhi9T9ieiQVZh3zP+IlLs7UrPE\u002f9HXDhq0K8T8oUNzHUPzvPyT1p\u002fq\u002fO\u002fA\u002fs7Rg4u068D99tWR7fDPwP4iPqcexAeo\u002fBo6tvZKG6D97m5oxvULtP1xhX8+88+8\u002f+g6dFjBf7z8yP2mKvz3sP0PrxY5dQN8\u002f"},"type":"scatter","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"%{y:.2f} kW","legend":"legend2","line":{"color":"#eb6834","width":2},"name":"Heat pump, heat","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABuMzqC+4neP1KvxamPF+A\u002fjWITBKohyz\u002fGSPsadcPfP3CcUW8ntsg\u002f4MmrFnJ55D8AAAAAAAAAAANbW8HEBOU\u002fAAAAAAAAAAAfc2S6YuflPwAAAAAAAAAAAAAAAAAAAAACTAEECiHqP4TDs0c9pOM\u002fLG2\u002fcU8CyD96k1QCyKLlPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB9c\u002fp8lor5P35qQUIwQe4\u002fN+5TKIVcxT9qVOI028bdPwAAAAAAAAAA\u002fvs13+NT4z8AAAAAAAAAAAAAAAAAAAAAh96ZHEV25D8AAAAAAAAAAAAAAAAAAAAAj+sMBGJN4z8CSwoFooPbP\u002fqm63gPtdk\u002fO2ZbkyqR6T8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAe5X+qQVm5j\u002fR1TQuGxrzP9ARZlOG4+4\u002fCmTCzsAN5j9uxGbqt2rZP6UgOgoeCM0\u002fxdA2ZP7A5D8AAAAAAAAAAFVu3cHHFuY\u002fAAAAAAAAAACle+i4tCvnP6RgXEzvicc\u002fQ+9JiL3D3D9Oe8BHrLbmP5sz6nMAOuo\u002fDU2SwXWH4z9+pXg2pErLPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALPpBrO5x5T8fHEkfLOX4P4ds6kygxfU\u002fMoJwYfW47T+1Dw77oQfgP4q0TquzC8s\u002fKgSooZAv7D+MTNJuh4HmP95n8It+PeY\u002fK0NGIDmK5D9yc1MHTzDjP0v8f+GkGdw\u002fuuNxussH6j9Nn8KMyknuP\u002f7W42dXrO0\u002feCRJrkwq7j8+YynHZR7kP0MoBat\u002fgsk\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\u002fp002ynoxD91kUwzCBn9PzfHy5TPJvM\u002fNvxakPIV5D+\u002f3xllNLDkP\u002fMvLhrobu0\u002fOGZ0JK4w7T9WR4y60+jrP82ChV7T8uw\u002fyOdSPXGu7T9f6XfFsWzyP2WTKg45S8Y\u002frCLbs3ul5T8L\u002fiokcv7yP2B5w2esyfE\u002fVkrEQcKp7j9WdsGDzQXsPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyDbIcbA46z\u002f6NYAdEIEAQJpTKjiFE\u002fo\u002fdfiaHEjo6T87OXNxxbnoP97KW\u002fzAQ+0\u002fquWLsbEu7T\u002fNpdb4l1vnP33yk7TNWe0\u002fRQO8MXBJ7T8GjJFnSgzvPzDOguAvGdo\u002f5iRY5lVA3D8wDJxQPbvyP61xRrU62PE\u002fiM0\u002fLDt\u002f8T810qi+4BnsPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO5zUZHBQ7j9ChX\u002fZITIAQIr1LE9kq\u002fk\u002fmlBYicV45j+g60Kxo6rwPxWga+e3wPQ\u002feUVp+Lp49D+AHipbpBTtPwg85\u002f+hr+M\u002fPX6ojFxq7D8eNrOJZdn1P96sV42\u002f+OY\u002fIuzG40MP7D8u77FiHK7yP+PZbGN76+4\u002fWkmBV5hG5z+b3BiaAnHYP7Ai3zBTTNE\u002f"},"type":"scatter","xaxis":"x2","yaxis":"y2"},{"hovertemplate":"%{y:.2f} kW","legend":"legend3","line":{"color":"#2a78d6","width":2},"name":"Heat pump","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC1ZAoBDH68PzBXRWHRYb0\u002fTR9AQwjjqT8aeqmNfMq8P8NVBHDFb6c\u002fvlt64fycwj8AAAAAAAAAAH5bvJvO\u002fMI\u002fAAAAAAAAAAAdS0ANx5rDPwAAAAAAAAAAAAAAAAAAAABKGxJ8dFbIP6zyVPWuJsM\u002f5a+T4KtiqD9HCJJajHjFPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADTf1h\u002fSWXaP6Z052VqV88\u002f7kIcckPYpT+WzITb+3W+PwAAAAAAAAAAtdTnnYzVwj8AAAAAAAAAAAAAAAAAAAAAW5GCRjkJxD8AAAAAAAAAAAAAAAAAAAAAtIsE571Ywz9rt36Hpfy7P\u002fYsP1Zs77o\u002fOpX0uodPyj8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOkRvflVZyD9cLg\u002fUv6LUP70reGuQi9A\u002flX+hVSCtxz8qQXvHEKW6PzMhHeYd6a4\u002fff2WiOJBxT8AAAAAAAAAALxrmYSnHcY\u002fAAAAAAAAAAAzLIPa5wXHP5SFXihoxKc\u002fsBU63zlkvT\u002fmxQtOkUnHP7MgaryUNsw\u002frvD+9EMWxj81IR0k8uCvPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASD4TIsuiyD+Vu684Bi7cPzqQyA5VbNg\u002fLnPl1V5p0D8aqxRRxjrBP9CDUaWB5a0\u002fAxIf7QzpzT\u002fuIXOjcnvIP8gn6bwiksg\u002fmrs5n93+xj8rlft28OvFP+reX5+IYMA\u002fBQ1zcXXdzT9J8Hc8fVTRP0rLKMpg2dA\u002fKy7Yjay20D+afcHbcT\u002fGP0trQcl\u002f\u002f6w\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMIVgi\u002fxdpT8F2I0tJf7cPydu24Ql4tI\u002fPvRXmNmcwz8IAS5xSJPEP7rAU4LW0Mw\u002fSkFGh4GezD\u002fuWkpn6FnLP60Jav1xlcw\u002fGz6R+IZizT8S+GlrvWTSP31kKhZ8mqY\u002faqfMNlE1xj+2youN2cnTP4LrUvyLxNI\u002fcj4TkCVO0D9T+zFDbCDOPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkGPTzkg9zj\u002fevmvY8EPiP97\u002fZarF6dw\u002fNc7Us9jdyz++0XqAZBnLP5A2PWALJM8\u002f8PrlqEorzj97MBytDqjHP7aKgu7jLs4\u002fdgD5BFIezj+t4eA4ddnPP4LYu8kR\u002f7o\u002fMFr\u002fVTrtvT8Gi16+Xq7TP14fnd5D4NI\u002fXQ21FRZ10j+jEoOJi6HNPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\u002fpDt8PST0D8iRs78ugnhP+10bMN2xto\u002fiNLfmTt4xj\u002feA\u002fnN8o7QP\u002fe4Js1G+dM\u002fDJn666E80z8APRqCf4DKP67DlXqX\u002fME\u002fbUUDObclyj+AGDw9uJbTP7r5cTyzUMQ\u002fStXd+PIByT\u002fhxVlqJpLQPxLb1hIkjss\u002fJcFhwGRpxD9QCA2+Fcq1P5pWF0L0Hq4\u002f"},"type":"scatter","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"%{y:.2f} kW","legend":"legend3","line":{"color":"#eb6834","width":2},"name":"Ventilation fans","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"8iRfXDSGlz8oOoafViOaP1Y9hp9WI5o\u002fMD2Gn1Yjmj8zPYafViOaP3A7hp9WI5o\u002fhT2Gn1Yjmj+tNYafViOaP+I4hp9WI5o\u002fKD2Gn1Yjmj9iPIafViOaP2I9hp9WI5o\u002flTuGn1Yjmj+7PIafViOaP609hp9WI5o\u002fJjyGn1Yjmj+DQIafViOaP6Y8hp9WI5o\u002fg0KGn1Yjmj99PYafViOaP2I9hp9WI5o\u002fWD2Gn1Yjmj\u002fjPIafViOaPyo9hp9WI5o\u002fED2Gn1Yjmj+CNoafViOaP007hp9WI5o\u002fWzuGn1Yjmj8DOoafViOaP5A9hp9WI5o\u002f8zmGn1Yjmj+IP4afViOaP0g8hp9WI5o\u002fpTqGn1Yjmj9+PIafViOaP748hp9WI5o\u002fOz2Gn1Yjmj8QPoafViOaP+g8hp9WI5o\u002fdjqGn1Yjmj+wPIafViOaPyg8hp9WI5o\u002fwziGn1Yjmj\u002fgPoafViOaPxY+hp9WI5o\u002ffTiGn1Yjmj\u002faPIafViOaP1M8hp9WI5o\u002fyDyGn1Yjmj8VOoafViOaP0U9hp9WI5o\u002fqjyGn1Yjmj9dPIafViOaP2U+hp9WI5o\u002fqj+Gn1Yjmj\u002fzO4afViOaP049hp9WI5o\u002fDj2Gn1Yjmj9iOoafViOaP4A8hp9WI5o\u002flTyGn1Yjmj8oPoafViOaPxI9hp9WI5o\u002fyDuGn1Yjmj\u002fVPIafViOaP348hp9WI5o\u002fCzuGn1Yjmj+qPIafViOaP8A7hp9WI5o\u002fED2Gn1Yjmj\u002fFPoafViOaP0A+hp9WI5o\u002fyjqGn1Yjmj\u002fWOoafViOaP5A9hp9WI5o\u002fEDuGn1Yjmj\u002foPIafViOaPx07hp9WI5o\u002fEz2Gn1Yjmj+GOoafViOaP3U7hp9WI5o\u002fWD2Gn1Yjmj9dPIafViOaP6Y7hp9WI5o\u002frjyGn1Yjmj9IPIafViOaPyI8hp9WI5o\u002fYz6Gn1Yjmj9KQIafViOaPx07hp9WI5o\u002fxT2Gn1Yjmj+YPIafViOaP\u002fs7hp9WI5o\u002fED2Gn1Yjmj8qPoafViOaP106hp9WI5o\u002fEzyGn1Yjmj\u002fSOYafViOaPytNhp9WI5o\u002fOjGGn1Yjmj9wO4afViOaPxg6hp9WI5o\u002fAzyGn1Yjmj+OioWfViOaP4A7hp9WI5o\u002fzTuGn1Yjmj\u002fiO4afViOaP\u002f07hp9WI5o\u002f2zuGn1Yjmj96OIafViOaP7M8hp9WI5o\u002fczuGn1Yjmj84O4afViOaP4U7hp9WI5o\u002fyDyGn1Yjmj9qS4afViOaP\u002fU7hp9WI5o\u002fHjuGn1Yjmj8aPIafViOaP+A8hp9WI5o\u002f0zuGn1Yjmj+qO4afViOaP41Ehp9WI5o\u002f2D2Gn1Yjmj+KPYafViOaPz07hp9WI5o\u002fijyGn1Yjmj\u002fLOoafViOaP6g7hp9WI5o\u002f0zyGn1Yjmj8rO4afViOaP708hp9WI5o\u002f\u002fjqGn1Yjmj\u002fAO4afViOaP6g9hp9WI5o\u002fujyGn1Yjmj81PIafViOaP24whp9WI5o\u002f7TyGn1Yjmj+FO4afViOaP7s9hp9WI5o\u002f0DiGn1Yjmj8FPYafViOaP5A8hp9WI5o\u002fljyGn1Yjmj\u002fbOoafViOaP9Uthp9WI5o\u002fwDyGn1Yjmj\u002fYPIafViOaP\u002fI9hp9WI5o\u002faDyGn1Yjmj8iQ4afViOaP0Y7hp9WI5o\u002fuDuGn1Yjmj\u002fDPIafViOaP0A9hp9WI5o\u002fTjuGn1Yjmj\u002fwO4afViOaPzs7hp9WI5o\u002fDTyGn1Yjmj9oPIafViOaP5A8hp9WI5o\u002fqzaGn1Yjmj\u002fYPoafViOaPyY0hp9WI5o\u002fajOGn1Yjmj+NPoafViOaP2U8hp9WI5o\u002f"},"type":"scatter","xaxis":"x3","yaxis":"y3"},{"hovertemplate":"%{y:.2f} kW","legend":"legend3","line":{"color":"#1baf7a","width":2},"name":"PV production","x":{"dtype":"f8","bdata":"VVVVVVVVlT8AAAAAAACwP6uqqqqqqro\u002fq6qqqqqqwj8AAAAAAADIP1VVVVVVVc0\u002fVVVVVVVV0T8AAAAAAADUP6uqqqqqqtY\u002fVVVVVVVV2T8AAAAAAADcP6uqqqqqqt4\u002fq6qqqqqq4D8AAAAAAADiP1VVVVVVVeM\u002fq6qqqqqq5D8AAAAAAADmP1VVVVVVVec\u002fq6qqqqqq6D8AAAAAAADqP1VVVVVVVes\u002fq6qqqqqq7D8AAAAAAADuP1VVVVVVVe8\u002fVVVVVVVV8D8AAAAAAADxP6uqqqqqqvE\u002fVVVVVVVV8j8AAAAAAADzP6uqqqqqqvM\u002fVVVVVVVV9D8AAAAAAAD1P6uqqqqqqvU\u002fVVVVVVVV9j8AAAAAAAD3P6uqqqqqqvc\u002fVVVVVVVV+D8AAAAAAAD5P6uqqqqqqvk\u002fVVVVVVVV+j8AAAAAAAD7P6uqqqqqqvs\u002fVVVVVVVV\u002fD8AAAAAAAD9P6uqqqqqqv0\u002fVVVVVVVV\u002fj8AAAAAAAD\u002fP6uqqqqqqv8\u002fq6qqqqoqAEAAAAAAAIAAQFVVVVVV1QBAq6qqqqoqAUAAAAAAAIABQFVVVVVV1QFAq6qqqqoqAkAAAAAAAIACQFVVVVVV1QJAq6qqqqoqA0AAAAAAAIADQFVVVVVV1QNAq6qqqqoqBEAAAAAAAIAEQFVVVVVV1QRAq6qqqqoqBUAAAAAAAIAFQFVVVVVV1QVAq6qqqqoqBkAAAAAAAIAGQFVVVVVV1QZAq6qqqqoqB0AAAAAAAIAHQFVVVVVV1QdAq6qqqqoqCEAAAAAAAIAIQFVVVVVV1QhAq6qqqqoqCUAAAAAAAIAJQFVVVVVV1QlAq6qqqqoqCkAAAAAAAIAKQFVVVVVV1QpAq6qqqqoqC0AAAAAAAIALQFVVVVVV1QtAq6qqqqoqDEAAAAAAAIAMQFVVVVVV1QxAq6qqqqoqDUAAAAAAAIANQFVVVVVV1Q1Aq6qqqqoqDkAAAAAAAIAOQFVVVVVV1Q5Aq6qqqqoqD0AAAAAAAIAPQFVVVVVV1Q9AVVVVVVUVEEAAAAAAAEAQQKuqqqqqahBAVVVVVVWVEEAAAAAAAMAQQKuqqqqq6hBAVVVVVVUVEUAAAAAAAEARQKuqqqqqahFAVVVVVVWVEUAAAAAAAMARQKuqqqqq6hFAVVVVVVUVEkAAAAAAAEASQKuqqqqqahJAVVVVVVWVEkAAAAAAAMASQKuqqqqq6hJAVVVVVVUVE0AAAAAAAEATQKuqqqqqahNAVVVVVVWVE0AAAAAAAMATQKuqqqqq6hNAVVVVVVUVFEAAAAAAAEAUQKuqqqqqahRAVVVVVVWVFEAAAAAAAMAUQKuqqqqq6hRAVVVVVVUVFUAAAAAAAEAVQKuqqqqqahVAVVVVVVWVFUAAAAAAAMAVQKuqqqqq6hVAVVVVVVUVFkAAAAAAAEAWQKuqqqqqahZAVVVVVVWVFkAAAAAAAMAWQKuqqqqq6hZAVVVVVVUVF0AAAAAAAEAXQKuqqqqqahdAVVVVVVWVF0AAAAAAAMAXQKuqqqqq6hdAVVVVVVUVGEAAAAAAAEAYQKuqqqqqahhAVVVVVVWVGEAAAAAAAMAYQKuqqqqq6hhAVVVVVVUVGUAAAAAAAEAZQKuqqqqqahlAVVVVVVWVGUAAAAAAAMAZQKuqqqqq6hlAVVVVVVUVGkAAAAAAAEAaQKuqqqqqahpAVVVVVVWVGkAAAAAAAMAaQKuqqqqq6hpAVVVVVVUVG0AAAAAAAEAbQKuqqqqqahtAVVVVVVWVG0AAAAAAAMAbQKuqqqqq6htA"},"y":{"dtype":"f8","bdata":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACKvnsbCVIA\u002fYg3lbUKvwD9246ktB2TGP5zMQ7z89MA\u002fwrDK63YRvD+5pG5ztHW3P5qtF429mLA\u002f8Pc2ldlGoT9A4O7k1rN\u002fP3ovWJnXSTs\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK1PoJ9x55o\u002fOs9igz2A4D9iXC7H\u002fQDxP8fXPzj7C\u002fY\u002fuqYBL205+D9Kcglm8q33P\u002fZ\u002frCtIT\u002fM\u002fZPr70Ws74j\u002fDqb9K7W+vP7qBQ2\u002fKHUY\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPOqrhFt6Ic\u002fCOlOdpG00T8arlNaKSHlPzb\u002fuDUEHvE\u002fv5MTZUhs8z+yoKYFUtvvPzb5gULFuOc\u002fLzsuMmJ70z+C9G\u002fklbOfPzso6bkc+kk\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMaJKOi5UXo\u002fKK+T4ZGTxD8b+FaDkkHcPyI5ue5rKes\u002fvnwfivg28T8qlWCYiwnrP5xNLaPAVtk\u002fzkS+t2+UvT9aoPWdxSORPxKLcJmITEs\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABMqE\u002fqBiYY\u002fEqYexH3jyD+nyf9zN0vUP3t1YE0wu9k\u002fE6bBAKUr3j+LssimB4zbP+J29V5V0dA\u002fTlQtoecqsz+jm5HtJtSIPyflH7wMijk\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIMMXgTKMIs\u002f3ZjFeZFPzz8euPDO5NreP9WzN4vhb+Q\u002fQg6ODlmp5j\u002fEIzFm\u002fjHlPypolhSOGtw\u002f+sNFTzOHwj9mX+URmH2SP+2SgfPKc0I\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH06awARWnY\u002ffapkdAW\u002ftT9Vte69\u002fzm\u002fP8iNMgbPiMI\u002faA526w12wj8NFVMc2F7BP48FOgycfLg\u002fIjXw1VGtpD\u002f1zuwGd2yKP9DL0qn\u002feE8\u002fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"type":"scatter","xaxis":"x3","yaxis":"y3"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,1.0],"matches":"x3","showticklabels":false,"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"},"yaxis":{"anchor":"x","domain":[0.7066666666666667,1.0],"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"xaxis2":{"anchor":"y2","domain":[0.0,1.0],"matches":"x3","showticklabels":false,"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"},"yaxis2":{"anchor":"x2","domain":[0.35333333333333333,0.6466666666666667],"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"xaxis3":{"anchor":"y3","domain":[0.0,1.0],"title":{"text":"Day of the year"},"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"},"yaxis3":{"anchor":"x3","domain":[0.0,0.29333333333333333],"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"annotations":[{"font":{"size":16},"showarrow":false,"text":"Temperature [degC]","x":0.5,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Heat [kW]","x":0.5,"xanchor":"center","xref":"paper","y":0.6466666666666667,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Electricity [kW]","x":0.5,"xanchor":"center","xref":"paper","y":0.29333333333333333,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#8a8985","size":10},"showarrow":false,"text":"21 degC","x":1.0,"xanchor":"right","xref":"paper","y":21.0,"yanchor":"bottom","yref":"y"},{"font":{"color":"#8a8985","size":10},"showarrow":false,"text":"18 degC","x":1.0,"xanchor":"right","xref":"paper","y":18.0,"yanchor":"bottom","yref":"y"}],"shapes":[{"line":{"color":"#b8b7b1","dash":"dash","width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":21.0,"y1":21.0,"yref":"y"},{"line":{"color":"#b8b7b1","dash":"dash","width":1},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":18.0,"y1":18.0,"yref":"y"}],"title":{"font":{"size":15},"text":"After renovation: the same week (Buildings)","x":0.0,"xanchor":"left"},"margin":{"l":60,"r":190,"t":70,"b":40},"font":{"family":"Roboto, Helvetica, Arial, sans-serif","size":12,"color":"#8a8985"},"height":900,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","hovermode":"x unified","legend":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":1.0,"yanchor":"top"},"legend2":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":0.6466666666666667,"yanchor":"top"},"legend3":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":0.29333333333333333,"yanchor":"top"}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div>
+
+<h3 id="a-year">A year</h3>
+<p>Over the year, the renovation divides the heat delivered to the rooms by seven, from 130 to
+18 kWh/m2, and replaces 19.2 MWh of gas by 0.53 MWh of electricity for the heat pump (seasonal COP
+3.8) and 0.22 MWh for the fans. IDEAS and Buildings agree on these within 7.5 %:</p>
+<div style="height:380px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.6.0.min.js" integrity="sha256-QaOVwtVY0T02VaHrr6pnoHLCwayMJp4O5n4YyaE3rJk=" crossorigin="anonymous"></script>                <div id="residential_annual_balance" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("residential_annual_balance")) {                    Plotly.newPlot(                        "residential_annual_balance",                        [{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#2a78d6","cornerradius":4},"name":"Before, Buildings","text":["15591","19188","0","0"],"textposition":"outside","x":["Heat from the generator","Gas","Electricity","PV production"],"y":[15591.203979449234,19188.331339601657,0.0,0.0],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#eb6834","cornerradius":4},"name":"Before, IDEAS","text":["15845","19361","0","0"],"textposition":"outside","x":["Heat from the generator","Gas","Electricity","PV production"],"y":[15845.047820176125,19360.720995194744,0.0,0.0],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#1baf7a","cornerradius":4},"name":"After, Buildings","text":["1992","0","752","4644"],"textposition":"outside","x":["Heat from the generator","Gas","Electricity","PV production"],"y":[1991.5035484891923,0.0,752.2918433450293,4644.038830974169],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#eda100","cornerradius":4},"name":"After, IDEAS","text":["1844","0","717","4645"],"textposition":"outside","x":["Heat from the generator","Gas","Electricity","PV production"],"y":[1843.6570266352594,0.0,717.3335903755151,4645.255469966747],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"barmode":"group","bargap":0.3,"bargroupgap":0.08,"yaxis":{"title":{"text":"kWh"},"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"hovermode":"x unified","title":{"font":{"size":15},"text":"A year in Uccle: energy of the house before and after renovation, IDEAS against Buildings","x":0.0,"xanchor":"left"},"margin":{"l":60,"r":190,"t":70,"b":40},"font":{"family":"Roboto, Helvetica, Arial, sans-serif","size":12,"color":"#8a8985"},"height":380,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","legend":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":1.0,"yanchor":"top"},"xaxis":{"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div>
+
+<div style="height:380px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.6.0.min.js" integrity="sha256-QaOVwtVY0T02VaHrr6pnoHLCwayMJp4O5n4YyaE3rJk=" crossorigin="anonymous"></script>                <div id="residential_monthly_heat" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("residential_monthly_heat")) {                    Plotly.newPlot(                        "residential_monthly_heat",                        [{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#2a78d6","cornerradius":4},"name":"Heat from the radiators, before","x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[2963.8269739609955,2444.913675672261,1483.152168475785,750.5061753350426,309.88872770267255,78.77069457157874,64.24227744500013,73.48734246942293,292.53174549118063,1021.3164259000513,2186.2412801897226,2749.7394850388923],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#eb6834","cornerradius":4},"name":"Heat from the radiators, after","x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[502.1336940894804,382.5819709151325,157.44268087142765,24.95967659221452,0.006615149304308716,-0.6664374396753012,-0.232129972166232,0.3598767814187587,0.42109946224834355,62.460440216100736,323.5771700840043,497.0801517538356],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"barmode":"group","bargap":0.25,"bargroupgap":0.08,"yaxis":{"title":{"text":"kWh"},"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"title":{"font":{"size":15},"text":"Monthly heat delivered by the radiators, before and after renovation (Buildings)","x":0.0,"xanchor":"left"},"margin":{"l":60,"r":190,"t":70,"b":40},"font":{"family":"Roboto, Helvetica, Arial, sans-serif","size":12,"color":"#8a8985"},"height":380,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","hovermode":"x unified","legend":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":1.0,"yanchor":"top"},"xaxis":{"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div>
+
+<p>The PV produces 4.6 MWh a year, six times the electricity of the heat pump and the fans, but in
+winter both are of the same order:</p>
+<div style="height:380px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.6.0.min.js" integrity="sha256-QaOVwtVY0T02VaHrr6pnoHLCwayMJp4O5n4YyaE3rJk=" crossorigin="anonymous"></script>                <div id="residential_monthly_electricity" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("residential_monthly_electricity")) {                    Plotly.newPlot(                        "residential_monthly_electricity",                        [{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#2a78d6","cornerradius":4},"name":"Heat pump","x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[136.67353376074078,95.69051444678607,35.235199912050085,6.5258572310963245,0.0,0.0,0.0,0.0,0.0,13.248370644307617,76.70319484291524,126.9634456814741],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#eb6834","cornerradius":4},"name":"Ventilation fans","x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[18.62930980011553,18.63356403848072,18.63356403848056,18.633564038476923,18.633564038480703,18.633564038480593,18.633564038480703,18.63356403848017,18.633564038480515,18.633564038481268,18.633564038480507,18.633564038480714],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#1baf7a","cornerradius":4},"name":"PV production","x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[155.18166845478552,268.47896796453534,444.3847900689051,581.7175103232978,541.4929413789667,544.5037469189393,559.12746670341,504.4686173292186,429.4734470772231,284.9527631036038,202.41379189090787,127.67128252007282],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"barmode":"group","bargap":0.25,"bargroupgap":0.08,"yaxis":{"title":{"text":"kWh"},"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"title":{"font":{"size":15},"text":"After renovation: monthly electricity of the heat pump and the fans against the PV production (Buildings)","x":0.0,"xanchor":"left"},"margin":{"l":60,"r":190,"t":70,"b":40},"font":{"family":"Roboto, Helvetica, Arial, sans-serif","size":12,"color":"#8a8985"},"height":380,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","hovermode":"x unified","legend":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":1.0,"yanchor":"top"},"xaxis":{"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div>
+
+<p>The figures are drawn by <code>docs_src/tutorials/figures.py</code> from the results of OpenModelica:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>docs_src/tutorials/figures.py<span class="w"> </span>residential<span class="w"> </span>&lt;results<span class="w"> </span>directory&gt;
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../zone_with_photovoltaics/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Model with photovoltaics">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Model with photovoltaics
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../rc_model_predictive_control/" class="md-footer__link md-footer__link--next" aria-label="Next: RC models for MPC">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                RC models for MPC
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.footnote.tooltips", "content.tabs.link", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

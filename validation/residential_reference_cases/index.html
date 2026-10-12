@@ -1,0 +1,2189 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Automated building energy simulation tool with Modelica">
+      
+      
+      
+      
+        <link rel="prev" href="../bestest_cases/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../img/trano.webp">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Residential reference cases - Trano</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#residential-reference-cases-ideas-and-buildings" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Trano" class="md-header__button md-logo" aria-label="Trano" data-md-component="logo">
+      
+  <img src="../../img/trano.webp" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Trano
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Residential reference cases
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 2C5.13 2 2 5.13 2 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7M6 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H6zm13-8h-2l-3.2 9h1.9l.7-2h3.2l.7 2h1.9zm-2.15 5.65L18 15l1.15 3.65z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="amber" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="amber" data-md-color-accent="amber"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/andoludo/trano" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    trano
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Trano
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting-started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tutorials/first_model_and_simulation/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Tutorials
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../how-to%20guides/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  How-to Guides
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../explanation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Explanation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/components/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../bestest/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Validation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Trano" class="md-nav__button md-logo" aria-label="Trano" data-md-component="logo">
+      
+  <img src="../../img/trano.webp" alt="logo">
+
+    </a>
+    Trano
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/andoludo/trano" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M202.1 328.7c0 20.9-10.9 55.1-36.7 55.1s-36.7-34.2-36.7-55.1 10.9-55.1 36.7-55.1 36.7 34.2 36.7 55.1M496 278.2c0 31.9-3.2 65.7-17.5 95-37.9 76.6-142.1 74.8-216.7 74.8-75.8 0-186.2 2.7-225.6-74.8-14.6-29-20.2-63.1-20.2-95 0-41.9 13.9-81.5 41.5-113.6-5.2-15.8-7.7-32.4-7.7-48.8 0-21.5 4.9-32.3 14.6-51.8 45.3 0 74.3 9 108.8 36 29-6.9 58.8-10 88.7-10 27 0 54.2 2.9 80.4 9.2 34-26.7 63-35.2 107.8-35.2 9.8 19.5 14.6 30.3 14.6 51.8 0 16.4-2.6 32.7-7.7 48.2 27.5 32.4 39 72.3 39 114.2m-64.3 50.5c0-43.9-26.7-82.6-73.5-82.6-18.9 0-37 3.4-56 6-14.9 2.3-29.8 3.2-45.1 3.2-15.2 0-30.1-.9-45.1-3.2-18.7-2.6-37-6-56-6-46.8 0-73.5 38.7-73.5 82.6 0 87.8 80.4 101.3 150.4 101.3h48.2c70.3 0 150.6-13.4 150.6-101.3m-82.6-55.1c-25.8 0-36.7 34.2-36.7 55.1s10.9 55.1 36.7 55.1 36.7-34.2 36.7-55.1-10.9-55.1-36.7-55.1"/></svg>
+  </div>
+  <div class="md-source__repository">
+    trano
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trano
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting-started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting-started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/first_model_and_simulation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First model and simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/model_with_another_library/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model with another library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/multizone_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zones
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/multi-zone_with_ideal_heating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zone with ideal heating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/multi-zone_with_hydronic_heating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-zone with hydronic heating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/zone_with_ventilation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Zone with ventilation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/zone_with_photovoltaics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Model with photovoltaics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/residential_renovation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A house before and after renovation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/rc_model_predictive_control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RC models for MPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to%20guides/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to Guides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explanation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/parameters/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Validation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bestest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ASHRAE 140 (BESTEST)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bestest_cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A walk through the BESTEST cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Residential reference cases
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Residential reference cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-house" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The house
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Envelope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#systems-and-sizing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Systems and sizing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changes-to-trano-for-these-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changes to trano for these cases
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-over-a-year" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results over a year
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-differences-and-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known differences and limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-house" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The house
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Envelope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#systems-and-sizing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Systems and sizing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference examples
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component mapping
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changes-to-trano-for-these-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changes to trano for these cases
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-over-a-year" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results over a year
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-differences-and-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known differences and limits
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Trano
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../bestest/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Validation
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="residential-reference-cases-ideas-and-buildings">Residential reference cases: IDEAS and Buildings</h1>
+<p>Two YAML files describe the same Belgian semi-detached house before and after a deep renovation:</p>
+<ul>
+<li><a href="https://github.com/andoludo/trano/blob/master/examples/residential_before_renovation.yaml"><code>examples/residential_before_renovation.yaml</code></a></li>
+<li><a href="https://github.com/andoludo/trano/blob/master/examples/residential_after_renovation.yaml"><code>examples/residential_after_renovation.yaml</code></a></li>
+</ul>
+<p>Each file generates the model of either library, with the same geometry, zoning, use and weather:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>trano<span class="w"> </span>create-model<span class="w"> </span>examples/residential_before_renovation.yaml<span class="w"> </span>IDEAS
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>trano<span class="w"> </span>create-model<span class="w"> </span>examples/residential_before_renovation.yaml<span class="w"> </span>Buildings
+</span></code></pre></div>
+<p>Both files are written by <code>examples/residential_cases.py</code>, which also prints the sizing below:
+change the house there, not in the YAML files.</p>
+<h2 id="the-house">The house</h2>
+<p>Semi-detached two-storey house in Uccle, 7.4 m x 8.4 m inside, street facade north, garden facade
+south, gable west and party wall east. Heated floor area 110.6 m2 in six zones.</p>
+<table>
+<thead>
+<tr>
+<th>Zone</th>
+<th>Storey</th>
+<th>Floor area [m2]</th>
+<th>Height [m]</th>
+<th>Exposed surfaces</th>
+<th>Set point [degC], schedule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Living (with the hall)</td>
+<td>ground</td>
+<td>40.0</td>
+<td>2.6</td>
+<td>south, west, north (hall), party wall, slab</td>
+<td>21, 7-23 h</td>
+</tr>
+<tr>
+<td>Kitchen</td>
+<td>ground</td>
+<td>15.0</td>
+<td>2.6</td>
+<td>north, west, slab</td>
+<td>21, 7-23 h</td>
+</tr>
+<tr>
+<td>Bedroom 1</td>
+<td>first</td>
+<td>18.5</td>
+<td>2.5</td>
+<td>south, west, attic floor</td>
+<td>18, 6-23 h</td>
+</tr>
+<tr>
+<td>Bedroom 2</td>
+<td>first</td>
+<td>18.5</td>
+<td>2.5</td>
+<td>north, west, attic floor</td>
+<td>18, 6-23 h</td>
+</tr>
+<tr>
+<td>Bedroom 3</td>
+<td>first</td>
+<td>9.6</td>
+<td>2.5</td>
+<td>north, party wall, attic floor</td>
+<td>18, 6-23 h</td>
+</tr>
+<tr>
+<td>Bathroom</td>
+<td>first</td>
+<td>9.0</td>
+<td>2.5</td>
+<td>south, party wall, attic floor</td>
+<td>22, 6-9 h and 19-22 h</td>
+</tr>
+</tbody>
+</table>
+<p>Every room falls back to 16 degC outside its schedule. Four occupants, with the default occupancy
+gains of trano during the occupied hours of each room. Windows: 21.1 m2 (19 % of the floor area),
+6.5 m2 of them facing the garden. The ceiling of the first floor is the floor of a cold, ventilated
+attic, modelled as a roof towards the outdoor air.</p>
+<p>The party wall is an <strong>adiabatic wall</strong> (new, see below): half of the 19 cm brick wall, whose
+mid-plane is adiabatic because the neighbour is heated alike.</p>
+<h2 id="envelope">Envelope</h2>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Before renovation</th>
+<th>U [W/(m2.K)]</th>
+<th>After renovation</th>
+<th>U [W/(m2.K)]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>External wall</td>
+<td>brick cavity wall, 5 cm air cavity</td>
+<td>1.47</td>
+<td>+ 12 cm EPS (ETICS)</td>
+<td>0.23</td>
+</tr>
+<tr>
+<td>Attic floor</td>
+<td>timber floor on joists</td>
+<td>1.70</td>
+<td>+ 22 cm mineral wool</td>
+<td>0.15</td>
+</tr>
+<tr>
+<td>Slab on ground</td>
+<td>concrete and tiles</td>
+<td>3.43 (slab), 0.71 (with the ground, ISO 13370)</td>
+<td>+ 8 cm PUR</td>
+<td>0.27 (slab), 0.20 (with the ground)</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td>double glazing 4-12-4 air, wooden frames</td>
+<td>Ug 2.88, Uw 2.71, g 0.76</td>
+<td>triple glazing argon, two low-e coatings, insulated frames</td>
+<td>Ug 0.70, Uw 0.80, g 0.47</td>
+</tr>
+<tr>
+<td>Airtightness</td>
+<td>n50 = 12 1/h (0.6 1/h of infiltration)</td>
+<td></td>
+<td>n50 = 3 1/h (0.15 1/h)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>The glazings are described by their panes and gaps: trano computes U and g (EN 673, EN 410) for
+IDEAS from the same layers that Buildings uses, so that both libraries see the same windows. Air
+layers in opaque constructions are equivalent conductivities giving the EN ISO 6946 resistance of
+an unventilated cavity (0.18 m2K/W for 5 cm, 0.16 m2K/W between the joists).</p>
+<h2 id="systems-and-sizing">Systems and sizing</h2>
+<p>The design heat loss follows EN 12831 (simplified): -8 degC outdoor (Uccle), the set points above,
+thermal bridges as +0.10 (before) and +0.05 W/(m2.K) (after) on the U-values, 0.5 1/h of natural
+ventilation before renovation, infiltration plus the supply air after an 80 % heat recovery after
+renovation, and the ground loss of the ISO 13370 model of IDEAS.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Before renovation</th>
+<th>After renovation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Design heat loss</td>
+<td>10.75 kW (97 W/m2)</td>
+<td>2.34 kW (21 W/m2)</td>
+</tr>
+<tr>
+<td>Generator</td>
+<td>non-condensing gas boiler, 16 kW (1.4 x the loss, reheat after the setback), efficiency 0.85 (lower heating value), 75 degC supply</td>
+<td>air-water heat pump, 3 kW at -8 degC / 40 degC (1.25 x the loss), heating curve 40 degC at -8 degC to 30 degC at 16 degC outdoor, 100 l buffer</td>
+</tr>
+<tr>
+<td>Emission</td>
+<td>radiators rated 1.2 x the room loss at 75/65/20 degC, 13.2 kW in total, thermostatic valves (P control)</td>
+<td><strong>the same radiators</strong>: they cover the loss of every room from 39 degC supply</td>
+</tr>
+<tr>
+<td>Ventilation</td>
+<td>natural, by infiltration</td>
+<td>balanced with heat recovery (system D), 150 m3/h (0.5 1/h), effectiveness 0.8, supply and extract in every room</td>
+</tr>
+<tr>
+<td>PV</td>
+<td>-</td>
+<td>21 m2 of 20 % modules (4.2 kWp), south, 35 degrees</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Room</th>
+<th>Design loss before [W]</th>
+<th>Design loss after [W]</th>
+<th>Radiator at 75/65/20 degC [W]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Living</td>
+<td>3239</td>
+<td>815</td>
+<td>3900</td>
+</tr>
+<tr>
+<td>Kitchen</td>
+<td>1446</td>
+<td>355</td>
+<td>1800</td>
+</tr>
+<tr>
+<td>Bedroom 1</td>
+<td>2059</td>
+<td>387</td>
+<td>2500</td>
+</tr>
+<tr>
+<td>Bedroom 2</td>
+<td>2078</td>
+<td>396</td>
+<td>2500</td>
+</tr>
+<tr>
+<td>Bedroom 3</td>
+<td>921</td>
+<td>179</td>
+<td>1200</td>
+</tr>
+<tr>
+<td>Bathroom</td>
+<td>1006</td>
+<td>204</td>
+<td>1300</td>
+</tr>
+</tbody>
+</table>
+<h2 id="reference-examples">Reference examples</h2>
+<p>The systems follow these examples of the libraries trano targets (IDEAS 3.0.0, Buildings 13.0.0):</p>
+<ul>
+<li><strong>IDEAS.Examples.PPD12</strong> (a Belgian terraced house of about 120 m2): zoning, party walls as
+  <code>BoundaryWall</code>s, radiators <code>RadiatorEN442_2</code> rated at 75/65/20 degC, a gas boiler of 30 kW at
+  70 degC, balanced ventilation with a <code>ConstantEffectiveness</code> heat exchanger (0.75) and 300 m3/h.</li>
+<li><strong>Buildings.Fluid.HeatPumps.ModularReversible.Examples.AirToWater2D_OneRoomRadiator</strong>: the
+  air-water heat pump (<code>AirToWaterTableData2D</code>, Vitocal 251-A data), its safety control
+  (<code>Wuellhorst2021</code>, minimum on and off times) and its own condenser pump; trano's heat pump now
+  follows it (see below).</li>
+<li><strong>Buildings.Examples.HydronicHeating.TwoRoomsWithStorage</strong>: <code>BoilerPolynomial</code>, radiators with
+  two-way valves and balanced ventilation with heat recovery (0.9).</li>
+<li><strong>Buildings.Examples.Tutorial.SimpleHouse.SimpleHouse6</strong>: heat recovery ventilation (0.85).</li>
+<li><strong>Buildings.Electrical.AC.OnePhase.Sources</strong> (<code>PVSimpleOriented</code>): the PV array.</li>
+</ul>
+<p>Neither library has a dwelling that combines a heat pump with PV: the after-renovation case is new.</p>
+<h2 id="component-mapping">Component mapping</h2>
+<p>The hydronic and ventilation systems of trano are built from Buildings components in the models of
+both libraries (the <code>Trano</code> package of every model); the envelope, the zones, the weather and the
+radiators come from the library chosen.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>trano YAML</th>
+<th>IDEAS model</th>
+<th>Buildings model</th>
+<th>Reference</th>
+<th>Supported</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zone</td>
+<td><code>spaces</code> (<code>infiltration</code> variant, <code>n50</code>)</td>
+<td><code>IDEAS.Buildings.Components.Zone</code></td>
+<td><code>Trano.ThermalZones.MixedAirInf</code> (MixedAir + infiltration)</td>
+<td>PPD12, BESTEST</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>External wall, roof</td>
+<td><code>external_walls</code></td>
+<td><code>IDEAS.Buildings.Components.OuterWall</code></td>
+<td><code>datConExt</code>, <code>datConExtWin</code></td>
+<td>PPD12</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Window</td>
+<td><code>windows</code> + <code>glazings</code></td>
+<td><code>IDEAS.Buildings.Components.Window</code> (U, g from the layers)</td>
+<td><code>datConExtWin</code> (layers)</td>
+<td>PPD12</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Slab on ground</td>
+<td><code>floor_on_grounds</code></td>
+<td><code>IDEAS.Buildings.Components.SlabOnGround</code> (ISO 13370)</td>
+<td><code>datConBou</code> + fixed temperature</td>
+<td></td>
+<td>yes (different ground models)</td>
+</tr>
+<tr>
+<td>Party wall</td>
+<td><code>adiabatic_walls</code> (<strong>new</strong>)</td>
+<td><code>IDEAS.Buildings.Components.BoundaryWall</code> (adiabatic)</td>
+<td><code>datConBou</code>, open outer port</td>
+<td>PPD12 <code>CommonWall</code></td>
+<td>yes (new)</td>
+</tr>
+<tr>
+<td>Floors and walls between rooms</td>
+<td><code>internal_walls</code></td>
+<td><code>IDEAS.Buildings.Components.InternalWall</code></td>
+<td><code>surBou</code></td>
+<td></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Weather</td>
+<td><code>weather</code></td>
+<td><code>IDEAS.BoundaryConditions.SimInfoManager</code></td>
+<td><code>Buildings.BoundaryConditions.WeatherData.ReaderTMY3</code></td>
+<td>Uccle TMYx of IDEAS</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Gas boiler</td>
+<td><code>boiler</code>, <code>without_storage</code></td>
+<td><code>Buildings.Fluid.Boilers.BoilerPolynomial</code></td>
+<td>same</td>
+<td>TwoRoomsWithStorage, PPD12</td>
+<td>yes (fixed)</td>
+</tr>
+<tr>
+<td>Air-water heat pump</td>
+<td><code>boiler</code>, <code>air_water_heat_pump</code></td>
+<td><code>Buildings.Fluid.HeatPumps.ModularReversible.AirToWaterTableData2D</code></td>
+<td>same</td>
+<td>AirToWater2D_OneRoomRadiator</td>
+<td>yes (rebuilt)</td>
+</tr>
+<tr>
+<td>Radiators and valves</td>
+<td><code>radiator</code>, <code>valve</code> + <code>emission_control</code></td>
+<td><code>IDEAS.Fluid.HeatExchangers.Radiators.RadiatorEN442_2</code></td>
+<td><code>Buildings.Fluid.HeatExchangers.Radiators.RadiatorEN442_2</code></td>
+<td>PPD12</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Distribution</td>
+<td><code>pump</code>, <code>three_way_valve</code>, <code>split_valve</code>, <code>temperature_sensor</code></td>
+<td>Buildings movers and valves</td>
+<td>same</td>
+<td></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Heat recovery ventilation</td>
+<td><code>air_handling_unit</code>, <code>system_d</code> + <code>duct</code>s</td>
+<td><code>Buildings.Fluid.HeatExchangers.ConstantEffectiveness</code> + 2 <code>FlowControlled_dp</code></td>
+<td>same</td>
+<td>PPD12, SimpleHouse6</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>PV</td>
+<td><code>solar.photovoltaic</code></td>
+<td><code>Buildings.Electrical.AC.OnePhase.Sources.PVSimpleOriented</code></td>
+<td>same</td>
+<td>PVPanels</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Floor heating</td>
+<td>-</td>
+<td><code>EmbeddedPipe</code></td>
+<td><code>ParallelCircuitsSlab</code></td>
+<td></td>
+<td>no (radiators used)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="changes-to-trano-for-these-cases">Changes to trano for these cases</h2>
+<p>The cases revealed problems in the existing models of trano, fixed along with the extensions:</p>
+<ul>
+<li><strong>Air-water heat pump</strong> rebuilt on the Buildings reference example: it could not start with
+  Buildings 13 (swapped cooling temperatures), had no safety control and no condenser pump of its
+  own, and drew its heat from a constant 10 degC source, so its water boiled when the radiator
+  valves closed. It now charges a buffer through its own pump, follows a heating curve, keeps the
+  library's safety control and takes the outdoor air as source (<code>heat_pump_source_outdoor_air</code>,
+  true by default).</li>
+<li><strong>Boilers</strong> fire on heat demand only; the casing loss defaults to 0.5 % of the nominal power at
+  50 K instead of 5 % at 30 K; natural gas counts on its lower heating value for every variant.</li>
+<li><strong>Outputs on the data bus</strong>: electrical power and energy of the heat pump and of the ventilation
+  fans (in the grid load), fuel power and energy of the boilers, heat delivered, supply and return
+  temperatures, PV production.</li>
+<li><strong>Adiabatic walls</strong> (<code>external_boundaries.adiabatic_walls</code>) for party walls, in IDEAS, Buildings,
+  the reduced-order and the ISO 13790 zones.</li>
+<li><strong>IDEAS ground model</strong>: <code>average_indoor_temperature</code> of a floor on ground sets the room
+  temperature of the ISO 13370 heat flow of IDEAS (22 degC otherwise).</li>
+<li><strong>Same defaults in every library</strong>: the Uccle weather of IDEAS when none is given, the infiltration
+  of the IDEAS zones (0.15 1/h) for the Buildings <code>infiltration</code> variant, and 21 degC as the default
+  heating set point.</li>
+</ul>
+<p>All of them are optional: models that do not use them only change where a default was wrong.</p>
+<h2 id="results-over-a-year">Results over a year</h2>
+<p>Both cases simulated over a year in OpenModelica 1.26 (IDEAS 3.0.0, Buildings 13.0.0) with the Uccle
+weather of IDEAS (11.1 degC mean). Energies are taken from the counters each element puts on the data
+bus; the heat of the radiators is integrated from their heat flows.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Before, Buildings</th>
+<th>Before, IDEAS</th>
+<th>Difference</th>
+<th>After, Buildings</th>
+<th>After, IDEAS</th>
+<th>Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Heat from the radiators [kWh]</td>
+<td>14 420</td>
+<td>14 910</td>
+<td>+3.4 %</td>
+<td>1 952</td>
+<td>1 809</td>
+<td>-7.3 %</td>
+</tr>
+<tr>
+<td>Heating demand [kWh/m2]</td>
+<td>130</td>
+<td>135</td>
+<td></td>
+<td>17.6</td>
+<td>16.4</td>
+<td></td>
+</tr>
+<tr>
+<td>Heat from the generator [kWh]</td>
+<td>15 591</td>
+<td>15 845</td>
+<td>+1.6 %</td>
+<td>1 992</td>
+<td>1 844</td>
+<td>-7.4 %</td>
+</tr>
+<tr>
+<td>Gas, lower heating value [kWh]</td>
+<td>19 188</td>
+<td>19 361</td>
+<td>+0.9 %</td>
+<td>-</td>
+<td>-</td>
+<td></td>
+</tr>
+<tr>
+<td>Heat pump electricity [kWh]</td>
+<td>-</td>
+<td>-</td>
+<td></td>
+<td>529</td>
+<td>494</td>
+<td>-6.6 %</td>
+</tr>
+<tr>
+<td>Seasonal COP of the heat pump</td>
+<td>-</td>
+<td>-</td>
+<td></td>
+<td>3.77</td>
+<td>3.73</td>
+<td>-0.9 %</td>
+</tr>
+<tr>
+<td>Ventilation fans [kWh]</td>
+<td>-</td>
+<td>-</td>
+<td></td>
+<td>224</td>
+<td>224</td>
+<td>0.0 %</td>
+</tr>
+<tr>
+<td>Circulation pumps [kWh]</td>
+<td>30</td>
+<td>27</td>
+<td></td>
+<td>17</td>
+<td>16</td>
+<td></td>
+</tr>
+<tr>
+<td>PV production [kWh]</td>
+<td>-</td>
+<td>-</td>
+<td></td>
+<td>4 644</td>
+<td>4 645</td>
+<td>0.0 %</td>
+</tr>
+</tbody>
+</table>
+<p>The two libraries agree on the annual heating within 3.4 % before and 7.3 % after renovation, within
+the 10 % aimed at. Per room:</p>
+<table>
+<thead>
+<tr>
+<th>Room</th>
+<th>Radiators before, Buildings / IDEAS [kWh]</th>
+<th>Difference</th>
+<th>Radiators after, Buildings / IDEAS [kWh]</th>
+<th>Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Living</td>
+<td>4 639 / 4 612</td>
+<td>-1 %</td>
+<td>806 / 757</td>
+<td>-6 %</td>
+</tr>
+<tr>
+<td>Kitchen</td>
+<td>2 579 / 2 691</td>
+<td>+4 %</td>
+<td>607 / 561</td>
+<td>-8 %</td>
+</tr>
+<tr>
+<td>Bedroom 1</td>
+<td>2 130 / 2 237</td>
+<td>+5 %</td>
+<td>67 / 54</td>
+<td>-19 %</td>
+</tr>
+<tr>
+<td>Bedroom 2</td>
+<td>2 594 / 2 770</td>
+<td>+7 %</td>
+<td>157 / 140</td>
+<td>-11 %</td>
+</tr>
+<tr>
+<td>Bedroom 3</td>
+<td>1 170 / 1 236</td>
+<td>+6 %</td>
+<td>46 / 38</td>
+<td>-17 %</td>
+</tr>
+<tr>
+<td>Bathroom</td>
+<td>1 308 / 1 364</td>
+<td>+4 %</td>
+<td>267 / 258</td>
+<td>-3 %</td>
+</tr>
+</tbody>
+</table>
+<p>After renovation the bedrooms, at 18 degC, are kept warm by the rooms around them and by the supply air:
+their few tens of kWh differ by up to 19 % between the libraries without weighing on the total.</p>
+<!-- figures of docs/tutorials/figures, written by docs_src/tutorials/figures.py -->
+<div style="height:380px; width:100%;">                        <script>window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.6.0.min.js" integrity="sha256-QaOVwtVY0T02VaHrr6pnoHLCwayMJp4O5n4YyaE3rJk=" crossorigin="anonymous"></script>                <div id="residential_annual_balance" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("residential_annual_balance")) {                    Plotly.newPlot(                        "residential_annual_balance",                        [{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#2a78d6","cornerradius":4},"name":"Before, Buildings","text":["15591","19188","0","0"],"textposition":"outside","x":["Heat from the generator","Gas","Electricity","PV production"],"y":[15591.203979449234,19188.331339601657,0.0,0.0],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#eb6834","cornerradius":4},"name":"Before, IDEAS","text":["15845","19361","0","0"],"textposition":"outside","x":["Heat from the generator","Gas","Electricity","PV production"],"y":[15845.047820176125,19360.720995194744,0.0,0.0],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#1baf7a","cornerradius":4},"name":"After, Buildings","text":["1992","0","752","4644"],"textposition":"outside","x":["Heat from the generator","Gas","Electricity","PV production"],"y":[1991.5035484891923,0.0,752.2918433450293,4644.038830974169],"type":"bar"},{"hovertemplate":"%{y:.0f} kWh","marker":{"color":"#eda100","cornerradius":4},"name":"After, IDEAS","text":["1844","0","717","4645"],"textposition":"outside","x":["Heat from the generator","Gas","Electricity","PV production"],"y":[1843.6570266352594,0.0,717.3335903755151,4645.255469966747],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"barmode":"group","bargap":0.3,"bargroupgap":0.08,"yaxis":{"title":{"text":"kWh"},"gridcolor":"rgba(138,137,133,0.25)","zeroline":false,"linecolor":"#b8b7b1"},"hovermode":"x unified","title":{"font":{"size":15},"text":"A year in Uccle: energy of the house before and after renovation, IDEAS against Buildings","x":0.0,"xanchor":"left"},"margin":{"l":60,"r":190,"t":70,"b":40},"font":{"family":"Roboto, Helvetica, Arial, sans-serif","size":12,"color":"#8a8985"},"height":380,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","legend":{"bgcolor":"rgba(0,0,0,0)","font":{"size":11},"tracegroupgap":2,"x":1.02,"xanchor":"left","y":1.0,"yanchor":"top"},"xaxis":{"showgrid":false,"linecolor":"#b8b7b1","ticks":"outside","tickcolor":"#b8b7b1"}},                        {"displaylogo": false, "responsive": true}                    )                };            </script>        </div>
+
+<p>The renovation cuts the heat delivered to the rooms by 86 % (130 to 18 kWh/m2) and the final energy
+for heating from 19.2 MWh of gas to 0.53 MWh of electricity. With the fans, the house draws 0.75 MWh
+of electricity a year for heating and ventilation, against 4.6 MWh produced by the PV, most of it
+from April to September (see the
+<a href="../../tutorials/residential_renovation/">tutorial</a> for the monthly figures).</p>
+<h2 id="known-differences-and-limits">Known differences and limits</h2>
+<ul>
+<li><strong>Ground.</strong> IDEAS computes the heat flow through the slab with the ISO 13370 model, from the exposed
+  perimeter and the mean temperature of the room above; Buildings holds the outer face of the slab at
+  a fixed temperature. <code>examples/residential_cases.py</code> sets that temperature so that both lose the
+  same heat over the heating season. The IDEAS ground starts at 10.8 degC and takes about two weeks
+  to settle: short simulations (the four January days of <code>tests/test_residential_examples.py</code>)
+  differ more (within 15 % upstairs, 25 % for the house).</li>
+<li><strong>Comfort in the bathroom after renovation.</strong> The bathroom (22 degC, 6-9 h and 19-22 h, 16 degC
+  otherwise) is below 21 degC during 43 % of its occupied hours in both libraries: the radiator
+  kept from before the renovation warms it slowly from the setback with water at 30-40 degC. A
+  lighter setback, an earlier start or a towel radiator sized for low temperatures would fix it;
+  the case keeps the radiators on purpose. The other rooms are below their set point minus 1 K during
+  at most 8 % of their occupied hours before renovation (the reheat after the setback) and 4 % after.</li>
+<li><strong>Boiler losses.</strong> <code>BoilerPolynomial</code> of Buildings 13 subtracts the loss of its casing twice
+  from the water; trano sets that loss to 0.5 % of the nominal power at 50 K so that it stays small.
+  Before renovation, 7.5 % of the heat of the boiler is lost by the boiler, the pipes and the valves
+  before the radiators.</li>
+<li><strong>Air layers</strong> of opaque constructions are equivalent solid layers in both libraries (no
+  convection or radiation across the cavity).</li>
+<li><strong>Natural ventilation</strong> before renovation is the infiltration of the zones, constant at
+  n50 / 20; it does not vary with the wind or the temperature difference.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../bestest_cases/" class="md-footer__link md-footer__link--prev" aria-label="Previous: A walk through the BESTEST cases">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                A walk through the BESTEST cases
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.annotate", "content.code.copy", "content.footnote.tooltips", "content.tabs.link", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.path", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
