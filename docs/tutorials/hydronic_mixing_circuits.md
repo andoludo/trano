@@ -376,12 +376,9 @@ systems:
 ### Tuning the valve controller
 
 `three_way_valve_control` takes the parameters of its controller (`controller_type`, `k`, `ti`, ...; see the
-[parameters](../reference/parameters.md#threewayvalvecontrolparameters)). Its default is a proportional controller
-with a gain of 1 per kelvin: an error of 1 K moves the valve over its whole stroke. In a mixing circuit, where the
-valve really regulates, that controller hunts around the set point, holds the water about 1 K below it and slows
-the simulation down (three January days of this model took 451 s to simulate with IDEAS). A PI controller with a
-gain of 0.1 per kelvin and an integral time of 300 s holds the set point without offset and simulates four times
-faster (110 s). With the pump before the valve, the valve never regulates, so the tuning does not matter there.
+[parameters](../reference/parameters.md#threewayvalvecontrolparameters)). This example uses a PI controller with a
+gain of 0.1 per kelvin and an integral time of 300 s; the
+[lessons learned](#lessons-learned-the-pid-of-the-three-way-valves) at the end of this page explain why.
 
 The model is created as in the other tutorials:
 
@@ -409,3 +406,53 @@ average 20.3 to 20.5 degC during the occupied hours. With the pump before the va
 tank temperature.
 
 {!tutorials/figures/three_zones_hydronic_mixing_water.html!}
+
+## Lessons learned: the PID of the three-way valves
+
+These lessons come from simulating three January days of this model with IDEAS, changing only the controller of
+the two valves. The figures are for the water sent to the radiators while the top of the tank is above 75 degC.
+
+| Controller of the valves | Water to the radiators: median | 95 % of the time below | Rooms (occupied, mean) | Time to simulate |
+|---|---|---|---|---|
+| Default: proportional, `k` = 1 per K | 68 to 69 degC | 75 degC | 20.3 to 20.4 degC | 451 s |
+| Proportional, `k` = 0.1 per K | **63 degC** | 71 degC | 20.2 to 20.3 degC | 128 s |
+| **PI, `k` = 0.1 per K, `ti` = 300 s** | **70.0 degC** | 76 degC | 20.3 to 20.4 degC | **110 s** |
+| Pump before the valves (earlier tutorial), default controller | follows the tank | — | — | 25 s |
+
+**1. The tuning only matters once the valve really regulates.** With the pump before the valves, the valves sit
+fully open, the controller never acts, and the default tuning looks fine: that model simulates in 25 s.
+The same controller on valves that do mix made the simulation 18 times slower. A layout that works hides the
+weaknesses of its controls, so a model only tells you about its controller once the controller has something to do.
+
+**2. The gain has units, and 1 per kelvin is a lot for a valve.** The controller turns a temperature error in
+kelvin into a valve opening between 0 and 1. With `k` = 1, an error of 1 K already moves the valve over its whole
+stroke. Between the valve and the sensor there are delays: the mixing volume, the sensor's time constant, the
+travel of the water and, in IDEAS, the actuator of the valve. A large gain acting through delays overshoots,
+corrects and overshoots again: the valve hunts around the set point, and every reversal is a fast change the solver
+follows with small steps. We did not record the valve finely enough to see each reversal, but the timings point to
+it: lowering the gain alone cut the simulation from 451 s to 128 s.
+
+**3. A proportional controller cannot reach its set point.** It only opens the valve in proportion to the error,
+so it needs a permanent error to hold the valve open: the opening divided by `k`. With `k` = 1 and the valves about
+70 % open, that offset is 0.7 K (68 to 69 degC for a 70 degC set point), which is why it goes unnoticed. Lowering the gain to calm the valve
+makes the offset ten times larger: `k` = 0.1 held the water at 63 degC, 7 K below the set point. A proportional
+controller makes you choose between a calm valve and an accurate temperature.
+
+**4. The integral action removes that choice.** A PI controller keeps adding up the error, so it holds the set point
+with a small gain: 70.0 degC with `k` = 0.1, in 110 s. Its integral time must be slow compared with the delays of
+the circuit (mixing volume, sensor, valve actuator): 300 s here.
+
+**5. Never switch to PI without setting `ti`.** The default `ti` is 0.5 s. It is unused by the proportional
+controller, but it becomes active as soon as `controller_type` is set to PI. An integral time of half a second is far faster than
+the delays of the circuit, a classic cause of oscillation (we did not simulate it). Always give `controller_type`, `k` and `ti` together.
+
+**6. How to check a tuning.** Plot the valve opening and the temperature after the valve (as in the second figure
+of the results):
+
+- the opening zig-zags, or the simulation is unusually slow: the gain is too high, lower `k`;
+- the temperature settles away from the set point: there is no integral action, use PI;
+- the temperature drifts slowly back and forth around the set point: the integral is too fast, raise `ti`.
+
+The PI values of this example are a starting point that worked here. We tested only the three tunings above, so
+check them on your own circuit with the plots above rather than reusing them blindly. The default of
+`three_way_valve_control` is still the proportional controller, so that the existing models keep their results.
