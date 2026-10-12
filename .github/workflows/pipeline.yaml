@@ -79,6 +79,19 @@ jobs:
       - name: Simulate the AixLib models (OpenModelica in Docker)
         run: uv run pytest -m simulate -k "reduced_order or iso_13790"
 
+      - name: Show the AixLib versions of the package manager
+        if: failure()
+        run: |
+          mkdir -p .cache/aixlib-check
+          cat > .cache/aixlib-check/check.mos <<'MOS'
+          updatePackageIndex(); getErrorString();
+          getAvailablePackageVersions(AixLib, ""); getErrorString();
+          installPackage(AixLib, "3.0.1"); getErrorString();
+          getAvailableLibraryVersions(AixLib); getErrorString();
+          MOS
+          docker run --rm -v "$PWD/.cache/aixlib-check:/check" \
+            openmodelica/openmodelica:v1.26.9-ompython omc /check/check.mos
+
   create-revision-and-tag:
     if: startsWith(github.ref, 'refs/heads/master')
     needs: [tests]
