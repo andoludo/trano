@@ -113,13 +113,11 @@ def test_simulate_yaml_model(model_name: str, yaml_file: str, library_name: str 
 
 
 @pytest.mark.simulate
-def test_simulate_house_complex() -> None:
+def test_simulate_house_complex(tmp_path: Path) -> None:
     house = get_path("house_complex.yaml")
     network = convert_network("house_complex", house)
-    project_path = Path(__file__).parent.joinpath("simulation")
-    project_path.mkdir(parents=True, exist_ok=True)
     results = simulate(
-        Path(project_path),
+        tmp_path,
         network,
         options=SimulationOptions(end_time=24 * ONE_HOUR * 30 * 3),
     )
