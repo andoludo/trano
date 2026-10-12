@@ -162,6 +162,11 @@ systems:
       id: BOILER:001
       control:
         boiler_control:
+          id: BOILER_CONTROL:001
+          # the tank is charged to 70-75 degC: below the 90 degC set point of the three-way valves, which
+          # divert the water to the return and cannot cool the supply of the radiators
+          parameters:
+            tsup_nominal: 343.15
   - pump:
       id: PUMP:001
       control:
