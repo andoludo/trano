@@ -159,6 +159,41 @@ def temperatures_and_power(
     return _layout(figure, title, 300 * rows)
 
 
+def water_temperatures(
+    result: Result,
+    title: str,
+    temperatures: Sequence[tuple[str, str]],
+    openings: Sequence[tuple[str, str]],
+    set_point: tuple[str, float],
+) -> go.Figure:
+    """Water temperatures against a set point, then the openings of the valves that hold it.
+
+    `temperatures` and `openings` are (pattern, label); the temperatures are in K, plotted in degC.
+    """
+    figure = make_subplots(
+        rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.06, subplot_titles=["Water [degC]", "Valve opening [1]"]
+    )
+    for row, signals, offset, unit in ((1, temperatures, -273.15, "degC"), (2, openings, 0.0, "")):
+        index = 0
+        for pattern, label in signals:
+            for number, name in enumerate(result.find(pattern), start=1):
+                series = result.series(name, offset=offset)
+                figure.add_scatter(
+                    x=_days(series.time), y=series.values, name=label.format(number),
+                    line={"color": SERIES[index % len(SERIES)], "width": 2}, legend="legend" if row == 1 else "legend2",
+                    hovertemplate=f"%{{y:.2f}} {unit}", row=row, col=1,
+                )  # fmt: skip
+                index += 1
+    label, value = set_point
+    figure.add_hline(y=value, line={"color": MUTED, "width": 1, "dash": "dash"}, row=1, col=1)
+    figure.add_annotation(
+        x=1.0, xref="paper", y=value, yref="y", text=label, showarrow=False, xanchor="right", yanchor="bottom",
+        font={"size": 10, "color": NEUTRAL},
+    )  # fmt: skip
+    figure.update_xaxes(title_text="Day of the year", row=2, col=1)
+    return _layout(figure, title, 600)
+
+
 def monthly_energy(results: dict[str, Result], signals: Sequence[tuple[str, str, float]], title: str) -> go.Figure:
     """Monthly energy [kWh] of signals in W: one group of bars per month, one bar per case and signal."""
     figure = go.Figure()
@@ -236,6 +271,25 @@ def hydronic_heating(results: Path) -> list[Path]:
     return [write(figure, "three_zones_hydronic_heating")]
 
 
+def hydronic_mixing(results: Path) -> list[Path]:
+    result = Result(next(results.glob("three_zones_hydronic_mixing*.mat")))
+    rooms = temperatures_and_power(
+        result,
+        "Three zones heated through mixing circuits, two January weeks (IDEAS)",
+        power=[RADIATORS, (r"production1\.boiler_001\.QFue\.y$", "Boiler, gas", 1.0)],
+        set_points={"21 degC set point": 21.0},
+    )  # fmt: skip
+    water = water_temperatures(
+        result,
+        "The boiler tank at up to 95 degC, the radiators held at 70 degC by the mixing valves (IDEAS)",
+        temperatures=[(r"^building\.bus1\.dataBus\.TStoTopBoiler_001$", "Top of the boiler tank"),
+                      (r"distribution1\.temperature_sensor_\d+\.T$", "To the radiators, circuit {}")],
+        openings=[(r"distribution1\.three_way_valve_\d+\.y$", "Three-way valve {}")],
+        set_point=("70 degC set point of the valves", 70.0),
+    )  # fmt: skip
+    return [write(rooms, "three_zones_hydronic_mixing"), write(water, "three_zones_hydronic_mixing_water")]
+
+
 def photovoltaics(results: Path) -> list[Path]:
     result = Result(next(results.glob("multizones_with_pv*.mat")))
     figure = temperatures_and_power(
@@ -305,6 +359,7 @@ def residential(results: Path) -> list[Path]:
 TUTORIALS = {
     "first_model": first_model,
     "hydronic_heating": hydronic_heating,
+    "hydronic_mixing": hydronic_mixing,
     "photovoltaics": photovoltaics,
     "residential": residential,
 }

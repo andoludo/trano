@@ -64,6 +64,7 @@ nav:
     - Multi-zones: tutorials/multizone_model.md
     - Multi-zone with ideal heating: tutorials/multi-zone_with_ideal_heating.md
     - Multi-zone with hydronic heating: tutorials/multi-zone_with_hydronic_heating.md
+    - Hydronic heating with mixing circuits: tutorials/hydronic_mixing_circuits.md
     - Zone with ventilation: tutorials/zone_with_ventilation.md
     - Model with photovoltaics: tutorials/zone_with_photovoltaics.md
     - A house before and after renovation: tutorials/residential_renovation.md
