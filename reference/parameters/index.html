@@ -567,6 +567,8 @@
       
         
       
+        
+      
     
     
     
@@ -737,6 +739,34 @@
     
   
     Multi-zone with hydronic heating
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/hydronic_mixing_circuits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hydronic heating with mixing circuits
   
 
     
@@ -1277,6 +1307,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#threewayvalvecontrolparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ThreeWayValveControlParameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#threewayvalveparameters" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1703,6 +1744,17 @@
     <span class="md-ellipsis">
       
         SplitValveParameters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threewayvalvecontrolparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ThreeWayValveControlParameters
       
     </span>
   </a>
@@ -3152,7 +3204,7 @@
 </tbody>
 </table>
 <h2 id="pidparameters">PIDParameters</h2>
-<p>Elements: <code>threewayvalvecontrol</code>, <code>collectorcontrol</code></p>
+<p>Elements: <code>collectorcontrol</code></p>
 <table>
 <thead>
 <tr>
@@ -3874,6 +3926,124 @@
 <td><code>linearized</code></td>
 <td><code>linearized</code></td>
 <td><code>linearized</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="threewayvalvecontrolparameters">ThreeWayValveControlParameters</h2>
+<p>Elements: <code>threewayvalvecontrol</code></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Default</th>
+<th>Buildings</th>
+<th>IDEAS</th>
+<th>AixLib reduced order</th>
+<th>ISO 13790</th>
+<th>mpc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>controller_type</code></td>
+<td>Type of controller</td>
+<td><code>Buildings.Controls.OBC.CDL.Types.SimpleController.P</code></td>
+<td><code>controllerType</code></td>
+<td><code>controllerType</code></td>
+<td><code>controllerType</code></td>
+<td><code>controllerType</code></td>
+<td><code>controllerType</code></td>
+</tr>
+<tr>
+<td><code>k</code></td>
+<td>Gain of controller [1]</td>
+<td><code>1.0</code></td>
+<td><code>k</code></td>
+<td><code>k</code></td>
+<td><code>k</code></td>
+<td><code>k</code></td>
+<td><code>k</code></td>
+</tr>
+<tr>
+<td><code>nd</code></td>
+<td>The higher Nd, the more ideal the derivative block [1]</td>
+<td><code>10.0</code></td>
+<td><code>Nd</code></td>
+<td><code>Nd</code></td>
+<td><code>Nd</code></td>
+<td><code>Nd</code></td>
+<td><code>Nd</code></td>
+</tr>
+<tr>
+<td><code>ni</code></td>
+<td>Ni*Ti is time constant of anti-windup compensation [1]</td>
+<td><code>0.9</code></td>
+<td><code>Ni</code></td>
+<td><code>Ni</code></td>
+<td><code>Ni</code></td>
+<td><code>Ni</code></td>
+<td><code>Ni</code></td>
+</tr>
+<tr>
+<td><code>r</code></td>
+<td>Typical range of control error, used for scaling the control error</td>
+<td><code>1.0</code></td>
+<td><code>r</code></td>
+<td><code>r</code></td>
+<td><code>r</code></td>
+<td><code>r</code></td>
+<td><code>r</code></td>
+</tr>
+<tr>
+<td><code>td</code></td>
+<td>Time constant of derivative block [s]</td>
+<td><code>0.1</code></td>
+<td><code>Td</code></td>
+<td><code>Td</code></td>
+<td><code>Td</code></td>
+<td><code>Td</code></td>
+<td><code>Td</code></td>
+</tr>
+<tr>
+<td><code>ti</code></td>
+<td>Time constant of integrator block [s]</td>
+<td><code>0.5</code></td>
+<td><code>Ti</code></td>
+<td><code>Ti</code></td>
+<td><code>Ti</code></td>
+<td><code>Ti</code></td>
+<td><code>Ti</code></td>
+</tr>
+<tr>
+<td><code>y_max</code></td>
+<td>Upper limit of output [1]</td>
+<td><code>1.0</code></td>
+<td><code>yMax</code></td>
+<td><code>yMax</code></td>
+<td><code>yMax</code></td>
+<td><code>yMax</code></td>
+<td><code>yMax</code></td>
+</tr>
+<tr>
+<td><code>y_min</code></td>
+<td>Lower limit of output [1]</td>
+<td><code>0.0</code></td>
+<td><code>yMin</code></td>
+<td><code>yMin</code></td>
+<td><code>yMin</code></td>
+<td><code>yMin</code></td>
+<td><code>yMin</code></td>
+</tr>
+<tr>
+<td><code>supply_temperature_setpoint</code></td>
+<td>Temperature the valve holds after it, at its temperature sensor [K]. Only a valve with its pump downstream (mixing circuit) can lower the supply temperature; with the pump upstream it can only cut the flow. 363.15 (90 degC) by default, raised 5 K above the highest supply of a storage boiler feeding a valve with its pump upstream (the top of the tank, 15 K above the boiler set point) so that the valve does not close.</td>
+<td>library default</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
 </tr>
 </tbody>
 </table>
