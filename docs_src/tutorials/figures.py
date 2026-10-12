@@ -160,22 +160,21 @@ def temperatures_and_power(
 
 
 def monthly_energy(results: dict[str, Result], signals: Sequence[tuple[str, str, float]], title: str) -> go.Figure:
-    """Monthly energy [kWh] of signals in W, one group of bars per month and one bar per case."""
+    """Monthly energy [kWh] of signals in W: one group of bars per month, one bar per case and signal."""
     figure = go.Figure()
-    for index, (case, result) in enumerate(results.items()):
-        for pattern, label, scale in signals:
-            names = result.find(pattern)
-            if not names:
-                continue
-            t, _ = result.reader.values(names[0])
-            edges = np.linspace(0, 365 * DAY, 13)
-            grid = np.arange(0, min(t[-1], 365 * DAY), 600.0)
-            power = sum(np.interp(grid, *result.reader.values(name)) for name in names) * scale
-            energy = [float(power[(grid >= a) & (grid < b)].sum() * 600 / 3.6e6) for a, b in pairwise(edges)]
-            figure.add_bar(
-                x=list(MONTHS), y=energy, name=f"{label}, {case}", marker={"color": SERIES[index], "cornerradius": 4},
-                hovertemplate="%{y:.0f} kWh",
-            )  # fmt: skip
+    edges = np.linspace(0, 365 * DAY, 13)
+    bars = [(case, result, signal) for case, result in results.items() for signal in signals]
+    for index, (case, result, (pattern, label, scale)) in enumerate(bars):
+        names = result.find(pattern)
+        if not names:
+            continue
+        grid = np.arange(0, min(result.reader.values(names[0])[0][-1], 365 * DAY), 600.0)
+        power = sum(np.interp(grid, *result.reader.values(name)) for name in names) * scale
+        energy = [float(power[(grid >= a) & (grid < b)].sum() * 600 / 3.6e6) for a, b in pairwise(edges)]
+        figure.add_bar(
+            x=list(MONTHS), y=energy, name=label if len(results) == 1 else f"{label}, {case}",
+            marker={"color": SERIES[index], "cornerradius": 4}, hovertemplate="%{y:.0f} kWh",
+        )  # fmt: skip
     figure.update_layout(barmode="group", bargap=0.25, bargroupgap=0.08, yaxis_title="kWh")
     return _layout(figure, title, 380)
 
@@ -251,7 +250,11 @@ def photovoltaics(results: Path) -> list[Path]:
 
 
 def residential(results: Path) -> list[Path]:
-    """Figures of the residential cases: a January week of each case, the year, IDEAS against Buildings."""
+    """Figures of the residential cases: a January week of each case, the year, IDEAS against Buildings.
+
+    `results` holds week/<case>_Buildings/results/*.mat (7 days) and year/<case>_<library>/results/*.mat
+    (365 days), with case before or after; the yearly figures are drawn for the runs found.
+    """
     paths = []
     week = {
         case: Result(next(results.joinpath("week", f"{case}_Buildings", "results").glob("*.mat")))
@@ -279,7 +282,7 @@ def residential(results: Path) -> list[Path]:
     }
     if year:
         paths.append(write(comparison_bars(
-            {name: annual_balance(result) for name, result in year.items()},
+            {name[0].upper() + name[1:]: annual_balance(result) for name, result in year.items()},
             "A year in Uccle: energy of the house before and after renovation, IDEAS against Buildings",
             "kWh",
         ), "residential_annual_balance"))  # fmt: skip
@@ -289,6 +292,13 @@ def residential(results: Path) -> list[Path]:
             [(r"emission1\.radiator_\w+\.Q_flow$", "Heat from the radiators", -1.0)],
             "Monthly heat delivered by the radiators, before and after renovation (Buildings)",
         ), "residential_monthly_heat"))  # fmt: skip
+        paths.append(write(monthly_energy(
+            {"after": year["after, Buildings"]},
+            [(r"production1\.generator_001\.PEle\.y$", "Heat pump", 1.0),
+             (r"ventilation1\.ahu_001\.PFan\.y$", "Ventilation fans", 1.0),
+             (r"\.pv_001\.PPv\.y$", "PV production", 1.0)],
+            "After renovation: monthly electricity of the heat pump and the fans against the PV production (Buildings)",
+        ), "residential_monthly_electricity"))  # fmt: skip
     return paths
 
 
