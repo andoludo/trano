@@ -54,6 +54,9 @@ REFERENCE_VARIABLES = (
     r"TSup\\.T|PFan\\.y|PEle\\.y|QFue\\.y|pv_[0-9]+\\.P)"
 )
 REFERENCE = "Buildings"
+REFERENCES = ("Buildings", "IDEAS")  # libraries whose simulation FastModel can replay
+# the zone air temperature in the reference libraries
+ZONE_AIR_TEMPERATURE = {"Buildings": "heaPorAir.T", "IDEAS": "TAir"}
 
 
 class ZoneComparison(BaseModel):
@@ -93,7 +96,8 @@ class EnergyComparison(BaseModel):
 
 class CaseComparison(BaseModel):
     case: str
-    model: str = Field(description="mpc zone model, e.g. R3C2, connected")
+    model: str = Field(description="FastModel, or an RC model type of the mpc library")
+    reference: str = Field(REFERENCE, description="Library of the simulation replayed and compared with")
     zones: list[ZoneComparison]
     circuits: list[CircuitComparison] = Field(default_factory=list)
     energies: list[EnergyComparison] = Field(default_factory=list)
@@ -116,14 +120,15 @@ def _network(case: MPCCase, library: Library, directory: Path) -> Network:
     return network
 
 
-def _options(case: MPCCase, reference: bool = False) -> SimulationOptions:
+def _options(case: MPCCase, reference: bool = False, library: str = REFERENCE) -> SimulationOptions:
     fine = reference and case.fine_replay
+    variables = REFERENCE_VARIABLES if library == REFERENCE else REFERENCE_VARIABLES.replace(".*(", r".*(\\.TAir|", 1)
     return SimulationOptions(
         start_time=case.start_time,
         end_time=case.end_time,
         tolerance=TOLERANCE,
         number_of_intervals=(case.end_time - case.start_time) // (FINE_REFERENCE_INTERVAL if fine else INTERVAL),
-        variable_filter=REFERENCE_VARIABLES if fine else None,
+        variable_filter=variables if fine else None,
     )
 
 
@@ -217,10 +222,15 @@ def _interval_mean(reader: Reader, variable: str, grid: np.ndarray) -> np.ndarra
     return np.append(mean, mean[-1])
 
 
-def reference(case: MPCCase) -> tuple[Network, Path]:
-    directory = case_directory(case, REFERENCE)
-    network = _network(case, Library.from_configuration(REFERENCE), directory)
-    return network, _simulate(network, directory, _options(case, reference=True), f"{case.id}-{REFERENCE}")
+def reference(case: MPCCase, library: str = REFERENCE) -> tuple[Network, Path]:
+    """The simulation of the case with ``library`` (Buildings or IDEAS), with its own controls."""
+    if library not in REFERENCES:
+        raise ValueError(f"FastModel replays {', '.join(REFERENCES)} simulations, not {library}")
+    directory = case_directory(case, library)
+    network = _network(case, Library.from_configuration(library), directory)
+    return network, _simulate(
+        network, directory, _options(case, reference=True, library=library), f"{case.id}-{library}"
+    )
 
 
 def _write_data(path: Path, grid: np.ndarray, columns: dict[str, np.ndarray]) -> Path:
@@ -423,22 +433,25 @@ def _circuits(reader: Reader, model_reader: Reader, network: Network, grid: np.n
 FAST_MODEL = "FastModel"
 
 
-def compare(case_id: str, model: str = FAST_MODEL) -> CaseComparison:
-    """Replay what the Buildings systems did through the model of the same YAML file and compare: ``FastModel`` or
-    an RC model type of the flat ``mpc`` library (R1C1, R3C2, ...)."""
+def compare(case_id: str, model: str = FAST_MODEL, reference_library: str = REFERENCE) -> CaseComparison:
+    """Replay what the systems of the ``reference_library`` model (Buildings or IDEAS) did through the model of the
+    same YAML file and compare: ``FastModel`` or an RC model type of the flat ``mpc`` library (R1C1, R3C2, ...)."""
     case = CASES[case_id]
     started = time.monotonic()
-    buildings_network, buildings_result = reference(case)
+    buildings_network, buildings_result = reference(case, reference_library)
     reader = _reader(buildings_result)
     grid = np.arange(case.start_time, case.end_time + 1, INTERVAL, dtype=float)
     spaces = _zones(buildings_network)
     heat = {sanitize_name(space.name): _emitter_heat(reader, space, grid) for space in spaces}
     reference_temperature = {
-        sanitize_name(space.name): _on_grid(reader, find_variable(reader, f"{space.name}.heaPorAir.T"), grid)
+        sanitize_name(space.name): _on_grid(
+            reader, find_variable(reader, f"{space.name}.{ZONE_AIR_TEMPERATURE[reference_library]}"), grid
+        )
         for space in spaces
     }
     fast_model = model == FAST_MODEL
-    directory = case_directory(case, FAST_MODEL if fast_model else f"mpc-{model}")
+    variant = FAST_MODEL if fast_model else f"mpc-{model}"
+    directory = case_directory(case, variant if reference_library == REFERENCE else f"{variant}-{reference_library}")
     library = (
         Library.from_configuration(FAST_MODEL)
         if fast_model
@@ -454,7 +467,8 @@ def compare(case_id: str, model: str = FAST_MODEL) -> CaseComparison:
         }
     if columns:  # nothing to replay in a free-floating case
         network.external_data = _write_data(directory / "replay.csv", replay - case.start_time, columns)
-    result = _simulate(network, directory, _options(case), f"{case.id}-{model}")
+    name = f"{case.id}-{model}" if reference_library == REFERENCE else f"{case.id}-{model}-{reference_library}"
+    result = _simulate(network, directory, _options(case), name)
     model_reader = _reader(result)
     radiator_heat = _radiator_heat(model_reader, network, grid) if fast_model else {}
 
@@ -485,6 +499,7 @@ def compare(case_id: str, model: str = FAST_MODEL) -> CaseComparison:
     return CaseComparison(
         case=case_id,
         model=model,
+        reference=reference_library,
         zones=zones,
         circuits=_circuits(reader, model_reader, network, grid) if fast_model else [],
         energies=_energies(reader, model_reader, network, grid) if fast_model else [],

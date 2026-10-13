@@ -10,7 +10,7 @@ from typing import Any
 
 from trano.mpc import RCModelType
 from validation.mpc.cases import CASES
-from validation.mpc.harness import CACHE_ROOT, FAST_MODEL, CaseComparison, compare
+from validation.mpc.harness import CACHE_ROOT, FAST_MODEL, REFERENCE, REFERENCES, CaseComparison, compare
 from validation.mpc.report import render_report
 
 RESULTS = CACHE_ROOT / "results.json"
@@ -41,6 +41,13 @@ def main() -> None:
         default=[FAST_MODEL, *(model.value for model in RCModelType)],
         help="FastModel, or an RC model type of the flat mpc library",
     )
+    run.add_argument(
+        "--references",
+        nargs="*",
+        default=[REFERENCE],
+        choices=REFERENCES,
+        help="libraries whose simulation is replayed",
+    )
     commands.add_parser("report", help="print the Markdown report of the stored results")
     commands.add_parser("list", help="list the cases")
     arguments = parser.parse_args()
@@ -54,14 +61,18 @@ def main() -> None:
         print(render_report([CaseComparison.model_validate(item) for item in _load().values()]))
         return
     for case_id in arguments.cases:
-        for model in arguments.models:
-            try:
-                comparison = compare(case_id, model)
-            except Exception:
-                logging.exception("Case %s with %s failed", case_id, model)
-                continue
-            _store(f"{case_id}/{comparison.model}", comparison)
-            logging.info("%s %s: worst zone RMSE %.2f K", case_id, comparison.model, comparison.worst_rmse)
+        for reference in arguments.references:
+            for model in arguments.models:
+                try:
+                    comparison = compare(case_id, model, reference)
+                except Exception:
+                    logging.exception("Case %s with %s against %s failed", case_id, model, reference)
+                    continue
+                key = f"{case_id}/{model}" if reference == REFERENCE else f"{case_id}/{model}/{reference}"
+                _store(key, comparison)
+                logging.info(
+                    "%s %s against %s: worst zone RMSE %.2f K", case_id, model, reference, comparison.worst_rmse
+                )
 
 
 if __name__ == "__main__":
