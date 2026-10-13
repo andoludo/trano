@@ -574,7 +574,8 @@ package FastModel "Building models for model predictive control: close to Buildi
         end for;
         CPan[nPan]*der(T[nPan]) = QAbs[nPan] + GGap[nPan - 1]*(T[nPan - 1] - T[nPan]) - QInt + propsBus_a.rad.Q_flow;
       end if;
-      propsBus_a.con.Q_flow = -QInt - QFra;
+      // the room air loses the heat that leaves through the frame and takes the heat of the inner pane
+      propsBus_a.con.Q_flow = QFra - QInt;
       propsBus_a.rad.T = T[nPan];
       propsBus_a.A = AGla;
       propsBus_a.epsLw = glazing.absIR_b;

@@ -94,7 +94,8 @@
         til={{ macros.convert_tilt(element.tilt, library_name) }})
   variant: default
 
-# A wall or floor between two zones: side a faces the zone connected to propsBus_a.
+# A wall or floor between two zones: side a faces the zone connected to propsBus_a, with the tilt the element has
+# in that zone (a floor between storeys is the ceiling of the zone below); side b faces the other way.
 - classes:
   - InternalElement
   library: FastModel
@@ -114,9 +115,10 @@
     targets:
     - Space
   template: |-
+    {%- set zone_a = macros.connected_element(element, 'propsBus_a') -%}
     FastModel.Envelope.InternalWall {{ element.name }}(
         constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
         A={{ element.surface }},
         azi={{ element.azimuth }},
-        til={{ macros.convert_tilt(element.tilt, library_name) }})
+        til={{ macros.convert_tilt(element.get_tilt(zone_a) if zone_a else element.tilt, library_name) }})
   variant: default

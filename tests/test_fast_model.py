@@ -192,3 +192,53 @@ def test_openmodelica_compiles_the_runnable_model(tmp_path: Path) -> None:
     options = SimulationOptions(check_only=True)
     results = simulate(tmp_path, network, options=options, container_name="compile_fast_model")
     assert is_success(results, options=options), results.output.decode(errors="replace")[-3000:]
+
+
+FRAME_ROOM = """
+package room
+  package Data
+    record Glass = FastModel.Data.Glazing(nPan=1, x={0.004}, d={2500}, c={840}, RPan={0.004}, RGap=fill(0, 0),
+      tau={0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.2, 0, 0.7},
+      absPan={{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0, 0.1}}, absIR_a=0.84, absIR_b=0.84, UFra=2.0);
+    record Slab = FastModel.Data.Construction(nLay=1, x={0.2}, k={1.4}, c={900}, d={2300});
+  end Data;
+  model building_mpc
+    parameter Real frac = 0.3;
+    FastModel.Interfaces.WeatherInputs weather_inputs;
+    FastModel.BoundaryConditions.Weather weather(TDryBul=weather_inputs.TDryBul, TBlaSky=weather_inputs.TBlaSky,
+      winSpe=weather_inputs.winSpe, winDir=weather_inputs.winDir, HDirNor=weather_inputs.HDirNor,
+      HDifHor=weather_inputs.HDifHor, HGloHor=weather_inputs.HGloHor);
+    FastModel.Interfaces.OccupancyInputs occupancy;
+    FastModel.Zones.Zone zone(nSurf=2, AFlo=20, hRoo=2.5);
+    FastModel.Envelope.Window window(glazing=Data.Glass(), A=4, frac=frac, til=FastModel.Types.Tilt.Wall);
+    FastModel.Envelope.AdiabaticWall wall(constructionType=Data.Slab(), A=40, til=FastModel.Types.Tilt.Wall);
+  equation
+    connect(weather.weaBus, zone.weaBus);
+    connect(occupancy.gai, zone.qGai_flow);
+    connect(window.propsBus_a, zone.propsBus[1]);
+    connect(wall.propsBus_a, zone.propsBus[2]);
+  end building_mpc;
+end room;
+"""
+
+
+@needs_connected_export
+def test_the_window_frame_loses_heat_to_the_outside() -> None:
+    """With the room and its surfaces at 21 degC and 0 degC outside, a larger frame cools the room air faster."""
+    from trano.elements.jinja import modelica_library
+
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{FRAME_ROOM}", "room.building_mpc")
+    names = model.description.parameter_names
+    weather = dict(zip(WEATHER, [KELVIN, KELVIN - 10, 0.0, 0.0, 0.0, 0.0, 0.0], strict=True))
+    inputs = np.array([weather.get(name, 0.0) for name in model.description.input_names])
+    air = model.description.state_names.index("zone.TAir")
+    state = np.full(len(model.description.states), KELVIN + 21)
+
+    def cooling(frame: float) -> float:
+        parameters = model.description.parameter_values.copy()
+        parameters[names.index("frac")] = frame
+        parameters[names.index("window.frac")] = frame
+        parameters[names.index("window.GFra")] = 4 * frame / (1 / 25 + 1 / 2.0 + 1 / 7.7)
+        return float(model.derivatives(0.0, state, inputs, parameters)[air])
+
+    assert cooling(0.5) < cooling(0.0) <= 0
