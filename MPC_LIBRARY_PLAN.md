@@ -170,6 +170,33 @@ the previous generator path (flat `building_mpc`) stays the default.
 
 Sizes: S ≈ 1 week, M ≈ 2–3 weeks, L ≈ 4–6 weeks of focused work.
 
+## Progress (2026-10-13)
+
+Built on this branch, all in `trano/mpc/` (Modelica library `trano/mpc/library/Components.mo`):
+
+| Stage | Status | Where | Result against Buildings (replay) |
+|---|---|---|---|
+| 0 foundations | done | `components/{catalogue,model,rc}.py`, `validation/mpc/` | connected RC models equal the flat ones |
+| 1 single-zone envelope | done (multilayer zone instead of VDI 6007) | `components/envelope.py`, `Envelope.*` | BESTEST 600FF 0.39 K, 900FF 0.35 K RMSE (RC models: 2.3–7.3 K) |
+| 2 multi-zone envelope | done, without ventilation units | internal walls shared by their zones | three zones 0.18–0.49 K, residential 0.11–0.19 K |
+| 3 emitters | done | `Hydronics.Radiator` (EN 442), `FlowValve`, `Valve` | radiator heat CV(RMSE) 0.6–3 %, NMBE within ±1 % |
+| 4 distribution | done (set flows) | `components/hydronics.py`, mixing and diverting valves, splitter, mixer, pump, reference | mixed supply 0.42–0.67 K, return 1.2–1.5 K (no bias) |
+| 5 production | boiler and air-to-water heat pump with its buffer; no stratified tank, chiller or DHW | `Hydronics.Boiler`, `Hydronics.HeatPump`, `components/heat_pump.py` | boiler supply 0.40 K, heat pump buffer 0.31 K; zones 0.11–0.33 K (`docs/validation/mpc_library.md`) |
+| 6 closed-loop parity | not started | | |
+| 7 optimization | IPOPT OCP (Radau collocation), moving horizon estimation, receding-horizon loop; no do-mpc adapter, no Buildings plant in the loop yet | `optimal_control.py` | |
+| 8 pressure-driven flows | not needed so far | | |
+
+Decisions taken while building (see [Decisions](#decisions-needed)):
+
+- rumoca **main (0.10.3)** for the connected export; 0.10.2 only exports the flat models.
+- **Set flows**: the radiator branch flows are the controls (`FlowValve`). Buildings' flows depend on the pump and
+  on the whole circuit (the living-room branch carries 38 % of its nominal flow at full opening in the residential
+  case), so a valve law with nominal parameters would be far off; the equal-percentage `Valve` with its authority
+  stays available.
+- The thresholds of [How close to Buildings](#how-close-to-buildings) as proposed.
+- Replays of fast controls (thermostatic valves, heater controllers) use a reference recorded every minute and
+  5-minute means; with 15-minute samples, the replayed heat was 2.4 % short.
+
 ## Stages
 
 ### Stage 0: Foundations

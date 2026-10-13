@@ -29,12 +29,12 @@ def render_report(comparisons: list[CaseComparison]) -> str:
     if circuits:
         lines += [
             "",
-            "| Case | Water temperature | RMSE [K] | Bias [K] | Mean Buildings [degC] |",
-            "|---|---|---|---|---|",
+            "| Case | Water temperature | RMSE [K] | Bias [K] | Mean Buildings [degC] | Time compared (circulating) |",
+            "|---|---|---|---|---|---|",
         ]
         lines.extend(
             f"| {comparison.case} | {circuit.variable} | {circuit.rmse:.2f} | {circuit.bias:+.2f} | "
-            f"{circuit.mean_reference:.1f} |"
+            f"{circuit.mean_reference:.1f} | {100 * circuit.circulating:.0f} % |"
             for comparison in circuits
             for circuit in comparison.circuits
         )

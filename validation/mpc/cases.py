@@ -24,10 +24,10 @@ class MPCCase(BaseModel):
     days: int = Field(gt=0, description="Simulated days")
     start_day: int = Field(0, ge=0, description="First simulated day of the year")
     description: str = ""
-    hydronic: bool = Field(
+    fine_replay: bool = Field(
         False,
-        description="Radiator circuits: the reference is recorded every minute (the thermostatic valves modulate the "
-        "flows faster than the comparison interval) and the controls are replayed as means over shorter intervals",
+        description="The reference is recorded every minute and its controls replayed as means over 5 minutes: "
+        "thermostatic valves and heater controllers act faster than the comparison interval",
     )
 
     @property
@@ -68,20 +68,21 @@ CASES = {
         ),
         MPCCase(
             id="three_zones_ideal",
+            fine_replay=True,
             path=TEST_MODELS / "three_zones_ideal_heaters.yaml",
             days=28,
             description="Three zones with internal walls and ideal heaters, January, Uccle",
         ),
         MPCCase(
             id="heat_pump_house",
-            hydronic=True,
+            fine_replay=True,
             path=TEST_MODELS / "house_infiltration_air_water_heat_pump.yaml",
             days=28,
             description="Six-zone house, air-to-water heat pump with a buffer tank and radiators, January, Uccle",
         ),
         MPCCase(
             id="residential_before",
-            hydronic=True,
+            fine_replay=True,
             path=EXAMPLES / "residential_before_renovation.yaml",
             days=28,
             description="Six-zone semi-detached house before renovation, gas boiler and radiators, January, Uccle",

@@ -44,8 +44,8 @@ logger = logging.getLogger(__name__)
 CACHE_ROOT = ROOT / ".cache" / "mpc_validation"
 TOLERANCE = 1e-6
 INTERVAL = 900  # [s] output interval of both simulations and of the replayed heat
-HYDRONIC_REFERENCE_INTERVAL = 60  # [s] output interval of the Buildings reference of a hydronic case
-HYDRONIC_REPLAY_INTERVAL = 300  # [s] interval of the replayed controls of a hydronic case
+FINE_REFERENCE_INTERVAL = 60  # [s] output interval of the Buildings reference of a fine-replay case
+FINE_REPLAY_INTERVAL = 300  # [s] interval of the replayed controls of a fine-replay case
 # the variables of a Buildings reference the comparison reads
 REFERENCE_VARIABLES = (
     r".*(heaPorAir\\.T|heatPortCon\\.Q_flow|heatPortRad\\.Q_flow|QHea_flow|QCoo_flow|\\.m_flow|\\.y|"
@@ -73,6 +73,7 @@ class CircuitComparison(BaseModel):
     rmse: float = Field(description="Root mean square error [K]")
     bias: float = Field(description="Mean error, mpc minus Buildings [K]")
     mean_reference: float = Field(description="Mean Buildings temperature [degC]")
+    circulating: float = Field(1.0, description="Share of the time compared: while the water circulates")
 
 
 class CaseComparison(BaseModel):
@@ -100,12 +101,12 @@ def _network(case: MPCCase, library: Library, directory: Path) -> Network:
 
 
 def _options(case: MPCCase, reference: bool = False) -> SimulationOptions:
-    fine = reference and case.hydronic
+    fine = reference and case.fine_replay
     return SimulationOptions(
         start_time=case.start_time,
         end_time=case.end_time,
         tolerance=TOLERANCE,
-        number_of_intervals=(case.end_time - case.start_time) // (HYDRONIC_REFERENCE_INTERVAL if fine else INTERVAL),
+        number_of_intervals=(case.end_time - case.start_time) // (FINE_REFERENCE_INTERVAL if fine else INTERVAL),
         variable_filter=REFERENCE_VARIABLES if fine else None,
     )
 
@@ -266,8 +267,29 @@ def _radiator_heat(reader: Reader, network: Network, grid: np.ndarray) -> dict[s
     return heat
 
 
+CIRCULATING = 0.1  # share of the largest flow of the radiators above which the water temperatures are compared
+
+
+def _circulating(reader: Reader, network: Network, grid: np.ndarray) -> np.ndarray:
+    """Times when the water circulates: the temperature sensors of Buildings are dynamic (their time constant grows
+    as the flow drops), so that at a near-zero flow their reading is that of stagnant water, not of the circuit."""
+    from trano.elements.system import Valve
+    from trano.mpc.components.hydronics import hydronic_graph
+
+    flow = sum(
+        (
+            _interval_mean(reader, find_variable(reader, f"{element.name}.m_flow"), grid)
+            for element in hydronic_graph(network).nodes
+            if isinstance(element, Valve)
+        ),
+        start=np.zeros(len(grid)),
+    )
+    return np.asarray(flow > CIRCULATING * flow.max()) if flow.max() > 0 else np.ones(len(grid), dtype=bool)
+
+
 def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.ndarray) -> list[CircuitComparison]:
-    """Return temperature of each production and temperature of each sensor of the circuits."""
+    """Supply and return temperatures of each production and temperature of each sensor, while the water
+    circulates."""
     from trano.elements.system import Boiler, TemperatureSensor
     from trano.mpc.components.hydronics import hydronic_graph
 
@@ -282,19 +304,21 @@ def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
             pairs.append((f"{name} return", f"{element.name}.TReturn.T", f"rc.{name}.inlet.T"))
         elif isinstance(element, TemperatureSensor):
             pairs.append((f"{name}", f"{element.name}.T", f"rc.{name}.T"))
+    active = _circulating(reader, network, grid)
     comparisons = []
     for label, reference_variable, mpc_variable in pairs:
         try:
-            expected = _on_grid(reader, find_variable(reader, reference_variable), grid)
+            expected = _on_grid(reader, find_variable(reader, reference_variable), grid)[active]
         except ValueError:
             continue
-        error = _on_grid(mpc_reader, mpc_variable, grid) - expected
+        error = _on_grid(mpc_reader, mpc_variable, grid)[active] - expected
         comparisons.append(
             CircuitComparison(
                 variable=label,
                 rmse=float(np.sqrt(np.mean(error**2))),
                 bias=float(np.mean(error)),
                 mean_reference=float(np.mean(expected) - 273.15),
+                circulating=float(np.mean(active)),
             )
         )
     return comparisons
@@ -323,7 +347,7 @@ def compare(
         update={"rc_model_type": model_type, "connected": connected or multilayer, "envelope": envelope}
     )
     network = _network(case, library, directory)
-    replay = np.arange(case.start_time, case.end_time + 1, HYDRONIC_REPLAY_INTERVAL if case.hydronic else INTERVAL)
+    replay = np.arange(case.start_time, case.end_time + 1, FINE_REPLAY_INTERVAL if case.fine_replay else INTERVAL)
     columns = {
         f"{sanitize_name(space.name)}_QHea": _emitter_heat(reader, space, replay.astype(float)) for space in spaces
     }

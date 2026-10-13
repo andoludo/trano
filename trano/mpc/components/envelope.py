@@ -44,6 +44,7 @@ T0 = 293.15  # [K] linearization temperature of the interior long-wave exchange 
 AIR_DENSITY = 1.2  # [kg/m3]
 AIR_HEAT_CAPACITY = 1006.0  # [J/(kg.K)]
 DEFAULT_RADIANT_FRACTION = 0.3  # radiators (fraction_radiant_heat_transfer)
+DEFAULT_INFILTRATION = 0.15  # [1/h] ACH of Trano.ThermalZones.MixedAirInf
 OUTDOOR = "outdoor"
 WEATHER_INPUTS = (
     TopInput(name="TOut", unit="K", description="Outdoor dry-bulb air temperature"),
@@ -571,7 +572,7 @@ class _Zone:
             self.opaque(element)
         for window in windows:
             self.window(window)
-        ach = getattr(parameters, "ach", None) if getattr(self.space, "variant", "default") == "infiltration" else None
+        ach = infiltration_rate(self.space)
         if ach:
             self.conductor(
                 self.n("inf"), AIR_DENSITY * AIR_HEAT_CAPACITY * volume * ach / 3600, self.air, f"{OUTDOOR}.port"
@@ -651,6 +652,15 @@ def solar_distribution(surfaces: list[_Surface]) -> tuple[list[float], list[floa
         for s in surfaces
     ]
     return k_dir, k_dif
+
+
+def infiltration_rate(space: "Space") -> float:
+    """Air change rate [1/h] of the ``infiltration`` variant, as ``Trano.ThermalZones.MixedAirInf`` (the zone of the
+    Buildings library) takes it: the ``ach`` of the space, 0.15 by default; none for the other variants."""
+    if getattr(space, "variant", "default") != "infiltration":
+        return 0.0
+    ach = getattr(space.parameters, "ach", None)
+    return DEFAULT_INFILTRATION if ach is None else float(ach)
 
 
 def occupancy_radiant_fraction(space: "Space", network: "Network") -> float:
