@@ -40,6 +40,7 @@ from trano.elements.system import AirHandlingUnit, Occupancy, Weather
 from trano.elements.types import Tilt
 from trano.elements.utils import import_element_function
 from trano.elements.library.library import Library
+from trano.performance import PerformanceOptions
 from trano.topology import Network
 from trano.validation.schema import validate_schema
 from trano.validation.semantic import apply_derived_defaults, validate_semantics
@@ -355,12 +356,16 @@ def _add_solar_components(network: Network, data: dict[str, Any]) -> None:
         solar_.component_instance.add_to_network(network)
 
 
-def convert_network(name: str, model_path: Path, library: Library | None = None) -> Network:
+def convert_network(
+    name: str, model_path: Path, library: Library | None = None, performance: PerformanceOptions | None = None
+) -> Network:
+    """The network of the model; ``performance`` replaces the options of the model's ``performance`` key."""
     network = Network(name=name, library=library)
     system_counter: Counter[str] = Counter()
 
     enriched_model = load_and_enrich_model(model_path, is_rc=network.library.is_rc)
     data = _merge_default(enriched_model.data)
+    network.performance = performance or PerformanceOptions(**(data.pop("performance", None) or {}))
     materials = _build_materials(data)
     constructions = _build_constructions(data, materials)
 

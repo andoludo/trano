@@ -80,6 +80,7 @@ nav:
       - A walk through the BESTEST cases: validation/bestest_cases.md
       - Residential reference cases: validation/residential_reference_cases.md
       - FastModel against Buildings: validation/fast_model.md
+      - Simulation performance: validation/simulation_performance.md
 
 markdown_extensions:
     - admonition
