@@ -429,4 +429,18 @@ the replay needs every minute, the FastModel run every 15 minutes.
 The CasADi model is the same model as the OpenModelica one: simulated with the inputs of the OpenModelica run, its
 zone temperatures stay within 0.014 K of it over the four weeks.
 
+**Optimal control.** A day-ahead problem of the house (hourly steps, the 9 controls, comfort at 20 degC from 7 to
+22 h and 17 degC otherwise, electricity bought at 0.30 and sold at 0.05 per kWh) is solved by IPOPT from the middle
+of January:
+
+| Radau collocation points per hour (`CollocationSettings.degree`) | NLP variables | IPOPT iterations | Solve time [s] |
+|---|---|---|---|
+| 1 | about 9 600 | 100 | 39 |
+| 2 | about 14 200 | 97 | 117 |
+| 3 (default) | about 18 700 | 165 | 380–475 |
+
+The model itself costs little (about 2 s of evaluations in the slowest solve): the time goes into the
+factorisations of the KKT system, whose Hessian blocks couple the 189 states at every collocation point. For a
+model of this size, fewer collocation points per step, or a shorter horizon, keep the solve within a minute.
+
 {!validation/figures/fast_model_residential_after_speed.html!}
