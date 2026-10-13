@@ -35,6 +35,12 @@ reference cases):
   valve → pump → two radiator branches with two-way valves → return split, connected with a `WaterPort`.
   - rumoca main exports it to a CasADi ODE: 5 states, 76 algebraic variables eliminated.
   - After 24 h, its CVODES simulation matches OpenModelica to **8 × 10⁻⁵ K**.
+  - **Full CasADi + IPOPT chain verified on it.** Controls: boiler heat, three-way valve and two radiator valves.
+    - 24 h economic OCP: optimal in 99 iterations. Replayed through CVODES, the plan keeps the zones in 20.0–21.25 °C
+      and the boiler at or below 90 °C.
+    - 24 MPC re-solves: all optimal, warm solves 2.2 s on average with SX expansion.
+    - Batch estimation of the radiator UA and zone capacities from noisy temperatures: 1.1999 / 0.8494 (true
+      1.2 / 0.85).
   - pymoca fails on it (package-level constant), so **the hydronic stages need rumoca ≥ 0.10.3**.
 
 ## Architecture
