@@ -492,8 +492,8 @@ classes:
         multivalued: true
         range: InternalWall
       performance:
-        description: Opt-in simplifications making the model simulate faster, all
-          off by default
+        description: Simplifications making the model simulate faster, all on by default
+          (set them to false for the detailed model)
         inlined: true
         range: Performance
       solar:
@@ -1483,15 +1483,15 @@ classes:
     attributes:
       ideal_actuators:
         description: Valves, dampers, pumps and fans follow their control signal instantly
-          (no stroke-time or rise-time filter)
+          (no stroke-time or rise-time filter); true by default
         range: boolean
       steady_state_sensors:
         description: Two-port fluid sensors measure instantly (time constant 0); at
-          zero flow they report the incoming fluid
+          zero flow they report the incoming fluid; true by default
         range: boolean
-    description: Opt-in simplifications of the generated model that trade the fidelity
-      of short transients for simulation speed; see the simulation performance page
-      of the documentation
+    description: Simplifications of the generated model that trade the fidelity of
+      short transients for simulation speed, all on by default; see the simulation
+      performance page of the documentation
   Photovoltaic:
     description: Photovoltaic panels on the building
     slot_usage:

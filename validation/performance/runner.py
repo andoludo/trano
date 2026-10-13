@@ -30,6 +30,7 @@ CONTAINER_ROOT = "/simulation"
 DAY = 24 * 3600
 RESULT_FILE = "model_res.mat"
 URI_LIBRARIES = ("Buildings", "IDEAS", "AixLib", "Modelica")
+TIMEOUT_EXIT_CODE = 124  # of coreutils timeout
 
 
 class Settings(BaseModel):
@@ -39,6 +40,7 @@ class Settings(BaseModel):
     tolerance: float = 1e-6
     method: str = "dassl"
     output_interval: int = Field(default=900, gt=0, description="[s]")
+    timeout: int = Field(default=3600, gt=0, description="[s] wall clock allowed to one simulation")
 
     @property
     def stop_time(self) -> int:
@@ -216,11 +218,13 @@ def run_case(
         return run
     _exec(container_, link_libraries_script(), workdir)
     simulation_time, simulation_log, exit_code = _exec(
-        container_, f"./model -lv=LOG_STATS -s={shlex.quote(settings.method)}", workdir
+        container_, f"timeout {settings.timeout} ./model -lv=LOG_STATS -s={shlex.quote(settings.method)}", workdir
     )
     directory.joinpath("simulation.log").write_text(simulation_log)
     success = exit_code == 0 and "The simulation finished successfully" in simulation_log
-    if not success:
+    if exit_code == TIMEOUT_EXIT_CODE:
+        logger.error("Case %s stopped after %d s", case.id, settings.timeout)
+    elif not success:
         logger.error("Case %s did not simulate; see %s", case.id, directory / "simulation.log")
     return run.model_copy(
         update={

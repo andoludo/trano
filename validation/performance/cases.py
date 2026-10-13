@@ -46,17 +46,17 @@ class Profile:
 
     name: str
     description: str
-    performance: PerformanceOptions = field(default_factory=PerformanceOptions)
+    performance: PerformanceOptions = field(default_factory=PerformanceOptions.disabled)
     boiler_hysteresis: float | None = None
 
 
 PROFILES: dict[str, Profile] = {
     profile.name: profile
     for profile in (
-        Profile("baseline", "the model as trano generates it by default"),
+        Profile("baseline", "the detailed model: the performance options off"),
         Profile(
             "fast",
-            "ideal actuators and steady-state sensors",
+            "ideal actuators and steady-state sensors (trano's default)",
             PerformanceOptions(ideal_actuators=True, steady_state_sensors=True),
         ),
         Profile("hysteresis", "1 K hysteresis on the boiler tank temperature checks", boiler_hysteresis=1.0),

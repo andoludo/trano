@@ -1,8 +1,8 @@
-"""Opt-in simplifications of the generated models that make them simulate faster.
+"""Simplifications of the generated models that make them simulate faster, on by default.
 
 ``PerformanceOptions`` is read from the ``performance`` key of the YAML (or given to ``convert_network``);
-``apply_performance_options`` rewrites the rendered model accordingly. With the default options the model
-is returned unchanged.
+``apply_performance_options`` rewrites the rendered model accordingly. With ``PerformanceOptions.disabled()``
+the model is returned unchanged.
 """
 
 from trano.performance.declarations import (

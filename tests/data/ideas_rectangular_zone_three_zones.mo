@@ -399,7 +399,7 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
   Buildings.Fluid.Sources.Boundary_pT bou(nPorts=1, redeclare package Medium =
 MediumW) "Fixed boundary condition, needed to provide a pressure in the system"
     annotation (Placement(transformation(extent={{-74,68},{-54,88}})));
-        Buildings.Fluid.Sensors.TemperatureTwoPort TSupply(redeclare package
+        Buildings.Fluid.Sensors.TemperatureTwoPort TSupply(tau=0, redeclare package
       Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
     "Radiator" annotation (Placement(transformation(
         origin={26,-1},
@@ -414,7 +414,7 @@ Modelica.Blocks.Sources.RealExpression realExpression1(y=boi.VFue_flow)
 annotation (Placement(transformation(extent={{-80,-50},{-60,-30}})));
 Modelica.Blocks.Continuous.Integrator GasUsage annotation (
 Placement(transformation(extent={{-32,-50},{-12,-30}})));
-        Buildings.Fluid.Sensors.TemperatureTwoPort TReturn(redeclare package
+        Buildings.Fluid.Sensors.TemperatureTwoPort TReturn(tau=0, redeclare package
       Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
     "Radiator" annotation (Placement(transformation(
         origin={-76,1},
@@ -519,7 +519,7 @@ parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab
         "Specific heat conductivity of insulation";
       parameter Integer nSeg(min=2) = 2 "Number of volume segments";
 
-      Buildings.Fluid.Movers.SpeedControlled_y pumBoi(
+      Buildings.Fluid.Movers.SpeedControlled_y pumBoi(use_riseTime=false, 
         redeclare package Medium = MediumW,
     per(pressure(V_flow=V_flow, dp=dp)),
         energyDynamics=Modelica.Fluid.Types.Dynamics.SteadyState)
@@ -578,25 +578,25 @@ parameter Boolean useStorageTank = false "Use storage tank"annotation(Dialog(tab
     extent={{10,10},{-10,-10}},
     rotation=180,
     origin={32,10})));
-            Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor1(
+            Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor1(tau=0, 
           redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
                                           "Radiator"  annotation (
         Placement(transformation(origin={-36,11},
         extent = {{-10, -10}, {10, 10}},
             rotation=0)));
-            Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor2(
+            Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor2(tau=0, 
           redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
                                           "Radiator"  annotation (
         Placement(transformation(origin={66,-85},
         extent = {{-10, -10}, {10, 10}},
             rotation=0)));
-            Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor3(
+            Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor3(tau=0, 
           redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
                                           "Radiator"  annotation (
         Placement(transformation(origin={32,-16.5},
         extent={{-8.5,-8},{8.5,8}},
             rotation=-90)));
-            Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor4(
+            Buildings.Fluid.Sensors.TemperatureTwoPort temperature_sensor4(tau=0, 
           redeclare package Medium = MediumW, m_flow_nominal=nominal_mass_flow_rate_boiler)
                                           "Radiator"  annotation (
         Placement(transformation(origin={-34,-97},
@@ -815,10 +815,10 @@ parameter Modelica.Units.SI.MassFlowRate nominal_mass_flow_radiator_loop;
     annotation (Placement(transformation(extent={{-8,76},{12,96}})));
   Modelica.Blocks.Sources.RealExpression souSetTemp(y=TSouSet)
     annotation (Placement(transformation(extent={{-60,-106},{-40,-86}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort retTemp(redeclare package Medium =
+  Buildings.Fluid.Sensors.TemperatureTwoPort retTemp(tau=0, redeclare package Medium =
         MediumW, m_flow_nominal=0.3)
     annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort supTemp(redeclare package Medium =
+  Buildings.Fluid.Sensors.TemperatureTwoPort supTemp(tau=0, redeclare package Medium =
         MediumW, m_flow_nominal=0.3)
     annotation (Placement(transformation(extent={{52,-2},{72,18}})));
   Buildings.Fluid.Storage.StratifiedEnhanced storage(
@@ -958,11 +958,11 @@ annotation (Placement(transformation(extent={{-50,-74},{-30,-54}})));
     annotation (Placement(transformation(extent={{-8,76},{12,96}})));
   Modelica.Blocks.Sources.RealExpression souSetTemp(y=TSouSet)
     annotation (Placement(transformation(extent={{-60,-106},{-40,-86}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort retTemp(redeclare package Medium
+  Buildings.Fluid.Sensors.TemperatureTwoPort retTemp(tau=0, redeclare package Medium
       =
 MediumW, m_flow_nominal=0.3)
     annotation (Placement(transformation(extent={{-60,-10},{-40,10}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort supTemp(redeclare package Medium
+  Buildings.Fluid.Sensors.TemperatureTwoPort supTemp(tau=0, redeclare package Medium
       =
 MediumW, m_flow_nominal=0.3)
     annotation (Placement(transformation(extent={{52,-2},{72,18}})));
@@ -1072,7 +1072,7 @@ model PartialSystemD
     parameter Real dp_nominal=200;
     parameter Real eps=0.8;
   Buildings.Fluid.Movers.FlowControlled_dp
-                           fanSup(
+                           fanSup(use_riseTime=false, 
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
@@ -1081,7 +1081,7 @@ model PartialSystemD
     m_flow_nominal=m_flow_nominal) "Supply fan"
     annotation (Placement(transformation(extent={{4,6},{24,26}})));
   Buildings.Fluid.Movers.FlowControlled_dp
-                           fanRet(
+                           fanRet(use_riseTime=false, 
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
     inputType=Buildings.Fluid.Types.InputType.Constant,
     nominalValuesDefineDefaultPressureCurve=true,
@@ -1110,7 +1110,7 @@ model PartialSystemD
     "Fluid connector a (positive design flow direction is from port_a to port_b)"
     annotation (Placement(transformation(extent={{84,-40},{118,-8}}),
   iconTransformation(extent={{94,-48},{110,-31}})));
-  Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+  Buildings.Fluid.Sensors.TemperatureTwoPort TSup(tau=0, 
     redeclare package Medium = Medium,
     m_flow_nominal=m_flow_nominal,
     allowFlowReversal=false)
@@ -1187,7 +1187,7 @@ end PartialSystemD;
     parameter Real dp_nominal=200;
     parameter Real eps=0.8;
         Buildings.Fluid.Movers.FlowControlled_dp
-                                 fanSup(
+                                 fanSup(use_riseTime=false, 
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
@@ -1196,7 +1196,7 @@ end PartialSystemD;
           m_flow_nominal=m_flow_nominal) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
-                                 fanRet(
+                                 fanRet(use_riseTime=false, 
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           inputType=Buildings.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
@@ -1230,7 +1230,7 @@ end PartialSystemD;
           nPorts=2,
           redeclare package Medium =                                                        Medium)
           annotation (Placement(transformation(extent={{-78,-14},{-58,6}})));
-        Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+        Buildings.Fluid.Sensors.TemperatureTwoPort TSup(tau=0, 
           redeclare package Medium = Medium,
           m_flow_nominal=m_flow_nominal,
           allowFlowReversal=false)
@@ -1425,7 +1425,7 @@ end PartialSystemD;
           "= false to simplify equations, assuming, but not enforcing, no flow reversal"
           annotation (Evaluate=true);
 
-        Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup(
+        Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup(use_riseTime=false, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mAir_flow_nominal,
           dp_nominal=780 + 10 + dpBuiStaSet,
@@ -1437,12 +1437,12 @@ end PartialSystemD;
              MediumA, m_flow_nominal=mAir_flow_nominal)
           "Sensor for supply fan flow rate"
           annotation (Placement(transformation(extent={{346,-82},{366,-62}})));
-        Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+        Buildings.Fluid.Sensors.TemperatureTwoPort TSup(tau=0, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mAir_flow_nominal,
           allowFlowReversal=allowFlowReversal)
           annotation (Placement(transformation(extent={{276,-82},{296,-62}})));
-        Buildings.Fluid.Sensors.TemperatureTwoPort TMix(
+        Buildings.Fluid.Sensors.TemperatureTwoPort TMix(tau=0, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mAir_flow_nominal,
           allowFlowReversal=allowFlowReversal,
@@ -1453,7 +1453,7 @@ end PartialSystemD;
           "Outside air volume flow rate"
           annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
         Buildings.Fluid.Actuators.Dampers.Exponential
-                                  damRet(
+                                  damRet(use_strokeTime=false, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mAir_flow_nominal,
           from_dp=false,
@@ -1464,7 +1464,7 @@ end PartialSystemD;
               extent={{10,-10},{-10,10}},
               rotation=90)));
         Buildings.Fluid.Actuators.Dampers.Exponential
-                                  damOut(
+                                  damOut(use_strokeTime=false, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mAir_flow_nominal,
           from_dp=false,
@@ -1497,7 +1497,7 @@ end PartialSystemD;
               extent={{-10,10},{10,-10}},
               rotation=0,
               origin={52,-70})));
-        Buildings.Fluid.Actuators.Dampers.Exponential damExh(
+        Buildings.Fluid.Actuators.Dampers.Exponential damExh(use_strokeTime=false, 
           from_dp=false,
           dpFixed_nominal=5,
           redeclare package Medium = MediumA,
@@ -1517,13 +1517,13 @@ end PartialSystemD;
              MediumA, m_flow_nominal=mAir_flow_nominal)
           "Sensor for return fan flow rate"
           annotation (Placement(transformation(extent={{234,0},{214,20}})));
-        Buildings.Fluid.Sensors.TemperatureTwoPort TRet(
+        Buildings.Fluid.Sensors.TemperatureTwoPort TRet(tau=0, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mAir_flow_nominal,
           allowFlowReversal=allowFlowReversal)
                                      "Return air temperature sensor"
           annotation (Placement(transformation(extent={{138,0},{118,20}})));
-        Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup1(
+        Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup1(use_riseTime=false, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mAir_flow_nominal,
           dp_nominal=780 + 10 + dpBuiStaSet,
@@ -1553,7 +1553,7 @@ end PartialSystemD;
               extent={{-18,22},{18,-22}},
               rotation=90,
               origin={404,-28})));
-        Buildings.Fluid.Sensors.TemperatureTwoPort TOut(
+        Buildings.Fluid.Sensors.TemperatureTwoPort TOut(tau=0, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mAir_flow_nominal,
           allowFlowReversal=allowFlowReversal,
@@ -1664,7 +1664,7 @@ end PartialSystemD;
        parameter Modelica.Units.SI.PressureDifference dp_nominal(displayUnit="Pa")
          "Pressure difference of loop";
 
-       Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y pumRad(
+       Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y pumRad(use_riseTime=false, 
          redeclare package Medium = Medium,
          m_flow_nominal=m_flow_nominal,
          dp_nominal=dp_nominal,
@@ -1678,7 +1678,7 @@ end PartialSystemD;
          annotation (Placement(transformation(extent={{-10,-10},{10,10}},
              rotation=180,
              origin={-6,32})));
-       Buildings.Fluid.Sensors.TemperatureTwoPort temSup(redeclare package
+       Buildings.Fluid.Sensors.TemperatureTwoPort temSup(tau=0, redeclare package
             Medium =
              Medium, m_flow_nominal=m_flow_nominal)
          annotation (Placement(transformation(extent={{-10,-10},{10,10}},
@@ -1781,7 +1781,7 @@ end PartialSystemD;
           "Fluid connector b (positive design flow direction is from port_a1 to port_b1)"
           annotation (Placement(transformation(extent={{-10,90},{10,110}}),
     iconTransformation(extent={{-10,90},{10,110}})));
-        Buildings.Fluid.Actuators.Dampers.Exponential vav(
+        Buildings.Fluid.Actuators.Dampers.Exponential vav(use_strokeTime=false, 
           redeclare package Medium = MediumA,
           m_flow_nominal=mCooAir_flow_nominal,
           dpDamper_nominal=20,
@@ -1792,7 +1792,7 @@ end PartialSystemD;
     rotation=90,
     origin={0,10})));
 
-        Buildings.Fluid.Sensors.TemperatureTwoPort senTem(
+        Buildings.Fluid.Sensors.TemperatureTwoPort senTem(tau=0, 
           redeclare package Medium = MediumA,
           initType=Modelica.Blocks.Types.Init.InitialState,
           m_flow_nominal=mCooAir_flow_nominal,

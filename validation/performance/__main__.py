@@ -25,6 +25,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--profiles", nargs="*", choices=list(PROFILES), help="baseline and fast when omitted")
     parser.add_argument("--include-slow", action="store_true", help="also the models taking minutes per week")
     parser.add_argument("--days", type=int, default=7, help="simulated days from 1 January")
+    parser.add_argument("--timeout", type=int, default=3600, help="[s] wall clock allowed to one simulation")
     parser.add_argument("--directory", type=Path, default=DEFAULT_DIRECTORY, help="models, logs and results")
     parser.add_argument("--report", type=Path, help="markdown report, <directory>/report.md by default")
     parser.add_argument("--force", action="store_true", help="run again the cases whose model did not change")
@@ -36,7 +37,7 @@ def main(argv: list[str] | None = None) -> None:
     if "baseline" not in profiles:
         profiles = ["baseline", *profiles]  # every profile is compared with the baseline
     cases = select_cases(arguments.models, arguments.libraries, profiles, include_slow=arguments.include_slow)
-    settings = Settings(days=arguments.days)
+    settings = Settings(days=arguments.days, timeout=arguments.timeout)
     runs = run_cases(cases, arguments.directory.resolve(), settings, force=arguments.force, reuse=arguments.reuse)
     by_id = {run.case_id: run for run in runs}
     comparisons: list[Comparison] = []

@@ -82,9 +82,17 @@ def test_nested_modifier_of_the_same_name_does_not_count_as_set() -> None:
     )
 
 
-def test_default_options_change_nothing() -> None:
+def test_options_are_on_by_default() -> None:
+    assert PerformanceOptions() == FAST
     text = "Buildings.Fluid.Actuators.Valves.TwoWayLinear val;"
-    assert apply_performance_options(text, PerformanceOptions()) == text
+    assert apply_performance_options(text, PerformanceOptions()) == (
+        "Buildings.Fluid.Actuators.Valves.TwoWayLinear val(use_strokeTime=false);"
+    )
+
+
+def test_disabled_options_change_nothing() -> None:
+    text = "Buildings.Fluid.Actuators.Valves.TwoWayLinear val;"
+    assert apply_performance_options(text, PerformanceOptions.disabled()) == text
 
 
 def test_options_are_strict() -> None:
@@ -112,17 +120,34 @@ def test_yaml_options_rewrite_every_hydronic_declaration(tmp_path: Path, library
     assert re.search(r"TemperatureTwoPort temperature_sensor1\(tau=0", model)
 
 
-def test_default_model_is_the_model_without_options() -> None:
+def test_default_model_uses_the_options() -> None:
     path = MODELS.joinpath("single_zone_hydronic.yaml")
-    with_defaults = convert_network("single_zone_hydronic", path, performance=PerformanceOptions()).model()
-    assert normalized_model(with_defaults) == normalized_model(convert_network("single_zone_hydronic", path).model())
-    assert "use_strokeTime=false" not in with_defaults
+    explicit = convert_network("single_zone_hydronic", path, performance=FAST).model()
+    assert normalized_model(explicit) == normalized_model(convert_network("single_zone_hydronic", path).model())
+
+
+def test_options_set_to_false_in_the_yaml_give_the_detailed_model(tmp_path: Path) -> None:
+    path = _yaml_with_performance(
+        tmp_path, "single_zone_hydronic.yaml", "  ideal_actuators: false\n  steady_state_sensors: false\n"
+    )
+    network = convert_network("single_zone_hydronic", path)
+    assert network.performance == PerformanceOptions.disabled()
+    detailed = network.model()
+    assert not re.search(r"TwoWayEqualPercentage\s+valve_\w+\(\s*use_strokeTime=false", detailed)
+    assert not re.search(r"SpeedControlled_y pumBoi\(use_riseTime=false", detailed)
+    assert not re.search(r"TemperatureTwoPort temperature_sensor1\(tau=0", detailed)
+
+
+def test_options_left_out_of_the_yaml_block_stay_on(tmp_path: Path) -> None:
+    path = _yaml_with_performance(tmp_path, "single_zone_hydronic.yaml", "  steady_state_sensors: false\n")
+    network = convert_network("single_zone_hydronic", path)
+    assert network.performance == PerformanceOptions(ideal_actuators=True, steady_state_sensors=False)
 
 
 def test_argument_replaces_the_yaml_options(tmp_path: Path) -> None:
     path = _yaml_with_performance(tmp_path, "single_zone_hydronic.yaml", "  ideal_actuators: true\n")
-    network = convert_network("single_zone_hydronic", path, performance=PerformanceOptions())
-    assert network.performance == PerformanceOptions()
+    network = convert_network("single_zone_hydronic", path, performance=PerformanceOptions.disabled())
+    assert network.performance == PerformanceOptions.disabled()
 
 
 def test_boiler_control_hysteresis_is_rendered_only_when_set(tmp_path: Path) -> None:

@@ -502,7 +502,7 @@ constructed by the signals connected to this bus.
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
         IDEAS.Fluid.Movers.FlowControlled_dp
-                                       fanSup(
+                                       fanSup(use_inputFilter=false, 
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           inputType=IDEAS.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
@@ -511,7 +511,7 @@ constructed by the signals connected to this bus.
           m_flow_nominal=2*100*1.2/3600) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         IDEAS.Fluid.Movers.FlowControlled_dp
-                                       fanRet(
+                                       fanRet(use_inputFilter=false, 
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           inputType=IDEAS.Fluid.Types.InputType.Constant,
           nominalValuesDefineDefaultPressureCurve=true,
@@ -578,7 +578,7 @@ constructed by the signals connected to this bus.
         replaceable package Medium = Modelica.Media.Interfaces.PartialMedium
           "Medium model" annotation (choicesAllMatching=true);
         Buildings.Fluid.Movers.FlowControlled_dp
-                                       fanSup(
+                                       fanSup(use_riseTime=false, 
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           use_inputFilter=false,
           inputType=Buildings.Fluid.Types.InputType.Constant,
@@ -588,7 +588,7 @@ constructed by the signals connected to this bus.
           m_flow_nominal=10*100*1.2/3600) "Supply fan"
           annotation (Placement(transformation(extent={{4,6},{24,26}})));
         Buildings.Fluid.Movers.FlowControlled_dp
-                                       fanRet(
+                                       fanRet(use_riseTime=false, 
           energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial,
           use_inputFilter=false,
           inputType=Buildings.Fluid.Types.InputType.Constant,
@@ -780,7 +780,7 @@ constructed by the signals connected to this bus.
 
 
 
-          Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup(
+          Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup(use_riseTime=false, 
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       dp_nominal=780 + 10 + dpBuiStaSet,
@@ -792,12 +792,12 @@ constructed by the signals connected to this bus.
                  MediumA, m_flow_nominal=mAir_flow_nominal)
     "Sensor for supply fan flow rate"
     annotation (Placement(transformation(extent={{346,-82},{366,-62}})));
-          Buildings.Fluid.Sensors.TemperatureTwoPort TSup(
+          Buildings.Fluid.Sensors.TemperatureTwoPort TSup(tau=0, 
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       allowFlowReversal=allowFlowReversal)
     annotation (Placement(transformation(extent={{276,-82},{296,-62}})));
-          Buildings.Fluid.Sensors.TemperatureTwoPort TMix(
+          Buildings.Fluid.Sensors.TemperatureTwoPort TMix(tau=0, 
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       allowFlowReversal=allowFlowReversal,
@@ -809,7 +809,7 @@ constructed by the signals connected to this bus.
     "Outside air volume flow rate"
     annotation (Placement(transformation(extent={{-68,-80},{-48,-60}})));
           Buildings.Fluid.Actuators.Dampers.Exponential
-                                      damRet(
+                                      damRet(use_strokeTime=false, 
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       from_dp=false,
@@ -821,7 +821,7 @@ constructed by the signals connected to this bus.
         extent={{10,-10},{-10,10}},
         rotation=90)));
           Buildings.Fluid.Actuators.Dampers.Exponential
-                                      damOut(
+                                      damOut(use_strokeTime=false, 
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       from_dp=false,
@@ -857,7 +857,7 @@ constructed by the signals connected to this bus.
         extent={{-10,10},{10,-10}},
         rotation=0,
         origin={52,-70})));
-          Buildings.Fluid.Actuators.Dampers.Exponential damExh(
+          Buildings.Fluid.Actuators.Dampers.Exponential damExh(use_strokeTime=false, 
       from_dp=false,
       riseTime=15,
       dpFixed_nominal=5,
@@ -878,13 +878,13 @@ constructed by the signals connected to this bus.
                  MediumA, m_flow_nominal=mAir_flow_nominal)
     "Sensor for return fan flow rate"
     annotation (Placement(transformation(extent={{234,0},{214,20}})));
-          Buildings.Fluid.Sensors.TemperatureTwoPort TRet(
+          Buildings.Fluid.Sensors.TemperatureTwoPort TRet(tau=0, 
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       allowFlowReversal=allowFlowReversal)
                                          "Return air temperature sensor"
     annotation (Placement(transformation(extent={{138,0},{118,20}})));
-          Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup1(
+          Buildings.Fluid.Movers.Preconfigured.SpeedControlled_y fanSup1(use_riseTime=false, 
       redeclare package Medium = MediumA,
       m_flow_nominal=mAir_flow_nominal,
       dp_nominal=780 + 10 + dpBuiStaSet,
@@ -941,7 +941,7 @@ constructed by the signals connected to this bus.
               final k=2)
     "AHU operation mode is occupied"
     annotation (Placement(transformation(extent={{-64,-218},{-44,-198}})));
-          Buildings.Fluid.Sensors.TemperatureTwoPort TOut(
+          Buildings.Fluid.Sensors.TemperatureTwoPort TOut(tau=0, 
     redeclare package Medium = MediumA,
     m_flow_nominal=mAir_flow_nominal,
     allowFlowReversal=allowFlowReversal,
@@ -1236,7 +1236,7 @@ constructed by the signals connected to this bus.
             "Fluid connector b (positive design flow direction is from port_a1 to port_b1)"
             annotation (Placement(transformation(extent={{-10,90},{10,110}}),
     iconTransformation(extent={{-10,90},{10,110}})));
-          Buildings.Fluid.Actuators.Dampers.Exponential vav(
+          Buildings.Fluid.Actuators.Dampers.Exponential vav(use_strokeTime=false, 
             redeclare package Medium = MediumA,
             m_flow_nominal=mCooAir_flow_nominal,
             dpDamper_nominal=20,
@@ -1247,7 +1247,7 @@ constructed by the signals connected to this bus.
     rotation=90,
     origin={0,10})));
 
-          Buildings.Fluid.Sensors.TemperatureTwoPort senTem(
+          Buildings.Fluid.Sensors.TemperatureTwoPort senTem(tau=0, 
             redeclare package Medium = MediumA,
             initType=Modelica.Blocks.Types.Init.InitialState,
             m_flow_nominal=mCooAir_flow_nominal,
