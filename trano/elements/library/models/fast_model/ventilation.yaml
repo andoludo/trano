@@ -1,0 +1,71 @@
+# Balanced ventilation with heat recovery (trano's system D): the unit sets the relative speed of its fans, the
+# input <unit>_y (held at 1, the design flow, by its bounds: without an indoor air quality model an optimizer
+# would stop the ventilation); each duct carries y times its nominal flow.
+- classes:
+  - Duct
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_a[1]
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_b[1]
+  template: |-
+    FastModel.Ventilation.Duct {{ element.name }}(m_flow_nominal={{ parameters.m_flow_nominal }})
+  variant: default
+
+- classes:
+  - AirHandlingUnit
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    targets:
+    - System
+    - Space
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    targets:
+    - System
+    - Space
+  - flow: undirected
+    medium: weather_data
+    names:
+    - weaBus
+    targets:
+    - Weather
+  template: |-
+    FastModel.Interfaces.ControlInput {{ element.name }}_y(y(min=1, max=1)) "Fan speed of {{ element.name }} relative to the design flow: input of the model";
+    FastModel.Ventilation.HeatRecoveryUnit {{ element.name }}(
+        nPorts_a={{ macros.connections(element, 'port_a') }},
+        nPorts_b={{ macros.connections(element, 'port_b') }},
+        m_flow_nominal={{ parameters.m_flow_nominal }},
+        eps={{ parameters.eps }},
+        dpSup_nominal={{ parameters.dpSup_nominal }},
+        dpRet_nominal={{ parameters.dpRet_nominal }},
+        y={{ element.name }}_y.y)
+  runnable:
+    declaration: |-
+      {%- if element.name ~ '_y' not in columns -%}
+      Modelica.Blocks.Sources.Constant {{ element.name }}_y(k=1) "Control held without external data";
+      {%- endif -%}
+    equation: |-
+      {%- if element.name ~ '_y' in columns -%}
+      connect(data_bus.y[{{ columns.index(element.name ~ '_y') + 1 }}], mpc.{{ element.name }}_y.y);
+      {%- else -%}
+      connect({{ element.name }}_y.y, mpc.{{ element.name }}_y.y);
+      {%- endif -%}
+  variant: system_d

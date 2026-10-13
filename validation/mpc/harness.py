@@ -24,6 +24,7 @@ import pandas as pd
 from pydantic import BaseModel, Field
 
 from trano.data_models.conversion import convert_network
+from trano.elements.bus import DataBus
 from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.mpc import RCModelType
@@ -135,9 +136,16 @@ def _hashed_text(model: str, network: Network) -> str:
     return model if network.library.name == "mpc" else _MPC_PACKAGE.sub("", model)
 
 
+def _data_bus(network: Network) -> DataBus | None:
+    """The data bus of a FastModel network, with the external data its runnable model replays."""
+    if network.library.name != "FastModel" or not network.external_data:
+        return None
+    return DataBus(external_data=network.external_data)
+
+
 def _simulate(network: Network, directory: Path, options: SimulationOptions, name: str) -> Path:
     """Simulate unless the cached result was produced by the same model; return the result file."""
-    model = network.model()
+    model = network.model(data_bus=_data_bus(network))
     expected = model_hash(_hashed_text(model, network), name, options)
     result = directory / "results" / f"{network.name}.building_res.mat"
     hash_file = directory / "model.hash"
@@ -221,63 +229,89 @@ def _write_data(path: Path, grid: np.ndarray, columns: dict[str, np.ndarray]) ->
     return path
 
 
-def _hydronic_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
-    """The hydronic controls of the mpc model, as Buildings ran them: branch flows, three-way valve positions and
-    boiler part load ratios or compressor speeds, as means over each interval (they move faster than it)."""
-    from trano.elements.system import Boiler, ThreeWayValve, Valve
-    from trano.fast_model.components.hydronics import hydronic_graph
-
-    columns = {}
-    for element in hydronic_graph(network).nodes:
-        name = sanitize_name(element.name)
-        if isinstance(element, Valve):
-            columns[f"{name}_m_flow"] = _interval_mean(reader, find_variable(reader, f"{element.name}.m_flow"), grid)
-        elif isinstance(element, ThreeWayValve):
-            columns[f"{name}_y"] = _interval_mean(reader, find_variable(reader, f"{element.name}.y"), grid)
-        elif isinstance(element, Boiler):
-            columns[f"{name}_y"] = _interval_mean(reader, find_variable(reader, _production_control(element)), grid)
-    return columns
+def _of_type(network: Network, kind: type) -> list:  # type: ignore[type-arg]
+    return sorted((node for node in network.graph.nodes if isinstance(node, kind)), key=lambda node: str(node.name))
 
 
-def _ventilation_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
-    """Speed of each ventilation unit as Buildings ran it: its supply duct flows over their nominal flows."""
-    from trano.elements.system import Duct
-    from trano.fast_model.components.ventilation import ventilated_zones, ventilation_units
+def _is_hydronic_radiator(element: object) -> bool:
+    from trano.elements.system import Radiator
 
-    columns = {}
-    for unit in ventilation_units(network):
+    return isinstance(element, Radiator) and getattr(element, "variant", "default") == "default"
+
+
+def _production_control(element: object) -> str:
+    """Control of a production in the Buildings model: boiler part load ratio or compressor speed."""
+    if getattr(element, "variant", "default") == "air_water_heat_pump":
+        return f"{element.name}.airToWaterTableData2D.ySet"  # type: ignore[attr-defined]
+    return f"{element.name}.boi.y"  # type: ignore[attr-defined]
+
+
+def _fast_model_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
+    """The inputs of the FastModel model as Buildings ran its systems, as means over each interval (they move faster
+    than it): the heat of each ideal emitter (<emitter>_Q), the flow of each valve relative to its nominal flow,
+    the three-way valve positions, the part load ratios or compressor speeds, the fan speeds (<system>_y)."""
+    from trano.elements.system import AirHandlingUnit, Boiler, Duct, IdealHeatingCooling, Radiator, ThreeWayValve, Valve
+
+    columns: dict[str, np.ndarray] = {}
+    for emitter in [*_of_type(network, Radiator), *_of_type(network, IdealHeatingCooling)]:
+        if not _is_hydronic_radiator(emitter):
+            columns[f"{emitter.name}_Q"] = _element_heat(reader, emitter, grid)
+    for valve in _of_type(network, Valve):
+        nominal = float(valve.processed_parameters(Library.from_configuration("FastModel"))["m_flow_nominal"])
+        columns[f"{valve.name}_y"] = (
+            _interval_mean(reader, find_variable(reader, f"{valve.name}.m_flow"), grid) / nominal
+        )
+    for valve in _of_type(network, ThreeWayValve):
+        columns[f"{valve.name}_y"] = _interval_mean(reader, find_variable(reader, f"{valve.name}.y"), grid)
+    for production in _of_type(network, Boiler):
+        columns[f"{production.name}_y"] = _interval_mean(
+            reader, find_variable(reader, _production_control(production)), grid
+        )
+    for unit in _of_type(network, AirHandlingUnit):
         ducts = [duct for duct in network.graph.succ[unit] if isinstance(duct, Duct)]
-        nominal = sum(zone.nominal_flow for zone in ventilated_zones(unit, network))
+        library = Library.from_configuration("FastModel")
+        nominal = sum(float(duct.processed_parameters(library)["m_flow_nominal"]) for duct in ducts)
         flow = sum(
             (_interval_mean(reader, find_variable(reader, f"{duct.name}.m_flow"), grid) for duct in ducts),
             start=np.zeros(len(grid)),
         )
-        columns[f"{sanitize_name(str(unit.name))}_y"] = flow / nominal if nominal else flow
+        columns[f"{unit.name}_y"] = flow / nominal if nominal else flow
     return columns
 
 
-def _energies(reader: Reader, mpc_reader: Reader, network: Network, grid: np.ndarray) -> list[EnergyComparison]:
-    """Fuel and electricity of the productions and fans, production of the PV arrays, against the mpc meters."""
-    from trano.elements.system import Boiler
-    from trano.fast_model.components.hydronics import hydronic_graph
-    from trano.fast_model.components.photovoltaics import photovoltaic_arrays
-    from trano.fast_model.components.ventilation import ventilation_units
+def _element_heat(reader: Reader, emission: object, grid: np.ndarray) -> np.ndarray:
+    """Heat delivered by one emitter of the Buildings model [W], mean over each interval."""
+    name = emission.name  # type: ignore[attr-defined]
+    try:
+        convective = find_variable(reader, f"{name}.heatPortCon.Q_flow")
+        radiative = find_variable(reader, f"{name}.heatPortRad.Q_flow")
+    except ValueError:
+        heating = _interval_mean(reader, find_variable(reader, f"{name}.QHea_flow"), grid)
+        with contextlib.suppress(ValueError):  # heating only
+            heating = heating - _interval_mean(reader, find_variable(reader, f"{name}.QCoo_flow"), grid)
+        return heating
+    return np.asarray(-(_interval_mean(reader, convective, grid) + _interval_mean(reader, radiative, grid)))
 
-    rows: list[tuple[str, str, str, str]] = []  # system, quantity, Buildings power, mpc meter
-    for element in hydronic_graph(network).nodes:
-        if not isinstance(element, Boiler):
-            continue
-        name = sanitize_name(str(element.name))
-        if getattr(element, "variant", "default") == "air_water_heat_pump":
-            rows.append((name, "electricity", f"{element.name}.PEle.y", f"rc.{name}.EEle"))
+
+def _energies(reader: Reader, model_reader: Reader, network: Network, grid: np.ndarray) -> list[EnergyComparison]:
+    """Fuel and electricity of the productions and fans, production of the PV arrays, against the meters."""
+    from trano.elements.solar import Photovoltaic
+    from trano.elements.system import AirHandlingUnit, Boiler
+
+    rows: list[tuple[str, str, str, str]] = []  # system, quantity, Buildings power, FastModel meter
+    for production in _of_type(network, Boiler):
+        if getattr(production, "variant", "default") == "air_water_heat_pump":
+            rows.append((production.name, "electricity", f"{production.name}.PEle.y", f"mpc.{production.name}.EEle"))
         else:
-            rows.append((name, "fuel", f"{element.name}.QFue.y", f"rc.{name}.EFue"))
-    for unit in ventilation_units(network):
-        name = sanitize_name(str(unit.name))
-        rows.append((name, "electricity", f"{unit.name}.PFan.y", f"rc.{name}.EFan"))
-    for array in photovoltaic_arrays(network):
-        name = sanitize_name(str(array.name))
-        rows.append((name, "production", f"{array.name}.P", f"rc.{name}.EPro"))
+            rows.append((production.name, "fuel", f"{production.name}.QFue.y", f"mpc.{production.name}.EFue"))
+    rows += [
+        (unit.name, "electricity", f"{unit.name}.PFan.y", f"mpc.{unit.name}.EFan")
+        for unit in _of_type(network, AirHandlingUnit)
+    ]
+    rows += [
+        (array.name, "production", f"{array.name}.P", f"mpc.{array.name}.EPro")
+        for array in _of_type(network, Photovoltaic)
+    ]
     comparisons = []
     for system, quantity, power, meter in rows:
         try:
@@ -286,7 +320,7 @@ def _energies(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
             )
         except ValueError:
             continue
-        readings = _on_grid(mpc_reader, meter, grid)
+        readings = _on_grid(model_reader, meter, grid)
         comparisons.append(
             EnergyComparison(
                 system=system,
@@ -296,13 +330,6 @@ def _energies(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
             )
         )
     return comparisons
-
-
-def _production_control(element: object) -> str:
-    """Control of a production in the Buildings model: boiler part load ratio or compressor speed."""
-    if getattr(element, "variant", "default") == "air_water_heat_pump":
-        return f"{element.name}.airToWaterTableData2D.ySet"  # type: ignore[attr-defined]
-    return f"{element.name}.boi.y"  # type: ignore[attr-defined]
 
 
 def _hourly(values: np.ndarray) -> np.ndarray:
@@ -323,21 +350,13 @@ def _cv_rmse_and_nmbe(actual: np.ndarray, expected: np.ndarray) -> tuple[float, 
 
 
 def _radiator_heat(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
-    """Heat the radiators of the mpc model gave each zone [W], mean over each interval."""
-    from trano.fast_model.components.hydronics import hydronic_emitters, zone_of
-
+    """Heat the radiators of the FastModel model gave each zone [W], mean over each interval."""
     heat: dict[str, np.ndarray] = {}
-    for radiator in hydronic_emitters(network):
-        space = zone_of(radiator, network)
-        if space is None:
-            continue
-        name = sanitize_name(str(radiator.name))
-        delivered = -(
-            _interval_mean(reader, f"rc.{name}.heatPortCon.Q_flow", grid)
-            + _interval_mean(reader, f"rc.{name}.heatPortRad.Q_flow", grid)
-        )
-        zone = sanitize_name(space.name)
-        heat[zone] = heat.get(zone, 0) + delivered
+    for space in _zones(network):
+        for emission in space.emissions:
+            if _is_hydronic_radiator(emission):
+                delivered = _interval_mean(reader, f"mpc.{emission.name}.Q_flow", grid)
+                heat[space.name] = heat.get(space.name, 0) + delivered
     return heat
 
 
@@ -348,54 +367,47 @@ def _circulating(reader: Reader, network: Network, grid: np.ndarray) -> np.ndarr
     """Times when the water circulates: the temperature sensors of Buildings are dynamic (their time constant grows
     as the flow drops), so that at a near-zero flow their reading is that of stagnant water, not of the circuit."""
     from trano.elements.system import Valve
-    from trano.fast_model.components.hydronics import hydronic_graph
 
     flow = sum(
         (
-            _interval_mean(reader, find_variable(reader, f"{element.name}.m_flow"), grid)
-            for element in hydronic_graph(network).nodes
-            if isinstance(element, Valve)
+            _interval_mean(reader, find_variable(reader, f"{valve.name}.m_flow"), grid)
+            for valve in _of_type(network, Valve)
         ),
         start=np.zeros(len(grid)),
     )
     return np.asarray(flow > CIRCULATING * flow.max()) if flow.max() > 0 else np.ones(len(grid), dtype=bool)
 
 
-def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.ndarray) -> list[CircuitComparison]:
+def _circuits(reader: Reader, model_reader: Reader, network: Network, grid: np.ndarray) -> list[CircuitComparison]:
     """Supply and return temperatures of each production and temperature of each sensor, while the water
-    circulates."""
-    from trano.elements.system import Boiler, TemperatureSensor
-    from trano.fast_model.components.hydronics import hydronic_graph
+    circulates, and the supply air of the ventilation units."""
+    from trano.elements.system import AirHandlingUnit, Boiler, TemperatureSensor
 
     pairs = []
-    for element in hydronic_graph(network).nodes:
-        name = sanitize_name(element.name)
-        if isinstance(element, Boiler) and getattr(element, "variant", "default") == "air_water_heat_pump":
-            pairs.append((f"{name} supply", f"{element.name}.supTemp.T", f"rc.{name}.T"))
-            pairs.append((f"{name} return", f"{element.name}.retTemp.T", f"rc.{name}.inlet.T"))
-        elif isinstance(element, Boiler):
-            pairs.append((f"{name} supply", f"{element.name}.TSupply.T", f"rc.{name}.T"))
-            pairs.append((f"{name} return", f"{element.name}.TReturn.T", f"rc.{name}.inlet.T"))
-        elif isinstance(element, TemperatureSensor):
-            pairs.append((f"{name}", f"{element.name}.T", f"rc.{name}.T"))
-    from trano.fast_model.components.ventilation import ventilation_units
-
+    for production in _of_type(network, Boiler):
+        heat_pump = getattr(production, "variant", "default") == "air_water_heat_pump"
+        supply, back = ("supTemp", "retTemp") if heat_pump else ("TSupply", "TReturn")
+        pairs.append((f"{production.name} supply", f"{production.name}.{supply}.T", f"mpc.{production.name}.T"))
+        pairs.append((f"{production.name} return", f"{production.name}.{back}.T", f"mpc.{production.name}.TIn"))
+    pairs += [
+        (str(sensor.name), f"{sensor.name}.T", f"mpc.{sensor.name}.T")
+        for sensor in _of_type(network, TemperatureSensor)
+    ]
     active = _circulating(reader, network, grid)
     always = np.ones(len(grid), dtype=bool)
     masks = dict.fromkeys(label for label, _, _ in pairs)
-    for unit in ventilation_units(network):
-        name = sanitize_name(str(unit.name))
-        pairs.append((f"{name} supply air", f"{unit.name}.TSup.T", f"rc.{name}.TSup"))
-        masks[f"{name} supply air"] = always
+    for unit in _of_type(network, AirHandlingUnit):
+        pairs.append((f"{unit.name} supply air", f"{unit.name}.TSup.T", f"mpc.{unit.name}.TSup"))
+        masks[f"{unit.name} supply air"] = always
     comparisons = []
-    for label, reference_variable, mpc_variable in pairs:
+    for label, reference_variable, model_variable in pairs:
         mask = masks.get(label)
         selected = active if mask is None else mask
         try:
             expected = _on_grid(reader, find_variable(reader, reference_variable), grid)[selected]
         except ValueError:
             continue
-        error = _on_grid(mpc_reader, mpc_variable, grid)[selected] - expected
+        error = _on_grid(model_reader, model_variable, grid)[selected] - expected
         comparisons.append(
             CircuitComparison(
                 variable=label,
@@ -408,21 +420,12 @@ def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
     return comparisons
 
 
-def _library(model_type: RCModelType, connected: bool, envelope: str) -> Library:
-    """The flat RC models of the ``mpc`` library, or the ``FastModel`` library (connected RC or multilayer zones)."""
-    if envelope == "multilayer":
-        return Library.from_configuration("FastModel").model_copy(update={"envelope": "multilayer"})
-    if connected:
-        return Library.from_configuration("FastModel").model_copy(
-            update={"rc_model_type": model_type, "envelope": "rc"}
-        )
-    return Library.from_configuration("mpc").model_copy(update={"rc_model_type": model_type})
+FAST_MODEL = "FastModel"
 
 
-def compare(
-    case_id: str, model_type: RCModelType = RCModelType.r3c2, connected: bool = True, envelope: str = "rc"
-) -> CaseComparison:
-    """Replay the Buildings heat of the case through the mpc model and compare the zone temperatures."""
+def compare(case_id: str, model: str = FAST_MODEL) -> CaseComparison:
+    """Replay what the Buildings systems did through the model of the same YAML file and compare: ``FastModel`` or
+    an RC model type of the flat ``mpc`` library (R1C1, R3C2, ...)."""
     case = CASES[case_id]
     started = time.monotonic()
     buildings_network, buildings_result = reference(case)
@@ -434,27 +437,31 @@ def compare(
         sanitize_name(space.name): _on_grid(reader, find_variable(reader, f"{space.name}.heaPorAir.T"), grid)
         for space in spaces
     }
-
-    multilayer = envelope == "multilayer"
-    variant = "mpc-Multilayer" if multilayer else f"mpc-{model_type.value}{'-connected' if connected else ''}"
-    directory = case_directory(case, variant)
-    library = _library(model_type, connected, envelope)
+    fast_model = model == FAST_MODEL
+    directory = case_directory(case, FAST_MODEL if fast_model else f"mpc-{model}")
+    library = (
+        Library.from_configuration(FAST_MODEL)
+        if fast_model
+        else Library.from_configuration("mpc").model_copy(update={"rc_model_type": RCModelType(model)})
+    )
     network = _network(case, library, directory)
     replay = np.arange(case.start_time, case.end_time + 1, FINE_REPLAY_INTERVAL if case.fine_replay else INTERVAL)
-    columns = {
-        f"{sanitize_name(space.name)}_QHea": _emitter_heat(reader, space, replay.astype(float)) for space in spaces
-    }
-    if multilayer:
-        columns |= _hydronic_replay(reader, buildings_network, replay.astype(float))
-        columns |= _ventilation_replay(reader, buildings_network, replay.astype(float))
-    network.external_data = _write_data(directory / "heat.csv", replay - case.start_time, columns)
-    result = _simulate(network, directory, _options(case), f"{case.id}-{variant}")
-    mpc_reader = _reader(result)
-    radiator_heat = _radiator_heat(mpc_reader, network, grid) if multilayer else {}
+    if fast_model:
+        columns = _fast_model_replay(reader, buildings_network, replay.astype(float))
+    else:
+        columns = {
+            f"{sanitize_name(space.name)}_QHea": _emitter_heat(reader, space, replay.astype(float)) for space in spaces
+        }
+    if columns:  # nothing to replay in a free-floating case
+        network.external_data = _write_data(directory / "replay.csv", replay - case.start_time, columns)
+    result = _simulate(network, directory, _options(case), f"{case.id}-{model}")
+    model_reader = _reader(result)
+    radiator_heat = _radiator_heat(model_reader, network, grid) if fast_model else {}
 
     zones = []
     for zone, expected in reference_temperature.items():
-        actual = _on_grid(mpc_reader, f"{zone}_TZon", grid)
+        variable = f"mpc.{zone}.TAir" if fast_model else f"{zone}_TZon"
+        actual = _on_grid(model_reader, variable, grid)
         error = actual - expected
         emitter: dict[str, float] = {}
         if zone in radiator_heat:
@@ -477,9 +484,9 @@ def compare(
         )
     return CaseComparison(
         case=case_id,
-        model="Multilayer" if multilayer else f"{model_type.value}{', connected' if connected else ''}",
+        model=model,
         zones=zones,
-        circuits=_circuits(reader, mpc_reader, network, grid) if multilayer else [],
-        energies=_energies(reader, mpc_reader, network, grid) if multilayer else [],
+        circuits=_circuits(reader, model_reader, network, grid) if fast_model else [],
+        energies=_energies(reader, model_reader, network, grid) if fast_model else [],
         wall_time=time.monotonic() - started,
     )

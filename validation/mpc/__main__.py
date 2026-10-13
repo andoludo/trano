@@ -10,7 +10,7 @@ from typing import Any
 
 from trano.mpc import RCModelType
 from validation.mpc.cases import CASES
-from validation.mpc.harness import CACHE_ROOT, CaseComparison, compare
+from validation.mpc.harness import CACHE_ROOT, FAST_MODEL, CaseComparison, compare
 from validation.mpc.report import render_report
 
 RESULTS = CACHE_ROOT / "results.json"
@@ -33,10 +33,14 @@ def _store(key: str, comparison: CaseComparison) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m validation.mpc")
     commands = parser.add_subparsers(dest="command", required=True)
-    run = commands.add_parser("compare", help="replay Buildings through mpc models and compare the zones")
+    run = commands.add_parser("compare", help="replay Buildings through FastModel or mpc models and compare")
     run.add_argument("cases", nargs="*", default=list(CASES))
-    run.add_argument("--models", nargs="*", default=[model.value for model in RCModelType] + ["Multilayer"])
-    run.add_argument("--flat", action="store_true", help="flat instead of connected building_mpc")
+    run.add_argument(
+        "--models",
+        nargs="*",
+        default=[FAST_MODEL, *(model.value for model in RCModelType)],
+        help="FastModel, or an RC model type of the flat mpc library",
+    )
     commands.add_parser("report", help="print the Markdown report of the stored results")
     commands.add_parser("list", help="list the cases")
     arguments = parser.parse_args()
@@ -52,10 +56,7 @@ def main() -> None:
     for case_id in arguments.cases:
         for model in arguments.models:
             try:
-                if model == "Multilayer":
-                    comparison = compare(case_id, envelope="multilayer")
-                else:
-                    comparison = compare(case_id, RCModelType(model), connected=not arguments.flat)
+                comparison = compare(case_id, model)
             except Exception:
                 logging.exception("Case %s with %s failed", case_id, model)
                 continue

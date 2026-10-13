@@ -1,0 +1,122 @@
+# Surfaces of the FastModel zones, one element each (the windows are cut out of their host walls by trano:
+# `opaque_surface`). Each connects to the propsBus of its zone; constructions and glazings are records of the
+# Data package of the model.
+- classes:
+  - ExternalWall
+  - ExternalDoor
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |-
+    FastModel.Envelope.OuterWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.opaque_surface }},
+        azi={{ element.azimuth }},
+        til={{ macros.convert_tilt(element.tilt, library_name) }})
+  variant: default
+
+- classes:
+  - Window
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |-
+    FastModel.Envelope.Window {{ element.name }}(
+        glazing={{ package_name }}.Data.Glazing.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        frac={{ element.frame_fraction }},
+        azi={{ element.azimuth }},
+        til={{ macros.convert_tilt(element.tilt, library_name) }})
+  variant: default
+
+- classes:
+  - FloorOnGround
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports: &single_surface
+  - flow: undirected
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |-
+    FastModel.Envelope.BoundaryWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        {%- if element.ground_temperature is not none %}
+        TGro={{ element.ground_temperature }},
+        {%- endif %}
+        til=FastModel.Types.Tilt.Floor)
+  variant: default
+
+# A raised floor over outdoor air (ASHRAE 140): the outer surface follows the outdoor dry-bulb temperature.
+- classes:
+  - FloorOnGround
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports: *single_surface
+  template: |-
+    FastModel.Envelope.BoundaryWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        outdoorAir=true,
+        til=FastModel.Types.Tilt.Floor)
+  variant: outdoor_air
+
+- classes:
+  - AdiabaticWall
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports: *single_surface
+  template: |-
+    FastModel.Envelope.AdiabaticWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        azi={{ element.azimuth }},
+        til={{ macros.convert_tilt(element.tilt, library_name) }})
+  variant: default
+
+# A wall or floor between two zones: side a faces the zone connected to propsBus_a.
+- classes:
+  - InternalElement
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: interchangeable_port
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  - flow: interchangeable_port
+    medium: data
+    names:
+    - propsBus_b
+    targets:
+    - Space
+  template: |-
+    FastModel.Envelope.InternalWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        azi={{ element.azimuth }},
+        til={{ macros.convert_tilt(element.tilt, library_name) }})
+  variant: default

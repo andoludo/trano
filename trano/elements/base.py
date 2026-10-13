@@ -91,12 +91,11 @@ class BaseElement(BaseElementPort):
             raise UnknownComponentVariantError(
                 f"Library data not found for {self.name} in {library.name} for variant {self.variant}"
             )
-        for library_name in (library.name, library.element_library, "default"):
-            if library_name is None:
-                continue
-            libraries_data = [library_ for library_ in libraries_data_variants if library_.serves(library_name)]
-            if libraries_data:
-                return libraries_data[0]
+        libraries_data = [library_ for library_ in libraries_data_variants if library_.serves(library.name)]
+        if not libraries_data:
+            libraries_data = [library_ for library_ in libraries_data_variants if library_.serves("default")]
+        if libraries_data:
+            return libraries_data[0]
         return None
 
     def connects_to(self, library: "Library", target: type) -> bool:
@@ -142,6 +141,28 @@ class BaseElement(BaseElementPort):
                     self.parameters, library=library.parameter_library, variant=library_data.variant
                 )
         return {}
+
+    def runnable_parts(self, network: "Network", columns: list[str]) -> dict[str, str]:
+        """Declaration, equation and modifier of the element in the runnable model of its library, rendered.
+
+        ``columns`` are the columns of the external data of the network, which the runnable model replays.
+        """
+        if not self.libraries_data:
+            return {}
+        library_data = self.get_library_data(network.library)
+        if library_data is None or library_data.runnable is None:
+            return {}
+        context = {
+            "element": self,
+            "package_name": network.name,
+            "library_name": network.library.base_library(),
+            "parameters": self.processed_parameters(network.library),
+            "columns": columns,
+        }
+        return {
+            part: compile_template("{% import 'macros.jinja2' as macros %}" + template).render(**context).strip()
+            for part, template in library_data.runnable.model_dump().items()
+        }
 
     def set_position(self, layout: dict[str, Any], global_: bool = True) -> None:
         if layout.get(self.name):  # type: ignore

@@ -1,32 +1,93 @@
-# The FastModel library reuses the element definitions of the 'mpc' library (Library.element_library) and adds
-# what it models beyond them. Its zones are not declared from these templates: trano.fast_model assembles them.
-
-# The infiltration variant only changes the Buildings zone; the RC zones always count an air change
-# rate and the multilayer zone reads `ach` from the space (0.15 ACH by default, as MixedAirInf).
+# FastModel zone: air node, radiant star between its surfaces, transmitted solar radiation (FastModel.Zones).
+# Its surfaces (walls, windows, floors, internal walls) are elements connected to its propsBus, as in IDEAS.
+# The `infiltration` variant brings outdoor air in at the air change rate of the space (0.15 by default, as
+# Trano.ThermalZones.MixedAirInf); the default variant has no infiltration, as Buildings MixedAir.
 - classes:
   - Space
   library: FastModel
-  parameter_processing:
+  requires_occupancy: true
+  parameter_processing: &zone_parameters
     function: default_parameters
-  ports:
+  ports: &zone_ports
   - flow: undirected
     medium: data
+    multi_connection: true
+    names:
+    - propsBus
+    targets:
+    - BaseWall
+  - flow: undirected
+    medium: weather_data
     names:
     - weaBus
     targets:
-    - Weather
+    - BaseWeather
+  - flow: undirected
+    medium: data
+    names:
+    - qGai_flow
+    targets:
+    - BaseOccupancy
   - flow: convective
     medium: heat
+    multi_connection: true
+    use_counter: false
     names:
     - heaPorAir
     targets:
     - Emission
-  - flow: undirected
-    medium: data
+  - flow: radiative
+    medium: heat
+    multi_connection: true
+    use_counter: false
     names:
-    - intGai
+    - heaPorRad
     targets:
-    - BaseOccupancy
-  template: |
-    {{package_name}}.Trano.MPC.Zones.R3C2 {{ element.name }}
+    - Emission
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - ports_a
+    targets:
+    - Ventilation
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - ports_b
+    targets:
+    - Ventilation
+  template: &zone_template |-
+    {%- set supply = macros.connections(element, 'ports_a') | int -%}
+    {%- set extract = macros.connections(element, 'ports_b') | int -%}
+    FastModel.Zones.{{ 'VentilatedZone' if supply or extract else 'Zone' }} {{ element.name }}(
+        nSurf={{ macros.connections(element, 'propsBus') }},
+        AFlo={{ parameters.AFlo }},
+        hRoo={{ parameters.hRoo }},
+        mSenFac={{ parameters.get('mSenFac') or 1 }},
+        T_start={{ parameters.T_start }},
+        {%- if element.variant == 'infiltration' %}
+        ACH={{ parameters.get('ACH') if parameters.get('ACH') is not none else 0.15 }},
+        {%- endif %}
+        {%- if element.parameters.interior_convection_coefficient is not none %}
+        hConInt={{ element.parameters.interior_convection_coefficient }},
+        {%- endif %}
+        {%- if element.parameters.exterior_convection_coefficient is not none %}
+        hConExt={{ element.parameters.exterior_convection_coefficient }},
+        {%- endif %}
+        {%- if supply or extract %}
+        nPorts_a={{ supply }},
+        nPorts_b={{ extract }},
+        {%- endif %}
+        T0Rad=293.15)
+  variant: default
+
+- classes:
+  - Space
+  library: FastModel
+  requires_occupancy: true
+  parameter_processing: *zone_parameters
+  ports: *zone_ports
+  template: *zone_template
   variant: infiltration

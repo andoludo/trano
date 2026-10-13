@@ -1,0 +1,20 @@
+# PV array (Buildings PVSimpleOriented) on the weather of the site, with its production meter.
+- classes:
+  - Photovoltaic
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: weather_data
+    names:
+    - weaBus
+    targets:
+    - Weather
+  template: |-
+    FastModel.Electrical.Photovoltaic {{ element.name }}(
+        A={{ parameters.A }},
+        eta={{ parameters.eta }},
+        til={{ parameters.til }},
+        azi={{ parameters.azi }})
+  variant: default

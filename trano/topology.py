@@ -318,30 +318,34 @@ class Network:  # : PLR0904, #TODO: fix this
             )
 
     def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
-        if self.library.is_fast_model:
-            # building_mpc assembled from the FastModel components, for MPC.
-            from trano.fast_model.modelica import render_network as render_fast_model
-
-            return render_fast_model(self, data_bus)
         if self.library.is_rc:
             # Flat RC model for MPC: the systems are abstracted as the heating power of each zone.
             from trano.mpc.modelica import render_network
 
             return render_network(self, data_bus)
+        include_container = include_container and self.library.use_containers
         data_bus = self._prepare_nodes(include_container, data_bus)
         self.connect()
         data = extract_properties(self.library, self.name, self.graph.nodes)
         component_models = [model for node in self.graph.nodes if (model := node.model(self))]
-        container_model = self.containers.build(
-            ContainerInput(
-                nodes=list(self.graph.nodes),
-                connections=self.edge_attributes,
-                data=data,
-                medium=self.library.medium,
+        container_model = (
+            self.containers.build(
+                ContainerInput(
+                    nodes=list(self.graph.nodes),
+                    connections=self.edge_attributes,
+                    data=data,
+                    medium=self.library.medium,
+                )
             )
+            if self.library.use_containers
+            else []
         )
         self._assert_all_systems_connected()
-        return ENVIRONMENT.get_template("base.jinja2").render(
+        bus = next((node for node in self.graph.nodes if isinstance(node, DataBus)), None)
+        columns = list(bus.validation_data.columns) if bus else []  # type: ignore[attr-defined]
+        runnable = [parts for node in self.graph.nodes if (parts := node.runnable_parts(self, columns))]
+        return ENVIRONMENT.get_template(self.library.package_template).render(
+            runnable=runnable,
             network=self,
             data=data,
             element_models=[c.model for c in component_models],

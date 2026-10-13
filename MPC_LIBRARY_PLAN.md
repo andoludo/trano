@@ -172,10 +172,14 @@ Sizes: S ≈ 1 week, M ≈ 2–3 weeks, L ≈ 4–6 weeks of focused work.
 
 ## Progress (2026-10-13)
 
-Built on this branch as a separate library, **`FastModel`** (`trano create-model <yaml> FastModel`), all in
-`trano/fast_model/` (Modelica package `FastModel`, source `trano/fast_model/library/Components.mo`). The `mpc`
-library and its flat RC models are left as they were; `FastModel` reuses its element definitions and its RC
-parameters (`--envelope rc`). Where this plan says `Trano.MPC` for the new components, read `FastModel`.
+Built on this branch as a separate library, **`FastModel`** (`trano create-model <yaml> FastModel`), made like
+Buildings and IDEAS: the Modelica library `trano/library/FastModel.mo` and one YAML/jinja template per element in
+`trano/elements/library/models/fast_model/` (walls, windows and floors are elements connected to the bus of their
+zone, as in IDEAS); no Python of its own. The CasADi/IPOPT side is the standalone package `trano/optimization`
+(rumoca, CasADi, NumPy and pydantic only), which reads the states, inputs, bounds and units from the Modelica
+model. The `mpc` library and its flat RC models are left as they were. Where this plan says `Trano.MPC` for the
+new components, read `FastModel`; the Python generator of the earlier stages (`components/*.py`) was replaced by
+the templates.
 
 | Stage | Status | Where | Result against Buildings (replay) |
 |---|---|---|---|

@@ -73,11 +73,20 @@
         "templates": {"construction": "", "glazing": "", "main": "", "material": ""}
     },
     "FastModel": {
-        "medium": {"air": "Modelica.Media.Air.SimpleAir", "water": "Modelica.Media.Water.ConstantPropertyLiquidWater"},
+        "medium": {
+            "air": "Modelica.Media.Air.SimpleAir",
+            "water": "Modelica.Media.Water.ConstantPropertyLiquidWater"
+        },
         "name": "FastModel",
-        "rc_model_type": "R3C2",
-        "element_library": "mpc",
-        "envelope": "multilayer",
-        "templates": {"construction": "", "glazing": "", "main": "", "material": ""}
+        "parameters_from": "buildings",
+        "package_template": "fast_model.jinja2",
+        "use_containers": false,
+        "templates": {
+            "is_package": true,
+            "construction": "record {{ construction.name }} = {{ package_name }}.FastModel.Data.Construction(\n    nLay={{ construction.layers | length }},\n    x={ {{- construction.layers | map(attribute='thickness') | join(', ') -}} },\n    k={ {%- for layer in construction.layers %}{{ layer.material.thermal_conductivity }}{{ ', ' if not loop.last }}{% endfor -%} },\n    c={ {%- for layer in construction.layers %}{{ layer.material.specific_heat_capacity }}{{ ', ' if not loop.last }}{% endfor -%} },\n    d={ {%- for layer in construction.layers %}{{ layer.material.density }}{{ ', ' if not loop.last }}{% endfor -%} },\n    absIR_a={{ construction.layers[0].material.longwave_emissivity }},\n    absIR_b={{ construction.layers[-1].material.longwave_emissivity }},\n    absSol_a={{ construction.layers[0].material.shortwave_emissivity }},\n    absSol_b={{ construction.layers[-1].material.shortwave_emissivity }}) \"{{ construction.name }}\";",
+            "glazing": "{%- set panes = construction.layers | selectattr('layer_type', 'eq', 'glass') | list -%}\n{%- set properties = construction.properties -%}\nrecord {{ construction.name }} = {{ package_name }}.FastModel.Data.Glazing(\n    nPan={{ panes | length }},\n    x={ {{- panes | map(attribute='thickness') | join(', ') -}} },\n    d={ {%- for pane in panes %}{{ pane.material.density }}{{ ', ' if not loop.last }}{% endfor -%} },\n    c={ {%- for pane in panes %}{{ pane.material.specific_heat_capacity or 0 }}{{ ', ' if not loop.last }}{% endfor -%} },\n    RPan={ {{- properties.pane_resistances | list | map('mo') | join(', ') -}} },\n    RGap={ {{- properties.gap_resistances | list | map('mo') | join(', ') -}} },\n    tau={ {{- properties.optics.transmittance.tolist() | map('mo') | join(', ') -}} },\n    absPan={ {%- for row in properties.optics.absorptances.tolist() %}{ {{- row | map('mo') | join(', ') -}} }{{ ', ' if not loop.last }}{% endfor -%} },\n    absIR_a={{ panes[0].material.infrared_absorptivity_outside_facing }},\n    absIR_b={{ panes[-1].material.infrared_absorptivity_room_facing }},\n    UFra={{ construction.u_value_frame }}) \"{{ construction.name }}\";",
+            "material": null,
+            "main": "package Data \"Constructions and glazings of the building\"\n  package Constructions \"Opaque constructions, layers from the outside\"\n{% for c in construction %}\n    {{ c | safe }}\n{% endfor %}\n  end Constructions;\n\n  package Glazing \"Glazings, panes from the outside\"\n{% for g in glazing %}\n    {{ g | safe }}\n{% endfor %}\n  end Glazing;\nend Data;"
+        }
     }
 }

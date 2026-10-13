@@ -1,0 +1,61 @@
+# The controls of the systems are inputs of building_mpc (each system declares its own: <system>_y): the
+# controllers of the other libraries have no FastModel component.
+- classes:
+  - EmissionControl
+  library: FastModel
+  parameter_processing: &no_parameters
+    function: default_parameters
+  ports: []
+  template: ""
+  variant: default
+- classes:
+  - EmissionControl
+  library: FastModel
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: onoff
+- classes:
+  - EmissionControl
+  library: FastModel
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: PController
+- classes:
+  - EmissionControl
+  library: FastModel
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: MonitoredSetpoint
+- classes:
+  - BoilerControl
+  library: FastModel
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: default
+- classes:
+  - BoilerControl
+  library: FastModel
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: complex
+- classes:
+  - BoilerControl
+  library: FastModel
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: simple
+- classes:
+  - ThreeWayValveControl
+  - CollectorControl
+  - AhuControl
+  library: FastModel
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: default
