@@ -112,6 +112,9 @@ class Collocated:
         self.comfort_index = [description.state_names.index(name) for name in self.roles.comfort]
         self.lower, self.upper = np.array([self._bounds(name) for name in self.roles.controls]).reshape(-1, 2).T
         self.offset = np.array([KELVIN if state.unit == "K" else 0.0 for state in description.states])
+        # the model as scalar expressions (SX), expanded once: its evaluations and derivatives, in CVODES and in
+        # IPOPT, are then an order of magnitude faster than through the expression graph (MX) rumoca exports
+        self.rhs = model.rhs.expand()
         self._interval = self._interval_function()
         self._step = self._step_function()
 
@@ -125,7 +128,7 @@ class Collocated:
         upper = variable.maximum if variable.maximum is not None else self.settings.default_heat_bound
         return lower, upper
 
-    def _inputs(self, u: ca.MX, d: ca.MX) -> ca.MX:
+    def _inputs(self, u: ca.SX, d: ca.SX) -> ca.SX:
         """The input vector of the model, controls and disturbances at their places."""
         signals = {index: u[position] for position, index in enumerate(self.control_index)}
         signals |= {index: d[position] for position, index in enumerate(self.disturbance_index)}
@@ -136,34 +139,34 @@ class Collocated:
         n_x, degree, step = self.n_states, self.settings.degree, self.settings.time_step
         tau, c, d = collocation_matrices(degree)
         parameters, offset = ca.DM(self.parameters), ca.DM(self.offset)
-        t0 = ca.MX.sym("t0")
-        z0 = ca.MX.sym("z0", n_x)
-        flat = ca.MX.sym("zc", n_x * degree)  # the collocation points of the step, stacked
+        t0 = ca.SX.sym("t0")
+        z0 = ca.SX.sym("z0", n_x)
+        flat = ca.SX.sym("zc", n_x * degree)  # the collocation points of the step, stacked
         zc = ca.reshape(flat, n_x, degree)
-        v = ca.MX.sym("v", len(self.roles.controls))
-        w = ca.MX.sym("w", len(self.roles.disturbances))
+        v = ca.SX.sym("v", len(self.roles.controls))
+        w = ca.SX.sym("w", len(self.roles.disturbances))
         u = ca.DM(self.lower) + ca.DM(self.upper - self.lower) * v
         points = [z0] + [zc[:, j] for j in range(degree)]
         residuals = []
         for j in range(1, degree + 1):
             slope = sum(c[r, j] * points[r] for r in range(degree + 1))
-            derivative = self.model.rhs(t0 + tau[j] * step, points[j] + offset, self._inputs(u, w), parameters)
+            derivative = self.rhs(t0 + tau[j] * step, points[j] + offset, self._inputs(u, w), parameters)
             residuals.append(step * derivative - slope)
         end = sum(d[r] * points[r] for r in range(degree + 1))
         return ca.Function("interval", [t0, z0, flat, v, w], [ca.vertcat(*residuals), end])
 
     def _step_function(self) -> ca.Function:
         """One step of the model with CVODES, controls and disturbances held, from the time ``t0``."""
-        x = ca.MX.sym("x", self.n_states)
-        u = ca.MX.sym("u", len(self.roles.controls))
-        w = ca.MX.sym("w", len(self.roles.disturbances))
-        t0 = ca.MX.sym("t0")
-        s = ca.MX.sym("s")  # time since the start of the step
+        x = ca.SX.sym("x", self.n_states)
+        u = ca.SX.sym("u", len(self.roles.controls))
+        w = ca.SX.sym("w", len(self.roles.disturbances))
+        t0 = ca.SX.sym("t0")
+        s = ca.SX.sym("s")  # time since the start of the step
         ode = {
             "x": x,
             "t": s,
             "p": ca.vertcat(t0, u, w),
-            "ode": self.model.rhs(t0 + s, x, self._inputs(u, w), ca.DM(self.parameters)),
+            "ode": self.rhs(t0 + s, x, self._inputs(u, w), ca.DM(self.parameters)),
         }
         options = {"abstol": 1e-6, "reltol": 1e-6}
         return ca.integrator("step", "cvodes", ode, 0, self.settings.time_step, options)

@@ -419,8 +419,14 @@ Four weeks of January, OpenModelica 1.26.9 (DASSL, tolerance 1e-6), on the same 
 |---|---|---|
 | Buildings | 182 | 886 |
 | IDEAS | 167 | 373 |
-| FastModel (`building`, replaying the controls) | 27 | 99 |
+| FastModel (`building`, replaying the controls) | 24 | 99 |
+| FastModel in CasADi (`building_mpc`, CVODES, inputs held over 5-minute steps) | 30 (rumoca) | 9 |
 
-FastModel simulates the four weeks 9 times faster than Buildings and 4 times faster than IDEAS, and translates
-6 times faster. The Buildings and IDEAS runs record the signals the replay needs every minute, the FastModel run
-every 15 minutes.
+FastModel simulates the four weeks 9 times faster than Buildings and 4 times faster than IDEAS in OpenModelica,
+and about 100 times faster than Buildings once translated to CasADi. The Buildings and IDEAS runs record the signals
+the replay needs every minute, the FastModel run every 15 minutes.
+
+The CasADi model is the same model as the OpenModelica one: simulated with the inputs of the OpenModelica run, its
+zone temperatures stay within 0.014 K of it over the four weeks.
+
+{!validation/figures/fast_model_residential_after_speed.html!}
