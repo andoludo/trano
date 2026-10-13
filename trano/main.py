@@ -28,7 +28,11 @@ class LibraryChoice(str, Enum):
 
 
 def _create_network(
-    model: str, library: str, rc_model_type: RCModelType | None = None, connected: bool = False
+    model: str,
+    library: str,
+    rc_model_type: RCModelType | None = None,
+    connected: bool = False,
+    envelope: str = "rc",
 ) -> Network:
     library_ = Library.from_configuration(library)
     if library_.is_rc and rc_model_type is not None:
@@ -37,6 +41,10 @@ def _create_network(
         if not library_.is_rc:
             raise typer.BadParameter("--connected only applies to the 'mpc' library.")
         library_ = library_.model_copy(update={"connected": True})
+    if envelope != "rc":
+        if not library_.is_rc:
+            raise typer.BadParameter("--envelope only applies to the 'mpc' library.")
+        library_ = library_.model_copy(update={"envelope": envelope, "connected": True})
     model_ = Path(model).resolve()
     return convert_network(str(model_.stem), model_, library=library_)
 
@@ -78,6 +86,13 @@ def create_model(
             "(CasADi export with rumoca >= 0.10.3)."
         ),
     ] = False,
+    envelope: Annotated[
+        str,
+        typer.Option(
+            help="'mpc' library: 'rc' zones, or 'multilayer' zones with the physics of the Buildings MixedAir zone "
+            "(connected, CasADi export with rumoca >= 0.10.3)."
+        ),
+    ] = "rc",
 ) -> None:
     with Progress(
         SpinnerColumn(),
@@ -89,7 +104,7 @@ def create_model(
             description=f"Generating model {modelica_model_path.name} with library {library}",
             total=None,
         )
-        network = _create_network(model, library, rc_model_type, connected)
+        network = _create_network(model, library, rc_model_type, connected, envelope)
         modelica_model = network.model()
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)

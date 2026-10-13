@@ -14,16 +14,18 @@ import re
 from functools import cache
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 LIBRARY_FILE = Path(__file__).parent.parent / "library" / "Components.mo"
 ROOT_PACKAGE = "Trano.MPC.Components"
 
 _BLOCK = re.compile(r"^\s*(?:partial\s+)?(package|model|connector)\s+(\w+)\b")
 _END = re.compile(r"^\s*end\s+(\w+)\s*;")
-_PARAMETER = re.compile(r'^\s*parameter\s+Real\s+(\w+)(?:\(([^)]*)\))?(?:\s*=\s*([^"\s;]+))?\s*(?:"([^"]*)")?\s*;')
+_PARAMETER = re.compile(
+    r'^\s*parameter\s+(Real|Integer)\s+(\w+)(?:\[(\w+)\])?(?:\(([^)]*)\))?(?:\s*=\s*([^"\s;]+))?\s*(?:"([^"]*)")?\s*;'
+)
 _INPUT = re.compile(r'^\s*input\s+Real\s+(\w+)(?:\(([^)]*)\))?\s*(?:"([^"]*)")?\s*;')
-_STATE = re.compile(r'^\s*Real\s+(\w+)\(([^)]*fixed\s*=\s*true[^)]*)\)\s*(?:"([^"]*)")?\s*;')
+_STATE = re.compile(r'^\s*Real\s+(\w+)(?:\[(\w+)\])?\(([^)]*fixed\s*=\s*true[^)]*)\)\s*(?:"([^"]*)")?\s*;')
 _UNIT = re.compile(r'unit\s*=\s*"([^"]*)"')
 _START = re.compile(r"start\s*=\s*(\w+)")
 
@@ -35,6 +37,8 @@ class ComponentParameter(BaseModel):
     unit: str = ""
     default: float | None = None
     description: str = ""
+    integer: bool = False
+    dimension: str | None = Field(None, description="Integer parameter giving the size of an array parameter")
 
 
 class ComponentInput(BaseModel):
@@ -52,6 +56,7 @@ class ComponentState(BaseModel):
     unit: str = ""
     start_parameter: str | None = None
     description: str = ""
+    dimension: str | None = Field(None, description="Integer parameter giving the size of an array state")
 
 
 class ComponentClass(BaseModel):
@@ -105,20 +110,22 @@ def parse_library(source: str) -> dict[str, ComponentClass]:
         if not stack or stack[-1][0] != "model":
             continue
         if parameter := _PARAMETER.match(line):
-            name, attributes, default, description = parameter.groups()
+            kind, name, dimension, attributes, default, description = parameter.groups()
             parameters.append(
                 ComponentParameter(
                     name=name,
                     unit=_unit(attributes),
                     default=float(default) if default is not None else None,
                     description=description or "",
+                    integer=kind == "Integer",
+                    dimension=dimension,
                 )
             )
         elif input_ := _INPUT.match(line):
             name, attributes, description = input_.groups()
             inputs.append(ComponentInput(name=name, unit=_unit(attributes), description=description or ""))
         elif state := _STATE.match(line):
-            name, attributes, description = state.groups()
+            name, dimension, attributes, description = state.groups()
             start = _START.search(attributes)
             states.append(
                 ComponentState(
@@ -126,6 +133,7 @@ def parse_library(source: str) -> dict[str, ComponentClass]:
                     unit=_unit(attributes),
                     start_parameter=start.group(1) if start else None,
                     description=description or "",
+                    dimension=dimension,
                 )
             )
     return classes

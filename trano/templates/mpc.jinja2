@@ -176,9 +176,14 @@ model building "Runnable {{ building.zones | length }}-zone RC building: weather
 {% for orientation in runnable.orientations %}
   Buildings.BoundaryConditions.SolarIrradiation.DirectTiltedSurface HDir_{{ orientation.name }}(
     til={{ orientation.tilt | mo }}, azi={{ orientation.azimuth | mo }}) "Direct irradiance, {{ orientation.description | safe }}";
+{% if runnable.multilayer %}
+  Buildings.BoundaryConditions.SolarIrradiation.DiffusePerez HDif_{{ orientation.name }}(
+    til={{ orientation.tilt | mo }}, azi={{ orientation.azimuth | mo }}) "Diffuse irradiance (Perez, as the Buildings zone), {{ orientation.description | safe }}";
+{% else %}
   Buildings.BoundaryConditions.SolarIrradiation.DiffuseIsotropic HDif_{{ orientation.name }}(
     til={{ orientation.tilt | mo }}, outSkyCon=true, outGroCon=true) "Diffuse irradiance, {{ orientation.description | safe }}";
   Modelica.Blocks.Math.Add HSol_{{ orientation.name }} "Total irradiance, {{ orientation.description | safe }}";
+{% endif %}
 {% endfor %}
 {% if runnable.external_data %}
   Modelica.Blocks.Sources.CombiTimeTable externalData(
@@ -220,12 +225,23 @@ model building "Runnable {{ building.zones | length }}-zone RC building: weather
 equation
   connect({{ runnable.weather_name }}.weaBus, weaBus);
   connect(weaBus.TDryBul, rc.TOut);
+{% if runnable.multilayer %}
+  connect(weaBus.TBlaSky, rc.TBlaSky);
+  connect(weaBus.winSpe, rc.winSpe);
+  connect(weaBus.winDir, rc.winDir);
+{% endif %}
 {% for orientation in runnable.orientations %}
   connect({{ runnable.weather_name }}.weaBus, HDir_{{ orientation.name }}.weaBus);
   connect({{ runnable.weather_name }}.weaBus, HDif_{{ orientation.name }}.weaBus);
+{% if runnable.multilayer %}
+  connect(HDir_{{ orientation.name }}.H, rc.HDir_{{ orientation.name }});
+  connect(HDif_{{ orientation.name }}.H, rc.HDif_{{ orientation.name }});
+  rc.cosInc_{{ orientation.name }} = cos(HDir_{{ orientation.name }}.inc);
+{% else %}
   connect(HDir_{{ orientation.name }}.H, HSol_{{ orientation.name }}.u1);
   connect(HDif_{{ orientation.name }}.H, HSol_{{ orientation.name }}.u2);
   connect(HSol_{{ orientation.name }}.y, rc.{{ orientation.irradiance }});
+{% endif %}
 {% endfor %}
 {% for zone in runnable.zones %}
 {% if zone.occupancy %}

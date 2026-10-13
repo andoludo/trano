@@ -10,7 +10,7 @@ from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from trano.mpc.components.catalogue import ComponentClass, component_class
+from trano.mpc.components.catalogue import ComponentClass, ComponentState, component_class
 from trano.mpc.parameters import validate_identifier
 
 
@@ -33,7 +33,9 @@ class Instance(BaseModel):
 
     name: str
     component: str = Field(description="Class path relative to Trano.MPC.Components, e.g. Thermal.HeatCapacitor")
-    parameters: dict[str, float] = Field(default_factory=dict)
+    parameters: dict[str, int | float | list[float]] = Field(
+        default_factory=dict, description="Literal values; a list for an array parameter"
+    )
     inputs: dict[str, str] = Field(default_factory=dict, description="Input bindings: input name -> expression")
     description: str = ""
     zone: str | None = Field(None, description="Zone the instance belongs to (interface metadata, not rendered)")
@@ -48,6 +50,14 @@ class Instance(BaseModel):
     @model_validator(mode="after")
     def _check_against_class(self) -> Self:
         component = self.component_class
+        for parameter in component.parameters:
+            value = self.parameters.get(parameter.name)
+            if parameter.integer and value is not None and not isinstance(value, int):
+                raise ValueError(f"{self.name}: parameter {parameter.name} of {self.component} is an Integer.")
+            if parameter.dimension and value is not None:
+                size = self.parameters.get(parameter.dimension)
+                if not isinstance(value, list) or len(value) != size:
+                    raise ValueError(f"{self.name}: {parameter.name} must be a list of {parameter.dimension} values.")
         known_parameters = {parameter.name for parameter in component.parameters}
         if unknown := set(self.parameters) - known_parameters:
             raise ValueError(f"{self.name}: {self.component} has no parameters {sorted(unknown)}.")
@@ -62,16 +72,34 @@ class Instance(BaseModel):
         return self
 
     def parameter_values(self) -> list[tuple[str, float]]:
-        """(name, value) of every parameter of the class, in declaration order."""
-        values = []
+        """(name, value) of every parameter of the class, in declaration order; arrays element by element."""
+        values: list[tuple[str, float]] = []
         for parameter in self.component_class.parameters:
             value = self.parameters.get(parameter.name, parameter.default)
             assert value is not None  # checked by the validator
-            values.append((f"{self.name}.{parameter.name}", value))
+            if isinstance(value, list):
+                values += [(f"{self.name}.{parameter.name}[{i}]", float(v)) for i, v in enumerate(value, start=1)]
+            else:
+                values.append((f"{self.name}.{parameter.name}", float(value)))
         return values
 
+    def size(self, dimension: str) -> int:
+        """Value of the Integer parameter sizing an array."""
+        value = self.parameters.get(dimension, self.component_class.parameter(dimension).default)
+        return int(value)  # type: ignore[arg-type]
+
+    def states(self) -> list[tuple[str, ComponentState]]:
+        """(name, class state) of each CasADi state of the instance, arrays element by element."""
+        states: list[tuple[str, ComponentState]] = []
+        for state in self.component_class.states:
+            if state.dimension:
+                states += [(f"{self.name}.{state.name}[{i}]", state) for i in range(1, self.size(state.dimension) + 1)]
+            else:
+                states.append((f"{self.name}.{state.name}", state))
+        return states
+
     def state_names(self) -> list[str]:
-        return [f"{self.name}.{state.name}" for state in self.component_class.states]
+        return [name for name, _ in self.states()]
 
     def render(self) -> str:
         modifiers = [f"{name}={_literal(value)}" for name, value in self.parameters.items()]
@@ -81,8 +109,12 @@ class Instance(BaseModel):
         return f"  {self.component_class.qualified_name} {self.name}{arguments}{description};"
 
 
-def _literal(value: float) -> str:
-    """Modelica literal of a parameter value (``repr`` keeps every digit)."""
+def _literal(value: float | list[float]) -> str:
+    """Modelica literal of a parameter value (``repr`` keeps every digit); an array as ``{a, b}``."""
+    if isinstance(value, list):
+        return "{" + ", ".join(repr(float(item)) for item in value) + "}"
+    if isinstance(value, int) and not isinstance(value, bool):
+        return str(value)
     return repr(float(value))
 
 
@@ -136,9 +168,9 @@ class ConnectedModel(BaseModel):
         values = []
         for instance in self.instances:
             parameters = dict(instance.parameter_values())
-            for state in instance.component_class.states:
+            for name, state in instance.states():
                 if state.start_parameter is None:
-                    raise ValueError(f"State {instance.name}.{state.name} has no start parameter.")
+                    raise ValueError(f"State {name} has no start parameter.")
                 values.append(parameters[f"{instance.name}.{state.start_parameter}"])
         return values
 

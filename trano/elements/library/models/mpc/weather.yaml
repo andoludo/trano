@@ -1,5 +1,6 @@
-# Same weather reader and weather file as the Buildings library. The path is quoted so that the
-# generated model is valid Modelica without going through the simulation helpers.
+# Same weather reader and weather file as the Buildings library. A file path is quoted so that the
+# generated model is valid Modelica without going through the simulation helpers; a Modelica
+# expression (Modelica.Utilities.Files.loadResource(...)) is kept as it is.
 - classes:
   - Weather
   figures: []
@@ -19,7 +20,7 @@
   template: |
     {% set path = parameters.get("filNam") %}
     {% if path %}
-    Buildings.BoundaryConditions.WeatherData.ReaderTMY3 {{ element.name }}(filNam={{ (path if path.startswith('"') else '"' ~ path ~ '"') | safe }})
+    Buildings.BoundaryConditions.WeatherData.ReaderTMY3 {{ element.name }}(filNam={{ (path if path.startswith('"') or path.startswith('Modelica.') else '"' ~ path ~ '"') | safe }})
     {% else %}
     Buildings.BoundaryConditions.WeatherData.ReaderTMY3 {{ element.name }}(filNam=Modelica.Utilities.Files.loadResource("modelica://Buildings/Resources/weatherdata/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.mos"))
     {% endif %}
