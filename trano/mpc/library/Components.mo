@@ -63,8 +63,11 @@ package Components "Primitive components of Trano.MPC: connectable models that t
       parameter Real G[n](each unit="W/K") "Conductances to the ports";
       Interfaces.HeatPort port[n];
       Interfaces.HeatPort node "Massless node: only heat flow sources may be connected to it";
+      Interfaces.HeatPort rad
+        "Radiant gains of emitters: at the conductance-weighted mean port temperature, spread as the node's";
     equation
-      node.T = (sum(G[i]*port[i].T for i in 1:n) + node.Q_flow)/sum(G);
+      node.T = (sum(G[i]*port[i].T for i in 1:n) + node.Q_flow + rad.Q_flow)/sum(G);
+      rad.T = sum(G[i]*port[i].T for i in 1:n)/sum(G);
       for i in 1:n loop
         port[i].Q_flow = G[i]*(port[i].T - node.T);
       end for;
@@ -241,6 +244,16 @@ package Components "Primitive components of Trano.MPC: connectable models that t
       outlet.T = inlet.T;
     end Valve;
 
+    model FlowValve "Valve setting the flow of its branch: the flow is the control (its opening follows locally)"
+      input Real m_flow(unit="kg/s") "Mass flow rate of the branch";
+      Interfaces.WaterPort inlet;
+      Interfaces.WaterPort outlet;
+    equation
+      inlet.m_flow = m_flow;
+      inlet.m_flow + outlet.m_flow = 0;
+      outlet.T = inlet.T;
+    end FlowValve;
+
     model ThreeWayValve "Mixing valve: the share y of the outlet flow comes from port_1 (supply), 1 - y from port_3"
       input Real y "Share of the supply, 0 to 1";
       Interfaces.WaterPort port_1 "Supply inlet";
@@ -251,6 +264,19 @@ package Components "Primitive components of Trano.MPC: connectable models that t
       port_1.m_flow = -y*port_2.m_flow;
       port_2.T = y*port_1.T + (1 - y)*port_3.T;
     end ThreeWayValve;
+
+    model DivertingValve "Diverting valve: sends (1 - y)*m_flow_nominal from port_1 to the bypass port_3"
+      parameter Real m_flow_nominal(unit="kg/s") "Bypass flow when the valve is fully on the bypass";
+      input Real y "Position: 1 all to port_2 (the emitters), 0 the nominal flow to the bypass";
+      Interfaces.WaterPort port_1 "Supply inlet";
+      Interfaces.WaterPort port_2 "Outlet to the emitters";
+      Interfaces.WaterPort port_3 "Bypass outlet";
+    equation
+      port_1.m_flow + port_2.m_flow + port_3.m_flow = 0;
+      port_3.m_flow = -(1 - y)*m_flow_nominal;
+      port_2.T = port_1.T;
+      port_3.T = port_1.T;
+    end DivertingValve;
 
     model Splitter "One inlet to n outlets at the inlet temperature"
       parameter Integer n = 2 "Number of outlets";
@@ -307,6 +333,36 @@ package Components "Primitive components of Trano.MPC: connectable models that t
       outlet.T = TSup;
       Q = inlet.m_flow*cp*(TSup - inlet.T);
     end PrescribedSupply;
+
+    model Boiler "Boiler (Buildings BoilerPolynomial): water and metal heated by the part load ratio y"
+      parameter Real Q_flow_nominal(unit="W") "Nominal heating power";
+      parameter Real a1 = 0.9 "Efficiency: a1 + a2*y + a3*y^2 + (a4 + a5*y + a6*y^2)*T (QuadraticLinear curve)";
+      parameter Real a2 = 0;
+      parameter Real a3 = 0;
+      parameter Real a4 = 0;
+      parameter Real a5 = 0;
+      parameter Real a6 = 0;
+      parameter Real eta_nominal = 0.9 "Efficiency at nominal conditions";
+      parameter Real UA(unit="W/K") = 0 "Heat loss conductance to the boiler room";
+      parameter Real TAmb(unit="K") = 288.15 "Temperature of the boiler room";
+      parameter Real C(unit="J/K") "Heat capacity of the water and of the dry mass";
+      parameter Real T0(unit="K") = 293.15 "Initial water temperature";
+      input Real y "Part load ratio, 0 to 1 (control)";
+      Real T(unit="K", start=T0, fixed=true) "Water temperature";
+      Interfaces.WaterPort inlet;
+      Interfaces.WaterPort outlet;
+      Real QFue(unit="W") "Fuel power";
+      Real QWat(unit="W") "Heat to the water";
+    protected
+      Real eta "Efficiency";
+    equation
+      eta = a1 + a2*y + a3*y^2 + (a4 + a5*y + a6*y^2)*T;
+      QFue = y*Q_flow_nominal/eta_nominal;
+      QWat = eta*QFue + UA*(TAmb - T);
+      C*der(T) = inlet.m_flow*cp*(inlet.T - T) + QWat;
+      inlet.m_flow + outlet.m_flow = 0;
+      outlet.T = T;
+    end Boiler;
 
     model Reference "One per closed circuit (the expansion vessel): drops the mass balance the loop makes redundant"
       Interfaces.WaterPort inlet;

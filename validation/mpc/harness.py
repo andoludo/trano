@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import re
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -52,13 +53,26 @@ class ZoneComparison(BaseModel):
     bias: float = Field(description="Mean error, mpc minus Buildings [K]")
     max_abs: float = Field(description="Largest absolute error [K]")
     mean_reference: float = Field(description="Mean Buildings temperature [degC]")
-    heat_kwh: float = Field(description="Heat replayed into the zone [kWh]")
+    heat_kwh: float = Field(description="Heat of the emitters of the zone in Buildings [kWh]")
+    emitter_heat_kwh: float | None = Field(None, description="Heat of the radiators of the zone, mpc [kWh]")
+    emitter_cv_rmse: float | None = Field(None, description="Hourly CV(RMSE) of the radiator heat [-]")
+    emitter_nmbe: float | None = Field(None, description="Normalized mean bias of the radiator heat [-]")
+
+
+class CircuitComparison(BaseModel):
+    """Water temperatures of a hydronic circuit, mpc against Buildings."""
+
+    variable: str
+    rmse: float = Field(description="Root mean square error [K]")
+    bias: float = Field(description="Mean error, mpc minus Buildings [K]")
+    mean_reference: float = Field(description="Mean Buildings temperature [degC]")
 
 
 class CaseComparison(BaseModel):
     case: str
     model: str = Field(description="mpc zone model, e.g. R3C2, connected")
     zones: list[ZoneComparison]
+    circuits: list[CircuitComparison] = Field(default_factory=list)
     wall_time: float
 
     @property
@@ -87,10 +101,19 @@ def _options(case: MPCCase) -> SimulationOptions:
     )
 
 
+_MPC_PACKAGE = re.compile(r"^package MPC\b.*?^end MPC;", flags=re.DOTALL | re.MULTILINE)
+
+
+def _hashed_text(model: str, network: Network) -> str:
+    """The model text the cache depends on: every generated package embeds ``Trano.MPC``, which a model of another
+    library never uses, so that the reference simulations survive changes of the mpc components."""
+    return model if network.library.name == "mpc" else _MPC_PACKAGE.sub("", model)
+
+
 def _simulate(network: Network, directory: Path, options: SimulationOptions, name: str) -> Path:
     """Simulate unless the cached result was produced by the same model; return the result file."""
     model = network.model()
-    expected = model_hash(model, name, options)
+    expected = model_hash(_hashed_text(model, network), name, options)
     result = directory / "results" / f"{network.name}.building_res.mat"
     hash_file = directory / "model.hash"
     if result.exists() and hash_file.exists() and hash_file.read_text() == expected:
@@ -167,10 +190,95 @@ def reference(case: MPCCase) -> tuple[Network, Path]:
     return network, _simulate(network, directory, _options(case), f"{case.id}-{REFERENCE}")
 
 
-def _write_heat(path: Path, grid: np.ndarray, heat: dict[str, np.ndarray]) -> Path:
+def _write_data(path: Path, grid: np.ndarray, columns: dict[str, np.ndarray]) -> Path:
     index = pd.Timestamp("2025-01-01") + pd.to_timedelta(grid, unit="s")
-    pd.DataFrame({f"{zone}_QHea": values for zone, values in heat.items()}, index=index).to_csv(path)
+    pd.DataFrame(columns, index=index).to_csv(path)
     return path
+
+
+def _hydronic_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
+    """The hydronic controls of the mpc model, as Buildings ran them: branch flows, three-way valve positions and
+    boiler part load ratios (the ``FlowValve``, ``ThreeWayValve``/``DivertingValve`` and ``Boiler`` inputs)."""
+    from trano.elements.system import Boiler, ThreeWayValve, Valve
+    from trano.mpc.components.hydronics import hydronic_graph
+
+    columns = {}
+    for element in hydronic_graph(network).nodes:
+        name = sanitize_name(element.name)
+        if isinstance(element, Valve):
+            columns[f"{name}_m_flow"] = _on_grid(reader, find_variable(reader, f"{element.name}.m_flow"), grid)
+        elif isinstance(element, ThreeWayValve):
+            columns[f"{name}_y"] = _on_grid(reader, find_variable(reader, f"{element.name}.y"), grid)
+        elif isinstance(element, Boiler):
+            columns[f"{name}_y"] = _on_grid(reader, find_variable(reader, f"{element.name}.boi.y"), grid)
+    return columns
+
+
+def _hourly(values: np.ndarray) -> np.ndarray:
+    steps = 3600 // INTERVAL
+    usable = len(values) - len(values) % steps
+    return np.asarray(values[:usable].reshape(-1, steps).mean(axis=1))
+
+
+def _cv_rmse_and_nmbe(actual: np.ndarray, expected: np.ndarray) -> tuple[float, float]:
+    """ASHRAE Guideline 14 hourly CV(RMSE) and NMBE of a heat flow."""
+    actual, expected = _hourly(actual), _hourly(expected)
+    mean = float(np.mean(expected))
+    if abs(mean) < 1e-9:
+        return 0.0, 0.0
+    return float(np.sqrt(np.mean((actual - expected) ** 2)) / mean), float(
+        np.sum(actual - expected) / len(expected) / mean
+    )
+
+
+def _radiator_heat(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
+    """Heat the radiators of the mpc model gave each zone [W], mean over each interval."""
+    from trano.mpc.components.hydronics import hydronic_emitters, zone_of
+
+    heat: dict[str, np.ndarray] = {}
+    for radiator in hydronic_emitters(network):
+        space = zone_of(radiator, network)
+        if space is None:
+            continue
+        name = sanitize_name(str(radiator.name))
+        delivered = -(
+            _interval_mean(reader, f"rc.{name}.heatPortCon.Q_flow", grid)
+            + _interval_mean(reader, f"rc.{name}.heatPortRad.Q_flow", grid)
+        )
+        zone = sanitize_name(space.name)
+        heat[zone] = heat.get(zone, 0) + delivered
+    return heat
+
+
+def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.ndarray) -> list[CircuitComparison]:
+    """Return temperature of each production and temperature of each sensor of the circuits."""
+    from trano.elements.system import Boiler, TemperatureSensor
+    from trano.mpc.components.hydronics import hydronic_graph
+
+    pairs = []
+    for element in hydronic_graph(network).nodes:
+        name = sanitize_name(element.name)
+        if isinstance(element, Boiler):
+            pairs.append((f"{name} supply", f"{element.name}.TSupply.T", f"rc.{name}.T"))
+            pairs.append((f"{name} return", f"{element.name}.TReturn.T", f"rc.{name}.inlet.T"))
+        elif isinstance(element, TemperatureSensor):
+            pairs.append((f"{name}", f"{element.name}.T", f"rc.{name}.T"))
+    comparisons = []
+    for label, reference_variable, mpc_variable in pairs:
+        try:
+            expected = _on_grid(reader, find_variable(reader, reference_variable), grid)
+        except ValueError:
+            continue
+        error = _on_grid(mpc_reader, mpc_variable, grid) - expected
+        comparisons.append(
+            CircuitComparison(
+                variable=label,
+                rmse=float(np.sqrt(np.mean(error**2))),
+                bias=float(np.mean(error)),
+                mean_reference=float(np.mean(expected) - 273.15),
+            )
+        )
+    return comparisons
 
 
 def compare(
@@ -196,14 +304,26 @@ def compare(
         update={"rc_model_type": model_type, "connected": connected or multilayer, "envelope": envelope}
     )
     network = _network(case, library, directory)
-    network.external_data = _write_heat(directory / "heat.csv", grid - case.start_time, heat)
+    columns = {f"{zone}_QHea": values for zone, values in heat.items()}
+    if multilayer:
+        columns |= _hydronic_replay(reader, buildings_network, grid)
+    network.external_data = _write_data(directory / "heat.csv", grid - case.start_time, columns)
     result = _simulate(network, directory, _options(case), f"{case.id}-{variant}")
     mpc_reader = _reader(result)
+    radiator_heat = _radiator_heat(mpc_reader, network, grid) if multilayer else {}
 
     zones = []
     for zone, expected in reference_temperature.items():
         actual = _on_grid(mpc_reader, f"{zone}_TZon", grid)
         error = actual - expected
+        emitter: dict[str, float] = {}
+        if zone in radiator_heat:
+            cv_rmse, nmbe = _cv_rmse_and_nmbe(radiator_heat[zone], heat[zone])
+            emitter = {
+                "emitter_heat_kwh": float(np.sum(radiator_heat[zone][:-1]) * INTERVAL / 3.6e6),
+                "emitter_cv_rmse": cv_rmse,
+                "emitter_nmbe": nmbe,
+            }
         zones.append(
             ZoneComparison(
                 zone=zone,
@@ -212,11 +332,13 @@ def compare(
                 max_abs=float(np.max(np.abs(error))),
                 mean_reference=float(np.mean(expected) - 273.15),
                 heat_kwh=float(np.sum(heat[zone][:-1]) * INTERVAL / 3.6e6),
+                **emitter,
             )
         )
     return CaseComparison(
         case=case_id,
         model="Multilayer" if multilayer else f"{model_type.value}{', connected' if connected else ''}",
         zones=zones,
+        circuits=_circuits(reader, mpc_reader, network, grid) if multilayer else [],
         wall_time=time.monotonic() - started,
     )

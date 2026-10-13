@@ -145,6 +145,7 @@ class RunnableControlView(BaseModel):
     name: str
     description: str
     column: int | None = None
+    unit: str = "W"
 
 
 class RunnableTableView(BaseModel):
@@ -706,10 +707,11 @@ def _prepare(network: "Network", data_bus: "DataBus | None") -> tuple["RCBuildin
 
 
 def _multilayer_runnable(network: "Network", runnable: RunnableView) -> RunnableView:
-    """The runnable view of multilayer zones: their orientations, in radians, named as their inputs."""
+    """The runnable view of multilayer zones: their orientations, in radians, named as their inputs, and the
+    controls of the model (zone heat inputs, hydronic controls), replayed from the external data when it has them."""
     import math
 
-    from trano.mpc.components.envelope import zone_orientations
+    from trano.mpc.components.envelope import multilayer_model, zone_orientations
 
     orientations = [
         OrientationView(
@@ -723,7 +725,25 @@ def _multilayer_runnable(network: "Network", runnable: RunnableView) -> Runnable
         )
         for orientation in zone_orientations(network)
     ]
-    return runnable.model_copy(update={"multilayer": True, "orientations": orientations})
+    controls = [
+        RunnableControlView(
+            name=top.name,
+            description=top.description,
+            unit=top.unit,
+            column=_column(runnable.external_data, top.name),
+        )
+        for top in multilayer_model(network).inputs
+        if top.control
+    ]
+    return runnable.model_copy(
+        update={
+            "multilayer": True,
+            "orientations": orientations,
+            "controls": controls,
+            "tables": [],
+            "photovoltaics": [],
+        }
+    )
 
 
 def _connected_model(network: "Network", building: "RCBuilding") -> "ConnectedModel | None":
@@ -765,7 +785,7 @@ def _state_and_parameter_specs(model: "ConnectedModel") -> tuple[list[Any], list
     for name, initial in zip(model.state_names, model.initial_state(), strict=True):
         instance_name, variable = name.split(".", 1)
         instance = instances[instance_name]
-        state = next(state for state in instance.component_class.states if state.name == variable)
+        state = next(state for state in instance.component_class.states if state.name == variable.split("[")[0])
         states.append(
             StateSpec(
                 name=name,
@@ -814,6 +834,19 @@ def multilayer_interface(interface: "MPCModelInterface", model: "ConnectedModel"
     for top in model.inputs:
         if top.name in zone_inputs:
             inputs.append(zone_inputs[top.name])
+        elif top.control:
+            inputs.append(
+                InputSpec(
+                    name=top.name,
+                    role=InputRole.control,
+                    unit=top.unit,
+                    description=top.description,
+                    zone=top.zone,
+                    system=top.system,
+                    minimum=top.minimum,
+                    maximum=top.maximum,
+                )
+            )
         elif top.name in weather:
             variable, unit = weather[top.name]
             inputs.append(
@@ -838,11 +871,21 @@ def multilayer_interface(interface: "MPCModelInterface", model: "ConnectedModel"
                 )
             )
     states, parameters = _state_and_parameter_specs(model)
-    zones = [
-        zone.model_copy(update={"indoor_temperature": f"{zone.name}_air.T", "model_type": "Multilayer"})
-        for zone in interface.zones
-    ]
-    return interface.model_copy(update={"inputs": inputs, "states": states, "parameters": parameters, "zones": zones})
+    names = set(model.input_names)
+    zones = []
+    for zone in interface.zones:
+        update: dict[str, Any] = {"indoor_temperature": f"{zone.name}_air.T", "model_type": "Multilayer"}
+        if zone.heating_input not in names:  # heated by a hydronic circuit: its branch flows heat it
+            branch = next((top for top in model.inputs if top.control and top.zone == zone.name), None)
+            update |= {
+                "heating_input": branch.name if branch else "",
+                "heating_system": branch.system if branch else None,
+                "heating_carrier": "heat",
+            }
+        zones.append(zone.model_copy(update=update))
+    return interface.model_copy(
+        update={"inputs": inputs, "states": states, "parameters": parameters, "zones": zones, "systems": []}
+    )
 
 
 def connected_interface(interface: "MPCModelInterface", model: "ConnectedModel") -> "MPCModelInterface":

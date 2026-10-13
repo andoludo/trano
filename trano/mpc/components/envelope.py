@@ -34,6 +34,7 @@ from trano.mpc.estimation import sanitize_name
 
 if TYPE_CHECKING:
     from trano.elements.construction import Construction, Glass
+    from trano.mpc.components.hydronics import HydronicSettings
     from trano.elements.envelope import BaseInternalElement, BaseSimpleWall
     from trano.elements.space import Space
     from trano.topology import Network
@@ -322,8 +323,11 @@ class _Surface(BaseModel):
 
 
 class _Zone:
-    def __init__(self, space: "Space", network: "Network", settings: MultilayerSettings) -> None:
+    def __init__(
+        self, space: "Space", network: "Network", settings: MultilayerSettings, hydronic: bool = False
+    ) -> None:
         self.space = space
+        self.hydronic = hydronic  # heated by the radiators of a hydronic circuit instead of the QHea input
         self.name = sanitize_name(space.name)
         self.network = network
         self.settings = settings
@@ -589,7 +593,8 @@ class _Zone:
     def _gains(self, star: str) -> None:
         internal_radiant = occupancy_radiant_fraction(self.space, self.network)
         self._split_input(f"{self.name}_QInt", "intGai", internal_radiant, star)
-        self._split_input(f"{self.name}_QHea", "hea", emitter_radiant_fraction(self.space), star)
+        if not self.hydronic:
+            self._split_input(f"{self.name}_QHea", "hea", emitter_radiant_fraction(self.space), star)
 
     def _split_input(self, signal: str, name: str, radiant: float, star: str) -> None:
         if radiant < 1:
@@ -684,12 +689,24 @@ def zone_orientations(network: "Network") -> list[Orientation]:
     return sorted(orientations, key=lambda o: (o.tilt, o.azimuth))
 
 
-def multilayer_model(network: "Network", settings: MultilayerSettings | None = None) -> ConnectedModel:
-    """``building_mpc`` of a network with multilayer zones."""
+def multilayer_model(
+    network: "Network", settings: MultilayerSettings | None = None, hydronics: "HydronicSettings | None" = None
+) -> ConnectedModel:
+    """``building_mpc`` of a network with multilayer zones and, when it has some, its hydronic circuits."""
     from trano.elements.space import Space
+    from trano.mpc.components.hydronics import hydronic_circuit, hydronic_emitters, zone_of
 
     settings = settings or MultilayerSettings()
-    zones = [_Zone(space, network, settings) for space in network.graph.nodes if isinstance(space, Space)]
+    hydronic_zones = {
+        sanitize_name(str(space.name))
+        for radiator in hydronic_emitters(network)
+        if (space := zone_of(radiator, network))
+    }
+    zones = [
+        _Zone(space, network, settings, hydronic=sanitize_name(space.name) in hydronic_zones)
+        for space in network.graph.nodes
+        if isinstance(space, Space)
+    ]
     instances = [
         Instance(
             name=OUTDOOR, component="Sources.PrescribedTemperature", inputs={"T": "TOut"}, description="Outdoor air"
@@ -700,6 +717,9 @@ def multilayer_model(network: "Network", settings: MultilayerSettings | None = N
         zone.build()
         instances += zone.instances
         connections += zone.connections
+    circuit = hydronic_circuit(network, lambda zone: (f"{zone}_air.port", f"{zone}_rad.rad"), hydronics)
+    instances += circuit.instances
+    connections += circuit.connections
     orientations = zone_orientations(network)
     inputs = list(WEATHER_INPUTS)
     for orientation in orientations:
@@ -710,15 +730,21 @@ def multilayer_model(network: "Network", settings: MultilayerSettings | None = N
             TopInput(name=orientation.cosine, unit="1", description=f"Cosine of the incidence angle, {label}"),
         ]
     for zone in zones:
-        inputs += [
-            TopInput(name=f"{zone.name}_QInt", unit="W", description="Sensible internal heat gains"),
-            TopInput(
-                name=f"{zone.name}_QHea", unit="W", description="Heating (> 0) or cooling (< 0) power, control input"
-            ),
-        ]
+        inputs.append(TopInput(name=f"{zone.name}_QInt", unit="W", description="Sensible internal heat gains"))
+        if not zone.hydronic:
+            inputs.append(
+                TopInput(
+                    name=f"{zone.name}_QHea",
+                    unit="W",
+                    description="Heating (> 0) or cooling (< 0) power, control input",
+                    control=True,
+                )
+            )
+    inputs += circuit.inputs
+    systems = f" and {len(circuit.inputs)} hydronic controls" if circuit.inputs else ""
     return ConnectedModel(
         name="building_mpc",
-        description=f"{len(zones)}-zone multilayer building model, connected components",
+        description=f"{len(zones)}-zone multilayer building model{systems}, connected components",
         inputs=inputs,
         instances=instances,
         connections=connections,

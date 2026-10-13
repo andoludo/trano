@@ -123,6 +123,8 @@ class InputSpec(_Frozen):
     data_column: str | None = Field(None, description="External data column replaying this input, if any")
     carrier: Carrier = Field("heat", description="Energy carrier drawn by a control input")
     system: str | None = Field(None, description="System the input belongs to, if any")
+    minimum: float | None = Field(None, description="Lower bound of a control, if it has one")
+    maximum: float | None = Field(None, description="Upper bound of a control, if it has one")
 
 
 class ParameterSpec(_Frozen):

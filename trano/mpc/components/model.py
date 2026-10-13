@@ -22,6 +22,11 @@ class TopInput(BaseModel):
     name: str
     unit: str = ""
     description: str = ""
+    control: bool = Field(False, description="Set by the controller (MPC decision), not a disturbance")
+    zone: str | None = Field(None, description="Zone the input heats, if any (interface metadata)")
+    system: str | None = Field(None, description="System the input acts on, if any (interface metadata)")
+    minimum: float | None = Field(None, description="Lower bound of a control")
+    maximum: float | None = Field(None, description="Upper bound of a control")
 
     _name_validator = field_validator("name")(validate_identifier)
 

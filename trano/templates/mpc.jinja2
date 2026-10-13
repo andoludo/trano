@@ -208,7 +208,7 @@ model building "Runnable {{ building.zones | length }}-zone RC building: weather
   // ---- Control inputs (e.g. set by the MPC) and system schedules ----
 {% for control in runnable.controls %}
 {% if control.column is none %}
-  Modelica.Blocks.Interfaces.RealInput {{ control.name }}(unit="W") "{{ control.description }}";
+  Modelica.Blocks.Interfaces.RealInput {{ control.name }}(unit="{{ control.unit }}") "{{ control.description }}";
 {% endif %}
 {% endfor %}
 {% for table in runnable.tables %}
