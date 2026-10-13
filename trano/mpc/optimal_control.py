@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import casadi as ca
@@ -362,3 +363,59 @@ class MovingHorizonEstimation(_Collocated):
             status=status,
             solve_time=time.monotonic() - started,
         )
+
+
+@dataclass(frozen=True)
+class ClosedLoopResult:
+    states: np.ndarray  # (states, steps + 1) of the plant
+    controls: np.ndarray  # (controls, steps) applied
+    statuses: list[str]
+    solve_times: list[float]
+
+
+Plant = Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]
+"""One step of the controlled system: (state, controls, disturbances) -> next state."""
+
+
+def receding_horizon(  # noqa: PLR0913
+    ocp: OptimalControl,
+    initial_state: np.ndarray,
+    disturbances: np.ndarray,
+    comfort_lower: np.ndarray,
+    price: np.ndarray,
+    horizon: int,
+    plant: Plant | None = None,
+) -> ClosedLoopResult:
+    """Model predictive control: at each step, solve over ``horizon`` steps and apply the first controls.
+
+    ``disturbances`` (disturbances, steps + horizon), ``comfort_lower`` and ``price`` (steps + horizon,) cover the
+    closed loop and the last horizon; ``plant`` defaults to the model itself (CVODES). Each solve is warm-started
+    from the previous solution, shifted by one step.
+    """
+
+    def model_plant(state: np.ndarray, controls: np.ndarray, forecast: np.ndarray) -> np.ndarray:
+        return ocp.simulate(state, controls[:, None], forecast[:, None])[:, -1]
+
+    step = plant or model_plant
+    steps = disturbances.shape[1] - horizon
+    states, applied, statuses, times = [np.asarray(initial_state, dtype=float)], [], [], []
+    guess_states = guess_controls = None
+    for k in range(steps):
+        window = slice(k, k + horizon)
+        result = ocp.solve(
+            states[-1],
+            disturbances[:, window],
+            np.asarray(comfort_lower)[..., window],
+            np.asarray(price)[window],
+            guess_states=guess_states,
+            guess_controls=guess_controls,
+        )
+        statuses.append(result.status)
+        times.append(result.solve_time)
+        applied.append(result.controls[:, 0])
+        states.append(step(states[-1], result.controls[:, 0], disturbances[:, k]))
+        guess_controls = np.column_stack([result.controls[:, 1:], result.controls[:, -1:]])
+        guess_states = np.column_stack([states[-1], result.states[:, 2:], result.states[:, -1:]])
+    return ClosedLoopResult(
+        states=np.column_stack(states), controls=np.column_stack(applied), statuses=statuses, solve_times=times
+    )

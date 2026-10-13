@@ -19,6 +19,7 @@ from trano.mpc.optimal_control import (
     OptimalControl,
     OptimalControlSettings,
     _collocation,
+    receding_horizon,
 )
 
 MODELS = Path(__file__).parent / "models"
@@ -140,3 +141,24 @@ def test_moving_horizon_estimation_recovers_the_unmeasured_states(
     believed = np.abs(estimator.simulate(prior, controls, disturbances)[:, -1] - truth[:, -1])[temperatures]
     assert error[interface.state_names.index(interface.zones[0].indoor_temperature)] < 0.1
     assert np.max(error) < 0.5 * np.max(believed)
+
+
+def test_the_receding_horizon_keeps_the_zone_comfortable(hydronic: tuple[MPCModelInterface, object]) -> None:
+    """Closed loop from 5:00: six MPC steps over a 12-hour horizon, the model as plant."""
+    interface, export = hydronic
+    ocp = OptimalControl(interface, export.rhs, OptimalControlSettings(time_step=3600))  # type: ignore[attr-defined]
+    hours = 5.0 + np.arange(18.0)
+    comfort = np.where((hours >= 7) & (hours < 22), KELVIN + 20, KELVIN + 16)
+    loop = receding_horizon(
+        ocp,
+        np.array(interface.initial_state),
+        _forecast(interface, hours),
+        comfort,
+        np.full(18, 0.1),
+        horizon=12,
+    )
+    assert all(status == "Solve_Succeeded" for status in loop.statuses), loop.statuses
+    indoor = loop.states[interface.state_names.index(interface.zones[0].indoor_temperature)]
+    assert np.all(indoor[1:] >= comfort[:6] - 0.1)
+    assert np.all(loop.controls >= ocp.lower[:, None] - 1e-6)
+    assert np.all(loop.controls <= ocp.upper[:, None] + 1e-6)
