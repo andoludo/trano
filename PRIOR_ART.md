@@ -32,13 +32,16 @@ for lightweight building and district thermal models used in optimization?
 Do not reuse or fork an existing Modelica library: none of them is connectable, light and optimizer-ready at the
 same time.**
 
-- **IBPSA, AixLib, Buildings and IDEAS** are connectable but not light: fluid media, events, tables and external C.
-  IBPSA still does not resolve in rumoca, even on main.
-- **MSL `Thermal.HeatTransfer`** is connectable and light. It works with rumoca main and OpenModelica, but:
+Section 3b has the tested answer. Of the existing libraries, **only MSL `Modelica.Thermal.HeatTransfer` components**
+go through the route, and only with rumoca main:
+
+- **IBPSA, Buildings, AixLib, IDEAS, FastBuildings and MoSDH all fail before the CasADi export.** The reasons are
+  rumoca compiler gaps, Modelica spec violations in the libraries, and dependencies that no longer exist. Even
+  past those, their fluid media, events and tables would block the export.
+- **MSL `Thermal.FluidHeatFlow`** (light pumps, pipes and valves) compiles, but does not export: `events`.
+- **MSL `Thermal.HeatTransfer`** is connectable and light, but:
   - pymoca 0.12 fails on its `RealInput` connector;
   - loading MSL makes rumoca compile 35 times slower (5.3 s instead of 0.15 s).
-- **FastBuildings** is MSL `HeatTransfer` plus legacy IDEAS imports, so it inherits the MSL issues plus broken
-  imports.
 
 **What the library looks like.** About 100 lines of Modelica (`Light` in section 1b):
 
@@ -139,7 +142,7 @@ like trano does:
 
 | Pipeline | `Light` (own connectors) | `HouseMSL` (MSL `HeatTransfer`) | Structure the solver sees | OCP objective | Speed | Estimation and MPC |
 |----------|--------------------------|---------------------------------|---------------------------|---------------|-------|--------------------|
-| rumoca 0.10.2 → CasADi | compiles in 0.07 s; ❌ `to_casadi()` | ❌ MSL constants do not resolve | 6 states + **115 algebraic** (no alias elimination) | – | – | – |
+| rumoca 0.10.2 → CasADi | compiles in 0.07 s; ❌ `to_casadi()` | compiles (MSL 4.1 as root); ❌ `to_casadi()` | 6 states + **115 / 149 algebraic** (no alias elimination) | – | – | – |
 | **rumoca main** (unreleased 0.10.3, `33c2114`, built from source) → CasADi | ✅ export 0.15 s | ✅ export 5.3 s (loads MSL) | 6 states; the 115 / 149 algebraic variables are eliminated into the ODE (MX function, `.expand()` gives SX for do-mpc) | **19.592617089 €**, identical to the flat model | 7 days 0.3 s; OCP 4.9 s; **warm MPC 0.15–0.17 s** | ✅ batch estimation 1.2996 / 0.8027, identical to the flat model (10–15 s: the MX function is not expanded) |
 | **pymoca 0.12 → CasADi, algebraics eliminated symbolically → explicit ODE** | ✅ | ❌ `KeyError` on the MSL `RealInput` connector (both binding styles) | 6 states (36 algebraic eliminated) | **19.592617089 €**, identical to the flat model | flatten + eliminate 0.25 s; 7 days 0.12 s; OCP 5.6 s; warm MPC 0.34 s | ✅ batch estimation 1.2996 / 0.8027, identical to the flat model; ✅ do-mpc NMPC on the same function: 19.5925 €, warm solve 0.81 s (CasADi 3.6, elimination not optimised yet) |
 | OpenModelica `optimize()` | ✅ | ✅ | index reduction + alias elimination | 19.5988 € (Light) / 19.5988 € (MSL), same as the flat model | OCP 0.59 s / 0.66 s | ❌ estimation; MPC by scripting |
@@ -203,27 +206,61 @@ Stor / EV / PV / Vent / DH:
 
 Scores: ✓ covered, ◐ partial, · not covered.
 
-"Tested" in the rumoca column means I ran it with rumoca 0.10.2.
+"Tested" in the rumoca column means I ran it with rumoca 0.10.2 and main, with the MSL 4.1 release as root (section 3b).
 
 | Candidate | License | Last activity | Physics scope | rumoca / optimizer compatibility | Covers trano YAML (Env/Occ/Hyd/Prod/Stor/EV/PV/Vent/DH) | Use |
 |-----------|---------|---------------|---------------|----------------------------------|---------------------------------------------------------|-----|
 | **trano `mpc` library** (baseline) | trano | this repo | R1C1, R3C2, R4C3, 5R2C zones; inline heat pump, boiler, chiller, DHW tank, battery, EV, PV | ✅ tested: 132 rumoca tests pass; P1–P4 and P6 | ✓ ✓ ◐ ✓ ✓ ✓ ✓ ◐ · | **extend** |
-| [IBPSA](https://github.com/ibpsa/modelica-ibpsa) `ThermalZones.ReducedOrder.RC`, `ISO13790.Zone5R1C` | BSD-3 style | 2026-10-09 | VDI 6007 1–4 element RC; ISO 13790 5R1C; solar gains | ❌ tested: does not resolve (`ModelicaServices.Machine.eps`); uses connectors, `MixingVolume` with a fluid medium, the weather bus and tables | ✓ · · · · · · · · | **borrow** equations and validation cases |
-| [Buildings](https://github.com/lbl-srg/modelica-buildings) incl. `DHC` | BSD-3 style | v14.0.0, 2026-10 | everything, including district heating and cooling | ❌ (fluid media, events, tables, external C) | ✓ ✓ ✓ ✓ ✓ ◐ ✓ ✓ ✓ | high-fidelity **plant** (already used by trano) |
-| [AixLib](https://github.com/RWTH-EBC/AixLib) | BSD-3 | v3.0.1, 2026-06 | VDI 6007 multizone, HVAC, district | ❌ (fluid, tables, events) | ✓ ✓ ✓ ✓ ✓ · ◐ ✓ ✓ | plant (already used by trano) |
-| [IDEAS](https://github.com/open-ideas/IDEAS) / LIDEAS | BSD-3 style | v4.0.0, 2025-09 | detailed envelope; LIDEAS linearises to state-space models for MPC (needs Dymola) | ❌ | ✓ ✓ ✓ ✓ ◐ · ✓ ✓ · | plant (already used by trano); linearisation idea |
-| [FastBuildings](https://github.com/open-ideas/FastBuildings) | Modelica License 2 | 2022-12 | about 40 grey-box single-zone RC variants | ◐ MSL `HeatTransfer` plus `replaceable`, `inner`/`outer` and legacy IDEAS imports. The connectors are accepted by rumoca main, not by 0.10.2; the IDEAS imports and `inner`/`outer` are not tested | ✓ · ◐ · · · · · · | **borrow** model structures for identification |
+| [IBPSA](https://github.com/ibpsa/modelica-ibpsa) `ThermalZones.ReducedOrder.RC`, `ISO13790.Zone5R1C` | BSD-3 style | 2026-10-09 | VDI 6007 1–4 element RC; ISO 13790 5R1C; solar gains | ❌ tested (section 3b): loads, but fails before export. `ReducedOrder` fails on a conditional component; `ISO13790` fails on the weather-reader functions and an `Evaluate` annotation. Behind that come `MixingVolume` with a fluid medium, the weather bus and tables | ✓ · · · · · · · · | **borrow** equations and validation cases |
+| [Buildings](https://github.com/lbl-srg/modelica-buildings) incl. `DHC` | BSD-3 style | v14.0.0, 2026-10 | everything, including district heating and cooling | ❌ tested (section 3b): the IBPSA failures plus Medium-dependent `stateSelect` and array comprehensions | ✓ ✓ ✓ ✓ ✓ ◐ ✓ ✓ ✓ | high-fidelity **plant** (already used by trano) |
+| [AixLib](https://github.com/RWTH-EBC/AixLib) | BSD-3 | v3.0.1, 2026-06 | VDI 6007 multizone, HVAC, district | ❌ tested (section 3b): rumoca rejects its files and folder layout; once those are patched, it fails like IBPSA | ✓ ✓ ✓ ✓ ✓ · ◐ ✓ ✓ | plant (already used by trano) |
+| [IDEAS](https://github.com/open-ideas/IDEAS) / LIDEAS | BSD-3 style | v4.0.0, 2025-09 | detailed envelope; LIDEAS linearises to state-space models for MPC (needs Dymola) | ❌ tested (section 3b): BOM, `outer` with modifications, an `input parameter` (Modelica spec violations) | ✓ ✓ ✓ ✓ ◐ · ✓ ✓ · | plant (already used by trano) |
+| [FastBuildings](https://github.com/open-ideas/FastBuildings) | Modelica License 2 | 2022-12 | about 40 grey-box single-zone RC variants | ❌ tested (section 3b): imports `Commons` from a pre-MSL-4 IDEAS that no longer exists | ✓ · ◐ · · · · · · | **borrow** model structures for identification |
 | [TEASER](https://github.com/RWTH-EBC/TEASER) | MIT | v1.3.1, 2025-12 | Python archetypes → VDI 6007 R/C parameters | n/a (Python) | ✓ (parameters) | **borrow** the parameter calculation, cross-check `trano.mpc.estimation` |
 | [OCHRE](https://github.com/NREL/OCHRE) (NREL) | BSD-3 | 0.9.2, 2025-12 | Python residential RC envelope, HVAC, water heater, EV, PV, battery | n/a (Python, no optimizer) | ✓ ✓ ◐ ✓ ✓ ✓ ✓ ◐ · | **borrow** equipment physics and defaults |
 | [HiSim](https://github.com/FZJ-IEK3-VSA/HiSim) (FZJ) | MIT | 1.2.4, 2026-10 | 5R1C, heat pumps, battery, EV, PV, storage | n/a (Python) | ✓ ✓ ◐ ✓ ✓ ✓ ✓ · · | **borrow** heat pump and battery maps |
 | [mesido](https://github.com/Multi-Energy-Systems-Optimization/mesido) | LGPL-3 | 0.1.22, 2026-10 | district heating MILP: pipes, buffers, ATES, heat pumps | rtc-tools (pycml in Python; legacy Modelica targets MSL 3) | · · · ✓ ✓ · · · ✓ | **borrow** the district formulation (later phase) |
-| [MoSDH](https://github.com/MoSDH/MoSDH) | BSD-3 | 2024-03 | solar district heating, storage, networks on `FluidHeatFlow` | ❌ for `casadi-ode` (connectors, events) | · · ✓ ✓ ✓ · · · ✓ | district reference model |
+| [MoSDH](https://github.com/MoSDH/MoSDH) | BSD-3 | 2024-03 | solar district heating, storage, networks on `FluidHeatFlow` | ❌ tested (section 3b): BOM, a missing `package.mo`, array-indexed `connect()`; `FluidHeatFlow` itself does not export (events) | · · ✓ ✓ ✓ · · · ✓ | district reference model |
 | [pycity_scheduling](https://gitlab.git.nrw/rwth-acs/public/simulation/pycity_scheduling) | MIT | 1.4.4, 2026-07 | Pyomo district scheduling: building, heat pump, CHP, battery, EV, PV | n/a (Pyomo) | ◐ · · ✓ ✓ ✓ ✓ · ◐ | district optimization formulation |
 | [GMT (URBANopt)](https://github.com/urbanopt/geojson-modelica-translator), [uesgraphs](https://github.com/RWTH-EBC/uesgraphs) | BSD / MIT | 2026-07 | generators: GeoJSON or graph → Buildings / AixLib district models | ❌ (detailed targets) | district generators | closest analogues of trano's design |
 | [MPCPy](https://github.com/lbl-srg/MPCPy), BRCM (ETH, MATLAB), [RC_BuildingSimulator](https://github.com/architecture-building-systems/RC_BuildingSimulator) | BSD / ? / MIT | 2014–2023 | RC models for MPC | dead (Python 2 / JModelica, MATLAB, unmaintained) | ✓ only | methodology references |
 
 BOPTEST, DESTEST, Energym, Sinergym and CityLearn are **benchmarks**, not model sources. Use BOPTEST later to
 validate trano's MPC against a common reference.
+
+## 3b. Which existing libraries the route accepts (tested)
+
+**Setup.**
+
+- Each library's own example or validation models, compiled with rumoca 0.10.2 and main (0.10.3-dev).
+- MSL 4.1.0 release as the root (the layout rumoca's own test suite uses).
+- Each model compiled through a one-line wrapper (`model W extends <Model>; end W;`), then exported with
+  `to_casadi()`.
+
+| Library | Loads in rumoca | Compiles | `to_casadi()` (main) | First blocker |
+|---------|-----------------|----------|----------------------|---------------|
+| trano `Light` (own connectors) | ✅ | ✅ | ✅ identical to the flat model | – |
+| MSL `Thermal.HeatTransfer` components | ✅ | ✅ | ✅ (`HouseMSL`, identical to the flat model) | The MSL examples themselves fail: `initialization` (TwoMasses, ControlledTemperature) and tables, which are `external_functions` (Motor) |
+| MSL `Thermal.FluidHeatFlow` | ✅ | ✅ all 11 examples | ❌ | `events` (flow-direction switching) in 9 examples; `external_functions` (tables) in 2 |
+| IBPSA (master, MSL 4.1) | ✅ | ❌ | – | `ReducedOrder` RC rooms and VDI 6007 cases: "conditional component `solRad` requires parameter expression". `ISO13790`: weather-reader functions (`getLongitude`) and `Evaluate` on a non-parameter (`Dzero`) |
+| Buildings 14 | ✅ | ❌ | – | Same as IBPSA; radiator: Medium-dependent `stateSelect`; `HeatTransfer` conductor: array comprehension |
+| AixLib 3.0.1 | ❌ files start with a BOM; orphan `RadiatorTypes/` folder; missing `package.mo` | ❌ (on a patched copy) | – | Weather-reader functions; `Evaluate` on `Dzero` (same as IBPSA) |
+| IDEAS 4.0 | ❌ BOM in 18 files; `outer` components with modifications; one syntax error | ❌ (on a patched copy) | – | `input` combined with `parameter` (Modelica spec violation) |
+| FastBuildings | ✅ (but needs IDEAS) | ❌ | – | `import Commons`: a package of the pre-MSL-4 IDEAS that no longer exists |
+| MoSDH | ❌ BOM; missing `package.mo` | ❌ (on a patched copy) | – | Array-indexed `connect()` ("structural parameter `connection subscript`") |
+| pymoca 0.12 (all MSL-based libraries) | – | ❌ | – | MSL `RealInput` short-class connector (section 1b) |
+
+**Notes:**
+
+- The layout and syntax failures (BOM, folder layout, `outer` modifications, `input parameter`) are strictness in
+  rumoca. OpenModelica tolerates them, and trano already simulates these libraries with it.
+- The compile failures are rumoca gaps (conditional components, functions, array comprehensions, connect ranges)
+  that may close over time.
+- Even then, the CasADi export would still reject the fluid media, events and tables those libraries are built on.
+- **Loading tips** for anyone repeating this:
+  - compile through a wrapper model, not `loads("")`;
+  - give the MSL 4.1 release folder (`Modelica 4.1.0/`, `ModelicaServices 4.1.0/`) as a single root, together with
+    the library package. With a plain MSL git checkout, `Modelica.Constants` fails to resolve.
 
 ## 4. What rumoca accepts (feature probe)
 
@@ -238,8 +275,8 @@ validate trano's MPC against a common reference.
 | linear algebraic loop (massless node joining three resistors) | ✅ | ❌ `residual_equations` | ❌ `residual_equations` |
 | `if` expression, `when` | ✅ | ❌ `events` | ❌ `events` |
 | user `function` | ✅ | ❌ `PureCall` | not re-tested |
-| `Modelica.Constants`, MSL in general | ❌ unresolved `ModelicaServices.Machine.*` | – | ✅ resolves (MSL `HeatTransfer` house compiles) |
-| IBPSA (`ReducedOrder`, `ISO13790`) | ❌ resolve failed | – | ❌ resolve failed |
+| MSL 4.1 (release layout as root) | ✅ all `HeatTransfer` and `FluidHeatFlow` examples | ❌ (algebraic variables) | `HeatTransfer` components ✅; examples ❌ `initialization`, tables ❌ `external_functions`, `FluidHeatFlow` ❌ `events` |
+| IBPSA (`ReducedOrder`, `ISO13790`) | ❌ instantiation (conditional component) | – | ❌ same |
 
 **Implications:**
 
