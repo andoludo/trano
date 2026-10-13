@@ -71,5 +71,13 @@
         "name": "mpc",
         "rc_model_type": "R3C2",
         "templates": {"construction": "", "glazing": "", "main": "", "material": ""}
+    },
+    "FastModel": {
+        "medium": {"air": "Modelica.Media.Air.SimpleAir", "water": "Modelica.Media.Water.ConstantPropertyLiquidWater"},
+        "name": "FastModel",
+        "rc_model_type": "R3C2",
+        "element_library": "mpc",
+        "envelope": "multilayer",
+        "templates": {"construction": "", "glazing": "", "main": "", "material": ""}
     }
 }

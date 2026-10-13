@@ -1,4 +1,4 @@
-"""Markdown report of the comparisons between the ``mpc`` library and Buildings."""
+"""Markdown report of the comparisons between the MPC libraries (``mpc``, ``FastModel``) and Buildings."""
 
 from validation.mpc.cases import CASES
 from validation.mpc.harness import CaseComparison
@@ -42,7 +42,7 @@ def render_report(comparisons: list[CaseComparison]) -> str:
     if energies:
         lines += [
             "",
-            "| Case | System | Energy | Buildings [kWh] | mpc [kWh] | Deviation |",
+            "| Case | System | Energy | Buildings [kWh] | FastModel [kWh] | Deviation |",
             "|---|---|---|---|---|---|",
         ]
         lines.extend(

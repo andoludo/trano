@@ -1,4 +1,4 @@
-package Components "Primitive components of Trano.MPC: connectable models that translate into an explicit CasADi ODE"
+package Components "Primitive components of FastModel: connectable models that translate into an explicit CasADi ODE"
 
   package Interfaces "Connectors"
 
@@ -517,7 +517,7 @@ package Components "Primitive components of Trano.MPC: connectable models that t
   end Sources;
 
   annotation (Documentation(info="<html>
-<p>Primitive components of the <code>Trano.MPC</code> library. trano assembles them, with <code>connect()</code>
+<p>Primitive components of the <code>FastModel</code> library. trano assembles them, with <code>connect()</code>
 statements, into the zones, emitters and hydronic networks of a building, and the resulting model translates
 into an explicit CasADi ODE (rumoca &ge; 0.10.3) for simulation, estimation and model predictive control with IPOPT.</p>
 <p>Rules kept by every component: own connectors (no short-class connectors), every node joined by

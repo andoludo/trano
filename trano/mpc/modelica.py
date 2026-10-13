@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel, Field
 
-from trano.mpc.components import ConnectedModel, library_source
 from trano.mpc.interface import Carrier, InputRole
 from trano.mpc.parameters import ZONE_PARAMETERS, ModelicaParameter, ModelicaState, RCModelType
 from trano.mpc.systems import (
@@ -136,7 +135,6 @@ class RunnableZoneView(BaseModel):
     prefix: str
     floor_area: float
     occupancy: OccupancyView | None = None
-    indoor_temperature: str = Field(description="Variable of building_mpc holding the indoor air temperature")
 
 
 class RunnableControlView(BaseModel):
@@ -145,7 +143,6 @@ class RunnableControlView(BaseModel):
     name: str
     description: str
     column: int | None = None
-    unit: str = "W"
 
 
 class RunnableTableView(BaseModel):
@@ -173,7 +170,6 @@ class RunnableView(BaseModel):
     weather: str
     weather_name: str
     weather_file: str | None = None
-    multilayer: bool = Field(False, description="Weather inputs of the multilayer zones (sky, wind, Perez irradiance)")
     orientations: list[OrientationView]
     zones: list[RunnableZoneView]
     external_data: ExternalDataView | None = None
@@ -463,45 +459,19 @@ def render_mpc_library() -> str:
     ]
     irradiances = [Irradiance(name=LIBRARY_IRRADIANCE, description="Total solar irradiance on the facade")]
     template = ENVIRONMENT.from_string(
-        "{% import 'mpc.jinja2' as mpc %}"
-        "{{ mpc.zones_library(library_zones, ground_temperature, irradiances, components) }}"
+        "{% import 'mpc.jinja2' as mpc %}{{ mpc.zones_library(library_zones, ground_temperature, irradiances) }}"
     )
     return template.render(
-        library_zones=library_zones,
-        ground_temperature=LIBRARY_GROUND_TEMPERATURE,
-        irradiances=irradiances,
-        components=library_source(),
+        library_zones=library_zones, ground_temperature=LIBRARY_GROUND_TEMPERATURE, irradiances=irradiances
     )
 
 
-def _render(
-    building: "RCBuilding",
-    package_name: str,
-    runnable: RunnableView | None = None,
-    connected: "ConnectedModel | None" = None,
-) -> str:
+def _render(building: "RCBuilding", package_name: str, runnable: RunnableView | None = None) -> str:
     from trano.elements.jinja import ENVIRONMENT
 
     return ENVIRONMENT.get_template("mpc_base.jinja2").render(
-        package_name=package_name,
-        building=_building_view(building),
-        runnable=runnable,
-        connected_model=connected.render() if connected else None,
+        package_name=package_name, building=_building_view(building), runnable=runnable
     )
-
-
-def _is_multilayer(network: "Network") -> bool:
-    return network.library.envelope == "multilayer"
-
-
-def _indoor_temperature(network: "Network", zone: "RCZone") -> str:
-    if _is_multilayer(network):
-        return f"{zone.name}_air.T"
-    if network.library.connected:
-        from trano.mpc.components.rc import indoor_temperature
-
-        return indoor_temperature(zone)
-    return f"{zone.prefix}Ti"
 
 
 def render_building(building: "RCBuilding", package_name: str) -> str:
@@ -642,13 +612,7 @@ def _runnable_view(network: "Network", building: "RCBuilding", data_bus: "DataBu
             _occupancy_view(space.occupancy, network, zone.floor_area, external_data) if space.occupancy else None
         )
         zones.append(
-            RunnableZoneView(
-                name=zone.name,
-                prefix=zone.prefix,
-                floor_area=zone.floor_area,
-                occupancy=occupancy,
-                indoor_temperature=_indoor_temperature(network, zone),
-            )
+            RunnableZoneView(name=zone.name, prefix=zone.prefix, floor_area=zone.floor_area, occupancy=occupancy)
         )
     view = _building_view(building)
     controls, tables, photovoltaics, pv_orientations = _runnable_systems(building, view, external_data)
@@ -700,202 +664,19 @@ def _prepare(network: "Network", data_bus: "DataBus | None") -> tuple["RCBuildin
 
     model_type = network.library.rc_model_type or RCModelType.r3c2
     building = rc_building_from_network(network, model_type=model_type)
-    runnable = _runnable_view(network, building, data_bus)
-    if _is_multilayer(network):
-        runnable = _multilayer_runnable(network, runnable)
-    return building, runnable
-
-
-def _multilayer_runnable(network: "Network", runnable: RunnableView) -> RunnableView:
-    """The runnable view of multilayer zones: their orientations, in radians, named as their inputs, and the
-    controls of the model (zone heat inputs, hydronic controls), replayed from the external data when it has them."""
-    import math
-
-    from trano.mpc.components.envelope import multilayer_model, zone_orientations
-
-    orientations = [
-        OrientationView(
-            name=orientation.name,
-            irradiance=orientation.direct,
-            azimuth=orientation.azimuth,
-            tilt=orientation.tilt,
-            description=(
-                f"azimuth {math.degrees(orientation.azimuth):g} deg, tilt {math.degrees(orientation.tilt):g} deg"
-            ),
-        )
-        for orientation in zone_orientations(network)
-    ]
-    controls = [
-        RunnableControlView(
-            name=top.name,
-            description=top.description,
-            unit=top.unit,
-            column=_column(runnable.external_data, top.name),
-        )
-        for top in multilayer_model(network).inputs
-        if top.control
-    ]
-    return runnable.model_copy(
-        update={
-            "multilayer": True,
-            "orientations": orientations,
-            "controls": controls,
-            "tables": [],
-            "photovoltaics": [],
-        }
-    )
-
-
-def _connected_model(network: "Network", building: "RCBuilding") -> "ConnectedModel | None":
-    if _is_multilayer(network):
-        from trano.mpc.components.envelope import multilayer_model
-
-        return multilayer_model(network)
-    if not network.library.connected:
-        return None
-    from trano.mpc.components.rc import connected_rc_model
-
-    return connected_rc_model(building)
+    return building, _runnable_view(network, building, data_bus)
 
 
 def render_network(network: "Network", data_bus: "DataBus | None" = None) -> str:
-    """Model of a network generated with the ``mpc`` library: RC model (flat or connected) and runnable model."""
+    """Model of a network generated with the ``mpc`` library: flat RC model and runnable model."""
     building, runnable = _prepare(network, data_bus)
-    return _render(building, network.name, runnable, _connected_model(network, building))
+    return _render(building, network.name, runnable)
 
 
 def network_interface(network: "Network", data_bus: "DataBus | None" = None) -> "MPCModelInterface":
     """Interface of the model generated for a network with the ``mpc`` library."""
     building, runnable = _prepare(network, data_bus)
-    interface = build_interface(building, network.name, runnable)
-    connected = _connected_model(network, building)
-    if connected is None:
-        return interface
-    if _is_multilayer(network):
-        return multilayer_interface(interface, connected)
-    return connected_interface(interface, connected)
-
-
-def _state_and_parameter_specs(model: "ConnectedModel") -> tuple[list[Any], list[Any]]:
-    """States and parameters of a connected model, described from the component catalogue."""
-    from trano.mpc.interface import ParameterSpec, StateSpec
-
-    instances = {instance.name: instance for instance in model.instances}
-    states = []
-    for name, initial in zip(model.state_names, model.initial_state(), strict=True):
-        instance_name, variable = name.split(".", 1)
-        instance = instances[instance_name]
-        state = next(state for state in instance.component_class.states if state.name == variable.split("[")[0])
-        states.append(
-            StateSpec(
-                name=name,
-                zone=instance.zone,
-                system=instance.system,
-                node=instance_name.removeprefix(f"{instance.zone}_") if instance.zone else instance_name,
-                unit=state.unit or "K",
-                initial_value=initial,
-                description=instance.description or state.description,
-            )
-        )
-    parameters = []
-    for name, value in model.parameters:
-        instance_name, variable = name.split(".", 1)
-        instance = instances[instance_name]
-        parameter = instance.component_class.parameter(variable.split("[", 1)[0])
-        description = (
-            f"{instance.description}: {parameter.description}" if instance.description else parameter.description
-        )
-        parameters.append(
-            ParameterSpec(
-                name=name,
-                value=value,
-                unit=parameter.unit,
-                description=description,
-                zone=instance.zone,
-                system=instance.system,
-            )
-        )
-    return states, parameters
-
-
-def multilayer_interface(interface: "MPCModelInterface", model: "ConnectedModel") -> "MPCModelInterface":
-    """The interface of a multilayer model: weather and irradiance parts as inputs, zone inputs as in the RC model."""
-    from trano.mpc.interface import InputSpec, IrradianceSource, OutdoorTemperatureSource
-
-    zone_inputs = {signal.name: signal for signal in interface.inputs if signal.zone}
-    weather = {
-        "TOut": ("TDryBul", "K"),
-        "TBlaSky": ("TBlaSky", "K"),
-        "winSpe": ("winSpe", "m/s"),
-        "winDir": ("winDir", "rad"),
-    }
-    components = {"HDir": "direct", "HDif": "diffuse_perez", "cosInc": "incidence_cosine"}
-    inputs = []
-    for top in model.inputs:
-        if top.name in zone_inputs:
-            inputs.append(zone_inputs[top.name])
-        elif top.control:
-            inputs.append(
-                InputSpec(
-                    name=top.name,
-                    role=InputRole.control,
-                    unit=top.unit,
-                    description=top.description,
-                    zone=top.zone,
-                    system=top.system,
-                    minimum=top.minimum,
-                    maximum=top.maximum,
-                )
-            )
-        elif top.name in weather:
-            variable, unit = weather[top.name]
-            inputs.append(
-                InputSpec(
-                    name=top.name,
-                    role=InputRole.disturbance,
-                    unit=unit,
-                    description=top.description,
-                    source=OutdoorTemperatureSource(variable=variable, unit=unit),
-                )
-            )
-        else:
-            prefix, orientation = top.name.split("_", 1)
-            azimuth, tilt = (float(part[3:].replace("m", "-")) for part in orientation.split("_"))
-            inputs.append(
-                InputSpec(
-                    name=top.name,
-                    role=InputRole.disturbance,
-                    unit=top.unit,
-                    description=top.description,
-                    source=IrradianceSource(azimuth=azimuth, tilt=tilt, component=components[prefix]),
-                )
-            )
-    states, parameters = _state_and_parameter_specs(model)
-    names = set(model.input_names)
-    zones = []
-    for zone in interface.zones:
-        update: dict[str, Any] = {"indoor_temperature": f"{zone.name}_air.T", "model_type": "Multilayer"}
-        if zone.heating_input not in names:  # heated by a hydronic circuit: its branch flows heat it
-            branch = next((top for top in model.inputs if top.control and top.zone == zone.name), None)
-            update |= {
-                "heating_input": branch.name if branch else "",
-                "heating_system": branch.system if branch else None,
-                "heating_carrier": "heat",
-            }
-        zones.append(zone.model_copy(update=update))
-    return interface.model_copy(
-        update={"inputs": inputs, "states": states, "parameters": parameters, "zones": zones, "systems": []}
-    )
-
-
-def connected_interface(interface: "MPCModelInterface", model: "ConnectedModel") -> "MPCModelInterface":
-    """The interface of a flat model rewritten for its connected version (same inputs, other states and parameters)."""
-    if model.input_names != interface.input_names:
-        raise ValueError("The connected model must keep the inputs of the flat model, in the same order.")
-    states, parameters = _state_and_parameter_specs(model)
-    # The capacitor of the indoor air of zone z is the instance z_Ti (trano.mpc.components.rc.state_instance).
-    zones = [zone.model_copy(update={"indoor_temperature": f"{zone.name}_Ti.T"}) for zone in interface.zones]
-    return interface.model_copy(update={"states": states, "parameters": parameters, "zones": zones})
+    return build_interface(building, network.name, runnable)
 
 
 def build_interface(  # noqa: C901, PLR0912

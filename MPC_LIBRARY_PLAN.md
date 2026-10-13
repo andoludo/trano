@@ -172,7 +172,10 @@ Sizes: S ≈ 1 week, M ≈ 2–3 weeks, L ≈ 4–6 weeks of focused work.
 
 ## Progress (2026-10-13)
 
-Built on this branch, all in `trano/mpc/` (Modelica library `trano/mpc/library/Components.mo`):
+Built on this branch as a separate library, **`FastModel`** (`trano create-model <yaml> FastModel`), all in
+`trano/fast_model/` (Modelica package `FastModel`, source `trano/fast_model/library/Components.mo`). The `mpc`
+library and its flat RC models are left as they were; `FastModel` reuses its element definitions and its RC
+parameters (`--envelope rc`). Where this plan says `Trano.MPC` for the new components, read `FastModel`.
 
 | Stage | Status | Where | Result against Buildings (replay) |
 |---|---|---|---|

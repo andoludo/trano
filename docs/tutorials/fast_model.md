@@ -1,9 +1,9 @@
-# Multilayer zones and hydronic circuits for MPC (`mpc` library)
+# FastModel: models close to Buildings for MPC
 
 The [RC models](rc_model_predictive_control.md) of the `mpc` library are small and fast, but they lump a zone
-into one to three capacities and leave the heating system out. With `--envelope multilayer`, the `mpc` library
-instead assembles, from the same YAML file, a model **close to the Buildings library** that **still translates
-into a CasADi ODE** for simulation, estimation and model predictive control with IPOPT:
+into one to three capacities and leave the heating system out. The `FastModel` library instead assembles, from
+the same YAML file, a model **close to the Buildings library** that **still translates into a CasADi ODE** for
+simulation, estimation and model predictive control with IPOPT:
 
 * every zone has the physics of `Buildings.ThermalZones.Detailed.MixedAir`: layered walls, floors and roofs,
   windows with the angular optics of their glazing, interior and exterior convection, long-wave exchange with
@@ -14,9 +14,13 @@ into a CasADi ODE** for simulation, estimation and model predictive control with
 * balanced ventilation units with heat recovery (trano's `system_d`) and PV arrays.
 
 ```bash
-trano create-model house.yaml mpc --envelope multilayer   # writes house.mo and house.mpc.json
-trano simulate-model house.yaml mpc --envelope multilayer # runnable, like the other libraries
+trano create-model house.yaml FastModel    # writes house.mo and house.mpc.json
+trano simulate-model house.yaml FastModel  # runnable, like the other libraries
 ```
+
+`--envelope rc` keeps the RC zones of the `mpc` library (`--rc-model-type`), assembled from the same components:
+the same equations as the flat `mpc` model, for the cases where a smaller model is enough. The `mpc` library itself
+is unchanged.
 
 or in Python:
 
@@ -25,9 +29,9 @@ from pathlib import Path
 
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.mpc.modelica import network_interface
+from trano.fast_model.modelica import network_interface
 
-library = Library.from_configuration("mpc").model_copy(update={"envelope": "multilayer"})
+library = Library.from_configuration("FastModel")
 network = convert_network("house", Path("house.yaml"), library=library)
 modelica_model = network.model()
 interface = network_interface(network)  # states, inputs, parameters and zones of house.building_mpc
@@ -35,7 +39,7 @@ interface = network_interface(network)  # states, inputs, parameters and zones o
 
 ## How the model is built
 
-`house.building_mpc` is made of instances of the components of `Trano.MPC.Components`, a small Modelica library
+`house.building_mpc` is made of instances of the components of `FastModel.Components`, a small Modelica library
 written for optimal control and joined with `connect()` statements, as a Modelica library is used. Every
 component keeps a few rules, so that the assembled model translates into an explicit ODE
 (`xdot = f(x, u, p)`) with [rumoca](https://github.com/cognipilot/rumoca) 0.10.3 or newer:
@@ -100,8 +104,8 @@ the zone or system they act on; the zone air temperatures are the states `<zone>
 
 ## Optimal control with IPOPT
 
-`trano.mpc.optimal_control.OptimalControl` sets up and solves the optimal control problem of any model of the
-`mpc` library: Radau collocation of the ODE (stable for the stiff water nodes whatever the step), IPOPT, a warm
+`trano.fast_model.optimal_control.OptimalControl` sets up and solves the optimal control problem of any model of
+the `FastModel` library: Radau collocation of the ODE (stable for the stiff water nodes whatever the step), IPOPT, a warm
 start from a simulation of the model (CVODES), control bounds from the interface, soft comfort bounds on the zone
 air temperatures and the energy cost read from the meters of the systems. Electricity is netted over each step:
 the PV production first covers the heat pump and the fans, the rest is sold at `feed_in_price` (smoothly, so that
@@ -111,7 +115,7 @@ IPOPT sees a differentiable cost); the boiler fuel has its own `fuel_price`.
 import numpy as np
 import rumoca
 
-from trano.mpc.optimal_control import KELVIN, OptimalControl, OptimalControlSettings
+from trano.fast_model.optimal_control import KELVIN, OptimalControl, OptimalControlSettings
 
 export = rumoca.Session().loads(modelica_model, model=interface.model).to_casadi()
 ocp = OptimalControl(interface, export.rhs, OptimalControlSettings(time_step=3600))
@@ -132,7 +136,7 @@ about 4 s for that house and about 40 s for the six-zone heat pump house (111 st
 The same discretization gives **state estimation** and the **closed loop**:
 
 ```python
-from trano.mpc.optimal_control import MovingHorizonEstimation, receding_horizon
+from trano.fast_model.optimal_control import MovingHorizonEstimation, receding_horizon
 
 # the states over a past window closest to the measured zone temperatures (walls, water and buffers follow)
 estimator = MovingHorizonEstimation(interface, export.rhs)
@@ -146,8 +150,8 @@ loop = receding_horizon(ocp, estimate.current, disturbances, comfort, price, hor
 
 `python -m validation.mpc` simulates the Buildings model of a YAML file and **replays** what its systems did
 (the heat of ideal emitters, or the branch flows, valve positions and boiler or heat pump controls) through the
-runnable `mpc` model, then compares the zones and the water temperatures. See the
-[validation page](../validation/mpc_library.md) for the results.
+runnable `FastModel` model, then compares the zones and the water temperatures. See the
+[validation page](../validation/fast_model.md) for the results.
 
 ## Limits
 

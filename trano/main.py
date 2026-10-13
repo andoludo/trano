@@ -2,7 +2,7 @@ import tempfile
 import webbrowser
 from enum import Enum
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 from rich import print
 import typer
 from trano.data_models.conversion import convert_network
@@ -16,6 +16,9 @@ from trano.topology import Network
 from trano.utils.utils import is_success
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+if TYPE_CHECKING:
+    from trano.mpc.interface import MPCModelInterface
+
 app = typer.Typer()
 CHECKMARK = "[green]✔[/green]"
 CROSS_MARK = "[red]✘[/red]"
@@ -25,26 +28,24 @@ class LibraryChoice(str, Enum):
     ideas = "IDEAS"
     buildings = "Buildings"
     mpc = "mpc"
+    fast_model = "FastModel"
+
+
+class Envelope(str, Enum):
+    rc = "rc"
+    multilayer = "multilayer"
 
 
 def _create_network(
-    model: str,
-    library: str,
-    rc_model_type: RCModelType | None = None,
-    connected: bool = False,
-    envelope: str = "rc",
+    model: str, library: str, rc_model_type: RCModelType | None = None, envelope: Envelope | None = None
 ) -> Network:
     library_ = Library.from_configuration(library)
     if library_.is_rc and rc_model_type is not None:
         library_ = library_.model_copy(update={"rc_model_type": rc_model_type})
-    if connected:
-        if not library_.is_rc:
-            raise typer.BadParameter("--connected only applies to the 'mpc' library.")
-        library_ = library_.model_copy(update={"connected": True})
-    if envelope != "rc":
-        if not library_.is_rc:
-            raise typer.BadParameter("--envelope only applies to the 'mpc' library.")
-        library_ = library_.model_copy(update={"envelope": envelope, "connected": True})
+    if envelope is not None:
+        if not library_.is_fast_model:
+            raise typer.BadParameter("--envelope only applies to the 'FastModel' library.")
+        library_ = library_.model_copy(update={"envelope": envelope.value})
     model_ = Path(model).resolve()
     return convert_network(str(model_.stem), model_, library=library_)
 
@@ -65,6 +66,16 @@ def _generate_report(network: Network, model_path: Path, result_path: Path) -> P
     return report_path
 
 
+def _network_interface(network: Network) -> "MPCModelInterface":
+    if network.library.is_fast_model:
+        from trano.fast_model.modelica import network_interface as fast_model_interface
+
+        return fast_model_interface(network)
+    from trano.mpc.modelica import network_interface
+
+    return network_interface(network)
+
+
 @app.command()
 def create_model(
     model: Annotated[
@@ -73,26 +84,22 @@ def create_model(
     ],
     library: Annotated[
         LibraryChoice,
-        typer.Argument(help="Library to be used: a simulation library or 'mpc' for a CasADi-compatible RC model."),
+        typer.Argument(
+            help="Library to be used: a simulation library, 'mpc' for a CasADi-compatible RC model or 'FastModel' "
+            "for a CasADi-compatible model close to Buildings, with its hydronic circuits."
+        ),
     ] = LibraryChoice.buildings,
     rc_model_type: Annotated[
         RCModelType | None,
-        typer.Option(help="RC zone model of the 'mpc' library (default: R3C2)."),
+        typer.Option(help="RC zone model of the 'mpc' library, and of the 'FastModel' rc envelope (default: R3C2)."),
     ] = None,
-    connected: Annotated[
-        bool,
-        typer.Option(
-            help="'mpc' library: assemble building_mpc from Trano.MPC.Components with connect() statements "
-            "(CasADi export with rumoca >= 0.10.3)."
-        ),
-    ] = False,
     envelope: Annotated[
-        str,
+        Envelope | None,
         typer.Option(
-            help="'mpc' library: 'rc' zones, or 'multilayer' zones with the physics of the Buildings MixedAir zone "
-            "(connected, CasADi export with rumoca >= 0.10.3)."
+            help="'FastModel' library: 'multilayer' zones with the physics of the Buildings MixedAir zone (default) "
+            "or 'rc' zones."
         ),
-    ] = "rc",
+    ] = None,
 ) -> None:
     with Progress(
         SpinnerColumn(),
@@ -104,7 +111,7 @@ def create_model(
             description=f"Generating model {modelica_model_path.name} with library {library}",
             total=None,
         )
-        network = _create_network(model, library, rc_model_type, connected, envelope)
+        network = _create_network(model, library, rc_model_type, envelope)
         modelica_model = network.model()
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)
@@ -112,9 +119,7 @@ def create_model(
         progress.remove_task(task)
         print(f"{CHECKMARK} Model generated at {modelica_model_path}")
         if network.library.is_rc:
-            from trano.mpc.modelica import network_interface
-
-            interface_path = network_interface(network).write(modelica_model_path.with_suffix(".mpc.json"))
+            interface_path = _network_interface(network).write(modelica_model_path.with_suffix(".mpc.json"))
             print(f"{CHECKMARK} MPC interface of {network.name}.building_mpc generated at {interface_path}")
 
 
@@ -132,9 +137,9 @@ def simulate_model(  # noqa: PLR0913 - one argument per CLI option
     end: Annotated[int | None, typer.Argument(help="End simulation time.")] = 2 * 3600 * 24 * 7,
     tolerance: Annotated[float | None, typer.Argument(help="Simulation tolerance.")] = 1e-4,
     envelope: Annotated[
-        str,
-        typer.Option(help="'mpc' library: 'rc' zones, or 'multilayer' zones and hydronic circuits."),
-    ] = "rc",
+        Envelope | None,
+        typer.Option(help="'FastModel' library: 'multilayer' zones (default) or 'rc' zones."),
+    ] = None,
 ) -> None:
     options = SimulationLibraryOptions(
         start_time=start,

@@ -1,6 +1,6 @@
-"""Connectable components of the ``mpc`` library (``Trano.MPC.Components``) and the models assembled from them."""
+"""Connectable components of the ``FastModel`` library (``FastModel.Components``) and the models assembled from them."""
 
-from trano.mpc.components.catalogue import (
+from trano.fast_model.components.catalogue import (
     ComponentClass,
     ComponentInput,
     ComponentParameter,
@@ -8,9 +8,10 @@ from trano.mpc.components.catalogue import (
     catalogue,
     component_class,
     library_source,
+    package_source,
     parse_library,
 )
-from trano.mpc.components.model import ConnectedModel, Instance, TopInput
+from trano.fast_model.components.model import ConnectedModel, Instance, TopInput
 
 __all__ = [
     "ComponentClass",
@@ -23,5 +24,6 @@ __all__ = [
     "catalogue",
     "component_class",
     "library_source",
+    "package_source",
     "parse_library",
 ]

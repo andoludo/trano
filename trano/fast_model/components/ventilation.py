@@ -1,4 +1,4 @@
-"""Mechanical ventilation of the ``mpc`` library, after trano's Buildings air handling unit ``system_d``.
+"""Mechanical ventilation of the ``FastModel`` library, after trano's Buildings air handling unit ``system_d``.
 
 The Buildings unit (``PartialSystemD``) blows the supply and extract air with two constant-pressure fans through a
 constant-effectiveness heat exchanger; the ducts of the YAML lead the supply air to each zone and the extract air
@@ -10,7 +10,7 @@ mixed by flow; the fans heat the supply air and draw electricity.
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from trano.mpc.components.model import Instance, TopInput
+from trano.fast_model.components.model import Instance, TopInput
 from trano.mpc.estimation import sanitize_name
 
 if TYPE_CHECKING:

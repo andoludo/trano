@@ -1,4 +1,4 @@
-"""Cases comparing the ``mpc`` library with the Buildings model of the same YAML file.
+"""Cases comparing the MPC libraries (``mpc``, ``FastModel``) with the Buildings model of the same YAML file.
 
 A case is a YAML building and a simulation period. The Buildings model is the reference; the ``mpc``
 model replays the heat that the Buildings systems delivered to each zone and must reproduce the zone

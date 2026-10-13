@@ -44,16 +44,11 @@ class OutdoorTemperatureSource(_Frozen):
 
 
 class IrradianceSource(_Frozen):
-    """Solar irradiance on a tilted surface: total (direct + isotropic diffuse) by default.
-
-    The multilayer zones take its parts: ``direct`` (beam irradiance on the surface), ``diffuse_perez``
-    (Perez diffuse irradiance on the surface) and ``incidence_cosine`` (cosine of the incidence angle).
-    """
+    """Total (direct + diffuse) solar irradiance on a tilted surface."""
 
     kind: Literal["irradiance"] = "irradiance"
     azimuth: float = Field(description="Surface azimuth [deg], 0 for south, 90 for west")
     tilt: float = Field(description="Surface tilt [deg], 0 for a roof, 90 for a wall")
-    component: Literal["total", "direct", "diffuse_perez", "incidence_cosine"] = "total"
 
 
 class OccupancySource(_Frozen):
@@ -123,8 +118,6 @@ class InputSpec(_Frozen):
     data_column: str | None = Field(None, description="External data column replaying this input, if any")
     carrier: Carrier = Field("heat", description="Energy carrier drawn by a control input")
     system: str | None = Field(None, description="System the input belongs to, if any")
-    minimum: float | None = Field(None, description="Lower bound of a control, if it has one")
-    maximum: float | None = Field(None, description="Upper bound of a control, if it has one")
 
 
 class ParameterSpec(_Frozen):

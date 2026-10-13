@@ -1,16 +1,16 @@
-"""A building model assembled from ``Trano.MPC.Components``: instances, connections and top-level inputs.
+"""A building model assembled from ``FastModel.Components``: instances, connections and top-level inputs.
 
-:class:`ConnectedModel` renders the ``building_mpc`` model of the connected ``mpc`` library and
+:class:`ConnectedModel` renders the ``building_mpc`` model of the ``FastModel`` library and
 describes its CasADi vectors without any compiler: the states and parameters of the translated
 model are those of the instances, in declaration order, and within an instance those of its class
-(:mod:`trano.mpc.components.catalogue`). The inputs are the top-level inputs, in declaration order.
+(:mod:`trano.fast_model.components.catalogue`). The inputs are the top-level inputs, in declaration order.
 """
 
 from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from trano.mpc.components.catalogue import ComponentClass, ComponentState, component_class
+from trano.fast_model.components.catalogue import ComponentClass, ComponentState, component_class
 from trano.mpc.parameters import validate_identifier
 
 
@@ -37,7 +37,7 @@ class Instance(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     name: str
-    component: str = Field(description="Class path relative to Trano.MPC.Components, e.g. Thermal.HeatCapacitor")
+    component: str = Field(description="Class path relative to FastModel.Components, e.g. Thermal.HeatCapacitor")
     parameters: dict[str, int | float | list[float]] = Field(
         default_factory=dict, description="Literal values; a list for an array parameter"
     )
@@ -133,7 +133,7 @@ class ConnectedModel(BaseModel):
     inputs: list[TopInput] = Field(default_factory=list)
     instances: list[Instance] = Field(default_factory=list)
     connections: list[tuple[str, str]] = Field(default_factory=list)
-    input_connector: str = Field("Trano.MPC.RealInput", description="Declaration type of the top-level inputs")
+    input_connector: str = Field("FastModel.RealInput", description="Declaration type of the top-level inputs")
 
     _name_validator = field_validator("name")(validate_identifier)
 

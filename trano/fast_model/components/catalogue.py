@@ -1,6 +1,6 @@
-"""Catalogue of the primitive components of ``Trano.MPC.Components``, read from the Modelica source.
+"""Catalogue of the primitive components of ``FastModel.Components``, read from the Modelica source.
 
-The Modelica file ``trano/mpc/library/Components.mo`` is the single source of the physics. trano
+The Modelica file ``trano/fast_model/library/Components.mo`` is the single source of the physics. trano
 only needs to know, for each component class, its parameters (in declaration order, with their
 defaults), its inputs and its states: that is enough to render instances and to describe the
 CasADi vectors of an assembled model, whose order is the declaration order of the instances and,
@@ -17,7 +17,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 LIBRARY_FILE = Path(__file__).parent.parent / "library" / "Components.mo"
-ROOT_PACKAGE = "Trano.MPC.Components"
+ROOT_PACKAGE = "FastModel.Components"
 
 _BLOCK = re.compile(r"^\s*(?:partial\s+)?(package|model|connector)\s+(\w+)\b")
 _END = re.compile(r"^\s*end\s+(\w+)\s*;")
@@ -67,7 +67,7 @@ class ComponentClass(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    path: str  # relative to ``Trano.MPC.Components``, e.g. ``Thermal.HeatCapacitor``
+    path: str  # relative to ``FastModel.Components``, e.g. ``Thermal.HeatCapacitor``
     parameters: tuple[ComponentParameter, ...] = ()
     inputs: tuple[ComponentInput, ...] = ()
     states: tuple[ComponentState, ...] = ()
@@ -143,7 +143,7 @@ def parse_library(source: str) -> dict[str, ComponentClass]:
 
 
 def library_source() -> str:
-    """The Modelica source of ``Trano.MPC.Components``."""
+    """The Modelica source of ``FastModel.Components``."""
     return LIBRARY_FILE.read_text()
 
 
@@ -156,4 +156,15 @@ def component_class(path: str) -> ComponentClass:
     try:
         return catalogue()[path]
     except KeyError as error:
-        raise KeyError(f"Unknown Trano.MPC component {path}. Available: {sorted(catalogue())}") from error
+        raise KeyError(f"Unknown FastModel component {path}. Available: {sorted(catalogue())}") from error
+
+
+def package_source() -> str:
+    """The ``FastModel`` Modelica package: the input connector of the generated models and the components."""
+    return (
+        'package FastModel "Connectable components for model predictive control: translate into an explicit '
+        'CasADi ODE"\n'
+        '  connector RealInput = input Real "Real input signal (library independent, for CasADi export)";\n\n'
+        f"{library_source()}\n"
+        "end FastModel;"
+    )

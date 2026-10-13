@@ -1,4 +1,4 @@
-"""Hydronic circuits of the ``mpc`` library (``--envelope multilayer`` with radiators, valves and production).
+"""Hydronic circuits of the ``FastModel`` library (``--envelope multilayer`` with radiators, valves and production).
 
 The agreement with Buildings is checked by ``python -m validation.mpc`` (replay of the branch flows, valve
 positions and supply temperatures); these tests check the radiator sizing, the mapping of the YAML graph onto
@@ -14,21 +14,21 @@ import rumoca
 
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.mpc.components.envelope import multilayer_model
-from trano.mpc.components.hydronics import (
+from trano.fast_model.components.envelope import multilayer_model
+from trano.fast_model.components.hydronics import (
     HydronicSettings,
     hydronic_circuit,
     hydronic_graph,
     radiator_conductance,
 )
-from trano.mpc.modelica import network_interface
+from trano.fast_model.modelica import network_interface
 from trano.topology import Network
 
 MODELS = Path(__file__).parent / "models"
 
 
 def _exports_connected_models() -> bool:
-    from tests.test_mpc_connected import _exports_connected_models as probe
+    from tests.test_fast_model_connected import _exports_connected_models as probe
 
     return probe()
 
@@ -40,7 +40,7 @@ needs_connected_export = pytest.mark.skipif(
 
 def _network(name: str) -> Network:
     path = MODELS / f"{name}.yaml"
-    library = Library.from_configuration("mpc").model_copy(update={"connected": True, "envelope": "multilayer"})
+    library = Library.from_configuration("FastModel")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return convert_network(path.stem, path, library=library)
@@ -171,8 +171,8 @@ def test_air_water_heat_pumps_become_heat_pump_components() -> None:
 @pytest.mark.parametrize("condenser", [308.15, 318.15, 323.15, 328.15])
 def test_the_heat_pump_follows_the_buildings_tables(source: float, condenser: float) -> None:
     """Heating capacity and power at full speed against the interpolated Vitocal tables, scaled as Buildings."""
-    from trano.mpc.components import ConnectedModel, Instance, TopInput, library_source
-    from trano.mpc.components.heat_pump import VITOCAL_HEATING, VITOCAL_POWER, bilinear, heat_pump_instance
+    from trano.fast_model.components import ConnectedModel, Instance, TopInput, package_source
+    from trano.fast_model.components.heat_pump import VITOCAL_HEATING, VITOCAL_POWER, bilinear, heat_pump_instance
 
     heat_pump = next(
         node
@@ -190,7 +190,7 @@ def test_the_heat_pump_follows_the_buildings_tables(source: float, condenser: fl
         ],
         connections=[("hp.outlet", "val.inlet"), ("val.outlet", "ref.inlet"), ("ref.outlet", "hp.inlet")],
     )
-    library = f"package Trano\npackage MPC\nconnector RealInput = input Real;\n{library_source()}\nend MPC;\nend Trano;"
+    library = package_source()
     export = rumoca.Session().loads(f"package T\n{library}\n{model.render()}\nend T;\n", model="T.M").to_casadi()
     p = dict(model.parameters)
     buffer = condenser - p["hp.dTCon"]  # condenser outlet at ``condenser`` at full speed

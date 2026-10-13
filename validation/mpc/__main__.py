@@ -1,4 +1,4 @@
-"""Compare the ``mpc`` library with Buildings: ``python -m validation.mpc compare 600FF three_zones_ideal``.
+"""Compare the MPC libraries (flat ``mpc``, ``FastModel``) with Buildings: ``python -m validation.mpc compare 600FF``.
 
 Results are written to ``.cache/mpc_validation/results.json`` and rendered with ``report``.
 """

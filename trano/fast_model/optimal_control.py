@@ -29,7 +29,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
-    from trano.mpc.interface import InputSpec, MPCModelInterface
+    from trano.fast_model.interface import FastModelInterface, InputSpec
 
 KELVIN = 273.15
 IpoptOption = float | int | str
@@ -146,7 +146,7 @@ def _collocation(degree: int) -> tuple[np.ndarray, np.ndarray]:
 class _Collocated:
     """The model of an interface, collocated on Radau points, with its scaled controls and a CVODES simulator."""
 
-    def __init__(self, interface: MPCModelInterface, rhs: ca.Function, settings: CollocationSettings) -> None:
+    def __init__(self, interface: FastModelInterface, rhs: ca.Function, settings: CollocationSettings) -> None:
         self.interface = interface
         self.settings = settings
         self.controls = interface.controls
@@ -295,7 +295,7 @@ class OptimalControl(_Collocated):
     settings: OptimalControlSettings
 
     def __init__(
-        self, interface: MPCModelInterface, rhs: ca.Function, settings: OptimalControlSettings | None = None
+        self, interface: FastModelInterface, rhs: ca.Function, settings: OptimalControlSettings | None = None
     ) -> None:
         super().__init__(interface, rhs, settings or OptimalControlSettings())
 
@@ -396,7 +396,7 @@ class MovingHorizonEstimation(_Collocated):
     settings: EstimationSettings
 
     def __init__(
-        self, interface: MPCModelInterface, rhs: ca.Function, settings: EstimationSettings | None = None
+        self, interface: FastModelInterface, rhs: ca.Function, settings: EstimationSettings | None = None
     ) -> None:
         super().__init__(interface, rhs, settings or EstimationSettings())
 

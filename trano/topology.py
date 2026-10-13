@@ -318,6 +318,11 @@ class Network:  # : PLR0904, #TODO: fix this
             )
 
     def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
+        if self.library.is_fast_model:
+            # building_mpc assembled from the FastModel components, for MPC.
+            from trano.fast_model.modelica import render_network as render_fast_model
+
+            return render_fast_model(self, data_bus)
         if self.library.is_rc:
             # Flat RC model for MPC: the systems are abstracted as the heating power of each zone.
             from trano.mpc.modelica import render_network

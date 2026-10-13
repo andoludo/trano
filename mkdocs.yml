@@ -69,7 +69,7 @@ nav:
     - Model with photovoltaics: tutorials/zone_with_photovoltaics.md
     - A house before and after renovation: tutorials/residential_renovation.md
     - RC models for MPC: tutorials/rc_model_predictive_control.md
-    - Multilayer and hydronic models for MPC: tutorials/mpc_multilayer_hydronics.md
+    - FastModel, models close to Buildings for MPC: tutorials/fast_model.md
   - How-to Guides: how-to guides/index.md
   - Explanation: explanation/index.md
   - Reference:
@@ -79,7 +79,7 @@ nav:
       - ASHRAE 140 (BESTEST): validation/bestest.md
       - A walk through the BESTEST cases: validation/bestest_cases.md
       - Residential reference cases: validation/residential_reference_cases.md
-      - The mpc library against Buildings: validation/mpc_library.md
+      - FastModel against Buildings: validation/fast_model.md
 
 markdown_extensions:
     - admonition

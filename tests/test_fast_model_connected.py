@@ -1,8 +1,9 @@
-"""The connected ``mpc`` library: building_mpc assembled from Trano.MPC.Components with connect() statements.
+"""The ``FastModel`` library with RC zones: building_mpc assembled from FastModel.Components with connect().
 
-The connected model must be the flat model, written differently: same inputs, and the same right-hand
-side once the states are matched by name (``<zone>_Ti`` in the flat model is ``<zone>_Ti.T``). The
-interface is written by trano without any compiler, so it is checked against the CasADi export.
+With ``envelope="rc"`` the connected model must be the flat model of the ``mpc`` library, written
+differently: same inputs, and the same right-hand side once the states are matched by name (``<zone>_Ti``
+in the flat model is ``<zone>_Ti.T``). The interface is written by trano without any compiler, so it is
+checked against the CasADi export.
 
 The CasADi export of connected models needs rumoca >= 0.10.3 (it eliminates the algebraic variables of
 the connections); with an older rumoca these tests are skipped.
@@ -21,11 +22,21 @@ from typer.testing import CliRunner
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
 from trano.main import app
-from trano.mpc import MPCModelInterface, RCModelType
-from trano.mpc.components import ConnectedModel, Instance, TopInput, catalogue, library_source, parse_library
-from trano.mpc.components.rc import connected_rc_model
+from trano.fast_model.components import (
+    ConnectedModel,
+    Instance,
+    TopInput,
+    catalogue,
+    library_source,
+    package_source,
+    parse_library,
+)
+from trano.fast_model.components.rc import connected_rc_model
+from trano.fast_model.interface import FastModelInterface
+from trano.fast_model.modelica import network_interface
+from trano.mpc import RCModelType
 from trano.mpc.estimation import rc_building_from_network
-from trano.mpc.modelica import network_interface
+from trano.mpc.modelica import network_interface as flat_interface
 from trano.topology import Network
 
 MODELS = Path(__file__).parent / "models"
@@ -53,7 +64,12 @@ needs_connected_export = pytest.mark.skipif(
 
 
 def _library(model_type: RCModelType, connected: bool = True) -> Library:
-    return Library.from_configuration("mpc").model_copy(update={"rc_model_type": model_type, "connected": connected})
+    """The FastModel library with RC zones, or the flat ``mpc`` library it must reproduce."""
+    if connected:
+        return Library.from_configuration("FastModel").model_copy(
+            update={"rc_model_type": model_type, "envelope": "rc"}
+        )
+    return Library.from_configuration("mpc").model_copy(update={"rc_model_type": model_type})
 
 
 def _network(path: Path, model_type: RCModelType, connected: bool = True) -> Network:
@@ -81,8 +97,8 @@ ENVELOPE_ONLY = _envelope_only_models()
 
 
 def _wrap(model: str) -> str:
-    """A package with the Trano.MPC library and ``model``, as in a generated package."""
-    library = f"package Trano\npackage MPC\nconnector RealInput = input Real;\n{library_source()}\nend MPC;\nend Trano;"
+    """A package with the FastModel library and ``model``, as in a generated package."""
+    library = package_source()
     return f"package T\n{library}\n{model}\nend T;\n"
 
 
@@ -139,7 +155,7 @@ def test_instances_are_checked_against_their_class() -> None:
         Instance(name="c", component="Thermal.HeatCapacitor", parameters={"C": 1, "R": 2})
     with pytest.raises(ValueError, match="must be bound"):
         Instance(name="s", component="Sources.PrescribedTemperature")
-    with pytest.raises(KeyError, match=r"Unknown Trano\.MPC component"):
+    with pytest.raises(KeyError, match="Unknown FastModel component"):
         Instance(name="x", component="Thermal.Nothing")
 
 
@@ -212,9 +228,9 @@ def test_many_buildings_are_covered() -> None:
 def test_the_connected_model_is_the_flat_model(path: Path, model_type: RCModelType) -> None:
     flat_network = _network(path, model_type, connected=False)
     network = _network(path, model_type)
-    flat_interface, interface = network_interface(flat_network), network_interface(network)
+    interface = network_interface(network)
     session = rumoca.Session()
-    flat = session.loads(flat_network.model(), model=flat_interface.model).to_casadi()
+    flat = session.loads(flat_network.model(), model=flat_interface(flat_network).model).to_casadi()
     export = session.loads(network.model(), model=interface.model).to_casadi()
 
     assert interface.state_names == list(export.state_names) == [f"{name}.T" for name in flat.state_names]
@@ -253,10 +269,11 @@ def test_systems_are_not_connected_yet() -> None:
         network.model()
 
 
-def test_the_flat_model_stays_the_default() -> None:
-    assert Library.from_configuration("mpc").connected is False
+def test_the_mpc_library_keeps_its_flat_model() -> None:
+    assert not Library.from_configuration("mpc").is_fast_model
     source = _network(MODELS / "three_zones_mpc.yaml", RCModelType.r3c2, connected=False).model()
     assert "der(space_001_Ti)" in source
+    assert "FastModel" not in source
 
 
 @needs_connected_export
@@ -265,20 +282,21 @@ def test_cli_writes_the_connected_model_and_its_interface(tmp_path: Path) -> Non
     shutil.copy(MODELS / "three_zones_mpc.yaml", yaml_path)
     resources = (MODELS.parent / "resources").resolve()
     yaml_path.write_text(yaml_path.read_text().replace("../tests/resources", str(resources)))
-    result = CliRunner().invoke(app, ["create-model", str(yaml_path), "mpc", "--connected"])
+    result = CliRunner().invoke(app, ["create-model", str(yaml_path), "FastModel", "--envelope", "rc"])
     assert result.exit_code == 0, result.output
-    interface = MPCModelInterface.read(tmp_path / "house.mpc.json")
+    interface = FastModelInterface.read(tmp_path / "house.mpc.json")
     export: Any = rumoca.Session().loads((tmp_path / "house.mo").read_text(), model=interface.model).to_casadi()
     assert interface.state_names == list(export.state_names)
     assert interface.parameter_names == list(export.parameter_names)
 
 
-def test_cli_refuses_connected_for_simulation_libraries(tmp_path: Path) -> None:
+@pytest.mark.parametrize("library", ["Buildings", "mpc"])
+def test_cli_refuses_an_envelope_for_other_libraries(tmp_path: Path, library: str) -> None:
     yaml_path = tmp_path / "house.yaml"
     shutil.copy(MODELS / "three_zones_mpc.yaml", yaml_path)
-    result = CliRunner().invoke(app, ["create-model", str(yaml_path), "Buildings", "--connected"])
+    result = CliRunner().invoke(app, ["create-model", str(yaml_path), library, "--envelope", "rc"])
     assert result.exit_code != 0
-    assert "--connected only applies to the 'mpc' library" in result.output
+    assert "--envelope only applies to the 'FastModel' library" in result.output
 
 
 def test_connected_rc_model_rejects_unknown_zone_types() -> None:

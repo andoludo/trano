@@ -1,5 +1,5 @@
-"""Multilayer zones of the ``mpc`` library: the physics of ``Buildings.ThermalZones.Detailed.MixedAir``,
-assembled from ``Trano.MPC.Components`` so that it translates into an explicit CasADi ODE.
+"""Multilayer zones of the ``FastModel`` library: the physics of ``Buildings.ThermalZones.Detailed.MixedAir``,
+assembled from ``FastModel.Components`` so that it translates into an explicit CasADi ODE.
 
 Every construction the Buildings zone receives (``datConExt``, ``datConExtWin``, ``datConBou``, from the
 same grouping of the trano envelope) becomes an element of the zone:
@@ -30,12 +30,12 @@ from typing import TYPE_CHECKING
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
-from trano.mpc.components.model import ConnectedModel, Instance, TopInput
+from trano.fast_model.components.model import ConnectedModel, Instance, TopInput
 from trano.mpc.estimation import sanitize_name
 
 if TYPE_CHECKING:
     from trano.elements.construction import Construction, Glass
-    from trano.mpc.components.hydronics import HydronicSettings
+    from trano.fast_model.components.hydronics import HydronicSettings
     from trano.elements.envelope import BaseInternalElement, BaseSimpleWall
     from trano.elements.space import Space
     from trano.topology import Network
@@ -691,7 +691,7 @@ def zone_orientations(network: "Network") -> list[Orientation]:
     """Orientations of the exterior surfaces of the multilayer zones and of the PV arrays, in the order of their
     inputs."""
     from trano.elements.space import Space
-    from trano.mpc.components.photovoltaics import array_orientation, photovoltaic_arrays
+    from trano.fast_model.components.photovoltaics import array_orientation, photovoltaic_arrays
 
     orientations: set[Orientation] = {array_orientation(array) for array in photovoltaic_arrays(network)}
     for space in network.graph.nodes:
@@ -703,12 +703,12 @@ def zone_orientations(network: "Network") -> list[Orientation]:
 
 
 class UnmodelledSystemWarning(UserWarning):
-    """A system of the YAML that the multilayer models of the ``mpc`` library leave out."""
+    """A system of the YAML that the multilayer models of the ``FastModel`` library leave out."""
 
 
 def _warn_unmodelled(network: "Network", modelled: set[object]) -> None:
     from trano.elements.system import BaseOccupancy, Emission, Sensor, System, Weather
-    from trano.mpc.components.hydronics import hydronic_graph
+    from trano.fast_model.components.hydronics import hydronic_graph
 
     covered = (Weather, BaseOccupancy, Sensor)
     left_out = sorted(
@@ -722,7 +722,7 @@ def _warn_unmodelled(network: "Network", modelled: set[object]) -> None:
     )
     if left_out:
         warnings.warn(
-            f"The multilayer mpc model leaves out {', '.join(left_out)}: not modelled by Trano.MPC yet.",
+            f"The FastModel model leaves out {', '.join(left_out)}: not modelled by FastModel yet.",
             UnmodelledSystemWarning,
             stacklevel=3,
         )
@@ -735,9 +735,9 @@ def multilayer_model(
     units and PV arrays. Systems it does not model raise an ``UnmodelledSystemWarning``."""
     from trano.elements.space import Space
     from trano.elements.system import Duct
-    from trano.mpc.components.hydronics import hydronic_circuit, hydronic_emitters, hydronic_graph, zone_of
-    from trano.mpc.components.photovoltaics import photovoltaic_arrays, photovoltaic_instance
-    from trano.mpc.components.ventilation import ventilation_systems, ventilation_units
+    from trano.fast_model.components.hydronics import hydronic_circuit, hydronic_emitters, hydronic_graph, zone_of
+    from trano.fast_model.components.photovoltaics import photovoltaic_arrays, photovoltaic_instance
+    from trano.fast_model.components.ventilation import ventilation_systems, ventilation_units
 
     settings = settings or MultilayerSettings()
     hydronic_zones = {

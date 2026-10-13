@@ -1,7 +1,7 @@
-"""Hydronic circuits of the ``mpc`` library, built from the system graph of the YAML.
+"""Hydronic circuits of the ``FastModel`` library, built from the system graph of the YAML.
 
 The graph trano builds for the Buildings library (boiler, pumps, three-way valves, split valves, temperature
-sensors, radiators and their valves, edges in the flow direction) is mapped onto ``Trano.MPC.Components.Hydronics``:
+sensors, radiators and their valves, edges in the flow direction) is mapped onto ``FastModel.Components.Hydronics``:
 
 * every element becomes a two-port component (the three-way valve has a supply and a bypass inlet);
 * a split valve, and any element with several inlets or outlets, becomes an ideal ``Mixer`` and/or ``Splitter``
@@ -27,7 +27,7 @@ import networkx as nx
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from trano.mpc.components.model import Instance, TopInput
+from trano.fast_model.components.model import Instance, TopInput
 from trano.mpc.estimation import sanitize_name
 
 if TYPE_CHECKING:
@@ -185,11 +185,11 @@ def boiler_instance(boiler: "Boiler", name: str, control: str) -> Instance:
     variant = getattr(boiler, "variant", "default")
     if variant not in ("default", "without_storage"):
         raise NotImplementedError(
-            f"Production {boiler.name} ({variant}): the mpc library models boilers and air-to-water heat pumps; "
+            f"Production {boiler.name} ({variant}): the FastModel library models boilers and air-to-water heat pumps; "
             "use HydronicSettings(production='supply_temperature') for an ideal production."
         )
     if str(parameters.use_storage_tank).lower() == "true":  # type: ignore[union-attr]
-        raise NotImplementedError(f"Boiler {boiler.name} has a storage tank: the mpc library has no tank yet.")
+        raise NotImplementedError(f"Boiler {boiler.name} has a storage tank: the FastModel library has no tank yet.")
     power = float(parameters.nominal_heating_power)  # type: ignore[union-attr]
     a = boiler_efficiency(
         str(parameters.effcur),  # type: ignore[union-attr]
@@ -457,7 +457,7 @@ class _Builder:
             )
             return
         if getattr(element, "variant", "default") == "air_water_heat_pump":
-            from trano.mpc.components.heat_pump import heat_pump_instance
+            from trano.fast_model.components.heat_pump import heat_pump_instance
 
             speed = self.control(f"{name}_y", "1", f"Compressor speed of {element.name}", name)
             self.add(heat_pump_instance(element, name, speed))

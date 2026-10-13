@@ -1,4 +1,4 @@
-"""PV arrays of the ``mpc`` library, after trano's Buildings PV (``PVSimpleOriented``).
+"""PV arrays of the ``FastModel`` library, after trano's Buildings PV (``PVSimpleOriented``).
 
 ``P = A*fAct*eta*eta_DCAC*(HDir + HDif)`` with the direct and Perez diffuse irradiance on the array, the inputs of
 its orientation; ``Electrical.Photovoltaic`` integrates the production into a meter, which the optimal control
@@ -8,12 +8,12 @@ counts as electricity that is not bought.
 import math
 from typing import TYPE_CHECKING
 
-from trano.mpc.components.model import Instance
+from trano.fast_model.components.model import Instance
 from trano.mpc.estimation import sanitize_name
 
 if TYPE_CHECKING:
     from trano.elements.solar import Photovoltaic
-    from trano.mpc.components.envelope import Orientation
+    from trano.fast_model.components.envelope import Orientation
     from trano.topology import Network
 
 ACTIVE_AREA_FRACTION = 0.9  # fAct of Buildings PartialPvBase
@@ -27,7 +27,7 @@ def photovoltaic_arrays(network: "Network") -> list["Photovoltaic"]:
 
 
 def array_orientation(array: "Photovoltaic") -> "Orientation":
-    from trano.mpc.components.envelope import Orientation
+    from trano.fast_model.components.envelope import Orientation
 
     parameters = array.parameters
     azimuth = getattr(parameters, "azimuth_radians", None)

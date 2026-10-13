@@ -1,4 +1,4 @@
-"""Air-to-water heat pump of the ``mpc`` library, after trano's Buildings model of the ``air_water_heat_pump``
+"""Air-to-water heat pump of the ``FastModel`` library, after trano's Buildings model of the ``air_water_heat_pump``
 production (``PartialAirWaterHeatPump``: ``Buildings.Fluid.HeatPumps.ModularReversible.AirToWaterTableData2D`` with
 the EN 14511 data of the Viessmann Vitocal 251-A08, charging a mixed buffer).
 
@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from trano.mpc.components.model import Instance
+from trano.fast_model.components.model import Instance
 
 if TYPE_CHECKING:
     from trano.elements.system import Boiler

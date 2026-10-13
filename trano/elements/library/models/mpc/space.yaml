@@ -29,33 +29,3 @@
   template: |
     {{package_name}}.Trano.MPC.Zones.R3C2 {{ element.name }}
   variant: default
-
-# The infiltration variant only changes the Buildings zone; the RC zones always count an air change
-# rate and the multilayer zone reads `ach` from the space.
-- classes:
-  - Space
-  library: mpc
-  parameter_processing:
-    function: default_parameters
-  ports:
-  - flow: undirected
-    medium: data
-    names:
-    - weaBus
-    targets:
-    - Weather
-  - flow: convective
-    medium: heat
-    names:
-    - heaPorAir
-    targets:
-    - Emission
-  - flow: undirected
-    medium: data
-    names:
-    - intGai
-    targets:
-    - BaseOccupancy
-  template: |
-    {{package_name}}.Trano.MPC.Zones.R3C2 {{ element.name }}
-  variant: infiltration

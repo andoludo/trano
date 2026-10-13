@@ -1,0 +1,104 @@
+{#- Runnable model of the FastModel library: the weather, solar irradiance, occupancy and external data of the
+    other trano models connected to the inputs of building_mpc (multilayer zones take the beam and Perez diffuse
+    irradiance and the incidence angle of each orientation, and the sky temperature and wind). -#}
+{%- macro runnable_model(building, runnable, fast) -%}
+{% autoescape false %}
+model building "Runnable {{ building.zones | length }}-zone FastModel building: weather, solar gains, occupancy and external data connected to {{ building.name }}"
+  {{ runnable.weather }}
+  Buildings.BoundaryConditions.WeatherData.Bus weaBus "Weather data bus";
+  {{ building.name }} rc "CasADi/IPOPT compatible FastModel model";
+{% for orientation in runnable.orientations %}
+  Buildings.BoundaryConditions.SolarIrradiation.DirectTiltedSurface HDir_{{ orientation.name }}(
+    til={{ orientation.tilt | mo }}, azi={{ orientation.azimuth | mo }}) "Direct irradiance, {{ orientation.description | safe }}";
+{% if fast.multilayer %}
+  Buildings.BoundaryConditions.SolarIrradiation.DiffusePerez HDif_{{ orientation.name }}(
+    til={{ orientation.tilt | mo }}, azi={{ orientation.azimuth | mo }}) "Diffuse irradiance (Perez, as the Buildings zone), {{ orientation.description | safe }}";
+{% else %}
+  Buildings.BoundaryConditions.SolarIrradiation.DiffuseIsotropic HDif_{{ orientation.name }}(
+    til={{ orientation.tilt | mo }}, outSkyCon=true, outGroCon=true) "Diffuse irradiance, {{ orientation.description | safe }}";
+  Modelica.Blocks.Math.Add HSol_{{ orientation.name }} "Total irradiance, {{ orientation.description | safe }}";
+{% endif %}
+{% endfor %}
+{% if runnable.external_data %}
+  Modelica.Blocks.Sources.CombiTimeTable externalData(
+    tableOnFile=false,
+    table=[{{ runnable.external_data.table }}],
+    smoothness=Modelica.Blocks.Types.Smoothness.LinearSegments,
+    extrapolation=Modelica.Blocks.Types.Extrapolation.HoldLastPoint)
+    "External data, columns: {{ runnable.external_data.columns | join(', ') }}";
+{% endif %}
+{% for zone in runnable.zones %}
+  // ---- Zone {{ zone.name }} ----
+{% if zone.occupancy %}
+  Trano.Occupancy.{{ zone.occupancy.model }} occupancy_{{ zone.name }}({{ zone.occupancy.parameters }})
+    "Occupancy of {{ zone.name }}";
+  Modelica.Blocks.Math.Sum QInt_{{ zone.name }}(nin=2, k={ {{- zone.floor_area | mo }}, {{ zone.floor_area | mo -}} })
+    "Sensible internal gains (radiant and convective) of {{ zone.name }}";
+{% else %}
+  Modelica.Blocks.Sources.Constant QInt_{{ zone.name }}(k=0) "No internal gains in {{ zone.name }}";
+{% endif %}
+  Modelica.Blocks.Interfaces.RealOutput {{ zone.name }}_TZon(unit="K") "Indoor air temperature of {{ zone.name }}";
+{% endfor %}
+  // ---- Control inputs (e.g. set by the MPC) and system schedules ----
+{% for control in runnable.controls %}
+{% if control.column is none %}
+  Modelica.Blocks.Interfaces.RealInput {{ control.name }}(unit="{{ fast.control_units.get(control.name, 'W') }}") "{{ control.description }}";
+{% endif %}
+{% endfor %}
+{% for table in runnable.tables %}
+  Modelica.Blocks.Sources.CombiTimeTable {{ table.name }}(
+    tableOnFile=false,
+    table=[{{ table.rows }}],
+    smoothness=Modelica.Blocks.Types.Smoothness.ConstantSegments,
+    extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic)
+    "{{ table.description }}";
+{% endfor %}
+{% for pv in runnable.photovoltaics %}
+  Modelica.Blocks.Math.Gain {{ pv.name }}(k={{ pv.gain | mo }}) "PV generation: area x efficiency x irradiance";
+{% endfor %}
+equation
+  connect({{ runnable.weather_name }}.weaBus, weaBus);
+  connect(weaBus.TDryBul, rc.TOut);
+{% if fast.multilayer %}
+  connect(weaBus.TBlaSky, rc.TBlaSky);
+  connect(weaBus.winSpe, rc.winSpe);
+  connect(weaBus.winDir, rc.winDir);
+{% endif %}
+{% for orientation in runnable.orientations %}
+  connect({{ runnable.weather_name }}.weaBus, HDir_{{ orientation.name }}.weaBus);
+  connect({{ runnable.weather_name }}.weaBus, HDif_{{ orientation.name }}.weaBus);
+{% if fast.multilayer %}
+  connect(HDir_{{ orientation.name }}.H, rc.HDir_{{ orientation.name }});
+  connect(HDif_{{ orientation.name }}.H, rc.HDif_{{ orientation.name }});
+  rc.cosInc_{{ orientation.name }} = cos(HDir_{{ orientation.name }}.inc);
+{% else %}
+  connect(HDir_{{ orientation.name }}.H, HSol_{{ orientation.name }}.u1);
+  connect(HDif_{{ orientation.name }}.H, HSol_{{ orientation.name }}.u2);
+  connect(HSol_{{ orientation.name }}.y, rc.{{ orientation.irradiance }});
+{% endif %}
+{% endfor %}
+{% for zone in runnable.zones %}
+{% if zone.occupancy %}
+  connect(occupancy_{{ zone.name }}.y[1], QInt_{{ zone.name }}.u[1]);
+  connect(occupancy_{{ zone.name }}.y[2], QInt_{{ zone.name }}.u[2]);
+{% endif %}
+  connect(QInt_{{ zone.name }}.y, rc.{{ zone.prefix }}QInt);
+  {{ zone.name }}_TZon = rc.{{ fast.indoor_temperatures[zone.name] }};
+{% endfor %}
+{% for control in runnable.controls %}
+{% if control.column is none %}
+  connect({{ control.name }}, rc.{{ control.name }});
+{% else %}
+  connect(externalData.y[{{ control.column }}], rc.{{ control.name }});
+{% endif %}
+{% endfor %}
+{% for table in runnable.tables %}
+  connect({{ table.name }}.y[1], rc.{{ table.input }});
+{% endfor %}
+{% for pv in runnable.photovoltaics %}
+  connect(HSol_{{ pv.orientation }}.y, {{ pv.name }}.u);
+  connect({{ pv.name }}.y, rc.{{ pv.input }});
+{% endfor %}
+end building;
+{% endautoescape %}
+{%- endmacro -%}

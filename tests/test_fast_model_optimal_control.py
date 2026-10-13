@@ -1,4 +1,4 @@
-"""Optimal control of the hydronic multilayer model with IPOPT (``trano.mpc.optimal_control``)."""
+"""Optimal control of the hydronic multilayer model with IPOPT (``trano.fast_model.optimal_control``)."""
 
 import warnings
 from pathlib import Path
@@ -10,9 +10,9 @@ import rumoca
 
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.mpc.interface import MPCModelInterface
-from trano.mpc.modelica import network_interface
-from trano.mpc.optimal_control import (
+from trano.fast_model.interface import FastModelInterface
+from trano.fast_model.modelica import network_interface
+from trano.fast_model.optimal_control import (
     KELVIN,
     EstimationSettings,
     MovingHorizonEstimation,
@@ -27,7 +27,7 @@ MODELS = Path(__file__).parent / "models"
 
 
 def _exports_connected_models() -> bool:
-    from tests.test_mpc_connected import _exports_connected_models as probe
+    from tests.test_fast_model_connected import _exports_connected_models as probe
 
     return probe()
 
@@ -38,9 +38,9 @@ pytestmark = pytest.mark.skipif(
 
 
 @pytest.fixture(scope="module")
-def hydronic() -> tuple[MPCModelInterface, object]:
+def hydronic() -> tuple[FastModelInterface, object]:
     path = MODELS / "single_zone_hydronic.yaml"
-    library = Library.from_configuration("mpc").model_copy(update={"connected": True, "envelope": "multilayer"})
+    library = Library.from_configuration("FastModel")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         network = convert_network(path.stem, path, library=library)
@@ -49,7 +49,7 @@ def hydronic() -> tuple[MPCModelInterface, object]:
     return interface, export
 
 
-def _forecast(interface: MPCModelInterface, hours: np.ndarray) -> np.ndarray:
+def _forecast(interface: FastModelInterface, hours: np.ndarray) -> np.ndarray:
     """Synthetic winter day: weather, sun on the facades and occupancy, from the disturbance sources."""
     sun = np.clip(np.sin(np.pi * (hours - 7) / 10), 0, None) * (hours <= 17)
     rows = []
@@ -85,7 +85,7 @@ def test_radau_collocation_is_exact_for_polynomials(degree: int) -> None:
         assert (c.T @ values)[1:] == pytest.approx(expected)
 
 
-def test_simulation_follows_the_controls(hydronic: tuple[MPCModelInterface, object]) -> None:
+def test_simulation_follows_the_controls(hydronic: tuple[FastModelInterface, object]) -> None:
     interface, export = hydronic
     ocp = OptimalControl(interface, export.rhs, OptimalControlSettings(time_step=3600))  # type: ignore[attr-defined]
     hours = np.arange(6.0)
@@ -97,7 +97,7 @@ def test_simulation_follows_the_controls(hydronic: tuple[MPCModelInterface, obje
     assert on[indoor, -1] > off[indoor, -1] + 1
 
 
-def test_the_optimal_control_heats_just_enough(hydronic: tuple[MPCModelInterface, object]) -> None:
+def test_the_optimal_control_heats_just_enough(hydronic: tuple[FastModelInterface, object]) -> None:
     interface, export = hydronic
     ocp = OptimalControl(interface, export.rhs, OptimalControlSettings(time_step=3600))  # type: ignore[attr-defined]
     hours = np.arange(24.0)
@@ -121,7 +121,7 @@ def test_the_optimal_control_heats_just_enough(hydronic: tuple[MPCModelInterface
 
 
 def test_moving_horizon_estimation_recovers_the_unmeasured_states(
-    hydronic: tuple[MPCModelInterface, object],
+    hydronic: tuple[FastModelInterface, object],
 ) -> None:
     """The house starts 2 K colder than the prior believes; only the zone air is measured, with noise."""
     interface, export = hydronic
@@ -144,7 +144,7 @@ def test_moving_horizon_estimation_recovers_the_unmeasured_states(
     assert np.max(error) < 0.5 * np.max(believed)
 
 
-def test_the_receding_horizon_keeps_the_zone_comfortable(hydronic: tuple[MPCModelInterface, object]) -> None:
+def test_the_receding_horizon_keeps_the_zone_comfortable(hydronic: tuple[FastModelInterface, object]) -> None:
     """Closed loop from 5:00: six MPC steps over a 12-hour horizon, the model as plant."""
     interface, export = hydronic
     ocp = OptimalControl(interface, export.rhs, OptimalControlSettings(time_step=3600))  # type: ignore[attr-defined]
@@ -168,7 +168,7 @@ def test_the_receding_horizon_keeps_the_zone_comfortable(hydronic: tuple[MPCMode
 def test_the_heat_pump_house_is_optimized() -> None:
     """Six zones, a heat pump with its buffer, six radiator branches and a mixing valve: 6 hourly steps."""
     path = MODELS / "house_infiltration_air_water_heat_pump.yaml"
-    library = Library.from_configuration("mpc").model_copy(update={"connected": True, "envelope": "multilayer"})
+    library = Library.from_configuration("FastModel")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         network = convert_network(path.stem, path, library=library)

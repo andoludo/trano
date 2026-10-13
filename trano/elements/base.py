@@ -91,11 +91,12 @@ class BaseElement(BaseElementPort):
             raise UnknownComponentVariantError(
                 f"Library data not found for {self.name} in {library.name} for variant {self.variant}"
             )
-        libraries_data = [library_ for library_ in libraries_data_variants if library_.serves(library.name)]
-        if not libraries_data:
-            libraries_data = [library_ for library_ in libraries_data_variants if library_.serves("default")]
-        if libraries_data:
-            return libraries_data[0]
+        for library_name in (library.name, library.element_library, "default"):
+            if library_name is None:
+                continue
+            libraries_data = [library_ for library_ in libraries_data_variants if library_.serves(library_name)]
+            if libraries_data:
+                return libraries_data[0]
         return None
 
     def connects_to(self, library: "Library", target: type) -> bool:
@@ -138,7 +139,7 @@ class BaseElement(BaseElementPort):
             library_data = self.get_library_data(library)
             if library_data and self.parameters:
                 return library_data.parameter_processing(
-                    self.parameters, library=library.name, variant=library_data.variant
+                    self.parameters, library=library.parameter_library, variant=library_data.variant
                 )
         return {}
 

@@ -1,6 +1,6 @@
-"""Connected version of the RC zone models of the ``mpc`` library.
+"""Connected version of the RC zone models of the ``FastModel`` library.
 
-Each RC structure of :mod:`trano.mpc.parameters` is assembled from ``Trano.MPC.Components``
+Each RC structure of :mod:`trano.mpc.parameters` is assembled from ``FastModel.Components``
 primitives and reproduces the equations of the flat ``building_mpc`` exactly (tested): the
 capacitor of state ``<zone>_<node>`` of the flat model is the instance ``<zone>_<node>``, so its
 CasADi state is ``<zone>_<node>.T``.
@@ -15,7 +15,7 @@ The energy systems of the flat model are not connected yet: buildings with syste
 """
 
 from trano.mpc.building import RCBuilding, RCZone
-from trano.mpc.components.model import ConnectedModel, Instance, TopInput
+from trano.fast_model.components.model import ConnectedModel, Instance, TopInput
 from trano.mpc.parameters import ISO13790Parameters, R1C1Parameters, R3C2Parameters, R4C3Parameters
 
 OUTDOOR = "outdoor"
@@ -165,7 +165,7 @@ def connected_rc_model(building: RCBuilding) -> ConnectedModel:
     """``building_mpc`` assembled from components, equivalent to the flat model of ``building``."""
     if building.systems:
         raise NotImplementedError(
-            "The connected 'mpc' library does not model energy systems yet: use the flat model for "
+            "The FastModel library does not model energy systems yet: use the flat model for "
             f"{[system.name for system in building.systems]}."
         )
     inputs = [TopInput(name="TOut", unit="K", description="Outdoor dry-bulb air temperature")]

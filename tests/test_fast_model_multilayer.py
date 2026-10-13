@@ -1,4 +1,4 @@
-"""Multilayer zones of the ``mpc`` library (``--envelope multilayer``): Buildings MixedAir physics as a CasADi ODE.
+"""Multilayer zones of the ``FastModel`` library (its default envelope): Buildings MixedAir physics as a CasADi ODE.
 
 The year-long agreement with Buildings is checked by ``python -m validation.mpc``; these tests check the
 assembly: the constructions of each zone, the shared walls between zones, the optics fits, the solar
@@ -19,9 +19,9 @@ from trano.elements.envelope import BaseInternalElement
 from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.main import app
-from trano.mpc import MPCModelInterface
-from trano.mpc.components import Instance
-from trano.mpc.components.envelope import (
+from trano.fast_model.interface import FastModelInterface
+from trano.fast_model.components import Instance
+from trano.fast_model.components.envelope import (
     INTERNAL_EMISSIVITY,
     Convection,
     _Surface,
@@ -32,7 +32,7 @@ from trano.mpc.components.envelope import (
     window_optics,
     zone_elements,
 )
-from trano.mpc.modelica import network_interface
+from trano.fast_model.modelica import network_interface
 from trano.topology import Network
 
 MODELS = Path(__file__).parent / "models"
@@ -40,7 +40,7 @@ THREE_ZONES = MODELS / "three_zones_mpc.yaml"
 
 
 def _exports_connected_models() -> bool:
-    from tests.test_mpc_connected import _exports_connected_models as probe
+    from tests.test_fast_model_connected import _exports_connected_models as probe
 
     return probe()
 
@@ -51,7 +51,7 @@ needs_connected_export = pytest.mark.skipif(
 
 
 def _network(path: Path = THREE_ZONES) -> Network:
-    library = Library.from_configuration("mpc").model_copy(update={"connected": True, "envelope": "multilayer"})
+    library = Library.from_configuration("FastModel")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return convert_network(path.stem, path, library=library)
@@ -182,9 +182,9 @@ def test_cli_writes_the_multilayer_model(tmp_path: Path) -> None:
     yaml_path = tmp_path / "house.yaml"
     resources = (MODELS.parent / "resources").resolve()
     yaml_path.write_text(THREE_ZONES.read_text().replace("../tests/resources", str(resources)))
-    result = CliRunner().invoke(app, ["create-model", str(yaml_path), "mpc", "--envelope", "multilayer"])
+    result = CliRunner().invoke(app, ["create-model", str(yaml_path), "FastModel", "--envelope", "multilayer"])
     assert result.exit_code == 0, result.output
-    interface = MPCModelInterface.read(tmp_path / "house.mpc.json")
+    interface = FastModelInterface.read(tmp_path / "house.mpc.json")
     assert [zone.indoor_temperature for zone in interface.zones] == [f"space_00{i}_air.T" for i in (1, 2, 3)]
     assert "Envelope.SolarDistribution" in (tmp_path / "house.mo").read_text()
 

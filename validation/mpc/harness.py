@@ -1,4 +1,4 @@
-"""Replay a Buildings simulation through the ``mpc`` model of the same YAML and compare the zones.
+"""Replay a Buildings simulation through the MPC model (``mpc`` or ``FastModel`` library) of the same YAML and compare.
 
 1. The Buildings model is simulated (cached by the generated model, as for BESTEST).
 2. The heat its emitters delivered to each zone (ideal heating and cooling, radiators) is written as the
@@ -130,8 +130,8 @@ _MPC_PACKAGE = re.compile(r"^package MPC\b.*?^end MPC;", flags=re.DOTALL | re.MU
 
 
 def _hashed_text(model: str, network: Network) -> str:
-    """The model text the cache depends on: every generated package embeds ``Trano.MPC``, which a model of another
-    library never uses, so that the reference simulations survive changes of the mpc components."""
+    """The model text the cache depends on: every generated package embeds ``Trano.MPC``, which only the models of
+    the ``mpc`` library use, so that the reference simulations survive changes of that package."""
     return model if network.library.name == "mpc" else _MPC_PACKAGE.sub("", model)
 
 
@@ -225,7 +225,7 @@ def _hydronic_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict
     """The hydronic controls of the mpc model, as Buildings ran them: branch flows, three-way valve positions and
     boiler part load ratios or compressor speeds, as means over each interval (they move faster than it)."""
     from trano.elements.system import Boiler, ThreeWayValve, Valve
-    from trano.mpc.components.hydronics import hydronic_graph
+    from trano.fast_model.components.hydronics import hydronic_graph
 
     columns = {}
     for element in hydronic_graph(network).nodes:
@@ -242,7 +242,7 @@ def _hydronic_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict
 def _ventilation_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
     """Speed of each ventilation unit as Buildings ran it: its supply duct flows over their nominal flows."""
     from trano.elements.system import Duct
-    from trano.mpc.components.ventilation import ventilated_zones, ventilation_units
+    from trano.fast_model.components.ventilation import ventilated_zones, ventilation_units
 
     columns = {}
     for unit in ventilation_units(network):
@@ -259,9 +259,9 @@ def _ventilation_replay(reader: Reader, network: Network, grid: np.ndarray) -> d
 def _energies(reader: Reader, mpc_reader: Reader, network: Network, grid: np.ndarray) -> list[EnergyComparison]:
     """Fuel and electricity of the productions and fans, production of the PV arrays, against the mpc meters."""
     from trano.elements.system import Boiler
-    from trano.mpc.components.hydronics import hydronic_graph
-    from trano.mpc.components.photovoltaics import photovoltaic_arrays
-    from trano.mpc.components.ventilation import ventilation_units
+    from trano.fast_model.components.hydronics import hydronic_graph
+    from trano.fast_model.components.photovoltaics import photovoltaic_arrays
+    from trano.fast_model.components.ventilation import ventilation_units
 
     rows: list[tuple[str, str, str, str]] = []  # system, quantity, Buildings power, mpc meter
     for element in hydronic_graph(network).nodes:
@@ -324,7 +324,7 @@ def _cv_rmse_and_nmbe(actual: np.ndarray, expected: np.ndarray) -> tuple[float, 
 
 def _radiator_heat(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
     """Heat the radiators of the mpc model gave each zone [W], mean over each interval."""
-    from trano.mpc.components.hydronics import hydronic_emitters, zone_of
+    from trano.fast_model.components.hydronics import hydronic_emitters, zone_of
 
     heat: dict[str, np.ndarray] = {}
     for radiator in hydronic_emitters(network):
@@ -348,7 +348,7 @@ def _circulating(reader: Reader, network: Network, grid: np.ndarray) -> np.ndarr
     """Times when the water circulates: the temperature sensors of Buildings are dynamic (their time constant grows
     as the flow drops), so that at a near-zero flow their reading is that of stagnant water, not of the circuit."""
     from trano.elements.system import Valve
-    from trano.mpc.components.hydronics import hydronic_graph
+    from trano.fast_model.components.hydronics import hydronic_graph
 
     flow = sum(
         (
@@ -365,7 +365,7 @@ def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
     """Supply and return temperatures of each production and temperature of each sensor, while the water
     circulates."""
     from trano.elements.system import Boiler, TemperatureSensor
-    from trano.mpc.components.hydronics import hydronic_graph
+    from trano.fast_model.components.hydronics import hydronic_graph
 
     pairs = []
     for element in hydronic_graph(network).nodes:
@@ -378,7 +378,7 @@ def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
             pairs.append((f"{name} return", f"{element.name}.TReturn.T", f"rc.{name}.inlet.T"))
         elif isinstance(element, TemperatureSensor):
             pairs.append((f"{name}", f"{element.name}.T", f"rc.{name}.T"))
-    from trano.mpc.components.ventilation import ventilation_units
+    from trano.fast_model.components.ventilation import ventilation_units
 
     active = _circulating(reader, network, grid)
     always = np.ones(len(grid), dtype=bool)
@@ -408,6 +408,17 @@ def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
     return comparisons
 
 
+def _library(model_type: RCModelType, connected: bool, envelope: str) -> Library:
+    """The flat RC models of the ``mpc`` library, or the ``FastModel`` library (connected RC or multilayer zones)."""
+    if envelope == "multilayer":
+        return Library.from_configuration("FastModel").model_copy(update={"envelope": "multilayer"})
+    if connected:
+        return Library.from_configuration("FastModel").model_copy(
+            update={"rc_model_type": model_type, "envelope": "rc"}
+        )
+    return Library.from_configuration("mpc").model_copy(update={"rc_model_type": model_type})
+
+
 def compare(
     case_id: str, model_type: RCModelType = RCModelType.r3c2, connected: bool = True, envelope: str = "rc"
 ) -> CaseComparison:
@@ -427,9 +438,7 @@ def compare(
     multilayer = envelope == "multilayer"
     variant = "mpc-Multilayer" if multilayer else f"mpc-{model_type.value}{'-connected' if connected else ''}"
     directory = case_directory(case, variant)
-    library = Library.from_configuration("mpc").model_copy(
-        update={"rc_model_type": model_type, "connected": connected or multilayer, "envelope": envelope}
-    )
+    library = _library(model_type, connected, envelope)
     network = _network(case, library, directory)
     replay = np.arange(case.start_time, case.end_time + 1, FINE_REPLAY_INTERVAL if case.fine_replay else INTERVAL)
     columns = {

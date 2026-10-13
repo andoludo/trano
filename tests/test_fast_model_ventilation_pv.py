@@ -1,4 +1,4 @@
-"""Ventilation units, PV arrays and the systems left out by the multilayer models of the ``mpc`` library."""
+"""Ventilation units, PV arrays and the systems left out by the multilayer models of the ``FastModel`` library."""
 
 import warnings
 from pathlib import Path
@@ -9,8 +9,8 @@ import rumoca
 
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.mpc.components import ConnectedModel, Instance, TopInput, library_source
-from trano.mpc.components.envelope import UnmodelledSystemWarning, multilayer_model
+from trano.fast_model.components import ConnectedModel, Instance, TopInput, package_source
+from trano.fast_model.components.envelope import UnmodelledSystemWarning, multilayer_model
 from trano.topology import Network
 
 ROOT = Path(__file__).parents[1]
@@ -18,7 +18,7 @@ RENOVATED = ROOT / "examples" / "residential_after_renovation.yaml"
 
 
 def _exports_connected_models() -> bool:
-    from tests.test_mpc_connected import _exports_connected_models as probe
+    from tests.test_fast_model_connected import _exports_connected_models as probe
 
     return probe()
 
@@ -29,14 +29,14 @@ needs_connected_export = pytest.mark.skipif(
 
 
 def _network(path: Path) -> Network:
-    library = Library.from_configuration("mpc").model_copy(update={"connected": True, "envelope": "multilayer"})
+    library = Library.from_configuration("FastModel")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return convert_network(path.stem, path, library=library)
 
 
 def _export(model: ConnectedModel) -> object:
-    library = f"package Trano\npackage MPC\nconnector RealInput = input Real;\n{library_source()}\nend MPC;\nend Trano;"
+    library = package_source()
     return rumoca.Session().loads(f"package T\n{library}\n{model.render()}\nend T;\n", model="T.M").to_casadi()
 
 
