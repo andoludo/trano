@@ -21,6 +21,14 @@ BoilerControlParameters:
       range: float
       minimum_value: 223.15
       maximum_value: 423.15
+    temperature_hysteresis:
+      alias: dTHys
+      description: Hysteresis of the tank temperature checks that start and stop the boiler (default and complex
+        variants; the simple variant has no such checks); 0 (the default) switches at each threshold crossing,
+        about 1 K avoids their chattering (see the simulation performance page) [K]
+      range: float
+      minimum_value: 0
+      maximum_value: 10
   classes:
   - BoilerControl
 BoilerParameters:

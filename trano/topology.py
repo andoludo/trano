@@ -37,6 +37,7 @@ from trano.elements.system import (
 from trano.elements.types import Tilt
 from trano.elements.utils import generate_normalized_layout
 from trano.exceptions import SystemsNotConnectedError
+from trano.performance import PerformanceOptions, apply_performance_options
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,7 @@ class Network:  # : PLR0904, #TODO: fix this
         library: Library | None = None,
         external_data: Path | None = None,
         diagram_scale: int | None = None,
+        performance: PerformanceOptions | None = None,
     ) -> None:
         reset_element_names()
         self.graph: DiGraph = DiGraph()
@@ -87,6 +89,7 @@ class Network:  # : PLR0904, #TODO: fix this
         self.external_data = external_data
         self.containers = containers_factory()
         self.diagram_scale = diagram_scale or 1000
+        self.performance = performance or PerformanceOptions()
         self.dynamic_components: dict[DynamicTemplateCategories, list[str]] = {
             "ventilation": [],
             "control": [],
@@ -336,7 +339,7 @@ class Network:  # : PLR0904, #TODO: fix this
             )
         )
         self._assert_all_systems_connected()
-        return ENVIRONMENT.get_template("base.jinja2").render(
+        model = ENVIRONMENT.get_template("base.jinja2").render(
             network=self,
             data=data,
             element_models=[c.model for c in component_models],
@@ -348,6 +351,7 @@ class Network:  # : PLR0904, #TODO: fix this
             main=self.containers.main if include_container else "",
             include_container=include_container,
         )
+        return apply_performance_options(model, self.performance)
 
     def add_boiler_plate_spaces(
         self,

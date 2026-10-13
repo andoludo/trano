@@ -930,6 +930,25 @@ classes:
         inlined: true
         inlined_as_list: true
         multivalued: true
+      performance:
+        description: Opt-in simplifications making the model simulate faster, all off by default
+        range: Performance
+        inlined: true
+  Performance:
+    description: >-
+      Opt-in simplifications of the generated model that trade the fidelity of short transients for
+      simulation speed; see the simulation performance page of the documentation
+    attributes:
+      ideal_actuators:
+        description: >-
+          Valves, dampers, pumps and fans follow their control signal instantly (no stroke-time or
+          rise-time filter)
+        range: boolean
+      steady_state_sensors:
+        description: >-
+          Two-port fluid sensors measure instantly (time constant 0); at zero flow they report the
+          incoming fluid
+        range: boolean
 
 
 

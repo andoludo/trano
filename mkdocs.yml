@@ -78,6 +78,7 @@ nav:
       - ASHRAE 140 (BESTEST): validation/bestest.md
       - A walk through the BESTEST cases: validation/bestest_cases.md
       - Residential reference cases: validation/residential_reference_cases.md
+      - Simulation performance: validation/simulation_performance.md
 
 markdown_extensions:
     - admonition

@@ -41,6 +41,7 @@ Elements: `boilercontrol`
 | `threshold_outdoor_air_cutoff` | Outdoor air temperature threshold; output is true when the outdoor air is below this heating cut-off limit [K] | `288.15` | `threshold_outdoor_air_cutoff` | `threshold_outdoor_air_cutoff` | `threshold_outdoor_air_cutoff` | `threshold_outdoor_air_cutoff` | `threshold_outdoor_air_cutoff` |
 | `threshold_to_switch_off_boiler` | Tank bottom temperature above which the boiler switches off; defaults to tsup_nominal + 5 K [K] | library default | `threshold_to_switch_off_boiler` | `threshold_to_switch_off_boiler` | `threshold_to_switch_off_boiler` | `threshold_to_switch_off_boiler` | `threshold_to_switch_off_boiler` |
 | `tsup_nominal` | Supply temperature set point; the boiler starts when the tank top drops 1 K below it [K] | `353.15` | `TSup_nominal` | `TSup_nominal` | `TSup_nominal` | `TSup_nominal` | `TSup_nominal` |
+| `temperature_hysteresis` | Hysteresis of the tank temperature checks that start and stop the boiler (default and complex variants; the simple variant has no such checks); 0 (the default) switches at each threshold crossing, about 1 K avoids their chattering (see the simulation performance page) [K] | library default | `dTHys` | `dTHys` | `dTHys` | `dTHys` | `dTHys` |
 
 ## BoilerParameters
 

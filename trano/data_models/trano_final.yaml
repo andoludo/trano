@@ -189,6 +189,14 @@ classes:
     - boiler_control
   BoilerControlParameters:
     attributes:
+      temperature_hysteresis:
+        description: Hysteresis of the tank temperature checks that start and stop
+          the boiler (default and complex variants; the simple variant has no such
+          checks); 0 (the default) switches at each threshold crossing, about 1 K
+          avoids their chattering (see the simulation performance page) [K]
+        maximum_value: 10
+        minimum_value: 0
+        range: float
       threshold_outdoor_air_cutoff:
         description: Outdoor air temperature threshold; output is true when the outdoor
           air is below this heating cut-off limit [K]
@@ -483,6 +491,11 @@ classes:
         inlined_as_list: true
         multivalued: true
         range: InternalWall
+      performance:
+        description: Opt-in simplifications making the model simulate faster, all
+          off by default
+        inlined: true
+        range: Performance
       solar:
         description: Solar components of the building
         inlined: true
@@ -1466,6 +1479,19 @@ classes:
     description: Base of the parameter sets of the components
     slots:
     - name
+  Performance:
+    attributes:
+      ideal_actuators:
+        description: Valves, dampers, pumps and fans follow their control signal instantly
+          (no stroke-time or rise-time filter)
+        range: boolean
+      steady_state_sensors:
+        description: Two-port fluid sensors measure instantly (time constant 0); at
+          zero flow they report the incoming fluid
+        range: boolean
+    description: Opt-in simplifications of the generated model that trade the fidelity
+      of short transients for simulation speed; see the simulation performance page
+      of the documentation
   Photovoltaic:
     description: Photovoltaic panels on the building
     slot_usage:
