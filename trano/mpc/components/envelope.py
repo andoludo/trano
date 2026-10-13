@@ -23,6 +23,7 @@ same grouping of the trano envelope) becomes an element of the zone:
 
 import math
 import re
+import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -687,10 +688,12 @@ def emitter_radiant_fraction(space: "Space") -> float:
 
 
 def zone_orientations(network: "Network") -> list[Orientation]:
-    """Orientations of the exterior surfaces of the multilayer zones, in the order of their inputs."""
+    """Orientations of the exterior surfaces of the multilayer zones and of the PV arrays, in the order of their
+    inputs."""
     from trano.elements.space import Space
+    from trano.mpc.components.photovoltaics import array_orientation, photovoltaic_arrays
 
-    orientations: set[Orientation] = set()
+    orientations: set[Orientation] = {array_orientation(array) for array in photovoltaic_arrays(network)}
     for space in network.graph.nodes:
         if isinstance(space, Space):
             opaque, windows = zone_elements(space, network)
@@ -699,12 +702,42 @@ def zone_orientations(network: "Network") -> list[Orientation]:
     return sorted(orientations, key=lambda o: (o.tilt, o.azimuth))
 
 
+class UnmodelledSystemWarning(UserWarning):
+    """A system of the YAML that the multilayer models of the ``mpc`` library leave out."""
+
+
+def _warn_unmodelled(network: "Network", modelled: set[object]) -> None:
+    from trano.elements.system import BaseOccupancy, Emission, Sensor, System, Weather
+    from trano.mpc.components.hydronics import hydronic_graph
+
+    covered = (Weather, BaseOccupancy, Sensor)
+    left_out = sorted(
+        str(node.name)
+        for node in network.graph.nodes
+        if isinstance(node, System)
+        and not isinstance(node, covered)
+        and node not in modelled
+        # an emitter outside the water circuits is an ideal emitter: the heat input of its zone
+        and not (isinstance(node, Emission) and node not in hydronic_graph(network))
+    )
+    if left_out:
+        warnings.warn(
+            f"The multilayer mpc model leaves out {', '.join(left_out)}: not modelled by Trano.MPC yet.",
+            UnmodelledSystemWarning,
+            stacklevel=3,
+        )
+
+
 def multilayer_model(
     network: "Network", settings: MultilayerSettings | None = None, hydronics: "HydronicSettings | None" = None
 ) -> ConnectedModel:
-    """``building_mpc`` of a network with multilayer zones and, when it has some, its hydronic circuits."""
+    """``building_mpc`` of a network with multilayer zones and, when it has them, its hydronic circuits, ventilation
+    units and PV arrays. Systems it does not model raise an ``UnmodelledSystemWarning``."""
     from trano.elements.space import Space
-    from trano.mpc.components.hydronics import hydronic_circuit, hydronic_emitters, zone_of
+    from trano.elements.system import Duct
+    from trano.mpc.components.hydronics import hydronic_circuit, hydronic_emitters, hydronic_graph, zone_of
+    from trano.mpc.components.photovoltaics import photovoltaic_arrays, photovoltaic_instance
+    from trano.mpc.components.ventilation import ventilation_systems, ventilation_units
 
     settings = settings or MultilayerSettings()
     hydronic_zones = {
@@ -728,8 +761,14 @@ def multilayer_model(
         instances += zone.instances
         connections += zone.connections
     circuit = hydronic_circuit(network, lambda zone: (f"{zone}_air.port", f"{zone}_rad.rad"), hydronics)
-    instances += circuit.instances
-    connections += circuit.connections
+    ventilation = ventilation_systems(network)
+    arrays = photovoltaic_arrays(network)
+    instances += circuit.instances + ventilation.instances + [photovoltaic_instance(array) for array in arrays]
+    connections += circuit.connections + ventilation.connections
+    units = ventilation_units(network)
+    ducts = {node for node in network.graph.nodes if isinstance(node, Duct)}
+    _warn_unmodelled(network, set(hydronic_graph(network).nodes) | set(units) | ducts | set(arrays))
+
     orientations = zone_orientations(network)
     inputs = list(WEATHER_INPUTS)
     for orientation in orientations:
@@ -748,10 +787,14 @@ def multilayer_model(
                     unit="W",
                     description="Heating (> 0) or cooling (< 0) power, control input",
                     control=True,
+                    zone=zone.name,
                 )
             )
-    inputs += circuit.inputs
-    systems = f" and {len(circuit.inputs)} hydronic controls" if circuit.inputs else ""
+    inputs += circuit.inputs + ventilation.inputs
+    parts = [f"{len(circuit.inputs)} hydronic controls"] if circuit.inputs else []
+    parts += [f"{len(ventilation.instances)} ventilation units"] if ventilation.instances else []
+    parts += [f"{len(arrays)} PV arrays"] if arrays else []
+    systems = f" with {', '.join(parts)}" if parts else ""
     return ConnectedModel(
         name="building_mpc",
         description=f"{len(zones)}-zone multilayer building model{systems}, connected components",

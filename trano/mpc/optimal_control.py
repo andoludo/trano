@@ -36,6 +36,9 @@ IpoptOption = float | int | str
 
 
 SOLVED = ("Solve_Succeeded", "Solved_To_Acceptable_Level")
+FUEL_METER = "EFue"  # boilers; every other kWh state is an electricity meter but the production of PV arrays
+PRODUCTION_METER = "EPro"
+NET_SMOOTHING = 1e-3  # [kWh] of the positive part of the net electricity
 
 
 @cache
@@ -153,7 +156,10 @@ class _Collocated:
         self.indoor = [interface.state_names.index(zone.indoor_temperature) for zone in interface.zones]
         self.lower, self.upper = np.array([self._bounds(signal) for signal in self.controls]).T
         self.power = self._power_coefficients()
-        self.meters = [i for i, state in enumerate(interface.states) if state.unit == "kWh"]
+        meters = {i: state.name.rsplit(".", 1)[-1] for i, state in enumerate(interface.states) if state.unit == "kWh"}
+        self.fuel_meters = [i for i, name in meters.items() if name == FUEL_METER]
+        self.production_meters = [i for i, name in meters.items() if name == PRODUCTION_METER]
+        self.electricity_meters = [i for i, name in meters.items() if name not in (FUEL_METER, PRODUCTION_METER)]
         self.offset = np.array([KELVIN if state.unit == "K" else 0.0 for state in interface.states])
         self._interval = self._interval_function(rhs)
         self._step = self._step_function(rhs)
@@ -216,6 +222,29 @@ class _Collocated:
             states.append(np.asarray(result["xf"]).ravel())
         return np.column_stack(states)
 
+    def _metered_cost(
+        self, z: ca.MX, price: np.ndarray, feed_in_price: np.ndarray | None, fuel_price: np.ndarray | None
+    ) -> ca.MX:
+        """Cost read from the meters of the systems [kWh over each step], exact for any power law.
+
+        Electricity is netted over each step: the import is the smooth positive part of consumption minus
+        production, the export the rest (``0.5*(x + sqrt(x^2 + d^2))``, ``d`` = 1 Wh: smooth for IPOPT).
+        """
+        cost = ca.MX(0)
+
+        def drawn(rows: list[int]) -> ca.MX:
+            return ca.sum1(z[rows, 1:] - z[rows, :-1]) if rows else ca.MX.zeros(1, z.shape[1] - 1)
+
+        if self.fuel_meters:
+            cost += ca.sum2(ca.DM(fuel_price if fuel_price is not None else price).T * drawn(self.fuel_meters))
+        if self.electricity_meters or self.production_meters:
+            net = drawn(self.electricity_meters) - drawn(self.production_meters)
+            bought = 0.5 * (net + ca.sqrt(net**2 + NET_SMOOTHING**2))
+            sold = bought - net
+            sell = feed_in_price if feed_in_price is not None else price
+            cost += ca.sum2(ca.DM(price).T * bought) - ca.sum2(ca.DM(sell).T * sold)
+        return cost
+
     def _bound_temperatures(self, opti: ca.Opti, z: ca.MX) -> None:
         low, high = self.settings.temperature_bounds
         temperatures = [i for i, state in enumerate(self.interface.states) if state.unit == "K"]
@@ -276,11 +305,15 @@ class OptimalControl(_Collocated):
         price: np.ndarray,
         guess_states: np.ndarray | None = None,
         guess_controls: np.ndarray | None = None,
+        feed_in_price: np.ndarray | None = None,
+        fuel_price: np.ndarray | None = None,
     ) -> OptimalControlResult:
         """Optimal controls over the horizon of ``disturbances`` (disturbances, N).
 
-        ``comfort_lower`` is the lowest indoor temperature, (N,) or (zones, N) [K]; ``price`` the cost of the
-        energy drawn by the controls, (N,) [per kWh].
+        ``comfort_lower`` is the lowest indoor temperature, (N,) or (zones, N) [K]. ``price`` is the cost of the
+        electricity bought and of the heat of ideal emitters, (N,) [per kWh]; the PV production first covers the
+        electricity of the step, the rest is sold at ``feed_in_price`` (``price`` by default); ``fuel_price`` is
+        the cost of the boiler fuel (``price`` by default).
         """
         settings = self.settings
         n_x, horizon, degree = len(self.interface.states), disturbances.shape[1], settings.degree
@@ -304,9 +337,7 @@ class OptimalControl(_Collocated):
 
         power = ca.DM(self.power * (self.upper - self.lower)).T @ v + float(self.power @ self.lower)
         energy = ca.sum2(ca.DM(price).T * power) * settings.time_step / 3.6e6
-        if self.meters:  # fuel and electricity meters of the systems [kWh], exact for any power law
-            drawn = ca.sum1(z[self.meters, 1:] - z[self.meters, :-1])
-            energy += ca.sum2(ca.DM(price).T * drawn)
+        energy += self._metered_cost(z, price, feed_in_price, fuel_price)
         hours = settings.time_step / 3600
         comfort = settings.comfort_weight * hours * (ca.sumsqr(slack) + ca.sum1(ca.sum2(slack)))
         moves = settings.move_weight * ca.sumsqr(v[:, 1:] - v[:, :-1]) if horizon > 1 else 0
@@ -434,6 +465,7 @@ def receding_horizon(  # noqa: PLR0913
     price: np.ndarray,
     horizon: int,
     plant: Plant | None = None,
+    feed_in_price: np.ndarray | None = None,
 ) -> ClosedLoopResult:
     """Model predictive control: at each step, solve over ``horizon`` steps and apply the first controls.
 
@@ -458,6 +490,7 @@ def receding_horizon(  # noqa: PLR0913
             np.asarray(price)[window],
             guess_states=guess_states,
             guess_controls=guess_controls,
+            feed_in_price=None if feed_in_price is None else np.asarray(feed_in_price)[window],
         )
         statuses.append(result.status)
         times.append(result.solve_time)

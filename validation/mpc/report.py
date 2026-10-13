@@ -38,4 +38,17 @@ def render_report(comparisons: list[CaseComparison]) -> str:
             for comparison in circuits
             for circuit in comparison.circuits
         )
+    energies = [comparison for comparison in ordered if comparison.energies]
+    if energies:
+        lines += [
+            "",
+            "| Case | System | Energy | Buildings [kWh] | mpc [kWh] | Deviation |",
+            "|---|---|---|---|---|---|",
+        ]
+        lines.extend(
+            f"| {comparison.case} | {energy.system} | {energy.quantity} | {energy.reference_kwh:.1f} | "
+            f"{energy.model_kwh:.1f} | {_percent(energy.deviation)} |"
+            for comparison in energies
+            for energy in comparison.energies
+        )
     return "\n".join(lines)

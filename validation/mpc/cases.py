@@ -89,9 +89,11 @@ CASES = {
         ),
         MPCCase(
             id="residential_after",
+            fine_replay=True,
             path=EXAMPLES / "residential_after_renovation.yaml",
             days=28,
-            description="Six-zone semi-detached house after renovation, January, Uccle",
+            description="Six-zone semi-detached house after renovation: air-to-water heat pump with a buffer, "
+            "radiators, balanced ventilation with heat recovery, PV, January, Uccle",
         ),
     )
 }

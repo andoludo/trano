@@ -21,11 +21,14 @@ ROOT_PACKAGE = "Trano.MPC.Components"
 
 _BLOCK = re.compile(r"^\s*(?:partial\s+)?(package|model|connector)\s+(\w+)\b")
 _END = re.compile(r"^\s*end\s+(\w+)\s*;")
+_ATTRIBUTES = r'((?:[^()"]|"[^"]*")*)'  # modifiers in parentheses; quoted strings may hold parentheses ("J/(kg.K)")
 _PARAMETER = re.compile(
-    r'^\s*parameter\s+(Real|Integer)\s+(\w+)(?:\[(\w+)\])?(?:\(([^)]*)\))?(?:\s*=\s*([^"\s;]+))?\s*(?:"([^"]*)")?\s*;'
+    r"^\s*parameter\s+(Real|Integer)\s+(\w+)(?:\[(\w+)\])?(?:\("
+    + _ATTRIBUTES
+    + r'\))?(?:\s*=\s*([^"\s;]+))?\s*(?:"([^"]*)")?\s*;'
 )
-_INPUT = re.compile(r'^\s*input\s+Real\s+(\w+)(?:\(([^)]*)\))?\s*(?:"([^"]*)")?\s*;')
-_STATE = re.compile(r'^\s*Real\s+(\w+)(?:\[(\w+)\])?\(([^)]*fixed\s*=\s*true[^)]*)\)\s*(?:"([^"]*)")?\s*;')
+_INPUT = re.compile(r"^\s*input\s+Real\s+(\w+)(?:\(" + _ATTRIBUTES + r'\))?\s*(?:"([^"]*)")?\s*;')
+_STATE = re.compile(r"^\s*Real\s+(\w+)(?:\[(\w+)\])?\(" + _ATTRIBUTES + r'\)\s*(?:"([^"]*)")?\s*;')
 _UNIT = re.compile(r'unit\s*=\s*"([^"]*)"')
 _START = re.compile(r"start\s*=\s*(\w+)")
 
@@ -124,7 +127,7 @@ def parse_library(source: str) -> dict[str, ComponentClass]:
         elif input_ := _INPUT.match(line):
             name, attributes, description = input_.groups()
             inputs.append(ComponentInput(name=name, unit=_unit(attributes), description=description or ""))
-        elif state := _STATE.match(line):
+        elif (state := _STATE.match(line)) and re.search(r"fixed\s*=\s*true", state.group(3)):
             name, dimension, attributes, description = state.groups()
             start = _START.search(attributes)
             states.append(

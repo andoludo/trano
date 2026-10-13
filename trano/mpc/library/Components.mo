@@ -436,6 +436,54 @@ package Components "Primitive components of Trano.MPC: connectable models that t
     end Reference;
   end Hydronics;
 
+  package Ventilation "Mechanical ventilation (after trano's Buildings system D)"
+
+    model HeatRecoveryUnit
+      "Balanced ventilation of n zones through a constant-effectiveness heat recovery (Buildings ConstantEffectiveness)"
+      parameter Integer n "Number of ventilated zones";
+      parameter Real mNom[n](each unit="kg/s") "Supply (and extract) air flow of each zone at full speed";
+      parameter Real eps = 0.8 "Effectiveness of the heat recovery";
+      parameter Real cpAir(unit="J/(kg.K)") = 1006 "Specific heat capacity of air";
+      parameter Real dTFan(unit="K") = 0 "Heating of the supply air by the fans (constant pressure fans)";
+      parameter Real PNom(unit="W") = 0 "Electrical power of the fans at full speed";
+      parameter Real E0(unit="kWh") = 0 "Initial reading of the electricity meter";
+      input Real y "Air flow relative to the nominal one (control), 0 to 1";
+      input Real TOut(unit="K") "Outdoor air temperature";
+      Real EFan(unit="kWh", start=E0, fixed=true) "Electricity meter of the fans";
+      Interfaces.HeatPort zone[n] "Air of the ventilated zones";
+      Real TSup(unit="K") "Supply air temperature";
+      Real PFan(unit="W") "Electrical power of the fans";
+    protected
+      Real TExt(unit="K") "Extract air temperature: the zone air mixed by flow";
+    equation
+      TExt = sum(mNom[i]*zone[i].T for i in 1:n)/sum(mNom[i] for i in 1:n);
+      TSup = TOut + eps*(TExt - TOut) + dTFan;
+      for i in 1:n loop
+        zone[i].Q_flow = y*mNom[i]*cpAir*(zone[i].T - TSup);
+      end for;
+      PFan = PNom*y;
+      der(EFan) = PFan/3.6e6;
+    end HeatRecoveryUnit;
+  end Ventilation;
+
+  package Electrical "Electricity production"
+
+    model Photovoltaic "PV array (Buildings PVSimpleOriented): P = A*fAct*eta*eta_DCAC*(HDir + HDif)"
+      parameter Real A(unit="m2") "Module area";
+      parameter Real eta = 0.2 "Module efficiency";
+      parameter Real fAct = 0.9 "Active share of the area";
+      parameter Real eta_DCAC = 0.9 "Inverter efficiency";
+      parameter Real E0(unit="kWh") = 0 "Initial reading of the production meter";
+      input Real HDir(unit="W/m2") "Direct irradiance on the array";
+      input Real HDif(unit="W/m2") "Diffuse irradiance on the array";
+      Real EPro(unit="kWh", start=E0, fixed=true) "Electricity produced";
+      Real P(unit="W") "Electrical power produced";
+    equation
+      P = A*fAct*eta*eta_DCAC*(HDir + HDif);
+      der(EPro) = P/3.6e6;
+    end Photovoltaic;
+  end Electrical;
+
   package Sources "Boundary conditions and heat inputs"
 
     model PrescribedTemperature "Temperature imposed by an input"

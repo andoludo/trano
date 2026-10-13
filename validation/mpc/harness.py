@@ -49,7 +49,8 @@ FINE_REPLAY_INTERVAL = 300  # [s] interval of the replayed controls of a fine-re
 # the variables of a Buildings reference the comparison reads
 REFERENCE_VARIABLES = (
     r".*(heaPorAir\\.T|heatPortCon\\.Q_flow|heatPortRad\\.Q_flow|QHea_flow|QCoo_flow|\\.m_flow|\\.y|"
-    r"TSupply\\.T|TReturn\\.T|supTemp\\.T|retTemp\\.T|ySet|yMea|QCon_flow|TableData2D\\.P|_sensor_[0-9]+\\.T)"
+    r"TSupply\\.T|TReturn\\.T|supTemp\\.T|retTemp\\.T|ySet|yMea|QCon_flow|TableData2D\\.P|_sensor_[0-9]+\\.T|"
+    r"TSup\\.T|PFan\\.y|PEle\\.y|QFue\\.y|pv_[0-9]+\\.P)"
 )
 REFERENCE = "Buildings"
 
@@ -76,11 +77,25 @@ class CircuitComparison(BaseModel):
     circulating: float = Field(1.0, description="Share of the time compared: while the water circulates")
 
 
+class EnergyComparison(BaseModel):
+    """Energy drawn or produced by a system over the case, mpc meter against Buildings."""
+
+    system: str
+    quantity: str = Field(description="fuel, electricity or production")
+    reference_kwh: float
+    model_kwh: float
+
+    @property
+    def deviation(self) -> float:
+        return (self.model_kwh - self.reference_kwh) / self.reference_kwh if self.reference_kwh else 0.0
+
+
 class CaseComparison(BaseModel):
     case: str
     model: str = Field(description="mpc zone model, e.g. R3C2, connected")
     zones: list[ZoneComparison]
     circuits: list[CircuitComparison] = Field(default_factory=list)
+    energies: list[EnergyComparison] = Field(default_factory=list)
     wall_time: float
 
     @property
@@ -224,6 +239,65 @@ def _hydronic_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict
     return columns
 
 
+def _ventilation_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
+    """Speed of each ventilation unit as Buildings ran it: its supply duct flows over their nominal flows."""
+    from trano.elements.system import Duct
+    from trano.mpc.components.ventilation import ventilated_zones, ventilation_units
+
+    columns = {}
+    for unit in ventilation_units(network):
+        ducts = [duct for duct in network.graph.succ[unit] if isinstance(duct, Duct)]
+        nominal = sum(zone.nominal_flow for zone in ventilated_zones(unit, network))
+        flow = sum(
+            (_interval_mean(reader, find_variable(reader, f"{duct.name}.m_flow"), grid) for duct in ducts),
+            start=np.zeros(len(grid)),
+        )
+        columns[f"{sanitize_name(str(unit.name))}_y"] = flow / nominal if nominal else flow
+    return columns
+
+
+def _energies(reader: Reader, mpc_reader: Reader, network: Network, grid: np.ndarray) -> list[EnergyComparison]:
+    """Fuel and electricity of the productions and fans, production of the PV arrays, against the mpc meters."""
+    from trano.elements.system import Boiler
+    from trano.mpc.components.hydronics import hydronic_graph
+    from trano.mpc.components.photovoltaics import photovoltaic_arrays
+    from trano.mpc.components.ventilation import ventilation_units
+
+    rows: list[tuple[str, str, str, str]] = []  # system, quantity, Buildings power, mpc meter
+    for element in hydronic_graph(network).nodes:
+        if not isinstance(element, Boiler):
+            continue
+        name = sanitize_name(str(element.name))
+        if getattr(element, "variant", "default") == "air_water_heat_pump":
+            rows.append((name, "electricity", f"{element.name}.PEle.y", f"rc.{name}.EEle"))
+        else:
+            rows.append((name, "fuel", f"{element.name}.QFue.y", f"rc.{name}.EFue"))
+    for unit in ventilation_units(network):
+        name = sanitize_name(str(unit.name))
+        rows.append((name, "electricity", f"{unit.name}.PFan.y", f"rc.{name}.EFan"))
+    for array in photovoltaic_arrays(network):
+        name = sanitize_name(str(array.name))
+        rows.append((name, "production", f"{array.name}.P", f"rc.{name}.EPro"))
+    comparisons = []
+    for system, quantity, power, meter in rows:
+        try:
+            reference = float(
+                np.sum(_interval_mean(reader, find_variable(reader, power), grid)[:-1]) * INTERVAL / 3.6e6
+            )
+        except ValueError:
+            continue
+        readings = _on_grid(mpc_reader, meter, grid)
+        comparisons.append(
+            EnergyComparison(
+                system=system,
+                quantity=quantity,
+                reference_kwh=abs(reference),
+                model_kwh=float(readings[-1] - readings[0]),
+            )
+        )
+    return comparisons
+
+
 def _production_control(element: object) -> str:
     """Control of a production in the Buildings model: boiler part load ratio or compressor speed."""
     if getattr(element, "variant", "default") == "air_water_heat_pump":
@@ -304,21 +378,31 @@ def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
             pairs.append((f"{name} return", f"{element.name}.TReturn.T", f"rc.{name}.inlet.T"))
         elif isinstance(element, TemperatureSensor):
             pairs.append((f"{name}", f"{element.name}.T", f"rc.{name}.T"))
+    from trano.mpc.components.ventilation import ventilation_units
+
     active = _circulating(reader, network, grid)
+    always = np.ones(len(grid), dtype=bool)
+    masks = dict.fromkeys(label for label, _, _ in pairs)
+    for unit in ventilation_units(network):
+        name = sanitize_name(str(unit.name))
+        pairs.append((f"{name} supply air", f"{unit.name}.TSup.T", f"rc.{name}.TSup"))
+        masks[f"{name} supply air"] = always
     comparisons = []
     for label, reference_variable, mpc_variable in pairs:
+        mask = masks.get(label)
+        selected = active if mask is None else mask
         try:
-            expected = _on_grid(reader, find_variable(reader, reference_variable), grid)[active]
+            expected = _on_grid(reader, find_variable(reader, reference_variable), grid)[selected]
         except ValueError:
             continue
-        error = _on_grid(mpc_reader, mpc_variable, grid)[active] - expected
+        error = _on_grid(mpc_reader, mpc_variable, grid)[selected] - expected
         comparisons.append(
             CircuitComparison(
                 variable=label,
                 rmse=float(np.sqrt(np.mean(error**2))),
                 bias=float(np.mean(error)),
                 mean_reference=float(np.mean(expected) - 273.15),
-                circulating=float(np.mean(active)),
+                circulating=float(np.mean(selected)),
             )
         )
     return comparisons
@@ -353,6 +437,7 @@ def compare(
     }
     if multilayer:
         columns |= _hydronic_replay(reader, buildings_network, replay.astype(float))
+        columns |= _ventilation_replay(reader, buildings_network, replay.astype(float))
     network.external_data = _write_data(directory / "heat.csv", replay - case.start_time, columns)
     result = _simulate(network, directory, _options(case), f"{case.id}-{variant}")
     mpc_reader = _reader(result)
@@ -386,5 +471,6 @@ def compare(
         model="Multilayer" if multilayer else f"{model_type.value}{', connected' if connected else ''}",
         zones=zones,
         circuits=_circuits(reader, mpc_reader, network, grid) if multilayer else [],
+        energies=_energies(reader, mpc_reader, network, grid) if multilayer else [],
         wall_time=time.monotonic() - started,
     )
