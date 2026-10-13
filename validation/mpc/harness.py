@@ -44,6 +44,13 @@ logger = logging.getLogger(__name__)
 CACHE_ROOT = ROOT / ".cache" / "mpc_validation"
 TOLERANCE = 1e-6
 INTERVAL = 900  # [s] output interval of both simulations and of the replayed heat
+HYDRONIC_REFERENCE_INTERVAL = 60  # [s] output interval of the Buildings reference of a hydronic case
+HYDRONIC_REPLAY_INTERVAL = 300  # [s] interval of the replayed controls of a hydronic case
+# the variables of a Buildings reference the comparison reads
+REFERENCE_VARIABLES = (
+    r".*(heaPorAir\\.T|heatPortCon\\.Q_flow|heatPortRad\\.Q_flow|QHea_flow|QCoo_flow|\\.m_flow|\\.y|"
+    r"TSupply\\.T|TReturn\\.T|supTemp\\.T|retTemp\\.T|ySet|yMea|QCon_flow|TableData2D\\.P|_sensor_[0-9]+\\.T)"
+)
 REFERENCE = "Buildings"
 
 
@@ -92,12 +99,14 @@ def _network(case: MPCCase, library: Library, directory: Path) -> Network:
     return network
 
 
-def _options(case: MPCCase) -> SimulationOptions:
+def _options(case: MPCCase, reference: bool = False) -> SimulationOptions:
+    fine = reference and case.hydronic
     return SimulationOptions(
         start_time=case.start_time,
         end_time=case.end_time,
         tolerance=TOLERANCE,
-        number_of_intervals=(case.end_time - case.start_time) // INTERVAL,
+        number_of_intervals=(case.end_time - case.start_time) // (HYDRONIC_REFERENCE_INTERVAL if fine else INTERVAL),
+        variable_filter=REFERENCE_VARIABLES if fine else None,
     )
 
 
@@ -187,7 +196,7 @@ def _interval_mean(reader: Reader, variable: str, grid: np.ndarray) -> np.ndarra
 def reference(case: MPCCase) -> tuple[Network, Path]:
     directory = case_directory(case, REFERENCE)
     network = _network(case, Library.from_configuration(REFERENCE), directory)
-    return network, _simulate(network, directory, _options(case), f"{case.id}-{REFERENCE}")
+    return network, _simulate(network, directory, _options(case, reference=True), f"{case.id}-{REFERENCE}")
 
 
 def _write_data(path: Path, grid: np.ndarray, columns: dict[str, np.ndarray]) -> Path:
@@ -198,7 +207,7 @@ def _write_data(path: Path, grid: np.ndarray, columns: dict[str, np.ndarray]) ->
 
 def _hydronic_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict[str, np.ndarray]:
     """The hydronic controls of the mpc model, as Buildings ran them: branch flows, three-way valve positions and
-    boiler part load ratios (the ``FlowValve``, ``ThreeWayValve``/``DivertingValve`` and ``Boiler`` inputs)."""
+    boiler part load ratios or compressor speeds, as means over each interval (they move faster than it)."""
     from trano.elements.system import Boiler, ThreeWayValve, Valve
     from trano.mpc.components.hydronics import hydronic_graph
 
@@ -206,12 +215,19 @@ def _hydronic_replay(reader: Reader, network: Network, grid: np.ndarray) -> dict
     for element in hydronic_graph(network).nodes:
         name = sanitize_name(element.name)
         if isinstance(element, Valve):
-            columns[f"{name}_m_flow"] = _on_grid(reader, find_variable(reader, f"{element.name}.m_flow"), grid)
+            columns[f"{name}_m_flow"] = _interval_mean(reader, find_variable(reader, f"{element.name}.m_flow"), grid)
         elif isinstance(element, ThreeWayValve):
-            columns[f"{name}_y"] = _on_grid(reader, find_variable(reader, f"{element.name}.y"), grid)
+            columns[f"{name}_y"] = _interval_mean(reader, find_variable(reader, f"{element.name}.y"), grid)
         elif isinstance(element, Boiler):
-            columns[f"{name}_y"] = _on_grid(reader, find_variable(reader, f"{element.name}.boi.y"), grid)
+            columns[f"{name}_y"] = _interval_mean(reader, find_variable(reader, _production_control(element)), grid)
     return columns
+
+
+def _production_control(element: object) -> str:
+    """Control of a production in the Buildings model: boiler part load ratio or compressor speed."""
+    if getattr(element, "variant", "default") == "air_water_heat_pump":
+        return f"{element.name}.airToWaterTableData2D.ySet"  # type: ignore[attr-defined]
+    return f"{element.name}.boi.y"  # type: ignore[attr-defined]
 
 
 def _hourly(values: np.ndarray) -> np.ndarray:
@@ -258,7 +274,10 @@ def _circuits(reader: Reader, mpc_reader: Reader, network: Network, grid: np.nda
     pairs = []
     for element in hydronic_graph(network).nodes:
         name = sanitize_name(element.name)
-        if isinstance(element, Boiler):
+        if isinstance(element, Boiler) and getattr(element, "variant", "default") == "air_water_heat_pump":
+            pairs.append((f"{name} supply", f"{element.name}.supTemp.T", f"rc.{name}.T"))
+            pairs.append((f"{name} return", f"{element.name}.retTemp.T", f"rc.{name}.inlet.T"))
+        elif isinstance(element, Boiler):
             pairs.append((f"{name} supply", f"{element.name}.TSupply.T", f"rc.{name}.T"))
             pairs.append((f"{name} return", f"{element.name}.TReturn.T", f"rc.{name}.inlet.T"))
         elif isinstance(element, TemperatureSensor):
@@ -304,10 +323,13 @@ def compare(
         update={"rc_model_type": model_type, "connected": connected or multilayer, "envelope": envelope}
     )
     network = _network(case, library, directory)
-    columns = {f"{zone}_QHea": values for zone, values in heat.items()}
+    replay = np.arange(case.start_time, case.end_time + 1, HYDRONIC_REPLAY_INTERVAL if case.hydronic else INTERVAL)
+    columns = {
+        f"{sanitize_name(space.name)}_QHea": _emitter_heat(reader, space, replay.astype(float)) for space in spaces
+    }
     if multilayer:
-        columns |= _hydronic_replay(reader, buildings_network, grid)
-    network.external_data = _write_data(directory / "heat.csv", grid - case.start_time, columns)
+        columns |= _hydronic_replay(reader, buildings_network, replay.astype(float))
+    network.external_data = _write_data(directory / "heat.csv", replay - case.start_time, columns)
     result = _simulate(network, directory, _options(case), f"{case.id}-{variant}")
     mpc_reader = _reader(result)
     radiator_heat = _radiator_heat(mpc_reader, network, grid) if multilayer else {}

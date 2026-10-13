@@ -185,7 +185,7 @@ def boiler_instance(boiler: "Boiler", name: str, control: str) -> Instance:
     variant = getattr(boiler, "variant", "default")
     if variant not in ("default", "without_storage"):
         raise NotImplementedError(
-            f"Production {boiler.name} ({variant}): the mpc library models boilers only for now; "
+            f"Production {boiler.name} ({variant}): the mpc library models boilers and air-to-water heat pumps; "
             "use HydronicSettings(production='supply_temperature') for an ideal production."
         )
     if str(parameters.use_storage_tank).lower() == "true":  # type: ignore[union-attr]
@@ -455,6 +455,12 @@ class _Builder:
                     },
                 )
             )
+            return
+        if getattr(element, "variant", "default") == "air_water_heat_pump":
+            from trano.mpc.components.heat_pump import heat_pump_instance
+
+            speed = self.control(f"{name}_y", "1", f"Compressor speed of {element.name}", name)
+            self.add(heat_pump_instance(element, name, speed))
             return
         self.add(
             boiler_instance(element, name, self.control(f"{name}_y", "1", f"Part load ratio of {element.name}", name))

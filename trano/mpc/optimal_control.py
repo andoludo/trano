@@ -10,8 +10,9 @@ over a horizon of ``N`` steps is
                 lower_k - slack_k <= indoor temperature of each zone,   slack >= 0,
                 the bounds of each control (valve flows, valve positions, boiler part load ratios),
 
-where ``P(u)`` is the energy drawn by the controls: the fuel power ``y*Q_flow_nominal/eta_nominal`` of each
-boiler and the heat of each ideal zone heating input. The controls and states are scaled (controls to their
+where ``P(u)*dt`` is the energy drawn over a step: the increase of the fuel and electricity meters of the systems
+(boilers, heat pumps: states in kWh, so that a nonlinear power is integrated exactly) and the heat of each ideal
+zone heating input. The controls and states are scaled (controls to their
 range, temperatures in degC) so that IPOPT sees well-conditioned variables.
 """
 
@@ -36,11 +37,21 @@ def _default_ipopt() -> dict[str, IpoptOption]:
     return {"print_level": 0, "sb": "yes", "max_iter": 1000, "tol": 1e-6}
 
 
-class OptimalControlSettings(BaseModel):
+class CollocationSettings(BaseModel):
+    """Discretization of the model and solver options, shared by control and estimation."""
+
     model_config = ConfigDict(frozen=True)
 
-    time_step: float = Field(900.0, gt=0, description="Length of a control step [s]")
+    time_step: float = Field(900.0, gt=0, description="Length of a step [s]")
     degree: int = Field(3, ge=1, le=9, description="Radau collocation points per step")
+    default_heat_bound: float = Field(1e4, gt=0, description="Upper bound of a heat input without one [W]")
+    temperature_bounds: tuple[float, float] = Field(
+        (KELVIN - 30, KELVIN + 100), description="Bounds of every temperature state (air, walls, water) [K]"
+    )
+    ipopt: dict[str, IpoptOption] = Field(default_factory=_default_ipopt, description="IPOPT options")
+
+
+class OptimalControlSettings(CollocationSettings):
     comfort_weight: float = Field(1e3, ge=0, description="Cost of one kelvin-hour of discomfort")
     move_weight: float = Field(1e-2, ge=0, description="Cost of a full-range change of a control between steps")
     effort_weight: float = Field(
@@ -49,11 +60,12 @@ class OptimalControlSettings(BaseModel):
         description="Cost of a control at full range per step: separates the controls that deliver the same heat "
         "(boiler temperature, mixing, branch flow), whose flat valley IPOPT would otherwise crawl along",
     )
-    default_heat_bound: float = Field(1e4, gt=0, description="Upper bound of a heat input without one [W]")
-    temperature_bounds: tuple[float, float] = Field(
-        (KELVIN - 30, KELVIN + 100), description="Bounds of every temperature state (air, walls, water) [K]"
-    )
-    ipopt: dict[str, IpoptOption] = Field(default_factory=_default_ipopt, description="IPOPT options")
+
+
+class EstimationSettings(CollocationSettings):
+    measurement_noise: float = Field(0.1, gt=0, description="Standard deviation of a measurement [K]")
+    process_noise: float = Field(0.05, gt=0, description="Standard deviation of the model error over a step [K]")
+    arrival_noise: float = Field(2.0, gt=0, description="Standard deviation of the prior of the first state [K]")
 
 
 @dataclass(frozen=True)
@@ -86,14 +98,12 @@ def _collocation(degree: int) -> tuple[np.ndarray, np.ndarray]:
     return c, d
 
 
-class OptimalControl:
-    """Optimal control problem of a building model, solved with IPOPT."""
+class _Collocated:
+    """The model of an interface, collocated on Radau points, with its scaled controls and a CVODES simulator."""
 
-    def __init__(
-        self, interface: MPCModelInterface, rhs: ca.Function, settings: OptimalControlSettings | None = None
-    ) -> None:
+    def __init__(self, interface: MPCModelInterface, rhs: ca.Function, settings: CollocationSettings) -> None:
         self.interface = interface
-        self.settings = settings or OptimalControlSettings()
+        self.settings = settings
         self.controls = interface.controls
         self.disturbances = interface.disturbances
         self.control_index = [interface.input_names.index(signal.name) for signal in self.controls]
@@ -101,6 +111,7 @@ class OptimalControl:
         self.indoor = [interface.state_names.index(zone.indoor_temperature) for zone in interface.zones]
         self.lower, self.upper = np.array([self._bounds(signal) for signal in self.controls]).T
         self.power = self._power_coefficients()
+        self.meters = [i for i, state in enumerate(interface.states) if state.unit == "kWh"]
         self.offset = np.array([KELVIN if state.unit == "K" else 0.0 for state in interface.states])
         self._interval = self._interval_function(rhs)
         self._step = self._step_function(rhs)
@@ -114,18 +125,8 @@ class OptimalControl:
         return signal.minimum if signal.minimum is not None else 0.0, upper
 
     def _power_coefficients(self) -> np.ndarray:
-        """Energy drawn per unit of each control [W]: boiler fuel, ideal zone heat; zero for valves."""
-        parameters = dict(zip(self.interface.parameter_names, self.interface.parameter_values, strict=True))
-        coefficients = []
-        for signal in self.controls:
-            nominal = parameters.get(f"{signal.system}.Q_flow_nominal")
-            if signal.system and nominal is not None and signal.name == f"{signal.system}_y":
-                coefficients.append(nominal / parameters[f"{signal.system}.eta_nominal"])
-            elif signal.unit == "W":
-                coefficients.append(1.0)
-            else:
-                coefficients.append(0.0)
-        return np.array(coefficients)
+        """Heat drawn per unit of each control [W]: the ideal zone heat inputs (systems have energy meters)."""
+        return np.array([1.0 if signal.unit == "W" else 0.0 for signal in self.controls])
 
     def _inputs(self, u: ca.MX, d: ca.MX) -> ca.MX:
         """The input vector of the model, controls and disturbances at their places."""
@@ -140,7 +141,8 @@ class OptimalControl:
         parameters = ca.DM(self.interface.parameter_values)
         offset = ca.DM(self.offset)
         z0 = ca.MX.sym("z0", n_x)
-        zc = ca.MX.sym("zc", n_x, degree)
+        flat = ca.MX.sym("zc", n_x * degree)  # the collocation points of the step, stacked
+        zc = ca.reshape(flat, n_x, degree)
         v = ca.MX.sym("v", len(self.controls))
         w = ca.MX.sym("w", len(self.disturbances))
         u = ca.DM(self.lower) + ca.DM(self.upper - self.lower) * v
@@ -150,7 +152,7 @@ class OptimalControl:
             slope = sum(c[r, j] * points[r] for r in range(degree + 1))
             residuals.append(step * rhs(0, points[j] + offset, self._inputs(u, w), parameters) - slope)
         end = sum(d[r] * points[r] for r in range(degree + 1))
-        return ca.Function("interval", [z0, zc, v, w], [ca.vertcat(*residuals), end])
+        return ca.Function("interval", [z0, flat, v, w], [ca.vertcat(*residuals), end])
 
     def _step_function(self, rhs: ca.Function) -> ca.Function:
         """One step of the model with CVODES, controls and disturbances held."""
@@ -172,7 +174,40 @@ class OptimalControl:
             states.append(np.asarray(result["xf"]).ravel())
         return np.column_stack(states)
 
-    # ------------------------------------------------------------------ solve
+    def _bound_temperatures(self, opti: ca.Opti, z: ca.MX) -> None:
+        low, high = self.settings.temperature_bounds
+        temperatures = [i for i, state in enumerate(self.interface.states) if state.unit == "K"]
+        if temperatures:
+            opti.subject_to(opti.bounded(low - KELVIN, ca.vec(z[temperatures, :]), high - KELVIN))
+
+    def _steps(self, z: ca.MX, zc: ca.MX, v: ca.MX | ca.DM, disturbances: np.ndarray) -> tuple[ca.MX, ca.MX]:
+        """Collocation residuals and end states of every step.
+
+        The steps are called one by one and the whole problem is expanded to SX by IPOPT's ``expand`` option: the
+        exact Hessian is then the one IPOPT converges with on these nonconvex problems (a ``map`` of the step,
+        mathematically equal, made IPOPT crawl).
+        """
+        residuals, ends = [], []
+        for k in range(disturbances.shape[1]):
+            residual, end = self._interval(z[:, k], zc[:, k], v[:, k], ca.DM(disturbances[:, k]))
+            residuals.append(residual)
+            ends.append(end)
+        return ca.horzcat(*residuals), ca.horzcat(*ends)
+
+    def _scaled(self, controls: np.ndarray) -> np.ndarray:
+        return np.asarray((controls - self.lower[:, None]) / (self.upper - self.lower)[:, None])
+
+
+class OptimalControl(_Collocated):
+    """Optimal control problem of a building model, solved with IPOPT."""
+
+    settings: OptimalControlSettings
+
+    def __init__(
+        self, interface: MPCModelInterface, rhs: ca.Function, settings: OptimalControlSettings | None = None
+    ) -> None:
+        super().__init__(interface, rhs, settings or OptimalControlSettings())
+
     def solve(  # noqa: PLR0913
         self,
         initial_state: np.ndarray,
@@ -197,21 +232,21 @@ class OptimalControl:
         v = opti.variable(n_u, horizon)
         slack = opti.variable(n_z, horizon)
 
-        residuals, ends = self._mapped(z, zc, v, disturbances, horizon)
+        residuals, ends = self._steps(z, zc, v, disturbances)
         opti.subject_to(ca.vec(residuals) == 0)
         opti.subject_to(z[:, 1:] == ends)
         opti.subject_to(z[:, 0] == initial_state - self.offset)
         opti.subject_to(opti.bounded(0, ca.vec(v), 1))
-        low, high = self.settings.temperature_bounds
-        temperatures = [i for i, state in enumerate(self.interface.states) if state.unit == "K"]
-        if temperatures:
-            opti.subject_to(opti.bounded(low - KELVIN, ca.vec(z[temperatures, 1:]), high - KELVIN))
+        self._bound_temperatures(opti, z[:, 1:])
         opti.subject_to(ca.vec(slack) >= 0)
         for zone, index in enumerate(self.indoor):
             opti.subject_to(z[index, 1:] + KELVIN + slack[zone, :] >= ca.DM(lower[zone, :]).T)
 
         power = ca.DM(self.power * (self.upper - self.lower)).T @ v + float(self.power @ self.lower)
         energy = ca.sum2(ca.DM(price).T * power) * settings.time_step / 3.6e6
+        if self.meters:  # fuel and electricity meters of the systems [kWh], exact for any power law
+            drawn = ca.sum1(z[self.meters, 1:] - z[self.meters, :-1])
+            energy += ca.sum2(ca.DM(price).T * drawn)
         hours = settings.time_step / 3600
         comfort = settings.comfort_weight * hours * (ca.sumsqr(slack) + ca.sum1(ca.sum2(slack)))
         moves = settings.move_weight * ca.sumsqr(v[:, 1:] - v[:, :-1]) if horizon > 1 else 0
@@ -225,7 +260,7 @@ class OptimalControl:
         scaled_guess = guess_states - self.offset[:, None]
         opti.set_initial(z, scaled_guess)
         opti.set_initial(zc, np.tile(scaled_guess[:, 1:], (degree, 1)))
-        opti.set_initial(v, (guess_controls - self.lower[:, None]) / (self.upper - self.lower)[:, None])
+        opti.set_initial(v, self._scaled(guess_controls))
         opti.solver("ipopt", {"print_time": False, "expand": True}, dict(settings.ipopt))
         started = time.monotonic()
         try:
@@ -245,13 +280,85 @@ class OptimalControl:
             solve_time=elapsed,
         )
 
-    def _mapped(self, z: ca.MX, zc: ca.MX, v: ca.MX, disturbances: np.ndarray, horizon: int) -> tuple[ca.MX, ca.MX]:
-        n_x, degree = len(self.interface.states), self.settings.degree
-        residuals, ends = [], []
-        for k in range(horizon):
-            residual, end = self._interval(
-                z[:, k], ca.reshape(zc[:, k], n_x, degree), v[:, k], ca.DM(disturbances[:, k])
-            )
-            residuals.append(residual)
-            ends.append(end)
-        return ca.horzcat(*residuals), ca.horzcat(*ends)
+
+@dataclass(frozen=True)
+class EstimationResult:
+    states: np.ndarray  # (states, N + 1) over the window; the last column is the current estimate
+    process_noise: np.ndarray  # (states, N) estimated model errors
+    status: str
+    solve_time: float
+
+    @property
+    def current(self) -> np.ndarray:
+        return self.states[:, -1]
+
+    @property
+    def success(self) -> bool:
+        return self.status == "Solve_Succeeded"
+
+
+class MovingHorizonEstimation(_Collocated):
+    """State estimation over a past window: the trajectory of the model closest to the measurements.
+
+    Minimizes, over the states of the window, the weighted squares of the measurement errors, of the model errors
+    over each step (process noise added to the end state of the step) and of the deviation of the first state
+    from its prior (arrival cost). The unmeasured states (walls, water, buffers) follow from the dynamics.
+    """
+
+    settings: EstimationSettings
+
+    def __init__(
+        self, interface: MPCModelInterface, rhs: ca.Function, settings: EstimationSettings | None = None
+    ) -> None:
+        super().__init__(interface, rhs, settings or EstimationSettings())
+
+    def estimate(
+        self,
+        prior: np.ndarray,
+        controls: np.ndarray,
+        disturbances: np.ndarray,
+        measurements: np.ndarray,
+        measured: list[str] | None = None,
+    ) -> EstimationResult:
+        """States over the window of ``controls`` (controls, N) as applied and ``disturbances`` (disturbances, N).
+
+        ``measurements`` (measured states, N + 1) are the measured values of the states ``measured`` (the zone air
+        temperatures by default) at the step boundaries; NaN marks a missing measurement.
+        """
+        settings = self.settings
+        measured = measured or [zone.indoor_temperature for zone in self.interface.zones]
+        rows = [self.interface.state_names.index(name) for name in measured]
+        n_x, horizon, degree = len(self.interface.states), controls.shape[1], settings.degree
+        opti = ca.Opti()
+        z = opti.variable(n_x, horizon + 1)
+        zc = opti.variable(n_x * degree, horizon)
+        noise = opti.variable(n_x, horizon)
+        residuals, ends = self._steps(z, zc, ca.DM(self._scaled(controls)), disturbances)
+        opti.subject_to(ca.vec(residuals) == 0)
+        opti.subject_to(z[:, 1:] == ends + noise)
+        self._bound_temperatures(opti, z)
+
+        offsets = self.offset[rows][:, None]
+        observed = ~np.isnan(measurements)
+        errors = (z[rows, :] - ca.DM(np.where(observed, measurements - offsets, 0.0))) * ca.DM(observed.astype(float))
+        objective = ca.sumsqr(errors) / settings.measurement_noise**2
+        objective += ca.sumsqr(noise) / settings.process_noise**2
+        objective += ca.sumsqr(z[:, 0] - (prior - self.offset)) / settings.arrival_noise**2
+        opti.minimize(objective)
+
+        guess = self.simulate(prior, controls, disturbances) - self.offset[:, None]
+        opti.set_initial(z, guess)
+        opti.set_initial(zc, np.tile(guess[:, 1:], (degree, 1)))
+        opti.solver("ipopt", {"print_time": False, "expand": True}, dict(settings.ipopt))
+        started = time.monotonic()
+        try:
+            solution = opti.solve()
+            values, status = solution.value, opti.stats()["return_status"]
+        except RuntimeError:
+            values, status = opti.debug.value, opti.stats()["return_status"]
+        return EstimationResult(
+            states=np.atleast_2d(values(z)).reshape(n_x, horizon + 1) + self.offset[:, None],
+            process_noise=np.atleast_2d(values(noise)).reshape(n_x, horizon),
+            status=status,
+            solve_time=time.monotonic() - started,
+        )

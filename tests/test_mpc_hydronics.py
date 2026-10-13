@@ -155,3 +155,47 @@ def test_openmodelica_compiles_the_hydronic_model(tmp_path: Path) -> None:
     options = SimulationOptions(check_only=True)
     results = simulate(tmp_path, _network("three_zones_hydronic"), options=options, container_name="compile_hydronic")
     assert is_success(results, options=options), results.output.decode(errors="replace")[-3000:]
+
+
+# ---------------------------------------------------------------------------------------- heat pumps
+def test_air_water_heat_pumps_become_heat_pump_components() -> None:
+    model = multilayer_model(_network("house_infiltration_air_water_heat_pump"))
+    heat_pump = next(instance for instance in model.instances if instance.component == "Hydronics.HeatPump")
+    assert heat_pump.inputs == {"y": "boiler_001_y", "TEva": "TOut"}
+    assert heat_pump.parameters["UA"] > 0  # the buffer tank loses heat to its room
+    assert "boiler_001.EEle" in model.state_names  # electricity meter
+
+
+@needs_connected_export
+@pytest.mark.parametrize("source", [258.15, 266.15, 270.15, 280.15, 288.15])
+@pytest.mark.parametrize("condenser", [308.15, 318.15, 323.15, 328.15])
+def test_the_heat_pump_follows_the_buildings_tables(source: float, condenser: float) -> None:
+    """Heating capacity and power at full speed against the interpolated Vitocal tables, scaled as Buildings."""
+    from trano.mpc.components import ConnectedModel, Instance, TopInput, library_source
+    from trano.mpc.components.heat_pump import VITOCAL_HEATING, VITOCAL_POWER, bilinear, heat_pump_instance
+
+    heat_pump = next(
+        node
+        for node in _network("house_infiltration_air_water_heat_pump").graph.nodes
+        if getattr(node, "variant", None) == "air_water_heat_pump"
+    )
+    instance = heat_pump_instance(heat_pump, "hp", "y")
+    model = ConnectedModel(
+        name="M",
+        inputs=[TopInput(name="y"), TopInput(name="TOut", unit="K")],
+        instances=[
+            instance,
+            Instance(name="val", component="Hydronics.FlowValve", inputs={"m_flow": "0"}),
+            Instance(name="ref", component="Hydronics.Reference"),
+        ],
+        connections=[("hp.outlet", "val.inlet"), ("val.outlet", "ref.inlet"), ("ref.outlet", "hp.inlet")],
+    )
+    library = f"package Trano\npackage MPC\nconnector RealInput = input Real;\n{library_source()}\nend MPC;\nend Trano;"
+    export = rumoca.Session().loads(f"package T\n{library}\n{model.render()}\nend T;\n", model="T.M").to_casadi()
+    p = dict(model.parameters)
+    buffer = condenser - p["hp.dTCon"]  # condenser outlet at ``condenser`` at full speed
+    xdot = np.array(export.rhs(0, [buffer, 0.0], [1.0, source], export.default_parameters)).ravel()
+    heat = p["hp.C"] * xdot[0] - p["hp.UA"] * (p["hp.TAmb"] - buffer)
+    scale = p["hp.scaFac"]
+    assert heat == pytest.approx(scale * bilinear(VITOCAL_HEATING, condenser, source), rel=0.03)
+    assert xdot[1] * 3.6e6 == pytest.approx(scale * bilinear(VITOCAL_POWER, condenser, source), rel=0.05)

@@ -156,6 +156,9 @@ class SimulationOptions(BaseModel):
     number_of_intervals: int | None = Field(
         default=None, gt=0, description="Output points over the simulation; OpenModelica's default when unset."
     )
+    variable_filter: str | None = Field(
+        default=None, description="Regular expression of the variables to store (OpenModelica's variableFilter)."
+    )
 
     @property
     def simulate_arguments(self) -> str:
@@ -163,6 +166,8 @@ class SimulationOptions(BaseModel):
         arguments = [f"startTime = {self.start_time}", f"stopTime = {self.end_time}", f"tolerance = {self.tolerance}"]
         if self.number_of_intervals is not None:
             arguments.append(f"numberOfIntervals = {self.number_of_intervals}")
+        if self.variable_filter is not None:
+            arguments.append(f'variableFilter = "{self.variable_filter}"')
         return ", ".join(arguments)
 
 

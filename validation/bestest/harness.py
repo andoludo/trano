@@ -79,7 +79,9 @@ def normalized_model(model: str) -> str:
 
 def model_hash(model: str, library: str, options: SimulationOptions) -> str:
     digest = hashlib.sha256()
-    for part in (library, options.model_dump_json(), normalized_model(model)):
+    # an unset variable filter is left out: the runs cached before the option existed keep their hash
+    settings = options.model_dump_json(exclude={"variable_filter"} if options.variable_filter is None else None)
+    for part in (library, settings, normalized_model(model)):
         digest.update(part.encode())
         digest.update(b"\0")
     return digest.hexdigest()

@@ -12,7 +12,14 @@ from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
 from trano.mpc.interface import MPCModelInterface
 from trano.mpc.modelica import network_interface
-from trano.mpc.optimal_control import KELVIN, OptimalControl, OptimalControlSettings, _collocation
+from trano.mpc.optimal_control import (
+    KELVIN,
+    EstimationSettings,
+    MovingHorizonEstimation,
+    OptimalControl,
+    OptimalControlSettings,
+    _collocation,
+)
 
 MODELS = Path(__file__).parent / "models"
 
@@ -109,3 +116,27 @@ def test_the_optimal_control_heats_just_enough(hydronic: tuple[MPCModelInterface
     # the collocated trajectory is the one of the model under the optimal controls
     replay = ocp.simulate(x0, result.controls, _forecast(interface, hours))
     assert np.abs(replay[interface.state_names.index(interface.zones[0].indoor_temperature)] - indoor).max() < 0.2
+
+
+def test_moving_horizon_estimation_recovers_the_unmeasured_states(
+    hydronic: tuple[MPCModelInterface, object],
+) -> None:
+    """The house starts 2 K colder than the prior believes; only the zone air is measured, with noise."""
+    interface, export = hydronic
+    settings = EstimationSettings(time_step=3600)
+    estimator = MovingHorizonEstimation(interface, export.rhs, settings)  # type: ignore[attr-defined]
+    hours = np.arange(12.0)
+    disturbances = _forecast(interface, hours)
+    controls = np.tile(((estimator.lower + estimator.upper) / 2)[:, None], len(hours))
+    prior = np.array(interface.initial_state)
+    temperatures = np.array([state.unit == "K" for state in interface.states])
+    truth = estimator.simulate(prior - 2.0 * temperatures, controls, disturbances)
+    air = interface.state_names.index(interface.zones[0].indoor_temperature)
+    noise = np.random.default_rng(0).normal(0, 0.05, truth.shape[1])
+    result = estimator.estimate(prior, controls, disturbances, truth[[air]] + noise)
+
+    assert result.success, result.status
+    error = np.abs(result.current - truth[:, -1])[temperatures]
+    believed = np.abs(estimator.simulate(prior, controls, disturbances)[:, -1] - truth[:, -1])[temperatures]
+    assert error[interface.state_names.index(interface.zones[0].indoor_temperature)] < 0.1
+    assert np.max(error) < 0.5 * np.max(believed)

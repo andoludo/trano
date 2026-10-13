@@ -119,7 +119,7 @@ def create_model(
 
 
 @app.command()
-def simulate_model(
+def simulate_model(  # noqa: PLR0913 - one argument per CLI option
     model: Annotated[
         str,
         typer.Argument(help="Local path to the '.yaml' model configuration file."),
@@ -131,6 +131,10 @@ def simulate_model(
     start: Annotated[int | None, typer.Argument(help="Start simulation time.")] = 0,
     end: Annotated[int | None, typer.Argument(help="End simulation time.")] = 2 * 3600 * 24 * 7,
     tolerance: Annotated[float | None, typer.Argument(help="Simulation tolerance.")] = 1e-4,
+    envelope: Annotated[
+        str,
+        typer.Option(help="'mpc' library: 'rc' zones, or 'multilayer' zones and hydronic circuits."),
+    ] = "rc",
 ) -> None:
     options = SimulationLibraryOptions(
         start_time=start,
@@ -147,7 +151,7 @@ def simulate_model(
             description=f"Generating model {Path(model).stem} with library {options.library_name}",
             total=None,
         )
-        network = _create_network(model, options.library_name)
+        network = _create_network(model, options.library_name, envelope=envelope)
         model_ = Path(model).resolve()
         progress.remove_task(task)
         print(f"{CHECKMARK} Model generated successfully.")

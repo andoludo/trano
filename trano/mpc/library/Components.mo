@@ -347,8 +347,10 @@ package Components "Primitive components of Trano.MPC: connectable models that t
       parameter Real TAmb(unit="K") = 288.15 "Temperature of the boiler room";
       parameter Real C(unit="J/K") "Heat capacity of the water and of the dry mass";
       parameter Real T0(unit="K") = 293.15 "Initial water temperature";
+      parameter Real E0(unit="kWh") = 0 "Initial reading of the fuel meter";
       input Real y "Part load ratio, 0 to 1 (control)";
       Real T(unit="K", start=T0, fixed=true) "Water temperature";
+      Real EFue(unit="kWh", start=E0, fixed=true) "Fuel meter";
       Interfaces.WaterPort inlet;
       Interfaces.WaterPort outlet;
       Real QFue(unit="W") "Fuel power";
@@ -360,9 +362,71 @@ package Components "Primitive components of Trano.MPC: connectable models that t
       QFue = y*Q_flow_nominal/eta_nominal;
       QWat = eta*QFue + UA*(TAmb - T);
       C*der(T) = inlet.m_flow*cp*(inlet.T - T) + QWat;
+      der(EFue) = QFue/3.6e6;
       inlet.m_flow + outlet.m_flow = 0;
       outlet.T = T;
     end Boiler;
+
+    model HeatPump
+      "Air-to-water heat pump (Buildings ModularReversible TableData2D) charging a mixed buffer, compressor speed y"
+      parameter Integer m "Number of interior knots of the source temperature";
+      parameter Real tEva0 "First knot of the source temperature [degC]";
+      parameter Real tEva[m] "Interior knots of the source temperature [degC]";
+      parameter Real dTEva = 1 "Smoothing of the kinks of the table interpolation [K]";
+      parameter Real aQ0 "Heating capacity per unit speed: (q0 + q1*TCon + q2*TCon^2), TCon in degC; each qk is";
+      parameter Real bQ0 "  ak + bk*(TEva - tEva0) + sum(ck[i]*hinge(TEva - tEva[i])), linear between the knots";
+      parameter Real cQ0[m];
+      parameter Real aQ1;
+      parameter Real bQ1;
+      parameter Real cQ1[m];
+      parameter Real aQ2;
+      parameter Real bQ2;
+      parameter Real cQ2[m];
+      parameter Real aP0 "Electrical power per unit speed, as the heating capacity";
+      parameter Real bP0;
+      parameter Real cP0[m];
+      parameter Real aP1;
+      parameter Real bP1;
+      parameter Real cP1[m];
+      parameter Real aP2;
+      parameter Real bP2;
+      parameter Real cP2[m];
+      parameter Real scaFac "Scaling of the table data to the nominal capacity";
+      parameter Real dTCon(unit="K") "Condenser outlet above the buffer at full speed";
+      parameter Real UA(unit="W/K") = 0 "Heat loss conductance of the buffer";
+      parameter Real TAmb(unit="K") = 288.15 "Temperature around the buffer";
+      parameter Real C(unit="J/K") "Heat capacity of the buffer and condenser water";
+      parameter Real T0(unit="K") = 318.15 "Initial buffer temperature";
+      parameter Real E0(unit="kWh") = 0 "Initial reading of the electricity meter";
+      input Real y "Compressor speed, 0 to 1 (control)";
+      input Real TEva(unit="K") "Source (outdoor air) temperature";
+      Real T(unit="K", start=T0, fixed=true) "Buffer temperature";
+      Real EEle(unit="kWh", start=E0, fixed=true) "Electricity meter";
+      Interfaces.WaterPort inlet;
+      Interfaces.WaterPort outlet;
+      Real QCon(unit="W") "Heat to the water";
+      Real PEle(unit="W") "Electrical power of the compressor";
+    protected
+      Real te "Source temperature [degC]";
+      Real tc "Condenser outlet temperature [degC]";
+      Real q[3] "Coefficients of the heating capacity in the condenser temperature";
+      Real p[3] "Coefficients of the electrical power in the condenser temperature";
+    equation
+      te = TEva - 273.15;
+      tc = T - 273.15 + dTCon*y;
+      q[1] = aQ0 + bQ0*(te - tEva0) + sum(cQ0[i]*0.5*(te - tEva[i] + sqrt((te - tEva[i])^2 + dTEva^2)) for i in 1:m);
+      q[2] = aQ1 + bQ1*(te - tEva0) + sum(cQ1[i]*0.5*(te - tEva[i] + sqrt((te - tEva[i])^2 + dTEva^2)) for i in 1:m);
+      q[3] = aQ2 + bQ2*(te - tEva0) + sum(cQ2[i]*0.5*(te - tEva[i] + sqrt((te - tEva[i])^2 + dTEva^2)) for i in 1:m);
+      p[1] = aP0 + bP0*(te - tEva0) + sum(cP0[i]*0.5*(te - tEva[i] + sqrt((te - tEva[i])^2 + dTEva^2)) for i in 1:m);
+      p[2] = aP1 + bP1*(te - tEva0) + sum(cP1[i]*0.5*(te - tEva[i] + sqrt((te - tEva[i])^2 + dTEva^2)) for i in 1:m);
+      p[3] = aP2 + bP2*(te - tEva0) + sum(cP2[i]*0.5*(te - tEva[i] + sqrt((te - tEva[i])^2 + dTEva^2)) for i in 1:m);
+      QCon = y*scaFac*(q[1] + q[2]*tc + q[3]*tc^2);
+      PEle = y*scaFac*(p[1] + p[2]*tc + p[3]*tc^2);
+      C*der(T) = inlet.m_flow*cp*(inlet.T - T) + QCon + UA*(TAmb - T);
+      der(EEle) = PEle/3.6e6;
+      inlet.m_flow + outlet.m_flow = 0;
+      outlet.T = T;
+    end HeatPump;
 
     model Reference "One per closed circuit (the expansion vessel): drops the mass balance the loop makes redundant"
       Interfaces.WaterPort inlet;
