@@ -31,6 +31,35 @@ WEATHER = (
 )
 
 
+PROBE = """package Probe
+  connector Port Real T; flow Real Q_flow; end Port;
+  model Node parameter Real C = 1; Real T(start = 290, fixed = true); Port port;
+  equation port.T = T; C*der(T) = port.Q_flow; end Node;
+  model Link Port a; Port b; equation a.Q_flow = a.T - b.T; a.Q_flow + b.Q_flow = 0; end Link;
+  model M Node n1; Node n2; Link l; equation connect(n1.port, l.a); connect(l.b, n2.port); end M;
+end Probe;
+"""
+
+
+@cache
+def _exports_connected_models() -> bool:
+    """rumoca 0.10.3 (its main branch) exports models made of connected components; the releases up to 0.10.2
+    stop at their connection equations."""
+    import rumoca
+
+    try:
+        rumoca.Session().loads(PROBE, model="Probe.M").to_casadi()
+    except Exception:
+        return False
+    return True
+
+
+needs_connected_export = pytest.mark.skipif(
+    not _exports_connected_models(),
+    reason="the CasADi export of connected models needs rumoca >= 0.10.3 (rumoca main)",
+)
+
+
 def _model(path: Path) -> str:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -60,6 +89,7 @@ def test_the_package_holds_the_model_and_its_runnable_wrapper() -> None:
     assert "Buildings." not in building_mpc  # the physics only: no table, no event, no Buildings component
 
 
+@needs_connected_export
 @pytest.mark.parametrize(
     ("path", "states"),
     [(BESTEST / "case_600FF.yaml", 25), (MODELS / "single_zone_hydronic.yaml", 27)],
@@ -73,6 +103,7 @@ def test_rumoca_translates_the_model(path: Path, states: int) -> None:
     assert all(np.isfinite(description.initial_state))
 
 
+@needs_connected_export
 def test_the_roles_come_from_the_model() -> None:
     model = _export(MODELS / "single_zone_hydronic.yaml")
     roles = Roles.infer(model.description)
@@ -107,6 +138,7 @@ def _radiator_conductance(power: float, t_in: float, t_out: float, fraction: flo
     return float(brentq(lambda conductance: delivered(conductance) - power, 1e-3, 1e3))
 
 
+@needs_connected_export
 def test_the_radiator_conductance_is_solved_as_buildings() -> None:
     model = _export(MODELS / "single_zone_hydronic.yaml")
     values = dict(zip(model.description.parameter_names, model.description.parameter_values, strict=True))
@@ -129,6 +161,7 @@ def test_unmodelled_systems_are_reported() -> None:
         _model(MODELS / "single_zone_air_handling_unit_complex_vav.yaml")
 
 
+@needs_connected_export
 def test_the_optimal_control_heats_the_zone() -> None:
     model = _export(MODELS / "single_zone_hydronic.yaml")
     ocp = OptimalControl(model, settings=OptimalControlSettings(time_step=3600))
