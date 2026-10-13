@@ -17,6 +17,7 @@ from trano.mpc.optimal_control import (
     EstimationSettings,
     MovingHorizonEstimation,
     OptimalControl,
+    SOLVED,
     OptimalControlSettings,
     _collocation,
     receding_horizon,
@@ -157,7 +158,7 @@ def test_the_receding_horizon_keeps_the_zone_comfortable(hydronic: tuple[MPCMode
         np.full(18, 0.1),
         horizon=12,
     )
-    assert all(status == "Solve_Succeeded" for status in loop.statuses), loop.statuses
+    assert all(status in SOLVED for status in loop.statuses), loop.statuses
     indoor = loop.states[interface.state_names.index(interface.zones[0].indoor_temperature)]
     assert np.all(indoor[1:] >= comfort[:6] - 0.1)
     assert np.all(loop.controls >= ocp.lower[:, None] - 1e-6)

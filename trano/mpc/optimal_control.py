@@ -34,8 +34,20 @@ KELVIN = 273.15
 IpoptOption = float | int | str
 
 
+SOLVED = ("Solve_Succeeded", "Solved_To_Acceptable_Level")
+
+
 def _default_ipopt() -> dict[str, IpoptOption]:
-    return {"print_level": 0, "sb": "yes", "max_iter": 1000, "tol": 1e-6}
+    """IPOPT options. The heating controls are redundant (branch flows, mixing, production all deliver heat), so that
+    the last digits of the optimum lie along flat valleys: an acceptable level stops the crawl along them."""
+    return {
+        "print_level": 0,
+        "sb": "yes",
+        "max_iter": 1000,
+        "tol": 1e-6,
+        "acceptable_tol": 1e-5,
+        "acceptable_iter": 10,
+    }
 
 
 class CollocationSettings(BaseModel):
@@ -49,7 +61,12 @@ class CollocationSettings(BaseModel):
     temperature_bounds: tuple[float, float] = Field(
         (KELVIN - 30, KELVIN + 100), description="Bounds of every temperature state (air, walls, water) [K]"
     )
-    ipopt: dict[str, IpoptOption] = Field(default_factory=_default_ipopt, description="IPOPT options")
+    ipopt: dict[str, IpoptOption] = Field(
+        default_factory=dict, description="IPOPT options, added to (or replacing) the defaults of _default_ipopt"
+    )
+
+    def ipopt_options(self) -> dict[str, IpoptOption]:
+        return {**_default_ipopt(), **self.ipopt}
 
 
 class OptimalControlSettings(CollocationSettings):
@@ -80,7 +97,7 @@ class OptimalControlResult:
 
     @property
     def success(self) -> bool:
-        return self.status == "Solve_Succeeded"
+        return self.status in SOLVED
 
 
 def _collocation(degree: int) -> tuple[np.ndarray, np.ndarray]:
@@ -262,7 +279,7 @@ class OptimalControl(_Collocated):
         opti.set_initial(z, scaled_guess)
         opti.set_initial(zc, np.tile(scaled_guess[:, 1:], (degree, 1)))
         opti.set_initial(v, self._scaled(guess_controls))
-        opti.solver("ipopt", {"print_time": False, "expand": True}, dict(settings.ipopt))
+        opti.solver("ipopt", {"print_time": False, "expand": True}, settings.ipopt_options())
         started = time.monotonic()
         try:
             solution = opti.solve()
@@ -295,7 +312,7 @@ class EstimationResult:
 
     @property
     def success(self) -> bool:
-        return self.status == "Solve_Succeeded"
+        return self.status in SOLVED
 
 
 class MovingHorizonEstimation(_Collocated):
@@ -350,7 +367,7 @@ class MovingHorizonEstimation(_Collocated):
         guess = self.simulate(prior, controls, disturbances) - self.offset[:, None]
         opti.set_initial(z, guess)
         opti.set_initial(zc, np.tile(guess[:, 1:], (degree, 1)))
-        opti.solver("ipopt", {"print_time": False, "expand": True}, dict(settings.ipopt))
+        opti.solver("ipopt", {"print_time": False, "expand": True}, settings.ipopt_options())
         started = time.monotonic()
         try:
             solution = opti.solve()
