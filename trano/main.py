@@ -27,10 +27,16 @@ class LibraryChoice(str, Enum):
     mpc = "mpc"
 
 
-def _create_network(model: str, library: str, rc_model_type: RCModelType | None = None) -> Network:
+def _create_network(
+    model: str, library: str, rc_model_type: RCModelType | None = None, connected: bool = False
+) -> Network:
     library_ = Library.from_configuration(library)
     if library_.is_rc and rc_model_type is not None:
         library_ = library_.model_copy(update={"rc_model_type": rc_model_type})
+    if connected:
+        if not library_.is_rc:
+            raise typer.BadParameter("--connected only applies to the 'mpc' library.")
+        library_ = library_.model_copy(update={"connected": True})
     model_ = Path(model).resolve()
     return convert_network(str(model_.stem), model_, library=library_)
 
@@ -65,6 +71,13 @@ def create_model(
         RCModelType | None,
         typer.Option(help="RC zone model of the 'mpc' library (default: R3C2)."),
     ] = None,
+    connected: Annotated[
+        bool,
+        typer.Option(
+            help="'mpc' library: assemble building_mpc from Trano.MPC.Components with connect() statements "
+            "(CasADi export with rumoca >= 0.10.3)."
+        ),
+    ] = False,
 ) -> None:
     with Progress(
         SpinnerColumn(),
@@ -76,7 +89,7 @@ def create_model(
             description=f"Generating model {modelica_model_path.name} with library {library}",
             total=None,
         )
-        network = _create_network(model, library, rc_model_type)
+        network = _create_network(model, library, rc_model_type, connected)
         modelica_model = network.model()
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)

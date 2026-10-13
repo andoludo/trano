@@ -115,10 +115,12 @@
 {% endfor %}
 {%- endmacro -%}
 
-{%- macro zones_library(library_zones, ground_temperature, irradiances) -%}
+{%- macro zones_library(library_zones, ground_temperature, irradiances, components) -%}
 {% autoescape false %}
 package MPC "CasADi/IPOPT compatible RC models for model predictive control"
   connector RealInput = input Real "Real input signal (library independent, for CasADi export)";
+
+{{ components }}
 
 package Zones "Single-zone RC models"
 {% for zone in library_zones %}
@@ -231,7 +233,7 @@ equation
   connect(occupancy_{{ zone.name }}.y[2], QInt_{{ zone.name }}.u[2]);
 {% endif %}
   connect(QInt_{{ zone.name }}.y, rc.{{ zone.prefix }}QInt);
-  {{ zone.name }}_TZon = rc.{{ zone.prefix }}Ti;
+  {{ zone.name }}_TZon = rc.{{ zone.indoor_temperature }};
 {% endfor %}
 {% for control in runnable.controls %}
 {% if control.column is none %}
