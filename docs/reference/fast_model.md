@@ -337,11 +337,12 @@ the fan speed. Everything else is simulated by FastModel. Largest zone RMSE per 
 | BESTEST 600 / 900 (a year) | 1 | ideal heating and cooling | 0.65 K / 0.41 K |
 | Three zones (January) | 3 | ideal heaters, walls between zones | 0.18–0.49 K |
 | Heat pump house (January) | 6 | heat pump, buffer, radiators | 0.15–0.33 K |
-| Residential house before renovation (January) | 6 | gas boiler, radiators | 0.11–0.19 K |
+| Residential house before renovation (January) | 6 | gas boiler, radiators | 0.12–0.20 K |
 | Residential house after renovation (January) | 6 | heat pump, buffer, three-way valve, radiators, ventilation with heat recovery, PV | 0.12–0.17 K |
 
-The radiators deliver the heat of Buildings within 0.6–4.4 % CV(RMSE); the meters follow within a few percent
-(fuel +0.0 %, heat pump electricity −1.6 and −1.8 %, fans −0.6 %, PV 0.0 %).
+The radiators deliver the heat of Buildings within 0.7–4.3 % CV(RMSE); the meters follow within a few percent
+(fuel +0.0 %, heat pump electricity −1.6 and −1.8 %, fans −0.6 %, PV 0.0 %). Against IDEAS, on the
+renovated house, the zones stay within 0.31–0.39 K (see the showcase below).
 
 ### Speed
 
