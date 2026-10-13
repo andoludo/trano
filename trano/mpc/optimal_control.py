@@ -20,8 +20,9 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from functools import cache
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import casadi as ca
 import numpy as np
@@ -37,6 +38,28 @@ IpoptOption = float | int | str
 SOLVED = ("Solve_Succeeded", "Solved_To_Acceptable_Level")
 
 
+@cache
+def linear_solver() -> str:
+    """SPRAL when the IPOPT of CasADi has it, else MUMPS.
+
+    On the hydronic models SPRAL converges in far fewer iterations (24 hourly steps of the six-zone heat pump house:
+    35 iterations, against no convergence in 1000 with MUMPS).
+    """
+    x = ca.SX.sym("x")
+    options: dict[str, str | int | bool] = {
+        "ipopt.linear_solver": "spral",
+        "ipopt.print_level": 0,
+        "ipopt.sb": "yes",
+        "print_time": False,
+    }
+    try:
+        solver = ca.nlpsol("probe", "ipopt", {"x": x, "f": (x - 1) ** 2}, options)
+        solver(x0=0)
+    except RuntimeError:
+        return "mumps"
+    return "spral" if solver.stats()["return_status"] == "Solve_Succeeded" else "mumps"
+
+
 def _default_ipopt() -> dict[str, IpoptOption]:
     """IPOPT options. The heating controls are redundant (branch flows, mixing, production all deliver heat), so that
     the last digits of the optimum lie along flat valleys: an acceptable level stops the crawl along them."""
@@ -47,6 +70,7 @@ def _default_ipopt() -> dict[str, IpoptOption]:
         "tol": 1e-6,
         "acceptable_tol": 1e-5,
         "acceptable_iter": 10,
+        "linear_solver": linear_solver(),
     }
 
 
@@ -212,6 +236,24 @@ class _Collocated:
             ends.append(end)
         return ca.horzcat(*residuals), ca.horzcat(*ends)
 
+    def _solve(self, opti: ca.Opti) -> tuple[Callable[..., Any], str]:
+        """Solve with IPOPT; when SPRAL fails (it does on some cold starts), solve again with MUMPS."""
+        options = self.settings.ipopt_options()
+        attempts = [options]
+        if options.get("linear_solver") == "spral" and "linear_solver" not in self.settings.ipopt:
+            attempts.append({**options, "linear_solver": "mumps"})
+        values: Callable[..., Any] = opti.debug.value
+        status = "Not_Solved"
+        for attempt in attempts:
+            opti.solver("ipopt", {"print_time": False, "expand": True}, attempt)
+            try:
+                values, status = opti.solve().value, opti.stats()["return_status"]
+            except RuntimeError:
+                values, status = opti.debug.value, opti.stats()["return_status"]
+            if status in SOLVED:
+                break
+        return values, status
+
     def _scaled(self, controls: np.ndarray) -> np.ndarray:
         return np.asarray((controls - self.lower[:, None]) / (self.upper - self.lower)[:, None])
 
@@ -279,13 +321,8 @@ class OptimalControl(_Collocated):
         opti.set_initial(z, scaled_guess)
         opti.set_initial(zc, np.tile(scaled_guess[:, 1:], (degree, 1)))
         opti.set_initial(v, self._scaled(guess_controls))
-        opti.solver("ipopt", {"print_time": False, "expand": True}, settings.ipopt_options())
         started = time.monotonic()
-        try:
-            solution = opti.solve()
-            values, status = solution.value, opti.stats()["return_status"]
-        except RuntimeError:
-            values, status = opti.debug.value, opti.stats()["return_status"]
+        values, status = self._solve(opti)
         elapsed = time.monotonic() - started
         scaled = np.atleast_2d(values(v)).reshape(n_u, horizon)
         controls = self.lower[:, None] + (self.upper - self.lower)[:, None] * scaled
@@ -367,13 +404,8 @@ class MovingHorizonEstimation(_Collocated):
         guess = self.simulate(prior, controls, disturbances) - self.offset[:, None]
         opti.set_initial(z, guess)
         opti.set_initial(zc, np.tile(guess[:, 1:], (degree, 1)))
-        opti.solver("ipopt", {"print_time": False, "expand": True}, settings.ipopt_options())
         started = time.monotonic()
-        try:
-            solution = opti.solve()
-            values, status = solution.value, opti.stats()["return_status"]
-        except RuntimeError:
-            values, status = opti.debug.value, opti.stats()["return_status"]
+        values, status = self._solve(opti)
         return EstimationResult(
             states=np.atleast_2d(values(z)).reshape(n_x, horizon + 1) + self.offset[:, None],
             process_noise=np.atleast_2d(values(noise)).reshape(n_x, horizon),

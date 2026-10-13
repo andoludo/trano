@@ -163,3 +163,24 @@ def test_the_receding_horizon_keeps_the_zone_comfortable(hydronic: tuple[MPCMode
     assert np.all(indoor[1:] >= comfort[:6] - 0.1)
     assert np.all(loop.controls >= ocp.lower[:, None] - 1e-6)
     assert np.all(loop.controls <= ocp.upper[:, None] + 1e-6)
+
+
+def test_the_heat_pump_house_is_optimized() -> None:
+    """Six zones, a heat pump with its buffer, six radiator branches and a mixing valve: 6 hourly steps."""
+    path = MODELS / "house_infiltration_air_water_heat_pump.yaml"
+    library = Library.from_configuration("mpc").model_copy(update={"connected": True, "envelope": "multilayer"})
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        network = convert_network(path.stem, path, library=library)
+    interface = network_interface(network)
+    export = rumoca.Session().loads(network.model(), model=interface.model).to_casadi()
+    ocp = OptimalControl(interface, export.rhs, OptimalControlSettings(time_step=3600))
+    hours = 5.0 + np.arange(6.0)
+    comfort = np.where(hours >= 7, KELVIN + 19, KELVIN + 16)
+    result = ocp.solve(np.array(interface.initial_state), _forecast(interface, hours), comfort, np.full(6, 0.3))
+
+    assert result.success, result.status
+    indoor = [interface.state_names.index(zone.indoor_temperature) for zone in interface.zones]
+    assert np.all(result.states[indoor, 1:] >= comfort - 0.05)
+    assert "boiler_001.EEle" in interface.state_names  # the electricity of the heat pump is the energy cost
+    assert result.energy_cost >= 0

@@ -183,7 +183,7 @@ Built on this branch, all in `trano/mpc/` (Modelica library `trano/mpc/library/C
 | 4 distribution | done (set flows) | `components/hydronics.py`, mixing and diverting valves, splitter, mixer, pump, reference | mixed supply 0.42–0.67 K, return 1.2–1.5 K (no bias) |
 | 5 production | boiler and air-to-water heat pump with its buffer; no stratified tank, chiller or DHW | `Hydronics.Boiler`, `Hydronics.HeatPump`, `components/heat_pump.py` | boiler supply 0.40 K, heat pump buffer 0.31 K; zones 0.11–0.33 K (`docs/validation/mpc_library.md`) |
 | 6 closed-loop parity | not started | | |
-| 7 optimization | IPOPT OCP (Radau collocation), moving horizon estimation, receding-horizon loop; no do-mpc adapter, no Buildings plant in the loop yet | `optimal_control.py` | |
+| 7 optimization | IPOPT OCP (Radau collocation, SPRAL), moving horizon estimation, receding-horizon loop; no do-mpc adapter, no Buildings plant in the loop yet | `optimal_control.py` | 24 h ahead: 4 s (one zone), 40 s (six-zone heat pump house) |
 | 8 pressure-driven flows | not needed so far | | |
 
 Decisions taken while building (see [Decisions](#decisions-needed)):

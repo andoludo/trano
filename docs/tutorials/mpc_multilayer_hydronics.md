@@ -110,8 +110,22 @@ result.controls  # branch flows, valve positions, boiler part load ratio, hour b
 
 On the single-zone hydronic test house the solution lets the zone float down to the night set point, fires the
 boiler to reach 20 °C exactly at 7:00 and holds the bound, with the branch flow and the mixing modulated
-together (24 hourly steps, about 20 s); the trajectory of the model under these controls (CVODES) stays within
-0.2 K of the collocated one.
+together; the trajectory of the model under these controls (CVODES) stays within 0.2 K of the collocated one.
+IPOPT uses the SPRAL linear solver when CasADi ships it (MUMPS otherwise, and as a fallback): 24 hourly steps take
+about 4 s for that house and about 40 s for the six-zone heat pump house (111 states).
+
+The same discretization gives **state estimation** and the **closed loop**:
+
+```python
+from trano.mpc.optimal_control import MovingHorizonEstimation, receding_horizon
+
+# the states over a past window closest to the measured zone temperatures (walls, water and buffers follow)
+estimator = MovingHorizonEstimation(interface, export.rhs)
+estimate = estimator.estimate(prior_state, applied_controls, past_disturbances, measured_air_temperatures)
+
+# MPC: solve, apply the first controls to the plant, repeat (the plant defaults to the model itself)
+loop = receding_horizon(ocp, estimate.current, disturbances, comfort, price, horizon=12)
+```
 
 ## How close to Buildings
 
