@@ -284,7 +284,9 @@ class _Collocated:
         return values, status
 
     def _scaled(self, controls: np.ndarray) -> np.ndarray:
-        return np.asarray((controls - self.lower[:, None]) / (self.upper - self.lower)[:, None])
+        """Controls on [0, 1]; a control whose bounds are equal is fixed (0)."""
+        span = np.where(self.upper > self.lower, self.upper - self.lower, 1.0)
+        return np.asarray((controls - self.lower[:, None]) / span[:, None])
 
 
 class OptimalControl(_Collocated):

@@ -178,10 +178,10 @@ Built on this branch, all in `trano/mpc/` (Modelica library `trano/mpc/library/C
 |---|---|---|---|
 | 0 foundations | done | `components/{catalogue,model,rc}.py`, `validation/mpc/` | connected RC models equal the flat ones |
 | 1 single-zone envelope | done (multilayer zone instead of VDI 6007) | `components/envelope.py`, `Envelope.*` | BESTEST 600FF 0.39 K, 900FF 0.35 K RMSE (RC models: 2.3–7.3 K) |
-| 2 multi-zone envelope | done, without ventilation units | internal walls shared by their zones | three zones 0.18–0.49 K, residential 0.11–0.19 K |
+| 2 multi-zone envelope | done, with balanced ventilation units with heat recovery | internal walls shared by their zones, `Ventilation.HeatRecoveryUnit` | three zones 0.18–0.49 K, residential 0.11–0.19 K, ventilation supply air 0.30 K |
 | 3 emitters | done | `Hydronics.Radiator` (EN 442), `FlowValve`, `Valve` | radiator heat CV(RMSE) 0.6–3 %, NMBE within ±1 % |
 | 4 distribution | done (set flows) | `components/hydronics.py`, mixing and diverting valves, splitter, mixer, pump, reference | mixed supply 0.42–0.67 K, return 1.2–1.5 K (no bias) |
-| 5 production | boiler and air-to-water heat pump with its buffer; no stratified tank, chiller or DHW | `Hydronics.Boiler`, `Hydronics.HeatPump`, `components/heat_pump.py` | boiler supply 0.40 K, heat pump buffer 0.31 K; zones 0.11–0.33 K (`docs/validation/mpc_library.md`) |
+| 5 production | boiler, air-to-water heat pump with its buffer, PV; no stratified tank, chiller, DHW, battery or EV | `Hydronics.Boiler`, `Hydronics.HeatPump`, `Electrical.Photovoltaic` | both residential houses (before: boiler, after: heat pump, ventilation, PV): zones 0.11–0.19 K; heat pump electricity −1.8 %, PV 0.0 % |
 | 6 closed-loop parity | not started | | |
 | 7 optimization | IPOPT OCP (Radau collocation, SPRAL), moving horizon estimation, receding-horizon loop; no do-mpc adapter, no Buildings plant in the loop yet | `optimal_control.py` | 24 h ahead: 4 s (one zone), 40 s (six-zone heat pump house) |
 | 8 pressure-driven flows | not needed so far | | |

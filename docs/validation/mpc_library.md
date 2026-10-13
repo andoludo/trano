@@ -13,8 +13,9 @@ systems did:
 
 * the heat of the ideal emitters of each zone, for the envelope cases;
 * the flow of each radiator branch, the position of each three-way valve and the part load ratio of the boiler
-  (or the speed of the heat pump compressor), for the hydronic cases. Everything else is simulated by the
-  `mpc` model: the production, the water circuits, the radiators and the zones.
+  (or the speed of the heat pump compressor), for the hydronic cases, and the air flow of the ventilation unit.
+  Everything else is simulated by the `mpc` model: the production, the water circuits, the radiators, the
+  ventilation, the PV array and the zones.
 
 Weather, solar irradiance (direct, Perez diffuse) and occupancy come from the same Buildings blocks in both
 models. The zone air temperatures are compared every 15 minutes; the radiator heat hour by hour (ASHRAE
@@ -88,6 +89,12 @@ flow, so that their reading in a stagnant circuit says nothing of the circuit.
 | residential_before | Multilayer | bedroom_2_001 | 0.12 | -0.06 | 0.61 | 17.31 | 544 | 0.6 % | -0.1 % |
 | residential_before | Multilayer | bedroom_3_001 | 0.11 | -0.04 | 0.51 | 17.32 | 250 | 0.7 % | -0.1 % |
 | residential_before | Multilayer | bathroom_001 | 0.19 | -0.03 | 1.36 | 17.58 | 239 | 3.0 % | +0.1 % |
+| residential_after | Multilayer | living_001 | 0.17 | -0.13 | 0.56 | 20.16 | 201 | 2.0 % | -0.3 % |
+| residential_after | Multilayer | kitchen_001 | 0.13 | -0.09 | 0.34 | 20.08 | 125 | 1.8 % | -0.5 % |
+| residential_after | Multilayer | bedroom_1_001 | 0.13 | -0.08 | 0.38 | 18.14 | 24 | 2.8 % | -0.3 % |
+| residential_after | Multilayer | bedroom_2_001 | 0.12 | -0.08 | 0.34 | 17.90 | 46 | 2.2 % | -0.4 % |
+| residential_after | Multilayer | bedroom_3_001 | 0.12 | -0.06 | 0.36 | 18.02 | 15 | 2.3 % | -0.5 % |
+| residential_after | Multilayer | bathroom_001 | 0.13 | -0.06 | 0.52 | 19.09 | 51 | 4.4 % | -0.5 % |
 
 | Case | Water temperature | RMSE [K] | Bias [K] | Mean Buildings [degC] | Time compared (circulating) |
 |---|---|---|---|---|---|
@@ -97,6 +104,16 @@ flow, so that their reading in a stagnant circuit says nothing of the circuit.
 | residential_before | temperature_sensor_001 | 0.42 | -0.16 | 74.7 | 84 % |
 | residential_before | generator_001 supply | 0.40 | -0.10 | 74.7 | 84 % |
 | residential_before | generator_001 return | 1.47 | -0.27 | 39.6 | 84 % |
+| residential_after | generator_001 supply | 0.46 | -0.19 | 35.5 | 69 % |
+| residential_after | generator_001 return | 1.65 | -0.46 | 29.3 | 69 % |
+| residential_after | temperature_sensor_001 | 0.67 | -0.23 | 35.5 | 69 % |
+| residential_after | ahu_001 supply air | 0.30 | +0.29 | 16.0 | 100 % |
+
+| Case | System | Energy | Buildings [kWh] | mpc [kWh] | Deviation |
+|---|---|---|---|---|---|
+| residential_after | generator_001 | electricity | 130.6 | 128.2 | -1.8 % |
+| residential_after | ahu_001 | electricity | 17.2 | 17.0 | -0.6 % |
+| residential_after | pv_001 | production | 139.3 | 139.3 | -0.0 % |
 
 ## Reading the results
 
@@ -110,11 +127,19 @@ envelope removes it; the multilayer zone stays within 0.4–0.7 K.
 **Multi-zone envelope.** With walls and floors shared between zones, the three-zone house stays within
 0.18–0.49 K of Buildings (RC models: 1.2–2.8 K).
 
-**Hydronics.** In the two hydronic houses, only the branch flows, the three-way valve positions and the boiler part
+**Hydronics.** In the three hydronic houses (the residential house before renovation with its gas boiler, after
+renovation with its heat pump, ventilation and PV, and the heat pump test house), only the branch flows, the three-way valve positions and the boiler part
 load ratio or the heat pump compressor speed are replayed; the production, the water circuits, the radiators and
 the zones are simulated by the `mpc` model. The radiators deliver the heat of Buildings within 0.6–3 % CV(RMSE)
 and a bias below 1 % (the 21 % of the nearly unheated bedroom 3 of the heat pump house is on 4 kWh in four
-weeks); the zones follow within 0.11–0.33 K; the boiler supply and the heat pump buffer within 0.3–0.4 K. The
+weeks); the zones follow within 0.11–0.33 K; the boiler supply and the heat pump buffer within 0.3–0.5 K. The meters of
+the renovated house follow Buildings over the four weeks: heat pump electricity −1.8 %, fans −1.2 %, PV
+production 0.0 %.
+
+**Ventilation.** The supply air of the renovated house's unit stays within 0.30 K of Buildings, 0.29 K too warm on
+average: in Buildings the extract flow is 3 % below the supply flow (part of the supply leaves through the
+infiltration paths of the zones, as the pressures set it), so that the heat exchanger recovers on a smaller
+stream; the `mpc` unit is balanced. The
 return temperatures (1.2–1.5 K, without bias) mix the outlets of radiators whose flows the thermostatic valves
 modulate within the replay interval.
 
@@ -127,4 +152,4 @@ modulate within the replay interval.
 * The heat pump interpolates the EN 14511 tables in the source temperature as Buildings does, smoothed at the
   knots, and is quadratic in the condenser temperature (within 1 % of the tables up to 55 °C); its condenser
   outlet is approximated explicitly from the buffer temperature.
-* Ventilation units are not modelled yet.
+* Ventilation units are balanced (see above).

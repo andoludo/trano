@@ -10,7 +10,8 @@ into a CasADi ODE** for simulation, estimation and model predictive control with
   the sky and between the room surfaces, the transmitted solar radiation distributed on the room surfaces,
   infiltration, walls and floors shared between zones;
 * the hydronic circuits of the YAML are modelled: radiators (EN 442), radiator valves, mixing and diverting
-  three-way valves, junctions, pumps, sensors, gas boilers and air-to-water heat pumps with their buffer.
+  three-way valves, junctions, pumps, sensors, gas boilers and air-to-water heat pumps with their buffer;
+* balanced ventilation units with heat recovery (trano's `system_d`) and PV arrays.
 
 ```bash
 trano create-model house.yaml mpc --envelope multilayer   # writes house.mo and house.mpc.json
@@ -50,6 +51,8 @@ component keeps a few rules, so that the assembled model translates into an expl
 | `Thermal` | `HeatCapacitor`, `ThermalResistor`, `ThermalConductor`, `StarNode` (radiant star of a room) |
 | `Envelope` | `InteriorConvection`, `ExteriorConvection` (wind), `SkyRadiation`, `WindowSolar`, `WindowExteriorConvection`, `SolarDistribution` |
 | `Hydronics` | `Radiator` (EN 442), `FlowValve`, `Valve` (equal percentage), `ThreeWayValve` (mixing), `DivertingValve`, `Splitter`, `Mixer`, `Pump`, `TemperatureSensor`, `Boiler`, `HeatPump`, `PrescribedSupply`, `Reference` |
+| `Ventilation` | `HeatRecoveryUnit` (balanced ventilation with a constant-effectiveness heat recovery) |
+| `Electrical` | `Photovoltaic` |
 | `Sources` | prescribed and fixed temperatures, heat flows |
 
 ### Water circuits
@@ -67,8 +70,17 @@ conditions as Buildings does at initialisation, the heat is split between the zo
 Boilers are `BoilerPolynomial` (efficiency curve, water and dry mass, losses). Heat pumps are the
 `ModularReversible.AirToWaterTableData2D` of trano's `air_water_heat_pump` production: the interpolation of the
 EN 14511 tables of the Vitocal 251-A08 in the source temperature, smoothed at the table knots, scaled to the
-nominal capacity of the YAML, with the buffer tank. Boilers and heat pumps carry an energy meter state
-(`EFue`, `EEle` in kWh), so that an optimal control problem integrates their consumption exactly.
+nominal capacity of the YAML, with the buffer tank. Boilers, heat pumps, fans and PV arrays carry an energy meter
+state (`EFue`, `EEle`, `EFan`, `EPro` in kWh), so that an optimal control problem integrates their consumption
+and production exactly.
+
+### Ventilation and PV
+
+A ventilation unit (`system_d`) supplies each zone with the nominal flow of its supply duct, scaled by its speed,
+at `TOut + eps*(TExtract - TOut)` plus the heat of its fans, the extract air being the zone air mixed by flow (as
+trano's Buildings unit: constant-pressure fans and a constant-effectiveness heat exchanger). A PV array produces
+`A*fAct*eta*eta_DCAC*(HDir + HDif)` on the irradiance of its orientation (Buildings `PVSimpleOriented`); the
+optimal control counts its production against the electricity of each step (see below).
 
 ### Inputs and states
 
@@ -81,6 +93,7 @@ nominal capacity of the YAML, with the buffer tank. Boilers and heat pumps carry
 | `<valve>_m_flow` | flow of a radiator branch [kg/s] (control, between 0 and the nominal flow of the valve) |
 | `<three-way valve>_y` | share of supply water (control) |
 | `<boiler>_y` | boiler part load ratio, or heat pump compressor speed (control) |
+| `<air handling unit>_y` | air flow of a ventilation unit relative to its design flow (control; its bounds hold it at the design flow, as Buildings runs it, unless you relax them) |
 
 The interface (`house.mpc.json`) lists them in the order of the CasADi vectors, with their role, unit, bounds and
 the zone or system they act on; the zone air temperatures are the states `<zone>_air.T`.
@@ -90,7 +103,9 @@ the zone or system they act on; the zone air temperatures are the states `<zone>
 `trano.mpc.optimal_control.OptimalControl` sets up and solves the optimal control problem of any model of the
 `mpc` library: Radau collocation of the ODE (stable for the stiff water nodes whatever the step), IPOPT, a warm
 start from a simulation of the model (CVODES), control bounds from the interface, soft comfort bounds on the zone
-air temperatures and the energy cost read from the meters of the systems.
+air temperatures and the energy cost read from the meters of the systems. Electricity is netted over each step:
+the PV production first covers the heat pump and the fans, the rest is sold at `feed_in_price` (smoothly, so that
+IPOPT sees a differentiable cost); the boiler fuel has its own `fuel_price`.
 
 ```python
 import numpy as np
@@ -136,6 +151,9 @@ runnable `mpc` model, then compares the zones and the water temperatures. See th
 
 ## Limits
 
-* Ventilation units and ducts are not modelled yet: zones with mechanical ventilation lose it.
-* Boilers with a storage tank, water-to-water heat pumps and domestic hot water are refused for now.
+* Ventilation units are balanced (supply = extract): the small imbalance of Buildings, set by the pressures of
+  the zones and of their infiltration paths, is not modelled.
+* Boilers with a storage tank, water-to-water heat pumps, chillers, domestic hot water, batteries and EV
+  chargers are not modelled yet: a model that leaves a system of the YAML out raises an
+  `UnmodelledSystemWarning` naming it.
 * Flows are set by the valves; the pressure-driven sharing of flow between branches is not modelled.

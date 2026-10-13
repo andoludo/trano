@@ -21,6 +21,7 @@ AIR_DENSITY = 1.2  # [kg/m3]
 AIR_HEAT_CAPACITY = 1006.0  # [J/(kg.K)]
 FAN_EFFICIENCY = 0.5  # overall efficiency of the constant-pressure fans
 DEFAULT_EFFECTIVENESS = 0.8  # eps of PartialSystemD
+DESIGN_SPEED = 1.0  # bounds of the unit speed in the interface: the design flow
 
 
 @dataclass(frozen=True)
@@ -106,14 +107,16 @@ def ventilation_systems(network: "Network", zone_port: str = "{zone}_air.port") 
         if not zones:
             continue
         name = sanitize_name(str(unit.name))
+        # held at the design flow by default, as the Buildings unit runs: without an indoor air quality model, an
+        # optimizer free to lower it would stop the ventilation to save heat (relax the minimum to modulate it)
         control = TopInput(
             name=f"{name}_y",
             unit="1",
             description=f"Air flow of {unit.name} relative to the nominal one",
             control=True,
             system=name,
-            minimum=0.0,
-            maximum=1.0,
+            minimum=DESIGN_SPEED,
+            maximum=DESIGN_SPEED,
         )
         systems.inputs.append(control)
         systems.instances.append(ventilation_instance(unit, zones, control.name))
