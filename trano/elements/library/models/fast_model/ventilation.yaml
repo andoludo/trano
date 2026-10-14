@@ -56,8 +56,8 @@
         nPorts_b={{ macros.connections(element, 'port_b') }},
         m_flow_nominal={{ parameters.m_flow_nominal }},
         eps={{ parameters.eps }},
-        dpSup_nominal={{ parameters.dpSup_nominal }},
-        dpRet_nominal={{ parameters.dpRet_nominal }},
+        dpSup_nominal={{ parameters.dpSup_nominal if parameters.dpSup_nominal is defined else parameters.dp_nominal }},
+        dpRet_nominal={{ parameters.dpRet_nominal if parameters.dpRet_nominal is defined else parameters.dp_nominal }},
         y={{ element.name ~ '_y.y' if library == 'FastModelMPC' else '1' }})
   runnable:
     declaration: |-

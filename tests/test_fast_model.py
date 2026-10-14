@@ -348,3 +348,20 @@ def test_the_heat_meter_reads_the_return_sensor_without_its_water(library: str) 
     assert "nPorts_a=1" in meter.group(1) and "nPorts_b=1" in meter.group(1)
     assert re.findall(r"connect\((\w+)\.port_b\[\d\],heat_meter_sensor_001\.port_a\[\d\]\)", model) == ["boiler_001"]
     assert re.findall(r"connect\(heat_meter_sensor_001\.port_b\[\d\],(\w+)\.port_a\[\d\]\)", model) == ["pump_001"]
+
+
+@pytest.mark.parametrize("library", ["FastModel", "FastModelMPC"])
+def test_the_fans_take_the_nominal_pressure_rise_by_default(tmp_path: Path, library: str) -> None:
+    """Without supply_dp_nominal and return_dp_nominal, both fans raise dp_nominal, as in Buildings and IDEAS
+    (an unset parameter used to render an empty modifier, ``dpSup_nominal=,``, which OpenModelica cannot parse)."""
+    import yaml
+
+    data = yaml.safe_load((ROOT / "examples" / "residential_after_renovation.yaml").read_text())
+    [ahu] = [system["air_handling_unit"] for system in data["systems"] if "air_handling_unit" in system]
+    del ahu["parameters"]["supply_dp_nominal"], ahu["parameters"]["return_dp_nominal"]
+    path = tmp_path / "ahu_default_fan_pressures.yaml"
+    path.write_text(yaml.safe_dump(data))
+    model = _building_mpc(_model(path, library)).replace(" ", "")
+    unit = re.search(r"FastModel\.Ventilation\.HeatRecoveryUnitahu_001\((.*?)\)", model, re.DOTALL)
+    assert unit is not None
+    assert "dpSup_nominal=100," in unit.group(1) and "dpRet_nominal=100," in unit.group(1)
