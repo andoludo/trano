@@ -275,9 +275,8 @@
 
 - classes:
   - TemperatureSensor
-  - HeatMeterSensor
   library: [FastModel, FastModelMPC]
-  parameter_processing:
+  parameter_processing: &sensor_parameters
     function: default_parameters
   ports:
   - flow: inlet
@@ -290,14 +289,15 @@
     multi_connection: true
     names:
     - port_b
-  - flow: undirected
+  - &sensor_temperature
+    flow: undirected
     medium: data
     names:
     - T
     targets:
     - Control
     no_check: true
-  template: |-
+  template: &sensor_template |-
     FastModel.Hydronics.TemperatureSensor {{ element.name }}(
         {%- if library == 'FastModel' %}
         pressureDriven=true,
@@ -307,6 +307,34 @@
         {%- endif %}
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }})
+  variant: default
+
+# Heat meters: a temperature sensor on the water between the boiler and the pump. The temperature sensor it reads
+# the return temperature from is a signal in Buildings (TExt), not water: the meter's water only comes from and goes
+# to the boiler and the pump.
+- classes:
+  - HeatMeterSensor
+  library: [FastModel, FastModelMPC]
+  parameter_processing: *sensor_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+    targets:
+    - Pump
+    - Boiler
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+    targets:
+    - Pump
+    - Boiler
+  - *sensor_temperature
+  template: *sensor_template
   variant: default
 
 # Boilers without storage tank (Buildings BoilerPolynomial): the part load ratio from a P controller on the boiler
