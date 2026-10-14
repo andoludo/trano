@@ -625,3 +625,89 @@ def test_mixing_circuit_tutorial_translates_without_warning() -> None:
 def test_tutorials_with_the_pump_before_the_valves_warn(tutorial: str) -> None:
     with pytest.warns(HydronicLayoutWarning, match="WRONG HYDRONIC LAYOUT"):
         convert_network("diverting", TUTORIALS / tutorial)
+
+
+def _heat_pump(model: Model) -> None:
+    _boiler(model)["variant"] = "air_water_heat_pump"
+
+
+def _radiator_rating(model: str) -> tuple[str, str]:
+    radiator = re.search(r"radiator_003\((.*?)\)", model.replace(" ", "").replace("\n", ""))
+    assert radiator is not None
+    found = dict(re.findall(r"(T_a_nominal|T_b_nominal)=([0-9.]+)", radiator.group(1)))
+    return found["T_a_nominal"], found["T_b_nominal"]
+
+
+def _radiator_warnings(found: list[warnings.WarningMessage]) -> list[str]:
+    return [str(warning.message) for warning in found if "RADIATOR:003" in str(warning.message)]
+
+
+def test_default_radiator_on_a_heat_pump_is_reported_and_kept(tmp_path: Path) -> None:
+    """The default rating (80/60 degC, for a boiler) on a heat pump at 50 degC: the radiator delivers under half of
+    its 2500 W. The model is left as written; the warning gives the rating for the heat pump."""
+    with warnings.catch_warnings(record=True) as found:
+        warnings.simplefilter("always")
+        model = convert_network("heat_pump", _write(HYDRONIC, _heat_pump, tmp_path, "heat_pump")).model()
+    [message] = _radiator_warnings(found)
+    assert re.search(
+        r"RADIATOR DOES NOT FIT THE HEAT PUMP: .*353.15/333.15 K \(the default, for a boiler\).*"
+        r"BOILER:001 supplies at most 323.15 K.*\(4\d% of its nominal 2500 W\).*"
+        r"water_inlet_temperature_at_nominal_condition: 323.15, water_outlet_temperature_at_nominal_condition: 313.15",
+        message,
+    )
+    assert "VALVE:003" not in message  # its 0.06 kg/s already passes the 0.0598 kg/s of 2500 W over 10 K
+    assert _radiator_rating(model) == ("353.15", "333.15")
+
+
+def test_valve_too_small_for_the_heat_pump_rating_is_reported(tmp_path: Path) -> None:
+    def larger_radiator(model: Model) -> None:
+        _heat_pump(model)
+        parameters(_radiator, nominal_heating_power_positive_for_heating=5000)(model)
+
+    with pytest.warns(ModelWarning, match=r"RADIATOR:003: .*m_flow_nominal: 0.1195 on VALVE:003 for 5000 W \(now 0.06"):
+        convert_network("larger", _write(HYDRONIC, larger_radiator, tmp_path, "larger"))
+
+
+def test_recommendation_follows_the_heat_pump_set_point(tmp_path: Path) -> None:
+    def low_temperature(model: Model) -> None:
+        _heat_pump(model)
+        parameters(_boiler, temperature_supply_setpoint_heat_pump=308.15)(model)
+
+    with pytest.warns(ModelWarning, match=r"RADIATOR:003: .*at most 308.15 K.*nominal_condition: 298.15"):
+        convert_network("low", _write(HYDRONIC, low_temperature, tmp_path, "low"))
+
+
+def test_given_rating_above_the_heat_pump_is_reported_as_given(tmp_path: Path) -> None:
+    def old_radiator(model: Model) -> None:
+        _heat_pump(model)
+        parameters(
+            _radiator,
+            water_inlet_temperature_at_nominal_condition=348.15,
+            water_outlet_temperature_at_nominal_condition=338.15,
+        )(model)
+
+    with pytest.warns(ModelWarning, match=r"RADIATOR:003: .*348.15/338.15 K \(as given\)"):
+        model = convert_network("old", _write(HYDRONIC, old_radiator, tmp_path, "old")).model()
+    assert _radiator_rating(model) == ("348.15", "338.15")
+
+
+def test_radiator_rated_for_the_heat_pump_is_not_reported(tmp_path: Path) -> None:
+    def rated(model: Model) -> None:
+        _heat_pump(model)
+        parameters(
+            _radiator,
+            water_inlet_temperature_at_nominal_condition=323.15,
+            water_outlet_temperature_at_nominal_condition=313.15,
+        )(model)
+
+    with warnings.catch_warnings(record=True) as found:
+        warnings.simplefilter("always")
+        convert_network("rated", _write(HYDRONIC, rated, tmp_path, "rated"))
+    assert _radiator_warnings(found) == []
+
+
+def test_radiator_fed_by_a_boiler_is_not_reported(tmp_path: Path) -> None:
+    with warnings.catch_warnings(record=True) as found:
+        warnings.simplefilter("always")
+        convert_network("boiler", _write(HYDRONIC, unchanged, tmp_path, "boiler"))
+    assert _radiator_warnings(found) == []
