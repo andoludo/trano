@@ -1,19 +1,34 @@
 # FastModel
 
-`FastModel` is the trano library for **optimal control**: from the same YAML file as Buildings and IDEAS, it
-generates a model whose physics follow `Buildings.ThermalZones.Detailed.MixedAir` and the Buildings hydronic and
-ventilation components, written so that [rumoca](https://github.com/cognipilot/rumoca) translates it into a
-CasADi ODE \(\dot x = f(t, x, u, p)\). The same model simulates in OpenModelica and in CasADi, where
+`FastModel` is the trano library of **fast models close to Buildings**: from the same YAML file as Buildings and
+IDEAS, it generates a model whose physics follow `Buildings.ThermalZones.Detailed.MixedAir` and the Buildings
+hydronic and ventilation components, written so that [rumoca](https://github.com/cognipilot/rumoca) translates it
+into a CasADi ODE \(\dot x = f(t, x, u, p)\). The same model simulates in OpenModelica and in CasADi, where
 `trano.optimization` estimates its state and solves optimal control problems with IPOPT.
 
+The library comes in two configurations of the same components and templates:
+
+* **`FastModel`**, the **closed loop**: the controllers of the YAML (thermostatic valves, pump, three-way valve,
+  boiler and heat pump controls, ideal heating and cooling) are part of the model, written without events, and the
+  water flows follow the pressures of the circuits. Its only inputs are the weather and the internal gains: it
+  simulates the building as the Buildings and IDEAS models do;
+* **`FastModelMPC`**, for **optimal control**: the controllers are left out and the controls of the systems are
+  inputs of the model, which the optimisation decides; the flows are set by the valves.
+
 ```bash
-trano create-model house.yaml FastModel    # writes house.mo: building_mpc and its runnable wrapper building
-trano simulate-model house.yaml FastModel  # simulates building with OpenModelica
+trano create-model house.yaml FastModel       # closed loop: house.mo with building_mpc and its runnable building
+trano simulate-model house.yaml FastModel     # simulates building with OpenModelica
+trano create-model house.yaml FastModelMPC    # the model for optimal control, its controls as inputs
 ```
 
 This page describes the components of the library and their equations, what the library does not model, and how
 close and how fast it is, ending with the most complex YAML file it simulates compared with Buildings and IDEAS.
 The [FastModel tutorial](../tutorials/fast_model.md) shows how to use the model in CasADi.
+
+!!! note "FastModel before the closed loop"
+    Until the closed loop was added, `FastModel` was the model for optimal control. That model is now
+    `FastModelMPC`: code that builds an optimal control problem with `Library.from_configuration("FastModel")`
+    takes `Library.from_configuration("FastModelMPC")`.
 
 ## How a model is built
 
@@ -22,17 +37,20 @@ template per element of the YAML file, `trano/elements/library/models/fast_model
 in every generated package; the constructions and glazings of the YAML are written as records of its `Data`
 package. The generated package holds two models:
 
-* **`building_mpc`**, the building: an explicit ODE whose inputs are the weather data, the internal gains and the
-  controls of the systems. It holds no table, no event and no component of another library: this is the model
-  rumoca translates;
+* **`building_mpc`**, the building: an explicit ODE whose inputs are the weather data and the internal gains, and,
+  with `FastModelMPC`, the controls of the systems. It holds no table, no event and no component of another
+  library: this is the model rumoca translates;
 * **`building`**, the runnable model: `building_mpc` fed with the weather file (the Buildings reader, which also
-  gives `building_mpc` the location of the site), the occupancy schedules, and the controls replayed from the
-  external data of the network (each held at 1 without data).
+  gives `building_mpc` the location of the site), the occupancy schedules and the external data of the network:
+  with `FastModelMPC`, the controls replayed from it (each held at 1 without data); with `FastModel`, the set
+  points of the `MonitoredSetpoint` emission controls.
 
-Walls, windows and floors are elements of their own connected to the bus of their zone, as in IDEAS. Each
-controllable system declares its control as a top-level input of `building_mpc` named `<element>_y` (bounded to
-0..1) or `<element>_Q` (a heat flow rate, bounded by the nominal power): the controllers of the YAML (thermostatic
-valves, boiler and collector controls) are not rendered, their decisions are the inputs.
+Walls, windows and floors are elements of their own connected to the bus of their zone, as in IDEAS. The templates
+render each system in the mode of the library (`library` in the templates): with `FastModel`, each controller of
+the YAML is a component of `FastModel.Controls` connected to the system it drives, and every water component is
+pressure-driven (`pressureDriven=true`); with `FastModelMPC`, each controllable system declares its control as a
+top-level input of `building_mpc` named `<element>_y` (bounded to 0..1) or `<element>_Q` (a heat flow rate, bounded
+by the nominal power), and the controllers are not rendered: their decisions are the inputs.
 
 | YAML element | FastModel component | Buildings counterpart |
 |---|---|---|
@@ -46,7 +64,7 @@ valves, boiler and collector controls) are not rendered, their decisions are the
 | `weather` | `BoundaryConditions.Weather` | `BoundaryConditions.WeatherData.ReaderTMY3` |
 | `occupancy` | `Interfaces.OccupancyInputs` (gains per floor area) | trano occupancy schedule |
 | `radiator` | `Hydronics.Radiator` | `Fluid.HeatExchangers.Radiators.RadiatorEN442_2` |
-| `radiator` variants `ideal`, `idealbus` | `HVAC.IdealHeatingCooling` | trano ideal heater |
+| `radiator` variants `ideal`, `idealbus` | `HVAC.IdealHeater` (`FastModel`), `HVAC.IdealHeatingCooling` (`FastModelMPC`) | trano ideal heater |
 | `valve` | `Hydronics.Valve` | `Fluid.Actuators.Valves.TwoWayEqualPercentage` |
 | `three_way_valve` | `Hydronics.ThreeWayValve` (mixing) | `Fluid.Actuators.Valves.ThreeWayEqualPercentageLinear` |
 | `split_valve` | `Hydronics.Junction`, `Hydronics.Junction2` | `Fluid.FixedResistances.Junction` |
@@ -56,7 +74,12 @@ valves, boiler and collector controls) are not rendered, their decisions are the
 | `boiler` variant `air_water_heat_pump` | `Hydronics.HeatPump` | `Fluid.HeatPumps.ModularReversible.AirToWaterTableData2D` + buffer |
 | `air_handling_unit` variant `system_d`, `duct` | `Ventilation.HeatRecoveryUnit`, `Ventilation.Duct` | trano system D (`ConstantEffectiveness` + 2 fans) |
 | `solar.photovoltaic` | `Electrical.Photovoltaic` | `Electrical.AC.OnePhase.Sources.PVSimpleOriented` |
-| `ideal_heating_cooling` | `HVAC.IdealHeatingCooling` | trano ideal heating and cooling |
+| `ideal_heating_cooling` | `HVAC.IdealHeatingCoolingPI` (`FastModel`), `HVAC.IdealHeatingCooling` (`FastModelMPC`) | trano ideal heating and cooling |
+| `emission_control` variants `default`, `PController`, `onoff`, `MonitoredSetpoint` | `Controls.EmissionPI`, `EmissionP`, `EmissionOnOff`, `EmissionMonitored` (`FastModel` only) | trano emission controls |
+| `collector_control` | `Controls.CollectorControl` (`FastModel` only) | trano collector control (`PIDWithReset`, P) |
+| `three_way_valve_control` | `Controls.ThreeWayValveControl` (`FastModel` only) | trano three-way valve control (P) |
+| `boiler_control` variant `simple` | `Controls.BoilerDemand` (`FastModel` only) | trano boiler control |
+| controls of `boiler` and `air_water_heat_pump` | `Controls.BoilerTemperatureControl`, `Controls.HeatPumpControl` (`FastModel` only) | P controller of `PartialBoilerWithoutStorage`, trano heat pump control |
 
 ### Rules for an explicit ODE
 
@@ -66,9 +89,13 @@ Every component keeps a few rules, so that the assembled model translates into \
   radiant star of a room, the mixing of water flows);
 * the equations are smooth (once continuously differentiable): power laws, maxima and table interpolations are
   regularised, conditions are inside functions or `noEvent`;
-* flows are **set**, not computed from pressures: each valve sets the flow of its branch, a mixing valve the share
+* water flows are **set** (`FastModelMPC`): each valve sets the flow of its branch, a mixing valve the share
   of supply water, mass balances the rest; the production (boiler, heat pump) or the ventilation unit closes the
-  balance of its circuit, one per circuit;
+  balance of its circuit, one per circuit. Or they are **pressure-driven** (`FastModel`): each component has a
+  pressure node of small compliance at its inlet, so that the pressures are states and every flow an explicit
+  function of them (see [water circuits](#water-circuits));
+* controllers have no event (`FastModel`): hysteresis is a fast bistable state, limits are smooth, PI controllers
+  have anti-windup and a smooth reset;
 * a port with several connections is an array, one element per connection, sized by the template: the inlets of a
   component mix, its outlets leave at its outlet temperature;
 * parameters computed by functions (the conductance of a radiator, the polynomial fits of the window optics, the
@@ -212,6 +239,8 @@ leave at its outlet temperature:
 T_{in} = \frac{\sum_k \dot m_k T_k + \dot m_{small}\, \overline{T_k}}{\sum_k \dot m_k + \dot m_{small}}
 \]
 
+**Set flows** (`FastModelMPC`):
+
 | Component | Equations |
 |---|---|
 | `Valve` | \(\dot m = y\,\dot m_{nom}\): the valve sets the flow of its branch (control `<valve>_y`) |
@@ -219,6 +248,29 @@ T_{in} = \frac{\sum_k \dot m_k T_k + \dot m_{small}\, \overline{T_k}}{\sum_k \do
 | `Junction`, `Junction2` | mass balance; the outlets leave at the mixed temperature of the inlets |
 | `Pump` | pass-through; electrical power \(P = \Delta p_{nom}\,\dot m / (\rho\,\eta)\) |
 | `TemperatureSensor` | pass-through; \(T\) is the water temperature (no sensor dynamics) |
+
+**Pressure-driven flows** (`FastModel`, the parameter `pressureDriven` of every component): each component has a
+pressure node at its inlet, of small compliance, whose pressure \(p_{in}\) is a state; the flow of each outlet is
+an explicit function of \(p_{in}\) and of the pressure of the inlet node downstream, with the resistances of
+Buildings linearised as Buildings does (`linearized=true`):
+
+\[
+\tau_{hyd}\, G_{hyd}\, \dot p_{in} = \sum_{inlets} \dot m - \sum_{outlets} \dot m, \qquad \tau_{hyd} = 5\ \text{s}
+\]
+
+| Component | Flow of an outlet |
+|---|---|
+| `Valve` | \(\dot m = G\,(p_{in} - p_b)\), \(\dfrac{1}{G\,\dot m_{nom}} = \dfrac{\Delta p_{fix}}{\dot m_{nom}^2} + \dfrac{\Delta p_{valve}}{(\varphi(y)\,\dot m_{nom})^2}\), \(\varphi\) the equal-percentage characteristic of Buildings (rangeability \(R\), leakage \(l\)) |
+| `ThreeWayValve` | a node per inlet; \(\dot m_1 = G_1 (p_1 - p_2)\) equal-percentage in \(y\), \(\dot m_3 = G_3 (p_3 - p_2)\) linear in \(1 - y\), the bypass \(K_v\) scaled by `fraK` |
+| `Junction`, `Junction2` | \(\dot m = G\,(p_{in} - p_b)\) on each outlet, \(G = \dot m_{nom} / \Delta p_{nom}\) (at least 1000 Pa) |
+| `Radiator` | \(\dot m = \dot m_{nom}\,(p_{in} - p_b) / \Delta p_{nom}\) |
+| `Boiler` | the quadratic law \(\dot m = \dot m_{nom}\,\Delta p / \sqrt{\Delta p_{nom}}\,(\Delta p^2 + (\delta_M^2 \Delta p_{nom})^2)^{-1/4}\), linear below \(\delta_M \dot m_{nom}\) |
+| `Pump` | its curve (`SpeedControlled_y`: 1.14, 1 and 0.42 times \(\Delta p_{nom}\) at 0, 1 and 2 times \(\dot m_{nom}\)) scaled to the speed \(y\): \(\Delta p / (y^2 \Delta p_{nom}) = 1.14 + 0.08\,x - 0.22\,x^2\), \(\dot m = y\,\dot m_{nom}\,x\), the positive root; \(P = \Delta p^+ \dot m^+ / (\rho\,\eta)\) |
+| `TemperatureSensor`, `HeatPump`, pipes | a small linear resistance, 1000 Pa at the nominal flow (no resistance in Buildings) |
+
+While the pressures settle, a flow may reverse for a moment: the components mix the positive parts of their inflows
+and carry the positive part of their flow, so that the temperatures stay finite. The circuit has no fixed pressure:
+the compliances hold the mass of the water, and only the pressure differences matter.
 
 **Radiator** (`RadiatorEN442_2` of Buildings): \(n_{ele} = 5\) water and metal elements in series, each emitting
 by the EN 442 power law, a share \(f_{rad}\) radiant:
@@ -233,7 +285,8 @@ m_{dry}\) and the water volume and dry mass of Buildings (5.8e-6 m3/W and 0.0263
 Buildings at initialisation, \(UA_{ele}\) is solved (by bisection, at translation) so that the radiator emits its
 nominal power at its nominal water and room temperatures.
 
-**Boiler** (`BoilerPolynomial`), the reference of its circuit: the part load ratio \(y\) is the control,
+**Boiler** (`BoilerPolynomial`), with set flows the reference of its circuit: the part load ratio \(y\) is the
+control (`FastModelMPC`) or comes from `Controls.BoilerTemperatureControl` (`FastModel`),
 
 \[
 Q_{fuel} = y\,\frac{Q_{nom}}{\eta_{nom}}, \qquad
@@ -244,8 +297,8 @@ with the efficiency curves of Buildings (constant, polynomial in \(y\), or quadr
 water volume, dry mass and heat loss to the boiler room.
 
 **Air-to-water heat pump** (`AirToWaterTableData2D` with the Vitocal 251-A08 data of Buildings, scaled to the
-capacity of the YAML) charging a mixed buffer, the reference of its circuit: the compressor speed \(y\) is the
-control,
+capacity of the YAML) charging a mixed buffer, with set flows the reference of its circuit: the compressor speed
+\(y\) is the control (`FastModelMPC`) or comes from `Controls.HeatPumpControl` (`FastModel`),
 
 \[
 T_{con,out} = T + \Delta T_{con}\, y, \qquad
@@ -259,7 +312,8 @@ C\,\dot T = \dot m c_p (T_{in} - T) + Q_{con} + UA\,(T_{amb} - T), \qquad \dot E
 with \(s = Q_{nom} / \tilde Q(T_{set}, T_{out,des})\) the scaling of the tables, \(\tilde Q\) and \(\tilde P\) the
 EN 14511 tables made differentiable (quadratic in the condenser temperature through the rows at 35, 45 and
 55 degC, linear in the source temperature with the kinks smoothed over 1 K), \(C\) the buffer and the condenser
-water, and \(UA\) the insulation of the buffer.
+water, and \(UA\) the insulation of the buffer. Its coefficient of performance at the current temperatures,
+\(\mathrm{COP} = \tilde Q / \tilde P\), is a variable of the model, defined also when the compressor is off.
 
 ### Ventilation
 
@@ -275,21 +329,51 @@ P_{fan} = y\,(P_{sup} + P_{ret}), \qquad P = \frac{\Delta p_{nom}\,\dot m_{nom}}
 where \(T_{ext}\) is the mixed extract air of the zones and the fans heat the air (the supply fan after the exchanger,
 the return fan before it).
 
+### Controls (closed loop)
+
+`FastModel.Controls` holds the controllers of trano's Buildings models, written without events so that the
+closed-loop model stays an explicit, smooth ODE:
+
+* a **hysteresis** (CDL `Hysteresis`) is a bistable state switching within \(\tau = 10\) s,
+  \(\tau \dot y = \mathrm{regStep}\big(u - (u_{high} + (u_{low} - u_{high})\,y)\big) - y\);
+* a **PI controller** (Modelica `LimPID`) limits its output smoothly, with back-calculation anti-windup:
+  \(y = \mathrm{lim}(k(e + I))\), \(\dot I = e/T_i + (y - y_{unl})/(k N_i T_i)\); while disabled, its integral
+  relaxes to the reset value in 30 s;
+* the **day schedules** of set points (`{on, off, ...}` in seconds of the day) change with smooth steps of 60 s,
+  the time of day taken without events.
+
+| Controller | Equations |
+|---|---|
+| `EmissionP` (emission control `PController`) | \(y = \mathrm{lim}_{0}^{1}\big(k\,(T_{set} - T_{zon})\big)\), \(T_{set}\) the occupied or setback set point of the schedule |
+| `EmissionPI` (`default`) | PI towards \(T_{set}\), \(k = 0.1\), \(T_i = 900\) s (heating loop of Buildings G36) |
+| `EmissionOnOff` (`onoff`) | hysteresis on \(T_{set} - T_{zon}\), band 0.1 K |
+| `EmissionMonitored` (`MonitoredSetpoint`) | P controller towards the set point input `<control>_TSet`, which `building` reads from the column of the external data named in the YAML (held at the occupied set point without data) |
+| `CollectorControl` | the pump runs when a valve of its circuit opens beyond 0.5 and stops when all are below 0.01 (hysteresis on their smooth maximum); its speed \(y = \mathrm{lim}_0^1\big(k\,(1 - \Delta p/\Delta p_{nom})\big)\) while it runs |
+| `ThreeWayValveControl` | \(y = \mathrm{lim}_0^1\big(k\,(T_{col,set} - T_{mea})\big)\), the supply temperature measured downstream with a 10 s lag |
+| `BoilerDemand` (boiler control `simple`) | demand when a valve of its circuits opens beyond 0.5, none when all are below 0.01 |
+| `BoilerTemperatureControl` | part load ratio \(y = d\,\mathrm{lim}_0^1\big(k\,(T_{set} - T_{boi})\big)\) with the demand \(d\) (1 without a `simple` boiler control) |
+| `HeatPumpControl` | supply set point on the heating curve, from `TSet` at the design outdoor temperature to 30 degC at the heating limit (16 degC); heating season by a hysteresis of ±1 K at the limit; the buffer charges below the set point minus half the band `dTHys` until it is half the band above; the compressor PI (\(k = 0.1\), \(T_i = 300\) s, minimum speed 0.3) on the condenser outlet, towards the set point plus `dTHys` |
+
 ### Electricity and ideal systems
 
 * `Electrical.Photovoltaic` (`PVSimpleOriented`): \(P = A\, f_{act}\, \eta\, \eta_{DC/AC}\, (H_{dir} + H_{dif})\) on
   the plane of the modules, metered as `EPro`.
-* `HVAC.IdealHeatingCooling`: the heat flow rate \(Q\) is an input `<element>_Q`, split between the room air and
-  the radiant star by its radiant share.
+* `HVAC.IdealHeatingCooling` (`FastModelMPC`): the heat flow rate \(Q\) is an input `<element>_Q`, split between
+  the room air and the radiant star by its radiant share.
+* `HVAC.IdealHeater` (`FastModel`): an ideal emitter delivers \(Q = y\,Q_{nom}\), \(y\) from its emission control.
+* `HVAC.IdealHeatingCoolingPI` (`FastModel`): a PI controller per mode (\(k = 0.1\) per kelvin, \(T_i = 300\) s)
+  towards the day tables of the heating and cooling set points, limited by the capacities, metered as `EHea` and
+  `ECoo`.
 
 ### Inputs, outputs and roles
 
-| Input of `building_mpc` | Role |
-|---|---|
-| `weather_inputs.TDryBul`, `.TBlaSky`, `.winSpe`, `.winDir`, `.HDirNor`, `.HDifHor`, `.HGloHor` | weather (disturbances) |
-| `<occupancy>.gai.QCon`, `.QRad` | internal gains per floor area [W/m2] (disturbances) |
-| `<valve>_y.y`, `<three-way valve>_y.y`, `<production>_y.y`, `<ventilation unit>_y.y` | controls, 0 to 1 |
-| `<emitter>_Q.Q_flow` | heat of an ideal emitter [W] (control between its bounds) |
+| Input of `building_mpc` | Library | Role |
+|---|---|---|
+| `weather_inputs.TDryBul`, `.TBlaSky`, `.winSpe`, `.winDir`, `.HDirNor`, `.HDifHor`, `.HGloHor` | both | weather (disturbances) |
+| `<occupancy>.gai.QCon`, `.QRad` | both | internal gains per floor area [W/m2] (disturbances) |
+| `<emission control>_TSet` | `FastModel` | set point of a `MonitoredSetpoint` emission control [K] (disturbance) |
+| `<valve>_y.y`, `<three-way valve>_y.y`, `<production>_y.y`, `<ventilation unit>_y.y` | `FastModelMPC` | controls, 0 to 1 |
+| `<emitter>_Q.Q_flow` | `FastModelMPC` | heat of an ideal emitter [W] (control between its bounds) |
 
 The meters are states in kWh: `EFue` (fuel), `EEle` (heat pump electricity), `EFan` (fans), `EPro` (PV
 production); the comfort temperatures are the `TAir` states of the zones. `trano.optimization.Roles.infer` reads
@@ -303,13 +387,19 @@ controls, air handling units other than the balanced unit with heat recovery (`s
 
 **Simplifications:**
 
-* **The controls are inputs.** The controllers of the YAML (thermostatic valves, boiler and heat pump controls,
-  collector and three-way valve controls) are not modelled: the optimal control decides, or the runnable model
-  replays the controls of the external data. Without data, `building` holds every control at 1: it is not a
-  closed-loop simulation of the building like the Buildings and IDEAS models.
-* **Flows are set, not pressure-driven.** Each valve sets the flow of its branch, the pressure-driven sharing of
-  flow between branches (pump curves, valve authorities, balancing) is not computed. One production per hydraulic
-  circuit, and mixing three-way valves only: diverting valves are not modelled.
+* **Controllers without events** (`FastModel`). The controllers follow those of trano's Buildings models, but a
+  hysteresis switches within 10 s instead of at an instant, and the safety controls of the heat pump (minimum on
+  and off times) are not modelled: the heat pump starts and stops more often than in Buildings, which shows in the
+  water temperatures (about 2 K RMSE) and in the hour-by-hour heat of the radiators (6–16 % CV(RMSE)), less in the
+  zones and the meters. The boiler controls `default` and `complex` charge a storage tank, which FastModel does not
+  model: a boiler without storage driven by them always has demand, its temperature control alone sets its firing.
+* **The controls are inputs** (`FastModelMPC`). The controllers are left out: the optimal control decides, or the
+  runnable model replays the controls of the external data. Without data, `building` holds every control at 1.
+* **Flows.** With set flows (`FastModelMPC`), each valve sets the flow of its branch: the sharing of flow between
+  branches (pump curves, valve authorities, balancing) is not computed. With pressure-driven flows (`FastModel`),
+  the resistances are linearised at their nominal flows (as Buildings does with `linearized=true`), and the
+  components that have none in Buildings (sensors, the condenser of the heat pump) have a small one. One production
+  per hydraulic circuit, and mixing three-way valves only: diverting valves are not modelled.
 * **Ventilation** units are balanced (supply = extract) and run at constant pressure rise; infiltration is a
   constant air change rate (no wind- or stack-driven air flows).
 * **The envelope** follows Buildings, not IDEAS: the floor on ground sees a fixed ground temperature (IDEAS models
@@ -320,29 +410,37 @@ controls, air handling units other than the balanced unit with heat recovery (`s
 * **The heat pump** is the Vitocal 251-A08 of Buildings scaled to the capacity of the YAML, heating only, without
   the safety controls (minimum on and off times) of Buildings.
 * **Tools**: the runnable model needs OpenModelica (or Dymola) and Buildings for the weather reader; the CasADi
-  export of the connected `building_mpc` needs rumoca 0.10.3 or later.
+  export of the connected `building_mpc`, closed loop or not, needs rumoca 0.10.3 (rumoca main up to `c74cddf`,
+  2026-10-13: the later commits stop the export of these models at `residual_equations`). The closed-loop model
+  exports too, but its fast controllers and pressure nodes make it stiff: CVODES takes about 100 s per simulated day
+  for the renovated house, where OpenModelica runs its four weeks in under two minutes.
 
 ## Benchmark
 
 ### Accuracy
 
 The [validation](../validation/fast_model.md) simulates the Buildings (or IDEAS) model of a YAML file with its own
-controls and **replays** them through the runnable FastModel model: the heat of the ideal emitters, or the flow of
-each radiator branch, the position of each three-way valve, the boiler part load ratio or the heat pump speed and
-the fan speed. Everything else is simulated by FastModel. Largest zone RMSE per case:
+controls and compares it with FastModel in two ways: the closed-loop `FastModel` with its own controllers, and the
+`FastModelMPC` model **replaying** the controls of Buildings (the heat of the ideal emitters, or the flow of each
+radiator branch, the position of each three-way valve, the boiler part load ratio or the heat pump speed and the
+fan speed; everything else is simulated by FastModel). Zone air temperature RMSE per case:
 
-| Case | Zones | Systems | Zone air temperature RMSE |
-|---|---|---|---|
-| BESTEST 600FF / 900FF (a year) | 1 | free floating | 0.39 K / 0.33 K |
-| BESTEST 600 / 900 (a year) | 1 | ideal heating and cooling | 0.65 K / 0.41 K |
-| Three zones (January) | 3 | ideal heaters, walls between zones | 0.18–0.49 K |
-| Heat pump house (January) | 6 | heat pump, buffer, radiators | 0.15–0.33 K |
-| Residential house before renovation (January) | 6 | gas boiler, radiators | 0.12–0.20 K |
-| Residential house after renovation (January) | 6 | heat pump, buffer, three-way valve, radiators, ventilation with heat recovery, PV | 0.12–0.17 K |
+| Case | Zones | Systems | Closed loop (`FastModel`) | Replay (`FastModelMPC`) |
+|---|---|---|---|---|
+| BESTEST 600FF / 900FF (a year) | 1 | free floating | 0.39 K / 0.33 K | 0.39 K / 0.33 K |
+| BESTEST 600 / 900 (a year) | 1 | ideal heating and cooling | 0.06 K / 0.14 K | 0.65 K / 0.41 K |
+| Three zones (January) | 3 | ideal heaters, walls between zones | 0.06–0.11 K | 0.18–0.49 K |
+| Heat pump house (January) | 6 | heat pump, buffer, radiators | 0.15–0.25 K | 0.15–0.33 K |
+| Residential house before renovation (January) | 6 | gas boiler, radiators | 0.05–0.11 K | 0.12–0.20 K |
+| Residential house after renovation (January) | 6 | heat pump, buffer, three-way valve, radiators, ventilation with heat recovery, PV | 0.06–0.14 K | 0.12–0.17 K |
 
-The radiators deliver the heat of Buildings within 0.7–4.3 % CV(RMSE); the meters follow within a few percent
-(fuel +0.0 %, heat pump electricity −1.6 and −1.8 %, fans −0.6 %, PV 0.0 %). Against IDEAS, on the
-renovated house, the zones stay within 0.31–0.39 K (see the showcase below).
+In closed loop the controllers correct the small differences of the envelope as the Buildings controllers do,
+where the replayed controls are open loop: the zones follow Buildings more closely. The meters follow within a few
+percent (closed loop: fuel +1.2 %, heat pump electricity −1.1 and −3.1 %, fans −2.1 %, PV 0.0 %; replay: fuel
++0.0 %, heat pump electricity −1.6 and −1.8 %, fans −0.6 %). The radiators deliver the heat of Buildings within
+0.7–4.3 % CV(RMSE) hour by hour in the replay, 2–16 % in closed loop, where the heat pump starts and stops at other
+instants than in Buildings (it has no minimum on and off times). Against IDEAS, on the renovated house, the zones
+stay within 0.14–0.23 K in closed loop and 0.31–0.39 K in the replay (see the showcase below).
 
 ### Speed
 
@@ -363,16 +461,17 @@ kind of system the library models.
 | Heating | air-to-water heat pump of 3 kW with a 100 l buffer, pump, mixing three-way valve, split valve, 6 radiators with their valves |
 | Ventilation | balanced unit with 80 % heat recovery, 12 supply and extract ducts |
 | Electricity | 4.2 kWp PV array |
-| `building_mpc` | 189 states, 28 inputs (9 controls, 7 weather channels, 12 internal gains), 2807 parameters |
+| `building_mpc` (`FastModelMPC`) | 189 states, 28 inputs (9 controls, 7 weather channels, 12 internal gains), 2807 parameters |
 
 The house is simulated for the four weeks of January in Uccle by Buildings and by IDEAS, each with its own
 controls (thermostatic valves, heating curve and safety controls of the heat pump, three-way valve control).
-FastModel then **replays the controls of each library**: the flow of each radiator branch, the position of the
-three-way valve, the compressor speed and the fan speed. The heat pump, the buffer, the water circuit, the
-radiators, the ventilation unit, the PV and the six zones are simulated by FastModel.
+The closed-loop `FastModel` runs the same house with its own controllers. `FastModelMPC` then **replays the
+controls of each library**: the flow of each radiator branch, the position of the three-way valve, the compressor
+speed and the fan speed. The heat pump, the buffer, the water circuit, the radiators, the ventilation unit, the PV
+and the six zones are simulated by FastModel.
 
 ```bash
-python -m validation.mpc compare residential_after --models FastModel --references Buildings IDEAS
+python -m validation.mpc compare residential_after --models FastModel FastModelClosedLoop --references Buildings IDEAS
 python -m validation.mpc.benchmark residential_after
 ```
 
@@ -389,7 +488,9 @@ python -m validation.mpc.benchmark residential_after
 
 {!validation/figures/fast_model_residential_after_zones.html!}
 
-FastModel follows Buildings within 0.12–0.17 K: its envelope and zone are those of Buildings. Against IDEAS it
+Replaying the controls, FastModel follows Buildings within 0.12–0.17 K: its envelope and zone are those of
+Buildings. In closed loop, with its own controllers, it follows Buildings within 0.06–0.14 K and IDEAS within
+0.14–0.23 K. Against IDEAS it
 stays within 0.31–0.39 K, 0.14–0.25 K too warm on average: the two libraries describe the same house with
 different envelope models, above all the floor on ground (IDEAS models the ground below the slab with ISO 13370,
 Buildings and FastModel hold it at 10 degC) and the heat exchanges inside the rooms. The controls replayed from
@@ -412,6 +513,22 @@ The radiators deliver the heat of either library within a few percent hour by ho
 2 %. The water temperatures differ most (supply 0.7–0.8 K, return 1.7 K) at the start and stop of the heat pump:
 the Buildings heat pump has a condenser and a pump of its own, the FastModel one heats a mixed buffer.
 
+In closed loop, FastModel with its own controllers:
+
+| | Buildings | FastModel (closed loop) | IDEAS | FastModel (closed loop) |
+|---|---|---|---|---|
+| Heat pump electricity [kWh] | 130.6 | 129.2 (−1.1 %) | 134.8 | 129.2 (−4.1 %) |
+| Fan electricity [kWh] | 17.2 | 16.8 (−2.1 %) | 17.2 | 16.8 (−2.1 %) |
+| PV production [kWh] | 139.3 | 139.3 (0.0 %) | 139.3 | 139.3 (0.0 %) |
+| Radiator heat, CV(RMSE) hourly | | 5.8–14.6 % | | 10.3–24.6 % |
+| Heat pump supply water, RMSE | | 1.93 K | | 1.96 K |
+| Supply air of the ventilation unit, RMSE | | 0.37 K | | 0.12 K |
+
+The zones and the meters stay close; the radiator heat and the water temperatures differ more than in the replay,
+hour by hour: the heat pump of FastModel, without the minimum on and off times of the Buildings control, starts and
+stops at other instants, and the thermostatic valves answer the zones of FastModel rather than those of the
+reference.
+
 ### Speed
 
 Four weeks of January, OpenModelica 1.26.9 (DASSL, tolerance 1e-6), on the same 4-core machine:
@@ -421,7 +538,11 @@ Four weeks of January, OpenModelica 1.26.9 (DASSL, tolerance 1e-6), on the same 
 | Buildings | 182 | 886 |
 | IDEAS | 167 | 373 |
 | FastModel (`building`, replaying the controls) | 24 | 99 |
-| FastModel in CasADi (`building_mpc`, CVODES, inputs held over 5-minute steps) | 30 (rumoca) | 9 |
+| FastModel closed loop (`building`, its own controllers)\* | 10 | 105 |
+| FastModelMPC in CasADi (`building_mpc`, CVODES, inputs held over 5-minute steps) | 30 (rumoca) | 9 |
+
+\* Measured later on another 4-core machine, where the replay simulates in 84 s: the closed loop costs about a
+quarter more than the replay.
 
 FastModel simulates the four weeks 9 times faster than Buildings and 4 times faster than IDEAS in OpenModelica,
 and about 100 times faster than Buildings once translated to CasADi. The Buildings and IDEAS runs record the signals

@@ -19,8 +19,17 @@ class Templates(BaseModel):
 
 
 def read_libraries() -> dict[str, dict[str, Any]]:
+    """The libraries of library.json; a library with ``extends`` takes the entry of that library, its own keys
+    replacing the inherited ones (FastModelMPC is FastModel under another name)."""
     library_json_path = Path(__file__).parent.joinpath("library.json")
-    return cast(dict[str, dict[str, Any]], json.loads(library_json_path.read_text()))
+    libraries = cast(dict[str, dict[str, Any]], json.loads(library_json_path.read_text()))
+    return {name: _resolve(name, libraries) for name in libraries}
+
+
+def _resolve(name: str, libraries: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    library = dict(libraries[name])
+    parent = library.pop("extends", None)
+    return {**_resolve(parent, libraries), **library} if parent else library
 
 
 class Library(BaseModel):

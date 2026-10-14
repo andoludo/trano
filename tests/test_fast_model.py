@@ -119,6 +119,21 @@ def test_the_roles_come_from_the_model() -> None:
     assert roles.meters
 
 
+@needs_connected_export
+@pytest.mark.parametrize(
+    "path",
+    [MODELS / "single_zone_hydronic.yaml", MODELS / "house_infiltration_air_water_heat_pump.yaml"],
+    ids=lambda path: path.stem,
+)
+def test_rumoca_translates_the_closed_loop_model(path: Path) -> None:
+    """The closed-loop model is an explicit ODE too: weather and gains in, no control."""
+    model = CasadiModel.from_modelica(_model(path, "FastModel"), f"{path.stem}.building_mpc")
+    description = model.description
+    assert set(WEATHER) <= set(description.input_names)
+    assert not Roles.infer(description).controls
+    assert all(np.isfinite(description.initial_state))
+
+
 def _radiator_conductance(power: float, t_in: float, t_out: float, fraction: float, exponent: float) -> float:
     """UAEle of one element of Buildings RadiatorEN442_2, solved independently of the Modelica function."""
     from scipy.optimize import brentq
@@ -156,9 +171,77 @@ def test_the_radiator_conductance_is_solved_as_buildings() -> None:
     assert values[name] > 0
 
 
-def test_unmodelled_systems_are_reported() -> None:
+@pytest.mark.parametrize("library", ["FastModel", "FastModelMPC"])
+def test_unmodelled_systems_are_reported(library: str) -> None:
     with pytest.raises(UnsupportedElementError, match="not modelled by the FastModel library"):
-        _model(MODELS / "single_zone_air_handling_unit_complex_vav.yaml")
+        _model(MODELS / "single_zone_air_handling_unit_complex_vav.yaml", library)
+
+
+def test_fast_model_mpc_is_fast_model_under_another_name() -> None:
+    closed_loop, mpc = Library.from_configuration("FastModel"), Library.from_configuration("FastModelMPC")
+    assert mpc.name == "FastModelMPC"
+    assert mpc.base_library() == "FastModel"
+    assert mpc.templates == closed_loop.templates
+    assert mpc.package_template == closed_loop.package_template
+    assert mpc.parameter_library == closed_loop.parameter_library
+
+
+def _building_mpc(model: str) -> str:
+    return model[model.index("model building_mpc") : model.index("end building_mpc;")]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        MODELS / "single_zone_hydronic.yaml",
+        MODELS / "three_zones_ideal_heaters.yaml",
+        MODELS / "house_infiltration_air_water_heat_pump.yaml",
+        ROOT / "examples" / "residential_before_renovation.yaml",
+        ROOT / "examples" / "residential_after_renovation.yaml",
+    ],
+    ids=lambda path: path.stem,
+)
+def test_the_closed_loop_model_runs_its_own_controllers(path: Path) -> None:
+    """FastModel has no control input: its controllers drive the systems, the circuits are pressure-driven."""
+    closed_loop = _building_mpc(_model(path, "FastModel"))
+    assert "FastModel.Interfaces.ControlInput" not in closed_loop
+    assert "FastModel.Interfaces.HeatFlowInput" not in closed_loop
+    assert "FastModel.Controls." in closed_loop or "FastModel.HVAC.IdealHeater" in closed_loop
+    assert "pressureDriven=true" in closed_loop or "Hydronics." not in closed_loop
+    mpc = _building_mpc(_model(path))
+    assert "FastModel.Controls." not in mpc
+    assert "pressureDriven=true" not in mpc
+    assert "FastModel.Interfaces.ControlInput" in mpc or "FastModel.Interfaces.HeatFlowInput" in mpc
+
+
+def test_the_heat_pump_follows_its_control() -> None:
+    model = _building_mpc(_model(MODELS / "house_infiltration_air_water_heat_pump.yaml", "FastModel"))
+    assert "FastModel.Controls.HeatPumpControl" in model
+    assert "FastModel.Controls.CollectorControl" in model
+    assert "y=boiler_001_control.y" in model.replace(" ", "")
+
+
+def test_the_monitored_set_point_is_held_without_external_data() -> None:
+    model = _model(MODELS / "single_zone_hydronic_emission_from_data.yaml", "FastModel")
+    assert 'FastModel.Interfaces.RealInput emission_control_001_TSet(unit="K")' in _building_mpc(model)
+    assert "FastModel.Controls.EmissionMonitored emission_control_001(" in model
+    assert "Modelica.Blocks.Sources.Constant emission_control_001_TSet(k=294.15)" in model
+    assert "connect(emission_control_001_TSet.y, mpc.emission_control_001_TSet);" in model
+
+
+def test_the_monitored_set_point_replays_its_column(tmp_path: Path) -> None:
+    from trano.elements.bus import DataBus
+
+    data = tmp_path / "set_point.csv"
+    data.write_text(",other,temp_01\n2024-01-01 00:00:00,0,294.15\n2024-01-01 12:00:00,0,290.15\n")
+    path = MODELS / "single_zone_hydronic_emission_from_data.yaml"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        network = convert_network(path.stem, path, library=Library.from_configuration("FastModel"))
+        model = network.model(data_bus=DataBus(external_data=data))
+    assert "Modelica.Blocks.Sources.CombiTimeTable data_bus(" in model
+    assert "connect(data_bus.y[2], mpc.emission_control_001_TSet);" in model
+    assert "Sources.Constant emission_control_001_TSet" not in model
 
 
 @needs_connected_export
@@ -181,16 +264,26 @@ def test_the_optimal_control_heats_the_zone() -> None:
 
 
 @pytest.mark.compile
-def test_openmodelica_compiles_the_runnable_model(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("library", "path"),
+    [
+        ("FastModelMPC", MODELS / "single_zone_hydronic.yaml"),
+        ("FastModel", MODELS / "single_zone_hydronic.yaml"),
+        ("FastModel", MODELS / "single_zone_hydronic_emission_from_data.yaml"),
+        ("FastModel", MODELS / "house_infiltration_air_water_heat_pump.yaml"),
+        ("FastModel", ROOT / "examples" / "residential_after_renovation.yaml"),
+    ],
+    ids=lambda value: value.stem if isinstance(value, Path) else value,
+)
+def test_openmodelica_compiles_the_runnable_model(tmp_path: Path, library: str, path: Path) -> None:
     from trano.simulate.simulate import SimulationOptions, simulate
     from trano.utils.utils import is_success
 
-    path = MODELS / "single_zone_hydronic.yaml"
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        network = convert_network(path.stem, path, library=Library.from_configuration("FastModel"))
+        network = convert_network(path.stem, path, library=Library.from_configuration(library))
     options = SimulationOptions(check_only=True)
-    results = simulate(tmp_path, network, options=options, container_name="compile_fast_model")
+    results = simulate(tmp_path, network, options=options, container_name=f"compile_fast_model_{tmp_path.name}")
     assert is_success(results, options=options), results.output.decode(errors="replace")[-3000:]
 
 

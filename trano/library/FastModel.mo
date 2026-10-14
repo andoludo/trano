@@ -939,7 +939,8 @@ package FastModel "Building models for model predictive control: close to Buildi
             /(2*c);
           port_b[i].m_flow = -y*m_flow_nominal/nPorts_b*x[i];
         end for;
-        P = dp*m_flow/rhoWat/eta;
+        // the forward flow and head only: while the pressures settle, the pump draws no negative power
+        P = Utilities.positivePart(dp, 1)*mTra/rhoWat/eta;
       else
         x = zeros(nPorts_b);
         P = dp_nominal*m_flow/rhoWat/eta;
@@ -1580,6 +1581,17 @@ package FastModel "Building models for model predictive control: close to Buildi
     equation
       y = onOff.y;
     end EmissionOnOff;
+
+    model EmissionMonitored
+      "Variant MonitoredSetpoint: P controller (IDEAS LimPID) between 0 and 1 towards a set point read from external
+       data"
+      parameter Real k = 1 "Gain";
+      Interfaces.RealInput TSet(unit="K") "Set point";
+      Interfaces.RealInput TZon(unit="K") "Zone air temperature";
+      Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter";
+    equation
+      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, 1e-3);
+    end EmissionMonitored;
 
     model CollectorControl
       "Collector control of a pump (trano CollectorControl): on when a valve opens beyond 0.5, off when all are

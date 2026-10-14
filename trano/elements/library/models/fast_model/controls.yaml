@@ -109,13 +109,32 @@
         k={{ parameters.k }},
         TZon={{ element.space_name }}.TAir)
   variant: PController
+# The set point of MonitoredSetpoint is an input of building_mpc (<control>_TSet, a disturbance): the runnable model
+# replays the column of the external data that the YAML names for it, or holds the occupied set point without it.
 - classes:
   - EmissionControl
   library: FastModel
-  parameter_processing: *no_parameters
-  ports: []
+  parameter_processing: *emission_parameters
+  ports: *emission_ports
   template: |-
-    {{ unsupported('Emission control ' ~ element.name ~ ' (MonitoredSetpoint): its set point comes from external data, which the closed-loop FastModel model does not read yet.') }}
+    FastModel.Interfaces.RealInput {{ element.name }}_TSet(unit="K") "Set point of {{ element.name }}: input of the model";
+    FastModel.Controls.EmissionMonitored {{ element.name }}(
+        k={{ parameters.k }},
+        TSet={{ element.name }}_TSet,
+        TZon={{ element.space_name }}.TAir)
+  runnable:
+    declaration: |-
+      {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'MonitoredSetpoint') | map(attribute='variable') | first -%}
+      {%- if column not in columns -%}
+      Modelica.Blocks.Sources.Constant {{ element.name }}_TSet(k={{ parameters.THeaSet }}) "Set point held without external data";
+      {%- endif -%}
+    equation: |-
+      {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'MonitoredSetpoint') | map(attribute='variable') | first -%}
+      {%- if column in columns -%}
+      connect(data_bus.y[{{ columns.index(column) + 1 }}], mpc.{{ element.name }}_TSet);
+      {%- else -%}
+      connect({{ element.name }}_TSet.y, mpc.{{ element.name }}_TSet);
+      {%- endif -%}
   variant: MonitoredSetpoint
 # Boiler controls: the demand of the variant simple (FastModel.Controls.BoilerDemand) drives its production; the
 # variants default and complex charge a storage tank, which FastModel does not model: their production has demand.

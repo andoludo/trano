@@ -1,4 +1,4 @@
-# FastModel: models close to Buildings for MPC
+# FastModel: models close to Buildings, in closed loop and for MPC
 
 The [RC models](rc_model_predictive_control.md) of the `mpc` library are small and fast, but they lump a zone
 into one to three capacities and leave the heating system out. The `FastModel` library instead turns the same YAML
@@ -14,9 +14,18 @@ with IPOPT:
   valves, pumps, sensors, gas boilers and air-to-water heat pumps with their buffer;
 * balanced ventilation units with heat recovery (trano's `system_d`) and PV arrays.
 
+The library has two configurations, built from the same components and templates:
+
+* `FastModel` simulates the building **in closed loop**, as the Buildings and IDEAS models do: the controllers of
+  the YAML are part of the model (written without events) and the water flows follow the pressures of the
+  circuits;
+* `FastModelMPC` is the model for **optimal control**: the controllers are left out, the controls of the systems
+  are inputs that the optimisation decides, and each valve sets the flow of its branch.
+
 ```bash
-trano create-model house.yaml FastModel    # writes house.mo
-trano simulate-model house.yaml FastModel  # runnable, like the other libraries
+trano create-model house.yaml FastModel       # closed loop: writes house.mo
+trano simulate-model house.yaml FastModel     # runnable, like the other libraries
+trano create-model house.yaml FastModelMPC    # the controls as inputs, for optimal control
 ```
 
 ## A library like Buildings and IDEAS
@@ -28,7 +37,9 @@ the YAML, without code of its own.
 * `trano/elements/library/models/fast_model/*.yaml` hold the templates that declare a component for each element
   of the YAML, with its ports, as the templates of the other libraries;
 * the `FastModel` entry of `library.json` writes the constructions and glazings as records of a `Data` package,
-  takes the parameter names of Buildings, and the package template `templates/fast_model.jinja2`.
+  takes the parameter names of Buildings, and the package template `templates/fast_model.jinja2`; the
+  `FastModelMPC` entry extends it under another name, and the templates render each element for the library they
+  are given (`library == 'FastModel'`: controllers and pressure-driven circuits; `'FastModelMPC'`: inputs).
 
 The walls, windows and floors are elements of their own connected to the bus of their zone, as in IDEAS: each
 `OuterWall`, `Window`, `BoundaryWall` (floor on ground or over outdoor air), `AdiabaticWall` or `InternalWall`
@@ -44,16 +55,19 @@ and transmittance), the solar radiation a window transmits, and the weather.
 | `Hydronics` | `Radiator` (EN 442), `Valve`, `ThreeWayValve`, `Junction`, `Pump`, `TemperatureSensor`, `Boiler`, `HeatPump` |
 | `Ventilation` | `HeatRecoveryUnit`, `Duct` |
 | `Electrical` | `Photovoltaic` |
-| `HVAC` | `IdealHeatingCooling` |
+| `HVAC` | `IdealHeatingCooling` (heat as an input), `IdealHeater`, `IdealHeatingCoolingPI` (closed loop) |
+| `Controls` | `EmissionP`, `EmissionPI`, `EmissionOnOff`, `EmissionMonitored`, `CollectorControl`, `ThreeWayValveControl`, `BoilerDemand`, `BoilerTemperatureControl`, `HeatPumpControl` (closed loop, without events) |
 | `Data` | `Construction`, `Glazing` (records written by trano) |
 
 The generated package holds two models:
 
-* `building_mpc`, the building: an explicit ODE whose inputs are the weather data, the internal gains and the
-  controls of the systems. It contains no table, no event and no component of another library;
+* `building_mpc`, the building: an explicit ODE whose inputs are the weather data, the internal gains and, with
+  `FastModelMPC`, the controls of the systems. It contains no table, no event and no component of another
+  library;
 * `building`, the runnable model: `building_mpc` fed with the weather file (the Buildings reader, which also gives
-  `building_mpc` the location of the site), the occupancy schedules, and the controls replayed from the external
-  data of the network (each held at 1 without data).
+  `building_mpc` the location of the site), the occupancy schedules, and the external data of the network: the
+  controls replayed from it with `FastModelMPC` (each held at 1 without data), the set points of the
+  `MonitoredSetpoint` emission controls with `FastModel`.
 
 ### Rules for an explicit ODE
 
@@ -62,15 +76,20 @@ Every component keeps a few rules, so that rumoca translates the assembled model
 * every node joined by connections has a heat capacity, or is solved in closed form inside its component (the
   radiant star of a room, the mixing of water flows);
 * the equations are smooth: power laws and table interpolations are regularised, conditions are inside functions;
-* flows are **set**, not computed from pressures: each valve sets the flow of its branch, a mixing valve the share
-  of supply water, mass balances the rest; the production (boiler, heat pump) or the ventilation unit closes the
-  balance of its circuit, one per circuit;
+  the controllers have no event (a hysteresis is a fast bistable state, a PI controller has anti-windup);
+* with `FastModelMPC`, flows are **set**: each valve sets the flow of its branch, a mixing valve the share of supply
+  water, mass balances the rest; the production (boiler, heat pump) or the ventilation unit closes the balance of
+  its circuit, one per circuit. With `FastModel`, they are **pressure-driven**: each component has a pressure node of
+  small compliance at its inlet, every flow follows from the pressures, the pumps run on their curves;
 * a port with several connections is an array, one element per connection, sized by the template from the
   connections trano made: the inlets of a component mix, its outlets leave at its outlet temperature;
 * parameters computed by functions (the conductance of a radiator solved as Buildings does at initialisation, the
   polynomial fits of the window optics, the scaling of the heat pump tables) take values settled at translation.
 
 ### Inputs of `building_mpc`
+
+The closed-loop `FastModel` takes the weather, the internal gains and, for a `MonitoredSetpoint` emission control,
+its set point `<control>_TSet`; `FastModelMPC` takes the controls too:
 
 | Input | Role |
 |---|---|
@@ -104,7 +123,7 @@ from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
 from trano.optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings
 
-network = convert_network("house", Path("house.yaml"), library=Library.from_configuration("FastModel"))
+network = convert_network("house", Path("house.yaml"), library=Library.from_configuration("FastModelMPC"))
 model = CasadiModel.from_modelica(network.model(), "house.building_mpc")
 ocp = OptimalControl(model, settings=OptimalControlSettings(time_step=3600))
 
@@ -136,10 +155,12 @@ capacities).
 
 ## How close to Buildings
 
-`python -m validation.mpc` simulates the Buildings model of a YAML file and **replays** what its systems did
-(the heat of ideal emitters, or the branch flows, valve positions and boiler or heat pump controls) through the
-runnable `FastModel` model, then compares the zones, the water temperatures and the meters. See the
-[validation page](../validation/fast_model.md) for the results.
+`python -m validation.mpc` simulates the Buildings model of a YAML file and compares it with FastModel in two
+ways: it **replays** what the systems of Buildings did (the heat of ideal emitters, or the branch flows, valve
+positions and boiler or heat pump controls) through the runnable `FastModelMPC` model (`--models FastModel`), or it
+simulates the closed-loop `FastModel` with its own controllers (`--models FastModelClosedLoop`); then it compares
+the zones, the water temperatures and the meters. See the [validation page](../validation/fast_model.md) for the
+results.
 
 ## Limits
 
@@ -148,4 +169,7 @@ runnable `FastModel` model, then compares the zones, the water temperatures and 
 * Ventilation units are balanced (supply = extract) and of the `system_d` kind.
 * Boilers with a storage tank, water-to-water heat pumps, chillers, domestic hot water, batteries, EV chargers and
   VAV systems are not modelled: generating a model with them stops with a message naming them.
-* Flows are set by the valves; the pressure-driven sharing of flow between branches is not modelled.
+* With `FastModelMPC`, flows are set by the valves; the pressure-driven sharing of flow between branches is
+  modelled in the closed loop only, with the resistances linearised at their nominal flows.
+* The closed-loop controllers have no event: a hysteresis switches within 10 s, and the minimum on and off times of
+  the heat pump are not modelled.
