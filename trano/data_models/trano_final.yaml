@@ -1662,9 +1662,7 @@ classes:
         description: Same as water_inlet_temperature_at_nominal_condition
         range: float
       water_inlet_temperature_at_nominal_condition:
-        description: Water inlet temperature at nominal condition [K]; 353.15 for
-          a boiler, the supply set point of the heat pump that feeds the radiator
-          otherwise
+        description: Water inlet temperature at nominal condition [K]
         ifabsent: float(353.15)
         maximum_value: 423.15
         minimum_value: 223.15
@@ -1673,9 +1671,7 @@ classes:
         description: Same as water_outlet_temperature_at_nominal_condition
         range: float
       water_outlet_temperature_at_nominal_condition:
-        description: Water outlet temperature at nominal condition [K]; 333.15 for
-          a boiler, 10 K below the supply set point of the heat pump that feeds the
-          radiator otherwise
+        description: Water outlet temperature at nominal condition [K]
         ifabsent: float(333.15)
         maximum_value: 423.15
         minimum_value: 223.15

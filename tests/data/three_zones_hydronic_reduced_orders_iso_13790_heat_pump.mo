@@ -4191,7 +4191,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
   );
         AixLib.Fluid.HeatExchangers.Radiators.
             RadiatorEN442_2 radiator_003(
-            TAir_nominal=293.15, dp_nominal=2000.0, n=1.24, deltaM=0.01, fraRad=0.3, Q_flow_nominal=5000.0, nEle=1, TRad_nominal=293.15, linearized=true, from_dp=false, T_a_nominal=323.15, T_b_nominal=313.15, mDry=131.5, VWat=0.029,
+            TAir_nominal=293.15, dp_nominal=2000.0, n=1.24, deltaM=0.01, fraRad=0.3, Q_flow_nominal=5000.0, nEle=1, TRad_nominal=293.15, linearized=true, from_dp=false, T_a_nominal=353.15, T_b_nominal=333.15, mDry=131.5, VWat=0.029,
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator"  annotation (
     Placement(transformation(origin = { -87.15560913085938, 29.441421508789062 },
@@ -4199,7 +4199,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
 )));
     AixLib.Fluid.Actuators.Valves.TwoWayEqualPercentage
         valve_003(use_strokeTime=false, 
-            dpFixed_nominal=5000.0, dpValve_nominal=10000.0, deltaM=0.02, m_flow_nominal=0.1195, delta0=0.01, R=50.0, linearized=true, from_dp=true, l=0.0001,redeclare package Medium = MediumW
+            dpFixed_nominal=5000.0, dpValve_nominal=10000.0, deltaM=0.02, m_flow_nominal=0.06, delta0=0.01, R=50.0, linearized=true, from_dp=true, l=0.0001,redeclare package Medium = MediumW
 
 ) "Radiator valve"  annotation (
     Placement(transformation(origin = { -56.76542282104492, -100.0 },
@@ -4212,7 +4212,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
 )));
         AixLib.Fluid.HeatExchangers.Radiators.
             RadiatorEN442_2 radiator_001(
-            TAir_nominal=293.15, dp_nominal=2000.0, n=1.24, deltaM=0.01, fraRad=0.3, Q_flow_nominal=5000.0, nEle=1, TRad_nominal=293.15, linearized=true, from_dp=false, T_a_nominal=323.15, T_b_nominal=313.15, mDry=131.5, VWat=0.029,
+            TAir_nominal=293.15, dp_nominal=2000.0, n=1.24, deltaM=0.01, fraRad=0.3, Q_flow_nominal=5000.0, nEle=1, TRad_nominal=293.15, linearized=true, from_dp=false, T_a_nominal=353.15, T_b_nominal=333.15, mDry=131.5, VWat=0.029,
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator"  annotation (
     Placement(transformation(origin = { -63.14834976196289, 55.84599304199219 },
@@ -4220,7 +4220,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
 )));
     AixLib.Fluid.Actuators.Valves.TwoWayEqualPercentage
         valve_001(use_strokeTime=false, 
-            dpFixed_nominal=5000.0, dpValve_nominal=10000.0, deltaM=0.02, m_flow_nominal=0.1195, delta0=0.01, R=50.0, linearized=true, from_dp=true, l=0.0001,redeclare package Medium = MediumW
+            dpFixed_nominal=5000.0, dpValve_nominal=10000.0, deltaM=0.02, m_flow_nominal=0.06, delta0=0.01, R=50.0, linearized=true, from_dp=true, l=0.0001,redeclare package Medium = MediumW
 
 ) "Radiator valve"  annotation (
     Placement(transformation(origin = { 36.39485168457031, -31.18004608154297 },
@@ -4233,7 +4233,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
 )));
         AixLib.Fluid.HeatExchangers.Radiators.
             RadiatorEN442_2 radiator_002(
-            TAir_nominal=293.15, dp_nominal=2000.0, n=1.24, deltaM=0.01, fraRad=0.3, Q_flow_nominal=5000.0, nEle=1, TRad_nominal=293.15, linearized=true, from_dp=false, T_a_nominal=323.15, T_b_nominal=313.15, mDry=131.5, VWat=0.029,
+            TAir_nominal=293.15, dp_nominal=2000.0, n=1.24, deltaM=0.01, fraRad=0.3, Q_flow_nominal=5000.0, nEle=1, TRad_nominal=293.15, linearized=true, from_dp=false, T_a_nominal=353.15, T_b_nominal=333.15, mDry=131.5, VWat=0.029,
     redeclare package Medium = MediumW,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Radiator"  annotation (
     Placement(transformation(origin = { 21.216354370117188, -0.05371856689453125 },
@@ -4241,7 +4241,7 @@ Trano.Controls.BaseClasses.DataBus dataBus
 )));
     AixLib.Fluid.Actuators.Valves.TwoWayEqualPercentage
         valve_002(use_strokeTime=false, 
-            dpFixed_nominal=5000.0, dpValve_nominal=10000.0, deltaM=0.02, m_flow_nominal=0.1195, delta0=0.01, R=50.0, linearized=true, from_dp=true, l=0.0001,redeclare package Medium = MediumW
+            dpFixed_nominal=5000.0, dpValve_nominal=10000.0, deltaM=0.02, m_flow_nominal=0.06, delta0=0.01, R=50.0, linearized=true, from_dp=true, l=0.0001,redeclare package Medium = MediumW
 
 ) "Radiator valve"  annotation (
     Placement(transformation(origin = { 100.0, 11.13592529296875 },
