@@ -19,7 +19,7 @@ Status = Literal["pass", "fail", "known"]
 # Results outside their band that are understood and accepted, with the reason: (library, case, KPI).
 KNOWN_DEVIATIONS: dict[tuple[str, str, Kpi], str] = {
     ("IDEAS", "950", "peak_cooling"): (
-        "2.517 kW against a band ending at 2.507 kW (the spread of the reference programs plus 5 % of the "
+        "2.519 kW against a band ending at 2.507 kW (the spread of the reference programs plus 5 % of the "
         "largest peak): 0.4 % above a tolerance that is a convention, not a limit of the standard."
     ),
     ("Buildings", "980", "annual_cooling"): (

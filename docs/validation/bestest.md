@@ -187,7 +187,7 @@ compare.
 | 950 | annual_heating | 0.000 MWh | 0.000 to 0.000 | 0.000 | pass |
 | 950 | annual_cooling | 0.741 MWh | 0.430 to 1.520 | 0.634 | pass |
 | 950 | peak_heating | 0.000 kW | 0.000 to 0.000 | 0.000 | pass |
-| 950 | peak_cooling | 2.519 kW | 1.935 to 2.507 | 2.268 | known deviation: 2.517 kW against a band ending at 2.507 kW (the spread of the reference programs plus 5 % of the largest peak): 0.4 % above a tolerance that is a convention, not a limit of the standard. |
+| 950 | peak_cooling | 2.519 kW | 1.935 to 2.507 | 2.268 | known deviation: 2.519 kW against a band ending at 2.507 kW (the spread of the reference programs plus 5 % of the largest peak): 0.4 % above a tolerance that is a convention, not a limit of the standard. |
 | 960 | annual_heating | 2.695 MWh | 2.000 to 3.400 | 2.693 | pass |
 | 960 | annual_cooling | 0.950 MWh | 0.620 to 1.810 | 0.896 | pass |
 | 960 | peak_heating | 2.217 kW | 1.970 to 2.415 | 2.195 | pass |
