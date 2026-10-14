@@ -3,7 +3,7 @@
 # the file; building_mpc alone keeps the site of its parameters (Uccle by default).
 - classes:
   - Weather
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -45,7 +45,7 @@
 # The ventilation units take the outdoor air from the weather: the boundary of the other libraries is not needed.
 - classes:
   - Boundary
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: []
@@ -56,7 +56,7 @@
 # them with the occupancy schedule of the element.
 - classes:
   - Occupancy
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: &occupancy_ports
@@ -79,7 +79,7 @@
 
 - classes:
   - Occupancy
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: *occupancy_ports
@@ -90,7 +90,7 @@
 # The data bus of the other libraries: the runnable model replays the columns of the external data, if any.
 - classes:
   - DataBus
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: []
@@ -107,11 +107,12 @@
       {%- endif -%}
   variant: default
 
-# Ideal heating and cooling: its heat flow rate is an input of building_mpc, between the cooling and the heating
-# capacities, split between the air and the radiant star of the zone.
+# Ideal heating and cooling: a PI controller per mode towards the day schedules of set points, as trano's model for
+# Buildings and IDEAS (closed loop), or its heat flow rate is an input of building_mpc, between the cooling and the
+# heating capacities (MPC); the heat is split between the air and the radiant star of the zone.
 - classes:
   - IdealHeatingCooling
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -128,6 +129,12 @@
     targets:
     - Space
   template: |-
+    {%- if library == 'FastModel' -%}
+    FastModel.HVAC.IdealHeatingCoolingPI {{ element.name }}(
+        {%- for name in ['TSetHea', 'TSetCoo', 'QHea_flow_max', 'QCoo_flow_max', 'k', 'Ti', 'frad'] if parameters.get(name) is not none %}
+        {{ name }}={{ parameters.get(name) }}{{ ',' if not loop.last }}
+        {%- endfor %})
+    {%- else -%}
     FastModel.Interfaces.HeatFlowInput {{ element.name }}_Q(Q_flow(
         min=-{{ parameters.get('QCoo_flow_max') if parameters.get('QCoo_flow_max') is not none else 1e6 }},
         max={{ parameters.get('QHea_flow_max') if parameters.get('QHea_flow_max') is not none else 1e6 }}))
@@ -135,15 +142,18 @@
     FastModel.HVAC.IdealHeatingCooling {{ element.name }}(
         fraRad={{ parameters.get('frad') if parameters.get('frad') is not none else 0 }},
         Q_flow={{ element.name }}_Q.Q_flow)
+    {%- endif -%}
   runnable:
     declaration: |-
-      {%- if element.name ~ '_Q' not in columns -%}
+      {%- if library == 'FastModelMPC' and element.name ~ '_Q' not in columns -%}
       Modelica.Blocks.Sources.Constant {{ element.name }}_Q(k=0) "No heating or cooling without external data";
       {%- endif -%}
     equation: |-
+      {%- if library == 'FastModelMPC' -%}
       {%- if element.name ~ '_Q' in columns -%}
       connect(data_bus.y[{{ columns.index(element.name ~ '_Q') + 1 }}], mpc.{{ element.name }}_Q.Q_flow);
       {%- else -%}
       connect({{ element.name }}_Q.y, mpc.{{ element.name }}_Q.Q_flow);
+      {%- endif -%}
       {%- endif -%}
   variant: default

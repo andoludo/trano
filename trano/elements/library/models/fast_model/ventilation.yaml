@@ -3,7 +3,7 @@
 # would stop the ventilation); each duct carries y times its nominal flow.
 - classes:
   - Duct
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -21,7 +21,7 @@
 
 - classes:
   - AirHandlingUnit
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -48,7 +48,9 @@
     targets:
     - Weather
   template: |-
+    {%- if library == 'FastModelMPC' -%}
     FastModel.Interfaces.ControlInput {{ element.name }}_y(y(min=1, max=1)) "Fan speed of {{ element.name }} relative to the design flow: input of the model";
+    {%- endif %}
     FastModel.Ventilation.HeatRecoveryUnit {{ element.name }}(
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }},
@@ -56,16 +58,18 @@
         eps={{ parameters.eps }},
         dpSup_nominal={{ parameters.dpSup_nominal }},
         dpRet_nominal={{ parameters.dpRet_nominal }},
-        y={{ element.name }}_y.y)
+        y={{ element.name ~ '_y.y' if library == 'FastModelMPC' else '1' }})
   runnable:
     declaration: |-
-      {%- if element.name ~ '_y' not in columns -%}
+      {%- if library == 'FastModelMPC' and element.name ~ '_y' not in columns -%}
       Modelica.Blocks.Sources.Constant {{ element.name }}_y(k=1) "Control held without external data";
       {%- endif -%}
     equation: |-
+      {%- if library == 'FastModelMPC' -%}
       {%- if element.name ~ '_y' in columns -%}
       connect(data_bus.y[{{ columns.index(element.name ~ '_y') + 1 }}], mpc.{{ element.name }}_y.y);
       {%- else -%}
       connect({{ element.name }}_y.y, mpc.{{ element.name }}_y.y);
+      {%- endif -%}
       {%- endif -%}
   variant: system_d

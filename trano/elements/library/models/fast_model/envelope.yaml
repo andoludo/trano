@@ -4,7 +4,7 @@
 - classes:
   - ExternalWall
   - ExternalDoor
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -24,7 +24,7 @@
 
 - classes:
   - Window
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -45,7 +45,7 @@
 
 - classes:
   - FloorOnGround
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: &single_surface
@@ -68,7 +68,7 @@
 # A raised floor over outdoor air (ASHRAE 140): the outer surface follows the outdoor dry-bulb temperature.
 - classes:
   - FloorOnGround
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: *single_surface
@@ -82,7 +82,7 @@
 
 - classes:
   - AdiabaticWall
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: *single_surface
@@ -98,7 +98,7 @@
 # in that zone (a floor between storeys is the ceiling of the zone below); side b faces the other way.
 - classes:
   - InternalElement
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:

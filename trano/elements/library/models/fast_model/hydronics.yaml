@@ -1,13 +1,16 @@
-# Water circuits: the flow of each branch is set by its valve (the input <valve>_y, relative to the nominal
-# flow), the share of supply water by the three-way valves, the heat by the production (the input
-# <production>_y). Ports with several connections are arrays, one element per connection, sized by the template.
-# The runnable model replays the column <system>_y of the external data, or holds the input at 1.
+# Water circuits, in two modes chosen by the library:
+# * FastModel (closed loop): the flows follow the pressures of the circuit (pressureDriven), the valves open as their
+#   controllers decide (the controls of controls.yaml, connected through the port y), the pumps run on their curves;
+# * FastModelMPC: the flow of each branch is set by its valve (the input <valve>_y, relative to the nominal flow),
+#   the share of supply water by the three-way valves, the heat by the production (the input <production>_y); the
+#   runnable model replays the column <system>_y of the external data, or holds the input at 1.
+# Ports with several connections are arrays, one element per connection, sized by the template.
 - classes:
   - Radiator
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: &radiator_parameters
     function: default_parameters
-  ports: &radiator_ports
+  ports:
   - flow: convective
     medium: heat
     names:
@@ -28,7 +31,7 @@
     medium: fluid
     names:
     - port_b[1]
-  template: &radiator_template |-
+  template: |-
     FastModel.Hydronics.Radiator {{ element.name }}(
         Q_flow_nominal={{ parameters.Q_flow_nominal }},
         T_a_nominal={{ parameters.T_a_nominal }},
@@ -44,13 +47,18 @@
         {%- if parameters.get('mDry') is not none %}
         mDry={{ parameters.mDry }},
         {%- endif %}
+        {%- if library == 'FastModel' %}
+        pressureDriven=true,
+        dp_nominal={{ parameters.dp_nominal }},
+        {%- endif %}
         T_start=293.15)
   variant: default
 
-# Ideal emitters (no water circuit): their heat flow rate, between 0 and the nominal power, is an input.
+# Ideal emitters (no water circuit): their emission control sets the share y of the nominal power (closed loop), or
+# their heat flow rate, between 0 and the nominal power, is an input (MPC).
 - classes:
   - Radiator
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *radiator_parameters
   ports: &ideal_ports
   - flow: convective
@@ -65,26 +73,40 @@
     - heatPortRad
     targets:
     - Space
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - Control
+    no_check: true
   template: &ideal_template |-
+    {%- if library == 'FastModel' -%}
+    FastModel.HVAC.IdealHeater {{ element.name }}(Q_flow_nominal={{ parameters.Q_flow_nominal }}, fraRad={{ parameters.fraRad }}
+        {%- if not element.control %}, y=1{% endif %})
+    {%- else -%}
     FastModel.Interfaces.HeatFlowInput {{ element.name }}_Q(Q_flow(min=0, max={{ parameters.Q_flow_nominal }}))
         "Heat flow rate of {{ element.name }}: input of the model";
     FastModel.HVAC.IdealHeatingCooling {{ element.name }}(fraRad={{ parameters.fraRad }}, Q_flow={{ element.name }}_Q.Q_flow)
+    {%- endif -%}
   runnable: &heat_runnable
     declaration: |-
-      {%- if element.name ~ '_Q' not in columns -%}
+      {%- if library == 'FastModelMPC' and element.name ~ '_Q' not in columns -%}
       Modelica.Blocks.Sources.Constant {{ element.name }}_Q(k=0) "No heat without external data";
       {%- endif -%}
     equation: |-
+      {%- if library == 'FastModelMPC' -%}
       {%- if element.name ~ '_Q' in columns -%}
       connect(data_bus.y[{{ columns.index(element.name ~ '_Q') + 1 }}], mpc.{{ element.name }}_Q.Q_flow);
       {%- else -%}
       connect({{ element.name }}_Q.y, mpc.{{ element.name }}_Q.Q_flow);
       {%- endif -%}
+      {%- endif -%}
   variant: ideal
 
 - classes:
   - Radiator
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *radiator_parameters
   ports: *ideal_ports
   template: *ideal_template
@@ -93,7 +115,7 @@
 
 - classes:
   - Valve
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -105,19 +127,41 @@
     medium: fluid
     names:
     - port_b[1]
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - Control
+    no_check: true
   template: |-
+    {%- if library == 'FastModel' -%}
+    FastModel.Hydronics.Valve {{ element.name }}(
+        pressureDriven=true,
+        m_flow_nominal={{ parameters.m_flow_nominal }},
+        dpValve_nominal={{ parameters.dpValve_nominal }},
+        dpFixed_nominal={{ parameters.dpFixed_nominal }},
+        R={{ parameters.R }},
+        l={{ parameters.l }},
+        delta0={{ parameters.delta0 }}
+        {%- if not element.control %},
+        y=1{% endif %})
+    {%- else -%}
     FastModel.Interfaces.ControlInput {{ element.name }}_y "Flow of {{ element.name }} relative to its nominal flow: input of the model";
     FastModel.Hydronics.Valve {{ element.name }}(m_flow_nominal={{ parameters.m_flow_nominal }}, y={{ element.name }}_y.y)
+    {%- endif -%}
   runnable: &control_runnable
     declaration: |-
-      {%- if element.name ~ '_y' not in columns -%}
+      {%- if library == 'FastModelMPC' and element.name ~ '_y' not in columns -%}
       Modelica.Blocks.Sources.Constant {{ element.name }}_y(k=1) "Control held without external data";
       {%- endif -%}
     equation: |-
+      {%- if library == 'FastModelMPC' -%}
       {%- if element.name ~ '_y' in columns -%}
       connect(data_bus.y[{{ columns.index(element.name ~ '_y') + 1 }}], mpc.{{ element.name }}_y.y);
       {%- else -%}
       connect({{ element.name }}_y.y, mpc.{{ element.name }}_y.y);
+      {%- endif -%}
       {%- endif -%}
   variant: default
 
@@ -125,7 +169,7 @@
 # to port_3, as for the Buildings library).
 - classes:
   - ThreeWayValve
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -141,15 +185,36 @@
     medium: fluid
     names:
     - port_3[1]
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - Control
+    no_check: true
   template: |-
+    {%- if library == 'FastModel' -%}
+    FastModel.Hydronics.ThreeWayValve {{ element.name }}(
+        pressureDriven=true,
+        m_flow_nominal={{ parameters.m_flow_nominal }},
+        dpValve_nominal={{ parameters.dpValve_nominal }},
+        dpFixed_nominal={{ parameters.dpFixed_nominal }},
+        fraK={{ parameters.fraK }},
+        R={{ parameters.R }},
+        l={{ parameters.l }},
+        delta0={{ parameters.delta0 }}
+        {%- if not element.control %},
+        y=1{% endif %})
+    {%- else -%}
     FastModel.Interfaces.ControlInput {{ element.name }}_y "Share of supply water of {{ element.name }}: input of the model";
     FastModel.Hydronics.ThreeWayValve {{ element.name }}(m_flow_nominal={{ parameters.m_flow_nominal }}, y={{ element.name }}_y.y)
+    {%- endif -%}
   runnable: *control_runnable
   variant: default
 
 - classes:
   - SplitValve
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -167,16 +232,20 @@
     names:
     - port_3[1]
   template: |-
-    {%- if macros.connections(element, 'port_3[1]') | int -%}
-    FastModel.Hydronics.Junction {{ element.name }}(nPorts_1={{ macros.connections(element, 'port_1') }})
-    {%- else -%}
-    FastModel.Hydronics.Junction2 {{ element.name }}(nPorts_1={{ macros.connections(element, 'port_1') }})
-    {%- endif -%}
+    FastModel.Hydronics.{{ 'Junction' if macros.connections(element, 'port_3[1]') | int else 'Junction2' }} {{ element.name }}(
+        {%- if library == 'FastModel' %}
+        pressureDriven=true,
+        dp_nominal={{ parameters.dp_nominal }},
+        m_flow_nominal={{ parameters.m_flow_nominal }},
+        {%- endif %}
+        nPorts_1={{ macros.connections(element, 'port_1') }})
   variant: default
 
+# Pumps: on their curve at the speed of their collector control (closed loop, full speed without one), or
+# pass-through (MPC: the valves set the flows).
 - classes:
   - Pump
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: &multi_fluid_ports
@@ -195,26 +264,56 @@
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }},
         dp_nominal={{ parameters.dp_nominal }},
-        m_flow_nominal={{ parameters.m_flow_nominal }})
+        m_flow_nominal={{ parameters.m_flow_nominal }},
+        {%- if library == 'FastModel' %}
+        pressureDriven=true,
+        y={{ element.control.name ~ '.y' if element.control else '1' }})
+        {%- else %}
+        y=1)
+        {%- endif %}
   variant: default
 
 - classes:
   - TemperatureSensor
   - HeatMeterSensor
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
-  ports: *multi_fluid_ports
+  ports:
+  - flow: inlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_a
+  - flow: outlet
+    medium: fluid
+    multi_connection: true
+    names:
+    - port_b
+  - flow: undirected
+    medium: data
+    names:
+    - T
+    targets:
+    - Control
+    no_check: true
   template: |-
     FastModel.Hydronics.TemperatureSensor {{ element.name }}(
+        {%- if library == 'FastModel' %}
+        pressureDriven=true,
+        {%- if parameters.get('m_flow_nominal') is not none %}
+        m_flow_nominal={{ parameters.m_flow_nominal }},
+        {%- endif %}
+        {%- endif %}
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }})
   variant: default
 
-# Boilers without storage tank (Buildings BoilerPolynomial): the part load ratio <boiler>_y is the input.
+# Boilers without storage tank (Buildings BoilerPolynomial): the part load ratio from a P controller on the boiler
+# temperature while its control sees demand (closed loop), or the input <boiler>_y (MPC).
 - classes:
   - Boiler
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: &boiler_parameters
     function: default_parameters
   ports: *multi_fluid_ports
@@ -222,7 +321,14 @@
     {%- if parameters.useStorageTank | string | lower == 'true' -%}
     {{ unsupported('Boiler ' ~ element.name ~ ' has a storage tank: the FastModel library has no tank yet.') }}
     {%- endif -%}
+    {%- if library == 'FastModel' -%}
+    {%- set demand = element.control.name ~ '.y' if element.control and element.control.variant == 'simple' and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
+    FastModel.Controls.BoilerTemperatureControl {{ element.name }}_control(
+        TempSet={{ parameters.get('TempSet', 353.15) }}, T={{ element.name }}.T, demand={{ demand }})
+        "Firing of {{ element.name }}";
+    {% else -%}
     FastModel.Interfaces.ControlInput {{ element.name }}_y "Part load ratio of {{ element.name }}: input of the model";
+    {%- endif %}
     FastModel.Hydronics.Boiler {{ element.name }}(
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }},
@@ -230,13 +336,20 @@
         effCur=FastModel.Types.EfficiencyCurves.{{ parameters.effCur.split('.')[-1] }},
         a={{ parameters.a }},
         T_nominal={{ parameters.T_nominal }},
+        {%- if library == 'FastModel' %}
+        pressureDriven=true,
+        m_flow_nominal={{ parameters.nominal_mass_flow_rate_boiler }},
+        dp_nominal={{ parameters.dp_nominal }},
+        y={{ element.name }}_control.y)
+        {%- else %}
         y={{ element.name }}_y.y)
+        {%- endif %}
   runnable: *control_runnable
   variant: default
 
 - classes:
   - Boiler
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *boiler_parameters
   ports: *multi_fluid_ports
   template: *boiler_template
@@ -244,10 +357,11 @@
   variant: without_storage
 
 # Air-to-water heat pump (trano's Buildings air_water_heat_pump: Vitocal 251-A08 tables scaled to the capacity)
-# with its buffer: the compressor speed <heat pump>_y is the input, the outdoor air its source.
+# with its buffer, the outdoor air its source: the compressor speed from the control of the Buildings model
+# (closed loop), or the input <heat pump>_y (MPC).
 - classes:
   - Boiler
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *boiler_parameters
   ports:
   - flow: inlet
@@ -267,7 +381,20 @@
     targets:
     - Weather
   template: |-
+    {%- if library == 'FastModel' -%}
+    {%- set demand = element.control.name ~ '.y' if element.control and element.control.variant == 'simple' and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
+    FastModel.Controls.HeatPumpControl {{ element.name }}_control(
+        TSet={{ parameters.TSet }},
+        {%- if parameters.get('TOutDes') is not none %}
+        TOutDes={{ parameters.TOutDes }},
+        {%- endif %}
+        demand={{ demand }},
+        TOut={{ element.name }}.weaBus.TDryBul,
+        TBuf={{ element.name }}.T,
+        TConOut={{ element.name }}.TConOut) "Control of {{ element.name }}";
+    {% else -%}
     FastModel.Interfaces.ControlInput {{ element.name }}_y "Compressor speed of {{ element.name }}: input of the model";
+    {%- endif %}
     FastModel.Hydronics.HeatPump {{ element.name }}(
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }},
@@ -280,13 +407,19 @@
         VTan={{ parameters.VTan }},
         hTan={{ parameters.hTan }},
         dIns={{ parameters.dIns }},
+        {%- if library == 'FastModel' %}
+        pressureDriven=true,
+        m_flow_nominal={{ parameters.nominal_mass_flow_radiator_loop }},
+        y={{ element.name }}_control.y)
+        {%- else %}
         y={{ element.name }}_y.y)
+        {%- endif %}
   runnable: *control_runnable
   variant: air_water_heat_pump
 
 - classes:
   - Boiler
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *boiler_parameters
   ports: *multi_fluid_ports
   template: |-

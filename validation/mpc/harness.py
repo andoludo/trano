@@ -143,7 +143,7 @@ def _hashed_text(model: str, network: Network) -> str:
 
 def _data_bus(network: Network) -> DataBus | None:
     """The data bus of a FastModel network, with the external data its runnable model replays."""
-    if network.library.name != "FastModel" or not network.external_data:
+    if network.library.name != FAST_MODEL_MPC or not network.external_data:
         return None
     return DataBus(external_data=network.external_data)
 
@@ -267,7 +267,7 @@ def _fast_model_replay(reader: Reader, network: Network, grid: np.ndarray) -> di
         if not _is_hydronic_radiator(emitter):
             columns[f"{emitter.name}_Q"] = _element_heat(reader, emitter, grid)
     for valve in _of_type(network, Valve):
-        nominal = float(valve.processed_parameters(Library.from_configuration("FastModel"))["m_flow_nominal"])
+        nominal = float(valve.processed_parameters(Library.from_configuration(FAST_MODEL_MPC))["m_flow_nominal"])
         columns[f"{valve.name}_y"] = (
             _interval_mean(reader, find_variable(reader, f"{valve.name}.m_flow"), grid) / nominal
         )
@@ -279,7 +279,7 @@ def _fast_model_replay(reader: Reader, network: Network, grid: np.ndarray) -> di
         )
     for unit in _of_type(network, AirHandlingUnit):
         ducts = [duct for duct in network.graph.succ[unit] if isinstance(duct, Duct)]
-        library = Library.from_configuration("FastModel")
+        library = Library.from_configuration(FAST_MODEL_MPC)
         nominal = sum(float(duct.processed_parameters(library)["m_flow_nominal"]) for duct in ducts)
         flow = sum(
             (_interval_mean(reader, find_variable(reader, f"{duct.name}.m_flow"), grid) for duct in ducts),
@@ -431,11 +431,16 @@ def _circuits(reader: Reader, model_reader: Reader, network: Network, grid: np.n
 
 
 FAST_MODEL = "FastModel"
+FAST_MODEL_MPC = "FastModelMPC"  # FastModel with the controls as inputs: the replay drives them
+CLOSED_LOOP = "FastModelClosedLoop"  # FastModel with its own controllers: no replay, the same YAML closed loop
 
 
 def compare(case_id: str, model: str = FAST_MODEL, reference_library: str = REFERENCE) -> CaseComparison:
     """Replay what the systems of the ``reference_library`` model (Buildings or IDEAS) did through the model of the
-    same YAML file and compare: ``FastModel`` or an RC model type of the flat ``mpc`` library (R1C1, R3C2, ...)."""
+    same YAML file and compare: ``FastModel`` or an RC model type of the flat ``mpc`` library (R1C1, R3C2, ...).
+
+    ``FastModelClosedLoop`` replays nothing: the FastModel model of the same YAML runs with its own controllers, as
+    the reference does with its own."""
     case = CASES[case_id]
     started = time.monotonic()
     buildings_network, buildings_result = reference(case, reference_library)
@@ -449,17 +454,20 @@ def compare(case_id: str, model: str = FAST_MODEL, reference_library: str = REFE
         )
         for space in spaces
     }
-    fast_model = model == FAST_MODEL
-    variant = FAST_MODEL if fast_model else f"mpc-{model}"
+    closed_loop = model == CLOSED_LOOP
+    fast_model = model in (FAST_MODEL, CLOSED_LOOP)
+    variant = model if fast_model else f"mpc-{model}"
     directory = case_directory(case, variant if reference_library == REFERENCE else f"{variant}-{reference_library}")
     library = (
-        Library.from_configuration(FAST_MODEL)
+        Library.from_configuration(FAST_MODEL if closed_loop else FAST_MODEL_MPC)
         if fast_model
         else Library.from_configuration("mpc").model_copy(update={"rc_model_type": RCModelType(model)})
     )
     network = _network(case, library, directory)
     replay = np.arange(case.start_time, case.end_time + 1, FINE_REPLAY_INTERVAL if case.fine_replay else INTERVAL)
-    if fast_model:
+    if closed_loop:
+        columns = {}
+    elif fast_model:
         columns = _fast_model_replay(reader, buildings_network, replay.astype(float))
     else:
         columns = {

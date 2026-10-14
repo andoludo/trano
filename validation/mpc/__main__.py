@@ -10,7 +10,15 @@ from typing import Any
 
 from trano.mpc import RCModelType
 from validation.mpc.cases import CASES
-from validation.mpc.harness import CACHE_ROOT, FAST_MODEL, REFERENCE, REFERENCES, CaseComparison, compare
+from validation.mpc.harness import (
+    CACHE_ROOT,
+    CLOSED_LOOP,
+    FAST_MODEL,
+    REFERENCE,
+    REFERENCES,
+    CaseComparison,
+    compare,
+)
 from validation.mpc.report import render_report
 
 RESULTS = CACHE_ROOT / "results.json"
@@ -39,7 +47,8 @@ def main() -> None:
         "--models",
         nargs="*",
         default=[FAST_MODEL, *(model.value for model in RCModelType)],
-        help="FastModel, or an RC model type of the flat mpc library",
+        help=f"FastModel (replaying the controls of the reference), {CLOSED_LOOP} (its own controllers), or an RC "
+        "model type of the flat mpc library",
     )
     run.add_argument(
         "--references",

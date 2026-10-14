@@ -67,10 +67,18 @@
         }
     },
     "mpc": {
-        "medium": {"air": "Modelica.Media.Air.SimpleAir", "water": "Modelica.Media.Water.ConstantPropertyLiquidWater"},
+        "medium": {
+            "air": "Modelica.Media.Air.SimpleAir",
+            "water": "Modelica.Media.Water.ConstantPropertyLiquidWater"
+        },
         "name": "mpc",
         "rc_model_type": "R3C2",
-        "templates": {"construction": "", "glazing": "", "main": "", "material": ""}
+        "templates": {
+            "construction": "",
+            "glazing": "",
+            "main": "",
+            "material": ""
+        }
     },
     "FastModel": {
         "medium": {
@@ -88,5 +96,10 @@
             "material": null,
             "main": "package Data \"Constructions and glazings of the building\"\n  package Constructions \"Opaque constructions, layers from the outside\"\n{% for c in construction %}\n    {{ c | safe }}\n{% endfor %}\n  end Constructions;\n\n  package Glazing \"Glazings, panes from the outside\"\n{% for g in glazing %}\n    {{ g | safe }}\n{% endfor %}\n  end Glazing;\nend Data;"
         }
+    },
+    "FastModelMPC": {
+        "extends": "FastModel",
+        "name": "FastModelMPC",
+        "core_library": "FastModel"
     }
 }

@@ -1,4 +1,5 @@
-"""Markdown report of the comparisons between the MPC libraries (``mpc``, ``FastModel``) and Buildings or IDEAS."""
+"""Markdown report of the comparisons between the MPC libraries (``mpc``, ``FastModel`` replaying the controls of
+the reference, ``FastModelClosedLoop`` with its own controllers) and Buildings or IDEAS."""
 
 from validation.mpc.cases import CASES
 from validation.mpc.harness import CaseComparison
@@ -30,12 +31,13 @@ def render_report(comparisons: list[CaseComparison]) -> str:
     if circuits:
         lines += [
             "",
-            "| Case | Reference | Water temperature | RMSE [K] | Bias [K] | Mean reference [degC] "
+            "| Case | Model | Reference | Water temperature | RMSE [K] | Bias [K] | Mean reference [degC] "
             "| Time compared (circulating) |",
-            "|---|---|---|---|---|---|---|",
+            "|---|---|---|---|---|---|---|---|",
         ]
         lines.extend(
-            f"| {comparison.case} | {comparison.reference} | {circuit.variable} | {circuit.rmse:.2f} | "
+            f"| {comparison.case} | {comparison.model} | {comparison.reference} | {circuit.variable} | "
+            f"{circuit.rmse:.2f} | "
             f"{circuit.bias:+.2f} | "
             f"{circuit.mean_reference:.1f} | {100 * circuit.circulating:.0f} % |"
             for comparison in circuits
@@ -45,11 +47,12 @@ def render_report(comparisons: list[CaseComparison]) -> str:
     if energies:
         lines += [
             "",
-            "| Case | Reference | System | Energy | Reference [kWh] | FastModel [kWh] | Deviation |",
-            "|---|---|---|---|---|---|---|",
+            "| Case | Model | Reference | System | Energy | Reference [kWh] | Model [kWh] | Deviation |",
+            "|---|---|---|---|---|---|---|---|",
         ]
         lines.extend(
-            f"| {comparison.case} | {comparison.reference} | {energy.system} | {energy.quantity} | "
+            f"| {comparison.case} | {comparison.model} | {comparison.reference} | {energy.system} | "
+            f"{energy.quantity} | "
             f"{energy.reference_kwh:.1f} | "
             f"{energy.model_kwh:.1f} | {_percent(energy.deviation)} |"
             for comparison in energies

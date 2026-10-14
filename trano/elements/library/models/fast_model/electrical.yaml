@@ -1,7 +1,7 @@
 # PV array (Buildings PVSimpleOriented) on the weather of the site, with its production meter.
 - classes:
   - Photovoltaic
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:

@@ -1,8 +1,10 @@
-# The controls of the systems are inputs of building_mpc (each system declares its own: <system>_y): the
-# controllers of the other libraries have no FastModel component.
+# Controls. FastModel (closed loop): the controllers of trano's Buildings models without events
+# (FastModel.Controls); an emission control drives its valve or ideal emitter through the port y, a three-way valve
+# control reads its temperature sensor through the port u; the collector and boiler controls are referenced by the
+# pumps and productions that they drive. FastModelMPC: no controller, the controls are inputs of building_mpc.
 - classes:
   - EmissionControl
-  library: FastModel
+  library: FastModelMPC
   parameter_processing: &no_parameters
     function: default_parameters
   ports: []
@@ -10,25 +12,143 @@
   variant: default
 - classes:
   - EmissionControl
-  library: FastModel
+  library: FastModelMPC
   parameter_processing: *no_parameters
   ports: []
   template: ""
   variant: onoff
 - classes:
   - EmissionControl
-  library: FastModel
+  library: FastModelMPC
   parameter_processing: *no_parameters
   ports: []
   template: ""
   variant: PController
 - classes:
   - EmissionControl
-  library: FastModel
+  library: FastModelMPC
   parameter_processing: *no_parameters
   ports: []
   template: ""
   variant: MonitoredSetpoint
+- classes:
+  - BoilerControl
+  library: FastModelMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: default
+- classes:
+  - BoilerControl
+  library: FastModelMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: complex
+- classes:
+  - BoilerControl
+  library: FastModelMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: simple
+- classes:
+  - ThreeWayValveControl
+  - CollectorControl
+  - AhuControl
+  library: FastModelMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: default
+
+# Closed loop
+- classes:
+  - EmissionControl
+  library: FastModel
+  parameter_processing: &emission_parameters
+    function: default_parameters
+  ports: &emission_ports
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - y
+    targets:
+    - System
+    use_counter: false
+  template: |-
+    FastModel.Controls.EmissionPI {{ element.name }}(
+        schedule={{ parameters.schedule }},
+        THeaSet={{ parameters.THeaSet }},
+        THeaSetBack={{ parameters.THeaSetBack }},
+        TZon={{ element.space_name }}.TAir)
+  variant: default
+- classes:
+  - EmissionControl
+  library: FastModel
+  parameter_processing: *emission_parameters
+  ports: *emission_ports
+  template: |-
+    FastModel.Controls.EmissionOnOff {{ element.name }}(
+        schedule={{ parameters.schedule }},
+        THeaSet={{ parameters.THeaSet }},
+        THeaSetBack={{ parameters.THeaSetBack }},
+        TZon={{ element.space_name }}.TAir)
+  variant: onoff
+- classes:
+  - EmissionControl
+  library: FastModel
+  parameter_processing: *emission_parameters
+  ports: *emission_ports
+  template: |-
+    FastModel.Controls.EmissionP {{ element.name }}(
+        schedule={{ parameters.schedule }},
+        THeaSet={{ parameters.THeaSet }},
+        THeaSetBack={{ parameters.THeaSetBack }},
+        k={{ parameters.k }},
+        TZon={{ element.space_name }}.TAir)
+  variant: PController
+# The set point of MonitoredSetpoint is an input of building_mpc (<control>_TSet, a disturbance): the runnable model
+# replays the column of the external data that the YAML names for it, or holds the occupied set point without it.
+- classes:
+  - EmissionControl
+  library: FastModel
+  parameter_processing: *emission_parameters
+  ports: *emission_ports
+  template: |-
+    FastModel.Interfaces.RealInput {{ element.name }}_TSet(unit="K") "Set point of {{ element.name }}: input of the model";
+    FastModel.Controls.EmissionMonitored {{ element.name }}(
+        k={{ parameters.k }},
+        TSet={{ element.name }}_TSet,
+        TZon={{ element.space_name }}.TAir)
+  runnable:
+    declaration: |-
+      {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'MonitoredSetpoint') | map(attribute='variable') | first -%}
+      {%- if column not in columns -%}
+      Modelica.Blocks.Sources.Constant {{ element.name }}_TSet(k={{ parameters.THeaSet }}) "Set point held without external data";
+      {%- endif -%}
+    equation: |-
+      {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'MonitoredSetpoint') | map(attribute='variable') | first -%}
+      {%- if column in columns -%}
+      connect(data_bus.y[{{ columns.index(column) + 1 }}], mpc.{{ element.name }}_TSet);
+      {%- else -%}
+      connect({{ element.name }}_TSet.y, mpc.{{ element.name }}_TSet);
+      {%- endif -%}
+  variant: MonitoredSetpoint
+# Boiler controls: the demand of the variant simple (FastModel.Controls.BoilerDemand) drives its production; the
+# variants default and complex charge a storage tank, which FastModel does not model: their production has demand.
+- classes:
+  - BoilerControl
+  library: FastModel
+  parameter_processing: *no_parameters
+  ports: []
+  template: |-
+    {%- if element.pumps and element.pumps | selectattr('control') | list -%}
+    {%- set collectors = element.pumps | selectattr('control') | map(attribute='control') | map(attribute='name') | list -%}
+    FastModel.Controls.BoilerDemand {{ element.name }}(n={{ collectors | length }}, yMax={ {{- collectors | join('.yMax, ') -}}.yMax})
+    {%- endif -%}
+  variant: simple
 - classes:
   - BoilerControl
   library: FastModel
@@ -44,15 +164,44 @@
   template: ""
   variant: complex
 - classes:
-  - BoilerControl
+  - CollectorControl
   library: FastModel
-  parameter_processing: *no_parameters
+  parameter_processing:
+    function: default_parameters
   ports: []
-  template: ""
-  variant: simple
+  template: |-
+    {%- set pump = element.controllable_element.name -%}
+    {%- set valves = (element.valves or []) | map(attribute='name') | list -%}
+    FastModel.Controls.CollectorControl {{ element.name }}(
+        nVal={{ [valves | length, 1] | max }},
+        k={{ parameters.get('k', 1) }},
+        yVal={ {{- (valves | join('.y, ') ~ '.y') if valves else '1' -}} },
+        dpRel={{ pump }}.dp/{{ pump }}.dp_nominal)
+  variant: default
 - classes:
   - ThreeWayValveControl
-  - CollectorControl
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - ThreeWayValve
+  - flow: undirected
+    medium: data
+    names:
+    - u
+    targets:
+    - TemperatureSensor
+  template: |-
+    FastModel.Controls.ThreeWayValveControl {{ element.name }}(
+        TColSet={{ element.bus_input_default('TColSet') or 363.15 }},
+        k={{ parameters.get('k', 1) }})
+  variant: default
+- classes:
   - AhuControl
   library: FastModel
   parameter_processing: *no_parameters

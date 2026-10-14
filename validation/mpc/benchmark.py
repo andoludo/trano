@@ -35,6 +35,7 @@ from validation.mpc.cases import CASES, ROOT, MPCCase
 from validation.mpc.harness import (
     CACHE_ROOT,
     FAST_MODEL,
+    FAST_MODEL_MPC,
     FINE_REPLAY_INTERVAL,
     REFERENCE,
     REFERENCES,
@@ -118,7 +119,7 @@ def _casadi(case: MPCCase, ocp_hours: int) -> tuple[CasadiBenchmark, dict[str, n
     """Translate building_mpc, replay the OpenModelica run of the runnable model through CVODES and solve an OCP."""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        network = convert_network(case.path.stem, case.path, library=Library.from_configuration(FAST_MODEL))
+        network = convert_network(case.path.stem, case.path, library=Library.from_configuration(FAST_MODEL_MPC))
         source = network.model()
     started = time.perf_counter()
     model = CasadiModel.from_modelica(source, f"{case.path.stem}.building_mpc")
