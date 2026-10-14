@@ -195,7 +195,8 @@
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }},
         dp_nominal={{ parameters.dp_nominal }},
-        m_flow_nominal={{ parameters.m_flow_nominal }})
+        m_flow_nominal={{ parameters.m_flow_nominal }},
+        y=1)
   variant: default
 
 - classes:
