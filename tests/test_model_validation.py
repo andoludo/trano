@@ -625,3 +625,83 @@ def test_mixing_circuit_tutorial_translates_without_warning() -> None:
 def test_tutorials_with_the_pump_before_the_valves_warn(tutorial: str) -> None:
     with pytest.warns(HydronicLayoutWarning, match="WRONG HYDRONIC LAYOUT"):
         convert_network("diverting", TUTORIALS / tutorial)
+
+
+def _heat_pump(model: Model) -> None:
+    _boiler(model)["variant"] = "air_water_heat_pump"
+
+
+def _radiator_rating(model: str) -> tuple[str, str]:
+    radiator = re.search(r"radiator_003\((.*?)\)", model.replace(" ", "").replace("\n", ""))
+    assert radiator is not None
+    found = dict(re.findall(r"(T_a_nominal|T_b_nominal)=([0-9.]+)", radiator.group(1)))
+    return found["T_a_nominal"], found["T_b_nominal"]
+
+
+def _valve_flow(model: str) -> str:
+    valve = re.search(r"valve_003\((.*?)\)", model.replace(" ", "").replace("\n", ""))
+    assert valve is not None
+    flow = re.search(r"m_flow_nominal=([0-9.]+)", valve.group(1))
+    assert flow is not None
+    return flow.group(1)
+
+
+def test_radiator_fed_by_a_heat_pump_is_rated_at_its_supply(tmp_path: Path) -> None:
+    """Without rated water temperatures, a radiator on a heat pump is rated at its supply (50/40 degC by default)
+    instead of the 80/60 degC of a boiler, which the heat pump never reaches; its valve passes the larger flow."""
+    with pytest.warns(ModelWarning, match="RADIATOR:003: DEFAULTS APPLIED.*323.15/313.15 K.*VALVE:003.*0.0598 kg/s"):
+        model = convert_network("heat_pump", _write(HYDRONIC, _heat_pump, tmp_path, "heat_pump")).model()
+    assert _radiator_rating(model) == ("323.15", "313.15")
+    assert _valve_flow(model) == "0.0598"
+
+
+def test_radiator_rating_follows_the_heat_pump_set_point(tmp_path: Path) -> None:
+    def low_temperature(model: Model) -> None:
+        _heat_pump(model)
+        parameters(_boiler, temperature_supply_setpoint_heat_pump=308.15)(model)
+
+    model = convert_network("low", _write(HYDRONIC, low_temperature, tmp_path, "low")).model()
+    assert _radiator_rating(model) == ("308.15", "298.15")
+
+
+def test_given_radiator_rating_and_valve_flow_are_kept(tmp_path: Path) -> None:
+    def given(model: Model) -> None:
+        _heat_pump(model)
+        parameters(
+            _radiator,
+            water_inlet_temperature_at_nominal_condition=318.15,
+            water_outlet_temperature_at_nominal_condition=308.15,
+        )(model)
+        parameters(lambda m: emission(m, "VALVE:003"), m_flow_nominal=0.2)(model)
+
+    with warnings.catch_warnings(record=True) as found:
+        warnings.simplefilter("always")
+        model = convert_network("given", _write(HYDRONIC, given, tmp_path, "given")).model()
+    assert _radiator_rating(model) == ("318.15", "308.15")
+    assert _valve_flow(model) == "0.2"
+    assert not [warning for warning in found if "RADIATOR:003" in str(warning.message)]
+
+
+def test_radiator_rated_for_a_boiler_on_a_heat_pump_is_reported(tmp_path: Path) -> None:
+    """Rated at 80/60 degC on a heat pump at 50 degC: it delivers well under half of its nominal power."""
+
+    def boiler_rating(model: Model) -> None:
+        _heat_pump(model)
+        parameters(
+            _radiator,
+            water_inlet_temperature_at_nominal_condition=353.15,
+            water_outlet_temperature_at_nominal_condition=333.15,
+        )(model)
+
+    with pytest.warns(ModelWarning, match=r"RADIATOR:003: it is rated for water at 353.15 K .* about \d+ W \(4\d%"):
+        model = convert_network("boiler_rating", _write(HYDRONIC, boiler_rating, tmp_path, "boiler_rating")).model()
+    assert _radiator_rating(model) == ("353.15", "333.15")
+
+
+def test_radiator_fed_by_a_boiler_keeps_the_boiler_rating(tmp_path: Path) -> None:
+    with warnings.catch_warnings(record=True) as found:
+        warnings.simplefilter("always")
+        model = convert_network("boiler", _write(HYDRONIC, unchanged, tmp_path, "boiler")).model()
+    assert _radiator_rating(model) == ("353.15", "333.15")
+    assert _valve_flow(model) == "0.06"
+    assert not [warning for warning in found if "RADIATOR:003" in str(warning.message)]

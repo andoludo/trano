@@ -28,6 +28,9 @@ SETPOINT_MARGIN = 5.0  # K, above the highest supply when the set point is raise
 MINIMUM_VALVE_AUTHORITY = 0.25
 UNDERSIZED_FLOW_RATIO = 0.5  # nominal pump flow below half of the flow the emitters need at their nominal dT
 BOUNDARY_KINDS = frozenset({"boiler", "split_valve"})
+HEAT_PUMP_VARIANTS = frozenset({"air_water_heat_pump", "water_water_heat_pump"})
+HEAT_PUMP_RADIATOR_DT = 10.0  # K, water temperature drop of the radiators rated at the heat pump supply
+RADIATOR_SUPPLY_MARGIN = 5.0  # K, rated inlet above the heat pump supply before the radiator is reported
 
 
 def _value(class_name: str, parameters: dict[str, Any], name: str) -> float | None:
@@ -36,6 +39,12 @@ def _value(class_name: str, parameters: dict[str, Any], name: str) -> float | No
 
 def _parameters(component: Component) -> dict[str, Any]:
     return component.data.get("parameters") or {}
+
+
+def _given(class_name: str, parameters: dict[str, Any], name: str) -> bool:
+    """Whether the user set `name`, under its name or its short name."""
+    names = parameter_classes()[class_name].names
+    return any(canonical == name and parameters.get(key) is not None for key, canonical in names.items())
 
 
 def supply_set_point(boiler: Component) -> float | None:
@@ -100,16 +109,158 @@ def derived_three_way_valve_set_point(graph: ModelGraph, flow: nx.DiGraph, valve
     return round(max(supplies) + SETPOINT_MARGIN, 2)
 
 
-def derive_defaults(data: dict[str, Any], graph: ModelGraph) -> None:
-    """Raise the set point of the diverting three-way valves above the boiler supply (the workaround).
+def heat_pump_supply(boiler: Component) -> float | None:
+    """The highest supply temperature of a heat pump: its set point at the design outdoor temperature."""
+    if boiler.variant not in HEAT_PUMP_VARIANTS:
+        return None
+    return _value("BoilerParameters", _parameters(boiler), "temperature_supply_setpoint_heat_pump")
 
-    `check_three_way_valve_layouts` reports it in the warning on the layout of each such valve.
+
+def _heat_pumps(graph: ModelGraph, flow: nx.DiGraph, radiator: Component) -> list[tuple[str, float]]:
+    return [
+        (boiler.id, supply)
+        for boiler in _upstream_boilers(graph, flow, radiator.id)
+        if (supply := heat_pump_supply(boiler)) is not None
+    ]
+
+
+def _has_rating(radiator: Component) -> bool:
+    parameters = _parameters(radiator)
+    return any(
+        _given("RadiatorParameter", parameters, name)
+        for name in ("water_inlet_temperature_at_nominal_condition", "water_outlet_temperature_at_nominal_condition")
+    )
+
+
+def derived_radiator_rating(graph: ModelGraph, flow: nx.DiGraph, radiator: Component) -> tuple[float, float] | None:
+    """The water temperatures of a radiator without them fed by a heat pump: the heat pump supply and
+    HEAT_PUMP_RADIATOR_DT below, instead of the 80/60 degC of a boiler. None otherwise."""
+    if radiator.kind != "radiator" or radiator.medium != "water" or _has_rating(radiator):
+        return None
+    supplies = [supply for _, supply in _heat_pumps(graph, flow, radiator)]
+    if not supplies:
+        return None
+    return round(max(supplies), 2), round(max(supplies) - HEAT_PUMP_RADIATOR_DT, 2)
+
+
+def _radiator_valves(graph: ModelGraph, flow: nx.DiGraph, radiator: Component) -> list[Component]:
+    """The valves next to the radiator in the emissions of its space."""
+    neighbours = {*flow.successors(radiator.id), *flow.predecessors(radiator.id)}  # type: ignore[no-untyped-call]
+    return [
+        graph.components[id_]
+        for id_ in sorted(neighbours)
+        if id_ in graph.components
+        and graph.components[id_].kind == "valve"
+        and graph.components[id_].space == radiator.space
+    ]
+
+
+def _derived_valve_flow(radiator: Component, rating: tuple[float, float]) -> float | None:
+    power = _value("RadiatorParameter", _parameters(radiator), "nominal_heating_power_positive_for_heating")
+    return round(abs(power) / (WATER_SPECIFIC_HEAT * (rating[0] - rating[1])), 4) if power else None
+
+
+def derive_defaults(data: dict[str, Any], graph: ModelGraph) -> None:
+    """Complete the model with the defaults that depend on its circuits:
+
+    - raise the set point of the diverting three-way valves above the boiler supply (the workaround),
+      reported by `check_three_way_valve_layouts` in the warning on the layout of each such valve;
+    - rate the radiators fed by a heat pump at its supply temperature, and size their valves for the flow,
+      reported by `check_heat_pump_radiators`.
     """
     flow = graph.flow_graph()
     for valve in [component for component in graph.components.values() if component.kind == "three_way_valve"]:
         set_point = derived_three_way_valve_set_point(graph, flow, valve)
         if set_point is not None:
             valve.control.setdefault("parameters", {})["supply_temperature_setpoint"] = set_point
+    for radiator in [component for component in graph.components.values() if component.kind == "radiator"]:
+        rating = derived_radiator_rating(graph, flow, radiator)
+        if rating is None:
+            continue
+        valve_flow = _derived_valve_flow(radiator, rating)
+        parameters = radiator.data.setdefault("parameters", {})
+        parameters["water_inlet_temperature_at_nominal_condition"] = rating[0]
+        parameters["water_outlet_temperature_at_nominal_condition"] = rating[1]
+        for valve in _radiator_valves(graph, flow, radiator):
+            if valve_flow is not None and not _given("ValveParameters", _parameters(valve), "m_flow_nominal"):
+                valve.data.setdefault("parameters", {})["m_flow_nominal"] = valve_flow
+
+
+def radiator_power_at(radiator: Component, supply: float) -> float | None:
+    """The heat output of a radiator fed at `supply` with its nominal flow, in a room at its nominal air
+    temperature (one lumped element, outlet at the element temperature): an estimate of what it delivers."""
+    values = [
+        _value("RadiatorParameter", _parameters(radiator), name)
+        for name in (
+            "nominal_heating_power_positive_for_heating",
+            "water_inlet_temperature_at_nominal_condition",
+            "water_outlet_temperature_at_nominal_condition",
+            "air_temperature_at_nominal_condition",
+            "exponent_for_heat_transfer",
+        )
+    ]
+    if any(value is None for value in values):
+        return None
+    power, inlet, outlet, air, exponent = (float(value) for value in values)  # type: ignore[arg-type]
+    if not inlet > outlet > air:
+        return None
+    if supply <= air:
+        return 0.0
+    conductance = abs(power) / (outlet - air) ** exponent
+    capacity_flow = abs(power) / (inlet - outlet)  # m_flow * cp at the nominal flow
+    low, high = air, supply
+    for _ in range(60):  # balance of the water and the radiator: capacity_flow * (supply - T) = UA * (T - air)^n
+        middle = (low + high) / 2
+        if capacity_flow * (supply - middle) > conductance * (middle - air) ** exponent:
+            low = middle
+        else:
+            high = middle
+    return float(conductance * (low - air) ** exponent)
+
+
+def check_heat_pump_radiators(graph: ModelGraph, flow: nx.DiGraph) -> Iterator[Issue]:
+    """Radiators fed by a heat pump: rated at its supply when they have no rating (derived default), reported
+    when they are rated for water much hotter than it delivers."""
+    for radiator in (component for component in graph.components.values() if component.kind == "radiator"):
+        heat_pumps = _heat_pumps(graph, flow, radiator) if radiator.medium == "water" else []
+        if not heat_pumps:
+            continue
+        names = ", ".join(id_ for id_, _ in heat_pumps)
+        supply = max(supply for _, supply in heat_pumps)
+        rating = derived_radiator_rating(graph, flow, radiator)
+        if rating is not None:
+            valves = [
+                valve.id
+                for valve in _radiator_valves(graph, flow, radiator)
+                if not _given("ValveParameters", _parameters(valve), "m_flow_nominal")
+            ]
+            valve_flow = _derived_valve_flow(radiator, rating)
+            sized = f", and {', '.join(valves)} to its flow of {valve_flow} kg/s" if valves and valve_flow else ""
+            yield Issue(
+                "warning",
+                radiator.id,
+                f"DEFAULTS APPLIED: it has no rated water temperatures and is fed by the heat pump {names}, which "
+                f"supplies at most {supply} K: it is rated at {rating[0]}/{rating[1]} K instead of the "
+                f"353.15/333.15 K of a boiler{sized}. Give water_inlet_temperature_at_nominal_condition and "
+                "water_outlet_temperature_at_nominal_condition to rate it otherwise.",
+            )
+            continue
+        inlet = _value("RadiatorParameter", _parameters(radiator), "water_inlet_temperature_at_nominal_condition")
+        nominal = _value("RadiatorParameter", _parameters(radiator), "nominal_heating_power_positive_for_heating")
+        delivered = radiator_power_at(radiator, supply)
+        if inlet is None or inlet <= supply + RADIATOR_SUPPLY_MARGIN or delivered is None or not nominal:
+            continue
+        yield Issue(
+            "warning",
+            radiator.id,
+            f"it is rated for water at {inlet} K but the heat pump {names} supplies at most {supply} K: it "
+            f"delivers about {delivered:.0f} W ({delivered / abs(nominal):.0%} of its nominal {abs(nominal):.0f} W) "
+            "at the design outdoor temperature. Enough if the room loses less at design (a radiator kept from "
+            "before a renovation); otherwise rate it at the heat pump temperatures "
+            f"(water_inlet_temperature_at_nominal_condition: {supply}, "
+            f"water_outlet_temperature_at_nominal_condition: {round(supply - HEAT_PUMP_RADIATOR_DT, 2)}) with the "
+            "power the room needs, or raise temperature_supply_setpoint_heat_pump.",
+        )
 
 
 def check_supply_temperatures(graph: ModelGraph) -> Iterator[Issue]:
@@ -236,3 +387,4 @@ def check_hydronics(graph: ModelGraph) -> Iterator[Issue]:
     yield from check_three_way_valve_layouts(graph, flow)
     yield from check_pump_flows(graph, flow)
     yield from check_valve_authorities(graph)
+    yield from check_heat_pump_radiators(graph, flow)

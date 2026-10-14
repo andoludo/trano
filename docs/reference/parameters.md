@@ -252,8 +252,8 @@ Elements: `radiator`
 | `radiative_temperature_at_nominal_condition`, `radiative_temperature` | Radiative temperature at nominal condition [K] | `293.15` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` | `TRad_nominal` |
 | `use_linear_relation_between_m_flow_and_dp_for_any_flow_rate`, `linearized` | *numerical.* = true, use linear relation between m_flow and dp for any flow rate | `true` | `linearized` | `linearized` | `linearized` | `linearized` | `linearized` |
 | `use_m_flow_f_dp_else_dp_f_m_flow`, `from_dp` | *numerical.* = true, use m_flow = f(dp) else dp = f(m_flow) | `false` | `from_dp` | `from_dp` | `from_dp` | `from_dp` | `from_dp` |
-| `water_inlet_temperature_at_nominal_condition`, `water_inlet_temperature` | Water inlet temperature at nominal condition [K] | `353.15` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` |
-| `water_outlet_temperature_at_nominal_condition`, `water_outlet_temperature` | Water outlet temperature at nominal condition [K] | `333.15` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` |
+| `water_inlet_temperature_at_nominal_condition`, `water_inlet_temperature` | Water inlet temperature at nominal condition [K]; 353.15 for a boiler, the supply set point of the heat pump that feeds the radiator otherwise | `353.15` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` | `T_a_nominal` |
+| `water_outlet_temperature_at_nominal_condition`, `water_outlet_temperature` | Water outlet temperature at nominal condition [K]; 333.15 for a boiler, 10 K below the supply set point of the heat pump that feeds the radiator otherwise | `333.15` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` | `T_b_nominal` |
 | `water_volume_of_radiator`, `water_volume` | Water volume of radiator [m3] | computed | `VWat` | `VWat` | `VWat` | `VWat` | `VWat` |
 
 ## SensorParameters
