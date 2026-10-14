@@ -5,6 +5,7 @@ components of ``trano/library/FastModel.mo``; rumoca translates it into a CasADi
 """
 
 import math
+import re
 import warnings
 from functools import cache
 from pathlib import Path
@@ -335,3 +336,15 @@ def test_the_window_frame_loses_heat_to_the_outside() -> None:
         return float(model.derivatives(0.0, state, inputs, parameters)[air])
 
     assert cooling(0.5) < cooling(0.0) <= 0
+
+
+@pytest.mark.parametrize("library", ["FastModel", "FastModelMPC"])
+def test_the_heat_meter_reads_the_return_sensor_without_its_water(library: str) -> None:
+    """In Buildings the heat meter reads the return temperature as a signal (TExt): FastModel must not plumb the
+    return line into the meter, which would let the water bypass the boiler."""
+    model = _building_mpc(_model(MODELS / "house_complex_heat_meter.yaml", library)).replace(" ", "")
+    meter = re.search(r"FastModel\.Hydronics\.TemperatureSensorheat_meter_sensor_001\((.*?)\)", model, re.DOTALL)
+    assert meter is not None
+    assert "nPorts_a=1" in meter.group(1) and "nPorts_b=1" in meter.group(1)
+    assert re.findall(r"connect\((\w+)\.port_b\[\d\],heat_meter_sensor_001\.port_a\[\d\]\)", model) == ["boiler_001"]
+    assert re.findall(r"connect\(heat_meter_sensor_001\.port_b\[\d\],(\w+)\.port_a\[\d\]\)", model) == ["pump_001"]
