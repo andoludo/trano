@@ -675,6 +675,8 @@
       
         
       
+        
+      
     
     
     
@@ -998,6 +1000,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorials/fast_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FastModel, models close to Buildings for MPC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1067,6 +1097,8 @@
   
     
     
+      
+        
       
         
       
@@ -1171,6 +1203,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/fast_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FastModel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1186,6 +1246,8 @@
   
     
     
+      
+        
       
         
       
@@ -1309,6 +1371,34 @@
     
   
     Residential reference cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="validation/fast_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FastModel against Buildings
   
 
     
@@ -1482,6 +1572,7 @@
 <p>Trano is <strong>Modelica library agnostic</strong> but is natively designed to work with:<br />
 ✅ <strong>Validated detailed Modelica libraries</strong> (e.g., <strong><a href="https://github.com/lbl-srg/modelica-buildings">Buildings</a></strong>, <strong><a href="https://github.com/open-ideas/IDEAS">IDEAS</a></strong>,...)<br />
 ✅ <strong>Reduced-order models</strong> (e.g., <strong><a href="https://github.com/RWTH-EBC/AixLib">AIXLIB</a></strong>, <strong>ISO13790</strong>,...)<br />
+✅ <strong>Models for optimal control</strong> (the RC models of <code>mpc</code>, and <strong><a href="reference/fast_model/">FastModel</a></strong>: close to Buildings, translated to CasADi)<br />
 ✅ <strong>your library...</strong>  </p>
 <h2 id="supported-libraries-and-validation">🧪 Supported libraries and validation</h2>
 <table>
@@ -1523,6 +1614,12 @@
 <td>-</td>
 <td>RC models (<code>R1C1</code>, <code>R3C2</code>, <code>R4C3</code>, ISO 13790)</td>
 <td>control-oriented, CasADi ready</td>
+</tr>
+<tr>
+<td><code>FastModel</code></td>
+<td>-</td>
+<td><code>FastModel.Zones.Zone</code> (the physics of <code>MixedAir</code>), with the hydronic and ventilation systems</td>
+<td>close to Buildings, CasADi ready</td>
 </tr>
 </tbody>
 </table>
@@ -1649,6 +1746,10 @@ zones are reported for information. Simulations run in the official OpenModelica
     
     
       <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
       
     
   </body>
