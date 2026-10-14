@@ -1014,7 +1014,7 @@
   <span class="md-ellipsis">
     
   
-    FastModel, models close to Buildings for MPC
+    FastModel, models close to Buildings in closed loop and for MPC
   
 
     
@@ -1572,7 +1572,7 @@
 <p>Trano is <strong>Modelica library agnostic</strong> but is natively designed to work with:<br />
 ✅ <strong>Validated detailed Modelica libraries</strong> (e.g., <strong><a href="https://github.com/lbl-srg/modelica-buildings">Buildings</a></strong>, <strong><a href="https://github.com/open-ideas/IDEAS">IDEAS</a></strong>,...)<br />
 ✅ <strong>Reduced-order models</strong> (e.g., <strong><a href="https://github.com/RWTH-EBC/AixLib">AIXLIB</a></strong>, <strong>ISO13790</strong>,...)<br />
-✅ <strong>Models for optimal control</strong> (the RC models of <code>mpc</code>, and <strong><a href="reference/fast_model/">FastModel</a></strong>: close to Buildings, translated to CasADi)<br />
+✅ <strong>Models for optimal control</strong> (the RC models of <code>mpc</code>, and <strong><a href="reference/fast_model/">FastModel</a></strong>: close to Buildings, closed loop or for optimal control, translated to CasADi)<br />
 ✅ <strong>your library...</strong>  </p>
 <h2 id="supported-libraries-and-validation">🧪 Supported libraries and validation</h2>
 <table>
@@ -1618,8 +1618,14 @@
 <tr>
 <td><code>FastModel</code></td>
 <td>-</td>
-<td><code>FastModel.Zones.Zone</code> (the physics of <code>MixedAir</code>), with the hydronic and ventilation systems</td>
-<td>close to Buildings, CasADi ready</td>
+<td><code>FastModel.Zones.Zone</code> (the physics of <code>MixedAir</code>), with the hydronic and ventilation systems and their controllers</td>
+<td>close to Buildings, closed loop, CasADi ready</td>
+</tr>
+<tr>
+<td><code>FastModelMPC</code></td>
+<td>-</td>
+<td>the same, the controls of the systems as inputs</td>
+<td>optimal control, CasADi ready</td>
 </tr>
 </tbody>
 </table>

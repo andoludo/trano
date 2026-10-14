@@ -25,7 +25,7 @@
     
     
       
-        <title>FastModel, models close to Buildings for MPC - Trano</title>
+        <title>FastModel, models close to Buildings in closed loop and for MPC - Trano</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#fastmodel-models-close-to-buildings-for-mpc" class="md-skip">
+        <a href="#fastmodel-models-close-to-buildings-in-closed-loop-and-for-mpc" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FastModel, models close to Buildings for MPC
+              FastModel, models close to Buildings in closed loop and for MPC
             
           </span>
         </div>
@@ -922,7 +922,7 @@
   <span class="md-ellipsis">
     
   
-    FastModel, models close to Buildings for MPC
+    FastModel, models close to Buildings in closed loop and for MPC
   
 
     
@@ -940,7 +940,7 @@
   <span class="md-ellipsis">
     
   
-    FastModel, models close to Buildings for MPC
+    FastModel, models close to Buildings in closed loop and for MPC
   
 
     
@@ -1631,7 +1631,7 @@
   
 
 
-<h1 id="fastmodel-models-close-to-buildings-for-mpc">FastModel: models close to Buildings for MPC</h1>
+<h1 id="fastmodel-models-close-to-buildings-in-closed-loop-and-for-mpc">FastModel: models close to Buildings, in closed loop and for MPC</h1>
 <p>The <a href="../rc_model_predictive_control/">RC models</a> of the <code>mpc</code> library are small and fast, but they lump a zone
 into one to three capacities and leave the heating system out. The <code>FastModel</code> library instead turns the same YAML
 file into a model <strong>close to the Buildings library</strong> that <strong>still translates into a CasADi ODE</strong> (with
@@ -1646,8 +1646,17 @@ with IPOPT:</p>
   valves, pumps, sensors, gas boilers and air-to-water heat pumps with their buffer;</li>
 <li>balanced ventilation units with heat recovery (trano's <code>system_d</code>) and PV arrays.</li>
 </ul>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>trano<span class="w"> </span>create-model<span class="w"> </span>house.yaml<span class="w"> </span>FastModel<span class="w">    </span><span class="c1"># writes house.mo</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>trano<span class="w"> </span>simulate-model<span class="w"> </span>house.yaml<span class="w"> </span>FastModel<span class="w">  </span><span class="c1"># runnable, like the other libraries</span>
+<p>The library has two configurations, built from the same components and templates:</p>
+<ul>
+<li><code>FastModel</code> simulates the building <strong>in closed loop</strong>, as the Buildings and IDEAS models do: the controllers of
+  the YAML are part of the model (written without events) and the water flows follow the pressures of the
+  circuits;</li>
+<li><code>FastModelMPC</code> is the model for <strong>optimal control</strong>: the controllers are left out, the controls of the systems
+  are inputs that the optimisation decides, and each valve sets the flow of its branch.</li>
+</ul>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>trano<span class="w"> </span>create-model<span class="w"> </span>house.yaml<span class="w"> </span>FastModel<span class="w">       </span><span class="c1"># closed loop: writes house.mo</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>trano<span class="w"> </span>simulate-model<span class="w"> </span>house.yaml<span class="w"> </span>FastModel<span class="w">     </span><span class="c1"># runnable, like the other libraries</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>trano<span class="w"> </span>create-model<span class="w"> </span>house.yaml<span class="w"> </span>FastModelMPC<span class="w">    </span><span class="c1"># the controls as inputs, for optimal control</span>
 </span></code></pre></div>
 <h2 id="a-library-like-buildings-and-ideas">A library like Buildings and IDEAS</h2>
 <p><code>FastModel</code> is used exactly as trano uses Buildings and IDEAS: a Modelica library and one template per element of
@@ -1657,7 +1666,9 @@ the YAML, without code of its own.</p>
 <li><code>trano/elements/library/models/fast_model/*.yaml</code> hold the templates that declare a component for each element
   of the YAML, with its ports, as the templates of the other libraries;</li>
 <li>the <code>FastModel</code> entry of <code>library.json</code> writes the constructions and glazings as records of a <code>Data</code> package,
-  takes the parameter names of Buildings, and the package template <code>templates/fast_model.jinja2</code>.</li>
+  takes the parameter names of Buildings, and the package template <code>templates/fast_model.jinja2</code>; the
+  <code>FastModelMPC</code> entry extends it under another name, and the templates render each element for the library they
+  are given (<code>library == 'FastModel'</code>: controllers and pressure-driven circuits; <code>'FastModelMPC'</code>: inputs).</li>
 </ul>
 <p>The walls, windows and floors are elements of their own connected to the bus of their zone, as in IDEAS: each
 <code>OuterWall</code>, <code>Window</code>, <code>BoundaryWall</code> (floor on ground or over outdoor air), <code>AdiabaticWall</code> or <code>InternalWall</code>
@@ -1698,7 +1709,11 @@ and transmittance), the solar radiation a window transmits, and the weather.</p>
 </tr>
 <tr>
 <td><code>HVAC</code></td>
-<td><code>IdealHeatingCooling</code></td>
+<td><code>IdealHeatingCooling</code> (heat as an input), <code>IdealHeater</code>, <code>IdealHeatingCoolingPI</code> (closed loop)</td>
+</tr>
+<tr>
+<td><code>Controls</code></td>
+<td><code>EmissionP</code>, <code>EmissionPI</code>, <code>EmissionOnOff</code>, <code>EmissionMonitored</code>, <code>CollectorControl</code>, <code>ThreeWayValveControl</code>, <code>BoilerDemand</code>, <code>BoilerTemperatureControl</code>, <code>HeatPumpControl</code> (closed loop, without events)</td>
 </tr>
 <tr>
 <td><code>Data</code></td>
@@ -1708,27 +1723,33 @@ and transmittance), the solar radiation a window transmits, and the weather.</p>
 </table>
 <p>The generated package holds two models:</p>
 <ul>
-<li><code>building_mpc</code>, the building: an explicit ODE whose inputs are the weather data, the internal gains and the
-  controls of the systems. It contains no table, no event and no component of another library;</li>
+<li><code>building_mpc</code>, the building: an explicit ODE whose inputs are the weather data, the internal gains and, with
+  <code>FastModelMPC</code>, the controls of the systems. It contains no table, no event and no component of another
+  library;</li>
 <li><code>building</code>, the runnable model: <code>building_mpc</code> fed with the weather file (the Buildings reader, which also gives
-  <code>building_mpc</code> the location of the site), the occupancy schedules, and the controls replayed from the external
-  data of the network (each held at 1 without data).</li>
+  <code>building_mpc</code> the location of the site), the occupancy schedules, and the external data of the network: the
+  controls replayed from it with <code>FastModelMPC</code> (each held at 1 without data), the set points of the
+  <code>MonitoredSetpoint</code> emission controls with <code>FastModel</code>.</li>
 </ul>
 <h3 id="rules-for-an-explicit-ode">Rules for an explicit ODE</h3>
 <p>Every component keeps a few rules, so that rumoca translates the assembled model into <code>xdot = f(t, x, u, p)</code>:</p>
 <ul>
 <li>every node joined by connections has a heat capacity, or is solved in closed form inside its component (the
   radiant star of a room, the mixing of water flows);</li>
-<li>the equations are smooth: power laws and table interpolations are regularised, conditions are inside functions;</li>
-<li>flows are <strong>set</strong>, not computed from pressures: each valve sets the flow of its branch, a mixing valve the share
-  of supply water, mass balances the rest; the production (boiler, heat pump) or the ventilation unit closes the
-  balance of its circuit, one per circuit;</li>
+<li>the equations are smooth: power laws and table interpolations are regularised, conditions are inside functions;
+  the controllers have no event (a hysteresis is a fast bistable state, a PI controller has anti-windup);</li>
+<li>with <code>FastModelMPC</code>, flows are <strong>set</strong>: each valve sets the flow of its branch, a mixing valve the share of supply
+  water, mass balances the rest; the production (boiler, heat pump) or the ventilation unit closes the balance of
+  its circuit, one per circuit. With <code>FastModel</code>, they are <strong>pressure-driven</strong>: each component has a pressure node of
+  small compliance at its inlet, every flow follows from the pressures, the pumps run on their curves;</li>
 <li>a port with several connections is an array, one element per connection, sized by the template from the
   connections trano made: the inlets of a component mix, its outlets leave at its outlet temperature;</li>
 <li>parameters computed by functions (the conductance of a radiator solved as Buildings does at initialisation, the
   polynomial fits of the window optics, the scaling of the heat pump tables) take values settled at translation.</li>
 </ul>
 <h3 id="inputs-of-building_mpc">Inputs of <code>building_mpc</code></h3>
+<p>The closed-loop <code>FastModel</code> takes the weather, the internal gains and, for a <code>MonitoredSetpoint</code> emission control,
+its set point <code>&lt;control&gt;_TSet</code>; <code>FastModelMPC</code> takes the controls too:</p>
 <table>
 <thead>
 <tr>
@@ -1785,7 +1806,7 @@ states in kWh are meters.</p>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.elements.library.library</span><span class="w"> </span><span class="kn">import</span> <span class="n">Library</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">KELVIN</span><span class="p">,</span> <span class="n">CasadiModel</span><span class="p">,</span> <span class="n">OptimalControl</span><span class="p">,</span> <span class="n">OptimalControlSettings</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">network</span> <span class="o">=</span> <span class="n">convert_network</span><span class="p">(</span><span class="s2">&quot;house&quot;</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;house.yaml&quot;</span><span class="p">),</span> <span class="n">library</span><span class="o">=</span><span class="n">Library</span><span class="o">.</span><span class="n">from_configuration</span><span class="p">(</span><span class="s2">&quot;FastModel&quot;</span><span class="p">))</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">network</span> <span class="o">=</span> <span class="n">convert_network</span><span class="p">(</span><span class="s2">&quot;house&quot;</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;house.yaml&quot;</span><span class="p">),</span> <span class="n">library</span><span class="o">=</span><span class="n">Library</span><span class="o">.</span><span class="n">from_configuration</span><span class="p">(</span><span class="s2">&quot;FastModelMPC&quot;</span><span class="p">))</span>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">model</span> <span class="o">=</span> <span class="n">CasadiModel</span><span class="o">.</span><span class="n">from_modelica</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">model</span><span class="p">(),</span> <span class="s2">&quot;house.building_mpc&quot;</span><span class="p">)</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">ocp</span> <span class="o">=</span> <span class="n">OptimalControl</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="n">OptimalControlSettings</span><span class="p">(</span><span class="n">time_step</span><span class="o">=</span><span class="mi">3600</span><span class="p">))</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
@@ -1811,10 +1832,12 @@ estimation and the closed loop:</p>
 own in the CasADi function, at their values: an identification adjusts the effective ones (conductances,
 capacities).</p>
 <h2 id="how-close-to-buildings">How close to Buildings</h2>
-<p><code>python -m validation.mpc</code> simulates the Buildings model of a YAML file and <strong>replays</strong> what its systems did
-(the heat of ideal emitters, or the branch flows, valve positions and boiler or heat pump controls) through the
-runnable <code>FastModel</code> model, then compares the zones, the water temperatures and the meters. See the
-<a href="../../validation/fast_model/">validation page</a> for the results.</p>
+<p><code>python -m validation.mpc</code> simulates the Buildings model of a YAML file and compares it with FastModel in two
+ways: it <strong>replays</strong> what the systems of Buildings did (the heat of ideal emitters, or the branch flows, valve
+positions and boiler or heat pump controls) through the runnable <code>FastModelMPC</code> model (<code>--models FastModel</code>), or it
+simulates the closed-loop <code>FastModel</code> with its own controllers (<code>--models FastModelClosedLoop</code>); then it compares
+the zones, the water temperatures and the meters. See the <a href="../../validation/fast_model/">validation page</a> for the
+results.</p>
 <h2 id="limits">Limits</h2>
 <ul>
 <li>One production (boiler or heat pump) per hydraulic circuit, and mixing three-way valves (the bypass from the
@@ -1822,7 +1845,10 @@ runnable <code>FastModel</code> model, then compares the zones, the water temper
 <li>Ventilation units are balanced (supply = extract) and of the <code>system_d</code> kind.</li>
 <li>Boilers with a storage tank, water-to-water heat pumps, chillers, domestic hot water, batteries, EV chargers and
   VAV systems are not modelled: generating a model with them stops with a message naming them.</li>
-<li>Flows are set by the valves; the pressure-driven sharing of flow between branches is not modelled.</li>
+<li>With <code>FastModelMPC</code>, flows are set by the valves; the pressure-driven sharing of flow between branches is
+  modelled in the closed loop only, with the resistances linearised at their nominal flows.</li>
+<li>The closed-loop controllers have no event: a hysteresis switches within 10 s, and the minimum on and off times of
+  the heat pump are not modelled.</li>
 </ul>
 
 
