@@ -245,6 +245,38 @@ def test_the_monitored_set_point_replays_its_column(tmp_path: Path) -> None:
     assert "Sources.Constant emission_control_001_TSet" not in model
 
 
+def _co2_occupancy_model(tmp_path: Path, data: Path | None) -> str:
+    from trano.elements.bus import DataBus
+
+    path = tmp_path / "co2_occupancy.yaml"
+    source = (MODELS / "single_zone_hydronic_occupancy_from_data.yaml").read_text()
+    path.write_text(
+        source.replace("        data:\n", "        floor_area: 100.0\n        ach: 0.5\n        data:\n", 1)
+    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        network = convert_network(path.stem, path, library=Library.from_configuration("FastModel"))
+        return network.model(data_bus=DataBus(external_data=data) if data else None)
+
+
+def test_the_co2_occupancy_replays_its_column(tmp_path: Path) -> None:
+    data = tmp_path / "co2.csv"
+    data.write_text(",other,co2_01\n2024-01-01 00:00:00,0,420\n2024-01-01 12:00:00,0,900\n")
+    model = _co2_occupancy_model(tmp_path, data)
+    assert "Trano.Occupancy.OccupancyCo2 occupancy_1(" in model
+    assert "co2(u=data_bus.y[2])" in model
+    assert "AFlo=100.0" in model
+
+
+def test_the_co2_occupancy_follows_its_schedule_without_external_data(tmp_path: Path) -> None:
+    """Without the CO2 column, the schedule is used without the parameters of the CO2 balance it does not have."""
+    model = _co2_occupancy_model(tmp_path, None)
+    declaration = model[model.index("Trano.Occupancy.SimpleOccupancy occupancy_1(") :].split(";")[0]
+    assert "AFlo" not in declaration
+    assert "ACH" not in declaration
+    assert "OccupancyCo2 occupancy_1" not in model
+
+
 @needs_connected_export
 def test_the_optimal_control_heats_the_zone() -> None:
     model = _export(MODELS / "single_zone_hydronic.yaml")
