@@ -4,7 +4,7 @@
 # Trano.ThermalZones.MixedAirInf); the default variant has no infiltration, as Buildings MixedAir.
 - classes:
   - Space
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   requires_occupancy: true
   parameter_processing: &zone_parameters
     function: default_parameters
@@ -85,7 +85,7 @@
 
 - classes:
   - Space
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   requires_occupancy: true
   parameter_processing: *zone_parameters
   ports: *zone_ports

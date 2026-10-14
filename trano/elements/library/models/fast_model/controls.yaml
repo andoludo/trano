@@ -2,7 +2,7 @@
 # controllers of the other libraries have no FastModel component.
 - classes:
   - EmissionControl
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: &no_parameters
     function: default_parameters
   ports: []
@@ -10,42 +10,42 @@
   variant: default
 - classes:
   - EmissionControl
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *no_parameters
   ports: []
   template: ""
   variant: onoff
 - classes:
   - EmissionControl
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *no_parameters
   ports: []
   template: ""
   variant: PController
 - classes:
   - EmissionControl
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *no_parameters
   ports: []
   template: ""
   variant: MonitoredSetpoint
 - classes:
   - BoilerControl
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *no_parameters
   ports: []
   template: ""
   variant: default
 - classes:
   - BoilerControl
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *no_parameters
   ports: []
   template: ""
   variant: complex
 - classes:
   - BoilerControl
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *no_parameters
   ports: []
   template: ""
@@ -54,7 +54,7 @@
   - ThreeWayValveControl
   - CollectorControl
   - AhuControl
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *no_parameters
   ports: []
   template: ""

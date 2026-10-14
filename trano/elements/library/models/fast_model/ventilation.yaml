@@ -3,7 +3,7 @@
 # would stop the ventilation); each duct carries y times its nominal flow.
 - classes:
   - Duct
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -21,7 +21,7 @@
 
 - classes:
   - AirHandlingUnit
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:

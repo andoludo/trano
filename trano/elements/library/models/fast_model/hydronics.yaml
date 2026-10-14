@@ -4,7 +4,7 @@
 # The runnable model replays the column <system>_y of the external data, or holds the input at 1.
 - classes:
   - Radiator
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: &radiator_parameters
     function: default_parameters
   ports: &radiator_ports
@@ -50,7 +50,7 @@
 # Ideal emitters (no water circuit): their heat flow rate, between 0 and the nominal power, is an input.
 - classes:
   - Radiator
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *radiator_parameters
   ports: &ideal_ports
   - flow: convective
@@ -84,7 +84,7 @@
 
 - classes:
   - Radiator
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *radiator_parameters
   ports: *ideal_ports
   template: *ideal_template
@@ -93,7 +93,7 @@
 
 - classes:
   - Valve
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -125,7 +125,7 @@
 # to port_3, as for the Buildings library).
 - classes:
   - ThreeWayValve
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -149,7 +149,7 @@
 
 - classes:
   - SplitValve
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -176,7 +176,7 @@
 
 - classes:
   - Pump
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: &multi_fluid_ports
@@ -201,7 +201,7 @@
 - classes:
   - TemperatureSensor
   - HeatMeterSensor
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: *multi_fluid_ports
@@ -214,7 +214,7 @@
 # Boilers without storage tank (Buildings BoilerPolynomial): the part load ratio <boiler>_y is the input.
 - classes:
   - Boiler
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: &boiler_parameters
     function: default_parameters
   ports: *multi_fluid_ports
@@ -236,7 +236,7 @@
 
 - classes:
   - Boiler
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *boiler_parameters
   ports: *multi_fluid_ports
   template: *boiler_template
@@ -247,7 +247,7 @@
 # with its buffer: the compressor speed <heat pump>_y is the input, the outdoor air its source.
 - classes:
   - Boiler
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *boiler_parameters
   ports:
   - flow: inlet
@@ -286,7 +286,7 @@
 
 - classes:
   - Boiler
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing: *boiler_parameters
   ports: *multi_fluid_ports
   template: |-

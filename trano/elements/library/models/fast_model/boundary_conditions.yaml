@@ -3,7 +3,7 @@
 # the file; building_mpc alone keeps the site of its parameters (Uccle by default).
 - classes:
   - Weather
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:
@@ -45,7 +45,7 @@
 # The ventilation units take the outdoor air from the weather: the boundary of the other libraries is not needed.
 - classes:
   - Boundary
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: []
@@ -56,7 +56,7 @@
 # them with the occupancy schedule of the element.
 - classes:
   - Occupancy
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: &occupancy_ports
@@ -79,7 +79,7 @@
 
 - classes:
   - Occupancy
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: *occupancy_ports
@@ -90,7 +90,7 @@
 # The data bus of the other libraries: the runnable model replays the columns of the external data, if any.
 - classes:
   - DataBus
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports: []
@@ -111,7 +111,7 @@
 # capacities, split between the air and the radiant star of the zone.
 - classes:
   - IdealHeatingCooling
-  library: FastModel
+  library: [FastModel, FastModelMPC]
   parameter_processing:
     function: default_parameters
   ports:

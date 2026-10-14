@@ -1093,12 +1093,16 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real EEle(unit="kWh", start=0, fixed=true) "Electricity meter";
       Real QCon(unit="W") "Heat to the water";
       Real PEle(unit="W") "Electrical power of the compressor";
+      Real COP(unit="1") "Coefficient of performance QCon/PEle at the current condenser and source temperatures";
     protected
       Real TConOut(unit="K") "Condenser outlet temperature";
     equation
       TConOut = T + dTCon*y;
       QCon = y*scaFac*HeatPumps.Vitocal251A08.smoothTable(TConOut, weaBus.TDryBul, true, dTSou);
       PEle = y*scaFac*HeatPumps.Vitocal251A08.smoothTable(TConOut, weaBus.TDryBul, false, dTSou);
+      // QCon and PEle both scale with y: their ratio is defined at every speed, also when the compressor is off
+      COP = HeatPumps.Vitocal251A08.smoothTable(TConOut, weaBus.TDryBul, true, dTSou)
+        /HeatPumps.Vitocal251A08.smoothTable(TConOut, weaBus.TDryBul, false, dTSou);
       C*der(T) = m_flow*cpWat*(TIn - T) + QCon + UA*(TAmb - T);
       der(EEle) = PEle/3.6e6;
       TOut = T;

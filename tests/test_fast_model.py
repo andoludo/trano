@@ -60,10 +60,10 @@ needs_connected_export = pytest.mark.skipif(
 )
 
 
-def _model(path: Path) -> str:
+def _model(path: Path, library: str = "FastModelMPC") -> str:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        network = convert_network(path.stem, path, library=Library.from_configuration("FastModel"))
+        network = convert_network(path.stem, path, library=Library.from_configuration(library))
         return network.model()
 
 
