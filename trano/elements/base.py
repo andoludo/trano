@@ -138,9 +138,31 @@ class BaseElement(BaseElementPort):
             library_data = self.get_library_data(library)
             if library_data and self.parameters:
                 return library_data.parameter_processing(
-                    self.parameters, library=library.name, variant=library_data.variant
+                    self.parameters, library=library.parameter_library, variant=library_data.variant
                 )
         return {}
+
+    def runnable_parts(self, network: "Network", columns: list[str]) -> dict[str, str]:
+        """Declaration, equation and modifier of the element in the runnable model of its library, rendered.
+
+        ``columns`` are the columns of the external data of the network, which the runnable model replays.
+        """
+        if not self.libraries_data:
+            return {}
+        library_data = self.get_library_data(network.library)
+        if library_data is None or library_data.runnable is None:
+            return {}
+        context = {
+            "element": self,
+            "package_name": network.name,
+            "library_name": network.library.base_library(),
+            "parameters": self.processed_parameters(network.library),
+            "columns": columns,
+        }
+        return {
+            part: compile_template("{% import 'macros.jinja2' as macros %}" + template).render(**context).strip()
+            for part, template in library_data.runnable.model_dump().items()
+        }
 
     def set_position(self, layout: dict[str, Any], global_: bool = True) -> None:
         if layout.get(self.name):  # type: ignore

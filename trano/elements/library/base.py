@@ -48,6 +48,15 @@ class DynamicComponentTemplate(BaseModel):
         return component
 
 
+class RunnableTemplate(BaseModel):
+    """What an element adds to the runnable model wrapping a model made of inputs (FastModel's ``building_mpc``):
+    declarations, equations, and modifiers of the wrapped model. Each is a jinja template of the element."""
+
+    declaration: str = ""
+    equation: str = ""
+    modifier: str = ""
+
+
 class LibraryData(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     template: str = ""
@@ -64,6 +73,9 @@ class LibraryData(BaseModel):
         "(IDEAS looks for its simulation manager as `sim`).",
     )
     figures: list[Figure] = Field(default=[])
+    runnable: RunnableTemplate | None = Field(
+        default=None, description="Parts of the element in the runnable model, for libraries that wrap their model"
+    )
     ports: Callable[[], list[Port]]
     parameter_processing: Callable[..., dict[str, Any]] = default_parameters
     library: list[str]

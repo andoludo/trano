@@ -25,6 +25,7 @@ class LibraryChoice(str, Enum):
     ideas = "IDEAS"
     buildings = "Buildings"
     mpc = "mpc"
+    fast_model = "FastModel"
 
 
 def _create_network(model: str, library: str, rc_model_type: RCModelType | None = None) -> Network:
@@ -59,7 +60,10 @@ def create_model(
     ],
     library: Annotated[
         LibraryChoice,
-        typer.Argument(help="Library to be used: a simulation library or 'mpc' for a CasADi-compatible RC model."),
+        typer.Argument(
+            help="Library to be used: a simulation library, 'mpc' for a CasADi-compatible RC model, or 'FastModel' "
+            "for a CasADi-compatible model close to Buildings with its systems."
+        ),
     ] = LibraryChoice.buildings,
     rc_model_type: Annotated[
         RCModelType | None,

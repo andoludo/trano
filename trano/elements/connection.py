@@ -37,11 +37,16 @@ class Port(BaseModel):
     ignore_direction: bool = False
     counter: int = Field(default=1)
     connection_counter: int = Field(default=0)
+    connected_elements: list[str] = Field(
+        default_factory=list, description="Names of the elements connected to the port, in connection order"
+    )
     no_check: bool = False
 
-    def set_connected(self) -> None:
+    def set_connected(self, element_name: str | None = None) -> None:
         self.connected = True
         self.connection_counter += 1
+        if element_name:
+            self.connected_elements.append(element_name)
 
     def get_compatible_port(self, port: "Port") -> bool:  # noqa: PLR0911, C901, PLR0912
         if self.medium == Medium.fluid:
@@ -297,8 +302,8 @@ def connect(edge_first: "ElementPort", edge_second: "ElementPort") -> list["Conn
                             connection_view=connection_color((edge_first, edge_second)),
                         )
                         connections.append(connection)
-                    first_port.set_connected()
-                    second_port.set_connected()
+                    first_port.set_connected(edge_second.name)
+                    second_port.set_connected(edge_first.name)
                     current_connection_numbers = len(connections)
                     allowed_connections = edge_first.get_connection_per_target(edge_second.element_type)
                     if current_connection_numbers >= allowed_connections:

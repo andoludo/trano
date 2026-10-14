@@ -6,7 +6,8 @@ Switching libraries is seamless with Trano. This tutorial demonstrates how to ge
 
 The same YAML file generates a model for each of the libraries trano supports: `Buildings` (13.0.0) and
 `IDEAS` (3.0.0) for detailed zones, `reduced_order` (the AixLib 3.0.1 reduced-order zone) and `iso_13790`
-(the ISO 13790 zone of AixLib) for simplified zones, and `mpc` for control-oriented RC models. Buildings and
+(the ISO 13790 zone of AixLib) for simplified zones, `mpc` for control-oriented RC models and `FastModel` for
+models close to Buildings that translate to CasADi (see the [FastModel reference](../reference/fast_model.md)). Buildings and
 IDEAS are validated against ASHRAE Standard 140 (BESTEST), see the [validation results](../validation/bestest.md)
 and the [walk through the cases](../validation/bestest_cases.md); the simplified zones are reported there for
 information. The [parameter reference](../reference/parameters.md) lists, for every parameter, the Modelica name

@@ -39,6 +39,16 @@ connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ 
 {%- endmacro %}
 
 
+{%- macro connections(element, name) -%}
+{#- Number of connections made to the port `name` of the element (templates are rendered after connecting). -#}
+{%- for port in element.ports if name in port.names -%}{{ port.connection_counter }}{%- endfor -%}
+{%- endmacro -%}
+
+{%- macro connected_element(element, name) -%}
+{#- Name of the first element connected to the port `name` of the element. -#}
+{%- for port in element.ports if name in port.names and port.connected_elements -%}{{ port.connected_elements[0] }}{%- endfor -%}
+{%- endmacro -%}
+
 {%- macro render_parameters(parameters) -%}
 {%- for key, value in parameters.items() if value is not none -%}
     {{ key | safe }}={{ value | safe }}{{ ", " if not loop.last }}

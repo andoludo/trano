@@ -1,0 +1,149 @@
+# Weather: the inputs of building_mpc (the weather data of a file or of a forecast) and the solar position of the
+# site. The runnable model reads the weather file with the Buildings reader and gives building_mpc the site of
+# the file; building_mpc alone keeps the site of its parameters (Uccle by default).
+- classes:
+  - Weather
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: weather_data
+    multi_connection: true
+    use_counter: false
+    names:
+    - weaBus
+    targets:
+    - Space
+    - System
+    - Photovoltaic
+  template: |-
+    FastModel.Interfaces.WeatherInputs {{ element.name }}_inputs "Weather data: inputs of the model";
+    FastModel.BoundaryConditions.Weather {{ element.name }}(
+        {%- for variable in ['TDryBul', 'TBlaSky', 'winSpe', 'winDir', 'HDirNor', 'HDifHor', 'HGloHor'] %}
+        {{ variable }}={{ element.name }}_inputs.{{ variable }}{{ ',' if not loop.last }}
+        {%- endfor %})
+  runnable:
+    declaration: |-
+      {%- set path = parameters.get("filNam") -%}
+      Buildings.BoundaryConditions.WeatherData.ReaderTMY3 {{ element.name }}_reader(filNam=
+      {%- if path -%}
+      {{ (path if path.startswith('"') or path.startswith('Modelica.') else '"' ~ path ~ '"') | safe }}
+      {%- else -%}
+      Modelica.Utilities.Files.loadResource("modelica://IDEAS/Resources/weatherdata/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos")
+      {%- endif -%}
+      ) "Weather file";
+    equation: |-
+      {%- for variable in ['TDryBul', 'TBlaSky', 'winSpe', 'winDir', 'HDirNor', 'HDifHor', 'HGloHor'] %}
+      connect({{ element.name }}_reader.weaBus.{{ variable }}, mpc.{{ element.name }}_inputs.{{ variable }});
+      {%- endfor %}
+    modifier: |-
+      {{ element.name }}(lat={{ element.name }}_reader.lat, lon={{ element.name }}_reader.lon,
+        timZon={{ element.name }}_reader.timZon, alt={{ element.name }}_reader.alt)
+  variant: default
+
+# The ventilation units take the outdoor air from the weather: the boundary of the other libraries is not needed.
+- classes:
+  - Boundary
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports: []
+  template: ""
+  variant: default
+
+# Internal gains per floor area (radiant and convective): inputs of building_mpc; the runnable model computes
+# them with the occupancy schedule of the element.
+- classes:
+  - Occupancy
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports: &occupancy_ports
+  - flow: undirected
+    medium: data
+    names:
+    - gai
+    targets:
+    - Space
+  template: &occupancy_template |-
+    FastModel.Interfaces.OccupancyInputs {{ element.name }} "Internal gains per floor area: inputs of the model"
+  runnable: &occupancy_runnable
+    declaration: |-
+      {{ package_name }}.Trano.Occupancy.SimpleOccupancy {{ element.name }}({{ macros.render_parameters(parameters) | safe }})
+        "Occupancy schedule";
+    equation: |-
+      connect({{ element.name }}.y[1], mpc.{{ element.name }}.gai.QRad);
+      connect({{ element.name }}.y[2], mpc.{{ element.name }}.gai.QCon);
+  variant: default
+
+- classes:
+  - Occupancy
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports: *occupancy_ports
+  template: *occupancy_template
+  runnable: *occupancy_runnable
+  variant: co2
+
+# The data bus of the other libraries: the runnable model replays the columns of the external data, if any.
+- classes:
+  - DataBus
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports: []
+  template: ""
+  runnable:
+    declaration: |-
+      {%- if element.validation_data.data -%}
+      Modelica.Blocks.Sources.CombiTimeTable {{ element.name }}(
+        tableOnFile=false,
+        table=[{{ element.validation_data.data | safe }}],
+        smoothness=Modelica.Blocks.Types.Smoothness.LinearSegments,
+        extrapolation=Modelica.Blocks.Types.Extrapolation.HoldLastPoint)
+        "External data: {{ element.validation_data.columns | join(', ') }}";
+      {%- endif -%}
+  variant: default
+
+# Ideal heating and cooling: its heat flow rate is an input of building_mpc, between the cooling and the heating
+# capacities, split between the air and the radiant star of the zone.
+- classes:
+  - IdealHeatingCooling
+  library: FastModel
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: convective
+    medium: heat
+    names:
+    - heatPortCon
+    targets:
+    - Space
+  - flow: radiative
+    medium: heat
+    names:
+    - heatPortRad
+    targets:
+    - Space
+  template: |-
+    FastModel.Interfaces.HeatFlowInput {{ element.name }}_Q(Q_flow(
+        min=-{{ parameters.get('QCoo_flow_max') if parameters.get('QCoo_flow_max') is not none else 1e6 }},
+        max={{ parameters.get('QHea_flow_max') if parameters.get('QHea_flow_max') is not none else 1e6 }}))
+        "Heat flow rate of {{ element.name }}: input of the model";
+    FastModel.HVAC.IdealHeatingCooling {{ element.name }}(
+        fraRad={{ parameters.get('frad') if parameters.get('frad') is not none else 0 }},
+        Q_flow={{ element.name }}_Q.Q_flow)
+  runnable:
+    declaration: |-
+      {%- if element.name ~ '_Q' not in columns -%}
+      Modelica.Blocks.Sources.Constant {{ element.name }}_Q(k=0) "No heating or cooling without external data";
+      {%- endif -%}
+    equation: |-
+      {%- if element.name ~ '_Q' in columns -%}
+      connect(data_bus.y[{{ columns.index(element.name ~ '_Q') + 1 }}], mpc.{{ element.name }}_Q.Q_flow);
+      {%- else -%}
+      connect({{ element.name }}_Q.y, mpc.{{ element.name }}_Q.Q_flow);
+      {%- endif -%}
+  variant: default

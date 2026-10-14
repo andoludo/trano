@@ -32,8 +32,28 @@ def _mpc_library() -> Markup:
     return Markup(render_mpc_library())  # noqa: S704 - Modelica source rendered by Trano itself
 
 
+MODELICA_LIBRARIES = Path(__file__).parents[1].joinpath("library")
+
+
+@cache
+def modelica_library(name: str) -> Markup:
+    """The Modelica source of a library shipped with trano (``trano/library/<name>.mo``)."""
+    return Markup(MODELICA_LIBRARIES.joinpath(f"{name}.mo").read_text())  # noqa: S704 - a file of trano
+
+
+class UnsupportedElementError(NotImplementedError):
+    """An element of the model that the library does not model."""
+
+
+def unsupported(message: str) -> str:
+    """Stop the generation of a model: called by the template of an element the library does not model."""
+    raise UnsupportedElementError(message)
+
+
 ENVIRONMENT.filters["mo"] = modelica_number
 ENVIRONMENT.globals["mpc_library"] = _mpc_library
+ENVIRONMENT.globals["modelica_library"] = modelica_library
+ENVIRONMENT.globals["unsupported"] = unsupported
 
 # For small inline templates that don't use the macros/templates directory.
 STRING_ENVIRONMENT = Environment(autoescape=True)

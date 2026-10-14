@@ -1,0 +1,1204 @@
+package FastModel "Building models for model predictive control: close to Buildings, translated into an explicit CasADi ODE"
+  extends FastModel.Icons.Package;
+
+  constant Real pi = 3.141592653589793;
+  constant Real sigma(unit="W/(m2.K4)") = 5.670374419e-8 "Stefan-Boltzmann constant";
+  constant Real cpWat(unit="J/(kg.K)") = 4184 "Specific heat capacity of water (Buildings.Media.Water)";
+  constant Real rhoWat(unit="kg/m3") = 995.586 "Density of water (Buildings.Media.Water)";
+  constant Real cpAir(unit="J/(kg.K)") = 1006 "Specific heat capacity of air";
+  constant Real rhoAir(unit="kg/m3") = 1.2 "Density of air";
+
+  package Icons "Icons"
+    partial package Package "Package icon"
+    end Package;
+  end Icons;
+
+  package Types "Types and constants"
+    package Tilt "Tilt of a surface, as Buildings.Types.Tilt [rad]"
+      constant Real Ceiling = 0 "Ceiling or roof: the surface faces up";
+      constant Real Wall = 1.5707963267948966 "Wall";
+      constant Real Floor = 3.141592653589793 "Floor: the surface faces down";
+    end Tilt;
+
+    package EfficiencyCurves "Efficiency curves of boilers, as Buildings.Fluid.Types.EfficiencyCurves"
+      constant Integer Constant = 1 "eta = a[1]";
+      constant Integer Polynomial = 2 "eta = a[1] + a[2]*y + a[3]*y^2 + ...";
+      constant Integer QuadraticLinear = 3 "eta = a[1] + a[2]*y + a[3]*y^2 + (a[4] + a[5]*y + a[6]*y^2)*T";
+    end EfficiencyCurves;
+  end Types;
+
+  package Utilities "Smooth functions (after Buildings.Utilities.Math.Functions) and parameter computations"
+    function regStep "Once continuously differentiable step from y2 (x < -x_small) to y1 (x > x_small)"
+      input Real x;
+      input Real y1;
+      input Real y2;
+      input Real x_small = 1e-5;
+      output Real y;
+    algorithm
+      y := if x > x_small then y1 else if x < -x_small then y2 else (x/x_small)*((x/x_small)^2 - 3)*(y2 - y1)/4 + (y1 + y2)/2;
+    end regStep;
+
+    function smoothMax "Once continuously differentiable approximation of max(x1, x2)"
+      input Real x1;
+      input Real x2;
+      input Real deltaX;
+      output Real y;
+    algorithm
+      y := regStep(x1 - x2, x1, x2, deltaX);
+    end smoothMax;
+
+    function smoothMin "Once continuously differentiable approximation of min(x1, x2)"
+      input Real x1;
+      input Real x2;
+      input Real deltaX;
+      output Real y;
+    algorithm
+      y := regStep(x2 - x1, x1, x2, deltaX);
+    end smoothMin;
+
+    function smoothLimit "Once continuously differentiable limitation of x to [l, u]"
+      input Real x;
+      input Real l;
+      input Real u;
+      input Real deltaX;
+      output Real y;
+    algorithm
+      y := smoothMin(smoothMax(x, l + deltaX, deltaX), u - deltaX, deltaX);
+    end smoothLimit;
+
+    function positivePart "Smooth max(x, 0): 0.5*(x + sqrt(x^2 + delta^2))"
+      input Real x;
+      input Real delta;
+      output Real y;
+    algorithm
+      y := 0.5*(x + sqrt(x^2 + delta^2));
+    end positivePart;
+
+    function naturalConvection
+      "Heat flow from a surface to the air q = A*c*|dT|^(4/3) (Buildings natural convection), smooth at dT = 0"
+      input Real dT(unit="K") "Surface minus air temperature";
+      input Real A(unit="m2") "Surface area";
+      input Real cPos "Coefficient when the surface is warmer than the air";
+      input Real cNeg "Coefficient when the surface is colder than the air";
+      input Real dT0(unit="K") = 0.1 "Temperature difference below which the law is regularised";
+      output Real Q_flow(unit="W");
+    algorithm
+      Q_flow := A*((cPos + cNeg)/2 + (cPos - cNeg)/2*dT/sqrt(dT^2 + dT0^2))*dT*(dT^2 + dT0^2)^(1/6);
+    end naturalConvection;
+
+    function convectionCoefficient
+      "Natural convection coefficient of Buildings for a surface tilt: wall 1.3, ceiling 0.76/1.51, floor 1.51/0.76"
+      input Real til(unit="rad") "Tilt: 0 for a ceiling, pi/2 for a wall, pi for a floor";
+      input Boolean warmer "true: the coefficient when the surface is warmer than the air";
+      output Real c;
+    algorithm
+      if abs(sin(til)) < 1e-6 and cos(til) > 0 then
+        c := if warmer then 0.76 else 1.51;
+      elseif abs(sin(til)) < 1e-6 and cos(til) < 0 then
+        c := if warmer then 1.51 else 0.76;
+      else
+        c := 1.3;
+      end if;
+    end convectionCoefficient;
+
+    function polynomialFit "Least-squares quartic c[1] + c[2]*x + ... + c[5]*x^4 through 10 points (x, y)"
+      input Real x[10];
+      input Real y[10];
+      output Real c[5];
+    protected
+      Real A[5, 5];
+      Real b[5];
+      Real factor;
+    algorithm
+      // normal equations
+      for i in 1:5 loop
+        for j in 1:5 loop
+          A[i, j] := sum(x[k]^(i + j - 2) for k in 1:10);
+        end for;
+        b[i] := sum(y[k]*x[k]^(i - 1) for k in 1:10);
+      end for;
+      // Gaussian elimination (the normal matrix is symmetric positive definite: no pivoting needed)
+      for i in 1:5 loop
+        for k in 1:5 loop
+          if k > i then
+            factor := A[k, i]/A[i, i];
+            for j in 1:5 loop
+              A[k, j] := A[k, j] - factor*A[i, j];
+            end for;
+            b[k] := b[k] - factor*b[i];
+          end if;
+        end for;
+      end for;
+      c := zeros(5);
+      for m in 1:5 loop
+        c[6 - m] := (b[6 - m] - sum((if j > 6 - m then A[6 - m, j]*c[j] else 0) for j in 1:5))/A[6 - m, 6 - m];
+      end for;
+    end polynomialFit;
+
+    function polynomial "c[1] + c[2]*x + ... + c[n]*x^(n-1)"
+      input Real c[:];
+      input Real x;
+      output Real y;
+    algorithm
+      y := sum(c[i]*x^(i - 1) for i in 1:size(c, 1));
+    end polynomial;
+  end Utilities;
+
+  package Interfaces "Connectors"
+    connector RealInput = input Real "Real input signal";
+    connector RealOutput = output Real "Real output signal";
+
+    connector HeatPort "Thermal port: temperature and heat flow rate into the component"
+      Real T(unit="K") "Port temperature";
+      flow Real Q_flow(unit="W") "Heat flow rate into the component";
+    end HeatPort;
+
+    connector WaterPort "Water port: mass flow rate into the component and temperature of the water crossing it"
+      flow Real m_flow(unit="kg/s") "Mass flow rate into the component";
+      Real T(unit="K") "Temperature of the water crossing the port";
+    end WaterPort;
+
+    connector WeatherInputs "Weather data: inputs of building_mpc (from a weather file or a forecast)"
+      RealInput TDryBul(unit="K") "Outdoor dry-bulb air temperature";
+      RealInput TBlaSky(unit="K") "Black-body sky temperature";
+      RealInput winSpe(unit="m/s") "Wind speed";
+      RealInput winDir(unit="rad") "Wind direction, 0 from the north";
+      RealInput HDirNor(unit="W/m2") "Direct normal irradiance";
+      RealInput HDifHor(unit="W/m2") "Diffuse horizontal irradiance";
+      RealInput HGloHor(unit="W/m2") "Global horizontal irradiance";
+    end WeatherInputs;
+
+    connector WeatherBus "Weather data and solar position (source side)"
+      RealOutput TDryBul(unit="K") "Outdoor dry-bulb air temperature";
+      RealOutput TBlaSky(unit="K") "Black-body sky temperature";
+      RealOutput winSpe(unit="m/s") "Wind speed";
+      RealOutput winDir(unit="rad") "Wind direction, 0 from the north";
+      RealOutput HDirNor(unit="W/m2") "Direct normal irradiance";
+      RealOutput HDifHor(unit="W/m2") "Diffuse horizontal irradiance";
+      RealOutput HGloHor(unit="W/m2") "Global horizontal irradiance";
+      RealOutput lat(unit="rad") "Latitude";
+      RealOutput decAng(unit="rad") "Solar declination";
+      RealOutput solHouAng(unit="rad") "Solar hour angle";
+      RealOutput cosZen "Cosine of the solar zenith angle";
+      RealOutput F1 "Circumsolar brightening coefficient of the Perez model";
+      RealOutput F2 "Horizon brightening coefficient of the Perez model";
+    end WeatherBus;
+
+    connector WeatherBusIn "Weather data and solar position (receiving side)"
+      RealInput TDryBul(unit="K") "Outdoor dry-bulb air temperature";
+      RealInput TBlaSky(unit="K") "Black-body sky temperature";
+      RealInput winSpe(unit="m/s") "Wind speed";
+      RealInput winDir(unit="rad") "Wind direction, 0 from the north";
+      RealInput HDirNor(unit="W/m2") "Direct normal irradiance";
+      RealInput HDifHor(unit="W/m2") "Diffuse horizontal irradiance";
+      RealInput HGloHor(unit="W/m2") "Global horizontal irradiance";
+      RealInput lat(unit="rad") "Latitude";
+      RealInput decAng(unit="rad") "Solar declination";
+      RealInput solHouAng(unit="rad") "Solar hour angle";
+      RealInput cosZen "Cosine of the solar zenith angle";
+      RealInput F1 "Circumsolar brightening coefficient of the Perez model";
+      RealInput F2 "Horizon brightening coefficient of the Perez model";
+    end WeatherBusIn;
+
+    connector SurfaceBus "A surface of a zone, surface side: heat exchanges, properties, weather"
+      HeatPort con "Convection with the zone air (at the air temperature)";
+      HeatPort rad "Long-wave and solar exchange with the room (at the surface temperature)";
+      RealOutput A(unit="m2") "Area seen from the room";
+      RealOutput epsLw "Long-wave emissivity of the room side";
+      RealOutput absSol "Solar absorptance of the room side (diffuse)";
+      RealOutput tauSol "Solar transmittance back to the outside (windows)";
+      RealOutput isFloor "1 for a floor, which receives the transmitted direct radiation first";
+      RealOutput QTraDir(unit="W") "Direct solar radiation transmitted into the room (windows)";
+      RealOutput QTraDif(unit="W") "Diffuse solar radiation transmitted into the room (windows)";
+      RealInput hConInt(unit="W/(m2.K)") "Fixed interior convection coefficient, 0 for the natural convection law";
+      RealInput hConExt(unit="W/(m2.K)") "Fixed exterior convection coefficient, 0 for the wind-dependent law";
+      WeatherBusIn wea "Weather";
+    end SurfaceBus;
+
+    connector ZoneSurfaceBus "A surface of a zone, zone side"
+      HeatPort con "Convection with the zone air (at the air temperature)";
+      HeatPort rad "Long-wave and solar exchange with the room (at the surface temperature)";
+      RealInput A(unit="m2") "Area seen from the room";
+      RealInput epsLw "Long-wave emissivity of the room side";
+      RealInput absSol "Solar absorptance of the room side (diffuse)";
+      RealInput tauSol "Solar transmittance back to the outside (windows)";
+      RealInput isFloor "1 for a floor, which receives the transmitted direct radiation first";
+      RealInput QTraDir(unit="W") "Direct solar radiation transmitted into the room (windows)";
+      RealInput QTraDif(unit="W") "Diffuse solar radiation transmitted into the room (windows)";
+      RealOutput hConInt(unit="W/(m2.K)") "Fixed interior convection coefficient, 0 for the natural convection law";
+      RealOutput hConExt(unit="W/(m2.K)") "Fixed exterior convection coefficient, 0 for the wind-dependent law";
+      WeatherBus wea "Weather";
+    end ZoneSurfaceBus;
+
+    connector ControlInput "A control of building_mpc: input between its bounds (a decision of the MPC)"
+      RealInput y(min=0, max=1, unit="1") "Control signal, 0 to 1";
+    end ControlInput;
+
+    connector ControlSignal "Control signal of a component (receiving side)"
+      RealInput y(unit="1") "Control signal, 0 to 1";
+    end ControlSignal;
+
+    connector GainInputs "Internal gains per floor area: inputs (from an occupancy schedule)"
+      RealInput QCon(unit="W/m2") "Convective internal gains per floor area";
+      RealInput QRad(unit="W/m2") "Radiant internal gains per floor area";
+    end GainInputs;
+
+    connector OccupancyInputs "Internal gains of a zone: inputs of building_mpc"
+      GainInputs gai "Internal gains per floor area";
+    end OccupancyInputs;
+
+    connector Gains "Internal gains per floor area (receiving side)"
+      RealInput QCon(unit="W/m2") "Convective internal gains per floor area";
+      RealInput QRad(unit="W/m2") "Radiant internal gains per floor area";
+    end Gains;
+
+    connector HeatFlowInput "Heat flow rate of an ideal system: input of building_mpc"
+      RealInput Q_flow(unit="W") "Heat flow rate, positive for heating";
+    end HeatFlowInput;
+  end Interfaces;
+
+  package Data "Records of constructions and glazings, written by trano from the YAML file"
+    record Construction "Opaque construction: layers from the outside (side a) to the inside (side b)"
+      parameter Integer nLay "Number of layers";
+      parameter Real x[nLay](each unit="m") "Thickness";
+      parameter Real k[nLay](each unit="W/(m.K)") "Thermal conductivity";
+      parameter Real c[nLay](each unit="J/(kg.K)") "Specific heat capacity";
+      parameter Real d[nLay](each unit="kg/m3") "Density";
+      parameter Real absIR_a = 0.84 "Long-wave emissivity of side a (outside)";
+      parameter Real absIR_b = 0.84 "Long-wave emissivity of side b (inside)";
+      parameter Real absSol_a = 0.84 "Solar absorptance of side a (outside)";
+      parameter Real absSol_b = 0.84 "Solar absorptance of side b (inside)";
+    end Construction;
+
+    record Glazing "Glazing: panes from the outside, angular optics at the incidence angles 0, 10, ..., 90 degrees"
+      parameter Integer nPan "Number of panes";
+      parameter Real x[nPan](each unit="m") "Thickness of the panes";
+      parameter Real d[nPan](each unit="kg/m3") "Density of the panes";
+      parameter Real c[nPan](each unit="J/(kg.K)") "Specific heat capacity of the panes";
+      parameter Real RPan[nPan](each unit="m2.K/W") "Thermal resistance of each pane";
+      parameter Real RGap[nPan - 1](each unit="m2.K/W") "Thermal resistance of each gas gap (EN 673)";
+      parameter Real tau[11] "Solar transmittance at the 10 incidence angles, then hemispherical";
+      parameter Real absPan[nPan, 11] "Solar absorptance of each pane at the 10 incidence angles, then hemispherical";
+      parameter Real absIR_a "Long-wave emissivity of the outer pane, outside face";
+      parameter Real absIR_b "Long-wave emissivity of the inner pane, room face";
+      parameter Real UFra(unit="W/(m2.K)") = 1.4 "Thermal transmittance of the frame";
+    end Glazing;
+  end Data;
+
+  package BoundaryConditions "Weather and solar irradiance (after Buildings.BoundaryConditions)"
+    model Weather "Weather data, solar position and Perez coefficients for the site"
+      parameter Real lat(unit="rad") = 0.8868 "Latitude (Uccle by default)";
+      parameter Real lon(unit="rad") = 0.0760 "Longitude (Uccle by default)";
+      parameter Real timZon(unit="s") = 3600 "Time zone (offset of the standard time from UTC)";
+      parameter Real alt(unit="m") = 100 "Altitude of the site";
+      Interfaces.RealInput TDryBul(unit="K") "Outdoor dry-bulb air temperature";
+      Interfaces.RealInput TBlaSky(unit="K") "Black-body sky temperature";
+      Interfaces.RealInput winSpe(unit="m/s") "Wind speed";
+      Interfaces.RealInput winDir(unit="rad") "Wind direction, 0 from the north";
+      Interfaces.RealInput HDirNor(unit="W/m2") "Direct normal irradiance";
+      Interfaces.RealInput HDifHor(unit="W/m2") "Diffuse horizontal irradiance";
+      Interfaces.RealInput HGloHor(unit="W/m2") "Global horizontal irradiance";
+      Interfaces.WeatherBus weaBus "Weather data and solar position";
+    protected
+      Real Bt "Intermediate variable of the equation of time";
+      Real eqnTim(unit="s") "Equation of time";
+      Real solTim(unit="s") "Solar time";
+      Real zen(unit="rad") "Solar zenith angle";
+      Real zenLim(unit="rad") "Zenith angle bounded by 90 degrees";
+      Real relAirMas "Relative air mass";
+      Real skyBri "Sky brightness";
+      Real HDifHorBou(unit="W/m2") "Diffuse horizontal irradiance bounded away from 0";
+      Real tmp "Intermediate variable of the sky clearness";
+      Real skyCle "Sky clearness";
+      Real a[8] "Weights of the sky clearness bins";
+      Real b[8] "Smooth steps of the sky clearness bins";
+      constant Real edges[7] = {1.065, 1.23, 1.50, 1.95, 2.80, 4.50, 6.20} "Sky clearness bin edges";
+      constant Real F11[8] = {-0.0083117, 0.1299457, 0.3296958, 0.5682053, 0.8730280, 1.1326077, 1.0601591, 0.6777470};
+      constant Real F12[8] = {0.5877285, 0.6825954, 0.4868735, 0.1874525, -0.3920403, -1.2367284, -1.5999137, -0.3272588};
+      constant Real F13[8] = {-0.0620636, -0.1513725, -0.2210958, -0.2951290, -0.3616149, -0.4118494, -0.3589221, -0.2504286};
+      constant Real F21[8] = {-0.0596012, -0.0189325, 0.0554140, 0.1088631, 0.2255647, 0.2877813, 0.2642124, 0.1561313};
+      constant Real F22[8] = {0.0721249, 0.0659650, -0.0639588, -0.1519229, -0.4620442, -0.8230357, -1.1272340, -1.3765031};
+      constant Real F23[8] = {-0.0220216, -0.0288748, -0.0260542, -0.0139754, 0.0012448, 0.0558651, 0.1310694, 0.2506212};
+    equation
+      // Weather data
+      weaBus.TDryBul = TDryBul;
+      weaBus.TBlaSky = TBlaSky;
+      weaBus.winSpe = winSpe;
+      weaBus.winDir = winDir;
+      weaBus.HDirNor = HDirNor;
+      weaBus.HDifHor = HDifHor;
+      weaBus.HGloHor = HGloHor;
+      weaBus.lat = lat;
+      // Solar position (Buildings.BoundaryConditions.SolarGeometry; the model time is the clock time of the year)
+      weaBus.decAng = asin(-sin(23.45*pi/180)*cos((time/86400 + 10)*2*pi/365.25));
+      Bt = pi*((time + 86400)/86400 - 81)/182;
+      eqnTim = 60*(9.87*sin(2*Bt) - 7.53*cos(Bt) - 1.5*sin(Bt));
+      solTim = time - timZon + lon*43200/pi + eqnTim;
+      weaBus.solHouAng = (solTim/3600 - 12)*2*pi/24;
+      weaBus.cosZen = cos(lat)*cos(weaBus.decAng)*cos(weaBus.solHouAng) + sin(lat)*sin(weaBus.decAng);
+      zen = acos(Utilities.smoothLimit(weaBus.cosZen, -1, 1, 1e-6));
+      // Perez sky model (Buildings.BoundaryConditions.SolarIrradiation.BaseClasses)
+      zenLim = Utilities.smoothMin(zen, pi/2, 0.01);
+      relAirMas = exp(-0.0001184*alt)/(cos(zenLim) + 0.15*(93.9 - zenLim*180/pi)^(-1.253));
+      skyBri = Utilities.smoothMin(HDifHor*relAirMas/(1366.1*(1 + 0.033*cos(2*pi*(solTim/86400 + 1)/365))), 1, 0.025);
+      HDifHorBou = Utilities.smoothMax(HDifHor, 0.5e-4, 0.25e-4);
+      tmp = 5.534e-6*(180/pi)^3*zen^3;
+      skyCle = Utilities.smoothLimit(((HDirNor + HDifHorBou)/HDifHorBou + tmp)/(1 + tmp), 1, 8, 0.01);
+      for i in 1:7 loop
+        b[i] = Utilities.regStep(edges[i] - skyCle, 1, 0, 0.01);
+      end for;
+      b[8] = Utilities.regStep(skyCle - edges[7], 1, 0, 0.01);
+      a[1] = b[1];
+      for i in 2:7 loop
+        a[i] = b[i] - b[i - 1];
+      end for;
+      a[8] = b[8];
+      weaBus.F1 = Utilities.smoothMax(0, sum(a[i]*(F11[i] + F12[i]*skyBri + F13[i]*zen) for i in 1:8), 0.01);
+      weaBus.F2 = sum(a[i]*(F21[i] + F22[i]*skyBri + F23[i]*zen) for i in 1:8);
+    end Weather;
+
+    model TiltedSurface "Solar irradiance on a tilted surface: direct, Perez diffuse (sky and ground), incidence"
+      parameter Real azi(unit="rad") "Surface azimuth: 0 south, pi/2 west";
+      parameter Real til(unit="rad") "Surface tilt: 0 roof, pi/2 wall";
+      parameter Real rho = 0.2 "Ground reflectance";
+      Interfaces.WeatherBusIn weaBus;
+      Real cosInc "Cosine of the incidence angle";
+      Real HDir(unit="W/m2") "Direct irradiance on the surface";
+      Real HDif(unit="W/m2") "Diffuse irradiance on the surface (sky and ground)";
+    protected
+      constant Real bMin = cos(85*pi/180);
+    equation
+      cosInc = cos(til)*(cos(weaBus.decAng)*cos(weaBus.solHouAng)*cos(weaBus.lat) + sin(weaBus.decAng)*sin(weaBus.lat))
+        + sin(til)*(sin(azi)*cos(weaBus.decAng)*sin(weaBus.solHouAng) + cos(azi)*(cos(weaBus.decAng)
+        *cos(weaBus.solHouAng)*sin(weaBus.lat) - sin(weaBus.decAng)*cos(weaBus.lat)));
+      HDir = Utilities.positivePart(cosInc*weaBus.HDirNor, 1e-2);
+      HDif = weaBus.HDifHor*(0.5*(1 - weaBus.F1)*(1 + cos(til)) + weaBus.F1*Utilities.smoothMax(0, cosInc, 0.01)
+        /Utilities.smoothMax(bMin, weaBus.cosZen, 0.01) + weaBus.F2*sin(til)) + weaBus.HGloHor*0.5*rho*(1 - cos(til));
+    end TiltedSurface;
+  end BoundaryConditions;
+
+  package Envelope "Walls, floors, roofs and windows (after Buildings.ThermalZones.Detailed and Buildings.HeatTransfer)"
+    partial model PartialSurface "A surface of a zone: area, orientation and its bus"
+      parameter Real A(unit="m2") "Area seen from the room";
+      parameter Real azi(unit="rad") = 0 "Azimuth: 0 south, pi/2 west";
+      parameter Real til(unit="rad") "Tilt: 0 roof (ceiling), pi/2 wall, pi floor";
+      parameter Real T_start(unit="K") = 294.15 "Initial temperature";
+      Interfaces.SurfaceBus propsBus_a "Connection to the zone";
+    protected
+      parameter Real cIntPos = Utilities.convectionCoefficient(til, true) "Interior natural convection, surface warmer";
+      parameter Real cIntNeg = Utilities.convectionCoefficient(til, false) "Interior natural convection, surface colder";
+      parameter Real isFloor = if abs(sin(til)) < 1e-6 and cos(til) < 0 then 1 else 0;
+    end PartialSurface;
+
+    partial model PartialOpaque "Conduction through the layers of a construction, one node at each layer boundary"
+      extends PartialSurface;
+      parameter Data.Construction constructionType "Construction, layers from the outside";
+      parameter Boolean stateAtSurface_a = true "Capacity at the outer surface (false: it is held at a temperature)";
+    protected
+      parameter Integer nLay = constructionType.nLay;
+      parameter Real C[nLay + 1](each unit="J/K") = {A*((if i > 1 then constructionType.x[i - 1]*constructionType.d[i - 1]
+        *constructionType.c[i - 1]/2 else 0) + (if i <= nLay then constructionType.x[i]*constructionType.d[i]
+        *constructionType.c[i]/2 else 0)) for i in 1:nLay + 1} "Capacity of each node";
+      parameter Real G[nLay](each unit="W/K") = {A*constructionType.k[i]/constructionType.x[i] for i in 1:nLay}
+        "Conductance of each layer";
+    end PartialOpaque;
+
+    model OuterWall "Exterior wall or roof: wind and sky at the outside, sun, conduction, room exchanges"
+      extends PartialOpaque;
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, outside first";
+      BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the outer surface";
+      Real QSol(unit="W") "Absorbed solar radiation";
+      Real QExt(unit="W") "Heat from the outer surface to the outside air and the sky";
+      Real QInt(unit="W") "Heat from the inner surface to the room air";
+    protected
+      parameter Real cExtPos = Utilities.convectionCoefficient(pi - til, true) "Outer face: tilt pi - til";
+      parameter Real cExtNeg = Utilities.convectionCoefficient(pi - til, false);
+    equation
+      connect(propsBus_a.wea, sol.weaBus);
+      QSol = constructionType.absSol_a*A*(sol.HDir + sol.HDif);
+      QExt = Functions.exteriorExchange(T[1], A, til, azi, cExtPos, cExtNeg, constructionType.absIR_a, propsBus_a.hConExt,
+        propsBus_a.wea.TDryBul, propsBus_a.wea.TBlaSky, propsBus_a.wea.winSpe, propsBus_a.wea.winDir);
+      QInt = Functions.interiorConvection(T[nLay + 1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
+      C[1]*der(T[1]) = QSol - QExt - G[1]*(T[1] - T[2]);
+      for i in 2:nLay loop
+        C[i]*der(T[i]) = G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]);
+      end for;
+      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt + propsBus_a.rad.Q_flow;
+      propsBus_a.con.Q_flow = -QInt;
+      propsBus_a.rad.T = T[nLay + 1];
+      propsBus_a.A = A;
+      propsBus_a.epsLw = constructionType.absIR_b;
+      propsBus_a.absSol = constructionType.absSol_b;
+      propsBus_a.tauSol = 0;
+      propsBus_a.isFloor = isFloor;
+      propsBus_a.QTraDir = 0;
+      propsBus_a.QTraDif = 0;
+    end OuterWall;
+
+    model BoundaryWall "Floor on ground or over outdoor air: the outer surface is held at a temperature"
+      extends PartialOpaque(final stateAtSurface_a=false);
+      parameter Boolean outdoorAir = false "true: the outer surface at the outdoor air temperature";
+      parameter Real TGro(unit="K") = 283.15 "Ground temperature";
+      Real T[nLay](each unit="K", each start=T_start, each fixed=true) "Node temperatures, the outer surface excluded";
+      Real QInt(unit="W") "Heat from the inner surface to the room air";
+    protected
+      Real TNod[nLay + 1](each unit="K") "Node temperatures, the outer surface first";
+    equation
+      TNod[1] = if outdoorAir then propsBus_a.wea.TDryBul else TGro;
+      for i in 1:nLay loop
+        TNod[i + 1] = T[i];
+      end for;
+      QInt = Functions.interiorConvection(T[nLay] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
+      for i in 1:nLay - 1 loop
+        C[i + 1]*der(T[i]) = G[i]*(TNod[i] - T[i]) - G[i + 1]*(T[i] - T[i + 1]);
+      end for;
+      C[nLay + 1]*der(T[nLay]) = G[nLay]*(TNod[nLay] - T[nLay]) - QInt + propsBus_a.rad.Q_flow;
+      propsBus_a.con.Q_flow = -QInt;
+      propsBus_a.rad.T = T[nLay];
+      propsBus_a.A = A;
+      propsBus_a.epsLw = constructionType.absIR_b;
+      propsBus_a.absSol = constructionType.absSol_b;
+      propsBus_a.tauSol = 0;
+      propsBus_a.isFloor = isFloor;
+      propsBus_a.QTraDir = 0;
+      propsBus_a.QTraDif = 0;
+    end BoundaryWall;
+
+    model AdiabaticWall "Wall without heat flow through its outer surface"
+      extends PartialOpaque;
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, outside first";
+      Real QInt(unit="W") "Heat from the inner surface to the room air";
+    equation
+      QInt = Functions.interiorConvection(T[nLay + 1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
+      C[1]*der(T[1]) = -G[1]*(T[1] - T[2]);
+      for i in 2:nLay loop
+        C[i]*der(T[i]) = G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]);
+      end for;
+      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt + propsBus_a.rad.Q_flow;
+      propsBus_a.con.Q_flow = -QInt;
+      propsBus_a.rad.T = T[nLay + 1];
+      propsBus_a.A = A;
+      propsBus_a.epsLw = constructionType.absIR_b;
+      propsBus_a.absSol = constructionType.absSol_b;
+      propsBus_a.tauSol = 0;
+      propsBus_a.isFloor = isFloor;
+      propsBus_a.QTraDir = 0;
+      propsBus_a.QTraDif = 0;
+    end AdiabaticWall;
+
+    model InternalWall "Wall or floor between two zones: side a faces the zone of propsBus_a, side b the other"
+      extends PartialOpaque;
+      parameter Real epsLw = 0.84 "Long-wave emissivity of both faces (Buildings surBou)";
+      parameter Real absSol = 0.84 "Solar absorptance of both faces (Buildings surBou)";
+      Interfaces.SurfaceBus propsBus_b "Connection to the zone of side b";
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, side a first";
+      Real QInt_a(unit="W") "Heat from side a to the air of its zone";
+      Real QInt_b(unit="W") "Heat from side b to the air of its zone";
+    protected
+      parameter Real cPos_b = Utilities.convectionCoefficient(pi - til, true) "Side b faces the other way";
+      parameter Real cNeg_b = Utilities.convectionCoefficient(pi - til, false);
+      parameter Real isFloor_b = if abs(sin(til)) < 1e-6 and cos(til) > 0 then 1 else 0;
+    equation
+      QInt_a = Functions.interiorConvection(T[1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
+      QInt_b = Functions.interiorConvection(T[nLay + 1] - propsBus_b.con.T, A, cPos_b, cNeg_b, propsBus_b.hConInt);
+      C[1]*der(T[1]) = -G[1]*(T[1] - T[2]) - QInt_a + propsBus_a.rad.Q_flow;
+      for i in 2:nLay loop
+        C[i]*der(T[i]) = G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]);
+      end for;
+      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt_b + propsBus_b.rad.Q_flow;
+      propsBus_a.con.Q_flow = -QInt_a;
+      propsBus_a.rad.T = T[1];
+      propsBus_a.A = A;
+      propsBus_a.epsLw = epsLw;
+      propsBus_a.absSol = absSol;
+      propsBus_a.tauSol = 0;
+      propsBus_a.isFloor = isFloor;
+      propsBus_a.QTraDir = 0;
+      propsBus_a.QTraDif = 0;
+      propsBus_b.con.Q_flow = -QInt_b;
+      propsBus_b.rad.T = T[nLay + 1];
+      propsBus_b.A = A;
+      propsBus_b.epsLw = epsLw;
+      propsBus_b.absSol = absSol;
+      propsBus_b.tauSol = 0;
+      propsBus_b.isFloor = isFloor_b;
+      propsBus_b.QTraDir = 0;
+      propsBus_b.QTraDif = 0;
+    end InternalWall;
+
+    model Window "Glazing with its frame: panes, gas gaps, optics of the glazing (Buildings), sky and wind outside"
+      extends PartialSurface;
+      parameter Data.Glazing glazing "Glazing, panes from the outside";
+      parameter Real frac = 0 "Frame share of the window area";
+      parameter Real hFraExt(unit="W/(m2.K)") = 25 "Exterior film coefficient of the frame";
+      parameter Real hFraInt(unit="W/(m2.K)") = 7.7 "Interior film coefficient of the frame";
+      parameter Real cGla(unit="J/(kg.K)") = 720 "Specific heat capacity of glass when the glazing gives none";
+      Real T[glazing.nPan](each unit="K", each start=T_start, each fixed=true) "Pane temperatures, outside first";
+      BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the window";
+      Real QExt(unit="W") "Heat from the outer pane to the outside air and the sky";
+      Real QInt(unit="W") "Heat from the inner pane to the room air";
+      Real QFra(unit="W") "Heat through the frame, from the room air to the outside";
+      Real cosInc "Cosine of incidence, 0 when the sun is behind the window";
+    protected
+      constant Real cosAng[10] = {cos(i*pi/18) for i in 0:9} "Cosine of the tabulated incidence angles";
+      parameter Integer nPan = glazing.nPan;
+      parameter Real AGla(unit="m2") = A*(1 - frac) "Glass area";
+      parameter Real CPan[nPan](each unit="J/K") = {AGla*glazing.x[i]*glazing.d[i]*(if glazing.c[i] > 0 then glazing.c[i]
+        else cGla) for i in 1:nPan} "Capacity of each pane";
+      parameter Real GGap[nPan - 1](each unit="W/K") = {AGla/(glazing.RPan[i]/2 + glazing.RGap[i] + glazing.RPan[i + 1]/2)
+        for i in 1:nPan - 1} "Conductance between two panes";
+      parameter Real tauCoe[5] = Utilities.polynomialFit(cosAng, glazing.tau[1:10])
+        "Direct transmittance in cos(inc)";
+      parameter Real absCoe[nPan, 5] = {Utilities.polynomialFit(cosAng, glazing.absPan[i, 1:10]) for i in 1:nPan}
+        "Direct absorptance of each pane in cos(inc)";
+      parameter Real GFra(unit="W/K") = A*frac/(1/hFraExt + 1/glazing.UFra + 1/hFraInt) "Frame conductance";
+      parameter Real cExtPos = Utilities.convectionCoefficient(pi - til, true);
+      parameter Real cExtNeg = Utilities.convectionCoefficient(pi - til, false);
+      Real QAbs[nPan](each unit="W") "Absorbed solar radiation of each pane";
+    equation
+      connect(propsBus_a.wea, sol.weaBus);
+      cosInc = Utilities.positivePart(sol.cosInc, 1e-2);
+      for i in 1:nPan loop
+        QAbs[i] = AGla*(sol.HDir*Utilities.polynomial(absCoe[i, :], cosInc) + sol.HDif*glazing.absPan[i, 11]);
+      end for;
+      QExt = AGla*(4 + 4*sqrt(propsBus_a.wea.winSpe^2 + 0.01))*(T[1] - propsBus_a.wea.TDryBul)
+        + Functions.skyExchange(T[1], AGla, til, glazing.absIR_a, propsBus_a.wea.TDryBul, propsBus_a.wea.TBlaSky);
+      QInt = Functions.interiorConvection(T[nPan] - propsBus_a.con.T, AGla, cIntPos, cIntNeg, propsBus_a.hConInt);
+      QFra = GFra*(propsBus_a.con.T - propsBus_a.wea.TDryBul);
+      if nPan == 1 then
+        CPan[1]*der(T[1]) = QAbs[1] - QExt - QInt + propsBus_a.rad.Q_flow;
+      else
+        CPan[1]*der(T[1]) = QAbs[1] - QExt - GGap[1]*(T[1] - T[2]);
+        for i in 2:nPan - 1 loop
+          CPan[i]*der(T[i]) = QAbs[i] + GGap[i - 1]*(T[i - 1] - T[i]) - GGap[i]*(T[i] - T[i + 1]);
+        end for;
+        CPan[nPan]*der(T[nPan]) = QAbs[nPan] + GGap[nPan - 1]*(T[nPan - 1] - T[nPan]) - QInt + propsBus_a.rad.Q_flow;
+      end if;
+      // the room air loses the heat that leaves through the frame and takes the heat of the inner pane
+      propsBus_a.con.Q_flow = QFra - QInt;
+      propsBus_a.rad.T = T[nPan];
+      propsBus_a.A = AGla;
+      propsBus_a.epsLw = glazing.absIR_b;
+      propsBus_a.absSol = glazing.absPan[nPan, 11];
+      propsBus_a.tauSol = glazing.tau[11];
+      propsBus_a.isFloor = 0;
+      propsBus_a.QTraDir = AGla*sol.HDir*Utilities.polynomial(tauCoe, cosInc);
+      propsBus_a.QTraDif = AGla*sol.HDif*glazing.tau[11];
+    end Window;
+
+    package Functions "Surface heat transfer"
+      function interiorConvection "Heat from a room surface to the air: natural convection, or a fixed coefficient"
+        input Real dT(unit="K") "Surface minus air temperature";
+        input Real A(unit="m2");
+        input Real cPos;
+        input Real cNeg;
+        input Real hFix(unit="W/(m2.K)") "Fixed coefficient, 0 for the natural convection law";
+        output Real Q_flow(unit="W");
+      algorithm
+        Q_flow := if hFix > 0 then hFix*A*dT else Utilities.naturalConvection(dT, A, cPos, cNeg);
+      end interiorConvection;
+
+      function skyExchange "Long-wave exchange with sky and ground (Buildings SkyRadiationExchange)"
+        input Real T(unit="K") "Surface temperature";
+        input Real A(unit="m2");
+        input Real til(unit="rad");
+        input Real eps "Long-wave emissivity";
+        input Real TOut(unit="K");
+        input Real TBlaSky(unit="K");
+        output Real Q_flow(unit="W") "Heat from the surface";
+      protected
+        Real vieFacSky = (pi - til)/pi;
+        Real TEnv;
+      algorithm
+        TEnv := (vieFacSky*TBlaSky^4 + (1 - vieFacSky)*TOut^4)^0.25;
+        Q_flow := 4*sigma*eps*A*TEnv^3*(T - TEnv);
+      end skyExchange;
+
+      function exteriorExchange
+        "Heat from an outer surface to the outside: natural and wind-driven convection (Buildings TemperatureWind)
+         or a fixed coefficient, and long-wave exchange with sky and ground"
+        input Real T(unit="K") "Surface temperature";
+        input Real A(unit="m2");
+        input Real til(unit="rad");
+        input Real azi(unit="rad");
+        input Real cPos;
+        input Real cNeg;
+        input Real eps "Long-wave emissivity";
+        input Real hFix(unit="W/(m2.K)") "Fixed convection coefficient, 0 for the wind-dependent law";
+        input Real TOut(unit="K");
+        input Real TBlaSky(unit="K");
+        input Real v(unit="m/s") "Wind speed";
+        input Real dir(unit="rad") "Wind direction, 0 from the north";
+        input Real R = 1.67 "Surface roughness factor (rough)";
+        output Real Q_flow(unit="W");
+      protected
+        Real W "Wind direction modifier: 1 windward, 0.5 leeward, 0.75 without wind";
+        Real hF(unit="W/(m2.K)") "Forced convection coefficient";
+      algorithm
+        W := 0.75 + (0.5*(0.5 + 0.5*(cos(azi + pi - dir) - cos(1.7453292519943295))
+          /sqrt((cos(azi + pi - dir) - cos(1.7453292519943295))^2 + 0.0025)) - 0.25)
+          *(0.5 + 0.5*(v - 0.25)/sqrt((v - 0.25)^2 + 0.015625));
+        hF := 2.537*W*R*2/A^0.25*(v^2 + 0.0625)^0.25;
+        Q_flow := (if hFix > 0 then hFix*A*(T - TOut) else Utilities.naturalConvection(T - TOut, A, cPos, cNeg)
+          + A*hF*(T - TOut)) + skyExchange(T, A, til, eps, TOut, TBlaSky);
+      end exteriorExchange;
+    end Functions;
+  end Envelope;
+
+  package Zones "Thermal zones"
+    partial model PartialZone
+      "Room air, long-wave exchange between its surfaces, distribution of the transmitted solar radiation"
+      parameter Integer nSurf(min=1) "Number of surfaces";
+      parameter Real AFlo(unit="m2") "Floor area";
+      parameter Real hRoo(unit="m") "Height";
+      parameter Real V(unit="m3") = AFlo*hRoo "Air volume";
+      parameter Real ACH(unit="1/h") = 0 "Air changes per hour by infiltration of outdoor air";
+      parameter Real mSenFac = 1 "Factor for the sensible heat capacity of the air";
+      parameter Real T_start(unit="K") = 294.15 "Initial temperature";
+      parameter Real hConInt(unit="W/(m2.K)") = 0 "Fixed interior convection coefficient, 0 for the natural law";
+      parameter Real hConExt(unit="W/(m2.K)") = 0 "Fixed exterior convection coefficient, 0 for the wind law";
+      parameter Real T0Rad(unit="K") = 293.15 "Linearization temperature of the long-wave exchange";
+      Interfaces.WeatherBusIn weaBus "Weather";
+      Interfaces.ZoneSurfaceBus propsBus[nSurf] "Surfaces";
+      Interfaces.HeatPort heaPorAir "Convective heat (emitters)";
+      Interfaces.HeatPort heaPorRad "Radiant heat (emitters), at the mean surface temperature";
+      Interfaces.Gains qGai_flow "Internal gains";
+      Real TAir(unit="K", start=T_start, fixed=true) "Zone air temperature";
+      Real TRad(unit="K") "Radiant star temperature";
+      Real QVen(unit="W") "Heat brought by the ventilation";
+    protected
+      Real G[nSurf](each unit="W/K") "Long-wave conductance of each surface to the star";
+      Real QDir(unit="W") "Transmitted direct solar radiation";
+      Real QDif(unit="W") "Transmitted diffuse solar radiation";
+      Real AFloSur(unit="m2") "Area of the floors";
+      Real epsTauA(unit="m2") "Absorbing and transmitting area";
+      Real kDif[nSurf] "Share of the diffuse radiation absorbed by each surface";
+      Real kDir[nSurf] "Share of the direct radiation absorbed by each surface (floors first)";
+    equation
+      for i in 1:nSurf loop
+        connect(weaBus, propsBus[i].wea);
+        propsBus[i].hConInt = hConInt;
+        propsBus[i].hConExt = hConExt;
+        G[i] = 4*sigma*T0Rad^3*propsBus[i].epsLw*propsBus[i].A;
+        propsBus[i].con.T = TAir;
+      end for;
+      // Long-wave exchange through a radiant star: the exact equivalent of Buildings' linearized radiosity exchange
+      // with view factors A_j/sum(A); radiant gains reach the surfaces in proportion to epsilon_i*A_i
+      TRad = (sum(G[i]*propsBus[i].rad.T for i in 1:nSurf) + heaPorRad.Q_flow + AFlo*qGai_flow.QRad)/sum(G);
+      heaPorRad.T = sum(G[i]*propsBus[i].rad.T for i in 1:nSurf)/sum(G);
+      // Transmitted solar radiation (Buildings SolarRadiationExchange): direct radiation on the floors first
+      QDir = sum(propsBus[i].QTraDir for i in 1:nSurf);
+      QDif = sum(propsBus[i].QTraDif for i in 1:nSurf);
+      AFloSur = sum(propsBus[i].isFloor*propsBus[i].A for i in 1:nSurf);
+      epsTauA = sum((propsBus[i].absSol + propsBus[i].tauSol)*propsBus[i].A for i in 1:nSurf);
+      for i in 1:nSurf loop
+        kDif[i] = propsBus[i].absSol*propsBus[i].A/epsTauA;
+        kDir[i] = noEvent(if AFloSur > 0 then (if propsBus[i].isFloor > 0.5 then propsBus[i].absSol*propsBus[i].A
+          /AFloSur else sum(propsBus[j].isFloor*propsBus[j].A*(1 - propsBus[j].absSol - propsBus[j].tauSol)
+          for j in 1:nSurf)/AFloSur*propsBus[i].absSol*propsBus[i].A/sum((1 - propsBus[j].isFloor)*(propsBus[j].absSol
+          + propsBus[j].tauSol)*propsBus[j].A for j in 1:nSurf)) else kDif[i]);
+        propsBus[i].rad.Q_flow = -(G[i]*(TRad - propsBus[i].rad.T) + kDir[i]*QDir + kDif[i]*QDif);
+      end for;
+      // Air
+      mSenFac*rhoAir*cpAir*V*der(TAir) = sum(propsBus[i].con.Q_flow for i in 1:nSurf) + heaPorAir.Q_flow + AFlo*qGai_flow.QCon
+        + rhoAir*cpAir*V*ACH/3600*(weaBus.TDryBul - TAir) + QVen;
+      heaPorAir.T = TAir;
+    end PartialZone;
+
+    model Zone "Thermal zone"
+      extends PartialZone;
+    equation
+      QVen = 0;
+    end Zone;
+
+    model VentilatedZone "Thermal zone with supply and extract air of a ventilation unit"
+      extends PartialZone;
+      parameter Integer nPorts_a = 1 "Number of supply air connections";
+      parameter Integer nPorts_b = 1 "Number of extract air connections";
+      Ventilation.AirInlet ports_a[nPorts_a] "Supply air";
+      Ventilation.AirOutlet ports_b[nPorts_b] "Extract air, at the zone air temperature";
+    equation
+      // the extract ducts carry the flows of the supply ones: the fan speed passes through the zone
+      for i in 1:nPorts_b loop
+        ports_b[i].T = TAir;
+        ports_b[i].y = sum(ports_a[j].y for j in 1:nPorts_a)/nPorts_a;
+      end for;
+      QVen = sum(ports_a[i].m_flow*cpAir*(ports_a[i].T - TAir) for i in 1:nPorts_a);
+    end VentilatedZone;
+  end Zones;
+
+  package Hydronics "Water circuits after Buildings.Fluid: set flows, smooth mixing, one production per circuit"
+    partial model PartialFlow
+      "Water ports as arrays, one element per connection: the inlets mix, every outlet leaves at TOut"
+      parameter Integer nPorts_a = 1 "Number of connections of the inlet";
+      parameter Integer nPorts_b = 1 "Number of connections of the outlet";
+      parameter Real m_flow_small(unit="kg/s") = 1e-6 "Flow below which the inlet takes the mean inlet temperature";
+      Interfaces.WaterPort port_a[nPorts_a] "Inlet";
+      Interfaces.WaterPort port_b[nPorts_b] "Outlet";
+      Real m_flow(unit="kg/s") "Flow through the component";
+      Real TIn(unit="K") "Mixed inlet temperature";
+      Real TOut(unit="K") "Outlet temperature";
+    equation
+      m_flow = sum(port_a[i].m_flow for i in 1:nPorts_a);
+      TIn = (sum(port_a[i].m_flow*port_a[i].T for i in 1:nPorts_a) + m_flow_small*sum(port_a[i].T for i in 1:nPorts_a)
+        /nPorts_a)/(m_flow + m_flow_small);
+      for i in 1:nPorts_b loop
+        port_b[i].T = TOut;
+      end for;
+    end PartialFlow;
+
+    partial model PartialConserving "Mass is conserved: what enters leaves"
+      extends PartialFlow;
+    equation
+      m_flow + sum(port_b[i].m_flow for i in 1:nPorts_b) = 0;
+    end PartialConserving;
+
+    model Pipe "Pass-through (junctions, sensors, pumps without a power model)"
+      extends PartialConserving;
+    equation
+      TOut = TIn;
+    end Pipe;
+
+    model TemperatureSensor "Pass-through: T is the water temperature"
+      extends PartialConserving;
+      Real T(unit="K") "Measured temperature";
+    equation
+      TOut = TIn;
+      T = TIn;
+    end TemperatureSensor;
+
+    model Pump "Pass-through pump; electrical power at its nominal head"
+      extends PartialConserving;
+      parameter Real dp_nominal(unit="Pa") = 3e4 "Pressure head";
+      parameter Real m_flow_nominal(unit="kg/s") = 1 "Nominal flow";
+      parameter Real eta = 0.5 "Overall efficiency";
+      Real P(unit="W") "Electrical power";
+    equation
+      TOut = TIn;
+      P = dp_nominal*m_flow/rhoWat/eta;
+    end Pump;
+
+    model Valve "Valve setting the flow of its branch: y*m_flow_nominal (its opening follows locally)"
+      extends PartialConserving;
+      parameter Real m_flow_nominal(unit="kg/s") "Flow at full opening";
+      Interfaces.RealInput y(unit="1") "Flow relative to the nominal flow";
+    equation
+      m_flow = y*m_flow_nominal;
+      TOut = TIn;
+    end Valve;
+
+    model ThreeWayValve "Mixing valve: the share y of the outlet flow comes from port_1 (supply), 1 - y from port_3"
+      parameter Integer nPorts_1 = 1 "Number of connections of the supply inlet";
+      parameter Integer nPorts_2 = 1 "Number of connections of the outlet";
+      parameter Integer nPorts_3 = 1 "Number of connections of the bypass inlet";
+      parameter Real m_flow_nominal(unit="kg/s") = 1 "Nominal flow";
+      parameter Real m_flow_small(unit="kg/s") = 1e-6;
+      Interfaces.WaterPort port_1[nPorts_1] "Supply inlet";
+      Interfaces.WaterPort port_2[nPorts_2] "Mixed outlet";
+      Interfaces.WaterPort port_3[nPorts_3] "Bypass inlet";
+      Interfaces.RealInput y(unit="1") "Share of the supply, 0 to 1";
+      Real m_flow(unit="kg/s") "Outlet flow";
+      Real T1(unit="K") "Supply temperature";
+      Real T3(unit="K") "Bypass temperature";
+    equation
+      m_flow = -sum(port_2[i].m_flow for i in 1:nPorts_2);
+      sum(port_1[i].m_flow for i in 1:nPorts_1) + sum(port_3[i].m_flow for i in 1:nPorts_3) = m_flow;
+      sum(port_1[i].m_flow for i in 1:nPorts_1) = y*m_flow;
+      T1 = (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
+        /nPorts_1)/(sum(port_1[i].m_flow for i in 1:nPorts_1) + m_flow_small);
+      T3 = (sum(port_3[i].m_flow*port_3[i].T for i in 1:nPorts_3) + m_flow_small*sum(port_3[i].T for i in 1:nPorts_3)
+        /nPorts_3)/(sum(port_3[i].m_flow for i in 1:nPorts_3) + m_flow_small);
+      for i in 1:nPorts_2 loop
+        port_2[i].T = y*T1 + (1 - y)*T3;
+      end for;
+    end ThreeWayValve;
+
+    model Junction "Split valve: its inlets (port_1) mix, its outlets (port_2, port_3) leave at the mixed temperature"
+      parameter Integer nPorts_1 = 1 "Number of connections of the inlet";
+      parameter Integer nPorts_2 = 1 "Number of connections of the outlet";
+      parameter Integer nPorts_3 = 1 "Number of connections of the second outlet";
+      parameter Real m_flow_small(unit="kg/s") = 1e-6;
+      Interfaces.WaterPort port_1[nPorts_1] "Inlets";
+      Interfaces.WaterPort port_2[nPorts_2] "Outlet";
+      Interfaces.WaterPort port_3[nPorts_3] "Second outlet (bypass)";
+      Real T(unit="K") "Mixed temperature";
+    equation
+      sum(port_1[i].m_flow for i in 1:nPorts_1) + sum(port_2[i].m_flow for i in 1:nPorts_2)
+        + sum(port_3[i].m_flow for i in 1:nPorts_3) = 0;
+      T = (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
+        /nPorts_1)/(sum(port_1[i].m_flow for i in 1:nPorts_1) + m_flow_small);
+      for i in 1:nPorts_2 loop
+        port_2[i].T = T;
+      end for;
+      for i in 1:nPorts_3 loop
+        port_3[i].T = T;
+      end for;
+    end Junction;
+
+    model Junction2 "Split valve without bypass: its inlets (port_1) mix, its outlets (port_2) leave at the mixed temperature"
+      parameter Integer nPorts_1 = 1 "Number of connections of the inlet";
+      parameter Integer nPorts_2 = 1 "Number of connections of the outlet";
+      parameter Real m_flow_small(unit="kg/s") = 1e-6;
+      Interfaces.WaterPort port_1[nPorts_1] "Inlets";
+      Interfaces.WaterPort port_2[nPorts_2] "Outlets";
+      Real T(unit="K") "Mixed temperature";
+    equation
+      sum(port_1[i].m_flow for i in 1:nPorts_1) + sum(port_2[i].m_flow for i in 1:nPorts_2) = 0;
+      T = (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
+        /nPorts_1)/(sum(port_1[i].m_flow for i in 1:nPorts_1) + m_flow_small);
+      for i in 1:nPorts_2 loop
+        port_2[i].T = T;
+      end for;
+    end Junction2;
+
+    function radiatorConductance
+      "UAEle of Buildings RadiatorEN442_2: the conductance of each element giving the nominal power (bisections)"
+      input Real Q_flow_nominal(unit="W");
+      input Real T_a_nominal(unit="K");
+      input Real T_b_nominal(unit="K");
+      input Real TAir_nominal(unit="K");
+      input Real TRad_nominal(unit="K");
+      input Real fraRad;
+      input Real n;
+      input Integer nEle;
+      output Real UAEle(unit="W/K");
+    protected
+      Real m_flow;
+      Real UALow;
+      Real UAHigh;
+      Real TUp;
+      Real TLow;
+      Real THigh;
+      Real TWat;
+      Real Q;
+      Real QEle;
+      Real residual;
+    algorithm
+      m_flow := Q_flow_nominal/cpWat/(T_a_nominal - T_b_nominal);
+      UAEle := Q_flow_nominal/((T_a_nominal + T_b_nominal)/2 - ((1 - fraRad)*TAir_nominal + fraRad*TRad_nominal))^n/nEle;
+      UALow := UAEle/10;
+      UAHigh := UAEle*10;
+      for iteration in 1:80 loop
+        UAEle := (UALow + UAHigh)/2;
+        // power of the radiator: the water of each element is at the temperature it leaves with
+        TUp := T_a_nominal;
+        Q := 0;
+        for i in 1:nEle loop
+          TLow := min(TAir_nominal, TRad_nominal);
+          THigh := TUp;
+          for k in 1:80 loop
+            TWat := (TLow + THigh)/2;
+            QEle := UAEle*(fraRad*max(TWat - TRad_nominal, 0)^n + (1 - fraRad)*max(TWat - TAir_nominal, 0)^n);
+            residual := TWat - TUp + QEle/m_flow/cpWat;
+            if residual > 0 then
+              THigh := TWat;
+            else
+              TLow := TWat;
+            end if;
+          end for;
+          Q := Q + UAEle*(fraRad*max(TWat - TRad_nominal, 0)^n + (1 - fraRad)*max(TWat - TAir_nominal, 0)^n);
+          TUp := TWat;
+        end for;
+        if Q > Q_flow_nominal then
+          UAHigh := UAEle;
+        else
+          UALow := UAEle;
+        end if;
+      end for;
+    end radiatorConductance;
+
+    model Radiator "EN 442 radiator (Buildings RadiatorEN442_2): nEle water and metal elements in series"
+      extends PartialConserving;
+      parameter Real Q_flow_nominal(unit="W") "Nominal heating power"
+        annotation (Evaluate=true);
+      parameter Real T_a_nominal(unit="K") "Water inlet temperature at nominal conditions"
+        annotation (Evaluate=true);
+      parameter Real T_b_nominal(unit="K") "Water outlet temperature at nominal conditions"
+        annotation (Evaluate=true);
+      parameter Real TAir_nominal(unit="K") = 293.15 "Air temperature at nominal conditions"
+        annotation (Evaluate=true);
+      parameter Real TRad_nominal(unit="K") = TAir_nominal "Radiative temperature at nominal conditions"
+        annotation (Evaluate=true);
+      parameter Real n = 1.24 "Exponent of the EN 442 power law"
+        annotation (Evaluate=true);
+      parameter Real fraRad = 0.35 "Radiant share of the heat output"
+        annotation (Evaluate=true);
+      parameter Integer nEle = 5 "Number of elements"
+        annotation (Evaluate=true);
+      parameter Real VWat(unit="m3") = 5.8e-6*abs(Q_flow_nominal) "Water volume";
+      parameter Real mDry(unit="kg") = 0.0263*abs(Q_flow_nominal) "Dry mass lumped to the water";
+      parameter Real T_start(unit="K") = 293.15 "Initial water temperature";
+      parameter Real dT0(unit="K") = 0.05 "Regularisation of the power law around a zero temperature difference";
+      parameter Real UAEle(unit="W/K") = radiatorConductance(Q_flow_nominal, T_a_nominal, T_b_nominal, TAir_nominal,
+        TRad_nominal, fraRad, n, nEle) "Conductance of each element";
+      parameter Real C(unit="J/K") = rhoWat*VWat*cpWat + 500*mDry "Heat capacity of the water and of the dry mass";
+      Real T[nEle](each unit="K", each start=T_start, each fixed=true) "Water temperature of each element";
+      Interfaces.HeatPort heatPortCon "Convective heat to the room air";
+      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces";
+      Real Q_flow(unit="W") "Heat output";
+    protected
+      Real QCon[nEle](each unit="W") "Convective heat output of each element";
+      Real QRad[nEle](each unit="W") "Radiative heat output of each element";
+      Real TUp[nEle](each unit="K") "Temperature of the water entering each element";
+    equation
+      for i in 1:nEle loop
+        TUp[i] = if i == 1 then TIn else T[max(i - 1, 1)];
+        QCon[i] = (1 - fraRad)*UAEle*(T[i] - heatPortCon.T)*((T[i] - heatPortCon.T)^2 + dT0^2)^((n - 1)/2);
+        QRad[i] = fraRad*UAEle*(T[i] - heatPortRad.T)*((T[i] - heatPortRad.T)^2 + dT0^2)^((n - 1)/2);
+        C/nEle*der(T[i]) = m_flow*cpWat*(TUp[i] - T[i]) - QCon[i] - QRad[i];
+      end for;
+      TOut = T[nEle];
+      Q_flow = sum(QCon) + sum(QRad);
+      heatPortCon.Q_flow = -sum(QCon);
+      heatPortRad.Q_flow = -sum(QRad);
+    end Radiator;
+
+    model Boiler
+      "Boiler (Buildings BoilerPolynomial): water and metal heated by the part load ratio y; the reference of its circuit"
+      extends PartialFlow;
+      parameter Real Q_flow_nominal(unit="W") "Nominal heating power";
+      parameter Integer effCur = Types.EfficiencyCurves.Constant "Efficiency curve";
+      parameter Real a[:] = {0.9} "Coefficients of the efficiency curve (Buildings)";
+      parameter Real T_nominal(unit="K") = 353.15 "Temperature used to compute the nominal efficiency";
+      parameter Real VWat(unit="m3") = 1.5e-6*Q_flow_nominal "Water volume";
+      parameter Real mDry(unit="kg") = 1.5e-3*Q_flow_nominal "Dry mass";
+      parameter Real UA(unit="W/K") = 2*1e-4*Q_flow_nominal
+        "Heat loss conductance to the boiler room (Buildings 13 BoilerPolynomial counts its UA loss twice)";
+      parameter Real TAmb(unit="K") = 288.15 "Temperature of the boiler room";
+      parameter Real T_start(unit="K") = 293.15 "Initial water temperature";
+      parameter Real C(unit="J/K") = rhoWat*VWat*cpWat + 500*mDry "Heat capacity of the water and of the dry mass";
+      Interfaces.RealInput y(unit="1") "Part load ratio, 0 to 1";
+      Real T(unit="K", start=T_start, fixed=true) "Water temperature";
+      Real EFue(unit="kWh", start=0, fixed=true) "Fuel meter";
+      Real QFue(unit="W") "Fuel power";
+      Real QWat(unit="W") "Heat to the water";
+      Real eta "Efficiency";
+    protected
+      parameter Real aPad[6] = cat(1, a, zeros(6 - size(a, 1))) "Coefficients padded with zeros";
+      parameter Real eta_nominal = if effCur == Types.EfficiencyCurves.QuadraticLinear then aPad[1] + aPad[2] + aPad[3]
+        + (aPad[4] + aPad[5] + aPad[6])*T_nominal else sum(aPad) "Efficiency at nominal conditions";
+    equation
+      // the reference of its circuit: no mass balance (the circuit closes it), the circuit flows set by its valves
+      QFue = y*Q_flow_nominal/eta_nominal;
+      eta = if effCur == Types.EfficiencyCurves.QuadraticLinear then aPad[1] + aPad[2]*y + aPad[3]*y^2
+        + (aPad[4] + aPad[5]*y + aPad[6]*y^2)*T else aPad[1] + aPad[2]*y + aPad[3]*y^2 + aPad[4]*y^3 + aPad[5]*y^4
+        + aPad[6]*y^5;
+      QWat = eta*QFue + UA*(TAmb - T);
+      C*der(T) = m_flow*cpWat*(TIn - T) + QWat;
+      der(EFue) = QFue/3.6e6;
+      TOut = T;
+    end Boiler;
+
+    package HeatPumps "Performance data of heat pumps (Buildings.Fluid.HeatPumps.ModularReversible.Data.TableData2D)"
+      package Vitocal251A08 "Viessmann Vitocal 251-A08, EN 14511"
+        constant Real TSou[9](each unit="K") = {253.15, 258.15, 266.15, 275.15, 280.15, 283.15, 293.15, 303.15, 308.15}
+          "Source temperatures (columns)";
+        constant Real TCon[5](each unit="K") = {308.15, 318.15, 328.15, 338.15, 343.15} "Condenser outlet (rows)";
+        constant Real QHea[5, 9](each unit="W") = {{4490, 5170, 6470, 6790, 8000, 10210, 12330, 12310, 13090},
+          {4230, 4900, 6260, 6780, 8370, 9970, 11520, 13040, 12640}, {3780, 4710, 6030, 6830, 8380, 9940, 11500, 13070,
+          13110}, {0, 3170, 4610, 6320, 8140, 9550, 11290, 12100, 12180}, {0, 0, 3830, 5560, 7600, 8700, 11290, 12500,
+          12590}} "Heating capacity";
+        constant Real PEle[5, 9](each unit="W") = {{2128, 2238, 2396, 1835, 1633, 2006, 1720, 1465, 1558},
+          {2299, 2402, 2641, 2173, 2244, 2462, 2110, 1734, 1584}, {2305, 2631, 2899, 2493, 2669, 2915, 2556, 2164, 2081},
+          {0, 2032, 2478, 2760, 3095, 3375, 3085, 2521, 2511}, {0, 0, 2201, 2699, 3193, 3398, 3330, 2822, 2817}}
+          "Electrical power";
+        constant Real mCon_flow_nominal(unit="kg/s") = 5600/5/4184 "Nominal condenser flow of the record";
+
+        function interpolate "Linear interpolation in the table, as CombiTable2Ds (rows: condenser, columns: source)"
+          input Real TConOut(unit="K");
+          input Real TSource(unit="K");
+          input Boolean heating "true: heating capacity, false: electrical power";
+          output Real y;
+        protected
+          Real row[5] "Values of each row at the source temperature";
+          Real w;
+        algorithm
+          for r in 1:5 loop
+            row[r] := if heating then QHea[r, 1] else PEle[r, 1];
+            for j in 1:8 loop
+              if TSource > TSou[j] then
+                w := min((TSource - TSou[j])/(TSou[j + 1] - TSou[j]), 1);
+                row[r] := if heating then QHea[r, j] + w*(QHea[r, j + 1] - QHea[r, j]) else PEle[r, j]
+                  + w*(PEle[r, j + 1] - PEle[r, j]);
+              end if;
+            end for;
+          end for;
+          y := row[1];
+          for r in 1:4 loop
+            if TConOut > TCon[r] then
+              w := min((TConOut - TCon[r])/(TCon[r + 1] - TCon[r]), 1);
+              y := row[r] + w*(row[r + 1] - row[r]);
+            end if;
+          end for;
+        end interpolate;
+
+        function smoothTable
+          "Quadratic in the condenser temperature through the rows at 35, 45 and 55 degC, linear between the source
+           columns with the kinks smoothed over dTSou: a differentiable version of the table"
+          input Real TConOut(unit="K");
+          input Real TSource(unit="K");
+          input Boolean heating "true: heating capacity, false: electrical power";
+          input Real dTSou(unit="K") = 1 "Smoothing of the kinks of the interpolation in the source temperature";
+          output Real y;
+        protected
+          Real v[9] "Value at each source temperature";
+          Real L[3] "Lagrange basis in the condenser temperature";
+        algorithm
+          L[1] := (TConOut - TCon[2])*(TConOut - TCon[3])/((TCon[1] - TCon[2])*(TCon[1] - TCon[3]));
+          L[2] := (TConOut - TCon[1])*(TConOut - TCon[3])/((TCon[2] - TCon[1])*(TCon[2] - TCon[3]));
+          L[3] := (TConOut - TCon[1])*(TConOut - TCon[2])/((TCon[3] - TCon[1])*(TCon[3] - TCon[2]));
+          for j in 1:9 loop
+            v[j] := if heating then L[1]*QHea[1, j] + L[2]*QHea[2, j] + L[3]*QHea[3, j] else L[1]*PEle[1, j]
+              + L[2]*PEle[2, j] + L[3]*PEle[3, j];
+          end for;
+          y := v[1] + (v[2] - v[1])/(TSou[2] - TSou[1])*(TSource - TSou[1]);
+          for i in 2:8 loop
+            y := y + ((v[i + 1] - v[i])/(TSou[i + 1] - TSou[i]) - (v[i] - v[i - 1])/(TSou[i] - TSou[i - 1]))
+              *Utilities.positivePart(TSource - TSou[i], dTSou);
+          end for;
+        end smoothTable;
+      end Vitocal251A08;
+    end HeatPumps;
+
+    model HeatPump
+      "Air-to-water heat pump (Buildings ModularReversible AirToWaterTableData2D, Vitocal 251-A08 scaled to its
+       capacity) charging a mixed buffer; the reference of its circuit"
+      extends PartialFlow;
+      parameter Real Q_flow_nominal(unit="W") "Heating capacity at the design outdoor and supply temperatures"
+        annotation (Evaluate=true);
+      parameter Real TSet(unit="K") = 318.15 "Supply temperature at design conditions"
+        annotation (Evaluate=true);
+      parameter Real TOutDes(unit="K") = 265.15 "Design outdoor temperature"
+        annotation (Evaluate=true);
+      parameter Boolean useStorageTank = false "Buffer tank; a hydraulic separator otherwise";
+      parameter Real VTan(unit="m3") = 0.1 "Volume of the buffer tank";
+      parameter Real hTan(unit="m") = 0.8 "Height of the buffer tank";
+      parameter Real dIns(unit="m") = 0.1 "Insulation thickness of the buffer tank";
+      parameter Real kIns(unit="W/(m.K)") = 0.04 "Insulation conductivity";
+      parameter Real TAmb(unit="K") = 288.15 "Temperature around the buffer";
+      parameter Real tauCon(unit="s") = 30 "Time constant of the condenser";
+      parameter Real dTSou(unit="K") = 1 "Smoothing of the table interpolation in the source temperature";
+      parameter Real scaFac = Q_flow_nominal/HeatPumps.Vitocal251A08.interpolate(TSet, TOutDes, true)
+        "Scaling of the table data to the capacity";
+      parameter Real mCon_flow(unit="kg/s") = HeatPumps.Vitocal251A08.mCon_flow_nominal*scaFac "Condenser flow";
+      parameter Real dTCon(unit="K") = Q_flow_nominal/cpWat/mCon_flow "Condenser outlet above the buffer at full speed";
+      parameter Real VWat(unit="m3") = if useStorageTank then VTan else 1.5e-5*Q_flow_nominal "Water volume";
+      parameter Real UA(unit="W/K") = if useStorageTank then kIns/dIns*(2*pi*sqrt(VTan/(pi*hTan))*hTan
+        + 2*pi*VTan/(pi*hTan)) else 0 "Heat loss conductance of the buffer";
+      parameter Real C(unit="J/K") = (rhoWat*VWat + mCon_flow*tauCon)*cpWat "Heat capacity of the buffer and condenser";
+      parameter Real T_start(unit="K") = TSet "Initial buffer temperature";
+      Interfaces.RealInput y(unit="1") "Compressor speed, 0 to 1";
+      Interfaces.WeatherBusIn weaBus "Weather: the source is the outdoor air";
+      Real T(unit="K", start=T_start, fixed=true) "Buffer temperature";
+      Real EEle(unit="kWh", start=0, fixed=true) "Electricity meter";
+      Real QCon(unit="W") "Heat to the water";
+      Real PEle(unit="W") "Electrical power of the compressor";
+    protected
+      Real TConOut(unit="K") "Condenser outlet temperature";
+    equation
+      TConOut = T + dTCon*y;
+      QCon = y*scaFac*HeatPumps.Vitocal251A08.smoothTable(TConOut, weaBus.TDryBul, true, dTSou);
+      PEle = y*scaFac*HeatPumps.Vitocal251A08.smoothTable(TConOut, weaBus.TDryBul, false, dTSou);
+      C*der(T) = m_flow*cpWat*(TIn - T) + QCon + UA*(TAmb - T);
+      der(EEle) = PEle/3.6e6;
+      TOut = T;
+    end HeatPump;
+  end Hydronics;
+
+  package Ventilation "Mechanical ventilation (after trano's Buildings system D)"
+    connector AirInlet "Air port, inlet: the temperature of the air crossing it and the speed of its fan"
+      flow Real m_flow(unit="kg/s") "Mass flow rate into the component";
+      Real T(unit="K") "Temperature of the air crossing the port";
+      Interfaces.RealInput y(unit="1") "Relative speed of the fan moving the air";
+    end AirInlet;
+
+    connector AirOutlet "Air port, outlet: the temperature of the air crossing it and the speed of its fan"
+      flow Real m_flow(unit="kg/s") "Mass flow rate into the component";
+      Real T(unit="K") "Temperature of the air crossing the port";
+      Interfaces.RealOutput y(unit="1") "Relative speed of the fan moving the air";
+    end AirOutlet;
+
+    model Duct "Duct carrying y*m_flow_nominal: y is the relative speed of the fan of its unit"
+      parameter Integer nPorts_a = 1 "Number of connections of the inlet";
+      parameter Integer nPorts_b = 1 "Number of connections of the outlet";
+      parameter Real m_flow_nominal(unit="kg/s") "Nominal flow";
+      AirInlet port_a[nPorts_a];
+      AirOutlet port_b[nPorts_b];
+      Real m_flow(unit="kg/s") "Flow through the duct";
+    equation
+      m_flow = sum(port_a[i].m_flow for i in 1:nPorts_a);
+      m_flow = port_a[1].y*m_flow_nominal;
+      m_flow + sum(port_b[i].m_flow for i in 1:nPorts_b) = 0;
+      for i in 1:nPorts_b loop
+        port_b[i].T = port_a[1].T;
+        port_b[i].y = port_a[1].y;
+      end for;
+    end Duct;
+
+    model HeatRecoveryUnit
+      "Balanced ventilation with a constant-effectiveness heat recovery and constant-pressure fans (trano's system D);
+       the reference of its air loop"
+      parameter Integer nPorts_a = 1 "Number of extract connections";
+      parameter Integer nPorts_b = 1 "Number of supply connections";
+      parameter Real m_flow_nominal(unit="kg/s") "Nominal supply flow";
+      parameter Real eps = 0.8 "Heat recovery effectiveness";
+      parameter Real dpSup_nominal(unit="Pa") = 200 "Pressure rise of the supply fan";
+      parameter Real dpRet_nominal(unit="Pa") = 200 "Pressure rise of the return fan";
+      parameter Real etaFan = 0.5 "Overall efficiency of the fans";
+      parameter Real m_flow_small(unit="kg/s") = 1e-6;
+      parameter Real PSup(unit="W") = dpSup_nominal*m_flow_nominal/rhoAir/etaFan "Supply fan power at nominal flow";
+      parameter Real PRet(unit="W") = dpRet_nominal*m_flow_nominal/rhoAir/etaFan "Return fan power at nominal flow";
+      parameter Real dTFan(unit="K") = (PSup + eps*PRet)/(m_flow_nominal*cpAir)
+        "Heating of the supply air by the fans (supply after the exchanger, return before it)";
+      AirInlet port_a[nPorts_a] "Extract air";
+      AirOutlet port_b[nPorts_b] "Supply air";
+      Interfaces.RealInput y(unit="1") "Relative speed of the fans";
+      Interfaces.WeatherBusIn weaBus "Weather: the outdoor air";
+      Real TExt(unit="K") "Mixed extract air temperature";
+      Real TSup(unit="K") "Supply air temperature";
+      Real PFan(unit="W") "Electrical power of the fans";
+      Real EFan(unit="kWh", start=0, fixed=true) "Electricity meter of the fans";
+    equation
+      TExt = (sum(port_a[i].m_flow*port_a[i].T for i in 1:nPorts_a) + m_flow_small*sum(port_a[i].T for i in 1:nPorts_a)
+        /nPorts_a)/(sum(port_a[i].m_flow for i in 1:nPorts_a) + m_flow_small);
+      TSup = weaBus.TDryBul + eps*(TExt - weaBus.TDryBul) + dTFan;
+      for i in 1:nPorts_b loop
+        port_b[i].T = TSup;
+        port_b[i].y = y;
+      end for;
+      PFan = y*(PSup + PRet);
+      der(EFan) = PFan/3.6e6;
+    end HeatRecoveryUnit;
+  end Ventilation;
+
+  package Electrical "Electricity production"
+    model Photovoltaic "PV array (Buildings PVSimpleOriented): P = A*fAct*eta*eta_DCAC*(HDir + HDif)"
+      parameter Real A(unit="m2") "Area of the modules";
+      parameter Real eta = 0.12 "Module conversion efficiency";
+      parameter Real fAct = 0.9 "Fraction of the area with active cells";
+      parameter Real eta_DCAC = 0.9 "Efficiency of the conversion from DC to AC";
+      parameter Real til(unit="rad") "Tilt";
+      parameter Real azi(unit="rad") "Azimuth: 0 south";
+      Interfaces.WeatherBusIn weaBus "Weather";
+      BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the modules";
+      Real P(unit="W") "Electrical power produced";
+      Real EPro(unit="kWh", start=0, fixed=true) "Production meter";
+    equation
+      connect(weaBus, sol.weaBus);
+      P = A*fAct*eta*eta_DCAC*(sol.HDir + sol.HDif);
+      der(EPro) = P/3.6e6;
+    end Photovoltaic;
+  end Electrical;
+
+  package HVAC "Ideal heating and cooling"
+    model IdealHeatingCooling "Heat flow rate Q_flow (an input), split between the room air and its radiant star"
+      parameter Real fraRad = 0 "Radiant share";
+      Interfaces.RealInput Q_flow(unit="W") "Heat flow rate, positive for heating";
+      Interfaces.HeatPort heatPortCon "Convective heat to the room air";
+      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces";
+    equation
+      heatPortCon.Q_flow = -(1 - fraRad)*Q_flow;
+      heatPortRad.Q_flow = -fraRad*Q_flow;
+    end IdealHeatingCooling;
+  end HVAC;
+end FastModel;
