@@ -365,3 +365,31 @@ def test_the_fans_take_the_nominal_pressure_rise_by_default(tmp_path: Path, libr
     unit = re.search(r"FastModel\.Ventilation\.HeatRecoveryUnitahu_001\((.*?)\)", model, re.DOTALL)
     assert unit is not None
     assert "dpSup_nominal=100," in unit.group(1) and "dpRet_nominal=100," in unit.group(1)
+
+
+def test_the_heat_pump_control_takes_the_heating_curve_of_the_yaml(tmp_path: Path) -> None:
+    """minimum_supply_temperature, heating_limit_temperature and buffer_temperature_band reach the control, as in
+    Buildings; they used to be dropped, leaving the curve at its 30 degC floor and 16 degC limit."""
+    import yaml
+
+    data = yaml.safe_load((MODELS / "house_infiltration_air_water_heat_pump.yaml").read_text())
+    [boiler] = [system["boiler"] for system in data["systems"] if "boiler" in system]
+    boiler["parameters"].update(
+        {"minimum_supply_temperature": 298.15, "heating_limit_temperature": 291.15, "buffer_temperature_band": 3}
+    )
+    path = tmp_path / "heat_pump_heating_curve.yaml"
+    path.write_text(yaml.safe_dump(data))
+    model = _building_mpc(_model(path, "FastModel")).replace(" ", "")
+    control = re.search(r"FastModel\.Controls\.HeatPumpControlboiler_001_control\((.*?)\)", model, re.DOTALL)
+    assert control is not None
+    assert "TSet=318.15," in control.group(1)
+    assert "TSupMin=298.15," in control.group(1)
+    assert "TOutHeaLim=291.15," in control.group(1)
+    assert "dTHys=3" in control.group(1)
+
+
+def test_the_heat_pump_control_keeps_its_defaults_when_the_yaml_sets_none() -> None:
+    model = _building_mpc(_model(MODELS / "house_infiltration_air_water_heat_pump.yaml", "FastModel")).replace(" ", "")
+    control = re.search(r"FastModel\.Controls\.HeatPumpControlboiler_001_control\((.*?)\)", model, re.DOTALL)
+    assert control is not None
+    assert not re.search(r"\b(TSupMin|TOutHeaLim|dTHys)=", control.group(1))

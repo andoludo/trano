@@ -413,9 +413,11 @@
     {%- set demand = element.control.name ~ '.y' if element.control and element.control.variant == 'simple' and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
     FastModel.Controls.HeatPumpControl {{ element.name }}_control(
         TSet={{ parameters.TSet }},
-        {%- if parameters.get('TOutDes') is not none %}
-        TOutDes={{ parameters.TOutDes }},
+        {%- for name in ['TOutDes', 'TSupMin', 'TOutHeaLim', 'dTHys'] %}
+        {%- if parameters.get(name) is not none %}
+        {{ name }}={{ parameters[name] }},
         {%- endif %}
+        {%- endfor %}
         demand={{ demand }},
         TOut={{ element.name }}.weaBus.TDryBul,
         TBuf={{ element.name }}.T,
