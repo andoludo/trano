@@ -849,10 +849,20 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real TIn(unit="K") "Mixed inlet temperature";
       Real TOut(unit="K") "Outlet temperature";
       Real pIn(unit="Pa", start=0, fixed=pressureDriven) "Pressure of the inlet node";
+      Real mTra(unit="kg/s") "Flow carrying the inlet water through (its positive part with pressure-driven flows)";
     equation
       m_flow = sum(port_a[i].m_flow for i in 1:nPorts_a);
-      TIn = (sum(port_a[i].m_flow*port_a[i].T for i in 1:nPorts_a) + m_flow_small*sum(port_a[i].T for i in 1:nPorts_a)
-        /nPorts_a)/(m_flow + m_flow_small);
+      if pressureDriven then
+        // flows may reverse while the pressures settle: the inlets mix with the positive part of their flows
+        mTra = Utilities.positivePart(m_flow, m_flow_small);
+        TIn = (sum(Utilities.positivePart(port_a[i].m_flow, m_flow_small)*port_a[i].T for i in 1:nPorts_a)
+          + m_flow_small*sum(port_a[i].T for i in 1:nPorts_a)/nPorts_a)
+          /(sum(Utilities.positivePart(port_a[i].m_flow, m_flow_small) for i in 1:nPorts_a) + m_flow_small);
+      else
+        mTra = m_flow;
+        TIn = (sum(port_a[i].m_flow*port_a[i].T for i in 1:nPorts_a) + m_flow_small*sum(port_a[i].T for i in 1:nPorts_a)
+          /nPorts_a)/(m_flow + m_flow_small);
+      end if;
       for i in 1:nPorts_b loop
         port_b[i].T = TOut;
       end for;
@@ -924,7 +934,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       dp = sum(port_b[i].p for i in 1:nPorts_b)/nPorts_b - pIn;
       if pressureDriven then
         for i in 1:nPorts_b loop
-          x[i] = (-b - sqrt(Utilities.smoothMax(b^2 - 4*c*(a - (port_b[i].p - pIn)/dp_nominal/(y^2 + 1e-4)), 0, 1e-3)))
+          // beyond the shut-off head the flow stays at the top of the curve: the root takes a positive argument
+          x[i] = (-b - sqrt(Utilities.positivePart(b^2 - 4*c*(a - (port_b[i].p - pIn)/dp_nominal/(y^2 + 1e-4)), 1e-3)))
             /(2*c);
           port_b[i].m_flow = -y*m_flow_nominal/nPorts_b*x[i];
         end for;
@@ -945,8 +956,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real R = 50 "Rangeability";
       parameter Real l = 1e-4 "Leakage";
       parameter Real delta0 = 0.01 "Linear range of the characteristic near closure";
-      final parameter Real GNom(unit="kg/(s.Pa)") = Utilities.valveConductance(1, m_flow_nominal, dpValve_nominal,
-        dpFixed_nominal) "Conductance of the open valve and its pipes";
+      final parameter Real GNom(unit="kg/(s.Pa)") = m_flow_nominal/(dpValve_nominal + dpFixed_nominal)
+        "Conductance of the open valve and its pipes";
       Interfaces.RealInput y(unit="1") "Flow relative to the nominal flow (set flows), or opening (pressure-driven)";
       Real G(unit="kg/(s.Pa)") "Conductance (pressure-driven flows)";
     equation
@@ -980,10 +991,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real R = 50 "Rangeability";
       parameter Real l[2] = {0.01, 0.01} "Leakages of the supply and bypass paths";
       parameter Real delta0 = 0.01 "Linear range of the characteristic near closure";
-      final parameter Real G1Nom(unit="kg/(s.Pa)") = Utilities.valveConductance(1, m_flow_nominal, dpValve_nominal,
-        dpFixed_nominal[1]);
-      final parameter Real G3Nom(unit="kg/(s.Pa)") = Utilities.valveConductance(1, m_flow_nominal,
-        dpValve_nominal/fraK^2, dpFixed_nominal[2]);
+      final parameter Real G1Nom(unit="kg/(s.Pa)") = m_flow_nominal/(dpValve_nominal + dpFixed_nominal[1])
+        "Conductance of the open supply path";
+      final parameter Real G3Nom(unit="kg/(s.Pa)") = m_flow_nominal/(dpValve_nominal/fraK^2 + dpFixed_nominal[2])
+        "Conductance of the open bypass path";
       Interfaces.WaterInlet port_1[nPorts_1] "Supply inlet";
       Interfaces.WaterOutlet port_2[nPorts_2] "Mixed outlet";
       Interfaces.WaterInlet port_3[nPorts_3] "Bypass inlet";
@@ -1008,11 +1019,13 @@ package FastModel "Building models for model predictive control: close to Buildi
       for i in 1:nPorts_3 loop
         port_3[i].p = p3;
       end for;
-      T1 = (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
-        /nPorts_1)/(sum(port_1[i].m_flow for i in 1:nPorts_1) + m_flow_small);
-      T3 = (sum(port_3[i].m_flow*port_3[i].T for i in 1:nPorts_3) + m_flow_small*sum(port_3[i].T for i in 1:nPorts_3)
-        /nPorts_3)/(sum(port_3[i].m_flow for i in 1:nPorts_3) + m_flow_small);
       if pressureDriven then
+        T1 = (sum(Utilities.positivePart(port_1[i].m_flow, m_flow_small)*port_1[i].T for i in 1:nPorts_1)
+          + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)/nPorts_1)
+          /(sum(Utilities.positivePart(port_1[i].m_flow, m_flow_small) for i in 1:nPorts_1) + m_flow_small);
+        T3 = (sum(Utilities.positivePart(port_3[i].m_flow, m_flow_small)*port_3[i].T for i in 1:nPorts_3)
+          + m_flow_small*sum(port_3[i].T for i in 1:nPorts_3)/nPorts_3)
+          /(sum(Utilities.positivePart(port_3[i].m_flow, m_flow_small) for i in 1:nPorts_3) + m_flow_small);
         G1 = Utilities.valveConductance(Utilities.equalPercentage(ys, R, l[1], delta0), m_flow_nominal,
           dpValve_nominal, dpFixed_nominal[1]);
         G3 = Utilities.valveConductance(l[2] + (1 - ys)*(1 - l[2]), m_flow_nominal, dpValve_nominal/fraK^2,
@@ -1031,6 +1044,10 @@ package FastModel "Building models for model predictive control: close to Buildi
         G3 = 0;
         p1 = 0;
         p3 = 0;
+        T1 = (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
+          /nPorts_1)/(sum(port_1[i].m_flow for i in 1:nPorts_1) + m_flow_small);
+        T3 = (sum(port_3[i].m_flow*port_3[i].T for i in 1:nPorts_3) + m_flow_small*sum(port_3[i].T for i in 1:nPorts_3)
+          /nPorts_3)/(sum(port_3[i].m_flow for i in 1:nPorts_3) + m_flow_small);
         m1 = sum(port_1[i].m_flow for i in 1:nPorts_1);
         m3 = sum(port_3[i].m_flow for i in 1:nPorts_3);
         m1 + m3 = m_flow;
@@ -1054,8 +1071,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real dp_nominal[3](each unit="Pa") = {5000, -1, -1} "Pressure drops of Buildings' Junction";
       parameter Real m_flow_nominal[3](each unit="kg/s") = 0.15*{1, -1, -1} "Nominal flows of Buildings' Junction";
       parameter Real dpLink(unit="Pa") = 1000 "Pressure drop at the nominal flow when dp_nominal[1] is not positive";
-      final parameter Real G(unit="kg/(s.Pa)") = abs(m_flow_nominal[1])/(if dp_nominal[1] > 0 then dp_nominal[1]
-        else dpLink) "Conductance of each outlet";
+      final parameter Real G(unit="kg/(s.Pa)") = abs(m_flow_nominal[1])/max(dp_nominal[1], dpLink)
+        "Conductance of each outlet (dp_nominal[1], at least dpLink)";
       Interfaces.WaterInlet port_1[nPorts_1] "Inlets";
       Interfaces.WaterOutlet port_2[nPorts_2] "Outlet";
       Interfaces.WaterOutlet port_3[nPorts_3] "Second outlet (bypass)";
@@ -1065,7 +1082,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       for i in 1:nPorts_1 loop
         port_1[i].p = pIn;
       end for;
-      T = (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
+      T = if pressureDriven then (sum(Utilities.positivePart(port_1[i].m_flow, m_flow_small)*port_1[i].T
+        for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)/nPorts_1)
+        /(sum(Utilities.positivePart(port_1[i].m_flow, m_flow_small) for i in 1:nPorts_1) + m_flow_small)
+        else (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
         /nPorts_1)/(sum(port_1[i].m_flow for i in 1:nPorts_1) + m_flow_small);
       for i in 1:nPorts_2 loop
         port_2[i].T = T;
@@ -1098,8 +1118,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real dp_nominal[3](each unit="Pa") = {5000, -1, -1} "Pressure drops of Buildings' Junction";
       parameter Real m_flow_nominal[3](each unit="kg/s") = 0.15*{1, -1, -1} "Nominal flows of Buildings' Junction";
       parameter Real dpLink(unit="Pa") = 1000 "Pressure drop at the nominal flow when dp_nominal[1] is not positive";
-      final parameter Real G(unit="kg/(s.Pa)") = abs(m_flow_nominal[1])/(if dp_nominal[1] > 0 then dp_nominal[1]
-        else dpLink) "Conductance of each outlet";
+      final parameter Real G(unit="kg/(s.Pa)") = abs(m_flow_nominal[1])/max(dp_nominal[1], dpLink)
+        "Conductance of each outlet (dp_nominal[1], at least dpLink)";
       Interfaces.WaterInlet port_1[nPorts_1] "Inlets";
       Interfaces.WaterOutlet port_2[nPorts_2] "Outlets";
       Real T(unit="K") "Mixed temperature";
@@ -1108,7 +1128,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       for i in 1:nPorts_1 loop
         port_1[i].p = pIn;
       end for;
-      T = (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
+      T = if pressureDriven then (sum(Utilities.positivePart(port_1[i].m_flow, m_flow_small)*port_1[i].T
+        for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)/nPorts_1)
+        /(sum(Utilities.positivePart(port_1[i].m_flow, m_flow_small) for i in 1:nPorts_1) + m_flow_small)
+        else (sum(port_1[i].m_flow*port_1[i].T for i in 1:nPorts_1) + m_flow_small*sum(port_1[i].T for i in 1:nPorts_1)
         /nPorts_1)/(sum(port_1[i].m_flow for i in 1:nPorts_1) + m_flow_small);
       for i in 1:nPorts_2 loop
         port_2[i].T = T;
@@ -1221,7 +1244,7 @@ package FastModel "Building models for model predictive control: close to Buildi
         TUp[i] = if i == 1 then TIn else T[max(i - 1, 1)];
         QCon[i] = (1 - fraRad)*UAEle*(T[i] - heatPortCon.T)*((T[i] - heatPortCon.T)^2 + dT0^2)^((n - 1)/2);
         QRad[i] = fraRad*UAEle*(T[i] - heatPortRad.T)*((T[i] - heatPortRad.T)^2 + dT0^2)^((n - 1)/2);
-        C/nEle*der(T[i]) = m_flow*cpWat*(TUp[i] - T[i]) - QCon[i] - QRad[i];
+        C/nEle*der(T[i]) = mTra*cpWat*(TUp[i] - T[i]) - QCon[i] - QRad[i];
       end for;
       TOut = T[nEle];
       if pressureDriven then
@@ -1269,7 +1292,7 @@ package FastModel "Building models for model predictive control: close to Buildi
         + (aPad[4] + aPad[5]*y + aPad[6]*y^2)*T else aPad[1] + aPad[2]*y + aPad[3]*y^2 + aPad[4]*y^3 + aPad[5]*y^4
         + aPad[6]*y^5;
       QWat = eta*QFue + UA*(TAmb - T);
-      C*der(T) = m_flow*cpWat*(TIn - T) + QWat;
+      C*der(T) = mTra*cpWat*(TIn - T) + QWat;
       der(EFue) = QFue/3.6e6;
       TOut = T;
       if pressureDriven then
@@ -1396,7 +1419,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       // QCon and PEle both scale with y: their ratio is defined at every speed, also when the compressor is off
       COP = HeatPumps.Vitocal251A08.smoothTable(TConOut, weaBus.TDryBul, true, dTSou)
         /HeatPumps.Vitocal251A08.smoothTable(TConOut, weaBus.TDryBul, false, dTSou);
-      C*der(T) = m_flow*cpWat*(TIn - T) + QCon + UA*(TAmb - T);
+      C*der(T) = mTra*cpWat*(TIn - T) + QCon + UA*(TAmb - T);
       der(EEle) = PEle/3.6e6;
       TOut = T;
       if pressureDriven then
@@ -1473,6 +1496,176 @@ package FastModel "Building models for model predictive control: close to Buildi
     end HeatRecoveryUnit;
   end Ventilation;
 
+  package Controls
+    "Controllers of the closed-loop model: the controls of trano's Buildings models without events (smooth limits
+     and set point changes, hysteresis as fast bistable states, anti-windup PI)"
+    function smoothMaxN "Smooth maximum of a vector"
+      input Real u[:];
+      input Real delta = 1e-3;
+      output Real y;
+    algorithm
+      y := u[1];
+      for i in 2:size(u, 1) loop
+        y := Utilities.smoothMax(y, u[i], delta);
+      end for;
+    end smoothMaxN;
+
+    model Hysteresis
+      "y goes to 1 when u rises above uHigh and back to 0 when u falls below uLow (CDL Hysteresis), as a bistable
+       state switching within tau"
+      parameter Real uLow "Threshold of the switch to 0";
+      parameter Real uHigh "Threshold of the switch to 1";
+      parameter Real tau(unit="s") = 10 "Switching time";
+      parameter Real y_start = 0 "Initial output";
+      Interfaces.RealInput u;
+      Real y(start=y_start, fixed=true);
+    equation
+      tau*der(y) = Utilities.regStep(u - (uHigh + (uLow - uHigh)*y), 1, 0, (uHigh - uLow)/10) - y;
+    end Hysteresis;
+
+    model PI
+      "PI controller with limits and anti-windup (Modelica LimPID: back-calculation with Ni), its integral relaxed to
+       the reset value while disabled"
+      parameter Real k "Gain";
+      parameter Real Ti(unit="s") "Integral time";
+      parameter Real yMin = 0;
+      parameter Real yMax = 1;
+      parameter Real Ni = 0.9 "Anti-windup gain";
+      parameter Real yReset = yMin "Output after a reset";
+      parameter Real tauReset(unit="s") = 30 "Time constant of the reset while disabled";
+      Interfaces.RealInput e "Control error";
+      Interfaces.RealInput enable "1: integrate, 0: reset";
+      Real I(start=yReset/k, fixed=true) "Integral of the error";
+      Real yUnl "Unlimited output";
+      Interfaces.RealOutput y;
+    equation
+      yUnl = k*(e + I);
+      y = Utilities.smoothLimit(yUnl, yMin, yMax, 1e-3*(yMax - yMin));
+      der(I) = enable*(e/Ti + (y - yUnl)/(k*Ni*Ti)) + (1 - enable)*(yReset/k - e - I)/tauReset;
+    end PI;
+
+    partial model PartialEmissionControl
+      "Emission control of a zone (trano EmissionControl): set point of its day schedule, output y to the valve or
+       the ideal emitter"
+      parameter Real schedule[:](each unit="s") = 3600*{7, 19} "Day schedule: occupied between pairs of instants";
+      parameter Real THeaSet(unit="K") = 294.15 "Set point when occupied";
+      parameter Real THeaSetBack(unit="K") = 289.15 "Set point otherwise";
+      parameter Real k = 1 "Gain";
+      Interfaces.RealInput TZon(unit="K") "Zone air temperature";
+      Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter";
+      Real TSet(unit="K") "Set point";
+    equation
+      TSet = THeaSetBack + (THeaSet - THeaSetBack)*Utilities.occupancy(Utilities.timeOfDay(time), schedule);
+    end PartialEmissionControl;
+
+    model EmissionP "Variant PController: P controller (IDEAS LimPID) between 0 and 1"
+      extends PartialEmissionControl(k=5);
+    equation
+      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, 1e-3);
+    end EmissionP;
+
+    model EmissionPI "Variant default: PI heating loop of Buildings G36 ControlLoops (k = 0.1, Ti = 900 s)"
+      extends PartialEmissionControl;
+      parameter Real kHea = 0.1 "Gain of the heating loop";
+      parameter Real TiHea(unit="s") = 900 "Integral time of the heating loop";
+      PI conHea(k=kHea, Ti=TiHea, e=TSet - TZon, enable=1);
+    equation
+      y = conHea.y;
+    end EmissionPI;
+
+    model EmissionOnOff "Variant onoff: on below the set point minus half the band, off above it plus half the band"
+      extends PartialEmissionControl;
+      parameter Real bandwidth(unit="K") = 0.1 "Band of the on/off controller (Modelica OnOffController)";
+      Hysteresis onOff(uLow=-bandwidth/2, uHigh=bandwidth/2, u=TSet - TZon);
+    equation
+      y = onOff.y;
+    end EmissionOnOff;
+
+    model CollectorControl
+      "Collector control of a pump (trano CollectorControl): on when a valve opens beyond 0.5, off when all are
+       below 0.01, the speed from a P controller holding the head at dp_nominal"
+      parameter Integer nVal = 1 "Number of valves";
+      parameter Real k = 1 "Gain";
+      Interfaces.RealInput yVal[nVal] "Openings of the valves of the circuit";
+      Interfaces.RealInput dpRel "Head of the pump relative to its nominal head";
+      Real yMax "Largest opening";
+      Hysteresis hysPum(uLow=0.01, uHigh=0.5, u=yMax);
+      Interfaces.RealOutput y(unit="1") "Speed of the pump";
+    equation
+      yMax = smoothMaxN(yVal);
+      y = Utilities.smoothLimit(k*(hysPum.y - dpRel), 0, 1, 1e-3);
+    end CollectorControl;
+
+    model ThreeWayValveControl
+      "Three-way valve control (trano ThreeWayValveControl): P controller on the supply temperature measured
+       downstream (filtered by tauSen)"
+      parameter Real TColSet(unit="K") = 363.15 "Supply temperature set point";
+      parameter Real k = 1 "Gain";
+      parameter Real tauSen(unit="s") = 10 "Time constant of the temperature measurement";
+      Interfaces.RealInput u(unit="K") "Measured supply temperature";
+      Interfaces.RealOutput y(unit="1") "Opening of the supply path";
+      Real TMea(unit="K", start=TColSet - 30, fixed=true) "Filtered measurement";
+    equation
+      tauSen*der(TMea) = u - TMea;
+      y = Utilities.smoothLimit(k*(TColSet - TMea), 0, 1, 1e-3);
+    end ThreeWayValveControl;
+
+    model BoilerDemand
+      "Demand of a production (trano BoilerControl, variant simple): on when a valve of its circuits opens beyond 0.5,
+       off when all are below 0.01"
+      parameter Integer n = 1 "Number of circuits";
+      Interfaces.RealInput yMax[n] "Largest opening of the valves of each circuit";
+      Hysteresis hys(uLow=0.01, uHigh=0.5, u=smoothMaxN(yMax));
+      Interfaces.RealOutput y(unit="1") "Demand";
+    equation
+      y = hys.y;
+    end BoilerDemand;
+
+    model BoilerTemperatureControl
+      "Firing of a boiler without storage (trano Buildings boiler): P controller (k) on the boiler temperature, while
+       there is demand"
+      parameter Real TempSet(unit="K") = 353.15 "Boiler temperature set point";
+      parameter Real k = 1 "Gain";
+      Interfaces.RealInput T(unit="K") "Boiler water temperature";
+      Interfaces.RealInput demand "Demand, 0 or 1";
+      Interfaces.RealOutput y(unit="1") "Part load ratio";
+    equation
+      y = demand*Utilities.smoothLimit(k*(TempSet - T), 0, 1, 1e-3);
+    end BoilerTemperatureControl;
+
+    model HeatPumpControl
+      "Control of trano's air-to-water heat pump (Buildings model): heating curve, heating season, buffer charged
+       between TSupSet - dTHys/2 and TSupSet + dTHys/2, compressor PI on the condenser outlet towards TSupSet + dTHys
+       (minimum speed yComMin); the minimum on and off times of the safety control are not modelled"
+      parameter Real TSet(unit="K") = 323.15 "Supply temperature at the design outdoor temperature";
+      parameter Real TSupMin(unit="K") = 303.15 "Supply temperature at the heating limit";
+      parameter Real TOutDes(unit="K") = 265.15 "Design outdoor temperature";
+      parameter Real TOutHeaLim(unit="K") = 289.15 "Heating limit";
+      parameter Real dTHys(unit="K") = 5 "Band of the buffer charging";
+      parameter Real kCom = 0.1 "Gain of the compressor controller";
+      parameter Real TiCom(unit="s") = 300 "Integral time of the compressor controller";
+      parameter Real yComMin = 0.3 "Minimum compressor speed";
+      parameter Real tauSen(unit="s") = 30 "Time constant of the condenser outlet temperature";
+      Interfaces.RealInput demand "Demand of the circuits, 0 or 1";
+      Interfaces.RealInput TOut(unit="K") "Outdoor air temperature";
+      Interfaces.RealInput TBuf(unit="K") "Buffer temperature";
+      Interfaces.RealInput TConOut(unit="K") "Condenser outlet temperature";
+      Interfaces.RealOutput y(unit="1") "Compressor speed";
+      Real TSupSet(unit="K") "Supply temperature set point (heating curve)";
+      Real TCon(unit="K", start=TSet, fixed=true) "Measured condenser outlet temperature";
+      Real heaOn "Heating on";
+      Hysteresis warOut(uLow=TOutHeaLim - 1, uHigh=TOutHeaLim + 1, u=TOut) "Outside the heating season";
+      Hysteresis bufCha(uLow=-dTHys/2, uHigh=dTHys/2, u=TSupSet - TBuf, y_start=1) "Charging the buffer";
+      PI conCom(k=kCom, Ti=TiCom, yMin=yComMin, yMax=1, yReset=yComMin, e=TSupSet + dTHys - TCon, enable=heaOn);
+    equation
+      TSupSet = Utilities.smoothMin(TSet, Utilities.smoothMax(TSupMin, TSet + (TSupMin - TSet)*(TOut - TOutDes)
+        /(TOutHeaLim - TOutDes), 0.1), 0.1);
+      tauSen*der(TCon) = TConOut - TCon;
+      heaOn = demand*(1 - warOut.y)*bufCha.y;
+      y = heaOn*conCom.y;
+    end HeatPumpControl;
+  end Controls;
+
   package Electrical "Electricity production"
     model Photovoltaic "PV array (Buildings PVSimpleOriented): P = A*fAct*eta*eta_DCAC*(HDir + HDif)"
       parameter Real A(unit="m2") "Area of the modules";
@@ -1502,5 +1695,47 @@ package FastModel "Building models for model predictive control: close to Buildi
       heatPortCon.Q_flow = -(1 - fraRad)*Q_flow;
       heatPortRad.Q_flow = -fraRad*Q_flow;
     end IdealHeatingCooling;
+
+    model IdealHeater
+      "Ideal emitter (trano radiator variants ideal and idealbus): Q_flow_nominal times the control y, split between
+       the room air and its radiant star"
+      parameter Real Q_flow_nominal(unit="W") "Nominal power";
+      parameter Real fraRad = 0 "Radiant share";
+      Interfaces.RealInput y(unit="1") "Share of the nominal power";
+      Interfaces.HeatPort heatPortCon "Convective heat to the room air";
+      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces";
+      Real Q_flow(unit="W") "Heat flow rate";
+    equation
+      Q_flow = Q_flow_nominal*Utilities.smoothLimit(y, 0, 1, 1e-3);
+      heatPortCon.Q_flow = -(1 - fraRad)*Q_flow;
+      heatPortRad.Q_flow = -fraRad*Q_flow;
+    end IdealHeater;
+
+    model IdealHeatingCoolingPI
+      "Ideal heating and cooling of a zone towards day schedules of set points (trano IdealHeatingCooling): a PI
+       controller per mode, limited by the capacities"
+      parameter Real TSetHea[:, 2] = [0, 293.15] "Heating set point: time of day [s] and set point [K]";
+      parameter Real TSetCoo[:, 2] = [0, 300.15] "Cooling set point: time of day [s] and set point [K]";
+      parameter Real QHea_flow_max(unit="W") = 1e6 "Heating capacity";
+      parameter Real QCoo_flow_max(unit="W") = 1e6 "Cooling capacity";
+      parameter Real k = 0.1 "Gain [1/K]";
+      parameter Real Ti(unit="s") = 300 "Integral time";
+      parameter Real frad = 0 "Radiant share";
+      Interfaces.HeatPort heatPortCon "Convective heat to the room air";
+      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces";
+      Real QHea_flow(unit="W") "Heating";
+      Real QCoo_flow(unit="W") "Cooling, positive when cooling";
+      Real EHea(unit="kWh", start=0, fixed=true) "Heating meter";
+      Real ECoo(unit="kWh", start=0, fixed=true) "Cooling meter";
+      Controls.PI conHea(k=k, Ti=Ti, e=Utilities.dayTable(Utilities.timeOfDay(time), TSetHea) - heatPortCon.T, enable=1);
+      Controls.PI conCoo(k=k, Ti=Ti, e=heatPortCon.T - Utilities.dayTable(Utilities.timeOfDay(time), TSetCoo), enable=1);
+    equation
+      QHea_flow = conHea.y*QHea_flow_max;
+      QCoo_flow = conCoo.y*QCoo_flow_max;
+      der(EHea) = QHea_flow/3.6e6;
+      der(ECoo) = QCoo_flow/3.6e6;
+      heatPortCon.Q_flow = -(1 - frad)*(QHea_flow - QCoo_flow);
+      heatPortRad.Q_flow = -frad*(QHea_flow - QCoo_flow);
+    end IdealHeatingCoolingPI;
   end HVAC;
 end FastModel;

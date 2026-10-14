@@ -156,6 +156,7 @@ class BaseElement(BaseElementPort):
             "element": self,
             "package_name": network.name,
             "library_name": network.library.base_library(),
+            "library": network.library.name,
             "parameters": self.processed_parameters(network.library),
             "columns": columns,
         }
@@ -208,6 +209,7 @@ class BaseElement(BaseElementPort):
                         element=self,
                         package_name=package_name,
                         library_name=library_name,
+                        library=network.library.name,
                         parameters=parameters,
                     )
                 }

@@ -432,11 +432,15 @@ def _circuits(reader: Reader, model_reader: Reader, network: Network, grid: np.n
 
 FAST_MODEL = "FastModel"
 FAST_MODEL_MPC = "FastModelMPC"  # FastModel with the controls as inputs: the replay drives them
+CLOSED_LOOP = "FastModelClosedLoop"  # FastModel with its own controllers: no replay, the same YAML closed loop
 
 
 def compare(case_id: str, model: str = FAST_MODEL, reference_library: str = REFERENCE) -> CaseComparison:
     """Replay what the systems of the ``reference_library`` model (Buildings or IDEAS) did through the model of the
-    same YAML file and compare: ``FastModel`` or an RC model type of the flat ``mpc`` library (R1C1, R3C2, ...)."""
+    same YAML file and compare: ``FastModel`` or an RC model type of the flat ``mpc`` library (R1C1, R3C2, ...).
+
+    ``FastModelClosedLoop`` replays nothing: the FastModel model of the same YAML runs with its own controllers, as
+    the reference does with its own."""
     case = CASES[case_id]
     started = time.monotonic()
     buildings_network, buildings_result = reference(case, reference_library)
@@ -450,17 +454,20 @@ def compare(case_id: str, model: str = FAST_MODEL, reference_library: str = REFE
         )
         for space in spaces
     }
-    fast_model = model == FAST_MODEL
-    variant = FAST_MODEL if fast_model else f"mpc-{model}"
+    closed_loop = model == CLOSED_LOOP
+    fast_model = model in (FAST_MODEL, CLOSED_LOOP)
+    variant = model if fast_model else f"mpc-{model}"
     directory = case_directory(case, variant if reference_library == REFERENCE else f"{variant}-{reference_library}")
     library = (
-        Library.from_configuration(FAST_MODEL_MPC)
+        Library.from_configuration(FAST_MODEL if closed_loop else FAST_MODEL_MPC)
         if fast_model
         else Library.from_configuration("mpc").model_copy(update={"rc_model_type": RCModelType(model)})
     )
     network = _network(case, library, directory)
     replay = np.arange(case.start_time, case.end_time + 1, FINE_REPLAY_INTERVAL if case.fine_replay else INTERVAL)
-    if fast_model:
+    if closed_loop:
+        columns = {}
+    elif fast_model:
         columns = _fast_model_replay(reader, buildings_network, replay.astype(float))
     else:
         columns = {
