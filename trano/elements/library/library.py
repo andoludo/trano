@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -53,6 +53,11 @@ class Library(BaseModel):
         default="base.jinja2", description="Template of the Modelica package generated for a network."
     )
     use_containers: bool = Field(default=True, description="Group the components in containers (sub-models).")
+    container_builder: Literal["trano", "fast_model"] = Field(
+        default="trano",
+        description="Containers of the Buildings-like libraries (trano), or of FastModel: sub-models made of "
+        "FastModel components only, so that rumoca still translates the model.",
+    )
 
     @property
     def is_rc(self) -> bool:

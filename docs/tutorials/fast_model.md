@@ -69,6 +69,19 @@ The generated package holds two models:
   controls replayed from it with `FastModelMPC` (each held at 1 without data), the set points of the
   `MonitoredSetpoint` emission controls with `FastModel`.
 
+Every component carries the icon of the Buildings model it follows (valves, pumps, radiators, boilers, heat pumps,
+walls, windows, zones, weather...), and its ports are placed on that icon, so that the model reads in a Modelica
+editor as a Buildings model does.
+
+As in the Buildings and IDEAS models, the components of `building_mpc` are grouped in containers, the sub-models
+of `Components.Containers`: `envelope`, `emission`, `distribution`, `production`, `ventilation` and `solar`. The
+inputs of `building_mpc` and the weather stay at its top. A connection between two containers goes through ports of
+the type of the component ports (`WaterInlet`, `HeatPort`, `WeatherBusIn`...), and a variable a component reads
+from another container (the zone temperature of an emission control) goes through an output and an input. The
+states then carry the container in their names (`envelope1.space_001.TAir`). The containers do not change the
+equations; leave them out with `network.model(include_container=False)` or
+`trano create-model house.yaml FastModel --no-containers` for a single flat `building_mpc`.
+
 ### Rules for an explicit ODE
 
 Every component keeps a few rules, so that rumoca translates the assembled model into `xdot = f(t, x, u, p)`:

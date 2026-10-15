@@ -71,6 +71,13 @@ def create_model(
         RCModelType | None,
         typer.Option(help="RC zone model of the 'mpc' library (default: R3C2)."),
     ] = None,
+    containers: Annotated[
+        bool,
+        typer.Option(
+            help="Group the components in containers (envelope, emission, distribution, production, ...); "
+            "--no-containers writes all of them in a single flat model."
+        ),
+    ] = True,
 ) -> None:
     with Progress(
         SpinnerColumn(),
@@ -83,7 +90,7 @@ def create_model(
             total=None,
         )
         network = _create_network(model, library, rc_model_type)
-        modelica_model = network.model()
+        modelica_model = network.model(include_container=containers)
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)
         modelica_model_path.write_text(modelica_model)

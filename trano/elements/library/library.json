@@ -88,7 +88,8 @@
         "name": "FastModel",
         "parameters_from": "buildings",
         "package_template": "fast_model.jinja2",
-        "use_containers": false,
+        "use_containers": true,
+        "container_builder": "fast_model",
         "templates": {
             "is_package": true,
             "construction": "record {{ construction.name }} = {{ package_name }}.FastModel.Data.Construction(\n    nLay={{ construction.layers | length }},\n    x={ {{- construction.layers | map(attribute='thickness') | join(', ') -}} },\n    k={ {%- for layer in construction.layers %}{{ layer.material.thermal_conductivity }}{{ ', ' if not loop.last }}{% endfor -%} },\n    c={ {%- for layer in construction.layers %}{{ layer.material.specific_heat_capacity }}{{ ', ' if not loop.last }}{% endfor -%} },\n    d={ {%- for layer in construction.layers %}{{ layer.material.density }}{{ ', ' if not loop.last }}{% endfor -%} },\n    absIR_a={{ construction.layers[0].material.longwave_emissivity }},\n    absIR_b={{ construction.layers[-1].material.longwave_emissivity }},\n    absSol_a={{ construction.layers[0].material.shortwave_emissivity }},\n    absSol_b={{ construction.layers[-1].material.shortwave_emissivity }}) \"{{ construction.name }}\";",

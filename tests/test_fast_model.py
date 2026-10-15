@@ -61,11 +61,11 @@ needs_connected_export = pytest.mark.skipif(
 )
 
 
-def _model(path: Path, library: str = "FastModelMPC") -> str:
+def _model(path: Path, library: str = "FastModelMPC", include_container: bool = True) -> str:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         network = convert_network(path.stem, path, library=Library.from_configuration(library))
-        return network.model()
+        return network.model(include_container=include_container)
 
 
 @cache
@@ -78,6 +78,102 @@ def test_fast_model_is_templates_and_modelica() -> None:
     templates = ROOT / "trano" / "elements" / "library" / "models" / "fast_model"
     assert {path.stem for path in templates.glob("*.yaml")} >= {"space", "envelope", "hydronics", "ventilation"}
     assert (ROOT / "trano" / "library" / "FastModel.mo").read_text().startswith("package FastModel")
+
+
+def _fast_model_classes() -> dict[str, tuple[bool, str, str]]:
+    """Models and connectors of FastModel.mo by name: whether they are partial, model or connector, and their body."""
+    text = (ROOT / "trano" / "library" / "FastModel.mo").read_text()
+    classes = {}
+    for match in re.finditer(r"^( *)(partial )?(model|connector) (\w+)\b(?! =)", text, re.MULTILINE):
+        indent, partial, kind, name = match.groups()
+        end = re.compile(rf"^{indent}end {name};", re.MULTILINE).search(text, match.end())
+        assert end, name
+        classes[name] = (bool(partial), kind, text[match.end() : end.start()])
+    return classes
+
+
+def _has_icon(name: str, classes: dict[str, tuple[bool, str, str]]) -> bool:
+    body = classes[name][2]
+    bases = [base.split(".")[-1] for base in re.findall(r"^\s*extends ([\w.]+)", body, re.MULTILINE)]
+    return "Icon(" in body or any(_has_icon(base, classes) for base in bases if base in classes)
+
+
+def test_every_component_has_the_icon_of_its_buildings_model() -> None:
+    classes = _fast_model_classes()
+    missing = [name for name, (partial, _, _) in classes.items() if not partial and not _has_icon(name, classes)]
+    assert not missing
+
+
+def test_every_port_is_placed_on_the_icon() -> None:
+    classes = _fast_model_classes()
+    connectors = {"RealInput", "RealOutput"} | {name for name, (_, kind, _) in classes.items() if kind == "connector"}
+    unplaced = [
+        f"{name}.{component}"
+        for name, (_, kind, body) in classes.items()
+        if kind == "model"
+        for declaration in re.findall(r"^\s*((?:Interfaces\.|Ventilation\.)?\w+ \w+[^;]*);", body, re.MULTILINE)
+        if declaration.split()[0].split(".")[-1] in connectors and "Placement" not in declaration
+        for component in [declaration.split()[1].split("(")[0].split("[")[0]]
+    ]
+    assert not unplaced
+
+
+def test_the_components_are_grouped_in_containers() -> None:
+    model = _model(MODELS / "single_zone_hydronic.yaml", "FastModel")
+    top = model[model.index("model building_mpc") : model.index("end building_mpc;")]
+    for container in ["envelope", "emission", "distribution", "production"]:
+        assert f"    model {container} " in model
+        assert f"Components.Containers.{container} {container}1" in top
+    # the inputs of building_mpc and the weather stay at its top, the components go to the containers
+    assert "FastModel.Interfaces.WeatherInputs weather_inputs" in top
+    assert "FastModel.Interfaces.OccupancyInputs occupancy_1" in top
+    assert "FastModel.BoundaryConditions.Weather weather(" in top
+    assert "FastModel.Zones.Zone space_001(" not in top
+    # a connection between two containers goes through their ports, of the type of the component ports
+    assert "FastModel.Interfaces.HeatPort space_001_heaPorAir" in model
+    assert "connect(envelope1.space_001_heaPorAir, emission1.radiator_003_heatPortCon)" in top
+    assert "connect(envelope1.weather_weaBus, weather.weaBus)" in top
+    # a variable of another container comes through an output of its container and an input of the other one
+    assert "FastModel.Interfaces.RealOutput space_001_TAir = space_001.TAir" in model
+    assert "TZon=space_001_TAir" in model
+    assert "connect(envelope1.space_001_TAir, emission1.space_001_TAir)" in top
+
+
+@pytest.mark.parametrize("library", ["FastModel", "FastModelMPC"])
+def test_the_containers_can_be_left_out(library: str) -> None:
+    flat = _model(MODELS / "single_zone_hydronic.yaml", library, include_container=False)
+    assert "package Components" not in flat
+    assert "FastModel.Zones.Zone space_001(" in _building_mpc(flat)
+
+
+@needs_connected_export
+@pytest.mark.parametrize("library", ["FastModel", "FastModelMPC"])
+@pytest.mark.parametrize(
+    "path",
+    [MODELS / "single_zone_hydronic.yaml", MODELS / "house_infiltration_air_water_heat_pump.yaml"],
+    ids=lambda path: path.stem,
+)
+def test_the_containers_leave_the_model_unchanged(path: Path, library: str) -> None:
+    """Same states, inputs and derivatives with and without containers."""
+    name = f"{path.stem}.building_mpc"
+    flat = CasadiModel.from_modelica(_model(path, library, include_container=False), name).description
+    grouped_model = CasadiModel.from_modelica(_model(path, library), name)
+    grouped = grouped_model.description
+    states = [re.sub(r"^[a-z]+1\.", "", state) for state in grouped.state_names]
+    assert sorted(states) == sorted(flat.state_names)
+    assert grouped.input_names == flat.input_names
+    order = [states.index(state) for state in flat.state_names]
+    np.testing.assert_allclose(grouped.initial_state[order], flat.initial_state)
+    flat_model = CasadiModel.from_modelica(_model(path, library, include_container=False), name)
+    inputs = np.array([KELVIN + 5 if "TDryBul" in n or "TBlaSky" in n else 1.0 for n in flat.input_names])
+    np.testing.assert_allclose(
+        np.asarray(grouped_model.derivatives(0.0, grouped.initial_state, inputs, grouped.parameter_values)).ravel()[
+            order
+        ],
+        np.asarray(flat_model.derivatives(0.0, flat.initial_state, inputs, flat.parameter_values)).ravel(),
+        rtol=1e-9,
+        atol=1e-12,
+    )
 
 
 def test_the_package_holds_the_model_and_its_runnable_wrapper() -> None:
@@ -108,7 +204,7 @@ def test_rumoca_translates_the_model(path: Path, states: int) -> None:
 def test_the_roles_come_from_the_model() -> None:
     model = _export(MODELS / "single_zone_hydronic.yaml")
     roles = Roles.infer(model.description)
-    assert roles.comfort == ("space_001.TAir",)
+    assert roles.comfort == ("envelope1.space_001.TAir",)
     gains = set(roles.disturbances) - set(WEATHER)
     assert len(gains) == 2
     assert {name.rsplit(".", 1)[-1] for name in gains} == {"QCon", "QRad"}
@@ -188,7 +284,9 @@ def test_fast_model_mpc_is_fast_model_under_another_name() -> None:
 
 
 def _building_mpc(model: str) -> str:
-    return model[model.index("model building_mpc") : model.index("end building_mpc;")]
+    """building_mpc and its containers."""
+    start = model.index("package Components") if "package Components" in model else model.index("model building_mpc")
+    return model[start : model.index("end building_mpc;")]
 
 
 @pytest.mark.parametrize(
@@ -290,7 +388,7 @@ def test_the_optimal_control_heats_the_zone() -> None:
     comfort = np.full(hours, KELVIN + 21)
     result = ocp.solve(initial, disturbances, comfort, price=np.full(hours, 0.1), start_time=0.0)
     assert result.success, result.status
-    zone = model.description.state_names.index("space_001.TAir")
+    zone = model.description.state_names.index("envelope1.space_001.TAir")
     assert result.states[zone, 3:].min() > KELVIN + 21 - 0.1
     simulated = ocp.simulate(initial, result.controls, disturbances)
     assert simulated[zone] == pytest.approx(result.states[zone], abs=0.2)
@@ -374,7 +472,8 @@ def test_the_window_frame_loses_heat_to_the_outside() -> None:
 def test_the_heat_meter_reads_the_return_sensor_without_its_water(library: str) -> None:
     """In Buildings the heat meter reads the return temperature as a signal (TExt): FastModel must not plumb the
     return line into the meter, which would let the water bypass the boiler."""
-    model = _building_mpc(_model(MODELS / "house_complex_heat_meter.yaml", library)).replace(" ", "")
+    model = _building_mpc(_model(MODELS / "house_complex_heat_meter.yaml", library, include_container=False))
+    model = model.replace(" ", "")
     meter = re.search(r"FastModel\.Hydronics\.TemperatureSensorheat_meter_sensor_001\((.*?)\)", model, re.DOTALL)
     assert meter is not None
     assert "nPorts_a=1" in meter.group(1) and "nPorts_b=1" in meter.group(1)

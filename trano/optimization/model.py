@@ -5,6 +5,8 @@ parameters in the order of the CasADi vectors, their units, bounds (``min``/``ma
 values of the states and the values of the parameters.
 """
 
+import itertools
+import json
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -90,6 +92,22 @@ def _variables(names: Sequence[str], infos: Any, values: Sequence[float | None] 
     return tuple(variables)
 
 
+def _names(names: Sequence[Any]) -> list[str]:
+    """Plain variable names: rumoca main names its inputs as JSON (``{"dimensions": [], "name": "u"}``), its
+    releases as plain strings; an array input is expanded into its elements."""
+    result = []
+    for raw in names:
+        name = str(raw)
+        if not name.startswith("{"):
+            result.append(name)
+            continue
+        variable = json.loads(name)
+        dimensions = [int(size) for size in variable.get("dimensions") or []]
+        indices = itertools.product(*(range(1, size + 1) for size in dimensions))
+        result += [variable["name"] + (f"[{','.join(map(str, index))}]" if index else "") for index in indices]
+    return result
+
+
 @dataclass(frozen=True)
 class CasadiModel:
     """The CasADi right-hand side of a model and its description."""
@@ -104,13 +122,13 @@ class CasadiModel:
 
         translated = rumoca.Session().loads(source, model=model)
         export = translated.to_casadi()
-        inputs = list(export.input_names)
+        inputs = _names(export.input_names)
         description = ModelDescription(
             name=model,
-            states=_variables(export.state_names, translated.states, np.asarray(export.default_states).ravel()),
+            states=_variables(_names(export.state_names), translated.states, np.asarray(export.default_states).ravel()),
             inputs=_variables(inputs, translated.inputs, [None] * len(inputs)),
             parameters=_variables(
-                export.parameter_names, translated.parameters, np.asarray(export.default_parameters).ravel()
+                _names(export.parameter_names), translated.parameters, np.asarray(export.default_parameters).ravel()
             ),
         )
         return cls(rhs=export.rhs, description=description)

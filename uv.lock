@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.11, <4.0"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -2896,16 +2896,8 @@ wheels = [
 
 [[package]]
 name = "rumoca"
-version = "0.10.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/11/a0/c7d3e5d4031901e3e7ea2f654f29a377222bec44b365341d81fe828ab3a0/rumoca-0.10.0.tar.gz", hash = "sha256:6ac81a4fa8b221d8ed65dfa66affe195de7616ebe2826dc7879cfa1ef955ff38", size = 5778083, upload-time = "2026-09-19T18:05:23.929Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0c/0c/98d072ed0529366a9a163997bc970f30a86b33280db47fbe188ab05e0fef/rumoca-0.10.0-cp310-abi3-macosx_14_0_arm64.whl", hash = "sha256:dc293f410f60ff43d54abb94c4789157d02e3ced1e69dbf1d2ffc52d2823d8ba", size = 23795232, upload-time = "2026-09-19T18:05:11.061Z" },
-    { url = "https://files.pythonhosted.org/packages/7a/24/22f1d147f96a9350d1e2a61b0dc4d3fe7510a1ef4cd91f40231cfad6fd3e/rumoca-0.10.0-cp310-abi3-macosx_14_0_x86_64.whl", hash = "sha256:65ca20308a6da0e2da84ff0c103862853db7823fa2c3cf92fa5299ba684464b8", size = 25790383, upload-time = "2026-09-19T18:05:13.669Z" },
-    { url = "https://files.pythonhosted.org/packages/13/e2/d476f4e1b0e0f50c3cf8ac50541d89a8d7c3f074e9d1082a5ec329898528/rumoca-0.10.0-cp310-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:1ee4dafa908fde3a6936f5bfdc57641517b28792bb802fc281aa932b1720c081", size = 21817899, upload-time = "2026-09-19T18:05:16.025Z" },
-    { url = "https://files.pythonhosted.org/packages/ef/07/27b19e3ecacbe610d33d8fc02825285627a8ad13b04079b5e9cd4457c66b/rumoca-0.10.0-cp310-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:34d9712b8b0ddac76cf91dee55073c3dd4a9dc8e7a7091d82a43ce5c86972f7c", size = 24118284, upload-time = "2026-09-19T18:05:18.794Z" },
-    { url = "https://files.pythonhosted.org/packages/3e/82/d29dc4763bd507b3308983af4bf422c14f19d034d92ca9195b5118c99286/rumoca-0.10.0-cp310-abi3-win_amd64.whl", hash = "sha256:b0db5c2aa6eb7d7f6e5f3058e7fd17d87fd16e4d630926ac7ee2eeacabdc0e9e", size = 24668345, upload-time = "2026-09-19T18:05:21.505Z" },
-]
+version = "0.10.3"
+source = { git = "https://github.com/CogniPilot/rumoca?subdirectory=crates%2Frumoca-bind-python&rev=33c21141791cbc341f4788ff6353d2f49d1c740a#33c21141791cbc341f4788ff6353d2f49d1c740a" }
 
 [[package]]
 name = "scipy"
@@ -3338,7 +3330,6 @@ wheels = [
 name = "trano"
 version = "0.51.0"
 source = { editable = "." }
-default-groups = "all"
 dependencies = [
     { name = "buildingspy" },
     { name = "docker" },
@@ -3406,7 +3397,7 @@ dev = [
     { name = "pandas-stubs", specifier = ">=2.2.0.240218,<3" },
     { name = "pytest", specifier = ">=9.0.3,<10" },
     { name = "ruff", specifier = ">=0.15.16,<0.16" },
-    { name = "rumoca", specifier = ">=0.10.0,<0.11" },
+    { name = "rumoca", git = "https://github.com/CogniPilot/rumoca?subdirectory=crates%2Frumoca-bind-python&rev=33c21141791cbc341f4788ff6353d2f49d1c740a" },
     { name = "types-beautifulsoup4", specifier = ">=4.12.0.20240229,<5" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20240808,<7" },
     { name = "types-simplejson", specifier = ">=3.19.0.20240218,<4" },
