@@ -150,7 +150,8 @@ def _data_bus(network: Network) -> DataBus | None:
 
 def _simulate(network: Network, directory: Path, options: SimulationOptions, name: str) -> Path:
     """Simulate unless the cached result was produced by the same model; return the result file."""
-    model = network.model(data_bus=_data_bus(network))
+    # flat building_mpc: the comparisons read its components by name (mpc.<component>.T)
+    model = network.model(include_container=False, data_bus=_data_bus(network))
     expected = model_hash(_hashed_text(model, network), name, options)
     result = directory / "results" / f"{network.name}.building_res.mat"
     hash_file = directory / "model.hash"

@@ -1,6 +1,8 @@
 {#- Package of a network generated with the FastModel library:
     building_mpc   the building made of FastModel components: an explicit ODE whose inputs are the weather data,
-                   the internal gains and the controls of the systems (rumoca translates it into CasADi);
+                   the internal gains and the controls of the systems (rumoca translates it into CasADi); with
+                   containers, its components are grouped in the sub-models of Components.Containers (envelope,
+                   emission, distribution, production, ventilation, solar) and its inputs stay at its top;
     building       the runnable model: building_mpc fed with the weather file, the occupancy schedules and the
                    controls replayed from the external data (or held). -#}
 {% import 'macros.jinja2' as macros %}
@@ -11,6 +13,28 @@ package {{ network.name }}
 {{ modelica_library("FastModel") }}
 
 {{ data.data | safe }}
+{% if grouped %}
+
+package Components "Containers of building_mpc"
+  package Containers
+{% for container in grouped.models() %}
+{{ container | indent(4, first=True) | safe }}
+
+{% endfor %}
+  end Containers;
+end Components;
+
+model building_mpc "{{ network.name }}: building model for MPC (FastModel), an explicit ODE of its inputs"
+{% for declaration in grouped.declarations() %}
+  {{ declaration | safe }}
+{% endfor %}
+equation
+{% for equation in grouped.top_equations %}
+  {{ equation | safe }}
+{% endfor %}
+  annotation (Diagram(coordinateSystem(extent={{ grouped.diagram_extent }})));
+end building_mpc;
+{% else %}
 
 model building_mpc "{{ network.name }}: building model for MPC (FastModel), an explicit ODE of its inputs"
 {% for element_model in element_models %}
@@ -21,6 +45,7 @@ equation
   {{ edge.equation }}
 {% endfor %}
 end building_mpc;
+{% endif %}
 
 model building "{{ network.name }}: building_mpc with the weather file, the occupancy schedules and the controls"
 {% for parts in runnable if parts.declaration %}

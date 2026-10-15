@@ -120,7 +120,7 @@ def _casadi(case: MPCCase, ocp_hours: int) -> tuple[CasadiBenchmark, dict[str, n
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         network = convert_network(case.path.stem, case.path, library=Library.from_configuration(FAST_MODEL_MPC))
-        source = network.model()
+        source = network.model(include_container=False)  # flat, as the replayed run of the harness
     started = time.perf_counter()
     model = CasadiModel.from_modelica(source, f"{case.path.stem}.building_mpc")
     translation = time.perf_counter() - started
