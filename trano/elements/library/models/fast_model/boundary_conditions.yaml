@@ -72,7 +72,7 @@
     declaration: |-
       {{ package_name }}.Trano.Occupancy.SimpleOccupancy {{ element.name }}({{ macros.render_parameters(parameters) | safe }})
         "Occupancy schedule";
-    equation: |-
+    equation: &occupancy_equation |-
       connect({{ element.name }}.y[1], mpc.{{ element.name }}.gai.QRad);
       connect({{ element.name }}.y[2], mpc.{{ element.name }}.gai.QCon);
   variant: default
@@ -84,7 +84,24 @@
     function: default_parameters
   ports: *occupancy_ports
   template: *occupancy_template
-  runnable: *occupancy_runnable
+  # The occupants are estimated from the column of measured CO2 that the YAML names (OccupancyCo2, as the other
+  # libraries); without that column the schedule is used, without the parameters of the CO2 balance.
+  runnable:
+    declaration: |-
+      {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'co2') | map(attribute='variable') | first -%}
+      {%- if column in columns -%}
+      {{ package_name }}.Trano.Occupancy.OccupancyCo2 {{ element.name }}({{ macros.render_parameters(parameters) | safe }},
+        co2(u=data_bus.y[{{ columns.index(column) + 1 }}]))
+        "Occupancy estimated from the measured CO2";
+      {%- else -%}
+      {%- set schedule = {} -%}
+      {%- for key, value in parameters.items() if key not in ['AFlo', 'ACH', 'hRoom', 'ppmOut', 'gCO2'] -%}
+      {%- set _ = schedule.update({key: value}) -%}
+      {%- endfor -%}
+      {{ package_name }}.Trano.Occupancy.SimpleOccupancy {{ element.name }}({{ macros.render_parameters(schedule) | safe }})
+        "Occupancy schedule: no external data for the CO2";
+      {%- endif -%}
+    equation: *occupancy_equation
   variant: co2
 
 # The data bus of the other libraries: the runnable model replays the columns of the external data, if any.
