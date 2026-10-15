@@ -1731,6 +1731,17 @@ and transmittance), the solar radiation a window transmits, and the weather.</p>
   controls replayed from it with <code>FastModelMPC</code> (each held at 1 without data), the set points of the
   <code>MonitoredSetpoint</code> emission controls with <code>FastModel</code>.</li>
 </ul>
+<p>Every component carries the icon of the Buildings model it follows (valves, pumps, radiators, boilers, heat pumps,
+walls, windows, zones, weather...), and its ports are placed on that icon, so that the model reads in a Modelica
+editor as a Buildings model does.</p>
+<p>As in the Buildings and IDEAS models, the components of <code>building_mpc</code> are grouped in containers, the sub-models
+of <code>Components.Containers</code>: <code>envelope</code>, <code>emission</code>, <code>distribution</code>, <code>production</code>, <code>ventilation</code> and <code>solar</code>. The
+inputs of <code>building_mpc</code> and the weather stay at its top. A connection between two containers goes through ports of
+the type of the component ports (<code>WaterInlet</code>, <code>HeatPort</code>, <code>WeatherBusIn</code>...), and a variable a component reads
+from another container (the zone temperature of an emission control) goes through an output and an input. The
+states then carry the container in their names (<code>envelope1.space_001.TAir</code>). The containers do not change the
+equations; leave them out with <code>network.model(include_container=False)</code> or
+<code>trano create-model house.yaml FastModel --no-containers</code> for a single flat <code>building_mpc</code>.</p>
 <h3 id="rules-for-an-explicit-ode">Rules for an explicit ODE</h3>
 <p>Every component keeps a few rules, so that rumoca translates the assembled model into <code>xdot = f(t, x, u, p)</code>:</p>
 <ul>
