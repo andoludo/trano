@@ -10,6 +10,10 @@ package FastModel "Building models for model predictive control: close to Buildi
 
   package Icons "Icons"
     partial package Package "Package icon"
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={200,200,200}, fillColor={248,248,248}, fillPattern=FillPattern.HorizontalCylinder,
+            extent={{-100,-100},{100,100}}, radius=25),
+          Rectangle(lineColor={128,128,128}, extent={{-100,-100},{100,100}}, radius=25)}));
     end Package;
   end Icons;
 
@@ -238,24 +242,41 @@ package FastModel "Building models for model predictive control: close to Buildi
   end Utilities;
 
   package Interfaces "Connectors"
-    connector RealInput = input Real "Real input signal";
-    connector RealOutput = output Real "Real output signal";
+    connector RealInput = input Real "Real input signal"
+      annotation (Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}), graphics={
+          Polygon(lineColor={0,0,127}, fillColor={0,0,127}, fillPattern=FillPattern.Solid,
+            points={{-100,100},{100,0},{-100,-100}})}));
+    connector RealOutput = output Real "Real output signal"
+      annotation (Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}), graphics={
+          Polygon(lineColor={0,0,127}, fillColor={255,255,255}, fillPattern=FillPattern.Solid,
+            points={{-100,100},{100,0},{-100,-100}})}));
 
     connector HeatPort "Thermal port: temperature and heat flow rate into the component"
       Real T(unit="K") "Port temperature";
       flow Real Q_flow(unit="W") "Heat flow rate into the component";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,100},{100,-100}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid)}));
     end HeatPort;
 
     connector WaterInlet "Water inlet: mass flow rate into the component, temperature of the water crossing it"
       flow Real m_flow(unit="kg/s") "Mass flow rate into the component";
       Real T(unit="K") "Temperature of the water crossing the port (set by the component the water leaves)";
       RealOutput p(unit="Pa") "Pressure of the inlet node of the component (0 with set flows)";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Ellipse(extent={{-100,100},{100,-100}}, lineColor={0,127,255}, fillColor={0,127,255},
+            fillPattern=FillPattern.Solid)}));
     end WaterInlet;
 
     connector WaterOutlet "Water outlet: mass flow rate into the component, temperature of the water crossing it"
       flow Real m_flow(unit="kg/s") "Mass flow rate into the component (negative when water leaves)";
       Real T(unit="K") "Temperature of the water crossing the port (set by the component)";
       RealInput p(unit="Pa") "Pressure of the inlet node of the component downstream";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Ellipse(extent={{-100,100},{100,-100}}, lineColor={0,127,255}, fillColor={0,127,255},
+            fillPattern=FillPattern.Solid),
+          Ellipse(extent={{-80,80},{80,-80}}, lineColor={0,127,255}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid)}));
     end WaterOutlet;
 
     connector WeatherInputs "Weather data: inputs of building_mpc (from a weather file or a forecast)"
@@ -266,6 +287,16 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealInput HDirNor(unit="W/m2") "Direct normal irradiance";
       RealInput HDifHor(unit="W/m2") "Diffuse horizontal irradiance";
       RealInput HGloHor(unit="W/m2") "Global horizontal irradiance";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
+          Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
+            points={{-80,50},{80,50},{100,30},{80,-40},{60,-50},{-60,-50},{-80,-40},{-100,30}},
+            smooth=Smooth.Bezier),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-65,15},{-55,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-5,15},{5,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{55,15},{65,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-35,-25},{-25,-15}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end WeatherInputs;
 
     connector WeatherBus "Weather data and solar position (source side)"
@@ -282,6 +313,16 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealOutput cosZen "Cosine of the solar zenith angle";
       RealOutput F1 "Circumsolar brightening coefficient of the Perez model";
       RealOutput F2 "Horizon brightening coefficient of the Perez model";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
+          Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
+            points={{-80,50},{80,50},{100,30},{80,-40},{60,-50},{-60,-50},{-80,-40},{-100,30}},
+            smooth=Smooth.Bezier),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-65,15},{-55,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-5,15},{5,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{55,15},{65,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-35,-25},{-25,-15}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end WeatherBus;
 
     connector WeatherBusIn "Weather data and solar position (receiving side)"
@@ -298,6 +339,16 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealInput cosZen "Cosine of the solar zenith angle";
       RealInput F1 "Circumsolar brightening coefficient of the Perez model";
       RealInput F2 "Horizon brightening coefficient of the Perez model";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
+          Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
+            points={{-80,50},{80,50},{100,30},{80,-40},{60,-50},{-60,-50},{-80,-40},{-100,30}},
+            smooth=Smooth.Bezier),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-65,15},{-55,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-5,15},{5,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{55,15},{65,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-35,-25},{-25,-15}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end WeatherBusIn;
 
     connector SurfaceBus "A surface of a zone, surface side: heat exchanges, properties, weather"
@@ -313,6 +364,16 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealInput hConInt(unit="W/(m2.K)") "Fixed interior convection coefficient, 0 for the natural convection law";
       RealInput hConExt(unit="W/(m2.K)") "Fixed exterior convection coefficient, 0 for the wind-dependent law";
       WeatherBusIn wea "Weather";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
+          Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
+            points={{-80,50},{80,50},{100,30},{80,-40},{60,-50},{-60,-50},{-80,-40},{-100,30}},
+            smooth=Smooth.Bezier),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-65,15},{-55,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-5,15},{5,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{55,15},{65,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-35,-25},{-25,-15}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end SurfaceBus;
 
     connector ZoneSurfaceBus "A surface of a zone, zone side"
@@ -328,32 +389,81 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealOutput hConInt(unit="W/(m2.K)") "Fixed interior convection coefficient, 0 for the natural convection law";
       RealOutput hConExt(unit="W/(m2.K)") "Fixed exterior convection coefficient, 0 for the wind-dependent law";
       WeatherBus wea "Weather";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
+          Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
+            points={{-80,50},{80,50},{100,30},{80,-40},{60,-50},{-60,-50},{-80,-40},{-100,30}},
+            smooth=Smooth.Bezier),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-65,15},{-55,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-5,15},{5,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{55,15},{65,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-35,-25},{-25,-15}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end ZoneSurfaceBus;
 
     connector ControlInput "A control of building_mpc: input between its bounds (a decision of the MPC)"
       RealInput y(min=0, max=1, unit="1") "Control signal, 0 to 1";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}), graphics={
+          Polygon(lineColor={0,0,127}, fillColor={0,0,127}, fillPattern=FillPattern.Solid,
+            points={{-100,100},{100,0},{-100,-100}})}));
     end ControlInput;
 
     connector ControlSignal "Control signal of a component (receiving side)"
       RealInput y(unit="1") "Control signal, 0 to 1";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}), graphics={
+          Polygon(lineColor={0,0,127}, fillColor={0,0,127}, fillPattern=FillPattern.Solid,
+            points={{-100,100},{100,0},{-100,-100}})}));
     end ControlSignal;
 
     connector GainInputs "Internal gains per floor area: inputs (from an occupancy schedule)"
       RealInput QCon(unit="W/m2") "Convective internal gains per floor area";
       RealInput QRad(unit="W/m2") "Radiant internal gains per floor area";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
+          Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
+            points={{-80,50},{80,50},{100,30},{80,-40},{60,-50},{-60,-50},{-80,-40},{-100,30}},
+            smooth=Smooth.Bezier),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-65,15},{-55,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-5,15},{5,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{55,15},{65,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-35,-25},{-25,-15}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end GainInputs;
 
     connector OccupancyInputs "Internal gains of a zone: inputs of building_mpc"
       GainInputs gai "Internal gains per floor area";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
+          Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
+            points={{-80,50},{80,50},{100,30},{80,-40},{60,-50},{-60,-50},{-80,-40},{-100,30}},
+            smooth=Smooth.Bezier),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-65,15},{-55,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-5,15},{5,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{55,15},{65,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-35,-25},{-25,-15}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end OccupancyInputs;
 
     connector Gains "Internal gains per floor area (receiving side)"
       RealInput QCon(unit="W/m2") "Convective internal gains per floor area";
       RealInput QRad(unit="W/m2") "Radiant internal gains per floor area";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
+          Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
+            points={{-80,50},{80,50},{100,30},{80,-40},{60,-50},{-60,-50},{-80,-40},{-100,30}},
+            smooth=Smooth.Bezier),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-65,15},{-55,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-5,15},{5,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{55,15},{65,25}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{-35,-25},{-25,-15}}),
+          Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end Gains;
 
     connector HeatFlowInput "Heat flow rate of an ideal system: input of building_mpc"
       RealInput Q_flow(unit="W") "Heat flow rate, positive for heating";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}), graphics={
+          Polygon(lineColor={0,0,127}, fillColor={0,0,127}, fillPattern=FillPattern.Solid,
+            points={{-100,100},{100,0},{-100,-100}})}));
     end HeatFlowInput;
   end Interfaces;
 
@@ -391,14 +501,22 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real lon(unit="rad") = 0.0760 "Longitude (Uccle by default)";
       parameter Real timZon(unit="s") = 3600 "Time zone (offset of the standard time from UTC)";
       parameter Real alt(unit="m") = 100 "Altitude of the site";
-      Interfaces.RealInput TDryBul(unit="K") "Outdoor dry-bulb air temperature";
-      Interfaces.RealInput TBlaSky(unit="K") "Black-body sky temperature";
-      Interfaces.RealInput winSpe(unit="m/s") "Wind speed";
-      Interfaces.RealInput winDir(unit="rad") "Wind direction, 0 from the north";
-      Interfaces.RealInput HDirNor(unit="W/m2") "Direct normal irradiance";
-      Interfaces.RealInput HDifHor(unit="W/m2") "Diffuse horizontal irradiance";
-      Interfaces.RealInput HGloHor(unit="W/m2") "Global horizontal irradiance";
-      Interfaces.WeatherBus weaBus "Weather data and solar position";
+      Interfaces.RealInput TDryBul(unit="K") "Outdoor dry-bulb air temperature"
+        annotation (Placement(transformation(extent={{-120,60},{-100,80}})));
+      Interfaces.RealInput TBlaSky(unit="K") "Black-body sky temperature"
+        annotation (Placement(transformation(extent={{-120,40},{-100,60}})));
+      Interfaces.RealInput winSpe(unit="m/s") "Wind speed"
+        annotation (Placement(transformation(extent={{-120,20},{-100,40}})));
+      Interfaces.RealInput winDir(unit="rad") "Wind direction, 0 from the north"
+        annotation (Placement(transformation(extent={{-120,0},{-100,20}})));
+      Interfaces.RealInput HDirNor(unit="W/m2") "Direct normal irradiance"
+        annotation (Placement(transformation(extent={{-120,-20},{-100,0}})));
+      Interfaces.RealInput HDifHor(unit="W/m2") "Diffuse horizontal irradiance"
+        annotation (Placement(transformation(extent={{-120,-40},{-100,-20}})));
+      Interfaces.RealInput HGloHor(unit="W/m2") "Global horizontal irradiance"
+        annotation (Placement(transformation(extent={{-120,-60},{-100,-40}})));
+      Interfaces.WeatherBus weaBus "Weather data and solar position"
+        annotation (Placement(transformation(extent={{90,-10},{110,10}})));
     protected
       Real Bt "Intermediate variable of the equation of time";
       Real eqnTim(unit="s") "Equation of time";
@@ -455,13 +573,30 @@ package FastModel "Building models for model predictive control: close to Buildi
       a[8] = b[8];
       weaBus.F1 = Utilities.smoothMax(0, sum(a[i]*(F11[i] + F12[i]*skyBri + F13[i]*zen) for i in 1:8), 0.01);
       weaBus.F2 = sum(a[i]*(F21[i] + F22[i]*skyBri + F23[i]*zen) for i in 1:8);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,100},{100,-100}}, lineColor={124,142,255}, fillColor={124,142,255},
+            fillPattern=FillPattern.Solid),
+          Ellipse(extent={{-73,77},{14,-10}}, lineColor={255,220,220}, lineThickness=1,
+            fillPattern=FillPattern.Sphere, fillColor={255,255,0}),
+          Polygon(points={{47,53}, {39,21}, {55,26}, {69,25}, {82,19}, {91,-14}, {69,-51}, {5,-55}, {-70,-53},
+            {-83,-15}, {-75,12}, {-51,13}, {-39,4}, {-46,35}, {-29,60}, {17,70}, {47,53}}, lineColor={220,220,220},
+            lineThickness=0.1, fillPattern=FillPattern.Sphere, smooth=Smooth.Bezier, fillColor={230,230,230}),
+          Text(extent={{-98,78},{-60,62}}, textColor={0,0,0}, textString="TDryBul"),
+          Text(extent={{-98,58},{-60,42}}, textColor={0,0,0}, textString="TBlaSky"),
+          Text(extent={{-98,38},{-60,22}}, textColor={0,0,0}, textString="winSpe"),
+          Text(extent={{-98,18},{-60,2}}, textColor={0,0,0}, textString="winDir"),
+          Text(extent={{-98,-2},{-60,-18}}, textColor={0,0,0}, textString="HDirNor"),
+          Text(extent={{-98,-22},{-60,-38}}, textColor={0,0,0}, textString="HDifHor"),
+          Text(extent={{-98,-42},{-60,-58}}, textColor={0,0,0}, textString="HGloHor"),
+          Text(extent={{-150,140},{150,100}}, textColor={0,0,255}, textString="%name")}));
     end Weather;
 
     model TiltedSurface "Solar irradiance on a tilted surface: direct, Perez diffuse (sky and ground), incidence"
       parameter Real azi(unit="rad") "Surface azimuth: 0 south, pi/2 west";
       parameter Real til(unit="rad") "Surface tilt: 0 roof, pi/2 wall";
       parameter Real rho = 0.2 "Ground reflectance";
-      Interfaces.WeatherBusIn weaBus;
+      Interfaces.WeatherBusIn weaBus
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
       Real cosInc "Cosine of the incidence angle";
       Real HDir(unit="W/m2") "Direct irradiance on the surface";
       Real HDif(unit="W/m2") "Diffuse irradiance on the surface (sky and ground)";
@@ -474,6 +609,15 @@ package FastModel "Building models for model predictive control: close to Buildi
       HDir = Utilities.positivePart(cosInc*weaBus.HDirNor, 1e-2);
       HDif = weaBus.HDifHor*(0.5*(1 - weaBus.F1)*(1 + cos(til)) + weaBus.F1*Utilities.smoothMax(0, cosInc, 0.01)
         /Utilities.smoothMax(bMin, weaBus.cosZen, 0.01) + weaBus.F2*sin(til)) + weaBus.HGloHor*0.5*rho*(1 - cos(til));
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,100},{100,-100}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Ellipse(extent={{-80,80},{-20,20}}, lineColor={255,220,220}, fillColor={255,255,0},
+            fillPattern=FillPattern.Sphere),
+          Polygon(points={{-20,-80},{80,20},{80,-80},{-20,-80}}, lineColor={0,0,0}, fillColor={175,175,175},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-30,30},{30,-30}}, color={255,128,0}, arrow={Arrow.None,Arrow.Filled}),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end TiltedSurface;
   end BoundaryConditions;
 
@@ -483,7 +627,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real azi(unit="rad") = 0 "Azimuth: 0 south, pi/2 west";
       parameter Real til(unit="rad") "Tilt: 0 roof (ceiling), pi/2 wall, pi floor";
       parameter Real T_start(unit="K") = 294.15 "Initial temperature";
-      Interfaces.SurfaceBus propsBus_a "Connection to the zone";
+      Interfaces.SurfaceBus propsBus_a "Connection to the zone"
+        annotation (Placement(transformation(extent={{90,-10},{110,10}})));
     protected
       parameter Real cIntPos = Utilities.convectionCoefficient(til, true) "Interior natural convection, surface warmer";
       parameter Real cIntNeg = Utilities.convectionCoefficient(til, false) "Interior natural convection, surface colder";
@@ -501,12 +646,32 @@ package FastModel "Building models for model predictive control: close to Buildi
         *constructionType.c[i]/2 else 0)) for i in 1:nLay + 1} "Capacity of each node";
       parameter Real G[nLay](each unit="W/K") = {A*constructionType.k[i]/constructionType.x[i] for i in 1:nLay}
         "Conductance of each layer";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{0,80},{80,-80}}, fillColor={175,175,175}, fillPattern=FillPattern.Solid,
+            lineColor={175,175,175}),
+          Rectangle(extent={{-80,80},{0,-80}}, fillColor={215,215,215}, fillPattern=FillPattern.Solid,
+            lineColor={175,175,175}),
+          Line(points={{-92,0},{90,0}}, color={0,0,0}, thickness=0.5),
+          Line(points={{-18,-40},{-32,-40}}, color={0,0,0}, thickness=0.5),
+          Line(points={{-12,-32},{-38,-32}}, color={0,0,0}, thickness=0.5),
+          Line(points={{-25,0},{-25,-32}}, color={0,0,0}, thickness=0.5),
+          Line(points={{32,-40},{18,-40}}, color={0,0,0}, thickness=0.5),
+          Line(points={{38,-32},{12,-32}}, color={0,0,0}, thickness=0.5),
+          Line(points={{25,0},{25,-32}}, color={0,0,0}, thickness=0.5),
+          Rectangle(extent={{-60,6},{-40,-6}}, lineColor={0,0,0}, lineThickness=0.5, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-10,6},{10,-6}}, lineColor={0,0,0}, lineThickness=0.5, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{40,6},{60,-6}}, lineColor={0,0,0}, lineThickness=0.5, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end PartialOpaque;
 
     model OuterWall "Exterior wall or roof: wind and sky at the outside, sun, conduction, room exchanges"
       extends PartialOpaque;
       Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, outside first";
-      BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the outer surface";
+      BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the outer surface"
+        annotation (Placement(transformation(extent={{-70,60},{-50,80}})));
       Real QSol(unit="W") "Absorbed solar radiation";
       Real QExt(unit="W") "Heat from the outer surface to the outside air and the sky";
       Real QInt(unit="W") "Heat from the inner surface to the room air";
@@ -533,6 +698,9 @@ package FastModel "Building models for model predictive control: close to Buildi
       propsBus_a.isFloor = isFloor;
       propsBus_a.QTraDir = 0;
       propsBus_a.QTraDif = 0;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Ellipse(extent={{-100,100},{-68,68}}, lineColor={255,255,0}, fillColor={255,213,170},
+            fillPattern=FillPattern.Sphere)}));
     end OuterWall;
 
     model BoundaryWall "Floor on ground or over outdoor air: the outer surface is held at a temperature"
@@ -562,6 +730,9 @@ package FastModel "Building models for model predictive control: close to Buildi
       propsBus_a.isFloor = isFloor;
       propsBus_a.QTraDir = 0;
       propsBus_a.QTraDif = 0;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-80},{-80,-100}}, lineColor={127,0,0}, fillColor={127,0,0},
+            fillPattern=FillPattern.Backward)}));
     end BoundaryWall;
 
     model AdiabaticWall "Wall without heat flow through its outer surface"
@@ -584,13 +755,16 @@ package FastModel "Building models for model predictive control: close to Buildi
       propsBus_a.isFloor = isFloor;
       propsBus_a.QTraDir = 0;
       propsBus_a.QTraDif = 0;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{-90,80},{-90,-80}}, color={0,0,0}, thickness=1)}));
     end AdiabaticWall;
 
     model InternalWall "Wall or floor between two zones: side a faces the zone of propsBus_a, side b the other"
       extends PartialOpaque;
       parameter Real epsLw = 0.84 "Long-wave emissivity of both faces (Buildings surBou)";
       parameter Real absSol = 0.84 "Solar absorptance of both faces (Buildings surBou)";
-      Interfaces.SurfaceBus propsBus_b "Connection to the zone of side b";
+      Interfaces.SurfaceBus propsBus_b "Connection to the zone of side b"
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
       Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, side a first";
       Real QInt_a(unit="W") "Heat from side a to the air of its zone";
       Real QInt_b(unit="W") "Heat from side b to the air of its zone";
@@ -634,7 +808,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real hFraInt(unit="W/(m2.K)") = 7.7 "Interior film coefficient of the frame";
       parameter Real cGla(unit="J/(kg.K)") = 720 "Specific heat capacity of glass when the glazing gives none";
       Real T[glazing.nPan](each unit="K", each start=T_start, each fixed=true) "Pane temperatures, outside first";
-      BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the window";
+      BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the window"
+        annotation (Placement(transformation(extent={{-70,60},{-50,80}})));
       Real QExt(unit="W") "Heat from the outer pane to the outside air and the sky";
       Real QInt(unit="W") "Heat from the inner pane to the room air";
       Real QFra(unit="W") "Heat through the frame, from the room air to the outside";
@@ -684,6 +859,26 @@ package FastModel "Building models for model predictive control: close to Buildi
       propsBus_a.isFloor = 0;
       propsBus_a.QTraDir = AGla*sol.HDir*Utilities.polynomial(tauCoe, cosInc);
       propsBus_a.QTraDif = AGla*sol.HDif*glazing.tau[11];
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{-37,-44},{14,-44}}, color={0,0,0}),
+          Polygon(points={{14,80},{14,-44},{45,-76},{45,48},{14,80}}, lineColor={0,0,0}, fillColor={215,215,215},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{19,69},{19,-42},{39,-62},{39,48},{19,69}}, lineColor={0,0,0}, fillColor={170,213,255},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-51,80},{24,80}}, color={0,0,0}),
+          Line(points={{-6,-76},{45,-76}}, color={0,0,0}),
+          Polygon(points={{-10,80},{-10,-44},{21,-76},{21,48},{-10,80}}, lineColor={0,0,0},
+            fillColor={215,215,215}, fillPattern=FillPattern.Solid),
+          Polygon(points={{-5,69},{-5,-42},{15,-62},{15,48},{-5,69}}, lineColor={0,0,0}, fillColor={170,213,255},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{-37,80},{-37,-44},{-6,-76},{-6,48},{-37,80}}, lineColor={0,0,0},
+            fillColor={215,215,215}, fillPattern=FillPattern.Solid),
+          Polygon(points={{-32,68},{-32,-43},{-12,-63},{-12,47},{-32,68}}, lineColor={0,0,0},
+            fillColor={170,213,255}, fillPattern=FillPattern.Solid),
+          Line(points={{-17,48},{58,48}}, color={0,0,0}),
+          Ellipse(extent={{-113,117},{-82,85}}, lineColor={255,255,0}, fillColor={255,213,170},
+            fillPattern=FillPattern.Sphere),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end Window;
 
     package Functions "Surface heat transfer"
@@ -758,11 +953,16 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real hConInt(unit="W/(m2.K)") = 0 "Fixed interior convection coefficient, 0 for the natural law";
       parameter Real hConExt(unit="W/(m2.K)") = 0 "Fixed exterior convection coefficient, 0 for the wind law";
       parameter Real T0Rad(unit="K") = 293.15 "Linearization temperature of the long-wave exchange";
-      Interfaces.WeatherBusIn weaBus "Weather";
-      Interfaces.ZoneSurfaceBus propsBus[nSurf] "Surfaces";
-      Interfaces.HeatPort heaPorAir "Convective heat (emitters)";
-      Interfaces.HeatPort heaPorRad "Radiant heat (emitters), at the mean surface temperature";
-      Interfaces.Gains qGai_flow "Internal gains";
+      Interfaces.WeatherBusIn weaBus "Weather"
+        annotation (Placement(transformation(extent={{-90,90},{-70,110}})));
+      Interfaces.ZoneSurfaceBus propsBus[nSurf] "Surfaces"
+        annotation (Placement(transformation(extent={{90,-20},{110,20}})));
+      Interfaces.HeatPort heaPorAir "Convective heat (emitters)"
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
+      Interfaces.HeatPort heaPorRad "Radiant heat (emitters), at the mean surface temperature"
+        annotation (Placement(transformation(extent={{-110,-50},{-90,-30}})));
+      Interfaces.Gains qGai_flow "Internal gains"
+        annotation (Placement(transformation(extent={{-120,30},{-100,50}})));
       Real TAir(unit="K", start=T_start, fixed=true) "Zone air temperature";
       Real TRad(unit="K") "Radiant star temperature";
       Real QVen(unit="W") "Heat brought by the ventilation";
@@ -803,6 +1003,19 @@ package FastModel "Building models for model predictive control: close to Buildi
       mSenFac*rhoAir*cpAir*V*der(TAir) = sum(propsBus[i].con.Q_flow for i in 1:nSurf) + heaPorAir.Q_flow + AFlo*qGai_flow.QCon
         + rhoAir*cpAir*V*ACH/3600*(weaBus.TDryBul - TAir) + QVen;
       heaPorAir.T = TAir;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-80,-80},{80,80}}, lineColor={95,95,95}, fillColor={95,95,95},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-70,70},{70,-70}}, pattern=LinePattern.None, lineColor={117,148,176},
+            fillColor={170,213,255}, fillPattern=FillPattern.Sphere),
+          Rectangle(extent={{70,35},{80,-35}}, lineColor={95,95,95}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{73,35},{77,-35}}, lineColor={95,95,95}, fillColor={170,213,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-30,6},{-11,-5}}, textColor={0,0,0}, textString="air"),
+          Text(extent={{-36,-11},{-11,-25}}, textColor={0,0,0}, textString="radiation"),
+          Text(extent={{-52,-62},{-27,-76}}, textColor={0,0,0}, textString="surface"),
+          Text(extent={{-150,140},{150,100}}, textColor={0,0,255}, textString="%name")}));
     end PartialZone;
 
     model Zone "Thermal zone"
@@ -815,8 +1028,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       extends PartialZone;
       parameter Integer nPorts_a = 1 "Number of supply air connections";
       parameter Integer nPorts_b = 1 "Number of extract air connections";
-      Ventilation.AirInlet ports_a[nPorts_a] "Supply air";
-      Ventilation.AirOutlet ports_b[nPorts_b] "Extract air, at the zone air temperature";
+      Ventilation.AirInlet ports_a[nPorts_a] "Supply air"
+        annotation (Placement(transformation(extent={{-50,-110},{-30,-90}})));
+      Ventilation.AirOutlet ports_b[nPorts_b] "Extract air, at the zone air temperature"
+        annotation (Placement(transformation(extent={{30,-110},{50,-90}})));
     equation
       // the extract ducts carry the flows of the supply ones: the fan speed passes through the zone
       for i in 1:nPorts_b loop
@@ -843,8 +1058,10 @@ package FastModel "Building models for model predictive control: close to Buildi
         annotation (Evaluate=true);
       parameter Real tauHyd(unit="s") = 5 "Time constant of the pressure of the inlet node (pressure-driven flows)";
       parameter Real GHyd(unit="kg/(s.Pa)") = 1e-4 "Conductance scaling the compliance of the inlet node";
-      Interfaces.WaterInlet port_a[nPorts_a] "Inlet";
-      Interfaces.WaterOutlet port_b[nPorts_b] "Outlet";
+      Interfaces.WaterInlet port_a[nPorts_a] "Inlet"
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
+      Interfaces.WaterOutlet port_b[nPorts_b] "Outlet"
+        annotation (Placement(transformation(extent={{90,-10},{110,10}})));
       Real m_flow(unit="kg/s") "Flow through the component";
       Real TIn(unit="K") "Mixed inlet temperature";
       Real TOut(unit="K") "Outlet temperature";
@@ -903,14 +1120,37 @@ package FastModel "Building models for model predictive control: close to Buildi
       extends PartialLink;
     equation
       TOut = TIn;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,40},{100,-40}}, lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder,
+            fillColor={192,192,192}),
+          Rectangle(extent={{-100,22},{100,-24}}, lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder,
+            fillColor={0,127,255}),
+          Text(extent={{-150,-110},{150,-150}}, textColor={0,0,255}, textString="%name")}));
     end Pipe;
 
     model TemperatureSensor "Pass-through: T is the water temperature"
       extends PartialLink;
-      Interfaces.RealOutput T(unit="K") "Measured temperature";
+      Interfaces.RealOutput T(unit="K") "Measured temperature"
+        annotation (Placement(transformation(extent={{-10,-10},{10,10}}, rotation=90, origin={0,110})));
     equation
       TOut = TIn;
       T = TIn;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{-100,0},{92,0}}, color={0,128,255}),
+          Ellipse(extent={{-20,-58},{20,-20}}, lineColor={0,0,0}, lineThickness=0.5, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-40,60},{-12,60}}),
+          Line(points={{-40,30},{-12,30}}),
+          Line(points={{-40,0},{-12,0}}),
+          Rectangle(extent={{-12,60},{12,-24}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{-12,60},{-12,80},{-10,86},{-6,88},{0,90},{6,88},{10,86},{12,80},{12,60},{-12,60}},
+            lineColor={0,0,0}, lineThickness=0.5),
+          Text(extent={{102,140},{-18,90}}, textColor={0,0,0}, textString="T"),
+          Line(points={{-12,60},{-12,-25}}, thickness=0.5),
+          Line(points={{12,60},{12,-24}}, thickness=0.5),
+          Line(points={{0,100},{0,50}}, color={0,0,127}),
+          Text(extent={{-150,-110},{150,-150}}, textColor={0,0,255}, textString="%name")}));
     end TemperatureSensor;
 
     model Pump
@@ -921,7 +1161,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real dp_nominal(unit="Pa") = 3e4 "Pressure head at the nominal flow";
       parameter Real m_flow_nominal(unit="kg/s") = 1 "Nominal flow";
       parameter Real eta = 0.5 "Overall efficiency";
-      Interfaces.RealInput y(unit="1") "Relative speed (pressure-driven flows)";
+      Interfaces.RealInput y(unit="1") "Relative speed (pressure-driven flows)"
+        annotation (Placement(transformation(extent={{-20,-20},{20,20}}, rotation=270, origin={0,120})));
       Real dp(unit="Pa") "Head";
       Real P(unit="W") "Electrical power";
     protected
@@ -945,6 +1186,16 @@ package FastModel "Building models for model predictive control: close to Buildi
         x = zeros(nPorts_b);
         P = dp_nominal*m_flow/rhoWat/eta;
       end if;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{0,100},{0,50}}, color={0,0,0}),
+          Rectangle(extent={{-100,16},{100,-16}}, lineColor={0,0,0}, fillColor={0,127,255},
+            fillPattern=FillPattern.HorizontalCylinder),
+          Ellipse(extent={{-58,58},{58,-58}}, lineColor={0,0,0}, fillPattern=FillPattern.Sphere,
+            fillColor={0,100,199}),
+          Polygon(points={{0,50},{0,-50},{54,0},{0,50}}, lineColor={0,0,0}, pattern=LinePattern.None,
+            fillPattern=FillPattern.HorizontalCylinder, fillColor={255,255,255}),
+          Text(extent={{64,106},{114,92}}, textColor={0,0,127}, textString="P"),
+          Text(extent={{-150,-110},{150,-150}}, textColor={0,0,255}, textString="%name")}));
     end Pump;
 
     model Valve
@@ -959,7 +1210,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real delta0 = 0.01 "Linear range of the characteristic near closure";
       final parameter Real GNom(unit="kg/(s.Pa)") = m_flow_nominal/(dpValve_nominal + dpFixed_nominal)
         "Conductance of the open valve and its pipes";
-      Interfaces.RealInput y(unit="1") "Flow relative to the nominal flow (set flows), or opening (pressure-driven)";
+      Interfaces.RealInput y(unit="1") "Flow relative to the nominal flow (set flows), or opening (pressure-driven)"
+        annotation (Placement(transformation(extent={{-20,-20},{20,20}}, rotation=270, origin={0,120})));
       Real G(unit="kg/(s.Pa)") "Conductance (pressure-driven flows)";
     equation
       TOut = TIn;
@@ -973,6 +1225,20 @@ package FastModel "Building models for model predictive control: close to Buildi
         G = 0;
         m_flow = y*m_flow_nominal;
       end if;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,40},{100,-40}}, lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder,
+            fillColor={192,192,192}),
+          Rectangle(extent={{-100,22},{100,-24}}, lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder,
+            fillColor={0,127,255}),
+          Rectangle(extent={{-60,40},{60,-40}}, fillColor={255,255,255}, fillPattern=FillPattern.Solid,
+            pattern=LinePattern.None),
+          Polygon(points={{0,0},{-76,60},{-76,-60},{0,0}}, lineColor={0,0,0}, fillColor={0,0,0},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{0,0},{76,60},{76,-60},{0,0}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Line(points={{0,40},{0,0}}),
+          Line(points={{0,100},{0,40}}),
+          Text(extent={{-150,-110},{150,-150}}, textColor={0,0,255}, textString="%name")}));
     end Valve;
 
     model ThreeWayValve
@@ -996,10 +1262,14 @@ package FastModel "Building models for model predictive control: close to Buildi
         "Conductance of the open supply path";
       final parameter Real G3Nom(unit="kg/(s.Pa)") = m_flow_nominal/(dpValve_nominal/fraK^2 + dpFixed_nominal[2])
         "Conductance of the open bypass path";
-      Interfaces.WaterInlet port_1[nPorts_1] "Supply inlet";
-      Interfaces.WaterOutlet port_2[nPorts_2] "Mixed outlet";
-      Interfaces.WaterInlet port_3[nPorts_3] "Bypass inlet";
-      Interfaces.RealInput y(unit="1") "Share of the supply (set flows), or opening of the supply path, 0 to 1";
+      Interfaces.WaterInlet port_1[nPorts_1] "Supply inlet"
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
+      Interfaces.WaterOutlet port_2[nPorts_2] "Mixed outlet"
+        annotation (Placement(transformation(extent={{90,-10},{110,10}})));
+      Interfaces.WaterInlet port_3[nPorts_3] "Bypass inlet"
+        annotation (Placement(transformation(extent={{-10,-110},{10,-90}})));
+      Interfaces.RealInput y(unit="1") "Share of the supply (set flows), or opening of the supply path, 0 to 1"
+        annotation (Placement(transformation(extent={{-20,-20},{20,20}}, rotation=270, origin={0,120})));
       Real m_flow(unit="kg/s") "Outlet flow";
       Real m1(unit="kg/s") "Flow of the supply path";
       Real m3(unit="kg/s") "Flow of the bypass path";
@@ -1057,6 +1327,26 @@ package FastModel "Building models for model predictive control: close to Buildi
           port_2[i].T = y*T1 + (1 - y)*T3;
         end for;
       end if;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,40},{100,-40}}, lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder,
+            fillColor={192,192,192}),
+          Rectangle(extent={{-100,22},{100,-22}}, lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder,
+            fillColor={0,127,255}),
+          Rectangle(extent={{-60,40},{60,-40}}, fillColor={255,255,255}, fillPattern=FillPattern.Solid,
+            pattern=LinePattern.None),
+          Polygon(points={{0,0},{-76,60},{-76,-60},{0,0}}, lineColor={0,0,0}, fillColor={0,0,0},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{0,0},{76,60},{76,-60},{0,0}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-40,-56},{40,-100}}, lineColor={0,0,0}, fillPattern=FillPattern.VerticalCylinder,
+            fillColor={192,192,192}),
+          Rectangle(extent={{-22,-56},{22,-100}}, lineColor={0,0,0}, fillPattern=FillPattern.VerticalCylinder,
+            fillColor={0,127,255}),
+          Polygon(points={{0,0},{60,-76},{-60,-76},{0,0}}, lineColor={0,0,0}, fillColor={0,0,0},
+            fillPattern=FillPattern.Solid),
+          Line(points={{0,40},{0,0}}),
+          Line(points={{0,100},{0,40}}),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end ThreeWayValve;
 
     model Junction
@@ -1074,9 +1364,12 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real dpLink(unit="Pa") = 1000 "Pressure drop at the nominal flow when dp_nominal[1] is not positive";
       final parameter Real G(unit="kg/(s.Pa)") = abs(m_flow_nominal[1])/max(dp_nominal[1], dpLink)
         "Conductance of each outlet (dp_nominal[1], at least dpLink)";
-      Interfaces.WaterInlet port_1[nPorts_1] "Inlets";
-      Interfaces.WaterOutlet port_2[nPorts_2] "Outlet";
-      Interfaces.WaterOutlet port_3[nPorts_3] "Second outlet (bypass)";
+      Interfaces.WaterInlet port_1[nPorts_1] "Inlets"
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
+      Interfaces.WaterOutlet port_2[nPorts_2] "Outlet"
+        annotation (Placement(transformation(extent={{90,-10},{110,10}})));
+      Interfaces.WaterOutlet port_3[nPorts_3] "Second outlet (bypass)"
+        annotation (Placement(transformation(extent={{-10,-110},{10,-90}})));
       Real T(unit="K") "Mixed temperature";
       Real pIn(unit="Pa", start=0, fixed=pressureDriven) "Pressure of the inlet node";
     equation
@@ -1108,6 +1401,12 @@ package FastModel "Building models for model predictive control: close to Buildi
         sum(port_1[i].m_flow for i in 1:nPorts_1) + sum(port_2[i].m_flow for i in 1:nPorts_2)
           + sum(port_3[i].m_flow for i in 1:nPorts_3) = 0;
       end if;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Polygon(points={{-100,-46},{-32,-40},{-32,-100},{30,-100},{30,-36},{100,-30},{100,38},{-100,52},{-100,-46}},
+            lineColor={0,0,0}, fillColor={175,175,175}, fillPattern=FillPattern.Solid),
+          Polygon(points={{-100,-34},{-18,-28},{-18,-100},{18,-100},{18,-26},{100,-20},{100,22},{-100,38},{-100,-34}},
+            lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder, fillColor={0,128,255}),
+          Text(extent={{-151,142},{149,102}}, textColor={0,0,255}, textString="%name")}));
     end Junction;
 
     model Junction2 "Split valve without bypass: its inlets (port_1) mix, its outlets (port_2) leave at the mixed temperature"
@@ -1121,8 +1420,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real dpLink(unit="Pa") = 1000 "Pressure drop at the nominal flow when dp_nominal[1] is not positive";
       final parameter Real G(unit="kg/(s.Pa)") = abs(m_flow_nominal[1])/max(dp_nominal[1], dpLink)
         "Conductance of each outlet (dp_nominal[1], at least dpLink)";
-      Interfaces.WaterInlet port_1[nPorts_1] "Inlets";
-      Interfaces.WaterOutlet port_2[nPorts_2] "Outlets";
+      Interfaces.WaterInlet port_1[nPorts_1] "Inlets"
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
+      Interfaces.WaterOutlet port_2[nPorts_2] "Outlets"
+        annotation (Placement(transformation(extent={{90,-10},{110,10}})));
       Real T(unit="K") "Mixed temperature";
       Real pIn(unit="Pa", start=0, fixed=pressureDriven) "Pressure of the inlet node";
     equation
@@ -1146,6 +1447,13 @@ package FastModel "Building models for model predictive control: close to Buildi
         pIn = 0;
         sum(port_1[i].m_flow for i in 1:nPorts_1) + sum(port_2[i].m_flow for i in 1:nPorts_2) = 0;
       end if;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Polygon(points={{-100,-40},{100,-40},{100,40},{-100,40},{-100,-40}}, lineColor={0,0,0},
+            fillColor={175,175,175}, fillPattern=FillPattern.Solid),
+          Polygon(points={{-100,-22},{100,-22},{100,22},{-100,22},{-100,-22}}, lineColor={0,0,0},
+            fillPattern=FillPattern.HorizontalCylinder, fillColor={0,128,255}),
+          Ellipse(extent={{-12,12},{12,-12}}, lineColor={0,0,0}, fillColor={0,0,0}, fillPattern=FillPattern.Solid),
+          Text(extent={{-151,142},{149,102}}, textColor={0,0,255}, textString="%name")}));
     end Junction2;
 
     function radiatorConductance
@@ -1233,8 +1541,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       final parameter Real m_flow_nominal(unit="kg/s") = abs(Q_flow_nominal/cpWat/(T_a_nominal - T_b_nominal))
         "Nominal flow";
       Real T[nEle](each unit="K", each start=T_start, each fixed=true) "Water temperature of each element";
-      Interfaces.HeatPort heatPortCon "Convective heat to the room air";
-      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces";
+      Interfaces.HeatPort heatPortCon "Convective heat to the room air"
+        annotation (Placement(transformation(extent={{-30,62},{-10,82}})));
+      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces"
+        annotation (Placement(transformation(extent={{10,62},{30,82}})));
       Real Q_flow(unit="W") "Heat output";
     protected
       Real QCon[nEle](each unit="W") "Convective heat output of each element";
@@ -1256,6 +1566,19 @@ package FastModel "Building models for model predictive control: close to Buildi
       Q_flow = sum(QCon) + sum(QRad);
       heatPortCon.Q_flow = -sum(QCon);
       heatPortRad.Q_flow = -sum(QRad);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-95,6},{106,-4}}, lineColor={0,0,255}, pattern=LinePattern.None, fillColor={0,0,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-102,-4},{-2,6}}, lineColor={0,0,255}, pattern=LinePattern.None, fillColor={255,0,0},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-80,60},{80,-60}}, lineColor={0,0,0}, fillColor={95,95,95},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-66,30},{66,30}}),
+          Line(points={{-66,2},{66,2}}),
+          Line(points={{-66,-30},{66,-30}}),
+          Line(points={{-66,60},{-66,-60}}),
+          Line(points={{66,60},{66,-60}}),
+          Text(extent={{-150,-110},{150,-150}}, textColor={0,0,255}, textString="%name")}));
     end Radiator;
 
     model Boiler
@@ -1276,7 +1599,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real TAmb(unit="K") = 288.15 "Temperature of the boiler room";
       parameter Real T_start(unit="K") = 293.15 "Initial water temperature";
       parameter Real C(unit="J/K") = rhoWat*VWat*cpWat + 500*mDry "Heat capacity of the water and of the dry mass";
-      Interfaces.RealInput y(unit="1") "Part load ratio, 0 to 1";
+      Interfaces.RealInput y(unit="1") "Part load ratio, 0 to 1"
+        annotation (Placement(transformation(extent={{-140,60},{-100,100}})));
       Real T(unit="K", start=T_start, fixed=true) "Water temperature";
       Real EFue(unit="kWh", start=0, fixed=true) "Fuel meter";
       Real QFue(unit="W") "Fuel power";
@@ -1301,6 +1625,18 @@ package FastModel "Building models for model predictive control: close to Buildi
           port_b[i].m_flow = -Utilities.quadraticFlow(pIn - port_b[i].p, m_flow_nominal/nPorts_b, dp_nominal, deltaM);
         end for;
       end if;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-70,60},{70,-60}}, lineColor={0,0,255}, pattern=LinePattern.None,
+            fillColor={95,95,95}, fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-101,5},{100,-4}}, lineColor={0,0,255}, pattern=LinePattern.None, fillColor={0,0,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{0,-4},{100,5}}, lineColor={0,0,255}, pattern=LinePattern.None, fillColor={255,0,0},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{0,-34},{-12,-52},{14,-52},{0,-34}}, pattern=LinePattern.None, fillColor={255,255,0},
+            fillPattern=FillPattern.Solid, lineColor={0,0,0}),
+          Line(points={{-100,80},{-80,80},{-80,-44},{-6,-44}}),
+          Text(extent={{-38,146},{-158,96}}, textColor={0,0,0}, textString="y"),
+          Text(extent={{-150,-110},{150,-150}}, textColor={0,0,255}, textString="%name")}));
     end Boiler;
 
     package HeatPumps "Performance data of heat pumps (Buildings.Fluid.HeatPumps.ModularReversible.Data.TableData2D)"
@@ -1405,8 +1741,10 @@ package FastModel "Building models for model predictive control: close to Buildi
         + 2*pi*VTan/(pi*hTan)) else 0 "Heat loss conductance of the buffer";
       parameter Real C(unit="J/K") = (rhoWat*VWat + mCon_flow*tauCon)*cpWat "Heat capacity of the buffer and condenser";
       parameter Real T_start(unit="K") = TSet "Initial buffer temperature";
-      Interfaces.RealInput y(unit="1") "Compressor speed, 0 to 1";
-      Interfaces.WeatherBusIn weaBus "Weather: the source is the outdoor air";
+      Interfaces.RealInput y(unit="1") "Compressor speed, 0 to 1"
+        annotation (Placement(transformation(extent={{-140,0},{-100,40}})));
+      Interfaces.WeatherBusIn weaBus "Weather: the source is the outdoor air"
+        annotation (Placement(transformation(extent={{-110,-90},{-90,-70}})));
       Real T(unit="K", start=T_start, fixed=true) "Buffer temperature";
       Real EEle(unit="kWh", start=0, fixed=true) "Electricity meter";
       Real QCon(unit="W") "Heat to the water";
@@ -1428,6 +1766,34 @@ package FastModel "Building models for model predictive control: close to Buildi
           port_b[i].m_flow = -GLink/nPorts_b*(pIn - port_b[i].p);
         end for;
       end if;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-102,100},{100,-100}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-16,60},{16,-60}}, fillColor={170,213,255}, fillPattern=FillPattern.Solid,
+            lineColor={0,0,0}, origin={0,-64}, rotation=90),
+          Rectangle(extent={{-16,60},{16,-60}}, fillColor={238,46,47}, fillPattern=FillPattern.Solid,
+            lineColor={0,0,0}, origin={0,60}, rotation=90),
+          Line(points={{-9,40},{9,40},{-5,-2},{9,-40},{-9,-40}}, color={0,0,0}, origin={-3,-60}, rotation=-90),
+          Line(points={{9,40},{-9,40},{5,-2},{-9,-40},{9,-40}}, color={0,0,0}, origin={-5,56}, rotation=-90),
+          Rectangle(extent={{-60,42},{60,-46}}, fillColor={0,0,0}, fillPattern=FillPattern.Solid,
+            pattern=LinePattern.None),
+          Line(points={{-42,72},{34,72}}, color={0,0,0}, arrow={Arrow.None,Arrow.Filled}, thickness=0.5),
+          Line(points={{-38,0},{38,0}}, color={0,0,0}, arrow={Arrow.None,Arrow.Filled}, thickness=0.5,
+            origin={0,-74}, rotation=180),
+          Text(extent={{-96,28},{-74,10}}, textColor={0,0,127}, textString="y"),
+          Rectangle(extent={{34,42},{38,-46}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Ellipse(extent={{14,22},{58,-20}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{36,22},{18,-10},{54,-10},{36,22}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-46,42},{-42,-46}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{-44,2},{-54,-10},{-34,-10},{-44,2}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{-44,2},{-54,12},{-34,12},{-44,2}}, lineColor={0,0,0}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end HeatPump;
   end Hydronics;
 
@@ -1436,20 +1802,30 @@ package FastModel "Building models for model predictive control: close to Buildi
       flow Real m_flow(unit="kg/s") "Mass flow rate into the component";
       Real T(unit="K") "Temperature of the air crossing the port";
       Interfaces.RealInput y(unit="1") "Relative speed of the fan moving the air";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Ellipse(extent={{-100,100},{100,-100}}, lineColor={0,127,255}, fillColor={0,127,255},
+            fillPattern=FillPattern.Solid)}));
     end AirInlet;
 
     connector AirOutlet "Air port, outlet: the temperature of the air crossing it and the speed of its fan"
       flow Real m_flow(unit="kg/s") "Mass flow rate into the component";
       Real T(unit="K") "Temperature of the air crossing the port";
       Interfaces.RealOutput y(unit="1") "Relative speed of the fan moving the air";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Ellipse(extent={{-100,100},{100,-100}}, lineColor={0,127,255}, fillColor={0,127,255},
+            fillPattern=FillPattern.Solid),
+          Ellipse(extent={{-80,80},{80,-80}}, lineColor={0,127,255}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid)}));
     end AirOutlet;
 
     model Duct "Duct carrying y*m_flow_nominal: y is the relative speed of the fan of its unit"
       parameter Integer nPorts_a = 1 "Number of connections of the inlet";
       parameter Integer nPorts_b = 1 "Number of connections of the outlet";
       parameter Real m_flow_nominal(unit="kg/s") "Nominal flow";
-      AirInlet port_a[nPorts_a];
-      AirOutlet port_b[nPorts_b];
+      AirInlet port_a[nPorts_a]
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
+      AirOutlet port_b[nPorts_b]
+        annotation (Placement(transformation(extent={{90,-10},{110,10}})));
       Real m_flow(unit="kg/s") "Flow through the duct";
     equation
       m_flow = sum(port_a[i].m_flow for i in 1:nPorts_a);
@@ -1459,6 +1835,12 @@ package FastModel "Building models for model predictive control: close to Buildi
         port_b[i].T = port_a[1].T;
         port_b[i].y = port_a[1].y;
       end for;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,40},{100,-40}}, lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder,
+            fillColor={192,192,192}),
+          Rectangle(extent={{-100,22},{100,-24}}, lineColor={0,0,0}, fillPattern=FillPattern.HorizontalCylinder,
+            fillColor={0,127,0}),
+          Text(extent={{-150,-110},{150,-150}}, textColor={0,0,255}, textString="%name")}));
     end Duct;
 
     model HeatRecoveryUnit
@@ -1476,10 +1858,14 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real PRet(unit="W") = dpRet_nominal*m_flow_nominal/rhoAir/etaFan "Return fan power at nominal flow";
       parameter Real dTFan(unit="K") = (PSup + eps*PRet)/(m_flow_nominal*cpAir)
         "Heating of the supply air by the fans (supply after the exchanger, return before it)";
-      AirInlet port_a[nPorts_a] "Extract air";
-      AirOutlet port_b[nPorts_b] "Supply air";
-      Interfaces.RealInput y(unit="1") "Relative speed of the fans";
-      Interfaces.WeatherBusIn weaBus "Weather: the outdoor air";
+      AirInlet port_a[nPorts_a] "Extract air"
+        annotation (Placement(transformation(extent={{90,-70},{110,-50}})));
+      AirOutlet port_b[nPorts_b] "Supply air"
+        annotation (Placement(transformation(extent={{90,50},{110,70}})));
+      Interfaces.RealInput y(unit="1") "Relative speed of the fans"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Interfaces.WeatherBusIn weaBus "Weather: the outdoor air"
+        annotation (Placement(transformation(extent={{-110,50},{-90,70}})));
       Real TExt(unit="K") "Mixed extract air temperature";
       Real TSup(unit="K") "Supply air temperature";
       Real PFan(unit="W") "Electrical power of the fans";
@@ -1494,6 +1880,15 @@ package FastModel "Building models for model predictive control: close to Buildi
       end for;
       PFan = y*(PSup + PRet);
       der(EFan) = PFan/3.6e6;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,65},{101,55}}, lineColor={0,0,255}, pattern=LinePattern.None,
+            fillColor={0,0,255}, fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-100,-55},{101,-65}}, lineColor={0,0,255}, pattern=LinePattern.None,
+            fillColor={0,127,0}, fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-70,78},{70,-80}}, lineColor={0,0,255}, pattern=LinePattern.None,
+            fillColor={95,95,95}, fillPattern=FillPattern.Solid),
+          Text(extent={{-56,-12},{54,-72}}, textColor={255,255,255}, textString="eps=%eps"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end HeatRecoveryUnit;
   end Ventilation;
 
@@ -1518,10 +1913,31 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real uHigh "Threshold of the switch to 1";
       parameter Real tau(unit="s") = 10 "Switching time";
       parameter Real y_start = 0 "Initial output";
-      Interfaces.RealInput u;
+      Interfaces.RealInput u
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Real y(start=y_start, fixed=true);
     equation
       tau*der(y) = Utilities.regStep(u - (uHigh + (uLow - uHigh)*y), 1, 0, (uHigh - uLow)/10) - y;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,100},{100,-100}}, lineColor={0,0,0}, fillColor={210,210,210},
+            fillPattern=FillPattern.Solid, borderPattern=BorderPattern.Raised),
+          Polygon(points={{-80,90},{-88,68},{-72,68},{-80,90}}, lineColor={192,192,192}, fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-80,68},{-80,-29}}, color={192,192,192}),
+          Polygon(points={{92,-29},{70,-21},{70,-37},{92,-29}}, lineColor={192,192,192}, fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-79,-29},{84,-29}}, color={192,192,192}),
+          Line(points={{-79,-29},{41,-29}}),
+          Line(points={{-15,-21},{1,-29},{-15,-36}}),
+          Line(points={{41,51},{41,-29}}),
+          Line(points={{33,3},{41,22},{50,3}}),
+          Line(points={{-49,51},{81,51}}),
+          Line(points={{-4,59},{-19,51},{-4,43}}),
+          Line(points={{-59,29},{-49,11},{-39,29}}),
+          Line(points={{-49,51},{-49,-29}}),
+          Text(extent={{-92,-49},{-9,-92}}, textColor={192,192,192}, textString="%uLow"),
+          Text(extent={{2,-49},{91,-92}}, textColor={192,192,192}, textString="%uHigh"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end Hysteresis;
 
     model PI
@@ -1534,15 +1950,32 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real Ni = 0.9 "Anti-windup gain";
       parameter Real yReset = yMin "Output after a reset";
       parameter Real tauReset(unit="s") = 30 "Time constant of the reset while disabled";
-      Interfaces.RealInput e "Control error";
-      Interfaces.RealInput enable "1: integrate, 0: reset";
+      Interfaces.RealInput e "Control error"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Interfaces.RealInput enable "1: integrate, 0: reset"
+        annotation (Placement(transformation(extent={{-20,-20},{20,20}}, rotation=90, origin={0,-120})));
       Real I(start=yReset/k, fixed=true) "Integral of the error";
       Real yUnl "Unlimited output";
-      Interfaces.RealOutput y;
+      Interfaces.RealOutput y
+        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
       yUnl = k*(e + I);
       y = Utilities.smoothLimit(yUnl, yMin, yMax, 1e-3*(yMax - yMin));
       der(I) = enable*(e/Ti + (y - yUnl)/(k*Ni*Ti)) + (1 - enable)*(yReset/k - e - I)/tauReset;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{-80,82},{-88,60},{-72,60},{-80,82}}, lineColor={192,192,192}, fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-80,68},{-80,-100}}, color={192,192,192}),
+          Line(points={{-90,-80},{70,-80}}, color={192,192,192}),
+          Polygon(points={{74,-80},{52,-72},{52,-88},{74,-80}}, lineColor={192,192,192}, fillColor={192,192,192},
+            fillPattern=FillPattern.Solid),
+          Line(points={{-80,-80},{-80,-22}}, color={0,0,0}),
+          Line(points={{-80,-22},{6,56}}, color={0,0,0}),
+          Line(points={{6,56},{68,56}}, color={0,0,0}),
+          Text(extent={{-26,-22},{74,-62}}, textColor={0,0,0}, textString="PI"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end PI;
 
     partial model PartialEmissionControl
@@ -1552,17 +1985,25 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real THeaSet(unit="K") = 294.15 "Set point when occupied";
       parameter Real THeaSetBack(unit="K") = 289.15 "Set point otherwise";
       parameter Real k = 1 "Gain";
-      Interfaces.RealInput TZon(unit="K") "Zone air temperature";
-      Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter";
+      Interfaces.RealInput TZon(unit="K") "Zone air temperature"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter"
+        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
       Real TSet(unit="K") "Set point";
     equation
       TSet = THeaSetBack + (THeaSet - THeaSetBack)*Utilities.occupancy(Utilities.timeOfDay(time), schedule);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end PartialEmissionControl;
 
     model EmissionP "Variant PController: P controller (IDEAS LimPID) between 0 and 1"
       extends PartialEmissionControl(k=5);
     equation
       y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, 1e-3);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="P")}));
     end EmissionP;
 
     model EmissionPI "Variant default: PI heating loop of Buildings G36 ControlLoops (k = 0.1, Ti = 900 s)"
@@ -1572,6 +2013,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       PI conHea(k=kHea, Ti=TiHea, e=TSet - TZon, enable=1);
     equation
       y = conHea.y;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="PI")}));
     end EmissionPI;
 
     model EmissionOnOff "Variant onoff: on below the set point minus half the band, off above it plus half the band"
@@ -1580,17 +2023,27 @@ package FastModel "Building models for model predictive control: close to Buildi
       Hysteresis onOff(uLow=-bandwidth/2, uHigh=bandwidth/2, u=TSet - TZon);
     equation
       y = onOff.y;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="on/off")}));
     end EmissionOnOff;
 
     model EmissionMonitored
       "Variant MonitoredSetpoint: P controller (IDEAS LimPID) between 0 and 1 towards a set point read from external
        data"
       parameter Real k = 1 "Gain";
-      Interfaces.RealInput TSet(unit="K") "Set point";
-      Interfaces.RealInput TZon(unit="K") "Zone air temperature";
-      Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter";
+      Interfaces.RealInput TSet(unit="K") "Set point"
+        annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+      Interfaces.RealInput TZon(unit="K") "Zone air temperature"
+        annotation (Placement(transformation(extent={{-140,-80},{-100,-40}})));
+      Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter"
+        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
       y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, 1e-3);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="P"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end EmissionMonitored;
 
     model CollectorControl
@@ -1598,14 +2051,22 @@ package FastModel "Building models for model predictive control: close to Buildi
        below 0.01, the speed from a P controller holding the head at dp_nominal"
       parameter Integer nVal = 1 "Number of valves";
       parameter Real k = 1 "Gain";
-      Interfaces.RealInput yVal[nVal] "Openings of the valves of the circuit";
-      Interfaces.RealInput dpRel "Head of the pump relative to its nominal head";
+      Interfaces.RealInput yVal[nVal] "Openings of the valves of the circuit"
+        annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+      Interfaces.RealInput dpRel "Head of the pump relative to its nominal head"
+        annotation (Placement(transformation(extent={{-140,-80},{-100,-40}})));
       Real yMax "Largest opening";
       Hysteresis hysPum(uLow=0.01, uHigh=0.5, u=yMax);
-      Interfaces.RealOutput y(unit="1") "Speed of the pump";
+      Interfaces.RealOutput y(unit="1") "Speed of the pump"
+        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
       yMax = smoothMaxN(yVal);
       y = Utilities.smoothLimit(k*(hysPum.y - dpRel), 0, 1, 1e-3);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="collector"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end CollectorControl;
 
     model ThreeWayValveControl
@@ -1614,23 +2075,37 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real TColSet(unit="K") = 363.15 "Supply temperature set point";
       parameter Real k = 1 "Gain";
       parameter Real tauSen(unit="s") = 10 "Time constant of the temperature measurement";
-      Interfaces.RealInput u(unit="K") "Measured supply temperature";
-      Interfaces.RealOutput y(unit="1") "Opening of the supply path";
+      Interfaces.RealInput u(unit="K") "Measured supply temperature"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Interfaces.RealOutput y(unit="1") "Opening of the supply path"
+        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
       Real TMea(unit="K", start=TColSet - 30, fixed=true) "Filtered measurement";
     equation
       tauSen*der(TMea) = u - TMea;
       y = Utilities.smoothLimit(k*(TColSet - TMea), 0, 1, 1e-3);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="3WV"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end ThreeWayValveControl;
 
     model BoilerDemand
       "Demand of a production (trano BoilerControl, variant simple): on when a valve of its circuits opens beyond 0.5,
        off when all are below 0.01"
       parameter Integer n = 1 "Number of circuits";
-      Interfaces.RealInput yMax[n] "Largest opening of the valves of each circuit";
+      Interfaces.RealInput yMax[n] "Largest opening of the valves of each circuit"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Hysteresis hys(uLow=0.01, uHigh=0.5, u=smoothMaxN(yMax));
-      Interfaces.RealOutput y(unit="1") "Demand";
+      Interfaces.RealOutput y(unit="1") "Demand"
+        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
       y = hys.y;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="demand"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end BoilerDemand;
 
     model BoilerTemperatureControl
@@ -1638,11 +2113,19 @@ package FastModel "Building models for model predictive control: close to Buildi
        there is demand"
       parameter Real TempSet(unit="K") = 353.15 "Boiler temperature set point";
       parameter Real k = 1 "Gain";
-      Interfaces.RealInput T(unit="K") "Boiler water temperature";
-      Interfaces.RealInput demand "Demand, 0 or 1";
-      Interfaces.RealOutput y(unit="1") "Part load ratio";
+      Interfaces.RealInput T(unit="K") "Boiler water temperature"
+        annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
+      Interfaces.RealInput demand "Demand, 0 or 1"
+        annotation (Placement(transformation(extent={{-140,-80},{-100,-40}})));
+      Interfaces.RealOutput y(unit="1") "Part load ratio"
+        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
       y = demand*Utilities.smoothLimit(k*(TempSet - T), 0, 1, 1e-3);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="boiler"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end BoilerTemperatureControl;
 
     model HeatPumpControl
@@ -1658,11 +2141,16 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real TiCom(unit="s") = 300 "Integral time of the compressor controller";
       parameter Real yComMin = 0.3 "Minimum compressor speed";
       parameter Real tauSen(unit="s") = 30 "Time constant of the condenser outlet temperature";
-      Interfaces.RealInput demand "Demand of the circuits, 0 or 1";
-      Interfaces.RealInput TOut(unit="K") "Outdoor air temperature";
-      Interfaces.RealInput TBuf(unit="K") "Buffer temperature";
-      Interfaces.RealInput TConOut(unit="K") "Condenser outlet temperature";
-      Interfaces.RealOutput y(unit="1") "Compressor speed";
+      Interfaces.RealInput demand "Demand of the circuits, 0 or 1"
+        annotation (Placement(transformation(extent={{-140,50},{-100,90}})));
+      Interfaces.RealInput TOut(unit="K") "Outdoor air temperature"
+        annotation (Placement(transformation(extent={{-140,5},{-100,45}})));
+      Interfaces.RealInput TBuf(unit="K") "Buffer temperature"
+        annotation (Placement(transformation(extent={{-140,-45},{-100,-5}})));
+      Interfaces.RealInput TConOut(unit="K") "Condenser outlet temperature"
+        annotation (Placement(transformation(extent={{-140,-90},{-100,-50}})));
+      Interfaces.RealOutput y(unit="1") "Compressor speed"
+        annotation (Placement(transformation(extent={{100,-20},{140,20}})));
       Real TSupSet(unit="K") "Supply temperature set point (heating curve)";
       Real TCon(unit="K", start=TSet, fixed=true) "Measured condenser outlet temperature";
       Real heaOn "Heating on";
@@ -1675,6 +2163,11 @@ package FastModel "Building models for model predictive control: close to Buildi
       tauSen*der(TCon) = TConOut - TCon;
       heaOn = demand*(1 - warOut.y)*bufCha.y;
       y = heaOn*conCom.y;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="heat pump"),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end HeatPumpControl;
   end Controls;
 
@@ -1686,7 +2179,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real eta_DCAC = 0.9 "Efficiency of the conversion from DC to AC";
       parameter Real til(unit="rad") "Tilt";
       parameter Real azi(unit="rad") "Azimuth: 0 south";
-      Interfaces.WeatherBusIn weaBus "Weather";
+      Interfaces.WeatherBusIn weaBus "Weather"
+        annotation (Placement(transformation(extent={{-10,90},{10,110}})));
       BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the modules";
       Real P(unit="W") "Electrical power produced";
       Real EPro(unit="kWh", start=0, fixed=true) "Production meter";
@@ -1694,18 +2188,55 @@ package FastModel "Building models for model predictive control: close to Buildi
       connect(weaBus, sol.weaBus);
       P = A*fAct*eta*eta_DCAC*(sol.HDir + sol.HDif);
       der(EPro) = P/3.6e6;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Polygon(points={{-80,-52},{-32,63},{78,63},{29,-52},{-80,-52}}, fillColor={205,203,203},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None, lineColor={0,0,0}),
+          Polygon(points={{-69,-45},{-57,-19},{-34,-19},{-45,-45},{-69,-45}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Polygon(points={{-53,-9},{-41,17},{-18,17},{-29,-9},{-53,-9}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Polygon(points={{-38,27},{-26,53},{-3,53},{-14,27},{-38,27}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Polygon(points={{-36,-45},{-24,-19},{-1,-19},{-12,-45},{-36,-45}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Polygon(points={{-20,-9},{-8,17},{15,17},{4,-9},{-20,-9}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Polygon(points={{-5,27},{7,53},{30,53},{19,27},{-5,27}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Polygon(points={{-3,-45},{9,-19},{32,-19},{21,-45},{-3,-45}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Polygon(points={{13,-9},{25,17},{48,17},{37,-9},{13,-9}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Polygon(points={{28,27},{40,53},{63,53},{52,27},{28,27}}, fillColor={6,13,150},
+            fillPattern=FillPattern.Solid, pattern=LinePattern.None),
+          Text(extent={{-150,-104},{150,-64}}, textColor={0,0,0}, textString="%name")}));
     end Photovoltaic;
   end Electrical;
 
   package HVAC "Ideal heating and cooling"
     model IdealHeatingCooling "Heat flow rate Q_flow (an input), split between the room air and its radiant star"
       parameter Real fraRad = 0 "Radiant share";
-      Interfaces.RealInput Q_flow(unit="W") "Heat flow rate, positive for heating";
-      Interfaces.HeatPort heatPortCon "Convective heat to the room air";
-      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces";
+      Interfaces.RealInput Q_flow(unit="W") "Heat flow rate, positive for heating"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Interfaces.HeatPort heatPortCon "Convective heat to the room air"
+        annotation (Placement(transformation(extent={{90,30},{110,50}})));
+      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces"
+        annotation (Placement(transformation(extent={{90,-50},{110,-30}})));
     equation
       heatPortCon.Q_flow = -(1 - fraRad)*Q_flow;
       heatPortRad.Q_flow = -fraRad*Q_flow;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{-60,-20},{40,-20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-60,20},{40,20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-80,0},{-60,-20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-80,0},{-60,20}}, color={191,0,0}, thickness=0.5),
+          Polygon(points={{40,0},{40,40},{70,20},{40,0}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{40,-40},{40,0},{70,-20},{40,-40}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{70,40},{90,-40}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end IdealHeatingCooling;
 
     model IdealHeater
@@ -1713,14 +2244,29 @@ package FastModel "Building models for model predictive control: close to Buildi
        the room air and its radiant star"
       parameter Real Q_flow_nominal(unit="W") "Nominal power";
       parameter Real fraRad = 0 "Radiant share";
-      Interfaces.RealInput y(unit="1") "Share of the nominal power";
-      Interfaces.HeatPort heatPortCon "Convective heat to the room air";
-      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces";
+      Interfaces.RealInput y(unit="1") "Share of the nominal power"
+        annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
+      Interfaces.HeatPort heatPortCon "Convective heat to the room air"
+        annotation (Placement(transformation(extent={{90,30},{110,50}})));
+      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces"
+        annotation (Placement(transformation(extent={{90,-50},{110,-30}})));
       Real Q_flow(unit="W") "Heat flow rate";
     equation
       Q_flow = Q_flow_nominal*Utilities.smoothLimit(y, 0, 1, 1e-3);
       heatPortCon.Q_flow = -(1 - fraRad)*Q_flow;
       heatPortRad.Q_flow = -fraRad*Q_flow;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{-60,-20},{40,-20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-60,20},{40,20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-80,0},{-60,-20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-80,0},{-60,20}}, color={191,0,0}, thickness=0.5),
+          Polygon(points={{40,0},{40,40},{70,20},{40,0}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{40,-40},{40,0},{70,-20},{40,-40}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{70,40},{90,-40}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name")}));
     end IdealHeater;
 
     model IdealHeatingCoolingPI
@@ -1733,8 +2279,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real k = 0.1 "Gain [1/K]";
       parameter Real Ti(unit="s") = 300 "Integral time";
       parameter Real frad = 0 "Radiant share";
-      Interfaces.HeatPort heatPortCon "Convective heat to the room air";
-      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces";
+      Interfaces.HeatPort heatPortCon "Convective heat to the room air"
+        annotation (Placement(transformation(extent={{90,30},{110,50}})));
+      Interfaces.HeatPort heatPortRad "Radiative heat to the room surfaces"
+        annotation (Placement(transformation(extent={{90,-50},{110,-30}})));
       Real QHea_flow(unit="W") "Heating";
       Real QCoo_flow(unit="W") "Cooling, positive when cooling";
       Real EHea(unit="kWh", start=0, fixed=true) "Heating meter";
@@ -1748,6 +2296,19 @@ package FastModel "Building models for model predictive control: close to Buildi
       der(ECoo) = QCoo_flow/3.6e6;
       heatPortCon.Q_flow = -(1 - frad)*(QHea_flow - QCoo_flow);
       heatPortRad.Q_flow = -frad*(QHea_flow - QCoo_flow);
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Line(points={{-60,-20},{40,-20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-60,20},{40,20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-80,0},{-60,-20}}, color={191,0,0}, thickness=0.5),
+          Line(points={{-80,0},{-60,20}}, color={191,0,0}, thickness=0.5),
+          Polygon(points={{40,0},{40,40},{70,20},{40,0}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Polygon(points={{40,-40},{40,0},{70,-20},{40,-40}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Rectangle(extent={{70,40},{90,-40}}, lineColor={191,0,0}, fillColor={191,0,0},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-150,150},{150,110}}, textColor={0,0,255}, textString="%name"),
+          Text(extent={{-80,80},{20,40}}, textColor={0,0,0}, textString="PI")}));
     end IdealHeatingCoolingPI;
   end HVAC;
 end FastModel;

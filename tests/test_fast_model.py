@@ -80,6 +80,44 @@ def test_fast_model_is_templates_and_modelica() -> None:
     assert (ROOT / "trano" / "library" / "FastModel.mo").read_text().startswith("package FastModel")
 
 
+def _fast_model_classes() -> dict[str, tuple[bool, str, str]]:
+    """Models and connectors of FastModel.mo by name: whether they are partial, model or connector, and their body."""
+    text = (ROOT / "trano" / "library" / "FastModel.mo").read_text()
+    classes = {}
+    for match in re.finditer(r"^( *)(partial )?(model|connector) (\w+)\b(?! =)", text, re.MULTILINE):
+        indent, partial, kind, name = match.groups()
+        end = re.compile(rf"^{indent}end {name};", re.MULTILINE).search(text, match.end())
+        assert end, name
+        classes[name] = (bool(partial), kind, text[match.end() : end.start()])
+    return classes
+
+
+def _has_icon(name: str, classes: dict[str, tuple[bool, str, str]]) -> bool:
+    body = classes[name][2]
+    bases = [base.split(".")[-1] for base in re.findall(r"^\s*extends ([\w.]+)", body, re.MULTILINE)]
+    return "Icon(" in body or any(_has_icon(base, classes) for base in bases if base in classes)
+
+
+def test_every_component_has_the_icon_of_its_buildings_model() -> None:
+    classes = _fast_model_classes()
+    missing = [name for name, (partial, _, _) in classes.items() if not partial and not _has_icon(name, classes)]
+    assert not missing
+
+
+def test_every_port_is_placed_on_the_icon() -> None:
+    classes = _fast_model_classes()
+    connectors = {"RealInput", "RealOutput"} | {name for name, (_, kind, _) in classes.items() if kind == "connector"}
+    unplaced = [
+        f"{name}.{component}"
+        for name, (_, kind, body) in classes.items()
+        if kind == "model"
+        for declaration in re.findall(r"^\s*((?:Interfaces\.|Ventilation\.)?\w+ \w+[^;]*);", body, re.MULTILINE)
+        if declaration.split()[0].split(".")[-1] in connectors and "Placement" not in declaration
+        for component in [declaration.split()[1].split("(")[0].split("[")[0]]
+    ]
+    assert not unplaced
+
+
 def test_the_package_holds_the_model_and_its_runnable_wrapper() -> None:
     model = _model(MODELS / "single_zone_hydronic.yaml")
     assert "package FastModel" in model
