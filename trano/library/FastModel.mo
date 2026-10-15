@@ -686,7 +686,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       QInt = Functions.interiorConvection(T[nLay + 1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
       C[1]*der(T[1]) = QSol - QExt - G[1]*(T[1] - T[2]);
       for i in 2:nLay loop
-        C[i]*der(T[i]) = G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]);
+        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
       end for;
       C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
@@ -718,7 +718,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       end for;
       QInt = Functions.interiorConvection(T[nLay] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
       for i in 1:nLay - 1 loop
-        C[i + 1]*der(T[i]) = G[i]*(TNod[i] - T[i]) - G[i + 1]*(T[i] - T[i + 1]);
+        der(T[i]) = (G[i]*(TNod[i] - T[i]) - G[i + 1]*(T[i] - T[i + 1]))/C[i + 1];
       end for;
       C[nLay + 1]*der(T[nLay]) = G[nLay]*(TNod[nLay] - T[nLay]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
@@ -743,7 +743,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       QInt = Functions.interiorConvection(T[nLay + 1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
       C[1]*der(T[1]) = -G[1]*(T[1] - T[2]);
       for i in 2:nLay loop
-        C[i]*der(T[i]) = G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]);
+        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
       end for;
       C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
@@ -777,7 +777,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       QInt_b = Functions.interiorConvection(T[nLay + 1] - propsBus_b.con.T, A, cPos_b, cNeg_b, propsBus_b.hConInt);
       C[1]*der(T[1]) = -G[1]*(T[1] - T[2]) - QInt_a + propsBus_a.rad.Q_flow;
       for i in 2:nLay loop
-        C[i]*der(T[i]) = G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]);
+        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
       end for;
       C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt_b + propsBus_b.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt_a;
@@ -845,7 +845,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       else
         CPan[1]*der(T[1]) = QAbs[1] - QExt - GGap[1]*(T[1] - T[2]);
         for i in 2:nPan - 1 loop
-          CPan[i]*der(T[i]) = QAbs[i] + GGap[i - 1]*(T[i - 1] - T[i]) - GGap[i]*(T[i] - T[i + 1]);
+          der(T[i]) = (QAbs[i] + GGap[i - 1]*(T[i - 1] - T[i]) - GGap[i]*(T[i] - T[i + 1]))/CPan[i];
         end for;
         CPan[nPan]*der(T[nPan]) = QAbs[nPan] + GGap[nPan - 1]*(T[nPan - 1] - T[nPan]) - QInt + propsBus_a.rad.Q_flow;
       end if;
@@ -1555,7 +1555,7 @@ package FastModel "Building models for model predictive control: close to Buildi
         TUp[i] = if i == 1 then TIn else T[max(i - 1, 1)];
         QCon[i] = (1 - fraRad)*UAEle*(T[i] - heatPortCon.T)*((T[i] - heatPortCon.T)^2 + dT0^2)^((n - 1)/2);
         QRad[i] = fraRad*UAEle*(T[i] - heatPortRad.T)*((T[i] - heatPortRad.T)^2 + dT0^2)^((n - 1)/2);
-        C/nEle*der(T[i]) = mTra*cpWat*(TUp[i] - T[i]) - QCon[i] - QRad[i];
+        der(T[i]) = (mTra*cpWat*(TUp[i] - T[i]) - QCon[i] - QRad[i])*nEle/C;
       end for;
       TOut = T[nEle];
       if pressureDriven then
