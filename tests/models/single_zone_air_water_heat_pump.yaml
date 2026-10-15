@@ -1,0 +1,104 @@
+# Single-zone house heated by an air-to-water heat pump with a buffer tank and a radiator on a mixing circuit:
+# the building of single_zone_hydronic.yaml with the boiler replaced by a heat pump and the radiator sized for a
+# 45/35 degC supply. Small enough for closed-loop model predictive control studies with the FastModelMPC library.
+default: !include_default
+spaces:
+  - occupancy:
+      parameters:
+        occupancy: 3600*{7, 22}
+        gain: "[40; 75; 40]"
+        heat_gain_if_occupied: 1/7/3
+    parameters:
+      floor_area: 100.0
+      average_room_height: 2.5
+    id: SPACE:001
+    external_boundaries:
+      external_walls:
+        - surface: 20
+          azimuth: 0
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 30
+          azimuth: 1.57
+          tilt: wall
+          construction: CAVITYWALL:001
+        - surface: 50
+          azimuth: 3.14
+          tilt: wall
+          construction: CAVITYWALL:001
+      windows:
+        - surface: 5.0
+          construction: INS3AR2020:001
+          azimuth: 0
+          tilt: wall
+        - surface: 2.0
+          construction: INS3AR2020:001
+          azimuth: 3.14
+          tilt: wall
+      floor_on_grounds:
+        - surface: 50.0
+          construction: CONCRETESLAB:001
+    emissions:
+      - radiator:
+          id: RADIATOR:001
+          # low-temperature radiator: the design loss at 45/35 degC
+          parameters:
+            nominal_heating_power_positive_for_heating: 3000
+            water_inlet_temperature_at_nominal_condition: 318.15
+            water_outlet_temperature_at_nominal_condition: 308.15
+            air_temperature_at_nominal_condition: 293.15
+      - valve:
+          id: VALVE:001
+          control:
+            emission_control:
+              id: EMISSION_CONTROL:001
+              parameters:
+                schedule: 3600*{7, 22}
+                temperature_heating_setpoint: 294.15
+                temperature_heating_setback: 290.15
+systems:
+  - boiler:
+      id: BOILER:001
+      variant: air_water_heat_pump
+      # 3.5 kW at -8 degC outdoor and 45 degC supply, 150 l buffer
+      parameters:
+        nominal_heating_power: 3500
+        temperature_supply_setpoint_heat_pump: 318.15
+        use_storage_tank: true
+        tank_volume: 0.15
+        height_of_tank_without_insulation: 1.0
+      control:
+        boiler_control:
+          id: BOILER_CONTROL:001
+          variant: simple
+      inlets:
+        - SPLIT_VALVE:002
+  - pump:
+      id: PUMP:001
+      parameters:
+        m_flow_nominal: 0.08
+      control:
+        collector_control:
+      inlets:
+        - BOILER:001
+  - three_way_valve:
+      id: THREE_WAY_VALVE:001
+      parameters:
+        m_flow_nominal: 0.08
+      control:
+        three_way_valve_control:
+      inlets:
+        - SPLIT_VALVE:002
+        - PUMP:001
+      outlets:
+        - TEMPERATURE_SENSOR:001
+  - temperature_sensor:
+      id: TEMPERATURE_SENSOR:001
+      outlets:
+        - RADIATOR:001
+  - split_valve:
+      id: SPLIT_VALVE:002
+      inlets:
+        - VALVE:001
+      outlets:
+        - BOILER:001

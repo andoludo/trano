@@ -186,6 +186,18 @@ def test_fast_model_mpc_is_fast_model_under_another_name() -> None:
     assert mpc.parameter_library == closed_loop.parameter_library
 
 
+@needs_connected_export
+def test_single_zone_heat_pump_is_controlled_through_its_electricity() -> None:
+    """The small heat pump house of the MPC studies: a valve, the compressor speed and a mixing valve as controls,
+    the electricity of the heat pump metered, the buffer and the radiator water as states."""
+    model = _export(MODELS / "single_zone_air_water_heat_pump.yaml")
+    roles = Roles.infer(model.description)
+    assert roles.controls == ("valve_001_y.y", "boiler_001_y.y", "three_way_valve_001_y.y")
+    assert roles.meters == {"boiler_001.EEle": "electricity"}
+    assert roles.comfort == ("space_001.TAir",)
+    assert {"boiler_001.T", "radiator_001.T[1]"} <= set(model.description.state_names)
+
+
 def _building_mpc(model: str) -> str:
     return model[model.index("model building_mpc") : model.index("end building_mpc;")]
 
@@ -194,6 +206,7 @@ def _building_mpc(model: str) -> str:
     "path",
     [
         MODELS / "single_zone_hydronic.yaml",
+        MODELS / "single_zone_air_water_heat_pump.yaml",
         MODELS / "three_zones_ideal_heaters.yaml",
         MODELS / "house_infiltration_air_water_heat_pump.yaml",
         ROOT / "examples" / "residential_before_renovation.yaml",
