@@ -382,6 +382,7 @@ class InventoryStudy:
                     recompiled,
                     study.overrides,
                 )
+                prune_build(recompiled)
                 self.progress.set(
                     "equivalence",
                     study.key,
@@ -427,6 +428,16 @@ class InventoryStudy:
         rows = self.finalise(studies)
         write_inventory(rows, self.project / f"parameter_inventory_{self.library.lower()}.csv")
         return rows
+
+
+KEPT_BUILD_FILES = ("build.log", "build.mos", "runtime.json")
+
+
+def prune_build(compiled: CompiledModel) -> None:
+    """Remove what a build directory holds besides its logs, script and model (hundreds of MB per build)."""
+    for path in compiled.directory.iterdir():
+        if path.is_file() and path.name not in KEPT_BUILD_FILES and path.suffix != ".mo":
+            path.unlink()
 
 
 def _impact_record(result: ImpactResult, path: Path) -> dict[str, Any]:
@@ -488,12 +499,13 @@ def _finalise_row(  # noqa: C901, PLR0912
                 reasons.append("the override is taken without effect while the recompiled model changes")
         elif impact is not None and not has_impact:
             row.status = Status.no_impact
-            reasons.append(
-                "inert in this scenario: the recompiled model does not change either"
-                if equivalent
-                else "below the impact threshold"
-            )
+            if row.equivalence_ok == "true":
+                reasons.append("inert in this scenario: the recompiled model does not change either")
+            elif equivalent:
+                reasons.append("below the impact threshold; the override is taken (equivalence inferred)")
+            else:
+                reasons.append("below the impact threshold")
     row.reason = " | ".join(reasons)
 
 
-__all__ = ["FieldStudy", "InventoryStudy", "equivalence_sample", "signature", "window_options"]
+__all__ = ["FieldStudy", "InventoryStudy", "equivalence_sample", "prune_build", "signature", "window_options"]

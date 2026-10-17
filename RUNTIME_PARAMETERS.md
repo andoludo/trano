@@ -94,30 +94,30 @@ field with its Modelica paths, run-time names, init-file attributes, check resul
 | Layers |  | 21 |  |  |  |  | 21 |
 | Glazing | 39 | 1 |  |  | 13 |  | 53 |
 | PV | 2 |  | 2 |  |  |  | 4 |
-| Geometry | 38 | 10 | 20 |  |  |  | 68 |
+| Geometry | 35 | 10 | 20 | 3 |  |  | 68 |
 | Space | 18 | 6 |  |  |  |  | 24 |
 | Controls | 12 |  |  | 6 |  |  | 18 |
 | Emission | 6 |  | 24 |  |  |  | 30 |
 | Heat pump | 3 | 1 |  |  |  |  | 4 |
 | Hydronics | 1 |  | 1 |  |  |  | 2 |
 | Ventilation | 13 |  | 16 |  |  |  | 29 |
-| **all** | **134** | **78** | **63** | **6** | **17** | **0** | **298** |
+| **all** | **131** | **78** | **63** | **9** | **17** | **0** | **298** |
 
-- **changeable** (134): the run-time parameters take the YAML value itself.
+- **changeable** (131): the run-time parameters take the YAML value itself.
 - **derived** (78): trano transforms the value; the run-time parameters to set and the transformation are in
   the `reason` column (`n50` -> `ACH`, materials -> every copy of `k`, `R`, `piMat`, `nStaReal`, window
   surface -> `wWin`, `hWin`, heat pump power -> its nominal flows). `SpecificationResolver.overrides` computes
   them from YAML changes.
 - **frozen** (63): radiator nominal power and temperatures, duct and AHU pressure drops and AHU and pump
   nominal flows, PV tilt and azimuth, orientation of walls hosting windows and of windows.
-- **no_impact** (6): the heating setbacks, inert in this scenario (below).
+- **no_impact** (9): the six heating setbacks, inert in this scenario (below), and the azimuths of the three
+  adiabatic party walls (a boundary construction receives no solar radiation in Buildings).
 - **not_used** (17): `perimeter` and `average_indoor_temperature` of the floors (IDEAS only; Buildings takes
   `ground_temperature`), the properties of `AIR:001` (no glazing of the example has an air gap), the
   emissivities of the gases, the density and heat capacity of the glass panes (Buildings' glass record has none).
 - **missing** (0).
 
-Calibration targets of the brief that pass (equivalence run on the field itself or on the field of the same
-mechanism, see `equivalence_ok`): insulation conductivities (within the admissible
+Calibration targets of the brief that pass all three checks on the field itself: insulation conductivities (within the admissible
 range, below), `n50`, `ground_temperature`, glass `solar_transmittance`, `u_value_frame`, heating setpoints,
 heat pump `nominal_heating_power` and `temperature_supply_setpoint_heat_pump`, `heat_exchanger_effectiveness`
 and the duct flows. The calibration targets that are **not** run-time parameters: the radiator
@@ -147,22 +147,24 @@ Perturbations: +20 % by default, -20 % for quantities bounded by one, +2 K for t
 half an hour for schedules (their midnight ends kept), +0.2 rad for an azimuth at zero; for material properties
 and layer thicknesses, inside the admissible range when +20 % leaves it.
 
-**Sampling.** Readback ran for every field reaching free parameters (224). The 16-day runs take about four
-minutes each, so impact ran for the high-priority fields of the brief (calibration targets: insulation
-conductivities, glazing, `n50`, ground temperatures, setpoints and setbacks, heat pump, heat recovery, duct flows)
-and for every field of the equivalence sample: 59 fields. Equivalence ran for one field per *mechanism* (its group,
-direct or derived, and the reasons some of its run-time names are not free), high priority first, plus floor area,
-room height, control schedule, setback, tank volume and height, brick conductivity, heat recovery and PV
-efficiency: 28 recompiles covering every group, plus the exploratory recompile of EPS `k` +20 % that showed the
-range limit. The other fields carry `equivalence_ok = inferred_true` or
-`inferred_false` with the field it was inferred from, and `impact_metric = not run`; their status relies on
-their readback and on the verified field of the same mechanism. `trano parameter-inventory` runs every check on
-every field when hours of simulation are available.
+**Coverage.** Readback and impact ran for every field reaching free parameters (224 fields; 225 16-day runs
+with the baseline, about four minutes each). Equivalence ran on 59 fields: every high-priority field of the brief
+(insulation conductivities, glazing transmittances and frame, `n50`, ground temperatures, setpoints and setbacks,
+heat pump power and supply setpoint, heat recovery, duct flows), one field for every other *mechanism* (its group,
+direct or derived, and the reasons some of its run-time names are not free), and floor area, room height,
+schedules, tank volume and height, brick conductivity, PV efficiency and area; plus the exploratory recompile of
+EPS `k` +20 % that showed the range limit. The remaining 165 fields (repeated surfaces, the other materials and
+layers, the other optical properties, valves, ...) carry `equivalence_ok = inferred_true` or `inferred_false`
+with the verified field of the same mechanism they were inferred from: 59 x (2.5 min compilation + 4 min run)
+already took two and a half hours, the other 165 would take seven more (`trano parameter-inventory` with an
+`extra_equivalence` list of every path does it).
 
-### Equivalence results (28 recompiles and the exploratory one)
+### Equivalence results (59 recompiles and the exploratory one)
 
-Every equivalent case is exact: the outputs of the recompiled model and of the override run are bit-identical
-(NRMSD 0.0), and no free parameter was missed.
+58 of the 59 are equivalent, and every equivalent case is exact: the outputs of the recompiled model and of the
+override run are bit-identical (NRMSD 0.0), and no free parameter was missed. By group: Controls 13, Ventilation 13,
+Space 9, Glazing 5, Opaque materials 5, Heat pump 4, Emission 2, Ground 2, Geometry 2, PV 2, Layers 1, Hydronics 1
+(every row of the CSV with `equivalence_ok = true`). The table gives one field per mechanism:
 
 | field (perturbed value) | equivalent | note |
 |---|---|---|
@@ -194,14 +196,15 @@ Every equivalent case is exact: the outputs of the recompiled model and of the o
 | `...radiator.parameters.nominal_heating_power_positive_for_heating` (4680) | **no** | NRMSD 0.14; `mDry`, `VWat` evaluated, `vol[1].V` a literal |
 | `material[EPS:001].thermal_conductivity` (0.0384, +20 %) | **no** | `nSta` 2 -> 1: the discretisation changes (exploratory run) |
 
-### Impact of the high-priority fields (heat pump heat over the two weeks)
+### Impact (heat pump heat over the two weeks)
 
 Heating setpoint +2 K: +1.5 to +5.3 % (living, kitchen, bedrooms; -0.6 % for the bathroom); heat recovery
 0.8 -> 0.64: +11.9 %; EPS layer of the external wall 12 -> 14.4 cm: -7.4 %; ground temperature +2 K: -2.9 %
 (kitchen), -4.4 % (living); `n50` +20 %: +3.7 % (living), between -1.9 % and +0.9 % for the other zones; mineral
 wool `k` +20 %: +2.7 %; EPS `k` +6 % (range limit): +1.2 %; low-e glass transmittance -20 %: -0.9 % or +2.7 %
 depending on the pane; `u_value_frame` +20 %: +0.9 %; heat pump supply setpoint +2 K: heat -1.2 %, electricity
-+1.0 %; PV efficiency -20 %: PV energy -20.00 %. Every value is in the `impact_metric` column.
++1.0 %; PV efficiency -20 %: PV energy -20.00 %. Every one of the 224 fields is in the `impact_metric`
+column.
 
 The heat pump cycles on and off, so its two-week energy moves by one or two percent for any small perturbation,
 in either direction (the infiltration of a single upstairs room, a duct flow): the impact check detects a change
@@ -211,8 +214,10 @@ or a hysteresis on the heat pump control) rather than two weeks of heat pump ene
 
 The **setbacks** (-2 K) have no impact at all (NRMSD exactly 0): in this well insulated house the rooms do not cool
 down to 16 degC during the night in these two weeks, so the P controllers stay at zero either way. The recompiled
-model does not change either (equivalence exact): inert by design in this scenario, not ignored by the executable;
-a colder period or a lower setback would make them act.
+model does not change either (equivalence exact for each of the six): inert by design in this scenario, not ignored
+by the executable; a colder period or a lower setback would make them act. The azimuths of the adiabatic party
+walls are taken by the executable (readback) but do nothing: Buildings computes no solar radiation on boundary
+constructions (`datConBou`).
 
 ## Freezing mechanisms found
 
