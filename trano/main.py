@@ -7,6 +7,7 @@ from rich import print
 import typer
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
+from trano.fmu.export import FmuExportOptions, export_fmu
 from trano.mpc.parameters import RCModelType
 from trano.reporting.html import to_html_reporting
 from trano.reporting.reporting import ModelDocumentation
@@ -164,6 +165,47 @@ def simulate_model(
         report_path = _generate_report(network, model_, result_path)
         progress.remove_task(task)
         print(f"{CHECKMARK} Report available at {report_path}")
+
+
+@app.command("export-fmu")
+def export_fmu_model(
+    model: Annotated[
+        str,
+        typer.Argument(help="Local path to the '.yaml' model configuration file."),
+    ],
+    library: Annotated[
+        LibraryChoice,
+        typer.Argument(help="Simulation library the model is generated with before the export."),
+    ] = LibraryChoice.buildings,
+    fmu_type: Annotated[
+        str,
+        typer.Option(help="FMU type passed to OpenModelica's buildModelFMU: 'cs' (co-simulation), 'me' or 'me_cs'."),
+    ] = FmuExportOptions().fmu_type,
+) -> None:
+    """Export the model as an FMI 2.0 FMU built by OpenModelica in trano's simulation container."""
+    options = FmuExportOptions(library_name=library.value, fmu_type=fmu_type)
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+    ) as progress:
+        task = progress.add_task(
+            description=f"Generating model {Path(model).stem} with library {library.value}",
+            total=None,
+        )
+        network = _create_network(model, library.value)
+        model_ = Path(model).resolve()
+        progress.remove_task(task)
+        print(f"{CHECKMARK} Model generated successfully.")
+        task = progress.add_task(description="Building the FMU (several minutes for a multi-zone model)...", total=None)
+        try:
+            fmu_path = export_fmu(model_.parent, network, options=options)
+        except Exception as e:
+            progress.remove_task(task)
+            print(f"{CROSS_MARK} FMU export failed. Reason {e}.")
+            return
+        progress.remove_task(task)
+        print(f"{CHECKMARK} FMU available at {fmu_path}")
 
 
 @app.command()

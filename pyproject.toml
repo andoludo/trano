@@ -62,6 +62,7 @@ dev = [
     "pytest>=9.0.3,<10",
     "rumoca>=0.10.3,<0.11",
     "casadi>=3.6.7,<4",
+    "fmpy>=0.3.22,<0.4",
 ]
 docs = [
     "mkdocs>=1.6.1,<2",
@@ -97,6 +98,7 @@ markers = [
     "simulate: slow integration tests that require Docker and the OpenModelica image",
     "bestest: year-long ASHRAE 140 validation simulations (Docker, hours); run with -m bestest",
     "compile: OpenModelica checks of every model of the repository (Docker, about a minute per model)",
+    "fmu: FMU export and calibration-parameter checks (Docker, OpenModelica image, FMPy; tens of minutes)",
 ]
 addopts = "-ra"
 

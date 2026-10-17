@@ -41,3 +41,7 @@ class InvalidSensorInletError(Exception): ...
 
 class InvalidModelError(ValueError):
     """The YAML model does not satisfy the Trano schema."""
+
+
+class FmuError(Exception):
+    """The FMU could not be built, read or simulated."""

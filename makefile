@@ -13,7 +13,7 @@ linting:
 
 # ── Tests ──────────────────────────────────────────────────────────────────────
 tests:
-	uv run pytest -m "not simulate and not bestest and not compile"
+	uv run pytest -m "not simulate and not bestest and not compile and not fmu"
 
 compile:
 	uv run pytest -m compile

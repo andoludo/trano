@@ -93,6 +93,7 @@ class ParameterSpec(BaseModel):
     deprecated: str | None = None
     default_from: str | None = None
     computed: bool = False
+    func: str | None = Field(default=None, description="Source of the function computing the parameter")
     description: str | None = None
     default: Any = None
 
@@ -122,6 +123,7 @@ class ParameterSpec(BaseModel):
             deprecated=attribute.get("deprecated"),
             default_from=attribute.get("default_from"),
             computed="func" in attribute,
+            func=attribute.get("func"),
             description=attribute.get("description"),
             default=_get_default(attribute) if "range" in attribute else None,
         )
