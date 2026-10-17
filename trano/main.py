@@ -166,6 +166,115 @@ def simulate_model(
         print(f"{CHECKMARK} Report available at {report_path}")
 
 
+def _parse_assignments(assignments: list[str] | None, option: str) -> dict[str, float]:
+    parsed = {}
+    for assignment in assignments or []:
+        name, separator, value = assignment.partition("=")
+        if not separator or not name.strip():
+            raise typer.BadParameter(f"expected name=value, got {assignment!r}", param_hint=option)
+        try:
+            parsed[name.strip()] = float(value)
+        except ValueError as error:
+            raise typer.BadParameter(f"{value!r} is not a number", param_hint=option) from error
+    return parsed
+
+
+@app.command()
+def compile_model(  # noqa: PLR0913
+    model: Annotated[str, typer.Argument(help="Local path to the '.yaml' model configuration file.")],
+    library: Annotated[LibraryChoice, typer.Argument(help="Library to be used.")] = LibraryChoice.buildings,
+    output: Annotated[
+        Path | None,
+        typer.Option(help="Project directory of the build; '<model>_runtime' next to the YAML file by default."),
+    ] = None,
+    start: Annotated[int, typer.Option(help="Default start time of the runs (s).")] = 0,
+    end: Annotated[int, typer.Option(help="Default stop time of the runs (s).")] = 2 * 3600 * 24 * 7,
+    tolerance: Annotated[float, typer.Option(help="Simulation tolerance.")] = 1e-4,
+    intervals: Annotated[int | None, typer.Option(help="Number of output intervals.")] = None,
+) -> None:
+    """Compile the model once; run it many times with 'trano run-model' and new parameter values."""
+    from trano.runtime import build_model
+
+    model_path = Path(model).resolve()
+    project = (output or model_path.parent / f"{model_path.stem}_runtime").resolve()
+    options = SimulationLibraryOptions(
+        start_time=start, end_time=end, tolerance=tolerance, number_of_intervals=intervals, library_name=library
+    )
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
+        progress.add_task(description=f"Compiling {model_path.stem} with library {library.value}", total=None)
+        network = _create_network(model, library)
+        compiled = build_model(project, network, options, specification=model_path)
+    print(f"{CHECKMARK} Executable and {compiled.init_xml.name} kept in {compiled.directory}")
+
+
+@app.command()
+def run_model(  # noqa: PLR0913
+    build: Annotated[Path, typer.Argument(help="Build directory written by 'trano compile-model'.")],
+    set_: Annotated[
+        list[str] | None,
+        typer.Option("--set", help="Run-time parameter override 'name=value' (repeatable)."),
+    ] = None,
+    change: Annotated[
+        list[str] | None,
+        typer.Option(
+            help="Change of the YAML specification 'path=value' (repeatable), e.g. "
+            "'material[EPS:001].thermal_conductivity=0.035', translated into run-time overrides."
+        ),
+    ] = None,
+    start: Annotated[float | None, typer.Option(help="Start time (s).")] = None,
+    stop: Annotated[float | None, typer.Option(help="Stop time (s).")] = None,
+    label: Annotated[str, typer.Option(help="Name of the run: runs/<label>_result.mat.")] = "run",
+    strict: Annotated[bool, typer.Option(help="Fail when the executable ignores an override.")] = True,
+) -> None:
+    """Run a compiled model with new parameter values, without recompiling."""
+    from trano.runtime import CompiledModel, run_model as run_compiled_model
+    from trano.runtime.init_xml import read_model_variables
+    from trano.runtime.resolution import SpecificationResolver
+
+    compiled = CompiledModel.load(build)
+    overrides = _parse_assignments(set_, "--set")
+    changes = _parse_assignments(change, "--change")
+    if changes:
+        if compiled.specification is None or compiled.library is None:
+            raise typer.BadParameter("the build does not record its YAML specification", param_hint="--change")
+        resolver = SpecificationResolver.from_file(Path(compiled.specification), compiled.library)
+        resolved = resolver.overrides(dict(changes))
+        variables = read_model_variables(compiled.init_xml, resolved)
+        blocked = sorted(name for name in resolved if name not in variables or variables[name].kind != "free")
+        for name in blocked:
+            print(f"[yellow]warning[/yellow] {name} cannot be set at run time (see RUNTIME_PARAMETERS.md)")
+        overrides = {name: value for name, value in resolved.items() if name not in blocked} | overrides
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
+        progress.add_task(description=f"Running {compiled.model_name} ({len(overrides)} overrides)", total=None)
+        result = run_compiled_model(compiled, overrides, label=label, start_time=start, stop_time=stop, strict=strict)
+    for message in result.messages:
+        print(f"[yellow]warning[/yellow] {message.name}: {message.issue}")
+    print(f"{CHECKMARK} Results available at {result.result_path}")
+
+
+@app.command()
+def parameter_inventory(  # noqa: PLR0913
+    model: Annotated[str, typer.Argument(help="Local path to the '.yaml' model configuration file.")],
+    library: Annotated[LibraryChoice, typer.Argument(help="Library to be used.")] = LibraryChoice.buildings,
+    project: Annotated[
+        Path | None, typer.Option(help="Working directory; '<model>_inventory' next to the YAML file by default.")
+    ] = None,
+    checks: Annotated[
+        bool, typer.Option(help="Run the readback, impact and equivalence checks (hours on a large model).")
+    ] = True,
+    select: Annotated[str | None, typer.Option(help="Regular expression of the YAML paths to study.")] = None,
+    workers: Annotated[int, typer.Option(help="Simulations run at the same time.")] = 3,
+) -> None:
+    """Which YAML fields can be changed at run time in the compiled model (parameter_inventory_<library>.csv)."""
+    from trano.runtime.study import InventoryStudy
+
+    model_path = Path(model).resolve()
+    project_path = project or model_path.parent / f"{model_path.stem}_inventory"
+    study = InventoryStudy(model_path, library.value, project_path, workers=workers, select=select)
+    rows = study.run(checks=checks)
+    print(f"{CHECKMARK} {len(rows)} fields in {project_path / f'parameter_inventory_{library.value.lower()}.csv'}")
+
+
 @app.command()
 def verify() -> None:
     model_path = Path(__file__).parent / "verification.yaml"

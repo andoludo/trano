@@ -265,6 +265,18 @@ def _load_aixlib(model: str, environment: ModelicaEnvironment) -> str:
     loadModel(AixLib, {{"{environment.aixlib}", "default"}});"""
 
 
+def load_statements(model: str, model_file: str, environment: ModelicaEnvironment = MODELICA_ENVIRONMENT) -> str:
+    """The OpenModelica statements loading the libraries and the model file ``/simulation/<model_file>``.
+
+    ``model`` is the Modelica text of the file: it tells whether AixLib has to be loaded too.
+    """
+    return f"""
+    getVersion();
+    loadModel(Modelica, {{"{environment.modelica_version}"}});
+    loadModel(IDEAS, {{"{environment.ideas}"}});{_load_aixlib(model, environment)}
+    loadFile("/simulation/{model_file}");"""
+
+
 @contextmanager
 def create_mos_file(
     network: Network,
@@ -290,11 +302,7 @@ def create_mos_file(
     getErrorString();"""
         )
         template = STRING_ENVIRONMENT.from_string(
-            f"""
-    getVersion();
-    loadModel(Modelica, {{"{environment.modelica_version}"}});
-    loadModel(IDEAS, {{"{environment.ideas}"}});{_load_aixlib(model, environment)}
-    loadFile("/simulation/{{{{model_file}}}}");
+            f"""{load_statements(model, "{{model_file}}", environment)}
     checkModel({{{{model_name}}}}.building);{simulation}
     """
         )
