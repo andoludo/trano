@@ -621,6 +621,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#simulation-runtimes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simulation runtimes
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1536,6 +1547,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#simulation-runtimes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Simulation runtimes
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1646,22 +1668,56 @@
 <h3 id="modelica-libraries">Modelica libraries</h3>
 <p>The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0 (built against Modelica 4.1.0), IDEAS 3.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the <code>openmodelica/openmodelica:v1.26.9-ompython</code> image. Both Modelica Standard Library versions are installed side by side; the versions are defined in one place, <code>trano.simulate.simulate.ModelicaEnvironment</code>. IDEAS 4.0.0 is not used yet: no OpenModelica release handles it (1.25 cannot parse it, 1.26 and 1.27 fail with internal errors on its weather bus, also in IDEAS' own examples).</p>
 <p>Each simulation container first runs an OpenModelica script that installs these libraries with the package manager. A library already present on the container's <code>MODELICAPATH</code> (for example baked into an image derived from the official one under <code>/root/.openmodelica/libraries</code>) is not installed again, so simulations also work where the package index cannot be reached.</p>
+<p>Without further configuration, the libraries are installed at every container start, which needs network access. Two ways avoid it:</p>
+<ul>
+<li>mount a directory of installed libraries into every simulation container by setting the environment variable <code>TRANO_MODELICA_LIBRARIES</code> to it;</li>
+<li>install the libraries once, when an image is built, with the <code>omc</code> of that image: <code>python -m trano.simulate.install_libraries</code> runs the same installation as a container start and exits with a non-zero status when Modelica, Buildings, IDEAS or AixLib is still missing afterwards.</li>
+</ul>
+<div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">openmodelica/openmodelica:v1.26.9-ompython</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>trano<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>trano.simulate.install_libraries
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">ENV</span><span class="w"> </span><span class="nv">TRANO_SIMULATION_RUNTIME</span><span class="o">=</span><span class="nb">local</span>
+</span></code></pre></div>
+<h3 id="simulation-runtimes">Simulation runtimes</h3>
+<p>Trano runs OpenModelica in one of two ways, chosen by the <code>runtime</code> argument of <code>trano.simulate.simulate.simulate</code> or, by default, by the environment variable <code>TRANO_SIMULATION_RUNTIME</code>:</p>
+<ul>
+<li><code>docker</code> (the default): a sibling container of the OpenModelica image is started through the Docker socket for every simulation, with a unique name, and the libraries are installed in it as described above;</li>
+<li><code>local</code>: the <code>omc</code> found on the <code>PATH</code> runs in the process' machine, for example in a worker container built as above. Nothing is installed at run time; <code>trano.exceptions.OpenModelicaNotFoundError</code> is raised when <code>omc</code> is missing.</li>
+</ul>
+<p>In both cases the model, its script and its weather file are written into the project directory and the result file lands in its <code>results</code> directory. Two simulations must not share a project directory.</p>
+<p>The one-call API validates, generates and simulates a model and returns a typed result instead of raising:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano</span><span class="w"> </span><span class="kn">import</span> <span class="n">simulate_yaml</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.simulate.simulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationOptions</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">simulate_yaml</span><span class="p">(</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;house.yaml&quot;</span><span class="p">),</span>  <span class="c1"># or the model already parsed into a dict</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">options</span><span class="o">=</span><span class="n">SimulationOptions</span><span class="p">(</span><span class="n">end_time</span><span class="o">=</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">),</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">runtime</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">on_phase</span><span class="o">=</span><span class="nb">print</span><span class="p">,</span>  <span class="c1"># generating, compiling, simulating, done</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="p">)</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">result_path</span><span class="p">)</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="k">else</span><span class="p">:</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">error_kind</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">error_message</span><span class="p">)</span>  <span class="c1"># validation, translation, solver, timeout or runtime</span>
+</span></code></pre></div>
+<p><code>trano.check_yaml</code> checks the model with OpenModelica without simulating it, and <code>trano.kpi.building_kpis(result.result_path, network)</code> computes the heating energy, peak power and hours below the set point of models heated by <code>ideal_heating_cooling</code> emissions.</p>
 <h2 id="python-package">Python package</h2>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Trano requires python 3.9 or higher and docker to be installed on the system.</p>
 </div>
 <p>Trano is a Python package that you can install via pip.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>trano
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span class="w"> </span>install<span class="w"> </span>trano
 </span></code></pre></div>
 <p>Trano can also be utilized with Poetry.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>poetry<span class="w"> </span>add<span class="w"> </span>trano
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>poetry<span class="w"> </span>add<span class="w"> </span>trano
 </span></code></pre></div>
 <p>The Python package enables the generation of a Modelica model from the YAML configuration input. However, to simulate the model, Docker must be installed on the system.</p>
 <p>On Windows systems, you may need to enable long path support. Refer to the <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry">Microsoft documentation</a> for guidance.</p>
 <h2 id="check-installation">Check installation</h2>
 <p>To verify the installation, execute the following command in the terminal.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>trano<span class="w"> </span>verify
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>trano<span class="w"> </span>verify
 </span></code></pre></div>
 <p>This command checks your system's compatibility for model generation and simulation. Compatibility is optional if you only intend to generate the Modelica model.</p>
 
