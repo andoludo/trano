@@ -17,7 +17,7 @@ import pytest
 from trano.data_models.conversion import convert_network
 from trano.elements.jinja import UnsupportedElementError
 from trano.elements.library.library import Library
-from trano.optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings, Roles
+from trano_optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings, Roles
 from trano.simulate.simulate import SimulationOptions, simulate
 
 ROOT = Path(__file__).parents[1]

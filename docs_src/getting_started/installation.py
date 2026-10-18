@@ -37,7 +37,7 @@ sudo apt install graphviz
     The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0
     (built against Modelica 4.1.0), IDEAS 3.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the
     openmodelica/openmodelica:v1.26.9-ompython image. Both Modelica Standard Library versions are installed
-    side by side; the versions are defined in one place, trano.simulate.simulate.ModelicaEnvironment.
+    side by side; the versions are defined in one place, trano_simulate.ModelicaEnvironment.
     Each simulation container first runs an OpenModelica script that installs these libraries with the
     package manager. A library already present on the container's MODELICAPATH (for example baked into an
     image derived from the official one under /root/.openmodelica/libraries) is not installed again, so
@@ -51,19 +51,19 @@ access. Two ways avoid it:
 - mount a directory of installed libraries into every simulation container by setting the environment variable
   `TRANO_MODELICA_LIBRARIES` to it;
 - install the libraries once, when an image is built, with the `omc` of that image: `python -m
-  trano.simulate.install_libraries` runs the same installation as a container start and exits with a non-zero
+  trano_simulate.install_libraries` runs the same installation as a container start and exits with a non-zero
   status when Modelica, Buildings, IDEAS or AixLib is still missing afterwards.
 
 ```dockerfile
 FROM openmodelica/openmodelica:v1.26.9-ompython
-RUN pip install trano && python -m trano.simulate.install_libraries
+RUN pip install trano && python -m trano_simulate.install_libraries
 ENV TRANO_SIMULATION_RUNTIME=local
 ```
 
 ### Simulation runtimes
 
 Trano runs OpenModelica in one of two ways, chosen by the `runtime` argument of
-`trano.simulate.simulate.simulate` or, by default, by the environment variable `TRANO_SIMULATION_RUNTIME`:
+`trano_simulate.simulate` or, by default, by the environment variable `TRANO_SIMULATION_RUNTIME`:
 
 - `docker` (the default): a sibling container of the OpenModelica image is started through the Docker socket
   for every simulation, with a unique name, and the libraries are installed in it as described above;
@@ -80,7 +80,7 @@ The one-call API validates, generates and simulates a model and returns a typed 
 from pathlib import Path
 
 from trano import simulate_yaml
-from trano.simulate.simulate import SimulationOptions
+from trano_simulate.simulate import SimulationOptions
 
 result = simulate_yaml(
     Path("house.yaml"),  # or the model already parsed into a dict

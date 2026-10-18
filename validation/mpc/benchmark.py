@@ -29,8 +29,8 @@ from pydantic import BaseModel, Field
 
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings
-from trano.optimization.collocation import Collocated, CollocationSettings
+from trano_optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings
+from trano_optimization.collocation import Collocated, CollocationSettings
 from validation.mpc.cases import CASES, ROOT, MPCCase
 from validation.mpc.harness import (
     CACHE_ROOT,

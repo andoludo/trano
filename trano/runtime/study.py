@@ -48,7 +48,7 @@ from trano.runtime.inventory import (
 from trano.runtime.model import CompiledModel, ModelRunner, RunError, build_model
 from trano.runtime.resolution import Resolution, SpecificationResolver
 from trano.runtime.specification import numeric_fields
-from trano.simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions
+from trano_simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions
 
 logger = logging.getLogger(__name__)
 

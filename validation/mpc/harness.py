@@ -29,7 +29,7 @@ from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.mpc import RCModelType
 from trano.mpc.estimation import sanitize_name
-from trano.simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions, simulate
+from trano_simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions, simulate
 from trano.utils.utils import is_success
 from validation.bestest.harness import model_hash, reset_element_names
 from validation.bestest.kpi import find_variable

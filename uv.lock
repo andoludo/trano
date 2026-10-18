@@ -3343,20 +3343,20 @@ dependencies = [
     { name = "pydot" },
     { name = "python-docx" },
     { name = "pyyaml-include" },
+    { name = "trano-simulate" },
     { name = "typer" },
     { name = "yattag" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "casadi" },
     { name = "jsf" },
     { name = "mypy" },
     { name = "networkx-stubs" },
     { name = "pandas-stubs" },
     { name = "pytest" },
     { name = "ruff" },
-    { name = "rumoca" },
+    { name = "trano-optimization" },
     { name = "types-beautifulsoup4" },
     { name = "types-pyyaml" },
     { name = "types-simplejson" },
@@ -3385,20 +3385,20 @@ requires-dist = [
     { name = "pydot", specifier = ">=3.0.4,<4" },
     { name = "python-docx", specifier = ">=1.2.0,<2" },
     { name = "pyyaml-include", specifier = ">=2.2,<3" },
+    { name = "trano-simulate", editable = "../trano-simulate" },
     { name = "typer", specifier = ">=0.19.2,<1" },
     { name = "yattag", specifier = ">=1.16.1,<2" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "casadi", specifier = ">=3.6.7,<4" },
     { name = "jsf", specifier = ">=0.11.2,<0.12" },
     { name = "mypy", specifier = ">=2.1.0,<3" },
     { name = "networkx-stubs", specifier = ">=0.0.1,<0.0.2" },
     { name = "pandas-stubs", specifier = ">=2.2.0.240218,<3" },
     { name = "pytest", specifier = ">=9.0.3,<10" },
     { name = "ruff", specifier = ">=0.15.16,<0.16" },
-    { name = "rumoca", git = "https://github.com/CogniPilot/rumoca?subdirectory=crates%2Frumoca-bind-python&rev=33c21141791cbc341f4788ff6353d2f49d1c740a" },
+    { name = "trano-optimization", editable = "../trano-optimization" },
     { name = "types-beautifulsoup4", specifier = ">=4.12.0.20240229,<5" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20240808,<7" },
     { name = "types-simplejson", specifier = ">=3.19.0.20240218,<4" },
@@ -3412,6 +3412,69 @@ docs = [
     { name = "mkdocstrings-python", specifier = ">=1.12.2,<2" },
     { name = "openai", specifier = ">=1.52.2,<2" },
     { name = "python-dotenv", specifier = ">=1.0.1,<2" },
+]
+
+[[package]]
+name = "trano-optimization"
+version = "0.1.0"
+source = { editable = "../trano-optimization" }
+dependencies = [
+    { name = "casadi" },
+    { name = "numpy" },
+    { name = "pydantic" },
+    { name = "rumoca" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "casadi", specifier = ">=3.6.7,<4" },
+    { name = "numpy", specifier = ">=2.0,<3" },
+    { name = "pydantic", specifier = ">=2.13.4,<3" },
+    { name = "rumoca", git = "https://github.com/CogniPilot/rumoca?subdirectory=crates%2Frumoca-bind-python&rev=33c21141791cbc341f4788ff6353d2f49d1c740a" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=2.1.0,<3" },
+    { name = "pytest", specifier = ">=9.0.3,<10" },
+    { name = "ruff", specifier = ">=0.15.16,<0.16" },
+]
+
+[[package]]
+name = "trano-simulate"
+version = "0.1.0"
+source = { editable = "../trano-simulate" }
+dependencies = [
+    { name = "buildingspy" },
+    { name = "docker" },
+    { name = "jinja2" },
+    { name = "matplotlib" },
+    { name = "pandas" },
+    { name = "plotly" },
+    { name = "pydantic" },
+    { name = "python-docx" },
+    { name = "yattag" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "buildingspy", specifier = ">=5.2.0,<6" },
+    { name = "docker", specifier = ">=7.1.0,<8" },
+    { name = "jinja2", specifier = ">=3.1.6,<4" },
+    { name = "matplotlib", specifier = ">=3.10.9,<4" },
+    { name = "pandas", specifier = ">=2.2.2,<3" },
+    { name = "plotly", specifier = ">=6.8.0,<7" },
+    { name = "pydantic", specifier = ">=2.13.4,<3" },
+    { name = "python-docx", specifier = ">=1.2.0,<2" },
+    { name = "yattag", specifier = ">=1.16.1,<2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=2.1.0,<3" },
+    { name = "pandas-stubs", specifier = ">=2.2.0.240218,<3" },
+    { name = "pytest", specifier = ">=9.0.3,<10" },
+    { name = "ruff", specifier = ">=0.15.16,<0.16" },
 ]
 
 [[package]]

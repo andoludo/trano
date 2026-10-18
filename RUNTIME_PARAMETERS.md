@@ -26,7 +26,7 @@ with ModelRunner(compiled) as runner:                                           
         run = runner.run(resolver.overrides(trial), label=..., stop_time=16 * 86400, strict=True)
 ```
 
-- `build_model` runs `buildModel` in trano's OpenModelica container (`trano.simulate.simulate`: same
+- `build_model` runs `buildModel` in trano's OpenModelica container (`trano_simulate.simulate`: same
   image, same library loading, same weather handling) and keeps the build directory: executable,
   `<Model>_init.xml`, `<Model>_info.json`. A variable filter keeps the outputs and every parameter set
   from the specification in the result files.

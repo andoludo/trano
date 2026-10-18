@@ -20,7 +20,7 @@ from pathlib import Path
 import docker  # type: ignore[import-untyped]
 from pydantic import BaseModel, Field
 
-from trano.simulate.simulate import MODELICA_ENVIRONMENT, CONTAINER_LIBRARIES, SimulationOptions, client, container
+from trano_simulate.simulate import MODELICA_ENVIRONMENT, CONTAINER_LIBRARIES, SimulationOptions, client, container
 from validation.bestest.harness import model_hash
 from validation.performance.cases import BenchmarkCase
 

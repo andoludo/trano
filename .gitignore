@@ -3,8 +3,6 @@
 *.html
 # figures of the documentation, written by docs_src/tutorials/figures.py
 !docs/tutorials/figures/*.html
-# The report templates are package source files, not generated output
-!/trano/reporting/templates/*.html
 *.mat
 *.doc
 *.docx
@@ -181,3 +179,6 @@ validation/bestest/_reports/
 # OpenModelica logs and result files used as test fixtures
 !tests/data/omc_logs/*.log
 !tests/data/kpi/*.mat
+
+# descriptions of the generated models, written next to them for their reports
+*.description.json

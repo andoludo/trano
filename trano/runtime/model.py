@@ -1,7 +1,7 @@
 """Compile a trano model once with OpenModelica, then run the executable many times with new parameters.
 
 :func:`build_model` translates and compiles the model with ``buildModel`` in the OpenModelica container of
-:mod:`trano.simulate.simulate` and keeps the build directory: the executable, ``<Model>_init.xml`` (the
+:mod:`trano_simulate.simulate` and keeps the build directory: the executable, ``<Model>_init.xml`` (the
 start values and attributes of every variable) and ``<Model>_info.json``. :class:`ModelRunner` starts one
 container on that directory and runs the executable as often as needed with parameter overrides
 (``-overrideFile``) and experiment settings (``-startTime=``, ``-stopTime=``): no recompilation.
@@ -35,7 +35,7 @@ from trano.runtime.overrides import (
     parse_override_messages,
     write_override_file,
 )
-from trano.simulate.simulate import (
+from trano_simulate.simulate import (
     CONTAINER_MODEL_DIR,
     MODELICA_ENVIRONMENT,
     ModelicaEnvironment,

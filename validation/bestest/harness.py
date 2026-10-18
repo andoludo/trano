@@ -23,7 +23,7 @@ from trano.elements.base import BaseElement
 from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.elements.system import IdealHeatingCooling
-from trano.simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions, simulate
+from trano_simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions, simulate
 from trano.topology import Network
 from trano.utils.utils import is_success
 from validation.bestest.cases import CASES, Case, building_description, check_support, render_case

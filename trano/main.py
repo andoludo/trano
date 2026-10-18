@@ -7,14 +7,16 @@ from rich import print
 import typer
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
+from trano.model_description import model_description
 from trano.mpc.parameters import RCModelType
 from trano.reporting.html import to_html_reporting
 from trano.reporting.reporting import ModelDocumentation
 from trano.reporting.types import ResultFile
-from trano.simulate.simulate import SimulationLibraryOptions, simulate
+from trano_simulate.simulate import SimulationLibraryOptions, simulate
 from trano.topology import Network
 from trano.utils.utils import is_success
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from trano_simulate.reporting.description import DESCRIPTION_SUFFIX
 
 app = typer.Typer()
 CHECKMARK = "[green]✔[/green]"
@@ -94,8 +96,10 @@ def create_model(
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)
         modelica_model_path.write_text(modelica_model)
+        description_path = model_description(network).write(modelica_model_path.with_suffix(DESCRIPTION_SUFFIX))
         progress.remove_task(task)
         print(f"{CHECKMARK} Model generated at {modelica_model_path}")
+        print(f"{CHECKMARK} Description of the model, for its reports, at {description_path}")
         if network.library.is_rc:
             from trano.mpc.modelica import network_interface
 
