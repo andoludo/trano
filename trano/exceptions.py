@@ -41,3 +41,7 @@ class InvalidSensorInletError(Exception): ...
 
 class InvalidModelError(ValueError):
     """The YAML model does not satisfy the Trano schema."""
+
+
+class OpenModelicaNotFoundError(Exception):
+    """The local simulation runtime is selected but OpenModelica's ``omc`` is not on the PATH."""

@@ -23,7 +23,7 @@ from trano.elements.base import BaseElement
 from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.elements.system import IdealHeatingCooling
-from trano.simulate.simulate import SimulationOptions, simulate
+from trano.simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions, simulate
 from trano.topology import Network
 from trano.utils.utils import is_success
 from validation.bestest.cases import CASES, Case, building_description, check_support, render_case
@@ -139,7 +139,7 @@ def run_case(
     )
     directory = cache_directory(case_id, library)
     network = network_for(case, library)
-    network.set_weather_path_to_container_path(directory)
+    network.set_weather_path(directory, CONTAINER_MODEL_DIR)
     model = network.model()  # rendered once: this very text is hashed, kept and simulated
     expected_hash = model_hash(model, library, options)
     if not force and (cached := _cached(directory, expected_hash)) is not None:
