@@ -15,6 +15,7 @@ from trano.elements.common_base import (
     BaseProperties,
     MediumTemplate,
 )
+from trano.elements.library.library import Connectors
 from trano.elements.connection import (
     BasePartialConnectionWithContainerType,
     PartialConnection,
@@ -27,6 +28,7 @@ from trano.elements.types import (
     Medium,
     SystemContainerTypes,
 )
+from trano.elements.data_bus.inputs import BaseInputOutput
 from trano.elements.jinja import ENVIRONMENT, compile_template
 from trano.elements.utils import wrap_with_raw
 from trano.exceptions import ContainerNotFoundError
@@ -53,6 +55,7 @@ class ContainerInput(BaseModel):
     connections: list[Connection]
     data: BaseProperties
     medium: MediumTemplate
+    connectors: Connectors
 
 
 class ContainerLayout(BaseModel):
@@ -126,7 +129,7 @@ class Container(BaseContainer):
                 return port_group
         return None
 
-    def _initialize_template(self, medium: MediumTemplate) -> None:
+    def _initialize_template(self, medium: MediumTemplate, connectors: Connectors) -> None:
         ports = {}
         for port_group in self.port_groups:
             for port in port_group.ports:
@@ -136,10 +139,13 @@ class Container(BaseContainer):
             template = compile_template(self.template)
         except:
             raise
-        self.template = template.render(medium=medium, ports=SimpleNamespace(**ports))
+        self.template = template.render(medium=medium, ports=SimpleNamespace(**ports), connectors=connectors)
+        self.prescribed_connection_equation = compile_template(self.prescribed_connection_equation).render(
+            connectors=connectors
+        )
 
-    def build(self, template: Template, medium: MediumTemplate) -> str:
-        self._initialize_template(medium)
+    def build(self, template: Template, medium: MediumTemplate, connectors: Connectors) -> str:
+        self._initialize_template(medium, connectors)
         self.add_grouped_by_medium_connection()
         return template.render(container=self)
 
@@ -338,9 +344,11 @@ class Containers(BaseModel):
         template = self._template()
         main_template = self._main_template()
         self._set_connection_annotation()
-        self.main = main_template.render(container=self)
-
-        return [c.build(template, container_input.medium) for c in self.in_use_containers()]
+        containers = [
+            c.build(template, container_input.medium, container_input.connectors) for c in self.in_use_containers()
+        ]
+        self.main = main_template.render(container=self, connectors=container_input.connectors)
+        return containers
 
     def build_main_connections(self) -> None:
         couple_connections: dict[Any, list[Any]] = {}
@@ -421,6 +429,11 @@ class Containers(BaseModel):
 
     def in_use_containers(self) -> list[Container]:
         return [c for c in self.containers if c.contain_elements()]
+
+    def model_inputs(self) -> list[BaseInputOutput]:
+        """Inputs of the model: the signals of the data bus that no element writes and that a library makes inputs."""
+        bus = self.get_container("bus")
+        return [port for element in (bus.elements if bus else []) for port in getattr(element, "model_inputs", [])]
 
     def bus_equations(self) -> list[str]:
         containers = {container.name for container in self.in_use_containers()}

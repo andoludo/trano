@@ -1,4 +1,4 @@
-{%- macro Trano_library(databus, dynamic_components) -%}
+{%- macro Trano_library(databus, dynamic_components, data_bus_connector=none) -%}
 {% raw %}
 package Trano
   package Occupancy
@@ -151,24 +151,9 @@ annotation (Placement(transformation(extent={{-66,-22},{-46,-2}})));
 
   package Controls
   package BaseClasses
-    expandable connector DataBus
-      extends Modelica.Icons.SignalBus;
-      annotation (
-        Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,
-                100}}), graphics={Rectangle(
-              extent={{-20,2},{22,-2}},
-              lineColor={255,204,51},
-              lineThickness=0.5)}),
-        Documentation(info="<html>
-<p>
-This connector defines the <code>expandable connector</code> ControlBus that
-is used to connect control signals.
-Note, this connector is empty. When using it, the actual content is
-constructed by the signals connected to this bus.
-</p>
-</html>"));
-    end DataBus;
-  annotation (
+{% endraw %}
+{% if data_bus_connector %}{{ data_bus_connector | safe }}{% else %}{% include 'data_bus/expandable.jinja2' %}{% endif %}
+{% raw %}  annotation (
         Icon(graphics={  Rectangle(lineColor = {200, 200, 200}, fillColor = {248, 248, 248},
                 fillPattern =                                                                              FillPattern.HorizontalCylinder, extent = {{-100, -100}, {100, 100}}, radius = 25), Rectangle(lineColor = {128, 128, 128}, extent = {{-100, -100}, {100, 100}}, radius = 25), Ellipse(lineColor = {128, 128, 128}, fillColor = {255, 255, 255},
                 fillPattern =                                                                                                                                                                                                        FillPattern.Solid, extent = {{-30, -30}, {30, 30}})}));

@@ -49,8 +49,8 @@ class DynamicComponentTemplate(BaseModel):
 
 
 class RunnableTemplate(BaseModel):
-    """What an element adds to the runnable model wrapping a model made of inputs (FastModel's ``building_mpc``):
-    declarations, equations, and modifiers of the wrapped model. Each is a jinja template of the element."""
+    """What an element adds to the runnable model wrapping a model made of inputs (``building_mpc``): declarations,
+    equations, and modifiers of the wrapped model. Each is a jinja template of the element."""
 
     declaration: str = ""
     equation: str = ""

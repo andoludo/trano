@@ -1,7 +1,10 @@
 # Controls. FastModel (closed loop): the controllers of trano's Buildings models without events
-# (FastModel.Controls); an emission control drives its valve or ideal emitter through the port y, a three-way valve
-# control reads its temperature sensor through the port u; the collector and boiler controls are referenced by the
-# pumps and productions that they drive. FastModelMPC: no controller, the controls are inputs of building_mpc.
+# (FastModel.Controls); an emission control reads the air temperature of its zone on the data bus (TZon<zone>) and
+# drives its valve or ideal emitter through the port y, whose opening it writes on the data bus (y<valve>) for the
+# collector control of the circuit; a three-way valve control reads its temperature sensor through the port u; the
+# collector control writes the largest opening of its valves (yMax<control>) for the boiler control, and is referenced
+# by the pump it drives, as the boiler control by its production. FastModelMPC: no controller, the controls are
+# inputs of building_mpc.
 - classes:
   - EmissionControl
   library: FastModelMPC
@@ -77,51 +80,151 @@
     targets:
     - System
     use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionPI{{ element.name | capitalize }}
+        extends FastModel.Controls.EmissionPI;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end EmissionPI{{ element.name | capitalize }};
   template: |-
-    FastModel.Controls.EmissionPI {{ element.name }}(
+    {{ package_name }}.Components.BaseClasses.EmissionPI{{ element.name | capitalize }} {{ element.name }}(
         schedule={{ parameters.schedule }},
         THeaSet={{ parameters.THeaSet }},
-        THeaSetBack={{ parameters.THeaSetBack }},
-        TZon={{ element.space_name }}.TAir)
+        THeaSetBack={{ parameters.THeaSetBack }})
   variant: default
 - classes:
   - EmissionControl
   library: FastModel
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionOnOff{{ element.name | capitalize }}
+        extends FastModel.Controls.EmissionOnOff;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end EmissionOnOff{{ element.name | capitalize }};
   parameter_processing: *emission_parameters
   ports: *emission_ports
   template: |-
-    FastModel.Controls.EmissionOnOff {{ element.name }}(
+    {{ package_name }}.Components.BaseClasses.EmissionOnOff{{ element.name | capitalize }} {{ element.name }}(
         schedule={{ parameters.schedule }},
         THeaSet={{ parameters.THeaSet }},
-        THeaSetBack={{ parameters.THeaSetBack }},
-        TZon={{ element.space_name }}.TAir)
+        THeaSetBack={{ parameters.THeaSetBack }})
   variant: onoff
 - classes:
   - EmissionControl
   library: FastModel
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionP{{ element.name | capitalize }}
+        extends FastModel.Controls.EmissionP;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end EmissionP{{ element.name | capitalize }};
   parameter_processing: *emission_parameters
   ports: *emission_ports
   template: |-
-    FastModel.Controls.EmissionP {{ element.name }}(
+    {{ package_name }}.Components.BaseClasses.EmissionP{{ element.name | capitalize }} {{ element.name }}(
         schedule={{ parameters.schedule }},
         THeaSet={{ parameters.THeaSet }},
         THeaSetBack={{ parameters.THeaSetBack }},
-        k={{ parameters.k }},
-        TZon={{ element.space_name }}.TAir)
+        k={{ parameters.k }})
   variant: PController
-# The set point of MonitoredSetpoint is an input of building_mpc (<control>_TSet, a disturbance): the runnable model
-# replays the column of the external data that the YAML names for it, or holds the occupied set point without it.
+# The set point of MonitoredSetpoint, read from the data bus, is an input of building_mpc (<control>_TSet, a
+# disturbance): the runnable model replays the column of the external data that the YAML names for it, or holds the
+# occupied set point without it.
 - classes:
   - EmissionControl
   library: FastModel
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      - component: ""
+        name: TSet
+        port: TSet
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastModel.Interfaces.RealInput {{ element.name }}_TSet(unit="K") "Set point of {{ element.name }}: input of the model";
+          port: "{{ element.name }}_TSet"
+      real_outputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionMonitored{{ element.name | capitalize }}
+        extends FastModel.Controls.EmissionMonitored;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end EmissionMonitored{{ element.name | capitalize }};
   parameter_processing: *emission_parameters
   ports: *emission_ports
   template: |-
-    FastModel.Interfaces.RealInput {{ element.name }}_TSet(unit="K") "Set point of {{ element.name }}: input of the model";
-    FastModel.Controls.EmissionMonitored {{ element.name }}(
-        k={{ parameters.k }},
-        TSet={{ element.name }}_TSet,
-        TZon={{ element.space_name }}.TAir)
+    {{ package_name }}.Components.BaseClasses.EmissionMonitored{{ element.name | capitalize }} {{ element.name }}(
+        k={{ parameters.k }})
   runnable:
     declaration: |-
       {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'MonitoredSetpoint') | map(attribute='variable') | first -%}
@@ -142,11 +245,35 @@
   - BoilerControl
   library: FastModel
   parameter_processing: *no_parameters
-  ports: []
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        multi: true
+        name: yMax
+        port: yMax
+        target:
+          main: element.pump_controls
+    category: control
+    template: |-
+      model BoilerDemand{{ element.name | capitalize }}
+        extends FastModel.Controls.BoilerDemand;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end BoilerDemand{{ element.name | capitalize }};
+  ports: &control_bus_port
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
   template: |-
-    {%- if element.pumps and element.pumps | selectattr('control') | list -%}
-    {%- set collectors = element.pumps | selectattr('control') | map(attribute='control') | map(attribute='name') | list -%}
-    FastModel.Controls.BoilerDemand {{ element.name }}(n={{ collectors | length }}, yMax={ {{- collectors | join('.yMax, ') -}}.yMax})
+    {%- if element.pump_controls -%}
+    {{ package_name }}.Components.BaseClasses.BoilerDemand{{ element.name | capitalize }} {{ element.name }}(n={{ element.pump_controls | length }})
     {%- endif -%}
   variant: simple
 - classes:
@@ -168,14 +295,40 @@
   library: FastModel
   parameter_processing:
     function: default_parameters
-  ports: []
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        default: 1
+        multi: true
+        name: y
+        port: yVal
+        target:
+          main: element.valves
+          sub: name
+      real_outputs:
+      - component: ""
+        name: yMax
+        port: yMax
+        target:
+          main: element.name
+    category: control
+    template: |-
+      model CollectorControl{{ element.name | capitalize }}
+        extends FastModel.Controls.CollectorControl;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+        {%- if not element.valves %}
+        yVal[1] = 1;
+        {%- endif %}
+      end CollectorControl{{ element.name | capitalize }};
+  ports: *control_bus_port
   template: |-
     {%- set pump = element.controllable_element.name -%}
-    {%- set valves = (element.valves or []) | map(attribute='name') | list -%}
-    FastModel.Controls.CollectorControl {{ element.name }}(
-        nVal={{ [valves | length, 1] | max }},
+    {{ package_name }}.Components.BaseClasses.CollectorControl{{ element.name | capitalize }} {{ element.name }}(
+        nVal={{ [(element.valves or []) | length, 1] | max }},
         k={{ parameters.get('k', 1) }},
-        yVal={ {{- (valves | join('.y, ') ~ '.y') if valves else '1' -}} },
         dpRel={{ pump }}.dp/{{ pump }}.dp_nominal)
   variant: default
 - classes:

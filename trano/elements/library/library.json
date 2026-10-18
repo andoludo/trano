@@ -1,5 +1,22 @@
 {
+    "base": {
+        "abstract": true,
+        "connectors": {
+            "heat": "Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a",
+            "fluid_a": "Modelica.Fluid.Interfaces.FluidPort_a",
+            "fluid_b": "Modelica.Fluid.Interfaces.FluidPort_b",
+            "fluids_a": "Modelica.Fluid.Interfaces.FluidPorts_a",
+            "fluids_b": "Modelica.Fluid.Interfaces.FluidPorts_b",
+            "real_input": "Modelica.Blocks.Interfaces.RealInput",
+            "real_output": "Modelica.Blocks.Interfaces.RealOutput",
+            "data_bus": "Trano.Controls.BaseClasses.DataBus",
+            "electrical": "Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p",
+            "medium": true
+        },
+        "data_bus_template": "data_bus/expandable.jinja2"
+    },
     "Buildings": {
+        "extends": "base",
         "constants": "\npackage Medium = {{ library.medium.air | safe }} \"Medium model\";\npackage MediumW = {{ library.medium.water | safe }} \"Medium model\";\n{% include 'hydronic_constants.jinja2' %}\n",
         "default": true,
         "merged_external_boundaries": false,
@@ -23,6 +40,7 @@
         }
     },
     "IDEAS": {
+        "extends": "base",
         "constants": "\nreplaceable package Medium = {{ library.medium.air | safe }}\nconstrainedby Modelica.Media.Interfaces.PartialMedium\n\"Medium in the component\"\nannotation (choicesAllMatching = true);\npackage MediumW = {{ library.medium.water | safe }} \"Medium model\";\n{% include 'hydronic_constants.jinja2' %}\n",
         "merged_external_boundaries": true,
         "medium": {
@@ -39,6 +57,7 @@
         }
     },
     "iso_13790": {
+        "extends": "base",
         "medium": {
             "air": "AixLib.Media.Air",
             "water": "AixLib.Media.Water"
@@ -53,6 +72,7 @@
         }
     },
     "reduced_order": {
+        "extends": "base",
         "medium": {
             "air": "AixLib.Media.Air",
             "water": "AixLib.Media.Water"
@@ -67,6 +87,7 @@
         }
     },
     "mpc": {
+        "extends": "base",
         "medium": {
             "air": "Modelica.Media.Air.SimpleAir",
             "water": "Modelica.Media.Water.ConstantPropertyLiquidWater"
@@ -81,6 +102,7 @@
         }
     },
     "FastModel": {
+        "extends": "base",
         "medium": {
             "air": "Modelica.Media.Air.SimpleAir",
             "water": "Modelica.Media.Water.ConstantPropertyLiquidWater"
@@ -89,7 +111,18 @@
         "parameters_from": "buildings",
         "package_template": "fast_model.jinja2",
         "use_containers": true,
-        "container_builder": "fast_model",
+        "connectors": {
+            "heat": "FastModel.Interfaces.HeatPort",
+            "fluid_a": "FastModel.Interfaces.WaterInlet",
+            "fluid_b": "FastModel.Interfaces.WaterOutlet",
+            "fluids_a": "FastModel.Ventilation.AirInlet",
+            "fluids_b": "FastModel.Ventilation.AirOutlet",
+            "real_input": "FastModel.Interfaces.RealInput",
+            "real_output": "FastModel.Interfaces.RealOutput",
+            "electrical": null,
+            "medium": false
+        },
+        "data_bus_template": "data_bus/declared.jinja2",
         "templates": {
             "is_package": true,
             "construction": "record {{ construction.name }} = {{ package_name }}.FastModel.Data.Construction(\n    nLay={{ construction.layers | length }},\n    x={ {{- construction.layers | map(attribute='thickness') | join(', ') -}} },\n    k={ {%- for layer in construction.layers %}{{ layer.material.thermal_conductivity }}{{ ', ' if not loop.last }}{% endfor -%} },\n    c={ {%- for layer in construction.layers %}{{ layer.material.specific_heat_capacity }}{{ ', ' if not loop.last }}{% endfor -%} },\n    d={ {%- for layer in construction.layers %}{{ layer.material.density }}{{ ', ' if not loop.last }}{% endfor -%} },\n    absIR_a={{ construction.layers[0].material.longwave_emissivity }},\n    absIR_b={{ construction.layers[-1].material.longwave_emissivity }},\n    absSol_a={{ construction.layers[0].material.shortwave_emissivity }},\n    absSol_b={{ construction.layers[-1].material.shortwave_emissivity }}) \"{{ construction.name }}\";",
