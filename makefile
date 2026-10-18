@@ -1,4 +1,4 @@
-.PHONY: install linting tests compile simulate all
+.PHONY: install linting tests compile simulate runtime all
 
 PYTHON := python3.10
 
@@ -13,13 +13,16 @@ linting:
 
 # ── Tests ──────────────────────────────────────────────────────────────────────
 tests:
-	uv run pytest -m "not simulate and not bestest and not compile"
+	uv run pytest -m "not simulate and not bestest and not compile and not runtime"
 
 compile:
 	uv run pytest -m compile
 
 simulate:
 	uv run pytest -m simulate
+
+runtime:
+	uv run pytest -m runtime
 
 # ── Composite ──────────────────────────────────────────────────────────────────
 all: install linting tests

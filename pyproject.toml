@@ -97,6 +97,7 @@ markers = [
     "simulate: slow integration tests that require Docker and the OpenModelica image",
     "bestest: year-long ASHRAE 140 validation simulations (Docker, hours); run with -m bestest",
     "compile: OpenModelica checks of every model of the repository (Docker, about a minute per model)",
+    "runtime: compile once and change parameters at run time: readback, impact and equivalence (Docker, hours)",
     "simulation: simulations with the local runtime, which need OpenModelica's omc on the PATH",
 ]
 addopts = "-ra"

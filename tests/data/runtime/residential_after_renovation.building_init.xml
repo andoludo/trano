@@ -1,0 +1,267 @@
+<?xml version = "1.0" encoding="UTF-8"?>
+
+<!-- description of the model interface using an extention of the FMI standard -->
+<fmiModelDescription
+  fmiVersion                          = "1.0"
+
+  modelName                           = "residential_after_renovation.building"
+  modelIdentifier                     = "residential_after_renovation_building"
+
+  OPENMODELICAHOME                    = "/usr/bin/.."
+
+  guid                                = "{b1f90be4-c8c6-4625-b990-83003f35b613}"
+
+  description                         = ""
+  generationTool                      = "OpenModelica Compiler OpenModelica 1.26.9"
+  generationDateAndTime               = "2026-10-17T08:40:20Z"
+
+  variableNamingConvention            = "structured"
+
+  numberOfEventIndicators             = "74"  cmt_numberOfEventIndicators             = "NG:       number of zero crossings,                           FMI"
+  numberOfTimeEvents                  = "0"  cmt_numberOfTimeEvents                  = "NG_SAM:   number of zero crossings that are samples,          OMC"
+
+  numberOfInputVariables              = "0"  cmt_numberOfInputVariables              = "NI:       number of inputvar on topmodel,                     OMC"
+  numberOfOutputVariables             = "0"  cmt_numberOfOutputVariables             = "NO:       number of outputvar on topmodel,                    OMC"
+
+  numberOfExternalObjects             = "18"  cmt_numberOfExternalObjects             = "NEXT:     number of external objects,                         OMC"
+  numberOfFunctions                   = "398"  cmt_numberOfFunctions                   = "NFUNC:    number of functions used by the simulation,         OMC"
+
+  numberOfContinuousStates            = "271"  cmt_numberOfContinuousStates            = "NX:       number of states,                                   FMI"
+  numberOfRealAlgebraicVariables      = "5664"  cmt_numberOfRealAlgebraicVariables      = "NY:       number of real variables,                           OMC"
+  numberOfRealAlgebraicAliasVariables = "16184"  cmt_numberOfRealAlgebraicAliasVariables = "NA:       number of alias variables,                          OMC"
+  numberOfRealParameters              = "54447"  cmt_numberOfRealParameters              = "NP:       number of parameters,                               OMC"
+
+  numberOfIntegerAlgebraicVariables   = "46"  cmt_numberOfIntegerAlgebraicVariables   = "NYINT:    number of alg. int variables,                       OMC"
+  numberOfIntegerAliasVariables       = "6"  cmt_numberOfIntegerAliasVariables       = "NAINT:    number of alias int variables,                      OMC"
+  numberOfIntegerParameters           = "6080"  cmt_numberOfIntegerParameters           = "NPINT:    number of int parameters,                           OMC"
+
+  numberOfStringAlgebraicVariables    = "0"  cmt_numberOfStringAlgebraicVariables    = "NYSTR:    number of alg. string variables,                    OMC"
+  numberOfStringAliasVariables        = "0"  cmt_numberOfStringAliasVariables        = "NASTR:    number of alias string variables,                   OMC"
+  numberOfStringParameters            = "404"  cmt_numberOfStringParameters            = "NPSTR:    number of string parameters,                        OMC"
+
+  numberOfBooleanAlgebraicVariables   = "126"  cmt_numberOfBooleanAlgebraicVariables   = "NYBOOL:   number of alg. bool variables,                      OMC"
+  numberOfBooleanAliasVariables       = "943"  cmt_numberOfBooleanAliasVariables       = "NABOOL:   number of alias bool variables,                     OMC"
+  numberOfBooleanParameters           = "5629"  cmt_numberOfBooleanParameters           = "NPBOOL:   number of bool parameters,                          OMC" >
+
+
+  <!-- startTime, stopTime, tolerance are FMI specific, all others are OMC specific -->
+  <DefaultExperiment
+    startTime      = "0"
+    stopTime       = "172800"
+    stepSize       = "900"
+    tolerance      = "1e-06"
+    solver         = "dassl"
+    outputFormat   = "mat"
+    variableFilter = ".*" />
+
+  <!-- variables in the model -->
+  <ModelVariables>
+  <ScalarVariable
+    name = "building.emission1.emission_control_living_001.schedule[1]"
+    valueReference = "7976"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "770" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="25200.0" fixed="true" useNominal="false" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.emission1.emission_control_living_001.schedule[2]"
+    valueReference = "7977"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "771" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="82800.0" fixed="true" useNominal="false" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.emission1.radiator_living_001.Q_flow_nominal"
+    valueReference = "8361"
+    description = "Nominal heating power (positive for heating)"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "1155" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="3900.0" fixed="true" useNominal="false" unit="W" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.emission1.radiator_living_001.T_a_nominal"
+    valueReference = "8365"
+    description = "Water inlet temperature at nominal condition"
+    variability = "parameter" isDiscrete = "true"
+    causality = "calculatedParameter" isValueChangeable = "false"
+    alias = "noAlias"
+    classIndex = "1159" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="348.15" fixed="true" useNominal="true" nominal="300.0" min="0.0" unit="K" displayUnit="degC" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.emission1.radiator_living_001.mDry"
+    valueReference = "8380"
+    description = "Dry mass of radiator that will be lumped to water heat capacity"
+    variability = "parameter" isDiscrete = "true"
+    causality = "calculatedParameter" isValueChangeable = "false"
+    alias = "noAlias"
+    classIndex = "1174" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="102.57000000000001" fixed="true" useNominal="false" min="0.0" unit="kg" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.external_wall_001.material[1].k"
+    valueReference = "34865"
+    description = "Thermal conductivity"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "27659" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="0.032" fixed="true" useNominal="false" unit="W/(m.K)" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.living_001.ACH"
+    valueReference = "45632"
+    description = "Air change rate (1/h), by default the one of the IDEAS zones: n50 = 3 1/h divided by n50toAch = 20"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "38426" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="0.15" fixed="true" useNominal="false" unit="1/h" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.living_001.AFlo"
+    valueReference = "45633"
+    description = "Floor area"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "38427" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="40.0" fixed="true" useNominal="false" unit="m2" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.living_001.V"
+    valueReference = "45637"
+    description = "Volume"
+    variability = "parameter" isDiscrete = "true"
+    causality = "calculatedParameter" isValueChangeable = "false"
+    alias = "noAlias"
+    classIndex = "38431" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real fixed="true" useNominal="false" unit="m3" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.living_001.air.V"
+    valueReference = "45663"
+    description = "Volume"
+    variability = "parameter" isDiscrete = "true"
+    causality = "calculatedParameter" isValueChangeable = "false"
+    alias = "noAlias"
+    classIndex = "38457" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real fixed="true" useNominal="false" unit="m3" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.living_001.datConExtWin[1].layers.material[1].k"
+    valueReference = "55544"
+    description = "Thermal conductivity"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "48338" classType = "rPar"
+    isProtected = "false" hideResult = "true" isEncrypted = "false" initNonlinear = "false">
+    <Real start="0.032" fixed="true" useNominal="false" unit="W/(m.K)" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.living_001.hRoo"
+    valueReference = "55713"
+    description = "Average room height"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "48507" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="2.6" fixed="true" useNominal="false" unit="m" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.solar1.pv_001.eta"
+    valueReference = "60757"
+    description = "Module conversion efficiency"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "53551" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="0.2" fixed="true" useNominal="false" min="0.0" max="1.0" unit="1" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.solar1.pv_001.til"
+    valueReference = "60771"
+    description = "Surface tilt"
+    variability = "parameter" isDiscrete = "true"
+    causality = "calculatedParameter" isValueChangeable = "false"
+    alias = "noAlias"
+    classIndex = "53565" classType = "rPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="0.610865" fixed="true" useNominal="false" unit="rad" displayUnit="deg" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.living_001.air.vol.T"
+    valueReference = "72853"
+    description = "Temperature of the fluid"
+    variability = "continuous" isDiscrete = "false"
+    causality = "local" isValueChangeable = "false"
+    alias = "alias" aliasVariable="building.envelope1.heatPortCon[1].T" aliasVariableId="3560"
+    classIndex = "11200" classType = "rAli"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real start="293.15" fixed="false" useNominal="true" nominal="300.0" min="1.0" max="1e4" unit="K" displayUnit="degC" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.envelope1.external_wall_001.material[1].nSta"
+    valueReference = "81240"
+    description = "Actual number of state variables in material"
+    variability = "parameter" isDiscrete = "true"
+    causality = "calculatedParameter" isValueChangeable = "false"
+    alias = "noAlias"
+    classIndex = "3357" classType = "iPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Integer start="2" fixed="true" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.production1.generator_001.nSeg"
+    valueReference = "83866"
+    description = "Not used, the buffer is fully mixed"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "5983" classType = "iPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Integer start="4" fixed="true" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.production1.generator_001.useStorageTank"
+    valueReference = "89498"
+    description = "Use a buffer tank of volume VTan, else a hydraulic separator of VSep"
+    variability = "parameter" isDiscrete = "true"
+    causality = "parameter" isValueChangeable = "true"
+    alias = "noAlias"
+    classIndex = "5403" classType = "bPar"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Boolean start="true" fixed="true" />
+  </ScalarVariable>
+  <ScalarVariable
+    name = "building.bus1.dataBus.yHeaValve_living_001"
+    valueReference = "61713"
+    description = "virtual variable in expandable connector"
+    variability = "continuous" isDiscrete = "false"
+    causality = "local" isValueChangeable = "false"
+    alias = "alias" aliasVariable="building.solar1.dataBus.yHeaValve_living_001" aliasVariableId="5769"
+    classIndex = "60" classType = "rAli"
+    isProtected = "false" hideResult = "" isEncrypted = "false" initNonlinear = "false">
+    <Real fixed="false" useNominal="false" />
+  </ScalarVariable>
+  </ModelVariables>
+</fmiModelDescription>
