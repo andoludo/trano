@@ -516,8 +516,13 @@ def _load_aixlib(model: str, environment: ModelicaEnvironment) -> str:
     loadModel(AixLib, {{"{environment.aixlib}", "default"}});"""
 
 
-def load_statements(model: str, model_file: str, environment: ModelicaEnvironment = MODELICA_ENVIRONMENT) -> str:
-    """The OpenModelica statements loading the libraries and the model file ``/simulation/<model_file>``.
+def load_statements(
+    model: str,
+    model_file: str,
+    environment: ModelicaEnvironment = MODELICA_ENVIRONMENT,
+    model_dir: PurePath = CONTAINER_MODEL_DIR,
+) -> str:
+    """The OpenModelica statements loading the libraries and the model file ``<model_dir>/<model_file>``.
 
     ``model`` is the Modelica text of the file: it tells whether AixLib has to be loaded too.
     """
@@ -525,7 +530,7 @@ def load_statements(model: str, model_file: str, environment: ModelicaEnvironmen
     getVersion();
     loadModel(Modelica, {{"{environment.modelica_version}"}});
     loadModel(IDEAS, {{"{environment.ideas}"}});{_load_aixlib(model, environment)}
-    loadFile("/simulation/{model_file}");"""
+    loadFile("{model_dir.as_posix()}/{model_file}");"""
 
 
 @contextmanager
@@ -562,11 +567,7 @@ def create_mos_file(  # noqa: PLR0913
     getErrorString();"""
         )
         template = STRING_ENVIRONMENT.from_string(
-            f"""{load_statements(model, "{{model_file}}", environment)};
-    getVersion();
-    loadModel(Modelica, {{"{environment.modelica_version}"}});
-    loadModel(IDEAS, {{"{environment.ideas}"}});{_load_aixlib(model, environment)}
-    loadFile("{model_dir.as_posix()}/{{{{model_file}}}}");
+            f"""{load_statements(model, "{{model_file}}", environment, model_dir)}
     checkModel({{{{model_name}}}}.building);{simulation}
     """
         )

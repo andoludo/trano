@@ -36,6 +36,7 @@ from trano.runtime.overrides import (
     write_override_file,
 )
 from trano.simulate.simulate import (
+    CONTAINER_MODEL_DIR,
     MODELICA_ENVIRONMENT,
     ModelicaEnvironment,
     SimulationOptions,
@@ -54,7 +55,7 @@ would evaluate parameters at translation and remove them from what can be change
 BUILD_DIRECTORY = "build"
 RUNS_DIRECTORY = "runs"
 RESULT_FORMAT = "mat"
-CONTAINER_PROJECT = "/simulation"  # where trano's simulation container mounts the project
+CONTAINER_PROJECT = CONTAINER_MODEL_DIR.as_posix()  # where trano's simulation container mounts the project
 BUILD_CONTAINER = "trano_runtime_build"
 RUN_CONTAINER = "trano_runtime_run"
 METADATA_FILE = "runtime.json"
@@ -167,7 +168,7 @@ def build_model(  # noqa: PLR0913
     directory.mkdir(parents=True, exist_ok=True)
     project_path.joinpath("results").mkdir(exist_ok=True)
     if model is None:
-        network.set_weather_path_to_container_path(project_path)
+        network.set_weather_path(project_path, CONTAINER_MODEL_DIR)
         model = network.model()
     model_file = f"{build_directory}/{network.name}.mo"
     project_path.joinpath(model_file).write_text(model)

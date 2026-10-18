@@ -48,7 +48,7 @@ from trano.runtime.inventory import (
 from trano.runtime.model import CompiledModel, ModelRunner, RunError, build_model
 from trano.runtime.resolution import Resolution, SpecificationResolver
 from trano.runtime.specification import numeric_fields
-from trano.simulate.simulate import SimulationOptions
+from trano.simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +194,7 @@ class InventoryStudy:
         network = convert_network(
             self.resolver.name, self.yaml_path.resolve(), Library.from_configuration(self.library)
         )
-        network.set_weather_path_to_container_path(self.project)
+        network.set_weather_path(self.project, CONTAINER_MODEL_DIR)
         model = network.model()
         outputs = self.adapter.impact_outputs(network)
         paths = [entry.modelica_path for entry in self.adapter.parameter_snapshot(network).values()]
