@@ -30,6 +30,48 @@ The simulation container installs the Modelica libraries Trano generates models 
 
 Each simulation container first runs an OpenModelica script that installs these libraries with the package manager. A library already present on the container's `MODELICAPATH` (for example baked into an image derived from the official one under `/root/.openmodelica/libraries`) is not installed again, so simulations also work where the package index cannot be reached.
 
+Without further configuration, the libraries are installed at every container start, which needs network access. Two ways avoid it:
+
+- mount a directory of installed libraries into every simulation container by setting the environment variable `TRANO_MODELICA_LIBRARIES` to it;
+- install the libraries once, when an image is built, with the `omc` of that image: `python -m trano.simulate.install_libraries` runs the same installation as a container start and exits with a non-zero status when Modelica, Buildings, IDEAS or AixLib is still missing afterwards.
+
+```dockerfile
+FROM openmodelica/openmodelica:v1.26.9-ompython
+RUN pip install trano && python -m trano.simulate.install_libraries
+ENV TRANO_SIMULATION_RUNTIME=local
+```
+
+### Simulation runtimes
+
+Trano runs OpenModelica in one of two ways, chosen by the `runtime` argument of `trano.simulate.simulate.simulate` or, by default, by the environment variable `TRANO_SIMULATION_RUNTIME`:
+
+- `docker` (the default): a sibling container of the OpenModelica image is started through the Docker socket for every simulation, with a unique name, and the libraries are installed in it as described above;
+- `local`: the `omc` found on the `PATH` runs in the process' machine, for example in a worker container built as above. Nothing is installed at run time; `trano.exceptions.OpenModelicaNotFoundError` is raised when `omc` is missing.
+
+In both cases the model, its script and its weather file are written into the project directory and the result file lands in its `results` directory. Two simulations must not share a project directory.
+
+The one-call API validates, generates and simulates a model and returns a typed result instead of raising:
+
+```python
+from pathlib import Path
+
+from trano import simulate_yaml
+from trano.simulate.simulate import SimulationOptions
+
+result = simulate_yaml(
+    Path("house.yaml"),  # or the model already parsed into a dict
+    options=SimulationOptions(end_time=7 * 24 * 3600),
+    runtime="local",
+    on_phase=print,  # generating, compiling, simulating, done
+)
+if result.success:
+    print(result.result_path)
+else:
+    print(result.error_kind, result.error_message)  # validation, translation, solver, timeout or runtime
+```
+
+`trano.check_yaml` checks the model with OpenModelica without simulating it, and `trano.kpi.building_kpis(result.result_path, network)` computes the heating energy, peak power and hours below the set point of models heated by `ideal_heating_cooling` emissions.
+
 ## Python package
 
 
