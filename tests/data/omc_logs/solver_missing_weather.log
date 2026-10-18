@@ -1,0 +1,27 @@
+"OpenModelica 1.26.9"
+true
+true
+false
+true
+"Check of first_model.building completed successfully.
+Class first_model.building has 3431 equation(s) and 3431 variable(s).
+2463 of these are trivial equation(s)."
+record SimulationResult
+    resultFile = "",
+    simulationOptions = "startTime = 0.0, stopTime = 86400.0, numberOfIntervals = 500, tolerance = 1e-4, method = 'dassl', fileNamePrefix = 'first_model.building', options = '', outputFormat = 'mat', variableFilter = '.*', cflags = '', simflags = ''",
+    messages = "Simulation execution failed for model: first_model.building
+LOG_ASSERT        | debug   | Not possible to open file \"//modelica://IDEAS/Resources/weatherdata/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos\" for reading:
+|                 | |       | No such file or directory
+LOG_ASSERT        | info    | simulation terminated by an assertion at initialization
+",
+    timeFrontend = 3.296838302,
+    timeBackend = 10.853444464,
+    timeSimCode = 1.026487687,
+    timeTemplates = 5.566100271,
+    timeCompile = 7.142349436,
+    timeSimulation = 0.259899672,
+    timeTotal = 28.145353628
+end SimulationResult;
+"Notification: IDEAS requested package Modelica of version 4.0.0. Modelica 4.1.0 is used instead which states that it is fully compatible without conversion script needed.
+Warning: The model contains alias variables with redundant start and/or conflicting nominal values. It is recommended to resolve the conflicts, because otherwise the system could be hard to solve. To print the conflicting alias sets and the chosen candidates please use -d=aliasConflicts.
+"

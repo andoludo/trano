@@ -1,0 +1,20 @@
+"OpenModelica 1.26.9"
+true
+true
+true
+""
+record SimulationResult
+    resultFile = "",
+    simulationOptions = "startTime = 0.0, stopTime = 10.0, numberOfIntervals = 500, tolerance = 1e-4, method = 'dassl', fileNamePrefix = 'first_model.building', options = '', outputFormat = 'mat', variableFilter = '.*', cflags = '', simflags = ''",
+    messages = "Failed to build model: first_model.building",
+    timeFrontend = 0.0,
+    timeBackend = 0.0,
+    timeSimCode = 0.0,
+    timeTemplates = 0.0,
+    timeCompile = 0.0,
+    timeSimulation = 0.0,
+    timeTotal = 0.0
+end SimulationResult;
+"Notification: IDEAS requested package Modelica of version 4.0.0. Modelica 4.1.0 is used instead which states that it is fully compatible without conversion script needed.
+[/project/tmpua5c6l80.mo:1:53-1:70:writable] Error: Variable undefinedThing not found in scope building.
+"
