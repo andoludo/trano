@@ -269,9 +269,11 @@ Per field, from the `isValueChangeable` of its run-time names (fields reaching t
 - **Layer discretisation**: write `nSta=` explicitly for each layer in the construction template (`library.json`)
   instead of letting Buildings derive it from `nStaRef`: `k`, `c`, `d` and `x` would no longer feed a structural
   parameter and the admissible ranges would disappear (the discretisation stays the compiled one).
-- **Radiator power**: stop writing `mDry` and `VWat` (Buildings' own defaults are the same formulas of
-  `Q_flow_nominal`); they become bindings in the model. Whether OpenModelica then keeps them changeable (`VWat`
-  sizes the volumes through `V = VWat/nEle`, `mSenFac` is final) has to be checked with this inventory.
+- **Radiator power**: keep writing `mDry` and `VWat` as numbers. They are frozen because Buildings' volume has
+  `final computeCSen = abs(mSenFac - 1) > eps` with `Evaluate=true`, and `mSenFac` is computed from them; OpenModelica
+  evaluates everything that flag depends on. Leaving them to Buildings' defaults (`0.0263 Q`, `5.8e-6 Q`) would extend
+  that chain to `Q_flow_nominal` and freeze the radiator power entirely. A calibration of the radiator size overrides
+  `Q_flow_nominal` (heat output) and `vol[1].V` (water volume, free); only the dry-mass heat capacity stays compiled.
 - **Glazing record**: drop the `final` of `glass=` and `gas=` in the glazing template; harmless today (the zones
   use free copies) but it makes `isValueChangeable` agree with the behaviour.
 - **Duct pressure drops**: `PressureDrop` evaluates `dp_nominal` through `computeFlowResistance`; a run-time
