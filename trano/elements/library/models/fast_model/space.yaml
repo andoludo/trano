@@ -1,5 +1,6 @@
 # FastModel zone: air node, radiant star between its surfaces, transmitted solar radiation (FastModel.Zones).
-# Its surfaces (walls, windows, floors, internal walls) are elements connected to its propsBus, as in IDEAS.
+# Its surfaces (walls, windows, floors, internal walls) are elements connected to its propsBus, as in IDEAS; its air
+# node is connected to the data bus, which reads its temperature.
 # The `infiltration` variant brings outdoor air in at the air change rate of the space (0.15 by default, as
 # Trano.ThermalZones.MixedAirInf); the default variant has no infiltration, as Buildings MixedAir.
 - classes:
@@ -17,7 +18,7 @@
     targets:
     - BaseWall
   - flow: undirected
-    medium: weather_data
+    medium: data
     names:
     - weaBus
     targets:
@@ -36,6 +37,7 @@
     - heaPorAir
     targets:
     - Emission
+    - DataBus
   - flow: radiative
     medium: heat
     multi_connection: true

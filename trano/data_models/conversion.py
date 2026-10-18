@@ -335,21 +335,6 @@ def _connect_ahu_to_boundary(network: Network) -> None:
         network.connect_elements(boundary, weather)
 
 
-def _connect_systems_to_weather(network: Network) -> None:
-    """Systems whose definition in the library takes the weather (FastModel: heat pumps, ventilation units, PV)."""
-    from trano.elements.envelope import BaseWall
-    from trano.elements.space import Space
-
-    weather = next((n for n in network.graph.nodes if isinstance(n, Weather)), None)
-    if weather is None:
-        return
-    for node in list(network.graph.nodes):
-        if isinstance(node, (Weather, Space, BaseWall)) or weather in network.graph.succ[node]:
-            continue
-        if node.connects_to(network.library, Weather):
-            network.graph.add_edge(node, weather)
-
-
 def _add_solar_components(network: Network, data: dict[str, Any]) -> None:
     for solar in data.get("solar", []):
         solar_ = _instantiate_component(solar)
@@ -385,7 +370,6 @@ def convert_network(
     _connect_systems(network, data, systems)
     _connect_ahu_to_boundary(network)
     _add_solar_components(network, data)
-    _connect_systems_to_weather(network)
     return network
 
 

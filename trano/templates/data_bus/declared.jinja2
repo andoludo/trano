@@ -1,0 +1,13 @@
+{#- Data bus of the libraries translated by tools that do not add members to an expandable connector (rumoca): the
+    expandable connector of the other libraries, with the signals of the network declared, each written by one
+    element and read by the others. -#}
+    expandable connector DataBus "Signals exchanged by the elements of the network"
+{% for member in bus_members %}
+      {{ member.type }} {{ member.name }};
+{% endfor %}
+      annotation (
+        Icon(coordinateSystem(preserveAspectRatio=true, extent={% raw %}{{-100,-100},{100,100}}{% endraw %}), graphics={Rectangle(
+              extent={% raw %}{{-20,2},{22,-2}}{% endraw %},
+              lineColor={255,204,51},
+              lineThickness=0.5)}));
+    end DataBus;

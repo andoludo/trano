@@ -142,10 +142,11 @@ class BaseElement(BaseElementPort):
                 )
         return {}
 
-    def runnable_parts(self, network: "Network", columns: list[str]) -> dict[str, str]:
+    def runnable_parts(self, network: "Network", columns: list[str], container: str | None = None) -> dict[str, str]:
         """Declaration, equation and modifier of the element in the runnable model of its library, rendered.
 
-        ``columns`` are the columns of the external data of the network, which the runnable model replays.
+        ``columns`` are the columns of the external data of the network, which the runnable model replays;
+        ``container`` the instance of the container holding the element, which its modifier then goes through.
         """
         if not self.libraries_data:
             return {}
@@ -160,10 +161,13 @@ class BaseElement(BaseElementPort):
             "parameters": self.processed_parameters(network.library),
             "columns": columns,
         }
-        return {
+        parts = {
             part: compile_template("{% import 'macros.jinja2' as macros %}" + template).render(**context).strip()
             for part, template in library_data.runnable.model_dump().items()
         }
+        if container and parts.get("modifier"):
+            parts["modifier"] = f"{container}({parts['modifier']})"
+        return parts
 
     def set_position(self, layout: dict[str, Any], global_: bool = True) -> None:
         if layout.get(self.name):  # type: ignore

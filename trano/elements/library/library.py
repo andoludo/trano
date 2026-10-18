@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Any, cast
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -18,18 +18,49 @@ class Templates(BaseModel):
     main: str
 
 
+class Connectors(BaseModel):
+    """Connector types of the ports of the containers, and of the data bus of the elements."""
+
+    heat: str
+    fluid_a: str
+    fluid_b: str
+    fluids_a: str = Field(description="Vector of fluid ports, inlet side")
+    fluids_b: str = Field(description="Vector of fluid ports, outlet side")
+    real_input: str
+    real_output: str
+    data_bus: str
+    electrical: str | None = Field(description="Electrical terminal; none: no electrical grid")
+    medium: bool = Field(description="The fluid ports take the medium as a replaceable package")
+
+
+def _read_library_json() -> dict[str, dict[str, Any]]:
+    return cast(dict[str, dict[str, Any]], json.loads(Path(__file__).parent.joinpath("library.json").read_text()))
+
+
+def _base(key: str) -> Any:  # noqa: ANN401
+    """A value of the abstract ``base`` entry of library.json: the default of the libraries built in code."""
+    return _read_library_json()["base"][key]
+
+
 def read_libraries() -> dict[str, dict[str, Any]]:
     """The libraries of library.json; a library with ``extends`` takes the entry of that library, its own keys
-    replacing the inherited ones (FastModelMPC is FastModel under another name)."""
-    library_json_path = Path(__file__).parent.joinpath("library.json")
-    libraries = cast(dict[str, dict[str, Any]], json.loads(library_json_path.read_text()))
-    return {name: _resolve(name, libraries) for name in libraries}
+    replacing the inherited ones, and the keys of an inherited object merged with its own (every library extends
+    the abstract ``base``; FastModelMPC is FastModel under another name). Abstract entries are not libraries."""
+    libraries = _read_library_json()
+    return {name: _resolve(name, libraries) for name in libraries if not libraries[name].get("abstract")}
 
 
 def _resolve(name: str, libraries: dict[str, dict[str, Any]]) -> dict[str, Any]:
     library = dict(libraries[name])
     parent = library.pop("extends", None)
-    return {**_resolve(parent, libraries), **library} if parent else library
+    if not parent:
+        return library
+    inherited = _resolve(parent, libraries)
+    inherited.pop("abstract", None)
+    return inherited | {
+        key: inherited[key] | value if isinstance(value, dict) and isinstance(inherited.get(key), dict) else value
+        for key, value in library.items()
+    }
 
 
 class Library(BaseModel):
@@ -53,10 +84,11 @@ class Library(BaseModel):
         default="base.jinja2", description="Template of the Modelica package generated for a network."
     )
     use_containers: bool = Field(default=True, description="Group the components in containers (sub-models).")
-    container_builder: Literal["trano", "fast_model"] = Field(
-        default="trano",
-        description="Containers of the Buildings-like libraries (trano), or of FastModel: sub-models made of "
-        "FastModel components only, so that rumoca still translates the model.",
+    connectors: Connectors = Field(default_factory=lambda: Connectors(**_base("connectors")))
+    data_bus_template: str = Field(
+        default_factory=lambda: _base("data_bus_template"),
+        description="Template declaring the connector of the data bus: an expandable connector, empty, or with the "
+        "signals of the network declared (``bus_members``) for the tools that do not add members to it (rumoca).",
     )
 
     @property

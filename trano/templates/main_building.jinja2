@@ -4,9 +4,12 @@ model building
 {% for container_ in container.in_use_containers() %}
 {{ container_.main_equation() | safe }}
 {% endfor %}
-{% raw %}
-Buildings.Electrical.AC.OnePhase.Interfaces.Terminal_p term_p
-annotation (Placement(transformation(extent={{-126,-18},{-92,18}}),
+{% for declaration in container.model_inputs() | map(attribute='model_input.declaration') | unique %}
+{{ declaration | safe }}
+{% endfor %}
+{% if connectors.electrical %}
+{{ connectors.electrical }} term_p
+{% raw %}annotation (Placement(transformation(extent={{-126,-18},{-92,18}}),
 iconTransformation(
 extent={{-112,-12},{-88,12}})));
 equation
@@ -14,6 +17,9 @@ connect(term_p, bus1.term_p) annotation (Line(points={{-109,0},{-88,0},
         {-88,-10},{60,-10},{60,64},{-50,64},{-50,40},{-65,40}}, color={
         0,120,120}));
 {% endraw %}
+{% else %}
+equation
+{% endif %}
 {% for connection in container.connections %}
 connect({{ connection.left.container_type }}1.{{ connection.left.equation }},
 {{ connection.right.container_type }}1.{{ connection.right.equation }})
@@ -25,6 +31,9 @@ connect({{ connection.left.container_type }}1.{{ connection.left.equation }},
 {% endfor %}
 {% for container_ in container.in_use_containers() %}
 {{ container_.prescribed_connection_equation | safe }}
+{% endfor %}
+{% for input in container.model_inputs() %}
+connect({{ input.model_input.port }}, bus1.dataBus.{{ input.bus_member }});
 {% endfor %}
 {% raw %}
 annotation (Icon(coordinateSystem(preserveAspectRatio=false), graphics={

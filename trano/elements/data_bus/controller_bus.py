@@ -37,7 +37,7 @@ def _evaluate_target(target: Target, element: "BaseElement") -> str | list[str]:
     from trano.elements import BaseElement
 
     target_ = _evaluate(element, target.commands())
-    if not target_:
+    if not target_ and not isinstance(target_, list):  # an empty list: no element to read
         message = (
             f"Element {element.name} of type {type(element).__name__} "
             f"has no valid target {target.commands()}. "
@@ -163,7 +163,8 @@ class ControllerBus(BaseModel):
                             if input.component == source.component:
                                 ports.append(f"connect(dataBus.{source.variable}, {input.component}.{input.port});")  # noqa: PERF401
             else:
-                target_value = _evaluate_target(target, element)
+                # the target `element`: a signal of the network, without suffix
+                target_value = _evaluate_target(target, element) if target.commands() else ""
                 for input in inputs:
                     if isinstance(target_value, list):
                         for i, target_ in enumerate(target_value):
@@ -196,8 +197,7 @@ def _append_ports(  # noqa: PLR0913
     case_1: str,
     case_2: str,
 ) -> list[str]:
-    if getattr(input, case_1_condition):
-        ports.append(f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, {input.component}{case_1});")
-    else:
-        ports.append(f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, {input.component}{case_2});")
+    # no component: the port is the element's own (a template extending the component it adds the bus to)
+    port = f"{input.component}{case_1 if getattr(input, case_1_condition) else case_2}".removeprefix(".")
+    ports.append(f"connect(dataBus.{input.input_name}{evaluated_target.capitalize()}, {port});")
     return ports
