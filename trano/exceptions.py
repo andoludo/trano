@@ -1,3 +1,6 @@
+from collections.abc import Sequence
+
+
 class WrongSystemFlowError(Exception):
     """Exception raised for wrong system flow."""
 
@@ -40,4 +43,16 @@ class InvalidSensorInletError(Exception): ...
 
 
 class InvalidModelError(ValueError):
-    """The YAML model does not satisfy the Trano schema."""
+    """The YAML model does not satisfy the Trano schema.
+
+    ``errors`` holds one readable line per violation, e.g.
+    ``spaces[0].parameters.floor_area: must be >= 0 (Floor area [m2])``.
+    """
+
+    def __init__(self, message: str, errors: Sequence[str] = ()) -> None:
+        super().__init__(message)
+        self.errors: tuple[str, ...] = tuple(errors)
+
+
+class OpenModelicaNotFoundError(Exception):
+    """The local simulation runtime is selected but OpenModelica's ``omc`` is not on the PATH."""

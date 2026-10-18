@@ -4,6 +4,7 @@
 tests/golden.py.
 """
 
+from tests.fixtures.fake_omc import fake_omc  # noqa: F401
 from tests.fixtures.libraries import buildings_library  # noqa: F401
 from tests.fixtures.networks import (  # noqa: F401
     building_multiple_internal_walls,

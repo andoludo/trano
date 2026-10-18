@@ -1,7 +1,7 @@
 {% import 'macros.jinja2' as macros %}
 {% import 'Trano.jinja2' as Trano %}
 package {{ network.name }}
-{{ Trano.Trano_library(databus, dynamic_components) }}
+{{ Trano.Trano_library(databus, dynamic_components, data_bus_connector) }}
 
 package Components
   package Containers

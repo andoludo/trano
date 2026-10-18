@@ -1,0 +1,35 @@
+"OpenModelica 1.26.9"
+true
+true
+false
+true
+"Check of first_model.building completed successfully.
+Class first_model.building has 3431 equation(s) and 3431 variable(s).
+2463 of these are trivial equation(s)."
+record SimulationResult
+    resultFile = "//first_model.building_res.mat",
+    simulationOptions = "startTime = 0.0, stopTime = 86400.0, numberOfIntervals = 500, tolerance = 1e-4, method = 'dassl', fileNamePrefix = 'first_model.building', options = '', outputFormat = 'mat', variableFilter = '.*', cflags = '', simflags = ''",
+    messages = "LOG_ASSERT        | warning | [/root/.openmodelica/libraries/Buildings 13.0.0/Fluid/Sensors/BaseClasses/PartialAbsoluteSensor.mo:28:3-33:32:writable]
+|                 | |       | The following assertion has been violated during initialization at time 0.000000
+|                 | |       | ((not building.bus1.data_bus.TRoo1[1].warnAboutOnePortConnection)) --> \"Sensor building.building.bus1.data_bus.TRoo1[1] can lead to numerical problems if connected to a scalar fluid port.
+|                 | |       |   Only connect it to a vectorized fluid port, such as used in 'Buildings.Fluid.MixingVolumes`.
+|                 | |       |   See Buildings.Fluid.Sensors.UsersGuide for more information.
+|                 | |       |   To disable this warning, set 'warnAboutOnePortConnection = false' in building.building.bus1.data_bus.TRoo1[1].\"
+LOG_STDOUT        | warning | The default linear solver fails, the fallback solver with total pivoting is started at time 0.000000. That might raise performance issues, for more information use -lv LOG_LS.
+LOG_SUCCESS       | info    | The initialization finished successfully with 3 homotopy steps.
+LOG_SUCCESS       | info    | The simulation finished successfully.
+",
+    timeFrontend = 3.185531466,
+    timeBackend = 11.518370508,
+    timeSimCode = 0.955455485,
+    timeTemplates = 4.484161483,
+    timeCompile = 7.430266465,
+    timeSimulation = 0.482553919,
+    timeTotal = 28.056671526
+end SimulationResult;
+"Notification: IDEAS requested package Modelica of version 4.0.0. Modelica 4.1.0 is used instead which states that it is fully compatible without conversion script needed.
+[/root/.openmodelica/libraries/Buildings 13.0.0/Electrical/Interfaces/Load.mo:19:3-22:28:writable] Warning: Parameter building.bus1.data_bus.loa.V_nominal has no value, and is fixed during initialization (fixed=true), using available start value (start=110) as default value.
+[/root/.openmodelica/libraries/Buildings 13.0.0/Electrical/AC/OnePhase/Sources/Grid.mo:7:3-7:78:writable] Warning: Parameter gri.f has no value, and is fixed during initialization (fixed=true), using available start value (start=60) as default value.
+[/root/.openmodelica/libraries/Buildings 13.0.0/Electrical/AC/OnePhase/Sources/Grid.mo:8:3-8:79:writable] Warning: Parameter gri.V has no value, and is fixed during initialization (fixed=true), using available start value (start=110) as default value.
+Warning: The model contains alias variables with redundant start and/or conflicting nominal values. It is recommended to resolve the conflicts, because otherwise the system could be hard to solve. To print the conflicting alias sets and the chosen candidates please use -d=aliasConflicts.
+"

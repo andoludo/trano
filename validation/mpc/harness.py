@@ -29,7 +29,7 @@ from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.mpc import RCModelType
 from trano.mpc.estimation import sanitize_name
-from trano.simulate.simulate import SimulationOptions, simulate
+from trano.simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions, simulate
 from trano.utils.utils import is_success
 from validation.bestest.harness import model_hash, reset_element_names
 from validation.bestest.kpi import find_variable
@@ -116,7 +116,7 @@ def _network(case: MPCCase, library: Library, directory: Path) -> Network:
     directory.mkdir(parents=True, exist_ok=True)
     reset_element_names()
     network = convert_network(case.path.stem, case.path, library=library)
-    network.set_weather_path_to_container_path(directory)
+    network.set_weather_path(directory, CONTAINER_MODEL_DIR)
     return network
 
 

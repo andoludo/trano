@@ -73,14 +73,21 @@ Every component carries the icon of the Buildings model it follows (valves, pump
 walls, windows, zones, weather...), and its ports are placed on that icon, so that the model reads in a Modelica
 editor as a Buildings model does.
 
-As in the Buildings and IDEAS models, the components of `building_mpc` are grouped in containers, the sub-models
-of `Components.Containers`: `envelope`, `emission`, `distribution`, `production`, `ventilation` and `solar`. The
-inputs of `building_mpc` and the weather stay at its top. A connection between two containers goes through ports of
-the type of the component ports (`WaterInlet`, `HeatPort`, `WeatherBusIn`...), and a variable a component reads
-from another container (the zone temperature of an emission control) goes through an output and an input. The
-states then carry the container in their names (`envelope1.space_001.TAir`). The containers do not change the
-equations; leave them out with `network.model(include_container=False)` or
-`trano create-model house.yaml FastModel --no-containers` for a single flat `building_mpc`.
+`building_mpc` is built as the Buildings and IDEAS models are, by the same code and configuration: its components
+are grouped in the containers of `containers.yaml` (`envelope`, `emission`, `distribution`, `production`, `bus`,
+`ventilation`, `solar`), which `building_mpc` extends as `Components.Containers.building`. The containers are linked
+by array ports (`heatPortCon[n]`, `port_a[n]`...) of the FastModel connector types that `library.json` gives
+(`connectors`), and all share one data bus, `dataBus`. As with the other libraries, the components exchange their
+signals on the data bus: the data server of the `bus` container writes the air temperature of each zone, an emission
+control reads it and writes the opening of its valve, the collector control of the circuit reads the openings... and
+the systems outside the envelope read the weather there. A signal that no component writes is an input of
+`building_mpc` when its component says so (`model_input` in its YAML template: the weather data, the internal gains,
+the controls of `FastModelMPC`); the inputs are at the top of `building_mpc`, connected to the data bus. The data bus is
+the expandable connector of the other libraries with the signals of the network declared (`data_bus_template`), as
+rumoca does not add members to an expandable connector. The states carry the container in their names
+(`envelope1.space_001.TAir`). The containers do not change the equations; leave them out with
+`network.model(include_container=False)` or `trano create-model house.yaml FastModel --no-containers` for a single
+flat `building_mpc`.
 
 ### Rules for an explicit ODE
 
@@ -107,7 +114,7 @@ its set point `<control>_TSet`; `FastModelMPC` takes the controls too:
 | Input | Role |
 |---|---|
 | `weather_inputs.TDryBul`, `.TBlaSky`, `.winSpe`, `.winDir`, `.HDirNor`, `.HDifHor`, `.HGloHor` | weather data, as in a weather file or a forecast (disturbances) |
-| `<occupancy>.gai.QCon`, `.QRad` | convective and radiant internal gains per floor area [W/m2] (disturbances) |
+| `<occupancy>_gai.QCon`, `.QRad` | convective and radiant internal gains per floor area [W/m2] (disturbances) |
 | `<valve>_y.y` | flow of a radiator branch relative to its nominal flow (control, 0 to 1) |
 | `<three-way valve>_y.y` | share of supply water (control) |
 | `<boiler>_y.y` | boiler part load ratio, or heat pump compressor speed (control) |

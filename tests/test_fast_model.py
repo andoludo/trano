@@ -6,6 +6,7 @@ components of ``trano/library/FastModel.mo``; rumoca translates it into a CasADi
 
 import math
 import re
+import tempfile
 import warnings
 from functools import cache
 from pathlib import Path
@@ -17,6 +18,7 @@ from trano.data_models.conversion import convert_network
 from trano.elements.jinja import UnsupportedElementError
 from trano.elements.library.library import Library
 from trano.optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings, Roles
+from trano.simulate.simulate import SimulationOptions, simulate
 
 ROOT = Path(__file__).parents[1]
 MODELS = ROOT / "tests" / "models"
@@ -119,31 +121,32 @@ def test_every_port_is_placed_on_the_icon() -> None:
 
 
 def test_the_components_are_grouped_in_containers() -> None:
+    """The containers and their assembly of the other libraries (containers.yaml, main_building.jinja2)."""
     model = _model(MODELS / "single_zone_hydronic.yaml", "FastModel")
-    top = model[model.index("model building_mpc") : model.index("end building_mpc;")]
-    for container in ["envelope", "emission", "distribution", "production"]:
-        assert f"    model {container} " in model
-        assert f"Components.Containers.{container} {container}1" in top
-    # the inputs of building_mpc and the weather stay at its top, the components go to the containers
-    assert "FastModel.Interfaces.WeatherInputs weather_inputs" in top
-    assert "FastModel.Interfaces.OccupancyInputs occupancy_1" in top
-    assert "FastModel.BoundaryConditions.Weather weather(" in top
-    assert "FastModel.Zones.Zone space_001(" not in top
-    # a connection between two containers goes through their ports, of the type of the component ports
-    assert "FastModel.Interfaces.HeatPort space_001_heaPorAir" in model
-    assert "connect(envelope1.space_001_heaPorAir, emission1.radiator_003_heatPortCon)" in top
-    assert "connect(envelope1.weather_weaBus, weather.weaBus)" in top
-    # a variable of another container comes through an output of its container and an input of the other one
-    assert "FastModel.Interfaces.RealOutput space_001_TAir = space_001.TAir" in model
-    assert "TZon=space_001_TAir" in model
-    assert "connect(envelope1.space_001_TAir, emission1.space_001_TAir)" in top
+    assembly = model[model.index("model building\n") : model.index("end building;")]
+    compact = assembly.replace(" ", "").replace("\n", "")
+    assert "extends Components.Containers.building;" in model[model.index("model building_mpc") :]
+    for container in ["envelope", "emission", "distribution", "production", "bus"]:
+        assert f"    model {container}\n" in model
+        assert f"Components.Containers.{container} {container}1" in assembly
+    # the inputs of the model at the top of the assembly, connected to the data bus
+    assert "FastModel.Interfaces.WeatherInputs weather_inputs" in assembly
+    assert "FastModel.Interfaces.GainInputs occupancy_1_gai" in assembly
+    assert "connect(weather_inputs.TDryBul, bus1.dataBus.TDryBulWeather);" in assembly
+    # array ports between the containers, the containers on one data bus
+    assert "connect(emission1.heatPortCon[1],envelope1.heatPortCon[1])" in compact
+    assert "connect(emission1.dataBus,envelope1.dataBus)" in compact
+    # the expandable data bus with the signals of the network declared; a control reads its zone on it
+    assert "expandable connector DataBus" in model
+    assert "Real TZonSpace_001;" in model
+    assert "connect(dataBus.TZonSpace_001, TZon);" in model
 
 
 @pytest.mark.parametrize("library", ["FastModel", "FastModelMPC"])
 def test_the_containers_can_be_left_out(library: str) -> None:
     flat = _model(MODELS / "single_zone_hydronic.yaml", library, include_container=False)
-    assert "package Components" not in flat
-    assert "FastModel.Zones.Zone space_001(" in _building_mpc(flat)
+    assert 'package Containers "Containers of building_mpc"' not in flat
+    assert "FastModel.Zones.Zone space_001(" in flat[flat.index("model building_mpc") :]
 
 
 @needs_connected_export
@@ -180,10 +183,9 @@ def test_the_package_holds_the_model_and_its_runnable_wrapper() -> None:
     model = _model(MODELS / "single_zone_hydronic.yaml")
     assert "package FastModel" in model
     assert "model building_mpc" in model
-    assert "building_mpc mpc(weather(lat=weather_reader.lat" in model
+    assert "building_mpc mpc(envelope1(weather(lat=weather_reader.lat" in model
     assert "Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weather_reader" in model
-    building_mpc = model[model.index("model building_mpc") : model.index("end building_mpc;")]
-    assert "Buildings." not in building_mpc  # the physics only: no table, no event, no Buildings component
+    assert "Buildings." not in _building_mpc(model)  # the physics only: no table, no event, no Buildings component
 
 
 @needs_connected_export
@@ -323,7 +325,8 @@ def test_the_heat_pump_follows_its_control() -> None:
 def test_the_monitored_set_point_is_held_without_external_data() -> None:
     model = _model(MODELS / "single_zone_hydronic_emission_from_data.yaml", "FastModel")
     assert 'FastModel.Interfaces.RealInput emission_control_001_TSet(unit="K")' in _building_mpc(model)
-    assert "FastModel.Controls.EmissionMonitored emission_control_001(" in model
+    assert "extends FastModel.Controls.EmissionMonitored;" in model
+    assert "BaseClasses.EmissionMonitoredEmission_control_001 emission_control_001(" in model
     assert "Modelica.Blocks.Sources.Constant emission_control_001_TSet(k=294.15)" in model
     assert "connect(emission_control_001_TSet.y, mpc.emission_control_001_TSet);" in model
 
@@ -493,9 +496,9 @@ def test_the_fans_take_the_nominal_pressure_rise_by_default(tmp_path: Path, libr
     path = tmp_path / "ahu_default_fan_pressures.yaml"
     path.write_text(yaml.safe_dump(data))
     model = _building_mpc(_model(path, library)).replace(" ", "")
-    unit = re.search(r"FastModel\.Ventilation\.HeatRecoveryUnitahu_001\((.*?)\)", model, re.DOTALL)
+    unit = re.search(r"BaseClasses\.HeatRecoveryUnitAhu_001ahu_001\((.*?)\)", model, re.DOTALL)
     assert unit is not None
-    assert "dpSup_nominal=100," in unit.group(1) and "dpRet_nominal=100," in unit.group(1)
+    assert re.search(r"dpSup_nominal=100(,|$)", unit.group(1)) and re.search(r"dpRet_nominal=100(,|$)", unit.group(1))
 
 
 def test_the_heat_pump_control_takes_the_heating_curve_of_the_yaml(tmp_path: Path) -> None:
@@ -524,3 +527,26 @@ def test_the_heat_pump_control_keeps_its_defaults_when_the_yaml_sets_none() -> N
     control = re.search(r"FastModel\.Controls\.HeatPumpControlboiler_001_control\((.*?)\)", model, re.DOTALL)
     assert control is not None
     assert not re.search(r"\b(TSupMin|TOutHeaLim|dTHys)=", control.group(1))
+
+
+@pytest.mark.simulate
+def test_simulate_fast_model() -> None:
+    """The runnable model of the containers simulates in OpenModelica, its zones at plausible temperatures."""
+    from buildingspy.io.outputfile import Reader
+
+    from trano.utils.utils import is_success
+
+    path = MODELS / "house_infiltration_air_water_heat_pump.yaml"
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        network = convert_network(path.stem, path, library=Library.from_configuration("FastModel"))
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as project_path:
+        results = simulate(Path(project_path), network, options=SimulationOptions(end_time=4 * 3600))
+        assert is_success(results), results.output.decode(errors="replace")[-3000:]
+        result = Reader(str(next(Path(project_path).joinpath("results").glob("*.mat"))), "dymola")
+        zones = result.varNames(r"^mpc\.envelope1\.\w+\.TAir$")
+        assert len(zones) == 6
+        for zone in zones:
+            _, temperature = result.values(zone)
+            assert temperature.min() > KELVIN + 10, zone
+            assert temperature.max() < KELVIN + 40, zone

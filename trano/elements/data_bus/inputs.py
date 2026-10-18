@@ -42,6 +42,14 @@ class PowerInput(BaseModel):
         return self.energy.lower()
 
 
+class ModelInput(BaseModel):
+    """A signal of the data bus that no element writes, as an input of the model instead of a constant: the
+    declaration of the input and the variable of it connected to the bus, templates of the element reading it."""
+
+    declaration: str
+    port: str
+
+
 class BaseInputOutput(BaseModel):
     name: str | DataSource
     component: str
@@ -51,6 +59,7 @@ class BaseInputOutput(BaseModel):
     input_template: str
     default: float | str | int
     power: PowerInput | None = None
+    model_input: ModelInput | None = None
 
     def __hash__(self) -> int:
         return hash((self.name, self.target.value))
@@ -73,6 +82,11 @@ class BaseInputOutput(BaseModel):
         if self.power is None:
             return self.name
         return self.power.name()
+
+    @property
+    def bus_member(self) -> str:
+        """The signal of the data bus: ``dataBus.<bus_member>``."""
+        return f"{self.input_name}{self.target.value}"
 
 
 class BaseInput(BaseInputOutput): ...

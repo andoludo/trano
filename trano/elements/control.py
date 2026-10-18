@@ -30,6 +30,11 @@ class CollectorControl(Control):
 class BoilerControl(Control):
     pumps: list[Pump] | None = None
 
+    @property
+    def pump_controls(self) -> list[str]:
+        """Names of the controls of its pumps, for the pumps that have one."""
+        return [pump.control.name for pump in self.pumps or [] if pump.control and pump.control.name]
+
 
 class AhuControl(Control):
     spaces: list[Space] | None = None

@@ -459,6 +459,13 @@ package FastModel "Building models for model predictive control: close to Buildi
           Ellipse(fillPattern=FillPattern.Solid, extent={{25,-25},{35,-15}})}));
     end Gains;
 
+    connector GainOutputs "Internal gains per floor area (source side)"
+      RealOutput QCon(unit="W/m2") "Convective internal gains per floor area";
+      RealOutput QRad(unit="W/m2") "Radiant internal gains per floor area";
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}})}));
+    end GainOutputs;
+
     connector HeatFlowInput "Heat flow rate of an ideal system: input of building_mpc"
       RealInput Q_flow(unit="W") "Heat flow rate, positive for heating";
       annotation (Icon(coordinateSystem(preserveAspectRatio=true, extent={{-100,-100},{100,100}}), graphics={
@@ -1040,6 +1047,36 @@ package FastModel "Building models for model predictive control: close to Buildi
       end for;
       QVen = sum(ports_a[i].m_flow*cpAir*(ports_a[i].T - TAir) for i in 1:nPorts_a);
     end VentilatedZone;
+
+    model AirTemperatureSensor "Air temperature of a zone, without heat flow (the data bus reads it)"
+      Interfaces.HeatPort port "Air of the zone"
+        annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
+      Interfaces.RealOutput T(unit="K") "Air temperature"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+    equation
+      port.Q_flow = 0;
+      T = port.T;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Ellipse(extent={{-20,-80},{20,-40}}, lineColor={0,0,0}, fillColor={191,0,0}, fillPattern=FillPattern.Solid),
+          Rectangle(extent={{-12,60},{12,-44}}, lineColor={0,0,0}, fillColor={191,0,0}, fillPattern=FillPattern.Solid),
+          Text(extent={{-150,140},{150,100}}, textColor={0,0,255}, textString="%name")}));
+    end AirTemperatureSensor;
+
+    model InternalGains "Internal gains of a zone per floor area, from two signals"
+      Interfaces.RealInput QCon(unit="W/m2") "Convective internal gains per floor area"
+        annotation (Placement(transformation(extent={{-140,20},{-100,60}})));
+      Interfaces.RealInput QRad(unit="W/m2") "Radiant internal gains per floor area"
+        annotation (Placement(transformation(extent={{-140,-60},{-100,-20}})));
+      Interfaces.GainOutputs gai "Internal gains per floor area"
+        annotation (Placement(transformation(extent={{100,-10},{120,10}})));
+    equation
+      gai.QCon = QCon;
+      gai.QRad = QRad;
+      annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
+          Rectangle(extent={{-100,100},{100,-100}}, lineColor={0,0,127}, fillColor={255,255,255},
+            fillPattern=FillPattern.Solid),
+          Text(extent={{-150,140},{150,100}}, textColor={0,0,255}, textString="%name")}));
+    end InternalGains;
   end Zones;
 
   package Hydronics
@@ -2055,7 +2092,8 @@ package FastModel "Building models for model predictive control: close to Buildi
         annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
       Interfaces.RealInput dpRel "Head of the pump relative to its nominal head"
         annotation (Placement(transformation(extent={{-140,-80},{-100,-40}})));
-      Real yMax "Largest opening";
+      Interfaces.RealOutput yMax "Largest opening (the boiler control reads it)"
+        annotation (Placement(transformation(extent={{100,40},{140,80}})));
       Hysteresis hysPum(uLow=0.01, uHigh=0.5, u=yMax);
       Interfaces.RealOutput y(unit="1") "Speed of the pump"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));

@@ -1,7 +1,8 @@
 import itertools
 import logging
 import shutil
-from pathlib import Path
+import warnings
+from pathlib import Path, PurePath, PurePosixPath
 from typing import Optional, cast
 
 import networkx as nx
@@ -16,7 +17,7 @@ from trano.elements import (
     connect,
 )
 from trano.elements.base import ElementPort
-from trano.elements.bus import DataBus
+from trano.elements.bus import DataBus, get_bus_members
 from trano.elements.construction import (
     extract_properties,
     Construction,
@@ -24,7 +25,6 @@ from trano.elements.construction import (
     Material,
 )
 from trano.elements.containers import containers_factory, ContainerInput
-from trano.elements.fast_model_containers import build_containers
 from trano.elements.jinja import ENVIRONMENT
 from trano.elements.library.library import Library
 from trano.elements.space import Space
@@ -269,11 +269,12 @@ class Network:  # : PLR0904, #TODO: fix this
         for edge in new_edges + edges_with_bus_without_space + edges_with_bus_with_space:
             self.edge_attributes += self.connect_edges(edge)
 
-    def set_weather_path_to_container_path(self, project_path: Path) -> None:
-        """Copy local weather files next to the model and point the readers at them inside the container.
+    def set_weather_path(self, project_path: Path, model_dir: PurePath) -> None:
+        """Copy local weather files into ``project_path`` and point the readers at them as ``omc`` sees them.
 
-        A Modelica resource (``modelica://Buildings/...``) lives in the library installed in the
-        container and is left untouched.
+        ``model_dir`` is ``project_path`` as seen by OpenModelica: ``/simulation`` in the container of the
+        docker runtime, the directory itself in the local runtime. A Modelica resource
+        (``modelica://Buildings/...``) lives in the installed library and is left untouched.
         """
         for node in self.graph.nodes:
             if not (isinstance(node, Weather) and getattr(node.parameters, "path", None)):
@@ -287,8 +288,19 @@ class Network:  # : PLR0904, #TODO: fix this
                 if found is None:
                     raise FileNotFoundError(f"File {old_path} not found")
                 old_path = found
-            shutil.copy(old_path, project_path.joinpath(old_path.name))
-            node.parameters.path = f'"/simulation/{old_path.name}"'  # type: ignore[union-attr]
+            target = project_path.joinpath(old_path.name)
+            if old_path.resolve() != target.resolve():
+                shutil.copy(old_path, target)
+            node.parameters.path = f'"{model_dir.as_posix()}/{old_path.name}"'  # type: ignore[union-attr]
+
+    def set_weather_path_to_container_path(self, project_path: Path) -> None:
+        """Deprecated: use ``set_weather_path(project_path, PurePosixPath("/simulation"))``."""
+        warnings.warn(
+            "set_weather_path_to_container_path is deprecated; use set_weather_path(project_path, model_dir).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.set_weather_path(project_path, PurePosixPath("/simulation"))
 
     def _prepare_nodes(self, include_container: bool, data_bus: DataBus | None) -> DataBus | None:
         """Process and position every node, adding a data bus if none exists."""
@@ -332,7 +344,6 @@ class Network:  # : PLR0904, #TODO: fix this
         self.connect()
         data = extract_properties(self.library, self.name, self.graph.nodes)
         component_models = [model for node in self.graph.nodes if (model := node.model(self))]
-        fast_model_containers = self.library.container_builder == "fast_model"
         container_model = (
             self.containers.build(
                 ContainerInput(
@@ -340,17 +351,29 @@ class Network:  # : PLR0904, #TODO: fix this
                     connections=self.edge_attributes,
                     data=data,
                     medium=self.library.medium,
+                    connectors=self.library.connectors,
                 )
             )
-            if self.library.use_containers and not fast_model_containers
+            if self.library.use_containers
             else []
         )
         self._assert_all_systems_connected()
-        grouped = build_containers(self) if include_container and fast_model_containers else None
         bus = next((node for node in self.graph.nodes if isinstance(node, DataBus)), None)
         columns = list(bus.validation_data.columns) if bus else []  # type: ignore[attr-defined]
-        runnable = [parts for node in self.graph.nodes if (parts := node.runnable_parts(self, columns))]
+        runnable = [
+            parts
+            for node in self.graph.nodes
+            if (
+                parts := node.runnable_parts(
+                    self, columns, f"{node.container_type}1" if include_container and node.container_type else None
+                )
+            )
+        ]
+        data_bus_connector = ENVIRONMENT.get_template(self.library.data_bus_template).render(
+            bus_members=get_bus_members(list(self.graph.nodes))
+        )
         model = ENVIRONMENT.get_template(self.library.package_template).render(
+            data_bus_connector=data_bus_connector,
             runnable=runnable,
             network=self,
             data=data,
@@ -362,7 +385,6 @@ class Network:  # : PLR0904, #TODO: fix this
             containers=container_model if include_container else [],
             main=self.containers.main if include_container else "",
             include_container=include_container,
-            grouped=grouped,
         )
         return apply_performance_options(model, self.performance)
 

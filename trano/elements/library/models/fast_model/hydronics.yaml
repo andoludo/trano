@@ -3,7 +3,8 @@
 #   controllers decide (the controls of controls.yaml, connected through the port y), the pumps run on their curves;
 # * FastModelMPC: the flow of each branch is set by its valve (the input <valve>_y, relative to the nominal flow),
 #   the share of supply water by the three-way valves, the heat by the production (the input <production>_y); the
-#   runnable model replays the column <system>_y of the external data, or holds the input at 1.
+#   runnable model replays the column <system>_y of the external data, or holds the input at 1. These inputs are
+#   signals of the data bus that no element writes, inputs of building_mpc (model_input).
 # Ports with several connections are arrays, one element per connection, sized by the template.
 - classes:
   - Radiator
@@ -55,10 +56,10 @@
   variant: default
 
 # Ideal emitters (no water circuit): their emission control sets the share y of the nominal power (closed loop), or
-# their heat flow rate, between 0 and the nominal power, is an input (MPC).
+# their heat flow rate, read from the data bus, between 0 and the nominal power, is an input (MPC).
 - classes:
   - Radiator
-  library: [FastModel, FastModelMPC]
+  library: FastModel
   parameter_processing: *radiator_parameters
   ports: &ideal_ports
   - flow: convective
@@ -81,42 +82,93 @@
     - Control
     no_check: true
   template: &ideal_template |-
-    {%- if library == 'FastModel' -%}
     FastModel.HVAC.IdealHeater {{ element.name }}(Q_flow_nominal={{ parameters.Q_flow_nominal }}, fraRad={{ parameters.fraRad }}
         {%- if not element.control %}, y=1{% endif %})
-    {%- else -%}
-    FastModel.Interfaces.HeatFlowInput {{ element.name }}_Q(Q_flow(min=0, max={{ parameters.Q_flow_nominal }}))
-        "Heat flow rate of {{ element.name }}: input of the model";
-    FastModel.HVAC.IdealHeatingCooling {{ element.name }}(fraRad={{ parameters.fraRad }}, Q_flow={{ element.name }}_Q.Q_flow)
-    {%- endif -%}
+  variant: ideal
+
+- classes:
+  - Radiator
+  library: FastModel
+  parameter_processing: *radiator_parameters
+  ports: *ideal_ports
+  template: *ideal_template
+  variant: idealbus
+
+- classes:
+  - Radiator
+  library: FastModelMPC
+  component_template: &heat_flow_component
+    bus:
+      real_inputs:
+      - component: ""
+        name: Q_flow
+        port: Q_flow
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastModel.Interfaces.HeatFlowInput {{ element.name }}_Q(Q_flow(min=0, max={{ parameters.Q_flow_nominal }}))
+                "Heat flow rate of {{ element.name }}: input of the model";
+          port: "{{ element.name }}_Q.Q_flow"
+    category: control
+    template: |-
+      model IdealHeatingCooling{{ element.name | capitalize }}
+        extends FastModel.HVAC.IdealHeatingCooling;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end IdealHeatingCooling{{ element.name | capitalize }};
+  parameter_processing: *radiator_parameters
+  ports: &heat_flow_ports
+  - flow: convective
+    medium: heat
+    names:
+    - heatPortCon
+    targets:
+    - Space
+  - flow: radiative
+    medium: heat
+    names:
+    - heatPortRad
+    targets:
+    - Space
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: &heat_flow_template |-
+    {{ package_name }}.Components.BaseClasses.IdealHeatingCooling{{ element.name | capitalize }} {{ element.name }}(fraRad={{ parameters.fraRad }})
   runnable: &heat_runnable
     declaration: |-
-      {%- if library == 'FastModelMPC' and element.name ~ '_Q' not in columns -%}
+      {%- if element.name ~ '_Q' not in columns -%}
       Modelica.Blocks.Sources.Constant {{ element.name }}_Q(k=0) "No heat without external data";
       {%- endif -%}
     equation: |-
-      {%- if library == 'FastModelMPC' -%}
       {%- if element.name ~ '_Q' in columns -%}
       connect(data_bus.y[{{ columns.index(element.name ~ '_Q') + 1 }}], mpc.{{ element.name }}_Q.Q_flow);
       {%- else -%}
       connect({{ element.name }}_Q.y, mpc.{{ element.name }}_Q.Q_flow);
       {%- endif -%}
-      {%- endif -%}
   variant: ideal
 
 - classes:
   - Radiator
-  library: [FastModel, FastModelMPC]
+  library: FastModelMPC
+  component_template: *heat_flow_component
   parameter_processing: *radiator_parameters
-  ports: *ideal_ports
-  template: *ideal_template
+  ports: *heat_flow_ports
+  template: *heat_flow_template
   runnable: *heat_runnable
   variant: idealbus
 
 - classes:
   - Valve
-  library: [FastModel, FastModelMPC]
-  parameter_processing:
+  library: FastModel
+  parameter_processing: &valve_parameters
     function: default_parameters
   ports:
   - flow: inlet
@@ -135,7 +187,6 @@
     - Control
     no_check: true
   template: |-
-    {%- if library == 'FastModel' -%}
     FastModel.Hydronics.Valve {{ element.name }}(
         pressureDriven=true,
         m_flow_nominal={{ parameters.m_flow_nominal }},
@@ -146,22 +197,61 @@
         delta0={{ parameters.delta0 }}
         {%- if not element.control %},
         y=1{% endif %})
-    {%- else -%}
-    FastModel.Interfaces.ControlInput {{ element.name }}_y "Flow of {{ element.name }} relative to its nominal flow: input of the model";
-    FastModel.Hydronics.Valve {{ element.name }}(m_flow_nominal={{ parameters.m_flow_nominal }}, y={{ element.name }}_y.y)
-    {%- endif -%}
+  variant: default
+
+- classes:
+  - Valve
+  library: FastModelMPC
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastModel.Interfaces.ControlInput {{ element.name }}_y "Flow of {{ element.name }} relative to its nominal flow: input of the model";
+          port: "{{ element.name }}_y.y"
+    category: control
+    template: |-
+      model Valve{{ element.name | capitalize }}
+        extends FastModel.Hydronics.Valve;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end Valve{{ element.name | capitalize }};
+  parameter_processing: *valve_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_a[1]
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_b[1]
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |-
+    {{ package_name }}.Components.BaseClasses.Valve{{ element.name | capitalize }} {{ element.name }}(m_flow_nominal={{ parameters.m_flow_nominal }})
   runnable: &control_runnable
     declaration: |-
-      {%- if library == 'FastModelMPC' and element.name ~ '_y' not in columns -%}
+      {%- if element.name ~ '_y' not in columns -%}
       Modelica.Blocks.Sources.Constant {{ element.name }}_y(k=1) "Control held without external data";
       {%- endif -%}
     equation: |-
-      {%- if library == 'FastModelMPC' -%}
       {%- if element.name ~ '_y' in columns -%}
       connect(data_bus.y[{{ columns.index(element.name ~ '_y') + 1 }}], mpc.{{ element.name }}_y.y);
       {%- else -%}
       connect({{ element.name }}_y.y, mpc.{{ element.name }}_y.y);
-      {%- endif -%}
       {%- endif -%}
   variant: default
 
@@ -169,8 +259,8 @@
 # to port_3, as for the Buildings library).
 - classes:
   - ThreeWayValve
-  library: [FastModel, FastModelMPC]
-  parameter_processing:
+  library: FastModel
+  parameter_processing: &three_way_parameters
     function: default_parameters
   ports:
   - flow: inlet
@@ -193,7 +283,6 @@
     - Control
     no_check: true
   template: |-
-    {%- if library == 'FastModel' -%}
     FastModel.Hydronics.ThreeWayValve {{ element.name }}(
         pressureDriven=true,
         m_flow_nominal={{ parameters.m_flow_nominal }},
@@ -205,10 +294,55 @@
         delta0={{ parameters.delta0 }}
         {%- if not element.control %},
         y=1{% endif %})
-    {%- else -%}
-    FastModel.Interfaces.ControlInput {{ element.name }}_y "Share of supply water of {{ element.name }}: input of the model";
-    FastModel.Hydronics.ThreeWayValve {{ element.name }}(m_flow_nominal={{ parameters.m_flow_nominal }}, y={{ element.name }}_y.y)
-    {%- endif -%}
+  variant: default
+
+- classes:
+  - ThreeWayValve
+  library: FastModelMPC
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastModel.Interfaces.ControlInput {{ element.name }}_y "Share of supply water of {{ element.name }}: input of the model";
+          port: "{{ element.name }}_y.y"
+    category: control
+    template: |-
+      model ThreeWayValve{{ element.name | capitalize }}
+        extends FastModel.Hydronics.ThreeWayValve;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end ThreeWayValve{{ element.name | capitalize }};
+  parameter_processing: *three_way_parameters
+  ports:
+  - flow: inlet
+    medium: fluid
+    names:
+    - port_1[1]
+  - flow: outlet
+    medium: fluid
+    names:
+    - port_2[1]
+  - flow: inlet_or_outlet
+    medium: fluid
+    names:
+    - port_3[1]
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |-
+    {{ package_name }}.Components.BaseClasses.ThreeWayValve{{ element.name | capitalize }} {{ element.name }}(m_flow_nominal={{ parameters.m_flow_nominal }})
   runnable: *control_runnable
   variant: default
 
@@ -338,10 +472,10 @@
   variant: default
 
 # Boilers without storage tank (Buildings BoilerPolynomial): the part load ratio from a P controller on the boiler
-# temperature while its control sees demand (closed loop), or the input <boiler>_y (MPC).
+# temperature while its control sees demand (closed loop), or the input <boiler>_y read from the data bus (MPC).
 - classes:
   - Boiler
-  library: [FastModel, FastModelMPC]
+  library: FastModel
   parameter_processing: &boiler_parameters
     function: default_parameters
   ports: *multi_fluid_ports
@@ -349,14 +483,10 @@
     {%- if parameters.useStorageTank | string | lower == 'true' -%}
     {{ unsupported('Boiler ' ~ element.name ~ ' has a storage tank: the FastModel library has no tank yet.') }}
     {%- endif -%}
-    {%- if library == 'FastModel' -%}
     {%- set demand = element.control.name ~ '.y' if element.control and element.control.variant == 'simple' and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
     FastModel.Controls.BoilerTemperatureControl {{ element.name }}_control(
         TempSet={{ parameters.get('TempSet', 353.15) }}, T={{ element.name }}.T, demand={{ demand }})
         "Firing of {{ element.name }}";
-    {% else -%}
-    FastModel.Interfaces.ControlInput {{ element.name }}_y "Part load ratio of {{ element.name }}: input of the model";
-    {%- endif %}
     FastModel.Hydronics.Boiler {{ element.name }}(
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }},
@@ -364,34 +494,45 @@
         effCur=FastModel.Types.EfficiencyCurves.{{ parameters.effCur.split('.')[-1] }},
         a={{ parameters.a }},
         T_nominal={{ parameters.T_nominal }},
-        {%- if library == 'FastModel' %}
         pressureDriven=true,
         m_flow_nominal={{ parameters.nominal_mass_flow_rate_boiler }},
         dp_nominal={{ parameters.dp_nominal }},
         y={{ element.name }}_control.y)
-        {%- else %}
-        y={{ element.name }}_y.y)
-        {%- endif %}
-  runnable: *control_runnable
   variant: default
 
 - classes:
   - Boiler
-  library: [FastModel, FastModelMPC]
+  library: FastModel
   parameter_processing: *boiler_parameters
   ports: *multi_fluid_ports
   template: *boiler_template
-  runnable: *control_runnable
   variant: without_storage
 
-# Air-to-water heat pump (trano's Buildings air_water_heat_pump: Vitocal 251-A08 tables scaled to the capacity)
-# with its buffer, the outdoor air its source: the compressor speed from the control of the Buildings model
-# (closed loop), or the input <heat pump>_y (MPC).
 - classes:
   - Boiler
-  library: [FastModel, FastModelMPC]
+  library: FastModelMPC
+  component_template: &boiler_component
+    bus:
+      real_inputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastModel.Interfaces.ControlInput {{ element.name }}_y "Part load ratio of {{ element.name }}: input of the model";
+          port: "{{ element.name }}_y.y"
+    category: boiler
+    template: |-
+      model Boiler{{ element.name | capitalize }}
+        extends FastModel.Hydronics.Boiler;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end Boiler{{ element.name | capitalize }};
   parameter_processing: *boiler_parameters
-  ports:
+  ports: &boiler_bus_ports
   - flow: inlet
     medium: fluid
     multi_connection: true
@@ -403,13 +544,132 @@
     names:
     - port_b
   - flow: undirected
-    medium: weather_data
+    medium: data
+    multi_connection: true
     names:
-    - weaBus
+    - dataBus
     targets:
-    - Weather
+    - DataBus
+    use_counter: false
+  template: &boiler_mpc_template |-
+    {%- if parameters.useStorageTank | string | lower == 'true' -%}
+    {{ unsupported('Boiler ' ~ element.name ~ ' has a storage tank: the FastModel library has no tank yet.') }}
+    {%- endif -%}
+    {{ package_name }}.Components.BaseClasses.Boiler{{ element.name | capitalize }} {{ element.name }}(
+        nPorts_a={{ macros.connections(element, 'port_a') }},
+        nPorts_b={{ macros.connections(element, 'port_b') }},
+        Q_flow_nominal={{ parameters.Q_flow_nominal }},
+        effCur=FastModel.Types.EfficiencyCurves.{{ parameters.effCur.split('.')[-1] }},
+        a={{ parameters.a }},
+        T_nominal={{ parameters.T_nominal }})
+  runnable: &control_runnable_boiler
+    declaration: |-
+      {%- if element.name ~ '_y' not in columns -%}
+      Modelica.Blocks.Sources.Constant {{ element.name }}_y(k=1) "Control held without external data";
+      {%- endif -%}
+    equation: |-
+      {%- if element.name ~ '_y' in columns -%}
+      connect(data_bus.y[{{ columns.index(element.name ~ '_y') + 1 }}], mpc.{{ element.name }}_y.y);
+      {%- else -%}
+      connect({{ element.name }}_y.y, mpc.{{ element.name }}_y.y);
+      {%- endif -%}
+  variant: default
+
+- classes:
+  - Boiler
+  library: FastModelMPC
+  component_template: *boiler_component
+  parameter_processing: *boiler_parameters
+  ports: *boiler_bus_ports
+  template: *boiler_mpc_template
+  runnable: *control_runnable_boiler
+  variant: without_storage
+
+# Air-to-water heat pump (trano's Buildings air_water_heat_pump: Vitocal 251-A08 tables scaled to the capacity)
+# with its buffer, the outdoor air its source (the weather from the data bus): the compressor speed from the control
+# of the Buildings model (closed loop), or the input <heat pump>_y read from the data bus (MPC).
+- classes:
+  - Boiler
+  library: FastModel
+  component_template:
+    bus:
+      real_inputs:
+      - component: weaBus
+        name: TDryBul
+        port: TDryBul
+        target:
+          main: element
+      - component: weaBus
+        name: TBlaSky
+        port: TBlaSky
+        target:
+          main: element
+      - component: weaBus
+        name: winSpe
+        port: winSpe
+        target:
+          main: element
+      - component: weaBus
+        name: winDir
+        port: winDir
+        target:
+          main: element
+      - component: weaBus
+        name: HDirNor
+        port: HDirNor
+        target:
+          main: element
+      - component: weaBus
+        name: HDifHor
+        port: HDifHor
+        target:
+          main: element
+      - component: weaBus
+        name: HGloHor
+        port: HGloHor
+        target:
+          main: element
+      - component: weaBus
+        name: lat
+        port: lat
+        target:
+          main: element
+      - component: weaBus
+        name: decAng
+        port: decAng
+        target:
+          main: element
+      - component: weaBus
+        name: solHouAng
+        port: solHouAng
+        target:
+          main: element
+      - component: weaBus
+        name: cosZen
+        port: cosZen
+        target:
+          main: element
+      - component: weaBus
+        name: F1
+        port: F1
+        target:
+          main: element
+      - component: weaBus
+        name: F2
+        port: F2
+        target:
+          main: element
+    category: boiler
+    template: &heat_pump_wrapper |-
+      model HeatPump{{ element.name | capitalize }}
+        extends FastModel.Hydronics.HeatPump;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end HeatPump{{ element.name | capitalize }};
+  parameter_processing: *boiler_parameters
+  ports: *boiler_bus_ports
   template: |-
-    {%- if library == 'FastModel' -%}
     {%- set demand = element.control.name ~ '.y' if element.control and element.control.variant == 'simple' and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
     FastModel.Controls.HeatPumpControl {{ element.name }}_control(
         TSet={{ parameters.TSet }},
@@ -422,10 +682,7 @@
         TOut={{ element.name }}.weaBus.TDryBul,
         TBuf={{ element.name }}.T,
         TConOut={{ element.name }}.TConOut) "Control of {{ element.name }}";
-    {% else -%}
-    FastModel.Interfaces.ControlInput {{ element.name }}_y "Compressor speed of {{ element.name }}: input of the model";
-    {%- endif %}
-    FastModel.Hydronics.HeatPump {{ element.name }}(
+    {{ package_name }}.Components.BaseClasses.HeatPump{{ element.name | capitalize }} {{ element.name }}(
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }},
         Q_flow_nominal={{ parameters.Q_flow_nominal }},
@@ -437,14 +694,109 @@
         VTan={{ parameters.VTan }},
         hTan={{ parameters.hTan }},
         dIns={{ parameters.dIns }},
-        {%- if library == 'FastModel' %}
         pressureDriven=true,
         m_flow_nominal={{ parameters.nominal_mass_flow_radiator_loop }},
         y={{ element.name }}_control.y)
-        {%- else %}
-        y={{ element.name }}_y.y)
+  variant: air_water_heat_pump
+
+- classes:
+  - Boiler
+  library: FastModelMPC
+  component_template:
+    bus:
+      real_inputs:
+      - component: weaBus
+        name: TDryBul
+        port: TDryBul
+        target:
+          main: element
+      - component: weaBus
+        name: TBlaSky
+        port: TBlaSky
+        target:
+          main: element
+      - component: weaBus
+        name: winSpe
+        port: winSpe
+        target:
+          main: element
+      - component: weaBus
+        name: winDir
+        port: winDir
+        target:
+          main: element
+      - component: weaBus
+        name: HDirNor
+        port: HDirNor
+        target:
+          main: element
+      - component: weaBus
+        name: HDifHor
+        port: HDifHor
+        target:
+          main: element
+      - component: weaBus
+        name: HGloHor
+        port: HGloHor
+        target:
+          main: element
+      - component: weaBus
+        name: lat
+        port: lat
+        target:
+          main: element
+      - component: weaBus
+        name: decAng
+        port: decAng
+        target:
+          main: element
+      - component: weaBus
+        name: solHouAng
+        port: solHouAng
+        target:
+          main: element
+      - component: weaBus
+        name: cosZen
+        port: cosZen
+        target:
+          main: element
+      - component: weaBus
+        name: F1
+        port: F1
+        target:
+          main: element
+      - component: weaBus
+        name: F2
+        port: F2
+        target:
+          main: element
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastModel.Interfaces.ControlInput {{ element.name }}_y "Compressor speed of {{ element.name }}: input of the model";
+          port: "{{ element.name }}_y.y"
+    category: boiler
+    template: *heat_pump_wrapper
+  parameter_processing: *boiler_parameters
+  ports: *boiler_bus_ports
+  template: |-
+    {{ package_name }}.Components.BaseClasses.HeatPump{{ element.name | capitalize }} {{ element.name }}(
+        nPorts_a={{ macros.connections(element, 'port_a') }},
+        nPorts_b={{ macros.connections(element, 'port_b') }},
+        Q_flow_nominal={{ parameters.Q_flow_nominal }},
+        TSet={{ parameters.TSet }},
+        {%- if parameters.get('TOutDes') is not none %}
+        TOutDes={{ parameters.TOutDes }},
         {%- endif %}
-  runnable: *control_runnable
+        useStorageTank={{ parameters.useStorageTank | string | lower }},
+        VTan={{ parameters.VTan }},
+        hTan={{ parameters.hTan }},
+        dIns={{ parameters.dIns }})
+  runnable: *control_runnable_boiler
   variant: air_water_heat_pump
 
 - classes:
