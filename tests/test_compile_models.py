@@ -59,7 +59,6 @@ INVALID = {
 }
 # models written for some libraries only
 ONLY = {
-    "house_mpc_systems.yaml": (),  # chiller, DHW tank, battery and EV charger: mpc library only
     "two_zones_ideas_rectangular_zone.yaml": ("IDEAS",),  # rectangular_zone: an IDEAS zone
 }
 # models whose weather file does not exist (they are only translated by the other tests): checked with the

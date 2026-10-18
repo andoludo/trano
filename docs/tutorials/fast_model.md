@@ -1,7 +1,6 @@
 # FastModel: models close to Buildings, in closed loop and for MPC
 
-The [RC models](rc_model_predictive_control.md) of the `mpc` library are small and fast, but they lump a zone
-into one to three capacities and leave the heating system out. The `FastModel` library instead turns the same YAML
+The `FastModel` library turns a YAML
 file into a model **close to the Buildings library** that **still translates into a CasADi ODE** (with
 [rumoca](https://github.com/cognipilot/rumoca)) for simulation, state estimation and model predictive control
 with IPOPT:

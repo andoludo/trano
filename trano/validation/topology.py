@@ -16,7 +16,6 @@ from trano.validation.graph import (
 from trano.validation.issues import Issue
 
 GENERATORS = frozenset({"boiler"})
-RC_ONLY = frozenset({"chiller", "dhw_tank", "battery", "ev_charger"})
 REQUIRED_CONTROLS = {
     "valve": "emission_control",
     "three_way_valve": "three_way_valve_control",
@@ -106,14 +105,14 @@ def check_spaces(data: dict[str, Any]) -> Iterator[Issue]:
             )
 
 
-def check_controls(graph: ModelGraph, is_rc: bool) -> Iterator[Issue]:
+def check_controls(graph: ModelGraph) -> Iterator[Issue]:
     """The components that cannot work without their control, or with a control of another variant."""
     for component in graph.components.values():
         if component.control_kind:
             yield from _check_control_variant(component)
             continue
         required = REQUIRED_CONTROLS.get(component.kind)
-        if required and not is_rc:
+        if required:
             yield Issue(
                 "error",
                 component.id,
@@ -177,14 +176,7 @@ def _check_ahu_controls(graph: ModelGraph, flow: nx.DiGraph) -> Iterator[Issue]:
 
 def _check_orphans(graph: ModelGraph, flow: nx.DiGraph) -> Iterator[Issue]:
     for component in graph.components.values():
-        if component.kind in RC_ONLY:
-            yield Issue(
-                "error",
-                component.id,
-                f"a {component.kind} is only modelled by the 'mpc' library. "
-                "Remove it, or translate the model with the 'mpc' library.",
-            )
-        elif component.space is None and flow.degree(component.id) == 0:
+        if component.space is None and flow.degree(component.id) == 0:
             yield Issue(
                 "error",
                 component.id,

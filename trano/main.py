@@ -8,7 +8,6 @@ import typer
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
 from trano.model_description import model_description
-from trano.mpc.parameters import RCModelType
 from trano.reporting.html import to_html_reporting
 from trano.reporting.reporting import ModelDocumentation
 from trano.reporting.types import ResultFile
@@ -26,17 +25,13 @@ CROSS_MARK = "[red]✘[/red]"
 class LibraryChoice(str, Enum):
     ideas = "IDEAS"
     buildings = "Buildings"
-    mpc = "mpc"
     fast_model = "FastModel"
     fast_model_mpc = "FastModelMPC"
 
 
-def _create_network(model: str, library: str, rc_model_type: RCModelType | None = None) -> Network:
-    library_ = Library.from_configuration(library)
-    if library_.is_rc and rc_model_type is not None:
-        library_ = library_.model_copy(update={"rc_model_type": rc_model_type})
+def _create_network(model: str, library: str) -> Network:
     model_ = Path(model).resolve()
-    return convert_network(str(model_.stem), model_, library=library_)
+    return convert_network(str(model_.stem), model_, library=Library.from_configuration(library))
 
 
 def _simulation_result_path(model_path: Path) -> Path:
@@ -64,15 +59,11 @@ def create_model(
     library: Annotated[
         LibraryChoice,
         typer.Argument(
-            help="Library to be used: a simulation library, 'mpc' for a CasADi-compatible RC model, 'FastModel' "
-            "for a closed-loop model close to Buildings that rumoca translates to CasADi, or 'FastModelMPC' for the "
-            "same model with the controls of its systems as inputs, for optimal control."
+            help="Library to be used: a simulation library, 'FastModel' for a closed-loop model close to Buildings "
+            "that rumoca translates to CasADi, or 'FastModelMPC' for the same model with the controls of its systems "
+            "as inputs, for optimal control."
         ),
     ] = LibraryChoice.buildings,
-    rc_model_type: Annotated[
-        RCModelType | None,
-        typer.Option(help="RC zone model of the 'mpc' library (default: R3C2)."),
-    ] = None,
     containers: Annotated[
         bool,
         typer.Option(
@@ -91,7 +82,7 @@ def create_model(
             description=f"Generating model {modelica_model_path.name} with library {library}",
             total=None,
         )
-        network = _create_network(model, library, rc_model_type)
+        network = _create_network(model, library)
         modelica_model = network.model(include_container=containers)
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)
@@ -100,11 +91,6 @@ def create_model(
         progress.remove_task(task)
         print(f"{CHECKMARK} Model generated at {modelica_model_path}")
         print(f"{CHECKMARK} Description of the model, for its reports, at {description_path}")
-        if network.library.is_rc:
-            from trano.mpc.modelica import network_interface
-
-            interface_path = network_interface(network).write(modelica_model_path.with_suffix(".mpc.json"))
-            print(f"{CHECKMARK} MPC interface of {network.name}.building_mpc generated at {interface_path}")
 
 
 @app.command()

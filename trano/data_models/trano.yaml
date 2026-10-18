@@ -423,10 +423,6 @@ classes:
       - heat_meter_sensor
       - air_handling_unit
       - power_sensor
-      - chiller
-      - dhw_tank
-      - battery
-      - ev_charger
     exactly_one_of:
       - slot_conditions: {split_valve: {name: split_valve, required: true}}
       - slot_conditions: {three_way_valve: {name: three_way_valve, required: true}}
@@ -436,10 +432,6 @@ classes:
       - slot_conditions: {heat_meter_sensor: {name: heat_meter_sensor, required: true}}
       - slot_conditions: {air_handling_unit: {name: air_handling_unit, required: true}}
       - slot_conditions: {power_sensor: {name: power_sensor, required: true}}
-      - slot_conditions: {chiller: {name: chiller, required: true}}
-      - slot_conditions: {dhw_tank: {name: dhw_tank, required: true}}
-      - slot_conditions: {battery: {name: battery, required: true}}
-      - slot_conditions: {ev_charger: {name: ev_charger, required: true}}
   Solar:
     description: One solar component of the building (exactly one key per entry)
     slots:
@@ -654,58 +646,6 @@ classes:
         description: Model of the component
         range: DefaultVariant
         ifabsent: string('default')
-  Chiller:
-    description: Chiller (mpc library only)
-    is_a: System
-    attributes:
-      variant:
-        description: Model of the component
-        range: DefaultVariant
-        ifabsent: string('default')
-    slots:
-      - parameters
-    slot_usage:
-      parameters:
-        range: ChillerParameters
-  DhwTank:
-    description: Domestic hot water tank (mpc library only)
-    is_a: System
-    attributes:
-      variant:
-        description: Model of the component
-        range: DefaultVariant
-        ifabsent: string('default')
-    slots:
-      - parameters
-    slot_usage:
-      parameters:
-        range: DhwTankParameters
-  Battery:
-    description: Electric battery (mpc library only)
-    is_a: System
-    attributes:
-      variant:
-        description: Model of the component
-        range: DefaultVariant
-        ifabsent: string('default')
-    slots:
-      - parameters
-    slot_usage:
-      parameters:
-        range: BatteryParameters
-  EvCharger:
-    description: Electric vehicle charger (mpc library only)
-    is_a: System
-    attributes:
-      variant:
-        description: Model of the component
-        range: DefaultVariant
-        ifabsent: string('default')
-    slots:
-      - parameters
-    slot_usage:
-      parameters:
-        range: EvChargerParameters
   HeatMeterSensor:
     description: >-
       Heat meter between a boiler and a pump, reading the return temperature of the temperature sensor
@@ -1010,26 +950,6 @@ slots:
   power_sensor:
     description: An electric power sensor of ideal heaters
     range: PowerSensor
-    multivalued: false
-    inlined: true
-  chiller:
-    description: A chiller (mpc library only)
-    range: Chiller
-    multivalued: false
-    inlined: true
-  dhw_tank:
-    description: A domestic hot water tank (mpc library only)
-    range: DhwTank
-    multivalued: false
-    inlined: true
-  battery:
-    description: An electric battery (mpc library only)
-    range: Battery
-    multivalued: false
-    inlined: true
-  ev_charger:
-    description: An electric vehicle charger (mpc library only)
-    range: EvCharger
     multivalued: false
     inlined: true
   heat_meter_sensor:

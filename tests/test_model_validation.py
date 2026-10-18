@@ -221,14 +221,6 @@ RULES: list[tuple[str, Model, Change, Change, str, str]] = [
         "PUMP:099",
         "not connected to anything",
     ),
-    (
-        "C6 mpc-only system",
-        HYDRONIC,
-        _append_system({"battery": {"id": "BATTERY:001"}}),
-        unchanged,
-        "BATTERY:001",
-        "only modelled by the 'mpc' library",
-    ),
     # C7-C8 emitters of a space
     (
         "C7 two emitters",

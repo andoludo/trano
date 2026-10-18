@@ -34,31 +34,31 @@ def check_weather(data: dict[str, Any]) -> Iterator[Issue]:
         )
 
 
-def check(data: dict[str, Any], is_rc: bool = False) -> list[Issue]:
-    """Every issue of the model; `is_rc` for the flat RC (mpc) models, which abstract the hydraulics."""
+def check(data: dict[str, Any]) -> list[Issue]:
+    """Every issue of the model."""
     graph, issues = build_graph(data)
     checks: list[Iterable[Issue]] = [
         check_references(data, graph),
         check_edges(graph),
         check_spaces(data),
-        check_controls(graph, is_rc),
+        check_controls(graph),
         check_parameters(data),
         check_weather(data),
+        check_topology(graph),
+        check_hydronics(graph),
     ]
-    if not is_rc:
-        checks += [check_topology(graph), check_hydronics(graph)]
     for found in checks:
         issues += found
     return list(dict.fromkeys(issues))
 
 
-def validate_semantics(data: dict[str, Any], is_rc: bool = False) -> None:
+def validate_semantics(data: dict[str, Any]) -> None:
     """Raise every error of the model at once and emit its warnings.
 
     Raises:
         InvalidModelError: when the model has at least one error.
     """
-    issues = check(data, is_rc=is_rc)
+    issues = check(data)
     for issue in issues:
         if issue.level == "warning":
             warnings.warn(str(issue), issue.category, stacklevel=2)
@@ -68,7 +68,6 @@ def validate_semantics(data: dict[str, Any], is_rc: bool = False) -> None:
         raise InvalidModelError("Invalid model:\n" + "\n".join(f"- {line}" for line in lines), errors=lines)
 
 
-def apply_derived_defaults(data: dict[str, Any], is_rc: bool = False) -> None:
+def apply_derived_defaults(data: dict[str, Any]) -> None:
     """Complete a valid model with the defaults that depend on its topology (reported by `check`)."""
-    if not is_rc:
-        derive_defaults(data, build_graph(data)[0])
+    derive_defaults(data, build_graph(data)[0])

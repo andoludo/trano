@@ -25,13 +25,6 @@ def modelica_number(value: float) -> str:
     return f"{float(value):.10g}"
 
 
-def _mpc_library() -> Markup:
-    # Imported lazily: trano.mpc depends on the elements that use this environment.
-    from trano.mpc.modelica import render_mpc_library
-
-    return Markup(render_mpc_library())  # noqa: S704 - Modelica source rendered by Trano itself
-
-
 MODELICA_LIBRARIES = Path(__file__).parents[1].joinpath("library")
 
 
@@ -51,7 +44,6 @@ def unsupported(message: str) -> str:
 
 
 ENVIRONMENT.filters["mo"] = modelica_number
-ENVIRONMENT.globals["mpc_library"] = _mpc_library
 ENVIRONMENT.globals["modelica_library"] = modelica_library
 ENVIRONMENT.globals["unsupported"] = unsupported
 
