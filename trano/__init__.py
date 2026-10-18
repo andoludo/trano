@@ -1,5 +1,6 @@
 import logging.config
 import warnings
+from typing import Any
 
 
 LOGGING_CONFIG = {
@@ -40,3 +41,15 @@ warnings.filterwarnings(
     "ignore",
     category=UserWarning,
 )
+
+
+__all__ = ["check_yaml", "simulate_yaml"]
+
+
+def __getattr__(name: str) -> Any:  # noqa: ANN401
+    """The one-call API, imported on first use: importing ``trano`` stays cheap."""
+    if name in __all__:
+        from trano import api
+
+        return getattr(api, name)
+    raise AttributeError(f"module 'trano' has no attribute {name!r}")

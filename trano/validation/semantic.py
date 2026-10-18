@@ -64,7 +64,8 @@ def validate_semantics(data: dict[str, Any], is_rc: bool = False) -> None:
             warnings.warn(str(issue), issue.category, stacklevel=2)
     errors = [issue for issue in issues if issue.level == "error"]
     if errors:
-        raise InvalidModelError("Invalid model:\n" + "\n".join(f"- {error}" for error in errors))
+        lines = [str(error) for error in errors]
+        raise InvalidModelError("Invalid model:\n" + "\n".join(f"- {line}" for line in lines), errors=lines)
 
 
 def apply_derived_defaults(data: dict[str, Any], is_rc: bool = False) -> None:

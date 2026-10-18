@@ -168,16 +168,16 @@ RULES: list[tuple[str, Model, Change, Change, str, str]] = [
         HYDRONIC,
         _set(lambda m: system(m, "PUMP:001"), "control", {"boiler_control": {"id": "CONTROL:9"}}),
         unchanged,
-        "/systems/1/pump/control",
-        "boiler_control",
+        "systems[1].pump.control.boiler_control",
+        "unknown field",
     ),
     (
         "C4 variant of another class",
         HYDRONIC,
         _set(lambda m: system(m, "PUMP:001"), "variant", "idealbus"),
         unchanged,
-        "/systems/1/pump/variant",
-        "is not one of ['default']",
+        "systems[1].pump.variant",
+        "must be one of default (got 'idealbus')",
     ),
     (
         "C3 VAV control of another variant",
@@ -360,8 +360,8 @@ RULES: list[tuple[str, Model, Change, Change, str, str]] = [
         HYDRONIC,
         _pop(lambda m: m["spaces"][0], "external_boundaries"),
         unchanged,
-        "/spaces/0",
-        "'external_boundaries' is a required property",
+        "spaces[0].external_boundaries",
+        "is required",
     ),
     # C19-C21 parameter values
     (
@@ -380,14 +380,14 @@ RULES: list[tuple[str, Model, Change, Change, str, str]] = [
         "thermal_conductivity = 0",
         "must be strictly positive",
     ),
-    ("C19 negative surface", HYDRONIC, _set(_wall, "surface", -20), unchanged, "/spaces/0", "minimum of 0"),
+    ("C19 negative surface", HYDRONIC, _set(_wall, "surface", -20), unchanged, "spaces[0]", "surface: must be >= 0"),
     (
         "C19 emissivity above 1",
         HYDRONIC,
         lambda m: m["default"]["material"][0].update(longwave_emissivity=1.5),
         unchanged,
         "longwave_emissivity",
-        "maximum of 1",
+        "must be <= 1",
     ),
     (
         "C20 temperature in degC",
@@ -419,7 +419,7 @@ RULES: list[tuple[str, Model, Change, Change, str, str]] = [
         HYDRONIC,
         lambda m: m["systems"].append({"boiler": {"id": "B:9"}, "pump": {"id": "P:9"}}),
         unchanged,
-        "/systems/5",
+        "systems[5]",
         "exactly one of",
     ),
     (
@@ -427,8 +427,8 @@ RULES: list[tuple[str, Model, Change, Change, str, str]] = [
         HYDRONIC,
         parameters(_radiator, bogus=1),
         unchanged,
-        "/spaces/0/emissions/0/radiator/parameters",
-        "'bogus' was unexpected",
+        "spaces[0].emissions[0].radiator.parameters.bogus",
+        "unknown field",
     ),
 ]
 

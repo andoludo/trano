@@ -1,5 +1,6 @@
 """Validation of a model, as written by the user, against the Trano LinkML schema."""
 
+from collections.abc import Iterable
 from functools import cache
 from pathlib import Path
 from typing import Any
@@ -89,8 +90,58 @@ def _message(error: ValidationError) -> str:
     return str(error.message)
 
 
-def _location(error: ValidationError) -> str:
-    return "/" + "/".join(str(part) for part in error.absolute_path)
+JSON_TYPES = {
+    "number": "a number",
+    "integer": "an integer",
+    "string": "a string",
+    "boolean": "a boolean",
+    "array": "a list",
+    "object": "a mapping",
+}
+BOUNDS = {"minimum": ">=", "maximum": "<=", "exclusiveMinimum": ">", "exclusiveMaximum": "<"}
+MAXIMUM_LISTED_FIELDS = 20
+
+
+def _location(path: Iterable[Any]) -> str:
+    """The YAML path of a value: ``spaces[0].parameters.floor_area``."""
+    location = ""
+    for part in path:
+        location += f"[{part}]" if isinstance(part, int) else f".{part}" if location else str(part)
+    return location or "(model)"
+
+
+def _expected_type(error: ValidationError) -> str:
+    expected = error.validator_value if isinstance(error.validator_value, list) else [error.validator_value]
+    names = [JSON_TYPES.get(str(name), str(name)) for name in expected if name != "null"]
+    return " or ".join(names)
+
+
+def _readable(error: ValidationError) -> list[str]:
+    """One line per violation: the YAML path, what is expected and the description of the field."""
+    path = list(error.absolute_path)
+    description = error.schema.get("description") if isinstance(error.schema, dict) else None
+    properties = error.schema.get("properties", {}) if isinstance(error.schema, dict) else {}
+    if error.validator == "required":
+        name = str(error.message).split("'")[1] if "'" in str(error.message) else ""
+        return [_line([*path, name], "is required", properties.get(name, {}).get("description"))]
+    if error.validator == "additionalProperties" and isinstance(error.instance, dict):
+        allowed = list(properties)
+        listed = ", ".join(allowed[:MAXIMUM_LISTED_FIELDS]) + (", ..." if len(allowed) > MAXIMUM_LISTED_FIELDS else "")
+        hint = f"unknown field; the fields of {_location(path)} are {listed}" if allowed else "unknown field"
+        return [_line([*path, name], hint, None) for name in error.instance if name not in properties]
+    if error.validator in BOUNDS and not (error.validator == "minimum" and error.validator_value == KELVIN_MINIMUM):
+        message = f"must be {BOUNDS[str(error.validator)]} {error.validator_value} (got {error.instance!r})"
+    elif error.validator == "type":
+        message = f"must be {_expected_type(error)} (got {error.instance!r})"
+    elif error.validator == "enum":
+        message = f"must be one of {', '.join(map(str, error.validator_value))} (got {error.instance!r})"
+    else:
+        message = _message(error)
+    return [_line(path, message, description)]
+
+
+def _line(path: Iterable[Any], message: str, description: str | None) -> str:
+    return f"{_location(path)}: {message}" + (f" ({description})" if description else "")
 
 
 def validate_schema(data: dict[str, Any], schema_path: Path = DATA_MODEL_PATH) -> None:
@@ -101,7 +152,9 @@ def validate_schema(data: dict[str, Any], schema_path: Path = DATA_MODEL_PATH) -
     Keys left empty (None) must have been removed beforehand: they count as absent.
 
     Raises:
-        InvalidModelError: listing each violation with its location in the model.
+        InvalidModelError: listing each violation, one line per violation (also in its ``errors``):
+            ``spaces[0].parameters.floor_area: must be >= 0 (got -5) (Floor area [m2])``, the YAML path,
+            what is expected and the description of the field in the schema.
     """
     validator = _json_schema_validator(schema_path)
     while True:
@@ -115,5 +168,6 @@ def validate_schema(data: dict[str, Any], schema_path: Path = DATA_MODEL_PATH) -
         for error in coercible:
             _coerce(data, error)
     if errors:
-        messages = "\n".join(f"- {_message(error)} in {_location(error)}" for error in errors)
-        raise InvalidModelError(f"Invalid model:\n{messages}")
+        lines = [line for error in errors for line in _readable(error)]
+        messages = "\n".join(f"- {line}" for line in lines)
+        raise InvalidModelError(f"Invalid model:\n{messages}", errors=lines)
