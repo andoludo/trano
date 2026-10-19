@@ -1,6 +1,6 @@
 # 🔥 Trano: Automated Building Energy Simulation (BES) Model Generation 🚀
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/andoludo/trano/blob/main/LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/andoludo/trano/blob/master/LICENSE)
 
 📖 **Full Documentation:** 👉 [Trano Docs](https://andoludo.github.io/trano/) 
 
@@ -69,4 +69,4 @@ zones are reported for information. Simulations run in the official OpenModelica
 
 ## 📄 License
 
-Trano is released under the [Apache License 2.0](https://github.com/andoludo/trano/blob/main/LICENSE). Releases up to and including 0.56.0 were published under the LGPL-3.0-or-later.
+Trano is released under the [Apache License 2.0](https://github.com/andoludo/trano/blob/master/LICENSE). Releases up to and including 0.56.0 were published under the LGPL-3.0-or-later.
