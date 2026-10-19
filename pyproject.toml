@@ -61,7 +61,6 @@ dev = [
     "types-pyyaml>=6.0.12.20240808,<7",
     "jsf>=0.11.2,<0.12",
     "pytest>=9.0.3,<10",
-    "trano-optimization>=0.1.0",
 ]
 docs = [
     "mkdocs>=1.6.1,<2",
@@ -80,12 +79,6 @@ default-groups = "all"
 [tool.uv.sources]
 # the simulation backend, developed alongside trano; a git or PyPI release once published
 trano-simulate = { path = "../trano-simulate", editable = true }
-# optimal control of the FastModel models (rumoca, CasADi, IPOPT), a development dependency for now
-trano-optimization = { path = "../trano-optimization", editable = true }
-# rumoca, a dependency of trano-optimization: uv does not read the sources of a dependency, so trano repeats its pin.
-# rumoca 0.10.3 from its main branch, where FastModel is translated (connected models exported to CasADi); the
-# later commits of main refuse the pressure-driven valves and the heat pump (residual_equations of casadi-ode).
-rumoca = { git = "https://github.com/CogniPilot/rumoca", rev = "33c21141791cbc341f4788ff6353d2f49d1c740a", subdirectory = "crates/rumoca-bind-python" }
 
 [tool.uv.build-backend]
 module-root = ""
@@ -126,6 +119,11 @@ exclude = [
     "test_*",
     "conftest.py",
 ]
+
+[[tool.mypy.overrides]]
+# trano-optimization is installed by hand for the FastModel benchmark of the validation (not a dependency of trano)
+module = ["trano_optimization", "trano_optimization.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 120
