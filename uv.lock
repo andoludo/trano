@@ -3360,7 +3360,7 @@ requires-dist = [
     { name = "pydot", specifier = ">=3.0.4,<4" },
     { name = "python-docx", specifier = ">=1.2.0,<2" },
     { name = "pyyaml-include", specifier = ">=2.2,<3" },
-    { name = "trano-simulate", editable = "../trano-simulate" },
+    { name = "trano-simulate", specifier = ">=0.2.0,<1" },
     { name = "typer", specifier = ">=0.19.2,<1" },
     { name = "yattag", specifier = ">=1.16.1,<2" },
 ]
@@ -3390,8 +3390,8 @@ docs = [
 
 [[package]]
 name = "trano-simulate"
-version = "0.1.0"
-source = { editable = "../trano-simulate" }
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "buildingspy" },
     { name = "docker" },
@@ -3403,26 +3403,9 @@ dependencies = [
     { name = "python-docx" },
     { name = "yattag" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "buildingspy", specifier = ">=5.2.0,<6" },
-    { name = "docker", specifier = ">=7.1.0,<8" },
-    { name = "jinja2", specifier = ">=3.1.6,<4" },
-    { name = "matplotlib", specifier = ">=3.10.9,<4" },
-    { name = "pandas", specifier = ">=2.2.2,<3" },
-    { name = "plotly", specifier = ">=6.8.0,<7" },
-    { name = "pydantic", specifier = ">=2.13.4,<3" },
-    { name = "python-docx", specifier = ">=1.2.0,<2" },
-    { name = "yattag", specifier = ">=1.16.1,<2" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "mypy", specifier = ">=2.1.0,<3" },
-    { name = "pandas-stubs", specifier = ">=2.2.0.240218,<3" },
-    { name = "pytest", specifier = ">=9.0.3,<10" },
-    { name = "ruff", specifier = ">=0.15.16,<0.16" },
+sdist = { url = "https://files.pythonhosted.org/packages/34/c5/56ce930c7d7f98036aec119349f4127dd311edd209c1851a5a1465ab68fb/trano_simulate-0.2.0.tar.gz", hash = "sha256:b9f006acdecba3f457051841a6a4a1eca965260d128c6f5703cf47ff0e9a9af9", size = 24356, upload-time = "2026-10-19T04:56:05.68Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/97/b32247a5af3f7e0d468421ac1a0f0a8f0ecf7c14ff16c35f51a8307f7243/trano_simulate-0.2.0-py3-none-any.whl", hash = "sha256:3b4d6b1088937897da6d207345e2b71d26bf58a6b7e3b146c98275568ed011cd", size = 27850, upload-time = "2026-10-19T04:56:04.524Z" },
 ]
 
 [[package]]

@@ -40,7 +40,7 @@ dependencies = [
     "typer>=0.19.2,<1",
     "pydot>=3.0.4,<4",
     "yattag>=1.16.1,<2",
-    "trano-simulate>=0.1.0",
+    "trano-simulate>=0.2.0,<1",
 ]
 
 [project.urls]
@@ -75,10 +75,6 @@ docs = [
 
 [tool.uv]
 default-groups = "all"
-
-[tool.uv.sources]
-# the simulation backend, developed alongside trano; a git or PyPI release once published
-trano-simulate = { path = "../trano-simulate", editable = true }
 
 [tool.uv.build-backend]
 module-root = ""
