@@ -3304,7 +3304,7 @@ wheels = [
 
 [[package]]
 name = "trano"
-version = "0.55.0"
+version = "0.56.0"
 source = { editable = "." }
 default-groups = "all"
 dependencies = [
