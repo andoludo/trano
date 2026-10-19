@@ -5,7 +5,8 @@ description = ""
 authors = [{ name = "Ando Andriamamonjy", email = "andoludovic.andriamamonjy@gmail.com" }]
 requires-python = ">=3.11,<4.0"
 readme = "README.md"
-license = {text = "LGPL-3.0-or-later"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 keywords = [
     "energy simulation",
     "modelica",
@@ -19,7 +20,6 @@ classifiers = [
     "Programming Language :: Python",
     "Typing :: Typed",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -78,7 +78,6 @@ default-groups = "all"
 
 [tool.uv.build-backend]
 module-root = ""
-source-include = ["LICENSE"]
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]
