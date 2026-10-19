@@ -11,7 +11,7 @@
       
       
       
-        <link rel="prev" href="../rc_model_predictive_control/">
+        <link rel="prev" href="../residential_renovation/">
       
       
         <link rel="next" href="../../how-to%20guides/">
@@ -571,8 +571,6 @@
       
         
       
-        
-      
     
     
     
@@ -875,34 +873,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../rc_model_predictive_control/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    RC models for MPC
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -1005,10 +975,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#simulation-estimation-and-optimal-control-tranooptimization" class="md-nav__link">
+  <a href="#simulation-estimation-and-optimal-control-trano_optimization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Simulation, estimation and optimal control: trano.optimization
+        Simulation, estimation and optimal control: trano_optimization
       
     </span>
   </a>
@@ -1531,10 +1501,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#simulation-estimation-and-optimal-control-tranooptimization" class="md-nav__link">
+  <a href="#simulation-estimation-and-optimal-control-trano_optimization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Simulation, estimation and optimal control: trano.optimization
+        Simulation, estimation and optimal control: trano_optimization
       
     </span>
   </a>
@@ -1632,8 +1602,7 @@
 
 
 <h1 id="fastmodel-models-close-to-buildings-in-closed-loop-and-for-mpc">FastModel: models close to Buildings, in closed loop and for MPC</h1>
-<p>The <a href="../rc_model_predictive_control/">RC models</a> of the <code>mpc</code> library are small and fast, but they lump a zone
-into one to three capacities and leave the heating system out. The <code>FastModel</code> library instead turns the same YAML
+<p>The <code>FastModel</code> library turns a YAML
 file into a model <strong>close to the Buildings library</strong> that <strong>still translates into a CasADi ODE</strong> (with
 <a href="https://github.com/cognipilot/rumoca">rumoca</a>) for simulation, state estimation and model predictive control
 with IPOPT:</p>
@@ -1809,9 +1778,10 @@ its set point <code>&lt;control&gt;_TSet</code>; <code>FastModelMPC</code> takes
 <p>The solar position and the irradiance on each surface are computed inside the model from the time (the clock time
 of the year) and the site, so that a forecast only needs the weather channels. The meters of the systems are
 states in kWh: <code>EFue</code> (boiler fuel), <code>EEle</code> (heat pump electricity), <code>EFan</code> (fans), <code>EPro</code> (PV production).</p>
-<h2 id="simulation-estimation-and-optimal-control-tranooptimization">Simulation, estimation and optimal control: <code>trano.optimization</code></h2>
-<p>The CasADi side lives in <code>trano.optimization</code>, a package that depends on rumoca, CasADi, NumPy and pydantic only
-(no other module of trano), so that it can be moved to a package of its own. It reads everything from the Modelica
+<h2 id="simulation-estimation-and-optimal-control-trano_optimization">Simulation, estimation and optimal control: <code>trano_optimization</code></h2>
+<p>The CasADi side lives in <a href="https://github.com/andoludo/trano-optimization">trano-optimization</a> (<code>trano_optimization</code>),
+a package of its own that depends on rumoca, CasADi, NumPy and pydantic only, not on trano; install it next to trano
+(<code>pip install trano-optimization</code>). It reads everything from the Modelica
 model: the names of the states, inputs and parameters in the order of the CasADi vectors, their units, bounds and
 descriptions. The roles of the variables follow simple conventions (<code>Roles.infer</code>): an input with a <code>min</code> and a
 <code>max</code> is a control, any other input a disturbance; the states named <code>TAir</code> are the comfort temperatures; the
@@ -1822,7 +1792,7 @@ states in kWh are meters.</p>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.data_models.conversion</span><span class="w"> </span><span class="kn">import</span> <span class="n">convert_network</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.elements.library.library</span><span class="w"> </span><span class="kn">import</span> <span class="n">Library</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">KELVIN</span><span class="p">,</span> <span class="n">CasadiModel</span><span class="p">,</span> <span class="n">OptimalControl</span><span class="p">,</span> <span class="n">OptimalControlSettings</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano_optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">KELVIN</span><span class="p">,</span> <span class="n">CasadiModel</span><span class="p">,</span> <span class="n">OptimalControl</span><span class="p">,</span> <span class="n">OptimalControlSettings</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">network</span> <span class="o">=</span> <span class="n">convert_network</span><span class="p">(</span><span class="s2">&quot;house&quot;</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;house.yaml&quot;</span><span class="p">),</span> <span class="n">library</span><span class="o">=</span><span class="n">Library</span><span class="o">.</span><span class="n">from_configuration</span><span class="p">(</span><span class="s2">&quot;FastModelMPC&quot;</span><span class="p">))</span>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">model</span> <span class="o">=</span> <span class="n">CasadiModel</span><span class="o">.</span><span class="n">from_modelica</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">model</span><span class="p">(),</span> <span class="s2">&quot;house.building_mpc&quot;</span><span class="p">)</span>
@@ -1840,7 +1810,7 @@ with IPOPT (SPRAL when CasADi ships it, MUMPS otherwise), warm-starts from a sim
 costs the energy read from the meters: the PV production first covers the electricity of the step, the rest is sold
 at <code>feed_in_price</code>; the boiler fuel has its own <code>fuel_price</code>. The same discretization gives the moving horizon
 estimation and the closed loop:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">MovingHorizonEstimation</span><span class="p">,</span> <span class="n">receding_horizon</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano_optimization</span><span class="w"> </span><span class="kn">import</span> <span class="n">MovingHorizonEstimation</span><span class="p">,</span> <span class="n">receding_horizon</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">estimator</span> <span class="o">=</span> <span class="n">MovingHorizonEstimation</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">estimate</span> <span class="o">=</span> <span class="n">estimator</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">prior_state</span><span class="p">,</span> <span class="n">applied_controls</span><span class="p">,</span> <span class="n">past_disturbances</span><span class="p">,</span> <span class="n">measured_air_temperatures</span><span class="p">)</span>
@@ -1905,7 +1875,7 @@ results.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../rc_model_predictive_control/" class="md-footer__link md-footer__link--prev" aria-label="Previous: RC models for MPC">
+          <a href="../residential_renovation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: A house before and after renovation">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1915,7 +1885,7 @@ results.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                RC models for MPC
+                A house before and after renovation
               </div>
             </div>
           </a>

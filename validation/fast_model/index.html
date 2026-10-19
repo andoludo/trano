@@ -569,8 +569,6 @@
       
         
       
-        
-      
     
     
     
@@ -853,34 +851,6 @@
     
   
     A house before and after renovation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../tutorials/rc_model_predictive_control/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    RC models for MPC
   
 
     
@@ -1611,7 +1581,6 @@ to the Buildings and IDEAS models of the same YAML file is measured by <code>val
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python<span class="w"> </span>-m<span class="w"> </span>validation.mpc<span class="w"> </span>compare<span class="w"> </span>residential_after<span class="w"> </span>--models<span class="w"> </span>FastModel<span class="w"> </span>FastModelClosedLoop<span class="w"> </span>--references<span class="w"> </span>Buildings<span class="w"> </span>IDEAS
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python<span class="w"> </span>-m<span class="w"> </span>validation.mpc<span class="w"> </span>report
 </span></code></pre></div>
-<p>The same command compares the flat RC models of the <code>mpc</code> library (<code>--models R1C1 R3C2 R4C3 ISO13790</code>).</p>
 <p>For each case the Buildings model (or the IDEAS model, <code>--references IDEAS</code>) is simulated with its own controls,
 then the runnable model of the other library <strong>replays</strong> what its systems did:</p>
 <ul>
@@ -3017,13 +2986,11 @@ the reference with its own controls (the column Heat is the heat of the referenc
 </table>
 <h2 id="reading-the-results">Reading the results</h2>
 <p><strong>Envelope.</strong> The <code>FastModel</code> zone follows Buildings within 0.33–0.39 K (RMSE) in the free-floating BESTEST
-cases, against 2.3–7.3 K for the RC models of the <code>mpc</code> library on the same YAML file: the RC models aggregate the envelope into one
-to three capacities whose parameters come from the constructions, without calibration, and they lose the
-fast exchanges between the window, the floor and the air that drive a free-floating zone. In the heated and
+cases. In the heated and
 cooled BESTEST cases the replay of the Buildings heat is open loop, so that any difference accumulates until the
 envelope removes it; the <code>FastModel</code> zone stays within 0.41–0.65 K.</p>
 <p><strong>Multi-zone envelope.</strong> With walls and floors shared between zones, the three-zone house stays within
-0.18–0.49 K of Buildings (RC models: 1.2–2.8 K).</p>
+0.18–0.49 K of Buildings.</p>
 <p><strong>Hydronics.</strong> In the three hydronic houses (the residential house before renovation with its gas boiler, after
 renovation with its heat pump, ventilation and PV, and the heat pump test house), only the branch flows, the three-way valve positions and the boiler part
 load ratio or the heat pump compressor speed are replayed; the production, the water circuits, the radiators and

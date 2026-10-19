@@ -704,8 +704,6 @@
       
         
       
-        
-      
     
     
     
@@ -988,34 +986,6 @@
     
   
     A house before and after renovation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../tutorials/rc_model_predictive_control/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    RC models for MPC
   
 
     
@@ -1666,19 +1636,19 @@
 <h3 id="docker">Docker</h3>
 <p>Trano utilizes the official OpenModelica Docker image to execute simulations. It is recommended to install Docker on your system so that Trano can pull the required images and run simulations. You can install Docker by following the instructions on the <a href="https://docs.docker.com/engine/install/">official website</a>.</p>
 <h3 id="modelica-libraries">Modelica libraries</h3>
-<p>The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0 (built against Modelica 4.1.0), IDEAS 3.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the <code>openmodelica/openmodelica:v1.26.9-ompython</code> image. Both Modelica Standard Library versions are installed side by side; the versions are defined in one place, <code>trano.simulate.simulate.ModelicaEnvironment</code>. IDEAS 4.0.0 is not used yet: no OpenModelica release handles it (1.25 cannot parse it, 1.26 and 1.27 fail with internal errors on its weather bus, also in IDEAS' own examples).</p>
+<p>The simulation container installs the Modelica libraries Trano generates models for: Buildings 13.0.0 (built against Modelica 4.1.0), IDEAS 3.0.0 and AixLib 3.0.1 (both built against Modelica 4.0.0), on the <code>openmodelica/openmodelica:v1.26.9-ompython</code> image. Both Modelica Standard Library versions are installed side by side; the versions are defined in one place, <code>trano_simulate.ModelicaEnvironment</code>. IDEAS 4.0.0 is not used yet: no OpenModelica release handles it (1.25 cannot parse it, 1.26 and 1.27 fail with internal errors on its weather bus, also in IDEAS' own examples).</p>
 <p>Each simulation container first runs an OpenModelica script that installs these libraries with the package manager. A library already present on the container's <code>MODELICAPATH</code> (for example baked into an image derived from the official one under <code>/root/.openmodelica/libraries</code>) is not installed again, so simulations also work where the package index cannot be reached.</p>
 <p>Without further configuration, the libraries are installed at every container start, which needs network access. Two ways avoid it:</p>
 <ul>
 <li>mount a directory of installed libraries into every simulation container by setting the environment variable <code>TRANO_MODELICA_LIBRARIES</code> to it;</li>
-<li>install the libraries once, when an image is built, with the <code>omc</code> of that image: <code>python -m trano.simulate.install_libraries</code> runs the same installation as a container start and exits with a non-zero status when Modelica, Buildings, IDEAS or AixLib is still missing afterwards.</li>
+<li>install the libraries once, when an image is built, with the <code>omc</code> of that image: <code>python -m trano_simulate.install_libraries</code> runs the same installation as a container start and exits with a non-zero status when Modelica, Buildings, IDEAS or AixLib is still missing afterwards.</li>
 </ul>
 <div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">openmodelica/openmodelica:v1.26.9-ompython</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>trano<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>trano.simulate.install_libraries
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>trano<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>trano_simulate.install_libraries
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">ENV</span><span class="w"> </span><span class="nv">TRANO_SIMULATION_RUNTIME</span><span class="o">=</span><span class="nb">local</span>
 </span></code></pre></div>
 <h3 id="simulation-runtimes">Simulation runtimes</h3>
-<p>Trano runs OpenModelica in one of two ways, chosen by the <code>runtime</code> argument of <code>trano.simulate.simulate.simulate</code> or, by default, by the environment variable <code>TRANO_SIMULATION_RUNTIME</code>:</p>
+<p>Trano runs OpenModelica in one of two ways, chosen by the <code>runtime</code> argument of <code>trano_simulate.simulate</code> or, by default, by the environment variable <code>TRANO_SIMULATION_RUNTIME</code>:</p>
 <ul>
 <li><code>docker</code> (the default): a sibling container of the OpenModelica image is started through the Docker socket for every simulation, with a unique name, and the libraries are installed in it as described above;</li>
 <li><code>local</code>: the <code>omc</code> found on the <code>PATH</code> runs in the process' machine, for example in a worker container built as above. Nothing is installed at run time; <code>trano.exceptions.OpenModelicaNotFoundError</code> is raised when <code>omc</code> is missing.</li>
@@ -1688,7 +1658,7 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano</span><span class="w"> </span><span class="kn">import</span> <span class="n">simulate_yaml</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano.simulate.simulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationOptions</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">trano_simulate.simulate</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimulationOptions</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">result</span> <span class="o">=</span> <span class="n">simulate_yaml</span><span class="p">(</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;house.yaml&quot;</span><span class="p">),</span>  <span class="c1"># or the model already parsed into a dict</span>

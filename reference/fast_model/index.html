@@ -569,8 +569,6 @@
       
         
       
-        
-      
     
     
     
@@ -853,34 +851,6 @@
     
   
     A house before and after renovation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../tutorials/rc_model_predictive_control/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    RC models for MPC
   
 
     
@@ -2002,7 +1972,7 @@
 IDEAS, it generates a model whose physics follow <code>Buildings.ThermalZones.Detailed.MixedAir</code> and the Buildings
 hydronic and ventilation components, written so that <a href="https://github.com/cognipilot/rumoca">rumoca</a> translates it
 into a CasADi ODE <span class="arithmatex">\(\dot x = f(t, x, u, p)\)</span>. The same model simulates in OpenModelica and in CasADi, where
-<code>trano.optimization</code> estimates its state and solves optimal control problems with IPOPT.</p>
+<code>trano_optimization</code> estimates its state and solves optimal control problems with IPOPT.</p>
 <p>The library comes in two configurations of the same components and templates:</p>
 <ul>
 <li><strong><code>FastModel</code></strong>, the <strong>closed loop</strong>: the controllers of the YAML (thermostatic valves, pump, three-way valve,
@@ -2548,7 +2518,7 @@ closed-loop model stays an explicit, smooth ODE:</p>
 </tbody>
 </table>
 <p>The meters are states in kWh: <code>EFue</code> (fuel), <code>EEle</code> (heat pump electricity), <code>EFan</code> (fans), <code>EPro</code> (PV
-production); the comfort temperatures are the <code>TAir</code> states of the zones. <code>trano.optimization.Roles.infer</code> reads
+production); the comfort temperatures are the <code>TAir</code> states of the zones. <code>trano_optimization.Roles.infer</code> reads
 these roles from the model: an input with a <code>min</code> and a <code>max</code> is a control, any other input a disturbance.</p>
 <h2 id="limitations">Limitations</h2>
 <p><strong>Not modelled: generating a model stops with a message naming the element.</strong> Boilers with a storage tank,
