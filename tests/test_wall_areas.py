@@ -17,7 +17,6 @@ from trano.elements.library.library import Library
 from trano.elements.space import Space, SpaceVariant
 from trano.elements.types import Azimuth, Tilt
 from trano.exceptions import InvalidBuildingStructureError
-from trano.mpc.estimation import EstimationSettings, zone_envelope
 from trano.topology import Network
 
 WALL = 10.0  # [m2] gross south wall
@@ -114,16 +113,3 @@ def test_lumped_zones_get_the_opaque_wall_areas(library: str, opaque: str, glaze
 
     assert array(model, opaque) == [WALL - WINDOW]
     assert array(model, glazed) == [WINDOW]
-
-
-def test_mpc_model_counts_the_opaque_wall_only() -> None:
-    space = room()
-    settings = EstimationSettings()
-    envelope = zone_envelope(space, settings)
-    u_value = 1 / (
-        Constructions.external_wall.total_thermal_resistance
-        + settings.internal_surface_resistance
-        + settings.external_surface_resistance
-    )
-
-    assert envelope.opaque_conductance == pytest.approx((WALL - WINDOW) * u_value)

@@ -82,72 +82,6 @@ classes:
     - parameters
     - control
     - variant
-  Battery:
-    description: Electric battery (mpc library only)
-    is_a: System
-    slot_usage:
-      parameters:
-        range: BatteryParameters
-      variant:
-        description: Model of the component
-        ifabsent: string('default')
-        range: DefaultVariant
-    slots:
-    - parameters
-    - variant
-  BatteryParameters:
-    attributes:
-      capacity:
-        description: Usable energy capacity [kWh]
-        ifabsent: float(10.0)
-        minimum_value: 0
-        range: float
-      discharge_efficiency:
-        description: Discharging efficiency [1]
-        ifabsent: float(0.95)
-        maximum_value: 1
-        minimum_value: 0
-        range: float
-      max_discharge_power:
-        description: Maximum discharging power [W]
-        ifabsent: float(5000)
-        minimum_value: 0
-        range: float
-      max_soc:
-        description: Upper bound of the state of charge [1]
-        ifabsent: float(0.9)
-        maximum_value: 1
-        minimum_value: 0
-        range: float
-      min_soc:
-        description: Lower bound of the state of charge [1]
-        ifabsent: float(0.1)
-        maximum_value: 1
-        minimum_value: 0
-        range: float
-    description: Parameters of an electric battery (mpc library only)
-    slot_usage:
-      charge_efficiency:
-        description: Charging efficiency [1]
-        ifabsent: float(0.95)
-        maximum_value: 1
-        minimum_value: 0
-        range: float
-      initial_soc:
-        description: Initial state of charge [1]
-        ifabsent: float(0.5)
-        maximum_value: 1
-        minimum_value: 0
-        range: float
-      max_charge_power:
-        description: Maximum charging power [W]
-        ifabsent: float(5000)
-        minimum_value: 0
-        range: float
-    slots:
-    - max_charge_power
-    - charge_efficiency
-    - initial_soc
   Boiler:
     description: Heat generator with its storage tank and pump (boiler or heat pump,
       by variant)
@@ -244,27 +178,6 @@ classes:
         description: Minimum time the compressor of the air-water heat pump runs once
           started [s], 300 by default
         minimum_value: 0
-        range: float
-      cop_cross_term:
-        description: Heat pump COP cross term outdoor x supply deviation, mpc library
-          [1/K2]
-        ifabsent: float(-0.0025)
-        range: float
-      cop_nominal:
-        description: Heat pump COP at the rating point A7/W35, used by the mpc library
-          [1]
-        ifabsent: float(4.5)
-        minimum_value: 0
-        range: float
-      cop_outdoor_slope:
-        description: Heat pump COP change per kelvin of outdoor temperature, mpc library
-          [1/K]
-        ifabsent: float(0.11)
-        range: float
-      cop_supply_slope:
-        description: Heat pump COP change per kelvin of supply temperature, mpc library
-          [1/K]
-        ifabsent: float(-0.075)
         range: float
       design_outdoor_temperature:
         description: Design outdoor temperature of the heating curve of the air-water
@@ -445,11 +358,6 @@ classes:
       linearized:
         description: Same as use_linear_relation_between_m_flow_and_dp_for_any_flow_rate
         range: string
-      max_electrical_power:
-        description: Maximum electrical power of the heat pump compressor, mpc library
-          [W] (nominal heating power / COP when absent)
-        minimum_value: 0
-        range: float
       nominal_heating_power:
         description: Nominal heating power [W]
         ifabsent: float(20000)
@@ -477,7 +385,6 @@ classes:
     - nominal_heating_power
     - use_linear_relation_between_m_flow_and_dp_for_any_flow_rate
     - linearized
-    - max_electrical_power
     - supply_temperature_setpoint
     - temperature_initial
   Building:
@@ -557,44 +464,6 @@ classes:
     - glazings
     - constructions
     tree_root: true
-  Chiller:
-    description: Chiller (mpc library only)
-    is_a: System
-    slot_usage:
-      parameters:
-        range: ChillerParameters
-      variant:
-        description: Model of the component
-        ifabsent: string('default')
-        range: DefaultVariant
-    slots:
-    - parameters
-    - variant
-  ChillerParameters:
-    attributes:
-      eer_nominal:
-        description: EER at 35 degC outdoor temperature [1]
-        ifabsent: float(3.5)
-        minimum_value: 0
-        range: float
-      eer_outdoor_slope:
-        description: EER change per kelvin of outdoor temperature [1/K]
-        ifabsent: float(-0.06)
-        range: float
-      nominal_cooling_power:
-        description: Nominal cooling power [W]
-        ifabsent: float(10000)
-        minimum_value: 0
-        range: float
-    description: Parameters of a chiller (mpc library only)
-    slot_usage:
-      max_electrical_power:
-        description: Maximum electrical power of the compressor [W] (nominal cooling
-          power / EER when absent)
-        minimum_value: 0
-        range: float
-    slots:
-    - max_electrical_power
   CollectorControl:
     description: Control of a pump from the opening of the valves it serves
     slots:
@@ -743,59 +612,6 @@ classes:
     - glass_material
     - glazings
     - constructions
-  DhwTank:
-    description: Domestic hot water tank (mpc library only)
-    is_a: System
-    slot_usage:
-      parameters:
-        range: DhwTankParameters
-      variant:
-        description: Model of the component
-        ifabsent: string('default')
-        range: DefaultVariant
-    slots:
-    - parameters
-    - variant
-  DhwTankParameters:
-    attributes:
-      daily_draw_off_energy:
-        description: Heat drawn by the hot water taps per day [kWh]
-        ifabsent: float(8.0)
-        minimum_value: 0
-        range: float
-      loss_coefficient:
-        description: Standing loss coefficient of the tank [W/K]
-        ifabsent: float(2.0)
-        minimum_value: 0
-        range: float
-      min_temperature:
-        description: Lower comfort bound of the tank temperature [K]
-        ifabsent: float(318.15)
-        maximum_value: 423.15
-        minimum_value: 223.15
-        range: float
-      set_temperature:
-        description: Upper comfort bound of the tank temperature [K]
-        ifabsent: float(328.15)
-        maximum_value: 423.15
-        minimum_value: 223.15
-        range: float
-      supply_offset:
-        description: Heat pump supply temperature above the tank temperature [K]
-        ifabsent: float(5.0)
-        minimum_value: 0
-        range: float
-      volume:
-        description: Water volume of the tank [m3]
-        ifabsent: float(0.2)
-        minimum_value: 0
-        range: float
-      zone:
-        description: Space receiving the standing losses of the tank (first space
-          when absent)
-        ifabsent: string(None)
-        range: string
-    description: Parameters of a domestic hot water tank (mpc library only)
   Duct:
     description: Air duct
     is_a: System
@@ -906,76 +722,6 @@ classes:
     slots:
     - controller_gain
     - data
-  EvCharger:
-    description: Electric vehicle charger (mpc library only)
-    is_a: System
-    slot_usage:
-      parameters:
-        range: EvChargerParameters
-      variant:
-        description: Model of the component
-        ifabsent: string('default')
-        range: DefaultVariant
-    slots:
-    - parameters
-    - variant
-  EvChargerParameters:
-    attributes:
-      arrival_hour:
-        description: Hour of the day the vehicle plugs in [h]
-        ifabsent: float(18)
-        maximum_value: 24
-        minimum_value: 0
-        range: float
-      battery_capacity:
-        description: Battery capacity of the vehicle [kWh]
-        ifabsent: float(60.0)
-        minimum_value: 0
-        range: float
-      departure_hour:
-        description: Hour of the day the vehicle leaves [h]
-        ifabsent: float(7)
-        maximum_value: 24
-        minimum_value: 0
-        range: float
-      energy_per_day:
-        description: Energy consumed by driving per day [kWh]
-        ifabsent: float(10.0)
-        minimum_value: 0
-        range: float
-      target_soc:
-        description: State of charge required at departure [1]
-        ifabsent: float(0.8)
-        maximum_value: 1
-        minimum_value: 0
-        range: float
-      weekend_present:
-        description: The vehicle stays plugged in during the weekend
-        ifabsent: string(true)
-        range: string
-    description: Parameters of an electric vehicle charger (mpc library only)
-    slot_usage:
-      charge_efficiency:
-        description: Charging efficiency [1]
-        ifabsent: float(0.9)
-        maximum_value: 1
-        minimum_value: 0
-        range: float
-      initial_soc:
-        description: Initial state of charge [1]
-        ifabsent: float(0.5)
-        maximum_value: 1
-        minimum_value: 0
-        range: float
-      max_charge_power:
-        description: Maximum charging power [W]
-        ifabsent: float(7400)
-        minimum_value: 0
-        range: float
-    slots:
-    - max_charge_power
-    - charge_efficiency
-    - initial_soc
   ExternalBoundaries:
     attributes:
       adiabatic_walls:
@@ -2002,22 +1748,6 @@ classes:
         power_sensor:
           name: power_sensor
           required: true
-    - slot_conditions:
-        chiller:
-          name: chiller
-          required: true
-    - slot_conditions:
-        dhw_tank:
-          name: dhw_tank
-          required: true
-    - slot_conditions:
-        battery:
-          name: battery
-          required: true
-    - slot_conditions:
-        ev_charger:
-          name: ev_charger
-          required: true
     slots:
     - split_valve
     - three_way_valve
@@ -2027,10 +1757,6 @@ classes:
     - heat_meter_sensor
     - air_handling_unit
     - power_sensor
-    - chiller
-    - dhw_tank
-    - battery
-    - ev_charger
   TemperatureSensor:
     description: Water temperature sensor
     is_a: System
@@ -2716,11 +2442,6 @@ slots:
     maximum_value: 6.2832
     minimum_value: -6.2832
     range: float
-  battery:
-    description: An electric battery (mpc library only)
-    inlined: true
-    multivalued: false
-    range: Battery
   boiler:
     description: A boiler or heat pump
     inlined: true
@@ -2731,14 +2452,6 @@ slots:
     inlined: true
     multivalued: false
     range: BoilerControl
-  charge_efficiency:
-    description: Charge efficiency; its meaning, range and default depend on the class
-      (see slot_usage).
-  chiller:
-    description: A chiller (mpc library only)
-    inlined: true
-    multivalued: false
-    range: Chiller
   collector_control:
     description: Control of a pump
     inlined: true
@@ -2766,11 +2479,6 @@ slots:
     description: Data; its meaning, range and default depend on the class (see slot_usage).
   depth:
     description: Depth; its meaning, range and default depend on the class (see slot_usage).
-  dhw_tank:
-    description: A domestic hot water tank (mpc library only)
-    inlined: true
-    multivalued: false
-    range: DhwTank
   dp_fixed_nominal:
     description: Dp fixed nominal; its meaning, range and default depend on the class
       (see slot_usage).
@@ -2798,11 +2506,6 @@ slots:
   equal_percentage_deviation:
     description: Equal percentage deviation; its meaning, range and default depend
       on the class (see slot_usage).
-  ev_charger:
-    description: An electric vehicle charger (mpc library only)
-    inlined: true
-    multivalued: false
-    range: EvCharger
   external_boundaries:
     description: Envelope elements of the space in contact with the outdoor air or
       the ground
@@ -2848,9 +2551,6 @@ slots:
     inlined: true
     multivalued: false
     range: IdealHeatingCooling
-  initial_soc:
-    description: Initial soc; its meaning, range and default depend on the class (see
-      slot_usage).
   inlets:
     description: Ids of the components the flow comes from
     multivalued: true
@@ -2871,12 +2571,6 @@ slots:
   material:
     description: Material; its meaning, range and default depend on the class (see
       slot_usage).
-  max_charge_power:
-    description: Max charge power; its meaning, range and default depend on the class
-      (see slot_usage).
-  max_electrical_power:
-    description: Max electrical power; its meaning, range and default depend on the
-      class (see slot_usage).
   name:
     description: A human-readable name for a thing
   nd:

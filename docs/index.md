@@ -10,7 +10,7 @@
 Trano is **Modelica library agnostic** but is natively designed to work with:  
 ✅ **Validated detailed Modelica libraries** (e.g., **[Buildings](https://github.com/lbl-srg/modelica-buildings)**, **[IDEAS](https://github.com/open-ideas/IDEAS)**,...)  
 ✅ **Reduced-order models** (e.g., **[AIXLIB](https://github.com/RWTH-EBC/AixLib)**, **ISO13790**,...)  
-✅ **Models for optimal control** (the RC models of `mpc`, and **[FastModel](reference/fast_model.md)**: close to Buildings, closed loop or for optimal control, translated to CasADi)  
+✅ **Models for optimal control** (**[FastModel](reference/fast_model.md)**: close to Buildings, closed loop or for optimal control, translated to CasADi)  
 ✅ **your library...**  
 
 ## 🧪 Supported libraries and validation
@@ -21,7 +21,6 @@ Trano is **Modelica library agnostic** but is natively designed to work with:
 | [IDEAS](https://github.com/open-ideas/IDEAS) | 3.0.0 | `IDEAS.Buildings.Components.Zone` | detailed, validated |
 | [AixLib](https://github.com/RWTH-EBC/AixLib) reduced order (`reduced_order`) | 3.0.1 | `AixLib.ThermalZones.ReducedOrder.ThermalZone` | simplified, informational |
 | ISO 13790 (`iso_13790`) | AixLib 3.0.1 | `ISO13790.Zone5R1C` | simplified, informational |
-| `mpc` | - | RC models (`R1C1`, `R3C2`, `R4C3`, ISO 13790) | control-oriented, CasADi ready |
 | `FastModel` | - | `FastModel.Zones.Zone` (the physics of `MixedAir`), with the hydronic and ventilation systems and their controllers | close to Buildings, closed loop, CasADi ready |
 | `FastModelMPC` | - | the same, the controls of the systems as inputs | optimal control, CasADi ready |
 

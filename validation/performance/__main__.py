@@ -1,7 +1,7 @@
 """Command line of the performance benchmark: ``python -m validation.performance --help``.
 
 Needs Docker and the OpenModelica image of trano. Set ``TRANO_MODELICA_LIBRARIES`` to a directory of
-installed Modelica libraries to run without network access (see trano.simulate).
+installed Modelica libraries to run without network access (see trano_simulate).
 """
 
 from __future__ import annotations

@@ -126,10 +126,3 @@ def test_the_occupancy_floor_area_belongs_to_the_co2_variant() -> None:
 
 def test_unknown_names_pass_through_as_modelica_modifiers() -> None:
     assert library_parameters(SpaceParameter(hIntFixed=4.0), "Buildings")["hIntFixed"] == 4.0
-
-
-def test_mpc_only_classes_take_no_modelica_library() -> None:
-    battery = param_from_config("Battery")
-    assert battery is not None
-    assert library_parameters(battery(), "Buildings") == {}
-    assert library_parameters(battery(), "mpc")["capacity"] == 10.0

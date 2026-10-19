@@ -4,7 +4,7 @@
 IDEAS, it generates a model whose physics follow `Buildings.ThermalZones.Detailed.MixedAir` and the Buildings
 hydronic and ventilation components, written so that [rumoca](https://github.com/cognipilot/rumoca) translates it
 into a CasADi ODE \(\dot x = f(t, x, u, p)\). The same model simulates in OpenModelica and in CasADi, where
-`trano.optimization` estimates its state and solves optimal control problems with IPOPT.
+`trano_optimization` estimates its state and solves optimal control problems with IPOPT.
 
 The library comes in two configurations of the same components and templates:
 
@@ -376,7 +376,7 @@ closed-loop model stays an explicit, smooth ODE:
 | `<emitter>_Q.Q_flow` | `FastModelMPC` | heat of an ideal emitter [W] (control between its bounds) |
 
 The meters are states in kWh: `EFue` (fuel), `EEle` (heat pump electricity), `EFan` (fans), `EPro` (PV
-production); the comfort temperatures are the `TAir` states of the zones. `trano.optimization.Roles.infer` reads
+production); the comfort temperatures are the `TAir` states of the zones. `trano_optimization.Roles.infer` reads
 these roles from the model: an input with a `min` and a `max` is a control, any other input a disturbance.
 
 ## Limitations

@@ -3,10 +3,6 @@
   - VAV
   - VAVControl
   - PowerSensor
-  - Chiller
-  - DhwTank
-  - Battery
-  - EvCharger
   library: [FastModel, FastModelMPC]
   parameter_processing: &no_parameters
     function: default_parameters

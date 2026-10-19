@@ -208,3 +208,10 @@ def test_installed_libraries_are_mounted_from_the_environment_variable(
     assert ModelicaEnvironment().libraries_path is None
     monkeypatch.setenv(LIBRARIES_VARIABLE, str(tmp_path))
     assert ModelicaEnvironment().libraries_path == tmp_path
+
+
+def test_trano_networks_are_model_sources() -> None:
+    """The contract with trano-simulate: a ``Network`` renders the packages that trano-simulate runs."""
+    from trano_simulate import ModelSource
+
+    assert isinstance(Network(name="contract"), ModelSource)

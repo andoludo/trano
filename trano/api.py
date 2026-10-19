@@ -1,7 +1,7 @@
 """One-call Python API: a YAML model in, a typed ``SimulationResult`` out.
 
     from trano import simulate_yaml
-    from trano.simulate.simulate import SimulationOptions
+    from trano_simulate.simulate import SimulationOptions
 
     result = simulate_yaml(Path("house.yaml"), options=SimulationOptions(end_time=86400), runtime="local")
     result.success, result.result_path, result.error_kind, result.error_message
@@ -30,8 +30,8 @@ from trano.exceptions import (
     OpenModelicaNotFoundError,
     UnknownLibraryError,
 )
-from trano.simulate.result import SimulationErrorKind, SimulationResult
-from trano.simulate.simulate import (
+from trano_simulate.result import SimulationErrorKind, SimulationResult
+from trano_simulate.simulate import (
     PhaseCallback,
     SimulationOptions,
     SimulationPhase,

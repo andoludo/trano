@@ -14,7 +14,7 @@ Every attribute of the YAML is a field of a pydantic model. Besides the LinkML k
 - ``positive``: ``true`` for a quantity that must be strictly positive (a power, an area, a nominal
   flow), checked when the model is validated; LinkML's ``minimum_value`` is inclusive.
 
-A parameter class may list the ``libraries`` it serves (the mpc elements): the others do not take
+A parameter class may list the ``libraries`` it serves: the others do not take
 any of its parameters.
 
 :func:`library_parameters` turns a parameter object into the ``name=value`` pairs a component
@@ -37,7 +37,7 @@ from trano.elements.utils import _get_default, _get_type
 logger = logging.getLogger(__name__)
 
 PRIORITY = ["DataSource"]
-LIBRARIES = ("buildings", "ideas", "iso_13790", "reduced_order", "mpc")
+LIBRARIES = ("buildings", "ideas", "iso_13790", "reduced_order")
 SPEC_KEYS = ("alias", "libraries", "short_name", "render", "numerical", "deprecated", "default_from", "positive")
 _UNIT = re.compile(r"\[([^\]]+)\]\s*$")
 

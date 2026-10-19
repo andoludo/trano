@@ -1,8 +1,11 @@
 """The FastModel library: Modelica components and their YAML/jinja element templates, as Buildings and IDEAS.
 
 trano writes ``building_mpc`` from the templates of ``trano/elements/library/models/fast_model``, with the
-components of ``trano/library/FastModel.mo``; rumoca translates it into a CasADi ODE for the optimization package.
+components of ``trano/library/FastModel.mo``; rumoca translates it into a CasADi ODE for trano-optimization. The
+tests of that translation run when trano-optimization is installed (it is not a dependency of trano).
 """
+
+from __future__ import annotations
 
 import math
 import re
@@ -17,8 +20,14 @@ import pytest
 from trano.data_models.conversion import convert_network
 from trano.elements.jinja import UnsupportedElementError
 from trano.elements.library.library import Library
-from trano.optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings, Roles
 from trano.simulate.simulate import SimulationOptions, simulate
+
+try:
+    from trano_optimization import CasadiModel, OptimalControl, OptimalControlSettings, Roles
+except ImportError:  # trano-optimization (with rumoca) is not a dependency of trano: its tests are skipped
+    CasadiModel = OptimalControl = OptimalControlSettings = Roles = None  # type: ignore[assignment,misc]
+
+KELVIN = 273.15
 
 ROOT = Path(__file__).parents[1]
 MODELS = ROOT / "tests" / "models"
@@ -46,8 +55,10 @@ end Probe;
 
 @cache
 def _exports_connected_models() -> bool:
-    """rumoca 0.10.3 (its main branch) exports models made of connected components; the releases up to 0.10.2
-    stop at their connection equations."""
+    """trano-optimization is installed, with rumoca 0.10.3 (its main branch), which exports models made of connected
+    components; the releases up to 0.10.2 stop at their connection equations."""
+    if CasadiModel is None:
+        return False
     import rumoca
 
     try:
@@ -59,7 +70,7 @@ def _exports_connected_models() -> bool:
 
 needs_connected_export = pytest.mark.skipif(
     not _exports_connected_models(),
-    reason="the CasADi export of connected models needs rumoca >= 0.10.3 (rumoca main)",
+    reason="the CasADi export of connected models needs trano-optimization, with rumoca >= 0.10.3 (rumoca main)",
 )
 
 

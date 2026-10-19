@@ -9,7 +9,6 @@ COLUMNS = {
     "ideas": "IDEAS",
     "reduced_order": "AixLib reduced order",
     "iso_13790": "ISO 13790",
-    "mpc": "mpc",
 }
 NOT_APPLICABLE = "-"
 

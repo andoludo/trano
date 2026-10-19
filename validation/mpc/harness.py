@@ -1,20 +1,17 @@
-"""Replay a Buildings simulation through the MPC model (``mpc`` or ``FastModel`` library) of the same YAML and compare.
+"""Replay a Buildings simulation through the FastModel model of the same YAML and compare.
 
 1. The Buildings model is simulated (cached by the generated model, as for BESTEST).
-2. The heat its emitters delivered to each zone (ideal heating and cooling, radiators) is written as the
-   ``<zone>_QHea`` columns of an external data file: the runnable ``mpc`` model replays such columns as
-   its heating inputs.
-3. The runnable ``mpc`` model is simulated with that file. Weather, solar irradiance and occupancy are
-   computed with the same Buildings blocks as in the Buildings model, so both models see the same inputs
-   and only the zone physics differ.
-4. The zone air temperatures are compared hour by hour.
+2. What its systems did (valve openings, production, heat of the ideal emitters) is written as the columns of an
+   external data file, which the runnable FastModelMPC model replays as its control inputs
+   (``FastModelClosedLoop``: nothing is replayed, FastModel runs its own controllers).
+3. The runnable FastModel model is simulated with that file, on the weather of the Buildings model.
+4. The zone air temperatures, the water temperatures and the energies are compared.
 """
 
 from __future__ import annotations
 
 import contextlib
 import logging
-import re
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -27,9 +24,7 @@ from trano.data_models.conversion import convert_network
 from trano.elements.bus import DataBus
 from trano.elements.library.library import Library
 from trano.elements.space import Space
-from trano.mpc import RCModelType
-from trano.mpc.estimation import sanitize_name
-from trano.simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions, simulate
+from trano_simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions, simulate
 from trano.utils.utils import is_success
 from validation.bestest.harness import model_hash, reset_element_names
 from validation.bestest.kpi import find_variable
@@ -62,27 +57,27 @@ ZONE_AIR_TEMPERATURE = {"Buildings": "heaPorAir.T", "IDEAS": "TAir"}
 class ZoneComparison(BaseModel):
     zone: str
     rmse: float = Field(description="Root mean square error of the zone air temperature [K]")
-    bias: float = Field(description="Mean error, mpc minus Buildings [K]")
+    bias: float = Field(description="Mean error, FastModel minus Buildings [K]")
     max_abs: float = Field(description="Largest absolute error [K]")
     mean_reference: float = Field(description="Mean Buildings temperature [degC]")
     heat_kwh: float = Field(description="Heat of the emitters of the zone in Buildings [kWh]")
-    emitter_heat_kwh: float | None = Field(None, description="Heat of the radiators of the zone, mpc [kWh]")
+    emitter_heat_kwh: float | None = Field(None, description="Heat of the radiators of the zone, FastModel [kWh]")
     emitter_cv_rmse: float | None = Field(None, description="Hourly CV(RMSE) of the radiator heat [-]")
     emitter_nmbe: float | None = Field(None, description="Normalized mean bias of the radiator heat [-]")
 
 
 class CircuitComparison(BaseModel):
-    """Water temperatures of a hydronic circuit, mpc against Buildings."""
+    """Water temperatures of a hydronic circuit, FastModel against Buildings."""
 
     variable: str
     rmse: float = Field(description="Root mean square error [K]")
-    bias: float = Field(description="Mean error, mpc minus Buildings [K]")
+    bias: float = Field(description="Mean error, FastModel minus Buildings [K]")
     mean_reference: float = Field(description="Mean Buildings temperature [degC]")
     circulating: float = Field(1.0, description="Share of the time compared: while the water circulates")
 
 
 class EnergyComparison(BaseModel):
-    """Energy drawn or produced by a system over the case, mpc meter against Buildings."""
+    """Energy drawn or produced by a system over the case, FastModel meter against Buildings."""
 
     system: str
     quantity: str = Field(description="fuel, electricity or production")
@@ -96,7 +91,7 @@ class EnergyComparison(BaseModel):
 
 class CaseComparison(BaseModel):
     case: str
-    model: str = Field(description="FastModel, or an RC model type of the mpc library")
+    model: str = Field(description="FastModel (replaying the controls of the reference) or FastModelClosedLoop")
     reference: str = Field(REFERENCE, description="Library of the simulation replayed and compared with")
     zones: list[ZoneComparison]
     circuits: list[CircuitComparison] = Field(default_factory=list)
@@ -132,13 +127,16 @@ def _options(case: MPCCase, reference: bool = False, library: str = REFERENCE) -
     )
 
 
-_MPC_PACKAGE = re.compile(r"^package MPC\b.*?^end MPC;", flags=re.DOTALL | re.MULTILINE)
-
-
 def _hashed_text(model: str, network: Network) -> str:
-    """The model text the cache depends on: every generated package embeds ``Trano.MPC``, which only the models of
-    the ``mpc`` library use, so that the reference simulations survive changes of that package."""
-    return model if network.library.name == "mpc" else _MPC_PACKAGE.sub("", model)
+    """The model text the cache depends on (generated packages no longer embed ``Trano.MPC``, which the cache of
+    earlier runs left out)."""
+    return model
+
+
+def sanitize_name(name: str) -> str:
+    """A space name as a Modelica identifier: the key of its zone in the comparisons."""
+    sanitized = "".join(character if character.isalnum() or character == "_" else "_" for character in name)
+    return sanitized if sanitized[:1].isalpha() else f"z_{sanitized}"
 
 
 def _data_bus(network: Network) -> DataBus | None:
@@ -437,8 +435,8 @@ CLOSED_LOOP = "FastModelClosedLoop"  # FastModel with its own controllers: no re
 
 
 def compare(case_id: str, model: str = FAST_MODEL, reference_library: str = REFERENCE) -> CaseComparison:
-    """Replay what the systems of the ``reference_library`` model (Buildings or IDEAS) did through the model of the
-    same YAML file and compare: ``FastModel`` or an RC model type of the flat ``mpc`` library (R1C1, R3C2, ...).
+    """Replay what the systems of the ``reference_library`` model (Buildings or IDEAS) did through the FastModel
+    model of the same YAML file and compare.
 
     ``FastModelClosedLoop`` replays nothing: the FastModel model of the same YAML runs with its own controllers, as
     the reference does with its own."""
@@ -455,35 +453,24 @@ def compare(case_id: str, model: str = FAST_MODEL, reference_library: str = REFE
         )
         for space in spaces
     }
+    if model not in (FAST_MODEL, CLOSED_LOOP):
+        raise ValueError(f"Model {model!r}: expected {FAST_MODEL} or {CLOSED_LOOP}")
     closed_loop = model == CLOSED_LOOP
-    fast_model = model in (FAST_MODEL, CLOSED_LOOP)
-    variant = model if fast_model else f"mpc-{model}"
-    directory = case_directory(case, variant if reference_library == REFERENCE else f"{variant}-{reference_library}")
-    library = (
-        Library.from_configuration(FAST_MODEL if closed_loop else FAST_MODEL_MPC)
-        if fast_model
-        else Library.from_configuration("mpc").model_copy(update={"rc_model_type": RCModelType(model)})
-    )
+    directory = case_directory(case, model if reference_library == REFERENCE else f"{model}-{reference_library}")
+    library = Library.from_configuration(FAST_MODEL if closed_loop else FAST_MODEL_MPC)
     network = _network(case, library, directory)
     replay = np.arange(case.start_time, case.end_time + 1, FINE_REPLAY_INTERVAL if case.fine_replay else INTERVAL)
-    if closed_loop:
-        columns = {}
-    elif fast_model:
-        columns = _fast_model_replay(reader, buildings_network, replay.astype(float))
-    else:
-        columns = {
-            f"{sanitize_name(space.name)}_QHea": _emitter_heat(reader, space, replay.astype(float)) for space in spaces
-        }
+    columns = {} if closed_loop else _fast_model_replay(reader, buildings_network, replay.astype(float))
     if columns:  # nothing to replay in a free-floating case
         network.external_data = _write_data(directory / "replay.csv", replay - case.start_time, columns)
     name = f"{case.id}-{model}" if reference_library == REFERENCE else f"{case.id}-{model}-{reference_library}"
     result = _simulate(network, directory, _options(case), name)
     model_reader = _reader(result)
-    radiator_heat = _radiator_heat(model_reader, network, grid) if fast_model else {}
+    radiator_heat = _radiator_heat(model_reader, network, grid)
 
     zones = []
     for zone, expected in reference_temperature.items():
-        variable = f"mpc.{zone}.TAir" if fast_model else f"{zone}_TZon"
+        variable = f"mpc.{zone}.TAir"
         actual = _on_grid(model_reader, variable, grid)
         error = actual - expected
         emitter: dict[str, float] = {}
@@ -510,7 +497,7 @@ def compare(case_id: str, model: str = FAST_MODEL, reference_library: str = REFE
         model=model,
         reference=reference_library,
         zones=zones,
-        circuits=_circuits(reader, model_reader, network, grid) if fast_model else [],
-        energies=_energies(reader, model_reader, network, grid) if fast_model else [],
+        circuits=_circuits(reader, model_reader, network, grid),
+        energies=_energies(reader, model_reader, network, grid),
         wall_time=time.monotonic() - started,
     )

@@ -34,7 +34,7 @@ from trano.runtime.init_xml import ParameterKind, read_model_variables
 from trano.runtime.model import CompiledModel, ModelRunner, RunResult, build_model
 from trano.runtime.overrides import OverrideValue
 from trano.runtime.specification import FieldValue, with_values, write_description
-from trano.simulate.simulate import SimulationOptions
+from trano_simulate.simulate import SimulationOptions
 
 logger = logging.getLogger(__name__)
 

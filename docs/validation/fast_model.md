@@ -15,8 +15,6 @@ python -m validation.mpc compare residential_after --models FastModel FastModelC
 python -m validation.mpc report
 ```
 
-The same command compares the flat RC models of the `mpc` library (`--models R1C1 R3C2 R4C3 ISO13790`).
-
 For each case the Buildings model (or the IDEAS model, `--references IDEAS`) is simulated with its own controls,
 then the runnable model of the other library **replays** what its systems did:
 
@@ -181,14 +179,12 @@ the reference with its own controls (the column Heat is the heat of the referenc
 ## Reading the results
 
 **Envelope.** The `FastModel` zone follows Buildings within 0.33–0.39 K (RMSE) in the free-floating BESTEST
-cases, against 2.3–7.3 K for the RC models of the `mpc` library on the same YAML file: the RC models aggregate the envelope into one
-to three capacities whose parameters come from the constructions, without calibration, and they lose the
-fast exchanges between the window, the floor and the air that drive a free-floating zone. In the heated and
+cases. In the heated and
 cooled BESTEST cases the replay of the Buildings heat is open loop, so that any difference accumulates until the
 envelope removes it; the `FastModel` zone stays within 0.41–0.65 K.
 
 **Multi-zone envelope.** With walls and floors shared between zones, the three-zone house stays within
-0.18–0.49 K of Buildings (RC models: 1.2–2.8 K).
+0.18–0.49 K of Buildings.
 
 **Hydronics.** In the three hydronic houses (the residential house before renovation with its gas boiler, after
 renovation with its heat pump, ventilation and PV, and the heat pump test house), only the branch flows, the three-way valve positions and the boiler part

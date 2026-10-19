@@ -1,5 +1,26 @@
 from collections.abc import Sequence
 
+# the simulation errors, defined with their backends and re-exported here
+from trano_simulate.exceptions import DockerClientError, DockerNotInstalledError, OpenModelicaNotFoundError
+
+__all__ = [
+    "ConnectionLimitReached",
+    "ContainerNotFoundError",
+    "ControllerBusPortError",
+    "DockerClientError",
+    "DockerNotInstalledError",
+    "IncompatiblePortsError",
+    "InvalidBuildingStructureError",
+    "InvalidModelError",
+    "InvalidSensorInletError",
+    "NoConnectionFoundError",
+    "OpenModelicaNotFoundError",
+    "SystemsNotConnectedError",
+    "UnknownComponentVariantError",
+    "UnknownLibraryError",
+    "WrongSystemFlowError",
+]
+
 
 class WrongSystemFlowError(Exception):
     """Exception raised for wrong system flow."""
@@ -10,12 +31,6 @@ class ControllerBusPortError(Exception):
 
 
 class IncompatiblePortsError(Exception): ...
-
-
-class DockerNotInstalledError(Exception): ...
-
-
-class DockerClientError(Exception): ...
 
 
 class ConnectionLimitReached(Exception): ...  # noqa: N818
@@ -52,7 +67,3 @@ class InvalidModelError(ValueError):
     def __init__(self, message: str, errors: Sequence[str] = ()) -> None:
         super().__init__(message)
         self.errors: tuple[str, ...] = tuple(errors)
-
-
-class OpenModelicaNotFoundError(Exception):
-    """The local simulation runtime is selected but OpenModelica's ``omc`` is not on the PATH."""

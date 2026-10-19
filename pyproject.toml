@@ -40,6 +40,7 @@ dependencies = [
     "typer>=0.19.2,<1",
     "pydot>=3.0.4,<4",
     "yattag>=1.16.1,<2",
+    "trano-simulate>=0.2.0,<1",
 ]
 
 [project.urls]
@@ -60,8 +61,6 @@ dev = [
     "types-pyyaml>=6.0.12.20240808,<7",
     "jsf>=0.11.2,<0.12",
     "pytest>=9.0.3,<10",
-    "rumoca>=0.10.3,<0.11",
-    "casadi>=3.6.7,<4",
 ]
 docs = [
     "mkdocs>=1.6.1,<2",
@@ -76,11 +75,6 @@ docs = [
 
 [tool.uv]
 default-groups = "all"
-
-[tool.uv.sources]
-# rumoca 0.10.3 from its main branch, where FastModel is translated (connected models exported to CasADi); the
-# later commits of main refuse the pressure-driven valves and the heat pump (residual_equations of casadi-ode).
-rumoca = { git = "https://github.com/CogniPilot/rumoca", rev = "33c21141791cbc341f4788ff6353d2f49d1c740a", subdirectory = "crates/rumoca-bind-python" }
 
 [tool.uv.build-backend]
 module-root = ""
@@ -121,6 +115,11 @@ exclude = [
     "test_*",
     "conftest.py",
 ]
+
+[[tool.mypy.overrides]]
+# trano-optimization is installed by hand for the FastModel benchmark of the validation (not a dependency of trano)
+module = ["trano_optimization", "trano_optimization.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 120

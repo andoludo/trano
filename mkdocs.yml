@@ -68,7 +68,6 @@ nav:
     - Zone with ventilation: tutorials/zone_with_ventilation.md
     - Model with photovoltaics: tutorials/zone_with_photovoltaics.md
     - A house before and after renovation: tutorials/residential_renovation.md
-    - RC models for MPC: tutorials/rc_model_predictive_control.md
     - FastModel, models close to Buildings in closed loop and for MPC: tutorials/fast_model.md
   - How-to Guides: how-to guides/index.md
   - Explanation: explanation/index.md

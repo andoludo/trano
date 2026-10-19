@@ -3,8 +3,8 @@ import logging
 import docker  # type: ignore
 
 
-from trano.simulate.result import SimulationResult
-from trano.simulate.simulate import SimulationOptions
+from trano_simulate.result import SimulationResult
+from trano_simulate.simulate import SimulationOptions
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,6 @@
 # FastModel: models close to Buildings, in closed loop and for MPC
 
-The [RC models](rc_model_predictive_control.md) of the `mpc` library are small and fast, but they lump a zone
-into one to three capacities and leave the heating system out. The `FastModel` library instead turns the same YAML
+The `FastModel` library turns a YAML
 file into a model **close to the Buildings library** that **still translates into a CasADi ODE** (with
 [rumoca](https://github.com/cognipilot/rumoca)) for simulation, state estimation and model predictive control
 with IPOPT:
@@ -125,10 +124,11 @@ The solar position and the irradiance on each surface are computed inside the mo
 of the year) and the site, so that a forecast only needs the weather channels. The meters of the systems are
 states in kWh: `EFue` (boiler fuel), `EEle` (heat pump electricity), `EFan` (fans), `EPro` (PV production).
 
-## Simulation, estimation and optimal control: `trano.optimization`
+## Simulation, estimation and optimal control: `trano_optimization`
 
-The CasADi side lives in `trano.optimization`, a package that depends on rumoca, CasADi, NumPy and pydantic only
-(no other module of trano), so that it can be moved to a package of its own. It reads everything from the Modelica
+The CasADi side lives in [trano-optimization](https://github.com/andoludo/trano-optimization) (`trano_optimization`),
+a package of its own that depends on rumoca, CasADi, NumPy and pydantic only, not on trano; install it next to trano
+(`pip install trano-optimization`). It reads everything from the Modelica
 model: the names of the states, inputs and parameters in the order of the CasADi vectors, their units, bounds and
 descriptions. The roles of the variables follow simple conventions (`Roles.infer`): an input with a `min` and a
 `max` is a control, any other input a disturbance; the states named `TAir` are the comfort temperatures; the
@@ -141,7 +141,7 @@ import numpy as np
 
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
-from trano.optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings
+from trano_optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings
 
 network = convert_network("house", Path("house.yaml"), library=Library.from_configuration("FastModelMPC"))
 model = CasadiModel.from_modelica(network.model(), "house.building_mpc")
@@ -162,7 +162,7 @@ at `feed_in_price`; the boiler fuel has its own `fuel_price`. The same discretiz
 estimation and the closed loop:
 
 ```python
-from trano.optimization import MovingHorizonEstimation, receding_horizon
+from trano_optimization import MovingHorizonEstimation, receding_horizon
 
 estimator = MovingHorizonEstimation(model)
 estimate = estimator.estimate(prior_state, applied_controls, past_disturbances, measured_air_temperatures)

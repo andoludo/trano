@@ -86,21 +86,6 @@
             "material": ""
         }
     },
-    "mpc": {
-        "extends": "base",
-        "medium": {
-            "air": "Modelica.Media.Air.SimpleAir",
-            "water": "Modelica.Media.Water.ConstantPropertyLiquidWater"
-        },
-        "name": "mpc",
-        "rc_model_type": "R3C2",
-        "templates": {
-            "construction": "",
-            "glazing": "",
-            "main": "",
-            "material": ""
-        }
-    },
     "FastModel": {
         "extends": "base",
         "medium": {

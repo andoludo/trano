@@ -110,8 +110,8 @@ class EnrichedModel(BaseModel):
     data: Any
 
 
-def load_and_enrich_model(model_path: Path, is_rc: bool = False) -> EnrichedModel:
-    """Load the model, validate it and enrich it with the schema defaults; `is_rc` for the mpc library."""
+def load_and_enrich_model(model_path: Path) -> EnrichedModel:
+    """Load the model, validate it and enrich it with the schema defaults."""
     if model_path.suffix == ".yaml":
         load_function = partial(yaml.load, Loader=Loader)
         dump_function = yaml.safe_dump
@@ -124,8 +124,8 @@ def load_and_enrich_model(model_path: Path, is_rc: bool = False) -> EnrichedMode
     data = assign_space_id(data)
     _parse(data)
     validate_model(data)
-    validate_semantics(data, is_rc=is_rc)
-    apply_derived_defaults(data, is_rc=is_rc)
+    validate_semantics(data)
+    apply_derived_defaults(data)
     with tempfile.NamedTemporaryFile(
         mode="w+",
         suffix=model_path.suffix,
@@ -313,10 +313,6 @@ def _connect_systems(network: Network, data: dict[str, Any], systems: dict[str, 
     for system in data.get("systems", []):
         system_ = _instantiate_component(system)
         systems[system_.name] = system_.component_instance
-        if network.library.is_rc:
-            # The flat RC model abstracts the hydraulics: a system without inlets or outlets (a heat
-            # pump serving every zone, a battery, an EV charger) is still part of the building.
-            network._add_system_with_control(system_.component_instance)
     edges = []
     for system in data.get("systems", []):
         for value in system.values():
@@ -348,7 +344,7 @@ def convert_network(
     network = Network(name=name, library=library)
     system_counter: Counter[str] = Counter()
 
-    enriched_model = load_and_enrich_model(model_path, is_rc=network.library.is_rc)
+    enriched_model = load_and_enrich_model(model_path)
     data = _merge_default(enriched_model.data)
     network.performance = performance or PerformanceOptions(**(data.pop("performance", None) or {}))
     materials = _build_materials(data)

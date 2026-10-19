@@ -1,5 +1,5 @@
-"""Markdown report of the comparisons between the MPC libraries (``mpc``, ``FastModel`` replaying the controls of
-the reference, ``FastModelClosedLoop`` with its own controllers) and Buildings or IDEAS."""
+"""Markdown report of the comparisons between FastModel (``FastModel`` replaying the controls of the reference,
+``FastModelClosedLoop`` with its own controllers) and Buildings or IDEAS."""
 
 from validation.mpc.cases import CASES
 from validation.mpc.harness import CaseComparison

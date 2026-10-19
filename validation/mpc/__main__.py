@@ -1,4 +1,4 @@
-"""Compare the MPC libraries (flat ``mpc``, ``FastModel``) with Buildings: ``python -m validation.mpc compare 600FF``.
+"""Compare FastModel with Buildings: ``python -m validation.mpc compare 600FF``.
 
 Results are written to ``.cache/mpc_validation/results.json`` and rendered with ``report``.
 """
@@ -8,7 +8,6 @@ import json
 import logging
 from typing import Any
 
-from trano.mpc import RCModelType
 from validation.mpc.cases import CASES
 from validation.mpc.harness import (
     CACHE_ROOT,
@@ -41,14 +40,14 @@ def _store(key: str, comparison: CaseComparison) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m validation.mpc")
     commands = parser.add_subparsers(dest="command", required=True)
-    run = commands.add_parser("compare", help="replay Buildings through FastModel or mpc models and compare")
+    run = commands.add_parser("compare", help="replay Buildings through FastModel and compare")
     run.add_argument("cases", nargs="*", default=list(CASES))
     run.add_argument(
         "--models",
         nargs="*",
-        default=[FAST_MODEL, *(model.value for model in RCModelType)],
-        help=f"FastModel (replaying the controls of the reference), {CLOSED_LOOP} (its own controllers), or an RC "
-        "model type of the flat mpc library",
+        default=[FAST_MODEL],
+        choices=[FAST_MODEL, CLOSED_LOOP],
+        help=f"FastModel (replaying the controls of the reference) or {CLOSED_LOOP} (its own controllers)",
     )
     run.add_argument(
         "--references",
