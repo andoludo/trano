@@ -20,6 +20,7 @@ from trano.optimization import KELVIN, CasadiModel, OptimalControl, OptimalContr
 ROOT = Path(__file__).parents[1]
 MODELS = ROOT / "tests" / "models"
 BESTEST = ROOT / "validation" / "bestest" / "cases"
+EXAMPLES = ROOT / "examples"
 WEATHER = (
     "weather_inputs.TDryBul",
     "weather_inputs.TBlaSky",
@@ -117,6 +118,36 @@ def test_the_roles_come_from_the_model() -> None:
         assert (variable.minimum, variable.maximum) == (0, 1)
     assert set(roles.meters.values()) <= {"fuel", "electricity"}
     assert roles.meters
+
+
+@needs_connected_export
+def test_the_closed_loop_model_takes_no_control() -> None:
+    """FastModel runs its own controllers: the weather and the internal gains are its only inputs."""
+    path = EXAMPLES / "residential_after_renovation.yaml"
+    model = CasadiModel.from_modelica(_model(path, "FastModel"), f"{path.stem}.building_mpc")
+    assert all(name.startswith(("weather_inputs.", "occupancy")) for name in model.description.input_names)
+    assert not Roles.infer(model.description).controls
+    states = set(model.description.state_names)
+    assert {"control_1.hysPum.y", "generator_001_control.bufCha.y", "pump_001.pIn"} <= states
+
+
+@needs_connected_export
+def test_the_closed_loop_holds_the_set_point() -> None:
+    """The emission control of the single zone heats it to 22 degC from 10 to 20 h, 18 degC otherwise."""
+    from trano.optimization.collocation import Collocated, CollocationSettings
+
+    path = MODELS / "single_zone_hydronic.yaml"
+    model = CasadiModel.from_modelica(_model(path, "FastModel"), f"{path.stem}.building_mpc")
+    simulator = Collocated(model, settings=CollocationSettings(time_step=600))
+    steps = 144
+    weather = dict(zip(WEATHER[:3], [KELVIN, KELVIN - 10, 3.0], strict=True))
+    disturbances = np.array([[weather.get(name, 0.0)] * steps for name in simulator.roles.disturbances])
+    states = simulator.simulate(model.description.initial_state, np.zeros((0, steps)), disturbances)
+    zone = next(name for name in model.description.state_names if name.endswith(".TAir"))
+    air = states[model.description.state_names.index(zone)] - KELVIN
+    hours = np.arange(steps + 1) * 600 / 3600
+    assert np.abs(air[(hours >= 12) & (hours <= 20)] - 22).max() < 0.5
+    assert air[(hours >= 22) & (hours <= 24)].max() < 19.5
 
 
 def _radiator_conductance(power: float, t_in: float, t_out: float, fraction: float, exponent: float) -> float:
