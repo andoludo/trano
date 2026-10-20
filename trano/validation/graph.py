@@ -37,7 +37,14 @@ class Component:
     def medium(self) -> Medium | None:
         """The fluid flowing through the component, None for the components without a fluid port."""
         if self.kind == "radiator":
-            return None if self.variant in IDEAL_RADIATOR_VARIANTS else "water"
+            if self.variant in IDEAL_RADIATOR_VARIANTS:
+                return None
+            from trano.elements.library.components import external_variant_has_fluid_ports
+
+            external_fluid = external_variant_has_fluid_ports(self.kind, self.variant)
+            if external_fluid is not None:
+                return "water" if external_fluid else None
+            return "water"
         if self.kind in WATER:
             return "water"
         return "air" if self.kind in AIR else None

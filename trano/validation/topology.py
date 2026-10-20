@@ -85,7 +85,7 @@ def check_spaces(data: dict[str, Any]) -> Iterator[Issue]:
         water_radiators = [
             data_
             for kind, data_ in emitters
-            if kind == "radiator" and (data_.get("variant") or "default") not in IDEAL_RADIATOR_VARIANTS
+            if kind == "radiator" and Component(data_["id"], kind, data_).medium == "water"
         ]
         has_valve = any(kind == "valve" for kind, _ in emissions)
         if has_valve and not water_radiators:

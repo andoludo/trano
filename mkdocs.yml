@@ -69,6 +69,7 @@ nav:
     - Model with photovoltaics: tutorials/zone_with_photovoltaics.md
     - A house before and after renovation: tutorials/residential_renovation.md
     - FastModel, models close to Buildings in closed loop and for MPC: tutorials/fast_model.md
+    - Component variants: tutorials/component_variants.md
   - How-to Guides: how-to guides/index.md
   - Explanation: explanation/index.md
   - Reference:

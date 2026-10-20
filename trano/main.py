@@ -6,6 +6,7 @@ from typing import Annotated
 from rich import print
 import typer
 from trano.data_models.conversion import convert_network
+from trano.elements.library.components import register_variants_folder
 from trano.elements.library.library import Library
 from trano.model_description import model_description
 from trano.reporting.html import to_html_reporting
@@ -27,6 +28,28 @@ class LibraryChoice(str, Enum):
     buildings = "Buildings"
     fast_model = "FastModel"
     fast_model_mpc = "FastModelMPC"
+
+
+VariantsFolderOption = Annotated[
+    list[Path] | None,
+    typer.Option(
+        "--variants-folder",
+        "-V",
+        help=(
+            "Path to a folder containing custom component variant YAML files. "
+            "May be passed multiple times to register several folders."
+        ),
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        resolve_path=True,
+    ),
+]
+
+
+def _register_variant_folders(folders: list[Path] | None) -> None:
+    for folder in folders or []:
+        register_variants_folder(folder)
 
 
 def _create_network(model: str, library: str) -> Network:
@@ -71,7 +94,9 @@ def create_model(
             "--no-containers writes all of them in a single flat model."
         ),
     ] = True,
+    variants_folder: VariantsFolderOption = None,
 ) -> None:
+    _register_variant_folders(variants_folder)
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -94,7 +119,7 @@ def create_model(
 
 
 @app.command()
-def simulate_model(
+def simulate_model(  # noqa: PLR0913
     model: Annotated[
         str,
         typer.Argument(help="Local path to the '.yaml' model configuration file."),
@@ -106,7 +131,9 @@ def simulate_model(
     start: Annotated[int | None, typer.Argument(help="Start simulation time.")] = 0,
     end: Annotated[int | None, typer.Argument(help="End simulation time.")] = 2 * 3600 * 24 * 7,
     tolerance: Annotated[float | None, typer.Argument(help="Simulation tolerance.")] = 1e-4,
+    variants_folder: VariantsFolderOption = None,
 ) -> None:
+    _register_variant_folders(variants_folder)
     options = SimulationLibraryOptions(
         start_time=start,
         end_time=end,
@@ -181,10 +208,12 @@ def compile_model(  # noqa: PLR0913
     end: Annotated[int, typer.Option(help="Default stop time of the runs (s).")] = 2 * 3600 * 24 * 7,
     tolerance: Annotated[float, typer.Option(help="Simulation tolerance.")] = 1e-4,
     intervals: Annotated[int | None, typer.Option(help="Number of output intervals.")] = None,
+    variants_folder: VariantsFolderOption = None,
 ) -> None:
     """Compile the model once; run it many times with 'trano run-model' and new parameter values."""
     from trano.runtime import build_model
 
+    _register_variant_folders(variants_folder)
     model_path = Path(model).resolve()
     project = (output or model_path.parent / f"{model_path.stem}_runtime").resolve()
     options = SimulationLibraryOptions(

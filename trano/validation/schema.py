@@ -144,6 +144,20 @@ def _line(path: Iterable[Any], message: str, description: str | None) -> str:
     return f"{_location(path)}: {message}" + (f" ({description})" if description else "")
 
 
+def _is_registered_external_variant(error: ValidationError) -> bool:
+    """An enum violation on a ``variant`` field whose value names a variant registered from an
+    external folder (``register_variants_folder`` or ``TRANO_VARIANTS_PATH``): the schema's
+    enums only know the built-in variants."""
+    path = list(error.absolute_path)
+    if error.validator != "enum" or not path or path[-1] != "variant":
+        return False
+    from trano.elements.library.components import external_variant_names
+
+    keys = [part for part in path if isinstance(part, str)]
+    component_key = keys[-2] if len(keys) >= 2 else ""
+    return error.instance in external_variant_names(component_key)
+
+
 def validate_schema(data: dict[str, Any], schema_path: Path = DATA_MODEL_PATH) -> None:
     """Validate the model against the schema and raise every violation at once.
 
@@ -167,6 +181,7 @@ def validate_schema(data: dict[str, Any], schema_path: Path = DATA_MODEL_PATH) -
             break
         for error in coercible:
             _coerce(data, error)
+    errors = [error for error in errors if not _is_registered_external_variant(error)]
     if errors:
         lines = [line for error in errors for line in _readable(error)]
         messages = "\n".join(f"- {line}" for line in lines)
