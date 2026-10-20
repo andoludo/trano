@@ -58,6 +58,16 @@ zones are reported for information. Simulations run in the official OpenModelica
   - **Hydronic Distribution** 🚰
   - **Production & Electricity** ⚡  
 
+### 🧩 **Extensible Component Variants**
+Every Trano component (radiator, space, control, AHU, boiler, ...) is selected
+by a **variant** name — switching `variant: default` to `variant: ideal`
+swaps the underlying Modelica model. You can also drop your own variant
+YAML files into any folder and load them via the CLI (`--variants-folder`),
+the Python API (`register_variants_folder`), or the `TRANO_VARIANTS_PATH`
+environment variable.
+
+📚 **Tutorial:** [Creating and using component variants](https://andoludo.github.io/trano/tutorials/component_variants/)
+
 ### 🎛️ **Models for optimal control**
 - `FastModel` library: `trano create-model house.yaml FastModel` generates a model **close to Buildings** (layered walls, windows with their angular optics, long-wave and solar exchanges in the rooms, radiators, valves, boilers, heat pumps, ventilation with heat recovery, PV) that **rumoca translates to a CasADi ODE**. `FastModel` simulates the building in **closed loop** with its controllers and pressure-driven water circuits; `FastModelMPC` leaves the controllers out, so that `trano_optimization` (the [trano-optimization](https://github.com/andoludo/trano-optimization) package, installed next to trano) decides the controls: it simulates the model, estimates its state and solves optimal control problems with IPOPT. In closed loop, FastModel follows Buildings within 0.05–0.39 K on the zone temperatures (0.05–0.25 K with controlled heating) (see the [FastModel reference](https://andoludo.github.io/trano/reference/fast_model/)).
 
