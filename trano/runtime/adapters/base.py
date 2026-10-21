@@ -67,6 +67,9 @@ class LibraryAdapter(ABC):
     """Regular expressions of YAML paths the library does not take, with the reason."""
     frozen_mechanisms: ClassVar[dict[str, str]] = {}
     """Regular expressions of run-time names the translation evaluates, with the reason found in the sources."""
+    unused_frozen: ClassVar[tuple[str, ...]] = ()
+    """Regular expressions of evaluated run-time names the equivalence checks showed unused by the model: an
+    override can leave them at their compiled values."""
 
     def model_name(self, network: Network) -> str:
         """The class compiled: the top model of the generated package."""

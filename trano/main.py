@@ -228,8 +228,7 @@ def run_model(  # noqa: PLR0913
 ) -> None:
     """Run a compiled model with new parameter values, without recompiling."""
     from trano.runtime import CompiledModel, run_model as run_compiled_model
-    from trano.runtime.init_xml import read_model_variables
-    from trano.runtime.resolution import SpecificationResolver
+    from trano.runtime.resolution import NotRuntimeChangeableError, SpecificationResolver
 
     compiled = CompiledModel.load(build)
     overrides = _parse_assignments(set_, "--set")
@@ -238,12 +237,14 @@ def run_model(  # noqa: PLR0913
         if compiled.specification is None or compiled.library is None:
             raise typer.BadParameter("the build does not record its YAML specification", param_hint="--change")
         resolver = SpecificationResolver.from_file(Path(compiled.specification), compiled.library)
-        resolved = resolver.overrides(dict(changes))
-        variables = read_model_variables(compiled.init_xml, resolved)
-        blocked = sorted(name for name in resolved if name not in variables or variables[name].kind != "free")
-        for name in blocked:
-            print(f"[yellow]warning[/yellow] {name} cannot be set at run time (see RUNTIME_PARAMETERS.md)")
-        overrides = {name: value for name, value in resolved.items() if name not in blocked} | overrides
+        try:
+            resolved = resolver.overrides(dict(changes), compiled)
+        except NotRuntimeChangeableError as error:
+            if strict:
+                raise typer.BadParameter(str(error), param_hint="--change") from error
+            print(f"[yellow]warning[/yellow] {error}; only the free parameters are set")
+            resolved = error.free
+        overrides = resolved | overrides
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), transient=True) as progress:
         progress.add_task(description=f"Running {compiled.model_name} ({len(overrides)} overrides)", total=None)
         result = run_compiled_model(compiled, overrides, label=label, start_time=start, stop_time=stop, strict=strict)

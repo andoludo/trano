@@ -23,14 +23,18 @@ from collections.abc import Mapping
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
 from trano.exceptions import InvalidBuildingStructureError
 from trano.runtime.adapters import Snapshot, get_adapter
 from trano.runtime.expressions import NotNumericError, evaluate
+from trano.runtime.init_xml import ParameterKind, read_model_variables
 from trano.runtime.specification import FieldValue, get_value, load_description, with_values, write_description
+
+if TYPE_CHECKING:
+    from trano.runtime.model import CompiledModel
 
 _ANNOTATION = re.compile(r"annotation\s*\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\)")
 RELATIVE_TOLERANCE = 1e-12
@@ -175,6 +179,7 @@ class SpecificationResolver:
     name: str
     library: str
     baseline: ConvertedSpecification = field(init=False)
+    _kinds: dict[str, dict[str, ParameterKind]] = field(init=False, default_factory=dict, repr=False)
 
     def __post_init__(self) -> None:
         self.baseline = convert(self.description, self.name, self.library)
@@ -218,11 +223,14 @@ class SpecificationResolver:
             futures = [pool.submit(self.resolve, path, value) for path, value in changes.items()]
             return [future.result() for future in futures]
 
-    def overrides(self, changes: Mapping[str, FieldValue]) -> dict[str, float]:
+    def overrides(self, changes: Mapping[str, FieldValue], compiled: "CompiledModel | None" = None) -> dict[str, float]:
         """The run-time overrides equivalent to the YAML changes, applied together.
 
         Raises ValueError when a change is structural (parameters appear or disappear) or not seen by
-        the adapter: no override can stand for it.
+        the adapter: no override can stand for it. With the ``compiled`` model, the overrides are checked
+        against its init file: the evaluated parameters the library adapter knows to be unused are left out,
+        and :class:`NotRuntimeChangeableError` is raised when another one changes (a radiator's mass, the
+        discretisation of a layer): the executable cannot represent the changes.
         """
         changed = convert(with_values(self.description, dict(changes)), self.name, self.library)
         differences = diff(self.baseline.snapshot, changed.snapshot)
@@ -231,11 +239,49 @@ class SpecificationResolver:
             raise ValueError(f"The changes alter the structure of the model: {structural[:5]}")
         if not differences and changed.model != self.baseline.model:
             raise ValueError(f"The changes {sorted(changes)} alter the model in a way no run-time parameter covers")
-        return {change.name: change.new for change in differences}
+        values = {change.name: change.new for change in differences}
+        if compiled is None:
+            return values
+        kinds = self.parameter_kinds(compiled)
+        adapter = get_adapter(self.library)
+        free = {name: value for name, value in values.items() if kinds.get(name) == ParameterKind.free}
+        blocked = [
+            name
+            for name in values
+            if name not in free and not any(re.search(pattern, name) for pattern in adapter.unused_frozen)
+        ]
+        if blocked:
+            raise NotRuntimeChangeableError(blocked, free, adapter.frozen_mechanisms)
+        return free
+
+    def parameter_kinds(self, compiled: "CompiledModel") -> dict[str, ParameterKind]:
+        """How the parameters trano writes take their values in the executable (read once per init file)."""
+        key = str(compiled.init_xml)
+        if key not in self._kinds:
+            variables = read_model_variables(compiled.init_xml, self.baseline.snapshot)
+            self._kinds[key] = {name: variable.kind for name, variable in variables.items()}
+        return self._kinds[key]
+
+
+class NotRuntimeChangeableError(ValueError):
+    """YAML changes reach parameters the executable fixed at compilation: recompile to apply them."""
+
+    def __init__(self, names: list[str], free: dict[str, float], mechanisms: Mapping[str, str]) -> None:
+        self.names = names
+        self.free = free  # the overrides of the free parameters the changes also reach
+        reasons = sorted(
+            {
+                next((reason for pattern, reason in mechanisms.items() if re.search(pattern, name)), "evaluated")
+                for name in names
+            }
+        )
+        shown = ", ".join(names[:4]) + (" ..." if len(names) > 4 else "")
+        super().__init__(f"Fixed in the compiled model, recompile to change them: {shown} ({'; '.join(reasons)})")
 
 
 __all__ = [
     "ConvertedSpecification",
+    "NotRuntimeChangeableError",
     "ParameterChange",
     "Resolution",
     "ResolutionKind",

@@ -190,6 +190,11 @@ class BuildingsAdapter(LibraryAdapter):
         "gas modifiers (library.json); the zones use free copies of their own",
     }
 
+    unused_frozen: ClassVar[tuple[str, ...]] = (
+        r"(\.layers|^building\.envelope1\.[a-z0-9_]+)\.R$",  # construction total R (equivalence exact)
+        r"^building\.envelope1\.[a-z0-9_]+\.(glass|gas)\[",  # envelope glazing record (equivalence exact)
+    )
+
     def parameter_snapshot(self, network: Network) -> Snapshot:
         snapshot = self.element_parameters(network)
         constructions: dict[str, Construction | Glass] = {}

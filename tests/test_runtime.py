@@ -43,7 +43,14 @@ from trano.runtime.overrides import (
     parse_override_messages,
     write_override_file,
 )
-from trano.runtime.resolution import ParameterChange, Resolution, ResolutionKind, SpecificationResolver, diff
+from trano.runtime.resolution import (
+    NotRuntimeChangeableError,
+    ParameterChange,
+    Resolution,
+    ResolutionKind,
+    SpecificationResolver,
+    diff,
+)
 from trano.runtime.specification import (
     YamlField,
     get_value,
@@ -518,3 +525,38 @@ def test_the_impact_metric_is_normalised_by_the_range_of_the_output() -> None:
     assert impact.has_impact
     assert impact.summary().startswith("max NRMSD 7.07e-02 (Q); energy Q +10.00%")
     assert not ImpactResult({"Q": IMPACT_THRESHOLD / 2}, {}).has_impact
+
+
+# -- overrides checked against the compiled model ------------------------------------------------------------
+FIXTURE_BUILD = CompiledModel(INIT_XML.parents[1], "residential_after_renovation.building", build_directory="runtime")
+
+
+def test_yaml_changes_on_free_parameters_become_overrides_of_the_executable(resolver: SpecificationResolver) -> None:
+    assert resolver.overrides({"spaces[LIVING:001].parameters.n50": 3.6}, FIXTURE_BUILD) == pytest.approx(
+        {f"{LIVING}.ACH": 0.18}
+    )
+
+
+def test_yaml_changes_on_evaluated_parameters_are_refused(resolver: SpecificationResolver) -> None:
+    with pytest.raises(NotRuntimeChangeableError, match="Evaluate=true") as error:
+        resolver.overrides({"solar[PV:001].photovoltaic.parameters.tilt": 40.0}, FIXTURE_BUILD)
+    assert error.value.names == ["building.solar1.pv_001.til"]
+    assert error.value.free == {}
+
+
+def test_evaluated_parameters_the_model_does_not_use_are_left_out(
+    resolver: SpecificationResolver, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The construction's total R is evaluated but unused (equivalence exact): a material change needs only the rest."""
+    resolution = resolver.resolve(EPS_K, 0.033)
+    kinds = {
+        name: ParameterKind.evaluated if name.endswith((".layers.R", "external_wall_001.R")) else ParameterKind.free
+        for name in resolution.runtime_names
+    }
+    monkeypatch.setattr(resolver, "parameter_kinds", lambda compiled: kinds)
+    overrides = resolver.overrides({EPS_K: 0.033}, FIXTURE_BUILD)
+    assert "building.envelope1.external_wall_001.R" not in overrides
+    assert overrides["building.envelope1.external_wall_001.material[1].R"] == pytest.approx(0.12 / 0.033)
+    kinds["building.envelope1.external_wall_001.material[1].nSta"] = ParameterKind.evaluated
+    with pytest.raises(NotRuntimeChangeableError):
+        resolver.overrides({EPS_K: 0.0384}, FIXTURE_BUILD)  # outside the admissible range: nSta changes

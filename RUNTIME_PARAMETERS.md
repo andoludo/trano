@@ -23,7 +23,7 @@ resolver = SpecificationResolver.from_file(Path("house.yaml"), "Buildings")
 compiled = build_model(project, network, SimulationOptions(end_time=16 * 86400))     # buildModel, kept
 with ModelRunner(compiled) as runner:                                                # one container
     for trial in trials:                                                             # YAML-level changes
-        run = runner.run(resolver.overrides(trial), label=..., stop_time=16 * 86400, strict=True)
+        run = runner.run(resolver.overrides(trial, compiled), label=..., stop_time=16 * 86400, strict=True)
 ```
 
 - `build_model` runs `buildModel` in trano's OpenModelica container (`trano.simulate.simulate`: same
@@ -38,7 +38,9 @@ with ModelRunner(compiled) as runner:                                           
 - `SpecificationResolver.overrides` turns YAML changes into run-time overrides by converting the
   specification with and without the change and comparing the parameters trano writes (see below): the
   overrides include every copy and every transformation, and a change no override can represent (a
-  structural one) raises.
+  structural one) raises. Given the compiled model, it also checks the overrides against its init file:
+  evaluated parameters known to be unused are left out, any other one raises `NotRuntimeChangeableError`.
+  The guidelines per YAML field are in [`YAML_PARAMETER_GUIDELINES.md`](YAML_PARAMETER_GUIDELINES.md).
 - OMC flags: none (`OPENMODELICA_FLAGS = ()`), as in trano's regular simulations. Flags such as
   `-d=evaluateAllParameters` or `--evaluateProtectedParameters` would evaluate parameters at translation
   and must not be added. With the defaults OpenModelica still evaluates the structural parameters
