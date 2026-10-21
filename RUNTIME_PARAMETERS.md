@@ -32,6 +32,8 @@ with ModelRunner(compiled) as runner:                                           
   from the specification in the result files.
 - `ModelRunner.run` runs the executable in the container with `-overrideFile` (one `name=value` per line)
   and the experiment flags `-startTime`, `-stopTime`, `-stepSize`, `-tolerance`, `-variableFilter`.
+  Each run also passes `-output=<overridden names>`: the executable prints the values it used at the end of the
+  run, and trano compares them with the values set (`RunResult.verification`, `verify_run`, `trano check-run`).
   OpenModelica 1.26 ignores `-override=stopTime=...` ("override variable name not found in model"),
   hence the flags. The executable's log is parsed: an override reported as *not possible to override* or
   *not found* fails the run with `strict=True` and never passes as a change.

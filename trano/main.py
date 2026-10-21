@@ -250,7 +250,26 @@ def run_model(  # noqa: PLR0913
         result = run_compiled_model(compiled, overrides, label=label, start_time=start, stop_time=stop, strict=strict)
     for message in result.messages:
         print(f"[yellow]warning[/yellow] {message.name}: {message.issue}")
+    if overrides:
+        verification = result.verification
+        print(f"{CHECKMARK if verification.ok else CROSS_MARK} {verification.summary()}")
     print(f"{CHECKMARK} Results available at {result.result_path}")
+
+
+@app.command()
+def check_run(
+    build: Annotated[Path, typer.Argument(help="Build directory written by 'trano compile-model'.")],
+    label: Annotated[str, typer.Argument(help="Label of the run (runs/<label>.log).")],
+) -> None:
+    """Check that a finished run used the parameter values it was given (from its override file and log)."""
+    from trano.runtime import CompiledModel, verify_run
+
+    verification = verify_run(CompiledModel.load(build), label)
+    if verification.ok:
+        print(f"{CHECKMARK} {verification.summary()}")
+        return
+    print(f"{CROSS_MARK} {verification.summary()}")
+    raise typer.Exit(code=1)
 
 
 @app.command()

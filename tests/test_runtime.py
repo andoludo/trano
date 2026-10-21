@@ -33,13 +33,17 @@ from trano.runtime.inventory import (
     static_row,
     write_inventory,
 )
-from trano.runtime.model import CompiledModel, RunResult, build_script
+from trano.runtime.model import CompiledModel, RunResult, build_script, verify_run
 from trano.runtime.overrides import (
     OverrideIssue,
     OverrideMessage,
     experiment_flags,
     format_value,
     ignored_overrides,
+    output_flag,
+    parse_output_values,
+    read_override_file,
+    verify_overrides,
     parse_override_messages,
     write_override_file,
 )
@@ -560,3 +564,54 @@ def test_evaluated_parameters_the_model_does_not_use_are_left_out(
     kinds["building.envelope1.external_wall_001.material[1].nSta"] = ParameterKind.evaluated
     with pytest.raises(NotRuntimeChangeableError):
         resolver.overrides({EPS_K: 0.0384}, FIXTURE_BUILD)  # outside the admissible range: nSta changes
+
+
+# -- verification of the values a run used -------------------------------------------------------------------
+# The line the executable prints with -output=<names> at the end of a run (OpenModelica 1.26.9).
+OUTPUT_LOG = (
+    "LOG_SUCCESS       | info    | The simulation finished successfully.\n"
+    f"time=3600,{LIVING}.ACH=0.2999999999999999889,{LIVING}.datConExtWin[1].layers.material[1].k="
+    "0.033000000000000001554,building.envelope1.occupancy_1.gain[2,1]=70,building.solar1.pv_001.til=0.61086499999999999133\n"
+)
+
+
+def test_the_values_used_by_the_simulation_are_read_from_its_log() -> None:
+    assert parse_output_values(OUTPUT_LOG) == pytest.approx(
+        {
+            f"{LIVING}.ACH": 0.3,
+            f"{LIVING}.datConExtWin[1].layers.material[1].k": 0.033,
+            "building.envelope1.occupancy_1.gain[2,1]": 70.0,
+            "building.solar1.pv_001.til": 0.610865,
+        }
+    )
+    assert output_flag(["b", "a[1,2]"]) == "-output=a[1,2],b"
+
+
+def test_a_run_that_used_every_value_set_is_verified() -> None:
+    verification = verify_overrides(
+        OUTPUT_LOG, {f"{LIVING}.ACH": 0.3, f"{LIVING}.datConExtWin[1].layers.material[1].k": 0.033}
+    )
+    assert verification.ok
+    assert verification.summary() == "2 overrides applied: the simulation used every value set"
+
+
+def test_a_value_the_simulation_did_not_use_is_reported() -> None:
+    log = LOG + OUTPUT_LOG  # LOG holds the refusal of the volume V
+    verification = verify_overrides(log, {"building.solar1.pv_001.til": 0.5, f"{LIVING}.V": 200.0, "x.y": 1.0})
+    assert not verification.ok
+    assert verification.differs == {"building.solar1.pv_001.til": (0.5, pytest.approx(0.610865))}
+    assert [message.name for message in verification.refused] == [f"{LIVING}.V"]
+    assert verification.missing == (f"{LIVING}.V", "x.y")
+    assert "set 0.5, used 0.610865" in verification.summary()
+
+
+def test_a_finished_run_is_verified_from_its_files(tmp_path: Path) -> None:
+    compiled = CompiledModel(tmp_path, "p.building")
+    runs = tmp_path / "runs"
+    runs.mkdir()
+    write_override_file(runs / "trial.overrides.txt", {f"{LIVING}.ACH": 0.3})
+    (runs / "trial.log").write_text(OUTPUT_LOG)
+    assert read_override_file(runs / "trial.overrides.txt") == {f"{LIVING}.ACH": 0.3}
+    assert verify_run(compiled, "trial").ok
+    (runs / "trial.log").write_text("LOG_SUCCESS | info | The simulation finished successfully.\n")
+    assert verify_run(compiled, "trial").missing == (f"{LIVING}.ACH",)  # a run made without -output

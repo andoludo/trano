@@ -288,6 +288,7 @@ def readback_run(
         variable_filter=filter_ if len(filter_ := variable_filter(names)) <= MAX_FILTER_LENGTH else ".*",
         flags=READBACK_FLAGS,
         check=True,
+        verify=False,  # the readback reads the result file, and a batch may set too many names for -output
     )
 
 

@@ -28,11 +28,16 @@ from buildingspy.io.outputfile import Reader  # type: ignore
 
 from trano.runtime.overrides import (
     IgnoredOverrideError,
+    OverrideNotAppliedError,
+    OverrideVerification,
     OverrideMessage,
     OverrideValue,
     experiment_flags,
     ignored_overrides,
+    output_flag,
     parse_override_messages,
+    read_override_file,
+    verify_overrides,
     write_override_file,
 )
 from trano.simulate.simulate import (
@@ -213,6 +218,11 @@ class RunResult:
         """The requested overrides the executable reported as not applied."""
         return tuple(ignored_overrides(self.log, self.overrides))
 
+    @property
+    def verification(self) -> OverrideVerification:
+        """The overrides against the refusals of the log and the values the simulation used (``-output``)."""
+        return verify_overrides(self.log, self.overrides)
+
     def reader(self) -> Reader:
         return Reader(str(self.result_path), "dymola")
 
@@ -263,14 +273,17 @@ class ModelRunner:
         flags: Sequence[str] = (),
         strict: bool = False,
         check: bool = True,
+        verify: bool = True,
     ) -> RunResult:
         """Run the executable with the parameter overrides and experiment settings given.
 
         The overrides, the log and the result (``runs/<label>_result.mat``; the name keeps it out of the
         ``*_res.mat`` files trano's container gathers) are kept in the project. ``flags`` are further options
-        of the executable (``-ignoreHideResult`` to store the variables marked HideResult). ``strict`` raises
-        :class:`IgnoredOverrideError` when the executable reports an override as not applied; ``check``
-        raises :class:`RunError` when the simulation fails.
+        of the executable (``-ignoreHideResult`` to store the variables marked HideResult). ``verify`` makes
+        the executable print the values it used for the overrides at the end of the run (``-output``, kept in
+        the log, see :attr:`RunResult.verification`). ``strict`` raises :class:`IgnoredOverrideError` when the
+        executable reports an override as not applied and :class:`OverrideNotAppliedError` when it used another
+        value; ``check`` raises :class:`RunError` when the simulation fails.
         """
         if self._container is None:
             raise RuntimeError("ModelRunner.run must be called inside its context (with ModelRunner(...) as runner)")
@@ -295,6 +308,8 @@ class ModelRunner:
         if settings:
             command.extend(experiment_flags(settings))
         command.extend(flags)
+        if verify and overrides:
+            command.append(output_flag(overrides))
         result_path = runs / f"{label}_result.{RESULT_FORMAT}"
         result_path.unlink(missing_ok=True)
         execution = self._container.exec_run(cmd=command, workdir=self.compiled.container_directory)
@@ -312,7 +327,20 @@ class ModelRunner:
             raise IgnoredOverrideError(run.ignored)
         if check and not run.success:
             raise RunError(f"Run {label} of {self.compiled.model_name} failed:\n{log[-3000:]}")
+        if strict and verify and run.success and not run.verification.ok:
+            raise OverrideNotAppliedError(run.verification)
         return run
+
+
+def verify_run(compiled: CompiledModel, label: str) -> OverrideVerification:
+    """Check a finished run from its files (``runs/<label>.overrides.txt`` and ``runs/<label>.log``).
+
+    The run must have been made with ``verify=True`` (the default) for the used values to be in its log.
+    """
+    runs = compiled.project_path / RUNS_DIRECTORY
+    overrides_path = runs / f"{label}.overrides.txt"
+    overrides = read_override_file(overrides_path) if overrides_path.exists() else {}
+    return verify_overrides((runs / f"{label}.log").read_text(), overrides)
 
 
 def run_model(  # noqa: PLR0913
@@ -342,4 +370,5 @@ __all__ = [
     "build_model",
     "build_script",
     "run_model",
+    "verify_run",
 ]

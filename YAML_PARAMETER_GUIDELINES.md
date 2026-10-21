@@ -52,6 +52,35 @@ Rules that apply to every field:
 - **For another YAML**, check it with `trano parameter-inventory house.yaml Buildings --select "<regex>"`: the
   verdicts below hold for the same element types and variants; a new element type or variant must be checked.
 
+### 1.1 Check that the parameters were really applied
+
+Every run checks itself: the executable prints, at the end of the simulation, the value it used for each overridden
+parameter (`-output=<names>`, kept in `runs/<label>.log`), and trano compares them with the values set. With
+`strict=True` (the default of the CLI) a run fails when an override was refused or another value was used.
+
+```bash
+trano run-model house_runtime/build --change "spaces[LIVING:001].parameters.n50=2.5" --label trial_001
+# ✔ 1 overrides applied: the simulation used every value set
+
+trano check-run house_runtime/build trial_001     # later, on a finished run: exit code 1 if not applied
+```
+
+```python
+run = runner.run(overrides, label="trial_001")          # strict=True raises OverrideNotAppliedError
+print(run.verification.summary())                        # or inspect .refused, .differs, .missing
+verification = verify_run(compiled, "trial_001")         # from runs/trial_001.overrides.txt and .log
+```
+
+A refused override is reported twice: as refused by the executable, and as used with another value
+(`set 0.5, used 0.610865` for the PV tilt). These values are the ones of the simulation, including the copies of
+the construction records inside each zone, which are not stored in the result file (Buildings marks them
+HideResult).
+
+What the check cannot see: a parameter the compilation used to size arrays takes the new value and prints it,
+but the model keeps its compiled structure (the tank's `nSeg`, a material outside its admissible range). Those are
+the NO and range rows of this guide, and `resolver.overrides(changes, compiled)` refuses them before the run.
+To confirm that a change also has an effect, compare an output with a run without overrides.
+
 ## 2. Verdicts at a glance
 
 | verdict | meaning | what to do |
@@ -400,7 +429,8 @@ so a calibration can catch it.
 3. **Use a smooth objective.** The heat pump cycles on and off: its two-week energy moves by one or two percent
    for any small change, in either direction. Zone temperatures, longer periods or daily energies are better
    targets than two weeks of heat pump energy.
-4. **Keep `strict=True`** so that a refused override stops the run, and read the warnings `trano run-model` prints.
+4. **Keep `strict=True`** so that a refused or unused override stops the run; `trano check-run` re-checks a finished
+   run from its files (section 1.1).
 5. **Parameters marked NO** are fixed for the compiled model: decide them before compiling (or compile one model
    per value, e.g. per radiator rating).
 6. **Another house, another variant**: run `trano parameter-inventory <yaml> Buildings` (or with `--select` for the
