@@ -244,6 +244,23 @@ def test_rumoca_translates_the_closed_loop_model(path: Path) -> None:
     assert all(np.isfinite(description.initial_state))
 
 
+@needs_connected_export
+def test_the_controllers_expose_their_smoothing_as_parameters() -> None:
+    """The width of every smooth transition and the switching time of every hysteresis are parameters of the
+    closed-loop model (a calibration widens them), at the values of the switching controllers by default."""
+    path = MODELS / "house_infiltration_air_water_heat_pump.yaml"
+    model = CasadiModel.from_modelica(_model(path, "FastModel"), f"{path.stem}.building_mpc")
+    values = dict(zip(model.description.parameter_names, model.description.parameter_values, strict=True))
+    smoothing = {name for name in values if name.endswith((".dU", ".dY", ".dMax", ".dT", ".dtSet", ".tau"))}
+    assert {"boiler_001_control.bufCha.dU", "boiler_001_control.bufCha.tau", "boiler_001_control.dT"} <= smoothing
+    assert any(name.endswith("hys.dU") for name in smoothing) and any(name.endswith(".dtSet") for name in smoothing)
+    assert values["boiler_001_control.bufCha.tau"] == 10.0
+    assert values["boiler_001_control.bufCha.dU"] == pytest.approx(0.25)  # dTHys = 5 K: (uHigh - uLow) / 10
+    assert values["boiler_001_control.dT"] == pytest.approx(0.1)
+    assert all(values[name] == pytest.approx(60.0) for name in smoothing if name.endswith(".dtSet"))
+    assert all(values[name] == pytest.approx(0.049) for name in smoothing if name.endswith("hys.dU"))
+
+
 def _radiator_conductance(power: float, t_in: float, t_out: float, fraction: float, exponent: float) -> float:
     """UAEle of one element of Buildings RadiatorEN442_2, solved independently of the Modelica function."""
     from scipy.optimize import brentq
