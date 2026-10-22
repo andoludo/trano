@@ -1931,7 +1931,10 @@ package FastModel "Building models for model predictive control: close to Buildi
 
   package Controls
     "Controllers of the closed-loop model: the controls of trano's Buildings models without events (smooth limits
-     and set point changes, hysteresis as fast bistable states, anti-windup PI)"
+     and set point changes, hysteresis as fast bistable states, anti-windup PI). The width of every smooth transition
+     and the switching time of every hysteresis are parameters (dU, dY, dMax, dT, dtSet, tau), at values that
+     reproduce the switching controllers by default; wider transitions and slower switches give a controller that
+     collocation and gradient-based calibration can follow"
     function smoothMaxN "Smooth maximum of a vector"
       input Real u[:];
       input Real delta = 1e-3;
@@ -1949,12 +1952,13 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real uLow "Threshold of the switch to 0";
       parameter Real uHigh "Threshold of the switch to 1";
       parameter Real tau(unit="s") = 10 "Switching time";
+      parameter Real dU = (uHigh - uLow)/10 "Half-width of the smooth transition of the switch";
       parameter Real y_start = 0 "Initial output";
       Interfaces.RealInput u
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Real y(start=y_start, fixed=true);
     equation
-      tau*der(y) = Utilities.regStep(u - (uHigh + (uLow - uHigh)*y), 1, 0, (uHigh - uLow)/10) - y;
+      tau*der(y) = Utilities.regStep(u - (uHigh + (uLow - uHigh)*y), 1, 0, dU) - y;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,100},{100,-100}}, lineColor={0,0,0}, fillColor={210,210,210},
             fillPattern=FillPattern.Solid, borderPattern=BorderPattern.Raised),
@@ -1987,6 +1991,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real Ni = 0.9 "Anti-windup gain";
       parameter Real yReset = yMin "Output after a reset";
       parameter Real tauReset(unit="s") = 30 "Time constant of the reset while disabled";
+      parameter Real dY = 1e-3*(yMax - yMin) "Width of the smooth limits";
       Interfaces.RealInput e "Control error"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Interfaces.RealInput enable "1: integrate, 0: reset"
@@ -1997,7 +2002,7 @@ package FastModel "Building models for model predictive control: close to Buildi
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
       yUnl = k*(e + I);
-      y = Utilities.smoothLimit(yUnl, yMin, yMax, 1e-3*(yMax - yMin));
+      y = Utilities.smoothLimit(yUnl, yMin, yMax, dY);
       der(I) = enable*(e/Ti + (y - yUnl)/(k*Ni*Ti)) + (1 - enable)*(yReset/k - e - I)/tauReset;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
@@ -2022,13 +2027,15 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real THeaSet(unit="K") = 294.15 "Set point when occupied";
       parameter Real THeaSetBack(unit="K") = 289.15 "Set point otherwise";
       parameter Real k = 1 "Gain";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the output";
+      parameter Real dtSet(unit="s") = 60 "Duration of a change of the set point";
       Interfaces.RealInput TZon(unit="K") "Zone air temperature"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
       Real TSet(unit="K") "Set point";
     equation
-      TSet = THeaSetBack + (THeaSet - THeaSetBack)*Utilities.occupancy(Utilities.timeOfDay(time), schedule);
+      TSet = THeaSetBack + (THeaSet - THeaSetBack)*Utilities.occupancy(Utilities.timeOfDay(time), schedule, dtSet);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2038,7 +2045,7 @@ package FastModel "Building models for model predictive control: close to Buildi
     model EmissionP "Variant PController: P controller (IDEAS LimPID) between 0 and 1"
       extends PartialEmissionControl(k=5);
     equation
-      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, 1e-3);
+      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="P")}));
     end EmissionP;
@@ -2047,7 +2054,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       extends PartialEmissionControl;
       parameter Real kHea = 0.1 "Gain of the heating loop";
       parameter Real TiHea(unit="s") = 900 "Integral time of the heating loop";
-      PI conHea(k=kHea, Ti=TiHea, e=TSet - TZon, enable=1);
+      PI conHea(k=kHea, Ti=TiHea, dY=dY, e=TSet - TZon, enable=1);
     equation
       y = conHea.y;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
@@ -2068,6 +2075,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       "Variant MonitoredSetpoint: P controller (IDEAS LimPID) between 0 and 1 towards a set point read from external
        data"
       parameter Real k = 1 "Gain";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the output";
       Interfaces.RealInput TSet(unit="K") "Set point"
         annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
       Interfaces.RealInput TZon(unit="K") "Zone air temperature"
@@ -2075,7 +2083,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
-      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, 1e-3);
+      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2088,6 +2096,8 @@ package FastModel "Building models for model predictive control: close to Buildi
        below 0.01, the speed from a P controller holding the head at dp_nominal"
       parameter Integer nVal = 1 "Number of valves";
       parameter Real k = 1 "Gain";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the speed";
+      parameter Real dMax = 1e-3 "Width of the smooth maximum of the openings";
       Interfaces.RealInput yVal[nVal] "Openings of the valves of the circuit"
         annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
       Interfaces.RealInput dpRel "Head of the pump relative to its nominal head"
@@ -2098,8 +2108,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       Interfaces.RealOutput y(unit="1") "Speed of the pump"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
-      yMax = smoothMaxN(yVal);
-      y = Utilities.smoothLimit(k*(hysPum.y - dpRel), 0, 1, 1e-3);
+      yMax = smoothMaxN(yVal, dMax);
+      y = Utilities.smoothLimit(k*(hysPum.y - dpRel), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2113,6 +2123,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real TColSet(unit="K") = 363.15 "Supply temperature set point";
       parameter Real k = 1 "Gain";
       parameter Real tauSen(unit="s") = 10 "Time constant of the temperature measurement";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the opening";
       Interfaces.RealInput u(unit="K") "Measured supply temperature"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Interfaces.RealOutput y(unit="1") "Opening of the supply path"
@@ -2120,7 +2131,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real TMea(unit="K", start=TColSet - 30, fixed=true) "Filtered measurement";
     equation
       tauSen*der(TMea) = u - TMea;
-      y = Utilities.smoothLimit(k*(TColSet - TMea), 0, 1, 1e-3);
+      y = Utilities.smoothLimit(k*(TColSet - TMea), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2132,9 +2143,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       "Demand of a production (trano BoilerControl, variant simple): on when a valve of its circuits opens beyond 0.5,
        off when all are below 0.01"
       parameter Integer n = 1 "Number of circuits";
+      parameter Real dMax = 1e-3 "Width of the smooth maximum of the openings";
       Interfaces.RealInput yMax[n] "Largest opening of the valves of each circuit"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
-      Hysteresis hys(uLow=0.01, uHigh=0.5, u=smoothMaxN(yMax));
+      Hysteresis hys(uLow=0.01, uHigh=0.5, u=smoothMaxN(yMax, dMax));
       Interfaces.RealOutput y(unit="1") "Demand"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
@@ -2151,6 +2163,7 @@ package FastModel "Building models for model predictive control: close to Buildi
        there is demand"
       parameter Real TempSet(unit="K") = 353.15 "Boiler temperature set point";
       parameter Real k = 1 "Gain";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the part load";
       Interfaces.RealInput T(unit="K") "Boiler water temperature"
         annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
       Interfaces.RealInput demand "Demand, 0 or 1"
@@ -2158,7 +2171,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Interfaces.RealOutput y(unit="1") "Part load ratio"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
-      y = demand*Utilities.smoothLimit(k*(TempSet - T), 0, 1, 1e-3);
+      y = demand*Utilities.smoothLimit(k*(TempSet - T), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2179,6 +2192,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real TiCom(unit="s") = 300 "Integral time of the compressor controller";
       parameter Real yComMin = 0.3 "Minimum compressor speed";
       parameter Real tauSen(unit="s") = 30 "Time constant of the condenser outlet temperature";
+      parameter Real dT(unit="K") = 0.1 "Width of the smooth limits of the heating curve";
+      parameter Real dY = 1e-3*(1 - yComMin) "Width of the smooth limits of the compressor speed";
       Interfaces.RealInput demand "Demand of the circuits, 0 or 1"
         annotation (Placement(transformation(extent={{-140,50},{-100,90}})));
       Interfaces.RealInput TOut(unit="K") "Outdoor air temperature"
@@ -2194,10 +2209,11 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real heaOn "Heating on";
       Hysteresis warOut(uLow=TOutHeaLim - 1, uHigh=TOutHeaLim + 1, u=TOut) "Outside the heating season";
       Hysteresis bufCha(uLow=-dTHys/2, uHigh=dTHys/2, u=TSupSet - TBuf, y_start=1) "Charging the buffer";
-      PI conCom(k=kCom, Ti=TiCom, yMin=yComMin, yMax=1, yReset=yComMin, e=TSupSet + dTHys - TCon, enable=heaOn);
+      PI conCom(k=kCom, Ti=TiCom, yMin=yComMin, yMax=1, yReset=yComMin, dY=dY, e=TSupSet + dTHys - TCon,
+        enable=heaOn);
     equation
       TSupSet = Utilities.smoothMin(TSet, Utilities.smoothMax(TSupMin, TSet + (TSupMin - TSet)*(TOut - TOutDes)
-        /(TOutHeaLim - TOutDes), 0.1), 0.1);
+        /(TOutHeaLim - TOutDes), dT), dT);
       tauSen*der(TCon) = TConOut - TCon;
       heaOn = demand*(1 - warOut.y)*bufCha.y;
       y = heaOn*conCom.y;
