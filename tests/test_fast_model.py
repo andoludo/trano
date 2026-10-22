@@ -252,13 +252,19 @@ def test_the_controllers_expose_their_smoothing_as_parameters() -> None:
     model = CasadiModel.from_modelica(_model(path, "FastModel"), f"{path.stem}.building_mpc")
     values = dict(zip(model.description.parameter_names, model.description.parameter_values, strict=True))
     smoothing = {name for name in values if name.endswith((".dU", ".dY", ".dMax", ".dT", ".dtSet", ".tau"))}
-    assert {"boiler_001_control.bufCha.dU", "boiler_001_control.bufCha.tau", "boiler_001_control.dT"} <= smoothing
-    assert any(name.endswith("hys.dU") for name in smoothing) and any(name.endswith(".dtSet") for name in smoothing)
-    assert values["boiler_001_control.bufCha.tau"] == 10.0
-    assert values["boiler_001_control.bufCha.dU"] == pytest.approx(0.25)  # dTHys = 5 K: (uHigh - uLow) / 10
-    assert values["boiler_001_control.dT"] == pytest.approx(0.1)
+
+    def value(suffix: str) -> float:
+        (name,) = [name for name in smoothing if name.endswith(suffix)]
+        return float(values[name])
+
+    assert len(smoothing) == 27
+    assert value("boiler_001_control.bufCha.tau") == 10.0
+    assert value("boiler_001_control.bufCha.dU") == pytest.approx(0.5)  # dTHys = 5 K: (uHigh - uLow) / 10
+    assert value("boiler_001_control.dT") == pytest.approx(0.1)
+    assert value("boiler_control_001.hys.dU") == pytest.approx(0.049)  # demand: uLow 0.01, uHigh 0.5
+    assert value("control_1.dMax") == pytest.approx(1e-3)
     assert all(values[name] == pytest.approx(60.0) for name in smoothing if name.endswith(".dtSet"))
-    assert all(values[name] == pytest.approx(0.049) for name in smoothing if name.endswith("hys.dU"))
+    assert all(values[name] == pytest.approx(1e-3) for name in smoothing if name.endswith("emission_control_001.dY"))
 
 
 def _radiator_conductance(power: float, t_in: float, t_out: float, fraction: float, exponent: float) -> float:
