@@ -3,6 +3,8 @@
 *.html
 # figures of the documentation, written by docs_src/tutorials/figures.py
 !docs/tutorials/figures/*.html
+# figures of the validation pages, written by validation/mpc/benchmark.py and validation/fast_model/report.py
+!docs/validation/figures/*.html
 *.mat
 *.doc
 *.docx

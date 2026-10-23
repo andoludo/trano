@@ -1,0 +1,37 @@
+{
+ "case": "960",
+ "variant": "sunspace_infiltration_x2",
+ "library": "Buildings",
+ "zones": [
+  {
+   "zone": "sunspace_001",
+   "mean_temperature": 25.61300334359651,
+   "min_temperature": 2.8170283464590966,
+   "max_temperature": 46.58344114912882,
+   "heating_kwh": 0.0,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.0,
+   "peak_cooling_kw": 0.0
+  },
+  {
+   "zone": "zone_001",
+   "mean_temperature": 22.758564351064752,
+   "min_temperature": 19.999553060002484,
+   "max_temperature": 27.00025208340753,
+   "heating_kwh": 2708.1401787253735,
+   "cooling_kwh": 912.3024311830585,
+   "peak_heating_kw": 2.138014069071876,
+   "peak_cooling_kw": 1.4642774274263448
+  }
+ ],
+ "heating_kwh": 2708.1401787253735,
+ "cooling_kwh": 912.3024311830585,
+ "peak_heating_kw": 2.138014069071876,
+ "peak_cooling_kw": 1.4642774274263448,
+ "electricity_kwh": null,
+ "fuel_kwh": null,
+ "fans_kwh": null,
+ "pv_kwh": null,
+ "wall_time": 148.7,
+ "model_hash": "e27ff026a60c3556368dda5b4d8d166040d9a7ef87f6fbac3e4957640636f1ba"
+}

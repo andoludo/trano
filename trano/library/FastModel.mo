@@ -7,6 +7,7 @@ package FastModel "Building models for model predictive control: close to Buildi
   constant Real rhoWat(unit="kg/m3") = 995.586 "Density of water (Buildings.Media.Water)";
   constant Real cpAir(unit="J/(kg.K)") = 1006 "Specific heat capacity of air";
   constant Real rhoAir(unit="kg/m3") = 1.2 "Density of air";
+  constant Real RAir(unit="J/(kg.K)") = 287.0512 "Gas constant of dry air (Buildings.Media.Air)";
 
   package Icons "Icons"
     partial package Package "Package icon"
@@ -60,7 +61,24 @@ package FastModel "Building models for model predictive control: close to Buildi
       y := regStep(x2 - x1, x1, x2, deltaX);
     end smoothMin;
 
-    function smoothLimit "Once continuously differentiable limitation of x to [l, u]"
+    function smoothLimit
+      "Once continuously differentiable limitation of x to [l, u]: exactly l below l - deltaX and u above u + deltaX,
+       x between l + deltaX and u - deltaX, quadratic blends in between that never leave [l, u]"
+      input Real x;
+      input Real l;
+      input Real u;
+      input Real deltaX "Half width of the blends, below (u - l)/2";
+      output Real y;
+    protected
+      Real z "x limited from below";
+    algorithm
+      z := if x > l + deltaX then x else if x < l - deltaX then l else l + (x - l + deltaX)^2/(4*deltaX);
+      y := if z < u - deltaX then z else if z > u + deltaX then u else u - (u + deltaX - z)^2/(4*deltaX);
+    end smoothLimit;
+
+    function smoothLimitInside
+      "Once continuously differentiable limitation of x to [l + deltaX, u - deltaX], strictly inside [l, u] (for
+       arguments of functions singular at the bounds, as acos at -1 and 1)"
       input Real x;
       input Real l;
       input Real u;
@@ -68,7 +86,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       output Real y;
     algorithm
       y := smoothMin(smoothMax(x, l + deltaX, deltaX), u - deltaX, deltaX);
-    end smoothLimit;
+    end smoothLimitInside;
 
     function positivePart "Smooth max(x, 0): 0.5*(x + sqrt(x^2 + delta^2))"
       input Real x;
@@ -313,6 +331,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealOutput cosZen "Cosine of the solar zenith angle";
       RealOutput F1 "Circumsolar brightening coefficient of the Perez model";
       RealOutput F2 "Horizon brightening coefficient of the Perez model";
+      RealOutput pAtm(unit="Pa") "Atmospheric pressure";
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
           Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
@@ -339,6 +358,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealInput cosZen "Cosine of the solar zenith angle";
       RealInput F1 "Circumsolar brightening coefficient of the Perez model";
       RealInput F2 "Horizon brightening coefficient of the Perez model";
+      RealInput pAtm(unit="Pa") "Atmospheric pressure";
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
           Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
@@ -475,25 +495,45 @@ package FastModel "Building models for model predictive control: close to Buildi
   end Interfaces;
 
   package Data "Records of constructions and glazings, written by trano from the YAML file"
-    record Construction "Opaque construction: layers from the outside (side a) to the inside (side b)"
+    record Construction
+      "Opaque construction: layers from the outside (side a) to the inside (side b), each split into nSta[i] sublayers
+       of equal thickness (Buildings.HeatTransfer.Data.OpaqueConstructions.Generic and its nSta)"
       parameter Integer nLay "Number of layers";
       parameter Real x[nLay](each unit="m") "Thickness";
       parameter Real k[nLay](each unit="W/(m.K)") "Thermal conductivity";
       parameter Real c[nLay](each unit="J/(kg.K)") "Specific heat capacity";
       parameter Real d[nLay](each unit="kg/m3") "Density";
+      // the sublayers are written out, without defaults: rumoca sizes arrays and evaluates subscripts from literal
+      // parameters only
+      parameter Integer nSta[nLay]
+        "Sublayers of each layer: the states Buildings gives it, at most 3 (FastModel); 1, a node at each layer
+         boundary (FastModelMPC, whose states are decision variables of the optimal control)";
+      parameter Integer nNod "Number of sublayers, the sum of nSta";
+      parameter Integer lay[nNod] "Layer of each sublayer, from the outside";
+      parameter Integer nod[nLay + 1] "Node of each layer boundary, from the outside (nod[1] = 1)";
+      parameter Integer sub[nNod - nLay] "Nodes inside the layers, from the outside";
       parameter Real absIR_a = 0.84 "Long-wave emissivity of side a (outside)";
       parameter Real absIR_b = 0.84 "Long-wave emissivity of side b (inside)";
       parameter Real absSol_a = 0.84 "Solar absorptance of side a (outside)";
       parameter Real absSol_b = 0.84 "Solar absorptance of side b (inside)";
     end Construction;
 
-    record Glazing "Glazing: panes from the outside, angular optics at the incidence angles 0, 10, ..., 90 degrees"
+    record Glazing
+      "Glazing: panes and gas gaps from the outside (Buildings.HeatTransfer.Data.GlazingSystems.Generic), angular
+       optics at the incidence angles 0, 10, ..., 90 degrees"
       parameter Integer nPan "Number of panes";
       parameter Real x[nPan](each unit="m") "Thickness of the panes";
+      parameter Real k[nPan](each unit="W/(m.K)") "Thermal conductivity of the panes";
       parameter Real d[nPan](each unit="kg/m3") "Density of the panes";
       parameter Real c[nPan](each unit="J/(kg.K)") "Specific heat capacity of the panes";
-      parameter Real RPan[nPan](each unit="m2.K/W") "Thermal resistance of each pane";
-      parameter Real RGap[nPan - 1](each unit="m2.K/W") "Thermal resistance of each gas gap (EN 673)";
+      parameter Real xGas[nPan - 1](each unit="m") "Thickness of each gas gap";
+      parameter Real kGas[nPan - 1](each unit="W/(m.K)") "Thermal conductivity of the gas of each gap";
+      parameter Real muGas_a[nPan - 1](each unit="Pa.s") "Dynamic viscosity of the gas: a_mu + b_mu*T";
+      parameter Real muGas_b[nPan - 1](each unit="Pa.s/K") "Dynamic viscosity of the gas: a_mu + b_mu*T";
+      parameter Real cGas[nPan - 1](each unit="J/(kg.K)") "Specific heat capacity of the gas";
+      parameter Real MGas[nPan - 1](each unit="kg/mol") "Molar mass of the gas";
+      parameter Real epsGap_a[nPan - 1] "Long-wave emissivity of the pane face on the outer side of each gap";
+      parameter Real epsGap_b[nPan - 1] "Long-wave emissivity of the pane face on the inner side of each gap";
       parameter Real tau[11] "Solar transmittance at the 10 incidence angles, then hemispherical";
       parameter Real absPan[nPan, 11] "Solar absorptance of each pane at the 10 incidence angles, then hemispherical";
       parameter Real absIR_a "Long-wave emissivity of the outer pane, outside face";
@@ -508,6 +548,9 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real lon(unit="rad") = 0.0760 "Longitude (Uccle by default)";
       parameter Real timZon(unit="s") = 3600 "Time zone (offset of the standard time from UTC)";
       parameter Real alt(unit="m") = 100 "Altitude of the site";
+      parameter Real pAtm(unit="Pa") = 101325
+        "Atmospheric pressure, constant (Buildings' default; the runnable model takes the pressure of the site's
+         altitude when the YAML reads the pressure from the weather file)";
       Interfaces.RealInput TDryBul(unit="K") "Outdoor dry-bulb air temperature"
         annotation (Placement(transformation(extent={{-120,60},{-100,80}})));
       Interfaces.RealInput TBlaSky(unit="K") "Black-body sky temperature"
@@ -553,6 +596,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       weaBus.HDirNor = HDirNor;
       weaBus.HDifHor = HDifHor;
       weaBus.HGloHor = HGloHor;
+      weaBus.pAtm = pAtm;
       weaBus.lat = lat;
       // Solar position (Buildings.BoundaryConditions.SolarGeometry; the model time is the clock time of the year)
       weaBus.decAng = asin(-sin(23.45*pi/180)*cos((time/86400 + 10)*2*pi/365.25));
@@ -561,14 +605,14 @@ package FastModel "Building models for model predictive control: close to Buildi
       solTim = time - timZon + lon*43200/pi + eqnTim;
       weaBus.solHouAng = (solTim/3600 - 12)*2*pi/24;
       weaBus.cosZen = cos(lat)*cos(weaBus.decAng)*cos(weaBus.solHouAng) + sin(lat)*sin(weaBus.decAng);
-      zen = acos(Utilities.smoothLimit(weaBus.cosZen, -1, 1, 1e-6));
+      zen = acos(Utilities.smoothLimitInside(weaBus.cosZen, -1, 1, 1e-6));
       // Perez sky model (Buildings.BoundaryConditions.SolarIrradiation.BaseClasses)
       zenLim = Utilities.smoothMin(zen, pi/2, 0.01);
       relAirMas = exp(-0.0001184*alt)/(cos(zenLim) + 0.15*(93.9 - zenLim*180/pi)^(-1.253));
       skyBri = Utilities.smoothMin(HDifHor*relAirMas/(1366.1*(1 + 0.033*cos(2*pi*(solTim/86400 + 1)/365))), 1, 0.025);
       HDifHorBou = Utilities.smoothMax(HDifHor, 0.5e-4, 0.25e-4);
       tmp = 5.534e-6*(180/pi)^3*zen^3;
-      skyCle = Utilities.smoothLimit(((HDirNor + HDifHorBou)/HDifHorBou + tmp)/(1 + tmp), 1, 8, 0.01);
+      skyCle = Utilities.smoothLimitInside(((HDirNor + HDifHorBou)/HDifHorBou + tmp)/(1 + tmp), 1, 8, 0.01);
       for i in 1:7 loop
         b[i] = Utilities.regStep(edges[i] - skyCle, 1, 0, 0.01);
       end for;
@@ -642,17 +686,41 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real isFloor = if abs(sin(til)) < 1e-6 and cos(til) < 0 then 1 else 0;
     end PartialSurface;
 
-    partial model PartialOpaque "Conduction through the layers of a construction, one node at each layer boundary"
+    partial model PartialOpaque
+      "Conduction through the layers of a construction split into sublayers, a node at each sublayer boundary: the
+       temperatures of the layer boundaries are T, the same states in FastModel and FastModelMPC (a state copied
+       from one library into the other by its name stays at its place), those of the nodes inside the layers TSub"
       extends PartialSurface;
       parameter Data.Construction constructionType "Construction, layers from the outside";
       parameter Boolean stateAtSurface_a = true "Capacity at the outer surface (false: it is held at a temperature)";
+      Real TSub[constructionType.nNod - constructionType.nLay](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the nodes inside the layers, outside first (none with one sublayer a layer)";
     protected
-      parameter Integer nLay = constructionType.nLay;
-      parameter Real C[nLay + 1](each unit="J/K") = {A*((if i > 1 then constructionType.x[i - 1]*constructionType.d[i - 1]
-        *constructionType.c[i - 1]/2 else 0) + (if i <= nLay then constructionType.x[i]*constructionType.d[i]
-        *constructionType.c[i]/2 else 0)) for i in 1:nLay + 1} "Capacity of each node";
-      parameter Real G[nLay](each unit="W/K") = {A*constructionType.k[i]/constructionType.x[i] for i in 1:nLay}
-        "Conductance of each layer";
+      parameter Integer nLay = constructionType.nLay "Number of layers";
+      parameter Integer nSub = constructionType.nNod "Number of sublayers, between nSub + 1 nodes";
+      parameter Real x[nSub](each unit="m") = {constructionType.x[constructionType.lay[j]]
+        /constructionType.nSta[constructionType.lay[j]] for j in 1:nSub} "Thickness of each sublayer";
+      parameter Real k[nSub](each unit="W/(m.K)") = {constructionType.k[constructionType.lay[j]] for j in 1:nSub};
+      parameter Real c[nSub](each unit="J/(kg.K)") = {constructionType.c[constructionType.lay[j]] for j in 1:nSub};
+      parameter Real d[nSub](each unit="kg/m3") = {constructionType.d[constructionType.lay[j]] for j in 1:nSub};
+      parameter Real C[nSub + 1](each unit="J/K") = {A*((if i > 1 then x[i - 1]*d[i - 1]*c[i - 1]/2 else 0)
+        + (if i <= nSub then x[i]*d[i]*c[i]/2 else 0)) for i in 1:nSub + 1}
+        "Capacity of each node: half of each adjacent sublayer";
+      parameter Real G[nSub](each unit="W/K") = {A*k[i]/x[i] for i in 1:nSub} "Conductance of each sublayer";
+      Real TNod[nSub + 1](each unit="K") "Temperature of every node, outside first";
+      Real QNod[nSub + 1](each unit="W") "Heat into every node from its sublayers and, at the surfaces, Q_a and Q_b";
+      Real Q_a(unit="W") "Heat into the outer surface from the outside";
+      Real Q_b(unit="W") "Heat into the inner surface from the room";
+    equation
+      // the subscripts are bounded in both branches: OpenModelica checks the branch that is not taken
+      for j in 1:nSub + 1 loop
+        QNod[j] = (if j > 1 then G[max(j - 1, 1)]*(TNod[max(j - 1, 1)] - TNod[j]) else Q_a)
+          - (if j <= nSub then G[min(j, nSub)]*(TNod[j] - TNod[min(j + 1, nSub + 1)]) else -Q_b);
+      end for;
+      for m in 1:nSub - nLay loop
+        TNod[constructionType.sub[m]] = TSub[m];
+        C[constructionType.sub[m]]*der(TSub[m]) = QNod[constructionType.sub[m]];
+      end for;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{0,80},{80,-80}}, fillColor={175,175,175}, fillPattern=FillPattern.Solid,
             lineColor={175,175,175}),
@@ -676,7 +744,8 @@ package FastModel "Building models for model predictive control: close to Buildi
 
     model OuterWall "Exterior wall or roof: wind and sky at the outside, sun, conduction, room exchanges"
       extends PartialOpaque;
-      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, outside first";
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the layer boundaries, outside first";
       BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the outer surface"
         annotation (Placement(transformation(extent={{-70,60},{-50,80}})));
       Real QSol(unit="W") "Absorbed solar radiation";
@@ -691,11 +760,12 @@ package FastModel "Building models for model predictive control: close to Buildi
       QExt = Functions.exteriorExchange(T[1], A, til, azi, cExtPos, cExtNeg, constructionType.absIR_a, propsBus_a.hConExt,
         propsBus_a.wea.TDryBul, propsBus_a.wea.TBlaSky, propsBus_a.wea.winSpe, propsBus_a.wea.winDir);
       QInt = Functions.interiorConvection(T[nLay + 1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
-      C[1]*der(T[1]) = QSol - QExt - G[1]*(T[1] - T[2]);
-      for i in 2:nLay loop
-        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
+      Q_a = QSol - QExt;
+      Q_b = propsBus_a.rad.Q_flow - QInt;
+      for b in 1:nLay + 1 loop
+        TNod[constructionType.nod[b]] = T[b];
+        C[constructionType.nod[b]]*der(T[b]) = QNod[constructionType.nod[b]];
       end for;
-      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
       propsBus_a.rad.T = T[nLay + 1];
       propsBus_a.A = A;
@@ -714,20 +784,19 @@ package FastModel "Building models for model predictive control: close to Buildi
       extends PartialOpaque(final stateAtSurface_a=false);
       parameter Boolean outdoorAir = false "true: the outer surface at the outdoor air temperature";
       parameter Real TGro(unit="K") = 283.15 "Ground temperature";
-      Real T[nLay](each unit="K", each start=T_start, each fixed=true) "Node temperatures, the outer surface excluded";
+      Real T[nLay](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the layer boundaries, the outer surface excluded";
       Real QInt(unit="W") "Heat from the inner surface to the room air";
-    protected
-      Real TNod[nLay + 1](each unit="K") "Node temperatures, the outer surface first";
     equation
       TNod[1] = if outdoorAir then propsBus_a.wea.TDryBul else TGro;
-      for i in 1:nLay loop
-        TNod[i + 1] = T[i];
-      end for;
+      // the outer surface is held at its temperature: its balance is not solved
+      Q_a = 0;
       QInt = Functions.interiorConvection(T[nLay] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
-      for i in 1:nLay - 1 loop
-        der(T[i]) = (G[i]*(TNod[i] - T[i]) - G[i + 1]*(T[i] - T[i + 1]))/C[i + 1];
+      Q_b = propsBus_a.rad.Q_flow - QInt;
+      for b in 2:nLay + 1 loop
+        TNod[constructionType.nod[b]] = T[b - 1];
+        C[constructionType.nod[b]]*der(T[b - 1]) = QNod[constructionType.nod[b]];
       end for;
-      C[nLay + 1]*der(T[nLay]) = G[nLay]*(TNod[nLay] - T[nLay]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
       propsBus_a.rad.T = T[nLay];
       propsBus_a.A = A;
@@ -744,15 +813,17 @@ package FastModel "Building models for model predictive control: close to Buildi
 
     model AdiabaticWall "Wall without heat flow through its outer surface"
       extends PartialOpaque;
-      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, outside first";
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the layer boundaries, outside first";
       Real QInt(unit="W") "Heat from the inner surface to the room air";
     equation
       QInt = Functions.interiorConvection(T[nLay + 1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
-      C[1]*der(T[1]) = -G[1]*(T[1] - T[2]);
-      for i in 2:nLay loop
-        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
+      Q_a = 0;
+      Q_b = propsBus_a.rad.Q_flow - QInt;
+      for b in 1:nLay + 1 loop
+        TNod[constructionType.nod[b]] = T[b];
+        C[constructionType.nod[b]]*der(T[b]) = QNod[constructionType.nod[b]];
       end for;
-      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
       propsBus_a.rad.T = T[nLay + 1];
       propsBus_a.A = A;
@@ -772,7 +843,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real absSol = 0.84 "Solar absorptance of both faces (Buildings surBou)";
       Interfaces.SurfaceBus propsBus_b "Connection to the zone of side b"
         annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
-      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, side a first";
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the layer boundaries, side a first";
       Real QInt_a(unit="W") "Heat from side a to the air of its zone";
       Real QInt_b(unit="W") "Heat from side b to the air of its zone";
     protected
@@ -782,11 +854,12 @@ package FastModel "Building models for model predictive control: close to Buildi
     equation
       QInt_a = Functions.interiorConvection(T[1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
       QInt_b = Functions.interiorConvection(T[nLay + 1] - propsBus_b.con.T, A, cPos_b, cNeg_b, propsBus_b.hConInt);
-      C[1]*der(T[1]) = -G[1]*(T[1] - T[2]) - QInt_a + propsBus_a.rad.Q_flow;
-      for i in 2:nLay loop
-        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
+      Q_a = propsBus_a.rad.Q_flow - QInt_a;
+      Q_b = propsBus_b.rad.Q_flow - QInt_b;
+      for b in 1:nLay + 1 loop
+        TNod[constructionType.nod[b]] = T[b];
+        C[constructionType.nod[b]]*der(T[b]) = QNod[constructionType.nod[b]];
       end for;
-      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt_b + propsBus_b.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt_a;
       propsBus_a.rad.T = T[1];
       propsBus_a.A = A;
@@ -814,6 +887,19 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real hFraExt(unit="W/(m2.K)") = 25 "Exterior film coefficient of the frame";
       parameter Real hFraInt(unit="W/(m2.K)") = 7.7 "Interior film coefficient of the frame";
       parameter Real cGla(unit="J/(kg.K)") = 720 "Specific heat capacity of glass when the glazing gives none";
+      parameter Real hWin(unit="m") = sqrt(A) "Height of the window: the aspect ratio of its gas gaps";
+      parameter Real wWin(unit="m") = A/hWin "Width of the window";
+      parameter Boolean haveOverhang = false "true: an overhang shades the window (Buildings Overhang)"
+        annotation (Evaluate=true);
+      parameter Real depOve(unit="m") = 0 "Depth of the overhang";
+      parameter Real gapOve(unit="m") = 0 "Distance between the top of the window and the overhang";
+      parameter Real wLOve(unit="m") = 0 "Extension of the overhang beyond the left edge, seen from outside";
+      parameter Real wROve(unit="m") = 0 "Extension of the overhang beyond the right edge, seen from outside";
+      parameter Boolean haveSideFins = false "true: side fins shade the window (Buildings SideFins)"
+        annotation (Evaluate=true);
+      parameter Real depFin(unit="m") = 0 "Depth of the side fins";
+      parameter Real gapFin(unit="m") = 0 "Distance between the window edges and the fins";
+      parameter Real hFin(unit="m") = 0 "Extension of the fins above the top of the window";
       Real T[glazing.nPan](each unit="K", each start=T_start, each fixed=true) "Pane temperatures, outside first";
       BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the window"
         annotation (Placement(transformation(extent={{-70,60},{-50,80}})));
@@ -821,14 +907,28 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real QInt(unit="W") "Heat from the inner pane to the room air";
       Real QFra(unit="W") "Heat through the frame, from the room air to the outside";
       Real cosInc "Cosine of incidence, 0 when the sun is behind the window";
+      Real fraSun "Fraction of the glass lit by the direct sun (1 without overhang or side fins)";
     protected
       constant Real cosAng[10] = {cos(i*pi/18) for i in 0:9} "Cosine of the tabulated incidence angles";
+      Real alt(unit="rad") "Solar altitude";
+      Real verAzi(unit="rad") "Angle between the horizontal projection of the sun's rays and the wall normal";
+      Real side "Horizontal component of the sun's direction to the left of the normal, seen from outside";
       parameter Integer nPan = glazing.nPan;
       parameter Real AGla(unit="m2") = A*(1 - frac) "Glass area";
       parameter Real CPan[nPan](each unit="J/K") = {AGla*glazing.x[i]*glazing.d[i]*(if glazing.c[i] > 0 then glazing.c[i]
         else cGla) for i in 1:nPan} "Capacity of each pane";
-      parameter Real GGap[nPan - 1](each unit="W/K") = {AGla/(glazing.RPan[i]/2 + glazing.RGap[i] + glazing.RPan[i + 1]/2)
-        for i in 1:nPan - 1} "Conductance between two panes";
+      parameter Real RPan[nPan](each unit="m2.K/W") = {glazing.x[i]/glazing.k[i] for i in 1:nPan}
+        "Thermal resistance of each pane";
+      parameter Real hGap0[nPan - 1](each unit="W/(m2.K)") = {Functions.gapConductance(
+        283.15 + 7.5/max(nPan - 1, 1), 283.15 - 7.5/max(nPan - 1, 1), glazing.xGas[i], glazing.kGas[i],
+        glazing.muGas_a[i], glazing.muGas_b[i], glazing.cGas[i], glazing.MGas[i], glazing.epsGap_a[i],
+        glazing.epsGap_b[i], hWin) for i in 1:nPan - 1}
+        "Conductance of each gap at the reference state of EN 673: mean 10 degC, 15 K across the glazing";
+      parameter Real RGap0[nPan - 1](each unit="m2.K/W") = {RPan[i]/2 + 1/hGap0[i] + RPan[i + 1]/2 for i in 1:nPan - 1}
+        "Resistance between the centres of two panes at the reference state";
+      parameter Real GGap[nPan - 1](each unit="W/K") = {AGla/RGap0[i] for i in 1:nPan - 1}
+        "Conductance between two panes at the reference state: the scale of the exchange (calibration)";
+      Real hGap[nPan - 1](each unit="W/(m2.K)") "Conductance of each gap at the current temperatures of its panes";
       parameter Real tauCoe[5] = Utilities.polynomialFit(cosAng, glazing.tau[1:10])
         "Direct transmittance in cos(inc)";
       parameter Real absCoe[nPan, 5] = {Utilities.polynomialFit(cosAng, glazing.absPan[i, 1:10]) for i in 1:nPan}
@@ -837,25 +937,46 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real cExtPos = Utilities.convectionCoefficient(pi - til, true);
       parameter Real cExtNeg = Utilities.convectionCoefficient(pi - til, false);
       Real QAbs[nPan](each unit="W") "Absorbed solar radiation of each pane";
+      Real QIn[nPan + 1](each unit="W")
+        "Heat flowing inwards across each interface: outside to the outer pane, between panes, inner pane to the room";
     equation
       connect(propsBus_a.wea, sol.weaBus);
       cosInc = Utilities.positivePart(sol.cosInc, 1e-2);
+      // shading by an overhang and side fins (Buildings FixedShade): the direct irradiance of the lit fraction of the
+      // glass, the diffuse irradiance unchanged
+      alt = asin(Utilities.smoothLimitInside(propsBus_a.wea.cosZen, -1, 1, 1e-4));
+      verAzi = acos(Utilities.smoothLimitInside(sol.cosInc/Utilities.smoothMax(cos(alt), 1e-3, 1e-4), -1, 1, 1e-4));
+      side = cos(propsBus_a.wea.decAng)*sin(propsBus_a.wea.solHouAng)*cos(azi) + (sin(propsBus_a.wea.decAng)
+        *cos(propsBus_a.wea.lat) - cos(propsBus_a.wea.decAng)*cos(propsBus_a.wea.solHouAng)*sin(propsBus_a.wea.lat))
+        *sin(azi);
+      fraSun = if haveOverhang and haveSideFins then Utilities.smoothMax(
+          Functions.overhangSunlitFraction(verAzi, alt, side, hWin, wWin, depOve, gapOve, wLOve, wROve)
+          + Functions.sideFinsSunlitFraction(verAzi, alt, hWin, wWin, depFin, gapFin, hFin) - 1, 1e-3, 5e-4)
+        elseif haveOverhang then Functions.overhangSunlitFraction(verAzi, alt, side, hWin, wWin, depOve, gapOve, wLOve,
+          wROve)
+        elseif haveSideFins then Functions.sideFinsSunlitFraction(verAzi, alt, hWin, wWin, depFin, gapFin, hFin)
+        else 1;
       for i in 1:nPan loop
-        QAbs[i] = AGla*(sol.HDir*Utilities.polynomial(absCoe[i, :], cosInc) + sol.HDif*glazing.absPan[i, 11]);
+        QAbs[i] = AGla*(fraSun*sol.HDir*Utilities.polynomial(absCoe[i, :], cosInc) + sol.HDif*glazing.absPan[i, 11]);
       end for;
       QExt = AGla*(4 + 4*sqrt(propsBus_a.wea.winSpe^2 + 0.01))*(T[1] - propsBus_a.wea.TDryBul)
         + Functions.skyExchange(T[1], AGla, til, glazing.absIR_a, propsBus_a.wea.TDryBul, propsBus_a.wea.TBlaSky);
       QInt = Functions.interiorConvection(T[nPan] - propsBus_a.con.T, AGla, cIntPos, cIntNeg, propsBus_a.hConInt);
       QFra = GFra*(propsBus_a.con.T - propsBus_a.wea.TDryBul);
-      if nPan == 1 then
-        CPan[1]*der(T[1]) = QAbs[1] - QExt - QInt + propsBus_a.rad.Q_flow;
-      else
-        CPan[1]*der(T[1]) = QAbs[1] - QExt - GGap[1]*(T[1] - T[2]);
-        for i in 2:nPan - 1 loop
-          der(T[i]) = (QAbs[i] + GGap[i - 1]*(T[i - 1] - T[i]) - GGap[i]*(T[i] - T[i + 1]))/CPan[i];
-        end for;
-        CPan[nPan]*der(T[nPan]) = QAbs[nPan] + GGap[nPan - 1]*(T[nPan - 1] - T[nPan]) - QInt + propsBus_a.rad.Q_flow;
-      end if;
+      // one balance per pane, without a branch on the number of panes: a single pane has no gap, and the branch of
+      // several panes would index GGap[1] and T[2], which OpenModelica rejects even when the branch is not taken
+      QIn[1] = -QExt;
+      for i in 1:nPan - 1 loop
+        // the long-wave exchange across a gap grows as T^3 and its convection with the temperature difference: a
+        // sun-lit glazing at 40 degC conducts a fifth more than at the reference state
+        hGap[i] = Functions.gapConductance(T[i], T[i + 1], glazing.xGas[i], glazing.kGas[i], glazing.muGas_a[i],
+          glazing.muGas_b[i], glazing.cGas[i], glazing.MGas[i], glazing.epsGap_a[i], glazing.epsGap_b[i], hWin);
+        QIn[i + 1] = GGap[i]*RGap0[i]/(RPan[i]/2 + 1/hGap[i] + RPan[i + 1]/2)*(T[i] - T[i + 1]);
+      end for;
+      QIn[nPan + 1] = QInt - propsBus_a.rad.Q_flow;
+      for i in 1:nPan loop
+        CPan[i]*der(T[i]) = QAbs[i] + QIn[i] - QIn[i + 1];
+      end for;
       // the room air loses the heat that leaves through the frame and takes the heat of the inner pane
       propsBus_a.con.Q_flow = QFra - QInt;
       propsBus_a.rad.T = T[nPan];
@@ -864,7 +985,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       propsBus_a.absSol = glazing.absPan[nPan, 11];
       propsBus_a.tauSol = glazing.tau[11];
       propsBus_a.isFloor = 0;
-      propsBus_a.QTraDir = AGla*sol.HDir*Utilities.polynomial(tauCoe, cosInc);
+      propsBus_a.QTraDir = AGla*fraSun*sol.HDir*Utilities.polynomial(tauCoe, cosInc);
       propsBus_a.QTraDif = AGla*sol.HDif*glazing.tau[11];
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Line(points={{-37,-44},{14,-44}}, color={0,0,0}),
@@ -913,8 +1034,137 @@ package FastModel "Building models for model predictive control: close to Buildi
         Real TEnv;
       algorithm
         TEnv := (vieFacSky*TBlaSky^4 + (1 - vieFacSky)*TOut^4)^0.25;
-        Q_flow := 4*sigma*eps*A*TEnv^3*(T - TEnv);
+        // exact grey-body exchange with the environment, sigma*eps*A*(T^4 - TEnv^4), written as a conductance times
+        // the temperature difference: a sun-lit surface at 60 degC loses a quarter more than the linearisation at TEnv
+        Q_flow := sigma*eps*A*(T^2 + TEnv^2)*(T + TEnv)*(T - TEnv);
       end skyExchange;
+
+      function gapConductance
+        "Conductance of a vertical gas gap between two panes per unit area: convection of the gas
+         (Buildings.HeatTransfer.Windows.BaseClasses.GasConvection and convectionVerticalCavity) and long-wave
+         exchange between the two panes, opaque to it, at their temperatures (Buildings exchanges exactly)"
+        input Real T_a(unit="K") "Temperature of the pane on the outer side";
+        input Real T_b(unit="K") "Temperature of the pane on the inner side";
+        input Real x(unit="m") "Thickness of the gap";
+        input Real k(unit="W/(m.K)") "Thermal conductivity of the gas";
+        input Real mu_a(unit="Pa.s") "Dynamic viscosity of the gas: mu_a + mu_b*T";
+        input Real mu_b(unit="Pa.s/K");
+        input Real c(unit="J/(kg.K)") "Specific heat capacity of the gas";
+        input Real MM(unit="kg/mol") "Molar mass of the gas";
+        input Real eps_a "Long-wave emissivity of the face of the outer pane";
+        input Real eps_b "Long-wave emissivity of the face of the inner pane";
+        input Real h(unit="m") "Height of the gap";
+        output Real hGap(unit="W/(m2.K)");
+      protected
+        Real T_m(unit="K") = (T_a + T_b)/2 "Mean temperature of the gas";
+        Real rho(unit="kg/m3") "Density of the gas at atmospheric pressure (Buildings.HeatTransfer.Data.Gases)";
+        Real Ra "Rayleigh number, at least 100 as Buildings";
+        Real Nu "Nusselt number";
+      algorithm
+        rho := 101325*MM/(8.314462618*T_m);
+        // |T_a - T_b| regularised at 0.1 K: smooth when both panes are at the same temperature
+        Ra := Utilities.smoothMax(rho^2*x^3*9.80665*c*sqrt((T_a - T_b)^2 + 0.01)/(T_m*(mu_a + mu_b*T_m)*k), 100, 10);
+        // Wright's correlations of the vertical cavity, blended over 100 around Ra = 1E4 and 5E4 as Buildings,
+        // against the correlation of the tall cavity
+        Nu := Utilities.smoothMax(
+          Utilities.regStep(Ra - 5E4, 0.0673838*Ra^(1/3),
+            Utilities.regStep(Ra - 1E4, 0.028154*Ra^0.4134, 1 + 1.7596678E-10*Ra^2.2984755, 100), 100),
+          0.242*(Ra*x/h)^0.272, 0.1);
+        hGap := Nu*k/x + sigma*(T_a^2 + T_b^2)*(T_a + T_b)/(1/eps_a + 1/eps_b - 1);
+      end gapConductance;
+
+      function overhangSunlitFraction
+        "Fraction of a window lit by the direct sun below an overhang: the superposition of rectangles of
+         Buildings.HeatTransfer.Windows.BaseClasses.Overhang, with its smooth minima, maxima and steps, explicit"
+        input Real verAzi(unit="rad") "Angle between the horizontal projection of the sun's rays and the wall normal";
+        input Real alt(unit="rad") "Solar altitude";
+        input Real side "Positive when the sun is left of the normal, seen from outside: the width wL shades";
+        input Real hWin(unit="m") "Window height";
+        input Real wWin(unit="m") "Window width";
+        input Real dep(unit="m") "Depth of the overhang";
+        input Real gap(unit="m") "Distance between the top of the window and the overhang";
+        input Real wL(unit="m") "Extension of the overhang beyond the left edge of the window";
+        input Real wR(unit="m") "Extension of the overhang beyond the right edge of the window";
+        output Real fraSun "Sunlit fraction of the window area";
+      protected
+        Real AWin(unit="m2") = hWin*wWin;
+        Real del(unit="m") = wWin/100 "Width over which the minima and maxima are smoothed";
+        Real w(unit="m") "wL or wR, depending on the side of the sun";
+        Real tmpH[4](each unit="m") "Heights of the rectangles of the superposition";
+        Real tmpW[4](each unit="m") "Widths of the rectangles of the superposition";
+        Real y1(unit="m") "Vertical distance between the overhang and the lower edge of its shadow";
+        Real x1(unit="m") "Horizontal distance between the window side and the corner of the shadow";
+        Real ratio "y1/x1";
+        Real x2(unit="m") "Where the shadow line crosses the lower edge of a rectangle";
+        Real cut(unit="m");
+        Real area[4](each unit="m2") "Shaded areas of the rectangles";
+        Real shdArea(unit="m2");
+      algorithm
+        w := Utilities.regStep(side, wL, wR, 0.005);
+        tmpH := {gap, gap + hWin, gap, gap + hWin};
+        tmpW := {w + wWin, w, w, w + wWin};
+        // tan(alt)/cos(verAzi) and tan(verAzi), bounded when the sun grazes the wall or stands behind it
+        y1 := dep*sin(alt)/Utilities.smoothMax(cos(alt), 1e-3, 1e-4)/Utilities.smoothMax(cos(verAzi), 1e-3, 1e-4);
+        x1 := dep*sin(verAzi)/Utilities.smoothMax(cos(verAzi), 1e-3, 1e-4);
+        ratio := y1/Utilities.smoothMax(x1, 1e-8*hWin, 1e-9*hWin);
+        for i in 1:4 loop
+          x2 := x1*tmpH[i]/Utilities.smoothMax(y1, 1e-8*hWin, 1e-9*hWin);
+          cut := Utilities.smoothMin(x1, x2, del) - tmpW[i];
+          area[i] := Utilities.smoothMin(y1, tmpH[i], del)*tmpW[i]
+            - Utilities.smoothMin(y1, tmpH[i], del)*Utilities.smoothMin(x2, y1, del)/2
+            + Utilities.smoothMax(ratio*cut, 0, del)*Utilities.smoothMax(cut, 0, del)/2;
+        end for;
+        shdArea := area[4] + area[3] - area[2] - area[1];
+        // all in the shade with the sun behind the wall or below the horizon
+        fraSun := Utilities.smoothMin(Utilities.smoothMax(1 - Utilities.smoothMax(
+          Utilities.regStep(pi/2 - verAzi, shdArea, AWin, 0.01), Utilities.regStep(alt, shdArea, AWin, 0.01), 0.01)/AWin,
+          0, 0.01), 1, 0.01);
+      end overhangSunlitFraction;
+
+      function sideFinsSunlitFraction
+        "Fraction of a window lit by the direct sun between two side fins: the superposition of rectangles of
+         Buildings.HeatTransfer.Windows.BaseClasses.SideFins, with its smooth minima, maxima and steps, explicit"
+        input Real verAzi(unit="rad") "Angle between the horizontal projection of the sun's rays and the wall normal";
+        input Real alt(unit="rad") "Solar altitude";
+        input Real hWin(unit="m") "Window height";
+        input Real wWin(unit="m") "Window width";
+        input Real dep(unit="m") "Depth of the fins";
+        input Real gap(unit="m") "Distance between the window edges and the fins";
+        input Real h(unit="m") "Extension of the fins above the top of the window";
+        output Real fraSun "Sunlit fraction of the window area";
+      protected
+        constant Real delta = 1e-6 "Small number to avoid a division by zero";
+        Real AWin(unit="m2") = hWin*wWin;
+        Real del(unit="m") = wWin/100 "Width over which the minima and maxima are smoothed";
+        Real tmpH[4](each unit="m") = {h + hWin, h, h + hWin, h} "Heights of the rectangles of the superposition";
+        Real tmpW[4](each unit="m") = {gap + wWin, gap + wWin, gap, gap} "Widths of the rectangles of the superposition";
+        Real verAzi_t "tan(verAzi), at least delta";
+        Real verAzi_c "cos(verAzi), at least delta";
+        Real alt_t "tan(alt), at least delta";
+        Real lambda_t "Tangent of the angle between the horizontal and the sun's rays projected on the wall";
+        Real y2(unit="m") "Vertical distance between the top of a fin and the corner of its shadow";
+        Real x2(unit="m") "Horizontal distance between a fin and the corner of its shadow";
+        Real minX(unit="m");
+        Real minY(unit="m");
+        Real area[4](each unit="m2") "Shaded areas of the rectangles";
+        Real shdArea(unit="m2");
+      algorithm
+        verAzi_c := Utilities.smoothMax(cos(verAzi), delta, delta/10);
+        verAzi_t := Utilities.smoothMax(sin(verAzi)/Utilities.smoothMax(cos(verAzi), 1e-3, 1e-4), delta, delta/10);
+        alt_t := Utilities.smoothMax(sin(alt)/Utilities.smoothMax(cos(alt), 1e-3, 1e-4), delta, delta/10);
+        lambda_t := Utilities.smoothMax(alt_t/verAzi_t, delta, delta/10);
+        y2 := dep*alt_t/verAzi_c;
+        x2 := dep*verAzi_t;
+        for i in 1:4 loop
+          minX := Utilities.smoothMin(tmpH[i]/lambda_t, Utilities.smoothMin(x2, tmpW[i], del), del);
+          minY := Utilities.smoothMin(tmpH[i], Utilities.smoothMin(y2, tmpW[i]*lambda_t, del), del);
+          area[i] := tmpH[i]*minX - minX*minY/2;
+        end for;
+        shdArea := area[1] + area[4] - area[2] - area[3];
+        // all in the shade with the sun behind the wall or below the horizon
+        fraSun := 1 - Utilities.smoothMax(Utilities.regStep(pi/2 - verAzi, shdArea, AWin, 0.01),
+          Utilities.regStep(alt, shdArea, AWin, 0.01), 1e-4*AWin)/AWin;
+      end sideFinsSunlitFraction;
 
       function exteriorExchange
         "Heat from an outer surface to the outside: natural and wind-driven convection (Buildings TemperatureWind)
@@ -955,11 +1205,17 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real hRoo(unit="m") "Height";
       parameter Real V(unit="m3") = AFlo*hRoo "Air volume";
       parameter Real ACH(unit="1/h") = 0 "Air changes per hour by infiltration of outdoor air";
+      parameter Real ventilationSchedule[:, 2] = [0, 0]
+        "Day schedule of outdoor air brought in on top of the infiltration (night ventilation): time since midnight [s]
+         and mass flow rate [kg/s], repeated daily; a step where the table repeats an instant, as trano's Buildings zone";
       parameter Real mSenFac = 1 "Factor for the sensible heat capacity of the air";
       parameter Real T_start(unit="K") = 294.15 "Initial temperature";
       parameter Real hConInt(unit="W/(m2.K)") = 0 "Fixed interior convection coefficient, 0 for the natural law";
       parameter Real hConExt(unit="W/(m2.K)") = 0 "Fixed exterior convection coefficient, 0 for the wind law";
       parameter Real T0Rad(unit="K") = 293.15 "Linearization temperature of the long-wave exchange";
+      parameter Boolean linearizeRadiation = true
+        "true: the long-wave exchange is linearised at T0Rad (Buildings' default); false: at the current mean surface
+         temperature of the zone, close to the exact exchange of Buildings when it does not linearise";
       Interfaces.WeatherBusIn weaBus "Weather"
         annotation (Placement(transformation(extent={{-90,90},{-70,110}})));
       Interfaces.ZoneSurfaceBus propsBus[nSurf] "Surfaces"
@@ -973,6 +1229,9 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real TAir(unit="K", start=T_start, fixed=true) "Zone air temperature";
       Real TRad(unit="K") "Radiant star temperature";
       Real QVen(unit="W") "Heat brought by the ventilation";
+      Real TLin(unit="K") "Temperature at which the long-wave exchange is linearised";
+      Real mVen_flow(unit="kg/s") "Scheduled outdoor air flow";
+      Real rho(unit="kg/m3") "Density of the zone air at the pressure of the site (ideal gas, Buildings.Media.Air)";
     protected
       Real G[nSurf](each unit="W/K") "Long-wave conductance of each surface to the star";
       Real QDir(unit="W") "Transmitted direct solar radiation";
@@ -982,11 +1241,14 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real kDif[nSurf] "Share of the diffuse radiation absorbed by each surface";
       Real kDir[nSurf] "Share of the direct radiation absorbed by each surface (floors first)";
     equation
+      // the mean surface temperature, weighted as the exchange: explicit in the states of the surfaces
+      TLin = if linearizeRadiation then T0Rad else sum(propsBus[i].epsLw*propsBus[i].A*propsBus[i].rad.T
+        for i in 1:nSurf)/sum(propsBus[i].epsLw*propsBus[i].A for i in 1:nSurf);
       for i in 1:nSurf loop
         connect(weaBus, propsBus[i].wea);
         propsBus[i].hConInt = hConInt;
         propsBus[i].hConExt = hConExt;
-        G[i] = 4*sigma*T0Rad^3*propsBus[i].epsLw*propsBus[i].A;
+        G[i] = 4*sigma*TLin^3*propsBus[i].epsLw*propsBus[i].A;
         propsBus[i].con.T = TAir;
       end for;
       // Long-wave exchange through a radiant star: the exact equivalent of Buildings' linearized radiosity exchange
@@ -1007,8 +1269,12 @@ package FastModel "Building models for model predictive control: close to Buildi
         propsBus[i].rad.Q_flow = -(G[i]*(TRad - propsBus[i].rad.T) + kDir[i]*QDir + kDif[i]*QDif);
       end for;
       // Air
-      mSenFac*rhoAir*cpAir*V*der(TAir) = sum(propsBus[i].con.Q_flow for i in 1:nSurf) + heaPorAir.Q_flow + AFlo*qGai_flow.QCon
-        + rhoAir*cpAir*V*ACH/3600*(weaBus.TDryBul - TAir) + QVen;
+      mVen_flow = Utilities.dayTable(Utilities.timeOfDay(time), ventilationSchedule);
+      // the infiltration is a volume flow of zone air (Buildings: ACH*V*density(pAtm, TAir)): at 1600 m it carries
+      // a fifth less heat than with the density of sea level
+      rho = weaBus.pAtm/(RAir*TAir);
+      mSenFac*rho*cpAir*V*der(TAir) = sum(propsBus[i].con.Q_flow for i in 1:nSurf) + heaPorAir.Q_flow + AFlo*qGai_flow.QCon
+        + (rho*V*ACH/3600 + mVen_flow)*cpAir*(weaBus.TDryBul - TAir) + QVen;
       heaPorAir.T = TAir;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-80,-80},{80,80}}, lineColor={95,95,95}, fillColor={95,95,95},
@@ -1140,10 +1406,12 @@ package FastModel "Building models for model predictive control: close to Buildi
 
     partial model PartialLink
       "Pressure-driven outlets of a component without resistance in Buildings: a small linear one, dpLink at the
-       nominal flow of each outlet"
+       nominal flow of each outlet. It must stay small against the branches it feeds: at 1000 Pa, the manifold of six
+       radiators of the renovated house took a fifth of the head of the living room branch, whose valve then opened
+       fully a third more often than in Buildings"
       extends PartialConserving(final GHyd=nPorts_b*GLink);
       parameter Real m_flow_nominal(unit="kg/s") = 0.15 "Nominal flow";
-      parameter Real dpLink(unit="Pa") = 1000 "Pressure drop at the nominal flow (pressure-driven flows)";
+      parameter Real dpLink(unit="Pa") = 100 "Pressure drop at the nominal flow (pressure-driven flows)";
       final parameter Real GLink(unit="kg/(s.Pa)") = m_flow_nominal/nPorts_b/dpLink "Conductance of each outlet";
     equation
       if pressureDriven then
@@ -1752,7 +2020,7 @@ package FastModel "Building models for model predictive control: close to Buildi
        capacity) charging a mixed buffer; with set flows, the reference of its circuit (no mass balance)"
       extends PartialFlow(final GHyd=GLink);
       parameter Real m_flow_nominal(unit="kg/s") = Q_flow_nominal/cpWat/5 "Nominal flow of the heating circuit";
-      parameter Real dpLink(unit="Pa") = 1000
+      parameter Real dpLink(unit="Pa") = 100
         "Pressure drop at the nominal flow (pressure-driven flows; the heating side of Buildings has none)";
       final parameter Real GLink(unit="kg/(s.Pa)") = m_flow_nominal/dpLink;
       parameter Real Q_flow_nominal(unit="W") "Heating capacity at the design outdoor and supply temperatures"
@@ -1931,7 +2199,10 @@ package FastModel "Building models for model predictive control: close to Buildi
 
   package Controls
     "Controllers of the closed-loop model: the controls of trano's Buildings models without events (smooth limits
-     and set point changes, hysteresis as fast bistable states, anti-windup PI)"
+     and set point changes, hysteresis as fast bistable states, anti-windup PI). The width of every smooth transition
+     and the switching time of every hysteresis are parameters (dU, dY, dMax, dT, dtSet, tau), at values that
+     reproduce the switching controllers by default; wider transitions and slower switches give a controller that
+     collocation and gradient-based calibration can follow"
     function smoothMaxN "Smooth maximum of a vector"
       input Real u[:];
       input Real delta = 1e-3;
@@ -1949,12 +2220,13 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real uLow "Threshold of the switch to 0";
       parameter Real uHigh "Threshold of the switch to 1";
       parameter Real tau(unit="s") = 10 "Switching time";
+      parameter Real dU = (uHigh - uLow)/10 "Half-width of the smooth transition of the switch";
       parameter Real y_start = 0 "Initial output";
       Interfaces.RealInput u
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Real y(start=y_start, fixed=true);
     equation
-      tau*der(y) = Utilities.regStep(u - (uHigh + (uLow - uHigh)*y), 1, 0, (uHigh - uLow)/10) - y;
+      tau*der(y) = Utilities.regStep(u - (uHigh + (uLow - uHigh)*y), 1, 0, dU) - y;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,100},{100,-100}}, lineColor={0,0,0}, fillColor={210,210,210},
             fillPattern=FillPattern.Solid, borderPattern=BorderPattern.Raised),
@@ -1987,6 +2259,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real Ni = 0.9 "Anti-windup gain";
       parameter Real yReset = yMin "Output after a reset";
       parameter Real tauReset(unit="s") = 30 "Time constant of the reset while disabled";
+      parameter Real dY = 1e-3*(yMax - yMin) "Width of the smooth limits";
       Interfaces.RealInput e "Control error"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Interfaces.RealInput enable "1: integrate, 0: reset"
@@ -1997,7 +2270,7 @@ package FastModel "Building models for model predictive control: close to Buildi
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
       yUnl = k*(e + I);
-      y = Utilities.smoothLimit(yUnl, yMin, yMax, 1e-3*(yMax - yMin));
+      y = Utilities.smoothLimit(yUnl, yMin, yMax, dY);
       der(I) = enable*(e/Ti + (y - yUnl)/(k*Ni*Ti)) + (1 - enable)*(yReset/k - e - I)/tauReset;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
@@ -2022,13 +2295,15 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real THeaSet(unit="K") = 294.15 "Set point when occupied";
       parameter Real THeaSetBack(unit="K") = 289.15 "Set point otherwise";
       parameter Real k = 1 "Gain";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the output";
+      parameter Real dtSet(unit="s") = 60 "Duration of a change of the set point";
       Interfaces.RealInput TZon(unit="K") "Zone air temperature"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
       Real TSet(unit="K") "Set point";
     equation
-      TSet = THeaSetBack + (THeaSet - THeaSetBack)*Utilities.occupancy(Utilities.timeOfDay(time), schedule);
+      TSet = THeaSetBack + (THeaSet - THeaSetBack)*Utilities.occupancy(Utilities.timeOfDay(time), schedule, dtSet);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2038,7 +2313,7 @@ package FastModel "Building models for model predictive control: close to Buildi
     model EmissionP "Variant PController: P controller (IDEAS LimPID) between 0 and 1"
       extends PartialEmissionControl(k=5);
     equation
-      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, 1e-3);
+      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Text(extent={{-90,40},{90,-40}}, textColor={0,0,0}, textString="P")}));
     end EmissionP;
@@ -2047,7 +2322,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       extends PartialEmissionControl;
       parameter Real kHea = 0.1 "Gain of the heating loop";
       parameter Real TiHea(unit="s") = 900 "Integral time of the heating loop";
-      PI conHea(k=kHea, Ti=TiHea, e=TSet - TZon, enable=1);
+      PI conHea(k=kHea, Ti=TiHea, dY=dY, e=TSet - TZon, enable=1);
     equation
       y = conHea.y;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
@@ -2068,6 +2343,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       "Variant MonitoredSetpoint: P controller (IDEAS LimPID) between 0 and 1 towards a set point read from external
        data"
       parameter Real k = 1 "Gain";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the output";
       Interfaces.RealInput TSet(unit="K") "Set point"
         annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
       Interfaces.RealInput TZon(unit="K") "Zone air temperature"
@@ -2075,7 +2351,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Interfaces.RealOutput y(unit="1") "Valve opening, or share of the power of an ideal emitter"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
-      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, 1e-3);
+      y = Utilities.smoothLimit(k*(TSet - TZon), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2088,6 +2364,8 @@ package FastModel "Building models for model predictive control: close to Buildi
        below 0.01, the speed from a P controller holding the head at dp_nominal"
       parameter Integer nVal = 1 "Number of valves";
       parameter Real k = 1 "Gain";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the speed";
+      parameter Real dMax = 1e-3 "Width of the smooth maximum of the openings";
       Interfaces.RealInput yVal[nVal] "Openings of the valves of the circuit"
         annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
       Interfaces.RealInput dpRel "Head of the pump relative to its nominal head"
@@ -2098,8 +2376,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       Interfaces.RealOutput y(unit="1") "Speed of the pump"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
-      yMax = smoothMaxN(yVal);
-      y = Utilities.smoothLimit(k*(hysPum.y - dpRel), 0, 1, 1e-3);
+      yMax = smoothMaxN(yVal, dMax);
+      y = Utilities.smoothLimit(k*(hysPum.y - dpRel), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2113,6 +2391,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real TColSet(unit="K") = 363.15 "Supply temperature set point";
       parameter Real k = 1 "Gain";
       parameter Real tauSen(unit="s") = 10 "Time constant of the temperature measurement";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the opening";
       Interfaces.RealInput u(unit="K") "Measured supply temperature"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
       Interfaces.RealOutput y(unit="1") "Opening of the supply path"
@@ -2120,7 +2399,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real TMea(unit="K", start=TColSet - 30, fixed=true) "Filtered measurement";
     equation
       tauSen*der(TMea) = u - TMea;
-      y = Utilities.smoothLimit(k*(TColSet - TMea), 0, 1, 1e-3);
+      y = Utilities.smoothLimit(k*(TColSet - TMea), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2132,9 +2411,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       "Demand of a production (trano BoilerControl, variant simple): on when a valve of its circuits opens beyond 0.5,
        off when all are below 0.01"
       parameter Integer n = 1 "Number of circuits";
+      parameter Real dMax = 1e-3 "Width of the smooth maximum of the openings";
       Interfaces.RealInput yMax[n] "Largest opening of the valves of each circuit"
         annotation (Placement(transformation(extent={{-140,-20},{-100,20}})));
-      Hysteresis hys(uLow=0.01, uHigh=0.5, u=smoothMaxN(yMax));
+      Hysteresis hys(uLow=0.01, uHigh=0.5, u=smoothMaxN(yMax, dMax));
       Interfaces.RealOutput y(unit="1") "Demand"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
@@ -2151,6 +2431,7 @@ package FastModel "Building models for model predictive control: close to Buildi
        there is demand"
       parameter Real TempSet(unit="K") = 353.15 "Boiler temperature set point";
       parameter Real k = 1 "Gain";
+      parameter Real dY = 1e-3 "Width of the smooth limits of the part load";
       Interfaces.RealInput T(unit="K") "Boiler water temperature"
         annotation (Placement(transformation(extent={{-140,40},{-100,80}})));
       Interfaces.RealInput demand "Demand, 0 or 1"
@@ -2158,7 +2439,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Interfaces.RealOutput y(unit="1") "Part load ratio"
         annotation (Placement(transformation(extent={{100,-20},{140,20}})));
     equation
-      y = demand*Utilities.smoothLimit(k*(TempSet - T), 0, 1, 1e-3);
+      y = demand*Utilities.smoothLimit(k*(TempSet - T), 0, 1, dY);
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-100,-100},{100,100}}, lineColor={0,0,127}, fillColor={255,255,255},
             fillPattern=FillPattern.Solid),
@@ -2179,6 +2460,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real TiCom(unit="s") = 300 "Integral time of the compressor controller";
       parameter Real yComMin = 0.3 "Minimum compressor speed";
       parameter Real tauSen(unit="s") = 30 "Time constant of the condenser outlet temperature";
+      parameter Real dT(unit="K") = 0.1 "Width of the smooth limits of the heating curve";
+      parameter Real dY = 1e-3*(1 - yComMin) "Width of the smooth limits of the compressor speed";
       Interfaces.RealInput demand "Demand of the circuits, 0 or 1"
         annotation (Placement(transformation(extent={{-140,50},{-100,90}})));
       Interfaces.RealInput TOut(unit="K") "Outdoor air temperature"
@@ -2194,10 +2477,11 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real heaOn "Heating on";
       Hysteresis warOut(uLow=TOutHeaLim - 1, uHigh=TOutHeaLim + 1, u=TOut) "Outside the heating season";
       Hysteresis bufCha(uLow=-dTHys/2, uHigh=dTHys/2, u=TSupSet - TBuf, y_start=1) "Charging the buffer";
-      PI conCom(k=kCom, Ti=TiCom, yMin=yComMin, yMax=1, yReset=yComMin, e=TSupSet + dTHys - TCon, enable=heaOn);
+      PI conCom(k=kCom, Ti=TiCom, yMin=yComMin, yMax=1, yReset=yComMin, dY=dY, e=TSupSet + dTHys - TCon,
+        enable=heaOn);
     equation
       TSupSet = Utilities.smoothMin(TSet, Utilities.smoothMax(TSupMin, TSet + (TSupMin - TSet)*(TOut - TOutDes)
-        /(TOutHeaLim - TOutDes), 0.1), 0.1);
+        /(TOutHeaLim - TOutDes), dT), dT);
       tauSen*der(TCon) = TConOut - TCon;
       heaOn = demand*(1 - warOut.y)*bufCha.y;
       y = heaOn*conCom.y;
@@ -2290,6 +2574,7 @@ package FastModel "Building models for model predictive control: close to Buildi
         annotation (Placement(transformation(extent={{90,-50},{110,-30}})));
       Real Q_flow(unit="W") "Heat flow rate";
     equation
+      // no heat at y <= 0, the nominal power at y >= 1: smoothLimit reaches its bounds exactly
       Q_flow = Q_flow_nominal*Utilities.smoothLimit(y, 0, 1, 1e-3);
       heatPortCon.Q_flow = -(1 - fraRad)*Q_flow;
       heatPortRad.Q_flow = -fraRad*Q_flow;
@@ -2328,6 +2613,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       Controls.PI conHea(k=k, Ti=Ti, e=Utilities.dayTable(Utilities.timeOfDay(time), TSetHea) - heatPortCon.T, enable=1);
       Controls.PI conCoo(k=k, Ti=Ti, e=heatPortCon.T - Utilities.dayTable(Utilities.timeOfDay(time), TSetCoo), enable=1);
     equation
+      // a saturated mode gives exactly no heat: smoothLimit reaches its bounds (when it saturated at dY, each mode
+      // leaked dY*capacity, 1 kW with the 1 MW of BESTEST, into the other)
       QHea_flow = conHea.y*QHea_flow_max;
       QCoo_flow = conCoo.y*QCoo_flow_max;
       der(EHea) = QHea_flow/3.6e6;

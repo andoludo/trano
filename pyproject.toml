@@ -97,7 +97,7 @@ addopts = "-ra"
 
 [tool.mypy]
 plugins = "pydantic.mypy"
-packages = ["trano", "validation"]
+packages = ["trano", "validation", "analysis"]
 
 follow_imports = "silent"
 warn_redundant_casts = true

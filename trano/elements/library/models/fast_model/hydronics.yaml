@@ -659,6 +659,11 @@
         port: F2
         target:
           main: element
+      - component: weaBus
+        name: pAtm
+        port: pAtm
+        target:
+          main: element
     category: boiler
     template: &heat_pump_wrapper |-
       model HeatPump{{ element.name | capitalize }}
@@ -768,6 +773,11 @@
       - component: weaBus
         name: F2
         port: F2
+        target:
+          main: element
+      - component: weaBus
+        name: pAtm
+        port: pAtm
         target:
           main: element
       - component: ""

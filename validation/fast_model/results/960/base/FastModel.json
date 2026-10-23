@@ -1,0 +1,37 @@
+{
+ "case": "960",
+ "variant": "base",
+ "library": "FastModel",
+ "zones": [
+  {
+   "zone": "sunspace_001",
+   "mean_temperature": 27.111883518781074,
+   "min_temperature": 4.2041467340787335,
+   "max_temperature": 49.049915015962426,
+   "heating_kwh": 0.0,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.0,
+   "peak_cooling_kw": 0.0
+  },
+  {
+   "zone": "zone_001",
+   "mean_temperature": 22.824778783790983,
+   "min_temperature": 19.999620467464126,
+   "max_temperature": 27.00011069589192,
+   "heating_kwh": 2574.503543364495,
+   "cooling_kwh": 928.4222437093853,
+   "peak_heating_kw": 2.107527291269548,
+   "peak_cooling_kw": 1.4242815491178933
+  }
+ ],
+ "heating_kwh": 2574.503543364495,
+ "cooling_kwh": 928.4222437093853,
+ "peak_heating_kw": 2.107527291269548,
+ "peak_cooling_kw": 1.4242815491178933,
+ "electricity_kwh": null,
+ "fuel_kwh": null,
+ "fans_kwh": null,
+ "pv_kwh": null,
+ "wall_time": 41.9,
+ "model_hash": "beae049f7349ba1a9c780959a0d494464e639d4ea4af910d090f4ccb7359ed7f"
+}

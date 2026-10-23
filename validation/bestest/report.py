@@ -178,9 +178,10 @@ Each case is a trano YAML file (`validation/bestest/cases/`), simulated for a ye
 library. The annual heating and cooling loads must fall inside the acceptance limits of the
 standard; the peak loads and the free-floating temperatures must fall inside the spread of the
 reference programs (BSIMAC, CSE, DeST, EnergyPlus, ESP-r, TRNSYS) widened by 5 % of the largest
-peak or 1 K. Buildings and IDEAS are gating libraries: `pytest -m bestest` fails when one of
-their cases leaves its band, except for the deviations listed below with their reason. The
-reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
+peak or 1 K. Buildings, IDEAS and FastModel are gating libraries: `pytest -m bestest` fails when
+one of their cases leaves its band, except for the deviations listed below with their reason;
+FastModel, the reduced library of trano that translates to CasADi, has [its own section](#fastmodel).
+The reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
 method applied hour by hour and the reduced-order zone still deviates on several cases, so
 neither gates. Cases a library cannot describe (shading with IDEAS, which OpenModelica cannot
 compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the two simplified zones)
@@ -192,3 +193,94 @@ compare.
 """
     body = render_markdown(results, reference)
     return intro + body[body.index("\n") + 1 :].lstrip("\n")
+
+
+LOAD_FLOOR = 0.2  # [MWh or kW] loads below it are left out of the relative gaps between two libraries
+# Libraries documented in a section of their own next to the generated tables, with the library their KPIs are
+# set against and what the reader needs to know before the table.
+LIBRARY_SECTIONS: dict[str, tuple[str, str]] = {
+    "FastModel": (
+        "Buildings",
+        """The `FastModel` library is trano's reduced model of the same building: the closed-loop model whose components
+rumoca translates to a CasADi ODE for optimal control and calibration. It runs the same YAML files in OpenModelica.
+Its walls are discretised as Buildings discretises them (`number_of_states`, at most three sublayers per layer), its
+zones take the air density of the site and exchange long-wave radiation as the YAML asks (linearised at 20 degC or
+around the current surface temperatures), its outer surfaces exchange with sky and ground exactly, the gas gaps of its
+glazings conduct at the temperatures of their panes (long-wave exchange and convection of the gas, as Buildings), its
+windows are shaded by overhangs and side fins as in Buildings, and its controllers are smooth and without events. It
+gates as Buildings and IDEAS do, on the 27 cases. The column Buildings gives the frozen value of Buildings for the
+same case (`expected/Buildings.json`), so that the gap between the two libraries reads next to the band. How the two
+libraries compare hour by hour, and how they respond to a change of the parameters, is studied in [FastModel against
+Buildings on BESTEST and a house before and after renovation](fast_model_study.md); how FastModel came to these
+results is told in the [improvement plan](fast_model_improvement_plan.md).
+""",
+    ),
+}
+
+
+def render_library_section(library: str, results: dict[str, CaseResult], reference: ReferenceData | None = None) -> str:
+    """The section of a library: its introduction, the share of KPIs inside their band and the table of every KPI
+    with the value of the library it is set against."""
+    reference = reference or load_reference()
+    against, introduction = LIBRARY_SECTIONS[library]
+    frozen = frozen_values(against)
+    comparisons = [
+        comparison
+        for case_id in sorted(results, key=lambda name: (len(name), name))
+        for comparison in compare(results[case_id].kpis, reference)
+    ]
+    inside = sum(comparison.status != "fail" for comparison in comparisons)
+    loads, temperatures = [], []
+    for comparison in comparisons:
+        value = frozen.get(comparison.case, {}).get(comparison.kpi)
+        if value is None:
+            continue
+        if comparison.unit == "degC":
+            temperatures.append(abs(comparison.value - value))
+        elif abs(value) > LOAD_FLOOR:
+            loads.append(abs(comparison.value / value - 1))
+    lines = [
+        f"## {library}",
+        "",
+        introduction.strip(),
+        "",
+        f"{inside} of {len(comparisons)} KPIs of {len(results)} cases are inside their band"
+        + (" (known deviations included)." if any(c.status == "known" for c in comparisons) else "."),
+    ]
+    if loads and temperatures:
+        lines.append(
+            f"Against {against}, the loads differ by {100 * sum(loads) / len(loads):.1f} % on average and "
+            f"{100 * max(loads):.1f} % at most, the temperatures of the free-floating zones by "
+            f"{sum(temperatures) / len(temperatures):.2f} K on average and {max(temperatures):.2f} K at most."
+        )
+    lines += [
+        "",
+        f"| Case | KPI | {library} | {against} | Band | Reference mean | Status |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for comparison in comparisons:
+        value = frozen.get(comparison.case, {}).get(comparison.kpi)
+        status = comparison.status
+        if status == "known":
+            status = f"known deviation: {comparison.known_deviation}"
+        lines.append(
+            f"| {comparison.case} | {comparison.kpi} | {comparison.value:.3f} {comparison.unit} | "
+            f"{'' if value is None else f'{value:.3f} {comparison.unit}'} | "
+            f"{comparison.lower:.3f} to {comparison.upper:.3f} | {comparison.mean:.3f} | {status} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def update_docs_section(library: str, results: dict[str, CaseResult], reference: ReferenceData | None = None) -> Path:
+    """Write the section of a library into the documentation page, replacing its previous version and leaving the
+    sections of the other libraries as they are (their results need not be at hand)."""
+    text = DOCS_PAGE.read_text()
+    section = render_library_section(library, results, reference)
+    start = text.find(f"\n## {library}\n")
+    if start < 0:
+        text = text.rstrip("\n") + "\n\n" + section
+    else:
+        end = text.find("\n## ", start + 1)
+        text = text[: start + 1] + section + ("\n" + text[end + 1 :] if end >= 0 else "")
+    DOCS_PAGE.write_text(text)
+    return DOCS_PAGE

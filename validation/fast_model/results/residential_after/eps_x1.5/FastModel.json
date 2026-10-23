@@ -1,0 +1,77 @@
+{
+ "case": "residential_after",
+ "variant": "eps_x1.5",
+ "library": "FastModel",
+ "zones": [
+  {
+   "zone": "bathroom_001",
+   "mean_temperature": 18.833403624725456,
+   "min_temperature": 16.819750308030223,
+   "max_temperature": 21.860979241664154,
+   "heating_kwh": 49.80482183380908,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.3066204454004806,
+   "peak_cooling_kw": 0.0
+  },
+  {
+   "zone": "bedroom_1_001",
+   "mean_temperature": 18.026290179781697,
+   "min_temperature": 16.72632975326644,
+   "max_temperature": 20.82465694498734,
+   "heating_kwh": 37.442921684501194,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.24091103793148677,
+   "peak_cooling_kw": 0.0
+  },
+  {
+   "zone": "bedroom_2_001",
+   "mean_temperature": 17.83688085353098,
+   "min_temperature": 16.380364602506177,
+   "max_temperature": 20.803647306624896,
+   "heating_kwh": 62.27480059669089,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.2893077399589163,
+   "peak_cooling_kw": 0.0
+  },
+  {
+   "zone": "bedroom_3_001",
+   "mean_temperature": 17.966810275553723,
+   "min_temperature": 16.922315614620857,
+   "max_temperature": 20.817093863623086,
+   "heating_kwh": 22.53040061314176,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.11851142290889492,
+   "peak_cooling_kw": 0.0
+  },
+  {
+   "zone": "kitchen_001",
+   "mean_temperature": 19.908911656394285,
+   "min_temperature": 17.278257414897325,
+   "max_temperature": 21.16919135147839,
+   "heating_kwh": 135.94229438270463,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.4255895429913203,
+   "peak_cooling_kw": 0.0
+  },
+  {
+   "zone": "living_001",
+   "mean_temperature": 20.026164135727612,
+   "min_temperature": 17.508720014492667,
+   "max_temperature": 21.153400903465524,
+   "heating_kwh": 231.46359746028432,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.8965194941987594,
+   "peak_cooling_kw": 0.0
+  }
+ ],
+ "heating_kwh": 539.4588365711319,
+ "cooling_kwh": 0.0,
+ "peak_heating_kw": 2.1823532927944402,
+ "peak_cooling_kw": 0.0,
+ "electricity_kwh": 150.6555702570515,
+ "fuel_kwh": null,
+ "fans_kwh": 16.800000000001244,
+ "pv_kwh": 139.28428896609674,
+ "wall_time": 149.8,
+ "model_hash": "671794b9791abe8d2d5e001d7e0a7949d63eeccb6f0f7ce92c505a4f7f20de81"
+}

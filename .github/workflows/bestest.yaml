@@ -12,6 +12,15 @@ on:
         description: "Case ids to run (all when empty)"
         required: false
         default: ""
+      libraries:
+        description: "Libraries to run, as a JSON list"
+        required: false
+        default: '["Buildings", "IDEAS", "FastModel"]'
+      commit_results:
+        description: "Commit the results (validation/bestest/results/<library>) to the branch the workflow runs on"
+        type: boolean
+        required: false
+        default: false
 
 env:
   TRANO_MODELICA_LIBRARIES: ${{ github.workspace }}/.cache/omlibs
@@ -23,10 +32,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        library: [Buildings, IDEAS]
+        library: ${{ fromJSON(github.event.inputs.libraries || '["Buildings", "IDEAS", "FastModel"]') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -74,7 +85,32 @@ jobs:
 
       - name: Render the report
         if: always()
-        run: uv run python -m validation.bestest report
+        run: |
+          uv run python -m validation.bestest report
+          cat validation/bestest/_reports/report.md
+
+      - name: Commit the results
+        if: always() && github.event.inputs.commit_results == 'true'
+        env:
+          LIBRARY: ${{ matrix.library }}
+        run: |
+          mkdir -p "validation/bestest/results/$LIBRARY"
+          for result in .cache/bestest/"$LIBRARY"/*/result.json; do
+            cp "$result" "validation/bestest/results/$LIBRARY/$(basename "$(dirname "$result")").json"
+          done
+          uv run python -m validation.bestest freeze --library "$LIBRARY"
+          if [ "$LIBRARY" = "FastModel" ]; then
+            uv run python -m validation.bestest report --docs-library "$LIBRARY"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all -- validation/bestest/results validation/bestest/expected docs/validation/bestest.md
+          git commit -m "BESTEST: results of $LIBRARY, run ${{ github.run_id }}" || { echo "nothing to commit"; exit 0; }
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${{ github.ref_name }}" && git push origin "HEAD:${{ github.ref_name }}" && exit 0
+            sleep 15
+          done
+          exit 1
 
       - name: Keep the report and the results
         if: always()

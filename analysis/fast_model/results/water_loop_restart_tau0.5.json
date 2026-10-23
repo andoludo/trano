@@ -1,0 +1,33 @@
+{
+ "case": "residential_before",
+ "patches": [
+  [
+   "tauHyd(unit=\"s\") = 5 ",
+   "tauHyd(unit=\"s\") = 0.5 "
+  ]
+ ],
+ "balances": {
+  "days 8 to 10": {
+   "days": [
+    8.0,
+    10.0
+   ],
+   "FastModel": {
+    "fuel_meter_kwh": 236.79538,
+    "fuel_from_samples_kwh": 237.669751,
+    "fuel_samples_error": 0.003693,
+    "jacket_loss_kwh": 9.172123,
+    "pump_heat_kwh": 0.0,
+    "water_in_kwh": 192.10395,
+    "radiators_kwh": 191.249804,
+    "stored_kwh": 0.464617,
+    "residual_kwh": 0.389529,
+    "fuel_per_heat": 1.238147,
+    "mean_boiler_temperature_degc": 74.714404
+   }
+  }
+ },
+ "lowest_boiler_temperature_degc": {
+  "FastModel": 72.343801
+ }
+}

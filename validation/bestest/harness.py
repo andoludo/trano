@@ -34,15 +34,19 @@ logger = logging.getLogger(__name__)
 CACHE_ROOT = Path(__file__).resolve().parents[2].joinpath(".cache", "bestest")
 SECONDS_PER_YEAR = 365 * 24 * 3600
 TOLERANCE = 1e-6
+LOG_LINES = 40  # of the OpenModelica log shown when a case does not simulate
 HOURS_PER_YEAR = 365 * 24  # one output point per hour: the KPIs are hourly statistics
-LIBRARIES = ("Buildings", "IDEAS", "iso_13790", "reduced_order")
+LIBRARIES = ("Buildings", "IDEAS", "iso_13790", "reduced_order", "FastModel")
 # Result variable holding the zone air temperature, per library.
 TEMPERATURE_VARIABLE = {
     "Buildings": "heaPorAir.T",
     "IDEAS": "TAir",
     "iso_13790": "TAir",
     "reduced_order": "TAir",
+    "FastModel": "TAir",
 }
+# Unit of the energy meters of the ideal system, per library: J, except FastModel's kWh meters.
+ENERGY_UNIT = {"FastModel": 3.6e6}
 
 
 class CaseResult(BaseModel):
@@ -121,6 +125,7 @@ def signals_for(network: Network, library: str, result_file: Path, case: Case) -
         cooling_power=None if hvac is None else find_variable(reader, f"{hvac.name}.QCoo_flow"),
         heating_energy=None if hvac is None else find_variable(reader, f"{hvac.name}.EHea"),
         cooling_energy=None if hvac is None else find_variable(reader, f"{hvac.name}.ECoo"),
+        energy_unit=ENERGY_UNIT.get(library, 1.0),
     )
 
 
@@ -152,7 +157,8 @@ def run_case(
     output = outcome.output.decode(errors="replace") if isinstance(outcome.output, bytes) else str(outcome.output)
     directory.joinpath("omc.log").write_text(output)
     if not is_success(outcome, options=options):
-        raise RuntimeError(f"Case {case_id} with {library} did not simulate; see {directory / 'omc.log'}")
+        tail = "\n".join(output.splitlines()[-LOG_LINES:])
+        raise RuntimeError(f"Case {case_id} with {library} did not simulate; see {directory / 'omc.log'}:\n{tail}")
     result_file = directory.joinpath("results", f"case_{case_id}.building_res.mat")
     signals = signals_for(network, library, result_file, case)
     kpis = extract_kpis(result_file, case_id, library, signals, case.trace_days)
@@ -199,6 +205,23 @@ def _run_case_or_error(*arguments: Any) -> CaseResult | str:  # noqa: ANN401
 
 def _raise_keyboard_interrupt(signum: int, frame: object) -> None:
     raise KeyboardInterrupt
+
+
+RESULTS_ROOT = Path(__file__).resolve().parent.joinpath("results")
+
+
+def committed_results(library: str) -> dict[str, CaseResult]:
+    """The results of a library committed to the repository (``results/<library>/<case>.json``, written by the
+    BESTEST workflow), so that the documentation renders without the cache of the runs."""
+    return {
+        path.stem: CaseResult.model_validate_json(path.read_text())
+        for path in sorted(RESULTS_ROOT.joinpath(library).glob("*.json"))
+    }
+
+
+def load_results(library: str) -> dict[str, CaseResult]:
+    """The cached results of a library, or its committed results when nothing is cached."""
+    return cached_results(library) or committed_results(library)
 
 
 def cached_results(library: str) -> dict[str, CaseResult]:

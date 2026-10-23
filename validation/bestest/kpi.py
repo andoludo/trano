@@ -35,6 +35,7 @@ class Signals(BaseModel):
     # output interval, instead of the integral of the sampled power.
     heating_energy: str | None = None
     cooling_energy: str | None = None
+    energy_unit: float = Field(1.0, description="J per unit of the energy signals (3.6e6 for kWh meters)")
 
 
 class HourlyTrace(BaseModel):
@@ -114,9 +115,9 @@ def hourly_increments(time: FloatArray, cumulative: FloatArray) -> FloatArray:
     return np.diff(np.interp(edges, time, cumulative)) / SECONDS_PER_HOUR  # type: ignore[no-any-return]
 
 
-def _hourly_load(reader: Reader, power: str | None, energy: str | None) -> FloatArray:
+def _hourly_load(reader: Reader, power: str | None, energy: str | None, energy_unit: float = 1.0) -> FloatArray:
     if energy is not None:
-        return np.maximum(hourly_increments(*_signal(reader, energy)), 0.0)
+        return np.maximum(hourly_increments(*_signal(reader, energy)) * energy_unit, 0.0)
     return np.maximum(_hourly(reader, power), 0.0)
 
 
@@ -129,8 +130,8 @@ def extract_kpis(
 ) -> KpiResults:
     reader = Reader(str(result_file), "dymola")
     temperature = _hourly(reader, signals.temperature) - KELVIN
-    heating = _hourly_load(reader, signals.heating_power, signals.heating_energy)
-    cooling = _hourly_load(reader, signals.cooling_power, signals.cooling_energy)
+    heating = _hourly_load(reader, signals.heating_power, signals.heating_energy, signals.energy_unit)
+    cooling = _hourly_load(reader, signals.cooling_power, signals.cooling_energy, signals.energy_unit)
     load = (heating - cooling) / 1000  # [kWh] per hour, heating positive as in the standard's tables
     peak_heating, peak_cooling = int(np.argmax(heating)), int(np.argmax(cooling))
     hottest, coldest = int(np.argmax(temperature)), int(np.argmin(temperature))

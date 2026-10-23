@@ -202,15 +202,24 @@ def test_the_package_holds_the_model_and_its_runnable_wrapper() -> None:
 @needs_connected_export
 @pytest.mark.parametrize(
     ("path", "states"),
-    [(BESTEST / "case_600FF.yaml", 25), (MODELS / "single_zone_hydronic.yaml", 27)],
-    ids=["600FF", "single_zone_hydronic"],
+    [
+        (BESTEST / "case_600FF.yaml", 25),
+        (BESTEST / "case_630.yaml", 27),  # overhangs and side fins
+        (MODELS / "single_zone_hydronic.yaml", 27),
+    ],
+    ids=["600FF", "630", "single_zone_hydronic"],
 )
 def test_rumoca_translates_the_model(path: Path, states: int) -> None:
-    description = _export(path).description
+    model = _export(path)
+    description = model.description
     assert len(description.states) == states
     assert description.input_names[:0] == []
     assert set(WEATHER) <= set(description.input_names)
     assert all(np.isfinite(description.initial_state))
+    sun = dict(zip(WEATHER, [KELVIN + 15, KELVIN + 5, 3.0, math.pi, 700.0, 100.0, 500.0], strict=True))
+    inputs = np.array([sun.get(name, 0.0) for name in description.input_names])
+    for hour in (0, 9, 12, 15):
+        assert np.all(np.isfinite(model.derivatives(3600.0 * hour, description.initial_state, inputs)))
 
 
 @needs_connected_export
@@ -232,7 +241,11 @@ def test_the_roles_come_from_the_model() -> None:
 @needs_connected_export
 @pytest.mark.parametrize(
     "path",
-    [MODELS / "single_zone_hydronic.yaml", MODELS / "house_infiltration_air_water_heat_pump.yaml"],
+    [
+        MODELS / "single_zone_hydronic.yaml",
+        MODELS / "house_infiltration_air_water_heat_pump.yaml",
+        ROOT / "examples" / "residential_before_renovation.yaml",
+    ],
     ids=lambda path: path.stem,
 )
 def test_rumoca_translates_the_closed_loop_model(path: Path) -> None:
@@ -242,6 +255,29 @@ def test_rumoca_translates_the_closed_loop_model(path: Path) -> None:
     assert set(WEATHER) <= set(description.input_names)
     assert not Roles.infer(description).controls
     assert all(np.isfinite(description.initial_state))
+
+
+@needs_connected_export
+def test_the_controllers_expose_their_smoothing_as_parameters() -> None:
+    """The width of every smooth transition and the switching time of every hysteresis are parameters of the
+    closed-loop model (a calibration widens them), at the values of the switching controllers by default."""
+    path = MODELS / "house_infiltration_air_water_heat_pump.yaml"
+    model = CasadiModel.from_modelica(_model(path, "FastModel"), f"{path.stem}.building_mpc")
+    values = dict(zip(model.description.parameter_names, model.description.parameter_values, strict=True))
+    smoothing = {name for name in values if name.endswith((".dU", ".dY", ".dMax", ".dT", ".dtSet", ".tau"))}
+
+    def value(suffix: str) -> float:
+        (name,) = [name for name in smoothing if name.endswith(suffix)]
+        return float(values[name])
+
+    assert len(smoothing) == 27
+    assert value("boiler_001_control.bufCha.tau") == 10.0
+    assert value("boiler_001_control.bufCha.dU") == pytest.approx(0.5)  # dTHys = 5 K: (uHigh - uLow) / 10
+    assert value("boiler_001_control.dT") == pytest.approx(0.1)
+    assert value("boiler_control_001.hys.dU") == pytest.approx(0.049)  # demand: uLow 0.01, uHigh 0.5
+    assert value("control_1.dMax") == pytest.approx(1e-3)
+    assert all(values[name] == pytest.approx(60.0) for name in smoothing if name.endswith(".dtSet"))
+    assert all(values[name] == pytest.approx(1e-3) for name in smoothing if name.endswith("emission_control_001.dY"))
 
 
 def _radiator_conductance(power: float, t_in: float, t_out: float, fraction: float, exponent: float) -> float:
@@ -291,9 +327,85 @@ def test_fast_model_mpc_is_fast_model_under_another_name() -> None:
     closed_loop, mpc = Library.from_configuration("FastModel"), Library.from_configuration("FastModelMPC")
     assert mpc.name == "FastModelMPC"
     assert mpc.base_library() == "FastModel"
-    assert mpc.templates == closed_loop.templates
+    # the MPC model keeps one node per layer boundary; the closed-loop model discretises the layers
+    assert mpc.templates.model_copy(update={"construction": None}) == closed_loop.templates.model_copy(
+        update={"construction": None}
+    )
+    assert mpc.templates.construction != closed_loop.templates.construction
     assert mpc.package_template == closed_loop.package_template
     assert mpc.parameter_library == closed_loop.parameter_library
+
+
+def test_the_closed_loop_model_discretises_the_layers_as_buildings() -> None:
+    """BESTEST heavy wall: wood siding, foam and 0.1 m of concrete blocks with 18 states per 0.2 m of reference
+    concrete (number_of_states). The closed-loop model splits each layer into the states Buildings gives it, at most
+    three; the MPC model keeps one node per layer boundary. The steady-state resistance and the capacity of the wall
+    are the same."""
+    records = {}
+    for library in ("FastModel", "FastModelMPC"):
+        model = _model(BESTEST / "case_940.yaml", library)
+        start = model.index("record heavy_wall_001")
+        records[library] = model[start : model.index(";", start)]
+    for record in records.values():  # the layers of the YAML: FastModel.Data.Construction splits them
+        assert "nLay=3" in record
+        assert "x={0.009, 0.0615, 0.1}" in record
+    assert "nSta={2, 3, 3}" in records["FastModel"]
+    assert "nNod=8" in records["FastModel"]
+    assert "lay={1, 1, 2, 2, 2, 3, 3, 3}" in records["FastModel"]
+    assert "nod={1, 3, 6, 9}" in records["FastModel"]  # the layer boundaries: the states T of both models
+    assert "sub={2, 4, 5, 7, 8}" in records["FastModel"]
+    assert "nSta={1, 1, 1}" in records["FastModelMPC"]
+    assert "lay={1, 2, 3}" in records["FastModelMPC"]
+    assert "nod={1, 2, 3, 4}" in records["FastModelMPC"]
+    assert "sub=fill(0, 0)" in records["FastModelMPC"]
+
+
+WALL_ROOM = """
+package room
+  package Data
+    record Wall = FastModel.Data.Construction(nLay=2, x={0.02, 0.15}, k={0.04, 1.4}, c={1400, 900}, d={10, 2300},
+      nSta={2, 3}, nNod=5, lay={1, 1, 2, 2, 2}, nod={1, 3, 6}, sub={2, 4, 5});
+  end Data;
+  model building_mpc
+    FastModel.Interfaces.WeatherInputs weather_inputs;
+    FastModel.BoundaryConditions.Weather weather(TDryBul=weather_inputs.TDryBul, TBlaSky=weather_inputs.TBlaSky,
+      winSpe=weather_inputs.winSpe, winDir=weather_inputs.winDir, HDirNor=weather_inputs.HDirNor,
+      HDifHor=weather_inputs.HDifHor, HGloHor=weather_inputs.HGloHor);
+    FastModel.Interfaces.OccupancyInputs occupancy;
+    FastModel.Zones.Zone zone(nSurf=1, AFlo=20, hRoo=2.5);
+    FastModel.Envelope.AdiabaticWall wall(constructionType=Data.Wall(), A=10, til=FastModel.Types.Tilt.Wall);
+  equation
+    connect(weather.weaBus, zone.weaBus);
+    connect(occupancy.gai, zone.qGai_flow);
+    connect(wall.propsBus_a, zone.propsBus[1]);
+  end building_mpc;
+end room;
+"""
+
+
+@needs_connected_export
+def test_the_construction_splits_its_layers_into_sublayers() -> None:
+    """rumoca exports a wall whose two layers are split into 2 and 3 sublayers: 6 nodes, the three layer boundaries
+    T (the states of FastModelMPC) and three nodes inside the layers TSub, the resistance and the capacity of the
+    layers."""
+    from trano.elements.jinja import modelica_library
+
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{WALL_ROOM}", "room.building_mpc")
+    description = model.description
+    assert {name for name in description.state_names if name.startswith("wall.T")} == {
+        "wall.T[1]",
+        "wall.T[2]",
+        "wall.T[3]",
+        "wall.TSub[1]",
+        "wall.TSub[2]",
+        "wall.TSub[3]",
+    }
+    parameters = dict(zip(description.parameter_names, description.parameter_values, strict=True))
+    resistance = sum(1 / parameters[f"wall.G[{i}]"] for i in range(1, 6))
+    assert resistance == pytest.approx((0.02 / 0.04 + 0.15 / 1.4) / 10)
+    capacity = sum(parameters[f"wall.C[{i}]"] for i in range(1, 7))
+    assert capacity == pytest.approx(10 * (0.02 * 10 * 1400 + 0.15 * 2300 * 900))
+    assert parameters["wall.C[3]"] == pytest.approx(10 * (0.01 * 10 * 1400 + 0.05 * 2300 * 900) / 2)
 
 
 def _building_mpc(model: str) -> str:
@@ -408,6 +520,40 @@ def test_the_optimal_control_heats_the_zone() -> None:
     assert simulated[zone] == pytest.approx(result.states[zone], abs=0.2)
 
 
+@needs_connected_export
+@pytest.mark.parametrize(
+    ("path", "meter"),
+    [
+        (ROOT / "examples" / "residential_before_renovation.yaml", "fuel"),
+        (ROOT / "examples" / "residential_after_renovation.yaml", "electricity"),
+    ],
+    ids=["before_renovation_gas_boiler", "after_renovation_heat_pump"],
+)
+def test_the_optimal_control_heats_the_residential_house(path: Path, meter: str) -> None:
+    """The six zones of the house, their radiators and valves, the gas boiler before renovation, the heat pump with
+    its buffer and the ventilation unit after: rumoca exports the whole house and IPOPT holds every zone at its set
+    point on a cold night, paying for the energy of the generator."""
+    model = _export(path)
+    ocp = OptimalControl(model, settings=OptimalControlSettings(time_step=3600))
+    assert any("generator" in name for name in ocp.roles.controls)
+    assert meter in ocp.roles.meters.values()
+    hours = 12
+    weather = dict(zip(WEATHER, [KELVIN, KELVIN - 10, 3.0, math.pi, 0.0, 0.0, 0.0], strict=True))
+    disturbances = np.array([[weather.get(name, 0.0)] * hours for name in ocp.roles.disturbances])
+    result = ocp.solve(
+        model.description.initial_state,
+        disturbances,
+        np.full(hours, KELVIN + 20),
+        price=np.full(hours, 0.25),
+        start_time=0.0,
+    )
+    assert result.success, result.status
+    names = model.description.state_names
+    zones = [names.index(zone) for zone in ocp.roles.comfort if zone in names]
+    assert len(zones) == 6
+    assert result.states[zones, 3:].min() > KELVIN + 20 - 0.1
+
+
 @pytest.mark.compile
 @pytest.mark.parametrize(
     ("library", "path"),
@@ -416,6 +562,7 @@ def test_the_optimal_control_heats_the_zone() -> None:
         ("FastModel", MODELS / "single_zone_hydronic.yaml"),
         ("FastModel", MODELS / "single_zone_hydronic_emission_from_data.yaml"),
         ("FastModel", MODELS / "house_infiltration_air_water_heat_pump.yaml"),
+        ("FastModel", ROOT / "examples" / "residential_before_renovation.yaml"),
         ("FastModel", ROOT / "examples" / "residential_after_renovation.yaml"),
     ],
     ids=lambda value: value.stem if isinstance(value, Path) else value,
@@ -435,10 +582,12 @@ def test_openmodelica_compiles_the_runnable_model(tmp_path: Path, library: str, 
 FRAME_ROOM = """
 package room
   package Data
-    record Glass = FastModel.Data.Glazing(nPan=1, x={0.004}, d={2500}, c={840}, RPan={0.004}, RGap=fill(0, 0),
-      tau={0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.2, 0, 0.7},
+    record Glass = FastModel.Data.Glazing(nPan=1, x={0.004}, k={1.0}, d={2500}, c={840}, xGas=fill(0, 0),
+      kGas=fill(0, 0), muGas_a=fill(0, 0), muGas_b=fill(0, 0), cGas=fill(0, 0), MGas=fill(0, 0), epsGap_a=fill(0, 0),
+      epsGap_b=fill(0, 0), tau={0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.2, 0, 0.7},
       absPan={{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0, 0.1}}, absIR_a=0.84, absIR_b=0.84, UFra=2.0);
-    record Slab = FastModel.Data.Construction(nLay=1, x={0.2}, k={1.4}, c={900}, d={2300});
+    record Slab = FastModel.Data.Construction(nLay=1, x={0.2}, k={1.4}, c={900}, d={2300}, nSta={1}, nNod=1,
+      lay={1}, nod={1, 2}, sub=fill(0, 0));
   end Data;
   model building_mpc
     parameter Real frac = 0.3;
@@ -561,3 +710,140 @@ def test_simulate_fast_model() -> None:
             _, temperature = result.values(zone)
             assert temperature.min() > KELVIN + 10, zone
             assert temperature.max() < KELVIN + 40, zone
+
+
+def test_the_zone_takes_the_night_ventilation_schedule() -> None:
+    """BESTEST 950FF: the scheduled outdoor air of the zone (Buildings' ventilationSchedule) reaches the FastModel zone;
+    a zone without a schedule keeps the default of the library."""
+    model = _model(BESTEST / "case_950FF.yaml", "FastModel", include_container=False)
+    assert (
+        "ventilationSchedule=[0, 0.391389; 25200, 0.391389; 25200, 0; 64800, 0; 64800, 0.391389; 86400, 0.391389]"
+        in model
+    )
+    assert "ventilationSchedule=" not in _model(BESTEST / "case_600FF.yaml", "FastModel", include_container=False)
+
+
+def test_a_saturated_ideal_system_gives_no_heat() -> None:
+    """smoothLimit reaches its bounds exactly: a saturated PI of the ideal system gives no heat. When it saturated at
+    dY and 1 - dY, heating and cooling each leaked 1e-3 of their capacity (1 kW for BESTEST)."""
+    text = (ROOT / "trano" / "library" / "FastModel.mo").read_text()
+    ideal = text[text.index("model IdealHeatingCoolingPI") : text.index("end IdealHeatingCoolingPI;")]
+    assert "QHea_flow = conHea.y*QHea_flow_max;" in ideal
+    assert "QCoo_flow = conCoo.y*QCoo_flow_max;" in ideal
+
+
+@pytest.mark.parametrize(
+    ("x", "expected"),
+    [(-1.0, 0.0), (-0.01, 0.0), (0.0, 0.0025), (0.005, 0.005625), (0.02, 0.02), (0.5, 0.5), (1.0, 0.9975), (2.0, 1.0)],
+)
+def test_the_smooth_limit_reaches_its_bounds_and_stays_inside(x: float, expected: float) -> None:
+    """The smooth limit of the controllers, evaluated by rumoca: exactly 0 and 1 beyond the blends of half width
+    0.01, never outside [0, 1], continuous with its derivative at the ends of the blends."""
+    if CasadiModel is None:
+        pytest.skip("trano-optimization (rumoca) is not installed")
+    from trano.elements.jinja import modelica_library
+
+    probe = """
+model Limit
+  input Real x;
+  Real s(start=0, fixed=true);
+equation
+  der(s) = FastModel.Utilities.smoothLimit(x, 0, 1, 0.01);
+end Limit;
+"""
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{probe}", "Limit")
+    assert model.derivatives(0.0, np.zeros(1), np.array([x]))[0] == pytest.approx(expected, abs=1e-12)
+
+
+GAP_PROBE = """
+model Gap
+  input Real T_a;
+  input Real T_b;
+  input Real eps;
+  Real s(start=0, fixed=true);
+equation
+  der(s) = FastModel.Envelope.Functions.gapConductance(T_a, T_b, 0.012, 0.025, 3.723e-6, 4.94e-8, 1006, 0.02897, eps,
+    0.84, 2.0);
+end Gap;
+"""
+
+
+def test_the_gas_gap_conducts_with_the_temperatures_of_its_panes() -> None:
+    """The conductance of a 12 mm air gap, evaluated by rumoca: the EN 673 value at the EN 673 state (mean 10 degC,
+    15 K across), a fifth more between panes at 40 and 30 degC (the long-wave exchange grows as T^3), most of the
+    radiation gone with a low-e face."""
+    if CasadiModel is None:
+        pytest.skip("trano-optimization (rumoca) is not installed")
+    from types import SimpleNamespace
+
+    from trano.elements.glazing import gap_conductance
+    from trano.elements.jinja import modelica_library
+
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{GAP_PROBE}", "Gap")
+
+    def conductance(t_a: float, t_b: float, eps: float = 0.84) -> float:
+        return float(model.derivatives(0.0, np.zeros(1), np.array([t_a, t_b, eps]))[0])
+
+    air = SimpleNamespace(
+        thermal_conductivity=0.025, density=1.2, specific_heat_capacity=1006, viscosity_coefficients=(3.723e-6, 4.94e-8)
+    )
+    reference = conductance(290.5, 275.5)
+    assert reference == pytest.approx(gap_conductance(0.012, air, 0.84, 0.84, 15.0), rel=0.02)
+    assert conductance(313.15, 303.15) == pytest.approx(1.18 * reference, rel=0.02)
+    assert conductance(278.15, 268.15) < reference
+    assert conductance(290.5, 275.5, eps=0.04) < 0.45 * reference
+    assert conductance(293.15, 293.15) == pytest.approx(conductance(293.16, 293.14), rel=1e-4)  # smooth at dT = 0
+
+
+@needs_connected_export
+def test_the_closed_loop_and_mpc_models_share_the_layer_boundaries() -> None:
+    """The closed-loop model splits the layers, the MPC model does not: both name T the temperatures of the layer
+    boundaries, so that a state copied from one model into the other by its name (mpctrano's spin-up) stays at its
+    place; the nodes inside the layers are TSub, in the closed-loop model only."""
+    path = MODELS / "single_zone_hydronic.yaml"
+    mpc = _export(path).description.state_names
+    closed_loop_model = CasadiModel.from_modelica(_model(path, "FastModel"), f"{path.stem}.building_mpc")
+    closed_loop = closed_loop_model.description.state_names
+    boundaries = {name for name in mpc if ".T[" in name}
+    assert boundaries
+    assert boundaries <= set(closed_loop)
+    assert any(".TSub[" in name for name in closed_loop)
+    assert not any(".TSub[" in name for name in mpc)
+
+
+SHADE_PROBE = """
+model Shade
+  input Real verAzi;
+  input Real alt;
+  Real overhang(start=0, fixed=true);
+  Real fins(start=0, fixed=true);
+equation
+  der(overhang) = FastModel.Envelope.Functions.overhangSunlitFraction(verAzi, alt, 0, 2.0, 3.0, 1.0, 0.0, 10.0, 10.0);
+  der(fins) = FastModel.Envelope.Functions.sideFinsSunlitFraction(verAzi, alt, 2.0, 3.0, 1.0, 0.0, 0.0);
+end Shade;
+"""
+
+
+@pytest.mark.parametrize(
+    ("ver_azi", "alt", "overhang", "fins"),
+    [
+        (0.0, math.pi / 4, 0.5, 1.0),  # the sun facing the wall: a 1 m overhang shades 1 m of the 2 m window
+        (0.0, math.pi / 3, 1 - math.sqrt(3) / 2, 1.0),
+        # a low sun 45 degrees aside: the overhang shades a strip of tan(0.05)/cos(45) = 7 cm, a 1 m fin shades
+        # 1 m of the 3 m width but for the small triangle above its shadow
+        (math.pi / 4, 0.05, 1 - math.tan(0.05) / math.cos(math.pi / 4) / 2, 0.672),
+        (0.0, -0.2, 0.0, 0.0),  # the sun below the horizon
+        (2.0, 0.5, 0.0, 0.0),  # the sun behind the wall
+    ],
+)
+def test_overhangs_and_side_fins_shade_as_buildings(ver_azi: float, alt: float, overhang: float, fins: float) -> None:
+    """The sunlit fractions of Buildings' Overhang and SideFins, evaluated by rumoca, on geometries whose shadow is
+    known: smooth, explicit functions of the solar angles."""
+    if CasadiModel is None:
+        pytest.skip("trano-optimization (rumoca) is not installed")
+    from trano.elements.jinja import modelica_library
+
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{SHADE_PROBE}", "Shade")
+    fractions = model.derivatives(0.0, np.zeros(2), np.array([ver_azi, alt]))
+    assert fractions[0] == pytest.approx(overhang, abs=0.02)
+    assert fractions[1] == pytest.approx(fins, abs=0.02)

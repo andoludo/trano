@@ -138,6 +138,11 @@
         port: F2
         target:
           main: element
+      - component: weaBus
+        name: pAtm
+        port: pAtm
+        target:
+          main: element
     category: control
     template: |-
       model Weather{{ element.name | capitalize }}
@@ -168,6 +173,7 @@
     use_counter: false
   template: |-
     {{ package_name }}.Components.BaseClasses.Weather{{ element.name | capitalize }} {{ element.name }}
+    {%- if parameters.get("pAtm") is not none %}(pAtm={{ parameters.get("pAtm") }}){% endif %}
   runnable:
     declaration: |-
       {%- set path = parameters.get("filNam") -%}
@@ -183,8 +189,15 @@
       connect({{ element.name }}_reader.weaBus.{{ variable }}, mpc.{{ element.name }}_inputs.{{ variable }});
       {%- endfor %}
     modifier: |-
+      {%- set source = parameters.get("pAtmSou") or "" -%}
       {{ element.name }}(lat={{ element.name }}_reader.lat, lon={{ element.name }}_reader.lon,
-        timZon={{ element.name }}_reader.timZon, alt={{ element.name }}_reader.alt)
+        timZon={{ element.name }}_reader.timZon, alt={{ element.name }}_reader.alt
+      {%- if "File" in source -%}
+        , pAtm=101325*(1 - 2.25577e-5*{{ element.name }}_reader.alt)^5.25588
+      {%- elif parameters.get("pAtm") is not none -%}
+        , pAtm={{ parameters.get("pAtm") }}
+      {%- endif -%}
+      )
   variant: default
 
 # The ventilation units take the outdoor air from the weather: the boundary of the other libraries is not needed.

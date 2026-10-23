@@ -15,8 +15,17 @@ from validation.bestest.cases import (
     check_support,
     write_cases,
 )
-from validation.bestest.harness import LIBRARIES, cached_results, run_cases
-from validation.bestest.report import DOCS_PAGE, compare, freeze, render_docs, render_markdown, write_report
+from validation.bestest.harness import LIBRARIES, cached_results, load_results, run_cases
+from validation.bestest.report import (
+    DOCS_PAGE,
+    LIBRARY_SECTIONS,
+    compare,
+    freeze,
+    render_docs,
+    render_markdown,
+    update_docs_section,
+    write_report,
+)
 from validation.bestest.walkthrough import WALKTHROUGH_PAGE, render_walkthrough
 from validation.bestest.reference import load_reference
 
@@ -42,6 +51,22 @@ def list_cases() -> None:
         print(f"{case.id:6s} {case.description:60s} {support}")
 
 
+def report_results(directory: Path, docs: bool, docs_library: str | None) -> None:
+    """The report of the cached results, the documentation page, or the section of one library in that page."""
+    if docs_library:
+        print(update_docs_section(docs_library, load_results(docs_library)))
+        return
+    results = {library: cases for library in LIBRARIES if (cases := cached_results(library))}
+    write_report(results, directory)
+    if docs:
+        DOCS_PAGE.parent.mkdir(parents=True, exist_ok=True)
+        DOCS_PAGE.write_text(render_docs(results))
+        WALKTHROUGH_PAGE.write_text(render_walkthrough(results))
+        print(f"wrote {DOCS_PAGE} and {WALKTHROUGH_PAGE}")
+    else:
+        print(render_markdown(results))
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="python -m validation.bestest", description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -56,6 +81,11 @@ def main(argv: list[str] | None = None) -> None:
     report = commands.add_parser("report", help="render the cached results")
     report.add_argument("--directory", type=Path, default=REPORT_DIR)
     report.add_argument("--docs", action="store_true", help="also write the documentation page")
+    report.add_argument(
+        "--docs-library",
+        choices=sorted(LIBRARY_SECTIONS),
+        help="write the section of this library into the documentation page, from its cached or committed results",
+    )
     freeze_ = commands.add_parser("freeze", help="freeze the cached results as the values the next ones are held to")
     freeze_.add_argument("--library", choices=LIBRARIES, default="Buildings")
     arguments = parser.parse_args(argv)
@@ -77,15 +107,7 @@ def main(argv: list[str] | None = None) -> None:
                     f"[{comparison.lower:.3f}, {comparison.upper:.3f}] {comparison.status}"
                 )
     elif arguments.command == "report":
-        results = {library: cases for library in LIBRARIES if (cases := cached_results(library))}
-        write_report(results, arguments.directory)
-        if arguments.docs:
-            DOCS_PAGE.parent.mkdir(parents=True, exist_ok=True)
-            DOCS_PAGE.write_text(render_docs(results))
-            WALKTHROUGH_PAGE.write_text(render_walkthrough(results))
-            print(f"wrote {DOCS_PAGE} and {WALKTHROUGH_PAGE}")
-        else:
-            print(render_markdown(results))
+        report_results(arguments.directory, arguments.docs, arguments.docs_library)
     elif arguments.command == "freeze":
         print(freeze(arguments.library, cached_results(arguments.library)))
 

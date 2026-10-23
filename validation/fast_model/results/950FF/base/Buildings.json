@@ -1,0 +1,27 @@
+{
+ "case": "950FF",
+ "variant": "base",
+ "library": "Buildings",
+ "zones": [
+  {
+   "zone": "zone_001",
+   "mean_temperature": 15.243282214874508,
+   "min_temperature": -12.04601075930725,
+   "max_temperature": 36.79013461377889,
+   "heating_kwh": 0.0,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.0,
+   "peak_cooling_kw": 0.0
+  }
+ ],
+ "heating_kwh": 0.0,
+ "cooling_kwh": 0.0,
+ "peak_heating_kw": 0.0,
+ "peak_cooling_kw": 0.0,
+ "electricity_kwh": null,
+ "fuel_kwh": null,
+ "fans_kwh": null,
+ "pv_kwh": null,
+ "wall_time": 79.7,
+ "model_hash": "4a76990eaa3226d26d8a83fa11129c64d27eee7b6a51e895cdfa30399d670dde"
+}

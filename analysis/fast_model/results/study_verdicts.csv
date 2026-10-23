@@ -1,0 +1,46 @@
+case,perturbation,group,ratio_mean_temperature,ratio_min_temperature,ratio_max_temperature,ratio_heating_kwh,ratio_cooling_kwh,ratio_peak_heating_kw,ratio_electricity_kwh,ratio_fuel_kwh,verdict,description
+950FF,insulation_x1.5,envelope,1.065763,1.007087,1.151765,,,,,,alike,"conductivity of the wall insulation (FOAM_INSULATION, 0.04 W/(m.K)) x1.5"
+950FF,infiltration_x2,envelope,1.024266,1.08511,0.98133,,,,,,alike,infiltration (0.414 air changes per hour) x2
+950FF,mass_x0.5,envelope,1.087559,0.999678,1.025421,,,,,,alike,density of the concrete blocks of the walls x0.5 (half the thermal mass of the walls)
+950FF,glazing_tau_x0.75,envelope,0.998578,0.900109,1.082077,,,,,,alike,solar transmittance of the panes x0.75 (0.834 to 0.626: each pane absorbs 0.30 instead of 0.09)
+950FF,absorptance_0.9,envelope,0.908729,0.932424,0.907006,,,,,,alike,solar absorptance of the outer surfaces of the walls and the roof 0.9 instead of 0.6
+950FF,gains_x2,use,0.998275,0.992254,1.004286,,,,,,alike,internal gains x2 (200 to 400 W)
+940,insulation_x0.5,envelope,1.011336,,,0.998712,1.069203,1.00111,,,alike,"conductivity of the wall insulation (FOAM_INSULATION, 0.04 W/(m.K)) x0.5"
+940,insulation_x0.75,envelope,1.013206,,,1.000892,1.071752,0.995559,,,alike,"conductivity of the wall insulation (FOAM_INSULATION, 0.04 W/(m.K)) x0.75"
+940,insulation_x1.5,envelope,1.014787,,,1.006337,1.076252,0.999969,,,alike,"conductivity of the wall insulation (FOAM_INSULATION, 0.04 W/(m.K)) x1.5"
+940,insulation_x2,envelope,1.016421,,,1.007702,1.078593,1.016835,,,alike,"conductivity of the wall insulation (FOAM_INSULATION, 0.04 W/(m.K)) x2"
+940,infiltration_x0.5,envelope,0.989842,,,0.991093,0.998284,0.992386,,,alike,infiltration (0.414 air changes per hour) x0.5
+940,infiltration_x1.5,envelope,0.990568,,,0.995054,1.004705,0.990684,,,alike,infiltration (0.414 air changes per hour) x1.5
+940,infiltration_x2,envelope,0.994051,,,0.995844,1.006867,0.990669,,,alike,infiltration (0.414 air changes per hour) x2
+940,infiltration_x3,envelope,0.997327,,,0.997281,1.011983,0.990373,,,alike,infiltration (0.414 air changes per hour) x3
+940,mass_x0.5,envelope,1.053562,,,1.010745,1.031337,0.955171,,,alike,density of the concrete blocks of the walls x0.5 (half the thermal mass of the walls)
+940,gap_k_x0.5,envelope,1.033354,,,1.023707,1.073507,1.020579,,,alike,conductivity of the gas of the glazing gap x0.5 (U-value of the glazing 2.9 to 2.6 W/(m2.K))
+940,glazing_tau_x0.75,envelope,0.992416,,,0.982925,1.021225,,,,alike,solar transmittance of the panes x0.75 (0.834 to 0.626: each pane absorbs 0.30 instead of 0.09)
+940,absorptance_0.9,envelope,0.911625,,,0.917288,0.908565,,,,alike,solar absorptance of the outer surfaces of the walls and the roof 0.9 instead of 0.6
+940,gains_x2,use,0.992586,,,0.988066,1.007406,0.992941,,,alike,internal gains x2 (200 to 400 W)
+940,setpoint_+2K,system,0.989404,0.999796,,0.990433,,0.990123,,,alike,"heating set points +2 K (12 degC at night, 22 degC by day)"
+960,glazing_tau_x0.75,envelope,0.991966,0.988057,1.037102,0.984096,1.009228,0.973597,,,alike,solar transmittance of the panes of the sun-space x0.75 (0.834 to 0.626)
+960,common_wall_k_x2,envelope,1.078432,0.944906,1.028582,1.09831,1.091118,0.983951,,,alike,conductivity of the concrete wall between the zone and the sun-space x2 (0.51 to 1.02 W/(m.K))
+960,sunspace_mass_x0.5,envelope,,1.016409,1.011261,,,,,,alike,density of the concrete blocks of the sun-space walls x0.5
+960,sunspace_infiltration_x2,envelope,1.003657,1.04847,0.968359,1.0072,0.995639,,,,alike,infiltration of the sun-space x2 (0.414 to 0.828 air changes per hour)
+residential_after,eps_x0.5,envelope,1.141426,1.019956,,0.996578,,1.511447,0.983655,,differs,conductivity of the EPS of the facade insulation (0.032 W/(m.K)) x0.5
+residential_after,eps_x1.5,envelope,1.239442,1.029593,,0.979349,,1.011145,0.967151,,alike,conductivity of the EPS of the facade insulation (0.032 W/(m.K)) x1.5
+residential_after,eps_x2,envelope,1.225175,1.003568,,0.978433,,0.983905,0.973846,,alike,conductivity of the EPS of the facade insulation (0.032 W/(m.K)) x2
+residential_after,n50_x2,envelope,1.170574,1.020056,,0.974756,,0.996477,0.96902,,alike,airtightness n50 x2 (3 to 6 1/h) in every room
+residential_after,heat_pump_2kW,system,,,,,,1.205138,,,close,heat pump rated 2 kW instead of 3 kW
+residential_after,supply_+10K,system,1.230917,,,,,1.012208,1.03612,,alike,supply set point of the heat pump 50 degC instead of 40 degC
+residential_after,radiators_x0.7,system,1.212599,,,1.280002,,1.008512,1.298784,,close,nominal power of every radiator x0.7
+residential_after,tank_x3,system,,,,,,,,,differs,buffer tank 300 l instead of 100 l
+residential_after,heat_recovery_0.5,system,1.130861,1.008059,,0.984428,,1.008868,0.979171,,alike,effectiveness of the heat recovery 0.5 instead of 0.8
+residential_after,setpoint_+1K,system,0.874357,0.890006,0.651557,0.871536,,1.037724,0.851686,,close,set point of the living room and the kitchen 22 degC instead of 21 degC
+residential_after,ventilation_x1.5,system,,1.021862,,0.987551,,1.142258,0.969548,,close,flow of the ventilation unit and of every duct x1.5 (150 to 225 m3/h)
+residential_after,radiator_n_1.33,system,,,,,,0.934817,,,alike,exponent of the EN 442 law of every radiator 1.33 instead of 1.24
+residential_before,cavity_insulated,envelope,,,,1.011614,,1.009934,,1.013692,alike,cavity of the external walls filled with insulation (0.278 to 0.035 W/(m.K): U 1.47 to 0.52 W/(m2.K))
+residential_before,n50_x0.5,envelope,,,,1.003992,,0.984518,,1.005354,alike,airtightness n50 (12 1/h) in every room x0.5
+residential_before,n50_x1.5,envelope,,,,1.003178,,0.881324,,1.003555,alike,airtightness n50 (12 1/h) in every room x1.5
+residential_before,gap_k_x0.5,envelope,,,,,,,,,neither moves,conductivity of the air of the glazing gaps x0.5 (U-value of the glazing 2.9 to 2.6 W/(m2.K))
+residential_before,boiler_10kW,system,,,,,,,,,neither moves,boiler rated 10 kW instead of 16 kW (design heat loss 10.7 kW)
+residential_before,supply_-10K,system,,,,,,1.057751,,,alike,supply set point of the boiler 65 degC instead of 75 degC
+residential_before,radiators_x0.7,system,,,,,,1.058187,,,alike,nominal power of every radiator x0.7
+residential_before,setpoint_+1K,system,0.990763,,,0.990251,,,,0.987228,alike,set point of the living room and the kitchen 22 degC instead of 21 degC
+residential_before,radiator_n_1.33,system,,,,,,,,,neither moves,exponent of the EN 442 law of every radiator 1.33 instead of 1.24

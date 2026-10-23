@@ -1,0 +1,27 @@
+{
+ "case": "950FF",
+ "variant": "absorptance_0.9",
+ "library": "FastModel",
+ "zones": [
+  {
+   "zone": "zone_001",
+   "mean_temperature": 15.751597329472379,
+   "min_temperature": -11.956522998644232,
+   "max_temperature": 37.9011643520991,
+   "heating_kwh": 0.0,
+   "cooling_kwh": 0.0,
+   "peak_heating_kw": 0.0,
+   "peak_cooling_kw": 0.0
+  }
+ ],
+ "heating_kwh": 0.0,
+ "cooling_kwh": 0.0,
+ "peak_heating_kw": 0.0,
+ "peak_cooling_kw": 0.0,
+ "electricity_kwh": null,
+ "fuel_kwh": null,
+ "fans_kwh": null,
+ "pv_kwh": null,
+ "wall_time": 32.7,
+ "model_hash": "9324e4c610b81bcc521cefaa9040b17dcb192d752bb01c8ce52270ef80e047ac"
+}
