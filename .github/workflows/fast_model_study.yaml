@@ -4,6 +4,14 @@ name: FastModel study
 # pair is simulated with both libraries in its own job, the results are collected, the report rendered and both are
 # committed to the branch the workflow runs on. On demand only: a year of Buildings per BESTEST variant.
 on:
+  # A workflow that is not on the default branch cannot be dispatched by hand: a push whose message carries [study]
+  # runs it on its branch (the results the workflow commits do not carry it, so it does not run on itself).
+  push:
+    paths:
+      - ".github/workflows/fast_model_study.yaml"
+      - "validation/fast_model/*.py"
+      - "trano/library/FastModel.mo"
+      - "trano/elements/library/models/fast_model/*.yaml"
   workflow_dispatch:
     inputs:
       cases:
@@ -20,6 +28,7 @@ env:
 
 jobs:
   plan:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[study]')
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
