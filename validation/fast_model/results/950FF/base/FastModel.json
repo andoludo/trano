@@ -5,9 +5,9 @@
  "zones": [
   {
    "zone": "zone_001",
-   "mean_temperature": 15.246209670723445,
-   "min_temperature": -12.114896792736317,
-   "max_temperature": 37.01220048771967,
+   "mean_temperature": 15.304076472463937,
+   "min_temperature": -12.095341395801938,
+   "max_temperature": 37.048068468040924,
    "heating_kwh": 0.0,
    "cooling_kwh": 0.0,
    "peak_heating_kw": 0.0,
@@ -22,6 +22,6 @@
  "fuel_kwh": null,
  "fans_kwh": null,
  "pv_kwh": null,
- "wall_time": 27.1,
- "model_hash": "cd633a57fb63a82ba1e85abf99dc8ad3a7b78acf57fa875211b5a86f3aca8feb"
+ "wall_time": 31.7,
+ "model_hash": "ed609e87ff24ad35c1745be3a34ea8075fb3d8c447632c30b44908f99d2f9e10"
 }
