@@ -47,6 +47,158 @@ did not take that parameter until this study (it silently dropped the fan), it d
 ## Results
 
 <!-- results:start -->
+### 950FF
+
+BESTEST 950FF: heavy single zone, free floating, night ventilation of 1700 m3/h from 18:00 to 07:00, Denver.
+
+Variants without results yet: insulation_x1.5, mass_x0.5.
+
+**KPIs of both libraries** (Buildings / FastModel):
+
+| Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
+|---|---|---|---|---|---|---|---|
+| base | zone_001 |  / 15.17 |  / -12.14 |  / 36.85 |  / 0 |  / 0.00 |  / 0 |
+| infiltration_x2 | zone_001 |  / 14.84 |  / -12.38 |  / 36.32 |  / 0 |  / 0.00 |  / 0 |
+
+**Meters and speed** (Buildings / FastModel, deviation of FastModel):
+
+| Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
+|---|---|---|---|---|---|
+| base |  / 0  |  /   |  /  |  /  |  / 29 |
+| infiltration_x2 |  / 0  |  /   |  /  |  /  |  / 28 |
+
+**Hour by hour**, FastModel against Buildings:
+
+| Variant | Zone | T RMSE [K] | T bias [K] | T max error [K] | Heating CV(RMSE) | Heating NMBE | Heating deviation |
+|---|---|---|---|---|---|---|---|
+
+{!validation/figures/fast_model_study_950FF_days_7_7.html!}
+
+{!validation/figures/fast_model_study_950FF_days_190_7.html!}
+
+### 940
+
+BESTEST 940: heavy single zone, ideal heating with a night set-back (10 degC from 23:00 to 07:00, 20 degC by day) and cooling at 27 degC, Denver.
+
+Variants without results yet: setpoint_+2K.
+
+**KPIs of both libraries** (Buildings / FastModel):
+
+| Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
+|---|---|---|---|---|---|---|---|
+| base | zone_001 |  / 23.31 |  / 10.00 |  / 27.00 |  / 10146 |  / 4.94 |  / 11163 |
+| insulation_x1.5 | zone_001 |  / 22.94 |  / 10.00 |  / 27.00 |  / 10541 |  / 5.34 |  / 10957 |
+| infiltration_x2 | zone_001 |  / 22.52 |  / 10.00 |  / 27.00 |  / 10992 |  / 5.56 |  / 10760 |
+| mass_x0.5 | zone_001 |  / 23.19 |  / 10.00 |  / 27.00 |  / 10299 |  / 5.27 |  / 11412 |
+
+**Meters and speed** (Buildings / FastModel, deviation of FastModel):
+
+| Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
+|---|---|---|---|---|---|
+| base |  / 10146  |  /   |  /  |  /  |  / 33 |
+| insulation_x1.5 |  / 10541  |  /   |  /  |  /  |  / 33 |
+| infiltration_x2 |  / 10992  |  /   |  /  |  /  |  / 33 |
+| mass_x0.5 |  / 10299  |  /   |  /  |  /  |  / 33 |
+
+**Hour by hour**, FastModel against Buildings:
+
+| Variant | Zone | T RMSE [K] | T bias [K] | T max error [K] | Heating CV(RMSE) | Heating NMBE | Heating deviation |
+|---|---|---|---|---|---|---|---|
+
+{!validation/figures/fast_model_study_940_days_7_7.html!}
+
+{!validation/figures/fast_model_study_940_days_190_7.html!}
+
+### 960
+
+BESTEST 960: light zone heated and cooled (20/27 degC) behind an unconditioned heavy sun-space, Denver.
+
+**KPIs of both libraries** (Buildings / FastModel):
+
+| Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
+|---|---|---|---|---|---|---|---|
+| base | sunspace_001 |  / 27.22 |  / 4.09 |  / 48.43 |  / 0 |  / 0.00 |  / 0 |
+| base | zone_001 |  / 22.80 |  / 20.00 |  / 27.00 |  / 11539 |  / 3.25 |  / 9715 |
+| base | **all zones** |  / 25.01 |  / 4.09 |  / 48.43 |  / 11539 |  / 3.25 |  / 9715 |
+
+**Meters and speed** (Buildings / FastModel, deviation of FastModel):
+
+| Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
+|---|---|---|---|---|---|
+| base |  / 11539  |  /   |  /  |  /  |  / 35 |
+
+**Hour by hour**, FastModel against Buildings:
+
+| Variant | Zone | T RMSE [K] | T bias [K] | T max error [K] | Heating CV(RMSE) | Heating NMBE | Heating deviation |
+|---|---|---|---|---|---|---|---|
+
+{!validation/figures/fast_model_study_960_days_7_7.html!}
+
+{!validation/figures/fast_model_study_960_days_190_7.html!}
+
+### residential_after
+
+Six-zone semi-detached house after renovation: air-to-water heat pump with a buffer, radiators with thermostatic valves, balanced ventilation with heat recovery, PV, January, Uccle.
+
+Variants without results yet: n50_x2, heat_pump_2kW, radiators_x0.7, setpoint_+1K.
+
+**KPIs of both libraries** (Buildings / FastModel):
+
+| Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
+|---|---|---|---|---|---|---|---|
+| base | bathroom_001 |  / 19.09 |  / 17.19 |  / 21.86 |  / 49 |  / 0.31 |  / 0 |
+| base | bedroom_1_001 |  / 18.16 |  / 17.09 |  / 20.82 |  / 25 |  / 0.18 |  / 0 |
+| base | bedroom_2_001 |  / 17.92 |  / 16.76 |  / 20.80 |  / 47 |  / 0.23 |  / 0 |
+| base | bedroom_3_001 |  / 18.04 |  / 17.22 |  / 20.82 |  / 16 |  / 0.09 |  / 0 |
+| base | kitchen_001 |  / 20.06 |  / 17.69 |  / 21.09 |  / 124 |  / 0.42 |  / 0 |
+| base | living_001 |  / 20.13 |  / 17.86 |  / 21.13 |  / 203 |  / 0.83 |  / 0 |
+| base | **all zones** |  / 18.90 |  / 16.76 |  / 21.86 |  / 464 |  / 1.99 |  / 0 |
+| eps_x1.5 | bathroom_001 |  / 18.82 |  / 16.86 |  / 21.86 |  / 49 |  / 0.30 |  / 0 |
+| eps_x1.5 | bedroom_1_001 |  / 18.03 |  / 16.78 |  / 20.82 |  / 37 |  / 0.24 |  / 0 |
+| eps_x1.5 | bedroom_2_001 |  / 17.84 |  / 16.43 |  / 20.80 |  / 62 |  / 0.29 |  / 0 |
+| eps_x1.5 | bedroom_3_001 |  / 17.97 |  / 16.96 |  / 20.82 |  / 23 |  / 0.12 |  / 0 |
+| eps_x1.5 | kitchen_001 |  / 19.88 |  / 17.33 |  / 21.08 |  / 135 |  / 0.42 |  / 0 |
+| eps_x1.5 | living_001 |  / 20.00 |  / 17.53 |  / 21.05 |  / 228 |  / 0.85 |  / 0 |
+| eps_x1.5 | **all zones** |  / 18.76 |  / 16.43 |  / 21.86 |  / 534 |  / 2.13 |  / 0 |
+| supply_+10K | bathroom_001 |  / 19.56 |  / 17.55 |  / 21.93 |  / 64 |  / 0.42 |  / 0 |
+| supply_+10K | bedroom_1_001 |  / 18.22 |  / 17.22 |  / 20.82 |  / 21 |  / 0.17 |  / 0 |
+| supply_+10K | bedroom_2_001 |  / 17.95 |  / 16.81 |  / 20.80 |  / 45 |  / 0.22 |  / 0 |
+| supply_+10K | bedroom_3_001 |  / 18.09 |  / 17.34 |  / 20.82 |  / 13 |  / 0.08 |  / 0 |
+| supply_+10K | kitchen_001 |  / 20.17 |  / 17.77 |  / 21.33 |  / 126 |  / 0.45 |  / 0 |
+| supply_+10K | living_001 |  / 20.22 |  / 17.94 |  / 21.30 |  / 204 |  / 0.91 |  / 0 |
+| supply_+10K | **all zones** |  / 19.03 |  / 16.81 |  / 21.93 |  / 472 |  / 2.22 |  / 0 |
+| tank_x3 | bathroom_001 |  / 19.08 |  / 17.21 |  / 21.88 |  / 49 |  / 0.30 |  / 0 |
+| tank_x3 | bedroom_1_001 |  / 18.15 |  / 17.10 |  / 20.82 |  / 25 |  / 0.18 |  / 0 |
+| tank_x3 | bedroom_2_001 |  / 17.92 |  / 16.76 |  / 20.80 |  / 47 |  / 0.23 |  / 0 |
+| tank_x3 | bedroom_3_001 |  / 18.04 |  / 17.22 |  / 20.82 |  / 16 |  / 0.09 |  / 0 |
+| tank_x3 | kitchen_001 |  / 20.07 |  / 17.70 |  / 21.19 |  / 124 |  / 0.42 |  / 0 |
+| tank_x3 | living_001 |  / 20.13 |  / 17.87 |  / 21.17 |  / 204 |  / 0.83 |  / 0 |
+| tank_x3 | **all zones** |  / 18.90 |  / 16.76 |  / 21.88 |  / 464 |  / 1.90 |  / 0 |
+| heat_recovery_0.5 | bathroom_001 |  / 18.21 |  / 16.20 |  / 21.83 |  / 50 |  / 0.31 |  / 0 |
+| heat_recovery_0.5 | bedroom_1_001 |  / 17.87 |  / 16.38 |  / 20.54 |  / 53 |  / 0.29 |  / 0 |
+| heat_recovery_0.5 | bedroom_2_001 |  / 17.73 |  / 16.02 |  / 20.51 |  / 77 |  / 0.34 |  / 0 |
+| heat_recovery_0.5 | bedroom_3_001 |  / 17.82 |  / 16.53 |  / 20.53 |  / 35 |  / 0.16 |  / 0 |
+| heat_recovery_0.5 | kitchen_001 |  / 19.67 |  / 17.03 |  / 20.94 |  / 142 |  / 0.43 |  / 0 |
+| heat_recovery_0.5 | living_001 |  / 19.89 |  / 17.31 |  / 20.99 |  / 248 |  / 0.87 |  / 0 |
+| heat_recovery_0.5 | **all zones** |  / 18.53 |  / 16.02 |  / 21.83 |  / 606 |  / 2.30 |  / 0 |
+
+**Meters and speed** (Buildings / FastModel, deviation of FastModel):
+
+| Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
+|---|---|---|---|---|---|
+| base |  / 464  |  / 129  |  / 16.8 |  / 139 |  / 130 |
+| eps_x1.5 |  / 534  |  / 149  |  / 16.8 |  / 139 |  / 133 |
+| supply_+10K |  / 472  |  / 145  |  / 16.8 |  / 139 |  / 129 |
+| tank_x3 |  / 464  |  / 133  |  / 16.8 |  / 139 |  / 93 |
+| heat_recovery_0.5 |  / 606  |  / 169  |  / 16.8 |  / 139 |  / 118 |
+
+**Hour by hour**, FastModel against Buildings:
+
+| Variant | Zone | T RMSE [K] | T bias [K] | T max error [K] | Heating CV(RMSE) | Heating NMBE | Heating deviation |
+|---|---|---|---|---|---|---|---|
+
+{!validation/figures/fast_model_study_residential_after_days_7_7.html!}
+
 <!-- results:end -->
 
 ## Reading the results
