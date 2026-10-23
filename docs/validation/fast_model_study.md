@@ -86,7 +86,7 @@ Variants without results yet: setpoint_+2K.
 
 | Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
 |---|---|---|---|---|---|---|---|
-| base | zone_001 |  / 23.31 |  / 10.00 |  / 27.00 |  / 10146 |  / 4.94 |  / 11163 |
+| base | zone_001 | 23.35 / 23.31 | 10.00 / 10.00 | 27.00 / 27.00 | 1198 / 1384 | 3.53 / 3.95 | 2328 / 2403 |
 | insulation_x1.5 | zone_001 |  / 22.94 |  / 10.00 |  / 27.00 |  / 10541 |  / 5.34 |  / 10957 |
 | infiltration_x2 | zone_001 |  / 22.52 |  / 10.00 |  / 27.00 |  / 10992 |  / 5.56 |  / 10760 |
 | mass_x0.5 | zone_001 |  / 23.19 |  / 10.00 |  / 27.00 |  / 10299 |  / 5.27 |  / 11412 |
@@ -95,7 +95,7 @@ Variants without results yet: setpoint_+2K.
 
 | Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
 |---|---|---|---|---|---|
-| base |  / 10146  |  /   |  /  |  /  |  / 33 |
+| base | 1198 / 1384 (+15.6 %) |  /   |  /  |  /  | 68 / 26 |
 | insulation_x1.5 |  / 10541  |  /   |  /  |  /  |  / 33 |
 | infiltration_x2 |  / 10992  |  /   |  /  |  /  |  / 33 |
 | mass_x0.5 |  / 10299  |  /   |  /  |  /  |  / 33 |
@@ -104,6 +104,7 @@ Variants without results yet: setpoint_+2K.
 
 | Variant | Zone | T RMSE [K] | T bias [K] | T max error [K] | Heating CV(RMSE) | Heating NMBE | Heating deviation |
 |---|---|---|---|---|---|---|---|
+| base | zone_001 | 0.13 | -0.03 | 0.77 | 58.2 % | +15.6 % | +15.6 % |
 
 {!validation/figures/fast_model_study_940_days_7_7.html!}
 
@@ -146,13 +147,13 @@ Variants without results yet: n50_x2, heat_pump_2kW, radiators_x0.7, setpoint_+1
 
 | Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
 |---|---|---|---|---|---|---|---|
-| base | bathroom_001 |  / 19.09 |  / 17.19 |  / 21.86 |  / 49 |  / 0.31 |  / 0 |
-| base | bedroom_1_001 |  / 18.16 |  / 17.09 |  / 20.82 |  / 25 |  / 0.18 |  / 0 |
-| base | bedroom_2_001 |  / 17.92 |  / 16.76 |  / 20.80 |  / 47 |  / 0.23 |  / 0 |
-| base | bedroom_3_001 |  / 18.04 |  / 17.22 |  / 20.82 |  / 16 |  / 0.09 |  / 0 |
-| base | kitchen_001 |  / 20.06 |  / 17.69 |  / 21.09 |  / 124 |  / 0.42 |  / 0 |
-| base | living_001 |  / 20.13 |  / 17.86 |  / 21.13 |  / 203 |  / 0.83 |  / 0 |
-| base | **all zones** |  / 18.90 |  / 16.76 |  / 21.86 |  / 464 |  / 1.99 |  / 0 |
+| base | bathroom_001 | 19.10 / 19.09 | 17.16 / 17.19 | 21.83 / 21.86 | 51 / 49 | 0.32 / 0.31 | 0 / 0 |
+| base | bedroom_1_001 | 18.14 / 18.16 | 17.08 / 17.09 | 20.52 / 20.82 | 23 / 25 | 0.18 / 0.18 | 0 / 0 |
+| base | bedroom_2_001 | 17.90 / 17.92 | 16.74 / 16.76 | 20.52 / 20.80 | 46 / 47 | 0.23 / 0.23 | 0 / 0 |
+| base | bedroom_3_001 | 18.02 / 18.04 | 17.20 / 17.22 | 20.50 / 20.82 | 15 / 16 | 0.09 / 0.09 | 0 / 0 |
+| base | kitchen_001 | 20.08 / 20.06 | 17.63 / 17.69 | 20.95 / 21.09 | 125 / 124 | 0.43 / 0.42 | 0 / 0 |
+| base | living_001 | 20.16 / 20.13 | 17.84 / 17.86 | 21.26 / 21.13 | 201 / 203 | 0.86 / 0.83 | 0 / 0 |
+| base | **all zones** | 18.90 / 18.90 | 16.74 / 16.76 | 21.83 / 21.86 | 461 / 464 | 2.02 / 1.99 | 0 / 0 |
 | eps_x1.5 | bathroom_001 |  / 18.82 |  / 16.86 |  / 21.86 |  / 49 |  / 0.30 |  / 0 |
 | eps_x1.5 | bedroom_1_001 |  / 18.03 |  / 16.78 |  / 20.82 |  / 37 |  / 0.24 |  / 0 |
 | eps_x1.5 | bedroom_2_001 |  / 17.84 |  / 16.43 |  / 20.80 |  / 62 |  / 0.29 |  / 0 |
@@ -186,7 +187,7 @@ Variants without results yet: n50_x2, heat_pump_2kW, radiators_x0.7, setpoint_+1
 
 | Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
 |---|---|---|---|---|---|
-| base |  / 464  |  / 129  |  / 16.8 |  / 139 |  / 130 |
+| base | 461 / 464 (+0.7 %) | 128 / 129 (+0.3 %) | 17.2 / 16.8 | 139 / 139 | 746 / 119 |
 | eps_x1.5 |  / 534  |  / 149  |  / 16.8 |  / 139 |  / 133 |
 | supply_+10K |  / 472  |  / 145  |  / 16.8 |  / 139 |  / 129 |
 | tank_x3 |  / 464  |  / 133  |  / 16.8 |  / 139 |  / 93 |
@@ -196,6 +197,12 @@ Variants without results yet: n50_x2, heat_pump_2kW, radiators_x0.7, setpoint_+1
 
 | Variant | Zone | T RMSE [K] | T bias [K] | T max error [K] | Heating CV(RMSE) | Heating NMBE | Heating deviation |
 |---|---|---|---|---|---|---|---|
+| base | bathroom_001 | 0.12 | -0.01 | 0.50 | 11.4 % | -3.1 % | -3.1 % |
+| base | bedroom_1_001 | 0.07 | +0.02 | 0.39 | 12.9 % | +5.9 % | +5.9 % |
+| base | bedroom_2_001 | 0.06 | +0.02 | 0.38 | 5.3 % | +2.8 % | +2.8 % |
+| base | bedroom_3_001 | 0.07 | +0.03 | 0.38 | 7.6 % | +3.4 % | +3.4 % |
+| base | kitchen_001 | 0.09 | -0.02 | 0.45 | 5.5 % | -0.7 % | -0.7 % |
+| base | living_001 | 0.09 | -0.03 | 0.51 | 10.4 % | +1.2 % | +1.2 % |
 
 {!validation/figures/fast_model_study_residential_after_days_7_7.html!}
 
