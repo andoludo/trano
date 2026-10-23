@@ -688,8 +688,8 @@ package FastModel "Building models for model predictive control: close to Buildi
 
     partial model PartialOpaque
       "Conduction through the layers of a construction split into sublayers, a node at each sublayer boundary: the
-       temperatures of the layer boundaries are T, the same states in FastModel and FastModelMPC (a state of one
-       model copied into the other by its name stays at its place), those of the nodes inside the layers TSub"
+       temperatures of the layer boundaries are T, the same states in FastModel and FastModelMPC (a state copied
+       from one library into the other by its name stays at its place), those of the nodes inside the layers TSub"
       extends PartialSurface;
       parameter Data.Construction constructionType "Construction, layers from the outside";
       parameter Boolean stateAtSurface_a = true "Capacity at the outer surface (false: it is held at a temperature)";
