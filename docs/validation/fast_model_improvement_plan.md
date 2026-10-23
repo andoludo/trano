@@ -88,7 +88,11 @@ What each step did:
 * **Layers split in Modelica** (phase 3). The construction record carries the layers of the YAML and the number of
   sublayers of each (the states Buildings gives it, at most 3; one for FastModelMPC); `PartialOpaque` splits them. The
   counts stay literal in the record: rumoca 0.10.3 sizes arrays only from literal parameters (not from a sum, nor from
-  a default of the record). Same results within 3e-5.
+  a default of the record). Same results within 3e-5. The walls name `T` the temperatures of the layer boundaries,
+  the states of both FastModel and FastModelMPC, and `TSub` the nodes inside the layers (FastModel only): a state of
+  one model copied into the other by its name stays at its place. Before, `T[2]` of the MPC model was a layer boundary
+  and `T[2]` of the closed-loop model a node inside the first layer; mpctrano's spin-up, which copies the states by
+  name, started the MPC model with the inner surfaces of its walls inside the insulation.
 
 **Still open.** The free-floating zones of the light, well-insulated constructions still peak 1 to 1.7 K above
 Buildings (600FF, 650FF, 680FF) and the 960 sun-space is 0.4 K warm on average. FastModel responds 8 % less than
