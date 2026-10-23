@@ -175,12 +175,12 @@ capacities).
 
 ## How close to Buildings
 
-`python -m validation.mpc` simulates the Buildings model of a YAML file and compares it with FastSmoothBuildings in two
-ways: it **replays** what the systems of Buildings did (the heat of ideal emitters, or the branch flows, valve
-positions and boiler or heat pump controls) through the runnable `FastSmoothBuildingsMPC` model (`--models FastSmoothBuildings`), or it
-simulates the closed-loop `FastSmoothBuildings` with its own controllers (`--models FastModelClosedLoop`); then it compares
-the zones, the water temperatures and the meters. See the [validation page](../validation/fast_model.md) for the
-results.
+The study of FastSmoothBuildings against Buildings lives with the library, in the
+[FastSmoothBuildings repository](https://github.com/andoludo/FastSmoothBuildings) (`study/`): it simulates the
+Buildings model of a YAML file and compares it with FastSmoothBuildings, replaying what the systems of Buildings did
+through the runnable `FastSmoothBuildingsMPC` model or running the closed-loop `FastSmoothBuildings` with its own
+controllers, and it measures how both libraries respond to changes of the YAML. See its
+[validation pages](https://andoludo.github.io/FastSmoothBuildings/validation/replay/) for the results.
 
 ## Limits
 

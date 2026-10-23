@@ -98,7 +98,7 @@ addopts = "-ra"
 
 [tool.mypy]
 plugins = "pydantic.mypy"
-packages = ["trano", "validation", "analysis"]
+packages = ["trano", "validation"]
 
 follow_imports = "silent"
 warn_redundant_casts = true
@@ -117,7 +117,7 @@ exclude = [
 ]
 
 [[tool.mypy.overrides]]
-# trano-optimization is installed by hand for the FastModel benchmark of the validation (not a dependency of trano)
+# trano-optimization is installed by hand for the tests of FastSmoothBuildings with rumoca (not a dependency of trano)
 module = ["trano_optimization", "trano_optimization.*"]
 ignore_missing_imports = true
 
