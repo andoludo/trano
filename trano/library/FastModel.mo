@@ -940,7 +940,9 @@ package FastModel "Building models for model predictive control: close to Buildi
         Real TEnv;
       algorithm
         TEnv := (vieFacSky*TBlaSky^4 + (1 - vieFacSky)*TOut^4)^0.25;
-        Q_flow := 4*sigma*eps*A*TEnv^3*(T - TEnv);
+        // exact grey-body exchange with the environment, sigma*eps*A*(T^4 - TEnv^4), written as a conductance times
+        // the temperature difference: a sun-lit surface at 60 degC loses a quarter more than the linearisation at TEnv
+        Q_flow := sigma*eps*A*(T^2 + TEnv^2)*(T + TEnv)*(T - TEnv);
       end skyExchange;
 
       function exteriorExchange
