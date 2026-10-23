@@ -35,14 +35,17 @@ CACHE_ROOT = Path(__file__).resolve().parents[2].joinpath(".cache", "bestest")
 SECONDS_PER_YEAR = 365 * 24 * 3600
 TOLERANCE = 1e-6
 HOURS_PER_YEAR = 365 * 24  # one output point per hour: the KPIs are hourly statistics
-LIBRARIES = ("Buildings", "IDEAS", "iso_13790", "reduced_order")
+LIBRARIES = ("Buildings", "IDEAS", "iso_13790", "reduced_order", "FastModel")
 # Result variable holding the zone air temperature, per library.
 TEMPERATURE_VARIABLE = {
     "Buildings": "heaPorAir.T",
     "IDEAS": "TAir",
     "iso_13790": "TAir",
     "reduced_order": "TAir",
+    "FastModel": "TAir",
 }
+# Unit of the energy meters of the ideal system, per library: J, except FastModel's kWh meters.
+ENERGY_UNIT = {"FastModel": 3.6e6}
 
 
 class CaseResult(BaseModel):
@@ -121,6 +124,7 @@ def signals_for(network: Network, library: str, result_file: Path, case: Case) -
         cooling_power=None if hvac is None else find_variable(reader, f"{hvac.name}.QCoo_flow"),
         heating_energy=None if hvac is None else find_variable(reader, f"{hvac.name}.EHea"),
         cooling_energy=None if hvac is None else find_variable(reader, f"{hvac.name}.ECoo"),
+        energy_unit=ENERGY_UNIT.get(library, 1.0),
     )
 
 
