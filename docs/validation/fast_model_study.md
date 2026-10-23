@@ -116,6 +116,9 @@ BESTEST 950FF: heavy single zone, free floating, night ventilation of 1700 m3/h 
 | insulation_x1.5 | zone_001 | 15.07 / 15.12 | -12.35 / -12.40 | 36.62 / 36.85 | 0 / 0 | 0.00 / 0.00 | 0 / 0 |
 | infiltration_x2 | zone_001 | 14.95 / 15.00 | -12.26 / -12.32 | 36.32 / 36.58 | 0 / 0 | 0.00 / 0.00 | 0 / 0 |
 | mass_x0.5 | zone_001 | 15.35 / 15.43 | -13.03 / -13.08 | 38.33 / 38.66 | 0 / 0 | 0.00 / 0.00 | 0 / 0 |
+| glazing_tau_x0.75 | zone_001 | 14.15 / 14.22 | -12.42 / -12.43 | 34.93 / 35.00 | 0 / 0 | 0.00 / 0.00 | 0 / 0 |
+| absorptance_0.9 | zone_001 | 15.75 / 15.77 | -11.94 / -11.99 | 37.86 / 38.03 | 0 / 0 | 0.00 / 0.00 | 0 / 0 |
+| gains_x2 | zone_001 | 16.06 / 16.12 | -11.56 / -11.62 | 37.96 / 38.24 | 0 / 0 | 0.00 / 0.00 | 0 / 0 |
 
 **Meters and speed** (Buildings / FastModel, deviation of FastModel):
 
@@ -125,6 +128,9 @@ BESTEST 950FF: heavy single zone, free floating, night ventilation of 1700 m3/h 
 | insulation_x1.5 | 0 / 0  |  /   |  /  |  /  | 63 / 27 |
 | infiltration_x2 | 0 / 0  |  /   |  /  |  /  | 104 / 34 |
 | mass_x0.5 | 0 / 0  |  /   |  /  |  /  | 106 / 26 |
+| glazing_tau_x0.75 | 0 / 0  |  /   |  /  |  /  | 81 / 30 |
+| absorptance_0.9 | 0 / 0  |  /   |  /  |  /  | 109 / 34 |
+| gains_x2 | 0 / 0  |  /   |  /  |  /  | 95 / 31 |
 
 **Hour by hour**, FastModel against Buildings:
 
@@ -134,6 +140,9 @@ BESTEST 950FF: heavy single zone, free floating, night ventilation of 1700 m3/h 
 | insulation_x1.5 | zone_001 | 0.09 | +0.05 | 0.37 |  |  |  |
 | infiltration_x2 | zone_001 | 0.09 | +0.05 | 0.39 |  |  |  |
 | mass_x0.5 | zone_001 | 0.12 | +0.07 | 0.49 |  |  |  |
+| glazing_tau_x0.75 | zone_001 | 0.12 | +0.07 | 0.50 |  |  |  |
+| absorptance_0.9 | zone_001 | 0.08 | +0.02 | 0.33 |  |  |  |
+| gains_x2 | zone_001 | 0.10 | +0.06 | 0.42 |  |  |  |
 
 **Response to the perturbations**:
 
@@ -148,12 +157,32 @@ BESTEST 950FF: heavy single zone, free floating, night ventilation of 1700 m3/h 
 | mass_x0.5 | mean zone temperature [degC] | 15.24, 15.35 (+0.11) | 15.30, 15.43 (+0.12) | 1.11 |
 | mass_x0.5 | lowest hourly zone temperature [degC] | -12.05, -13.03 (-0.99) | -12.10, -13.08 (-0.98) | 1.00 |
 | mass_x0.5 | highest hourly zone temperature [degC] | 36.79, 38.33 (+1.54) | 37.05, 38.66 (+1.61) | 1.04 |
+| glazing_tau_x0.75 | mean zone temperature [degC] | 15.24, 14.15 (-1.09) | 15.30, 14.22 (-1.08) | 0.99 |
+| glazing_tau_x0.75 | lowest hourly zone temperature [degC] | -12.05, -12.42 (-0.37) | -12.10, -12.43 (-0.33) | 0.90 |
+| glazing_tau_x0.75 | highest hourly zone temperature [degC] | 36.79, 34.93 (-1.86) | 37.05, 35.00 (-2.05) | 1.10 |
+| absorptance_0.9 | mean zone temperature [degC] | 15.24, 15.75 (+0.51) | 15.30, 15.77 (+0.46) | 0.91 |
+| absorptance_0.9 | lowest hourly zone temperature [degC] | -12.05, -11.94 (+0.11) | -12.10, -11.99 (+0.10) | 0.93 |
+| absorptance_0.9 | highest hourly zone temperature [degC] | 36.79, 37.86 (+1.07) | 37.05, 38.03 (+0.98) | 0.92 |
+| gains_x2 | mean zone temperature [degC] | 15.24, 16.06 (+0.81) | 15.30, 16.12 (+0.81) | 1.00 |
+| gains_x2 | lowest hourly zone temperature [degC] | -12.05, -11.56 (+0.48) | -12.10, -11.62 (+0.48) | 0.99 |
+| gains_x2 | highest hourly zone temperature [degC] | 36.79, 37.96 (+1.17) | 37.05, 38.24 (+1.19) | 1.02 |
+
+**Sweeps**: one parameter scaled by several factors (1 is the base case), the KPIs of both libraries and the ratio of their changes from the base case:
+
+| Parameter | Factor | mean zone temperature [degC], Buildings / FastModel | ratio |
+|---|---|---|---|
+| insulation | 1 | 15.24 / 15.30 |  |
+| insulation | 1.5 | 15.07 / 15.12 | 1.07 |
+| infiltration | 1 | 15.24 / 15.30 |  |
+| infiltration | 2 | 14.95 / 15.00 | 1.03 |
 
 {!validation/figures/fast_model_study_950FF_days_7_7.html!}
 
 {!validation/figures/fast_model_study_950FF_days_190_7.html!}
 
 {!validation/figures/fast_model_study_950FF_sensitivity.html!}
+
+{!validation/figures/fast_model_study_950FF_sweeps.html!}
 
 ### 940
 
@@ -164,9 +193,19 @@ BESTEST 940: heavy single zone, ideal heating with a night set-back (10 degC fro
 | Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
 |---|---|---|---|---|---|---|---|
 | base | zone_001 | 23.35 / 23.38 | 10.00 / 10.00 | 27.00 / 27.00 | 1100 / 1103 | 3.27 / 3.33 | 2329 / 2413 |
+| insulation_x0.5 | zone_001 | 23.94 / 23.99 | 10.00 / 10.00 | 27.00 / 27.00 | 683 / 685 | 2.73 / 2.78 | 2702 / 2821 |
+| insulation_x0.75 | zone_001 | 23.61 / 23.65 | 10.00 / 10.00 | 27.00 / 27.00 | 896 / 898 | 3.03 / 3.09 | 2485 / 2585 |
 | insulation_x1.5 | zone_001 | 22.95 / 22.99 | 10.00 / 10.00 | 27.00 / 27.00 | 1464 / 1471 | 3.63 / 3.69 | 2125 / 2187 |
+| insulation_x2 | zone_001 | 22.68 / 22.71 | 10.00 / 10.00 | 27.00 / 27.00 | 1772 / 1782 | 3.90 / 3.97 | 1999 / 2048 |
+| infiltration_x0.5 | zone_001 | 23.75 / 23.79 | 10.00 / 10.00 | 27.00 / 27.00 | 818 / 823 | 2.96 / 3.02 | 2570 / 2659 |
+| infiltration_x1.5 | zone_001 | 22.97 / 23.02 | 10.00 / 10.00 | 27.00 / 27.00 | 1410 / 1412 | 3.56 / 3.61 | 2137 / 2215 |
 | infiltration_x2 | zone_001 | 22.64 / 22.68 | 10.00 / 10.00 | 27.00 / 27.00 | 1742 / 1743 | 3.83 / 3.88 | 1981 / 2054 |
+| infiltration_x3 | zone_001 | 22.08 / 22.12 | 10.00 / 10.00 | 27.00 / 27.00 | 2460 / 2459 | 4.33 / 4.37 | 1751 / 1814 |
 | mass_x0.5 | zone_001 | 23.24 / 23.28 | 10.00 / 10.00 | 27.00 / 27.00 | 1242 / 1247 | 3.61 / 3.65 | 2554 / 2646 |
+| gap_k_x0.5 | zone_001 | 23.50 / 23.56 | 10.00 / 10.00 | 27.00 / 27.00 | 990 / 985 | 3.16 / 3.22 | 2444 / 2552 |
+| glazing_tau_x0.75 | zone_001 | 22.40 / 22.46 | 10.00 / 10.00 | 27.00 / 27.00 | 1703 / 1685 | 3.34 / 3.39 | 1418 / 1475 |
+| absorptance_0.9 | zone_001 | 23.61 / 23.63 | 10.00 / 10.00 | 27.00 / 27.00 | 966 / 979 | 3.24 / 3.30 | 2906 / 2943 |
+| gains_x2 | zone_001 | 23.91 / 23.95 | 10.00 / 10.00 | 27.00 / 27.00 | 771 / 777 | 2.96 / 3.02 | 3103 / 3203 |
 | setpoint_+2K | zone_001 | 23.87 / 23.91 | 12.00 / 12.00 | 27.00 / 27.00 | 1544 / 1540 | 3.57 / 3.62 | 2369 / 2456 |
 
 **Meters and speed** (Buildings / FastModel, deviation of FastModel):
@@ -174,9 +213,19 @@ BESTEST 940: heavy single zone, ideal heating with a night set-back (10 degC fro
 | Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
 |---|---|---|---|---|---|
 | base | 1100 / 1103 (+0.3 %) |  /   |  /  |  /  | 110 / 35 |
+| insulation_x0.5 | 683 / 685 (+0.3 %) |  /   |  /  |  /  | 112 / 36 |
+| insulation_x0.75 | 896 / 898 (+0.2 %) |  /   |  /  |  /  | 96 / 33 |
 | insulation_x1.5 | 1464 / 1471 (+0.4 %) |  /   |  /  |  /  | 106 / 35 |
+| insulation_x2 | 1772 / 1782 (+0.5 %) |  /   |  /  |  /  | 83 / 31 |
+| infiltration_x0.5 | 818 / 823 (+0.6 %) |  /   |  /  |  /  | 64 / 26 |
+| infiltration_x1.5 | 1410 / 1412 (+0.1 %) |  /   |  /  |  /  | 66 / 27 |
 | infiltration_x2 | 1742 / 1743 (+0.0 %) |  /   |  /  |  /  | 84 / 36 |
+| infiltration_x3 | 2460 / 2459 (-0.0 %) |  /   |  /  |  /  | 110 / 36 |
 | mass_x0.5 | 1242 / 1247 (+0.4 %) |  /   |  /  |  /  | 109 / 28 |
+| gap_k_x0.5 | 990 / 985 (-0.5 %) |  /   |  /  |  /  | 83 / 31 |
+| glazing_tau_x0.75 | 1703 / 1685 (-1.1 %) |  /   |  /  |  /  | 68 / 28 |
+| absorptance_0.9 | 966 / 979 (+1.4 %) |  /   |  /  |  /  | 74 / 29 |
+| gains_x2 | 771 / 777 (+0.8 %) |  /   |  /  |  /  | 109 / 35 |
 | setpoint_+2K | 1544 / 1540 (-0.2 %) |  /   |  /  |  /  | 90 / 37 |
 
 **Hour by hour**, FastModel against Buildings:
@@ -184,37 +233,102 @@ BESTEST 940: heavy single zone, ideal heating with a night set-back (10 degC fro
 | Variant | Zone | T RMSE [K] | T bias [K] | T max error [K] | Heating CV(RMSE) | Heating NMBE | Heating deviation |
 |---|---|---|---|---|---|---|---|
 | base | zone_001 | 0.08 | +0.04 | 0.30 | 6.3 % | +0.3 % | +0.3 % |
+| insulation_x0.5 | zone_001 | 0.08 | +0.05 | 0.32 | 8.3 % | +0.3 % | +0.3 % |
+| insulation_x0.75 | zone_001 | 0.08 | +0.04 | 0.32 | 7.1 % | +0.2 % | +0.2 % |
 | insulation_x1.5 | zone_001 | 0.07 | +0.03 | 0.30 | 5.3 % | +0.4 % | +0.4 % |
+| insulation_x2 | zone_001 | 0.06 | +0.03 | 0.28 | 4.9 % | +0.5 % | +0.5 % |
+| infiltration_x0.5 | zone_001 | 0.07 | +0.03 | 0.29 | 7.2 % | +0.6 % | +0.6 % |
+| infiltration_x1.5 | zone_001 | 0.08 | +0.04 | 0.33 | 5.6 % | +0.1 % | +0.1 % |
 | infiltration_x2 | zone_001 | 0.08 | +0.05 | 0.32 | 5.2 % | +0.0 % | +0.0 % |
+| infiltration_x3 | zone_001 | 0.09 | +0.04 | 0.35 | 4.8 % | -0.0 % | -0.0 % |
 | mass_x0.5 | zone_001 | 0.07 | +0.03 | 0.34 | 5.9 % | +0.4 % | +0.4 % |
+| gap_k_x0.5 | zone_001 | 0.09 | +0.06 | 0.35 | 6.9 % | -0.5 % | -0.5 % |
+| glazing_tau_x0.75 | zone_001 | 0.12 | +0.06 | 0.55 | 6.7 % | -1.1 % | -1.1 % |
+| absorptance_0.9 | zone_001 | 0.05 | +0.01 | 0.26 | 7.5 % | +1.4 % | +1.4 % |
+| gains_x2 | zone_001 | 0.07 | +0.03 | 0.31 | 7.8 % | +0.8 % | +0.8 % |
 | setpoint_+2K | zone_001 | 0.07 | +0.03 | 0.31 | 5.2 % | -0.2 % | -0.2 % |
 
 **Response to the perturbations**:
 
 | Perturbation | KPI | Buildings: base, perturbed (change) | FastModel: base, perturbed (change) | FastModel change / Buildings change |
 |---|---|---|---|---|
+| insulation_x0.5 | mean zone temperature [degC] | 23.35, 23.94 (+0.60) | 23.38, 23.99 (+0.60) | 1.01 |
+| insulation_x0.5 | heating demand [kWh] | 1100, 683 (-37.9 %) | 1103, 685 (-37.9 %) | 1.00 |
+| insulation_x0.5 | peak heating [kW] | 3.27, 2.73 (-16.7 %) | 3.33, 2.78 (-16.4 %) | 1.00 |
+| insulation_x0.5 | cooling demand [kWh] | 2329, 2702 (+16.0 %) | 2413, 2821 (+16.9 %) | 1.09 |
+| insulation_x0.75 | mean zone temperature [degC] | 23.35, 23.61 (+0.26) | 23.38, 23.65 (+0.27) | 1.01 |
+| insulation_x0.75 | heating demand [kWh] | 1100, 896 (-18.6 %) | 1103, 898 (-18.6 %) | 1.00 |
+| insulation_x0.75 | peak heating [kW] | 3.27, 3.03 (-7.5 %) | 3.33, 3.09 (-7.2 %) | 0.98 |
+| insulation_x0.75 | cooling demand [kWh] | 2329, 2485 (+6.7 %) | 2413, 2585 (+7.1 %) | 1.10 |
 | insulation_x1.5 | mean zone temperature [degC] | 23.35, 22.95 (-0.39) | 23.38, 22.99 (-0.40) | 1.02 |
 | insulation_x1.5 | heating demand [kWh] | 1100, 1464 (+33.1 %) | 1103, 1471 (+33.3 %) | 1.01 |
 | insulation_x1.5 | peak heating [kW] | 3.27, 3.63 (+11.0 %) | 3.33, 3.69 (+10.8 %) | 0.99 |
 | insulation_x1.5 | cooling demand [kWh] | 2329, 2125 (-8.8 %) | 2413, 2187 (-9.4 %) | 1.10 |
+| insulation_x2 | mean zone temperature [degC] | 23.35, 22.68 (-0.67) | 23.38, 22.71 (-0.68) | 1.02 |
+| insulation_x2 | heating demand [kWh] | 1100, 1772 (+61.0 %) | 1103, 1782 (+61.5 %) | 1.01 |
+| insulation_x2 | peak heating [kW] | 3.27, 3.90 (+19.2 %) | 3.33, 3.97 (+19.1 %) | 1.01 |
+| insulation_x2 | cooling demand [kWh] | 2329, 1999 (-14.2 %) | 2413, 2048 (-15.1 %) | 1.11 |
+| infiltration_x0.5 | mean zone temperature [degC] | 23.35, 23.75 (+0.41) | 23.38, 23.79 (+0.40) | 0.99 |
+| infiltration_x0.5 | heating demand [kWh] | 1100, 818 (-25.6 %) | 1103, 823 (-25.4 %) | 0.99 |
+| infiltration_x0.5 | peak heating [kW] | 3.27, 2.96 (-9.6 %) | 3.33, 3.02 (-9.3 %) | 0.98 |
+| infiltration_x0.5 | cooling demand [kWh] | 2329, 2570 (+10.3 %) | 2413, 2659 (+10.2 %) | 1.02 |
+| infiltration_x1.5 | mean zone temperature [degC] | 23.35, 22.97 (-0.37) | 23.38, 23.02 (-0.37) | 0.99 |
+| infiltration_x1.5 | heating demand [kWh] | 1100, 1410 (+28.2 %) | 1103, 1412 (+28.0 %) | 1.00 |
+| infiltration_x1.5 | peak heating [kW] | 3.27, 3.56 (+8.7 %) | 3.33, 3.61 (+8.4 %) | 0.98 |
+| infiltration_x1.5 | cooling demand [kWh] | 2329, 2137 (-8.3 %) | 2413, 2215 (-8.2 %) | 1.03 |
 | infiltration_x2 | mean zone temperature [degC] | 23.35, 22.64 (-0.71) | 23.38, 22.68 (-0.70) | 0.99 |
 | infiltration_x2 | heating demand [kWh] | 1100, 1742 (+58.3 %) | 1103, 1743 (+57.9 %) | 1.00 |
 | infiltration_x2 | peak heating [kW] | 3.27, 3.83 (+16.9 %) | 3.33, 3.88 (+16.3 %) | 0.98 |
 | infiltration_x2 | cooling demand [kWh] | 2329, 1981 (-15.0 %) | 2413, 2054 (-14.9 %) | 1.03 |
+| infiltration_x3 | mean zone temperature [degC] | 23.35, 22.08 (-1.27) | 23.38, 22.12 (-1.26) | 1.00 |
+| infiltration_x3 | heating demand [kWh] | 1100, 2460 (+123.5 %) | 1103, 2459 (+122.9 %) | 1.00 |
+| infiltration_x3 | peak heating [kW] | 3.27, 4.33 (+32.2 %) | 3.33, 4.37 (+31.2 %) | 0.99 |
+| infiltration_x3 | cooling demand [kWh] | 2329, 1751 (-24.8 %) | 2413, 1814 (-24.8 %) | 1.04 |
 | mass_x0.5 | mean zone temperature [degC] | 23.35, 23.24 (-0.10) | 23.38, 23.28 (-0.11) | 1.05 |
 | mass_x0.5 | heating demand [kWh] | 1100, 1242 (+12.8 %) | 1103, 1247 (+13.0 %) | 1.02 |
 | mass_x0.5 | peak heating [kW] | 3.27, 3.61 (+10.3 %) | 3.33, 3.65 (+9.6 %) | 0.95 |
 | mass_x0.5 | cooling demand [kWh] | 2329, 2554 (+9.6 %) | 2413, 2646 (+9.6 %) | 1.04 |
+| gap_k_x0.5 | mean zone temperature [degC] | 23.35, 23.50 (+0.16) | 23.38, 23.56 (+0.17) | 1.10 |
+| gap_k_x0.5 | heating demand [kWh] | 1100, 990 (-10.0 %) | 1103, 985 (-10.8 %) | 1.07 |
+| gap_k_x0.5 | peak heating [kW] | 3.27, 3.16 (-3.3 %) | 3.33, 3.22 (-3.4 %) | 1.03 |
+| gap_k_x0.5 | cooling demand [kWh] | 2329, 2444 (+4.9 %) | 2413, 2552 (+5.7 %) | 1.21 |
+| glazing_tau_x0.75 | mean zone temperature [degC] | 23.35, 22.40 (-0.95) | 23.38, 22.46 (-0.92) | 0.98 |
+| glazing_tau_x0.75 | heating demand [kWh] | 1100, 1703 (+54.8 %) | 1103, 1685 (+52.7 %) | 0.97 |
+| glazing_tau_x0.75 | cooling demand [kWh] | 2329, 1418 (-39.1 %) | 2413, 1475 (-38.9 %) | 1.03 |
+| absorptance_0.9 | mean zone temperature [degC] | 23.35, 23.61 (+0.27) | 23.38, 23.63 (+0.24) | 0.91 |
+| absorptance_0.9 | heating demand [kWh] | 1100, 966 (-12.3 %) | 1103, 979 (-11.2 %) | 0.92 |
+| absorptance_0.9 | cooling demand [kWh] | 2329, 2906 (+24.7 %) | 2413, 2943 (+21.9 %) | 0.92 |
+| gains_x2 | mean zone temperature [degC] | 23.35, 23.91 (+0.57) | 23.38, 23.95 (+0.56) | 0.99 |
+| gains_x2 | heating demand [kWh] | 1100, 771 (-29.9 %) | 1103, 777 (-29.6 %) | 0.99 |
+| gains_x2 | peak heating [kW] | 3.27, 2.96 (-9.6 %) | 3.33, 3.02 (-9.3 %) | 0.98 |
+| gains_x2 | cooling demand [kWh] | 2329, 3103 (+33.2 %) | 2413, 3203 (+32.7 %) | 1.02 |
 | setpoint_+2K | mean zone temperature [degC] | 23.35, 23.87 (+0.53) | 23.38, 23.91 (+0.52) | 0.99 |
 | setpoint_+2K | lowest hourly zone temperature [degC] | 10.00, 12.00 (+2.00) | 10.00, 12.00 (+2.00) | 1.00 |
 | setpoint_+2K | heating demand [kWh] | 1100, 1544 (+40.3 %) | 1103, 1540 (+39.5 %) | 0.98 |
 | setpoint_+2K | peak heating [kW] | 3.27, 3.57 (+9.0 %) | 3.33, 3.62 (+8.7 %) | 0.98 |
+
+**Sweeps**: one parameter scaled by several factors (1 is the base case), the KPIs of both libraries and the ratio of their changes from the base case:
+
+| Parameter | Factor | mean zone temperature [degC], Buildings / FastModel | ratio | heating demand [kWh], Buildings / FastModel | ratio | cooling demand [kWh], Buildings / FastModel | ratio |
+|---|---|---|---|---|---|---|---|
+| insulation | 0.5 | 23.94 / 23.99 | 1.01 | 683 / 685 | 1.00 | 2702 / 2821 | 1.09 |
+| insulation | 0.75 | 23.61 / 23.65 | 1.01 | 896 / 898 | 1.00 | 2485 / 2585 | 1.10 |
+| insulation | 1 | 23.35 / 23.38 |  | 1100 / 1103 |  | 2329 / 2413 |  |
+| insulation | 1.5 | 22.95 / 22.99 | 1.02 | 1464 / 1471 | 1.01 | 2125 / 2187 | 1.10 |
+| insulation | 2 | 22.68 / 22.71 | 1.02 | 1772 / 1782 | 1.01 | 1999 / 2048 | 1.11 |
+| infiltration | 0.5 | 23.75 / 23.79 | 0.99 | 818 / 823 | 0.99 | 2570 / 2659 | 1.02 |
+| infiltration | 1 | 23.35 / 23.38 |  | 1100 / 1103 |  | 2329 / 2413 |  |
+| infiltration | 1.5 | 22.97 / 23.02 | 0.99 | 1410 / 1412 | 1.00 | 2137 / 2215 | 1.03 |
+| infiltration | 2 | 22.64 / 22.68 | 0.99 | 1742 / 1743 | 1.00 | 1981 / 2054 | 1.03 |
+| infiltration | 3 | 22.08 / 22.12 | 1.00 | 2460 / 2459 | 1.00 | 1751 / 1814 | 1.04 |
 
 {!validation/figures/fast_model_study_940_days_7_7.html!}
 
 {!validation/figures/fast_model_study_940_days_190_7.html!}
 
 {!validation/figures/fast_model_study_940_sensitivity.html!}
+
+{!validation/figures/fast_model_study_940_sweeps.html!}
 
 ### 960
 
@@ -227,12 +341,20 @@ BESTEST 960: light zone heated and cooled (20/27 degC) behind an unconditioned h
 | base | sunspace_001 | 26.69 / 27.29 | 4.16 / 3.89 | 48.04 / 49.75 | 0 / 0 | 0.00 / 0.00 | 0 / 0 |
 | base | zone_001 | 22.81 / 22.84 | 20.00 / 20.00 | 27.00 / 27.00 | 2588 / 2563 | 2.10 / 2.11 | 950 / 949 |
 | base | **all zones** | 24.75 / 25.07 | 4.16 / 3.89 | 48.04 / 49.75 | 2588 / 2563 | 2.10 / 2.11 | 950 / 949 |
+| glazing_tau_x0.75 | **all zones** | 23.08 / 23.40 | 2.89 / 2.66 | 42.22 / 43.55 | 3128 / 3092 | 2.17 / 2.18 | 762 / 754 |
+| common_wall_k_x2 | **all zones** | 24.50 / 24.77 | 5.02 / 4.73 | 45.96 / 47.49 | 2467 / 2432 | 2.21 / 2.22 | 1076 / 1090 |
+| sunspace_mass_x0.5 | **all zones** | 24.75 / 25.07 | 2.89 / 2.59 | 49.39 / 51.20 | 2595 / 2569 | 2.14 / 2.15 | 952 / 952 |
+| sunspace_infiltration_x2 | **all zones** | 24.19 / 24.48 | 2.82 / 2.50 | 46.58 / 48.27 | 2708 / 2686 | 2.14 / 2.15 | 912 / 909 |
 
 **Meters and speed** (Buildings / FastModel, deviation of FastModel):
 
 | Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
 |---|---|---|---|---|---|
 | base | 2588 / 2563 (-1.0 %) |  /   |  /  |  /  | 149 / 42 |
+| glazing_tau_x0.75 | 3128 / 3092 (-1.2 %) |  /   |  /  |  /  | 144 / 41 |
+| common_wall_k_x2 | 2467 / 2432 (-1.4 %) |  /   |  /  |  /  | 145 / 42 |
+| sunspace_mass_x0.5 | 2595 / 2569 (-1.0 %) |  /   |  /  |  /  | 145 / 42 |
+| sunspace_infiltration_x2 | 2708 / 2686 (-0.8 %) |  /   |  /  |  /  | 149 / 41 |
 
 **Hour by hour**, FastModel against Buildings:
 
@@ -240,10 +362,44 @@ BESTEST 960: light zone heated and cooled (20/27 degC) behind an unconditioned h
 |---|---|---|---|---|---|---|---|
 | base | sunspace_001 | 0.68 | +0.60 | 1.87 |  |  |  |
 | base | zone_001 | 0.10 | +0.03 | 0.42 | 4.0 % | -1.0 % | -1.0 % |
+| glazing_tau_x0.75 | sunspace_001 | 0.69 | +0.62 | 1.82 |  |  |  |
+| glazing_tau_x0.75 | zone_001 | 0.09 | +0.03 | 0.43 | 3.8 % | -1.2 % | -1.2 % |
+| common_wall_k_x2 | sunspace_001 | 0.58 | +0.51 | 1.60 |  |  |  |
+| common_wall_k_x2 | zone_001 | 0.10 | +0.04 | 0.44 | 4.7 % | -1.4 % | -1.4 % |
+| sunspace_mass_x0.5 | sunspace_001 | 0.69 | +0.61 | 1.93 |  |  |  |
+| sunspace_mass_x0.5 | zone_001 | 0.10 | +0.03 | 0.43 | 4.1 % | -1.0 % | -1.0 % |
+| sunspace_infiltration_x2 | sunspace_001 | 0.65 | +0.57 | 1.83 |  |  |  |
+| sunspace_infiltration_x2 | zone_001 | 0.09 | +0.03 | 0.42 | 3.8 % | -0.8 % | -0.8 % |
+
+**Response to the perturbations**:
+
+| Perturbation | KPI | Buildings: base, perturbed (change) | FastModel: base, perturbed (change) | FastModel change / Buildings change |
+|---|---|---|---|---|
+| glazing_tau_x0.75 | mean zone temperature [degC] | 24.75, 23.08 (-1.68) | 25.07, 23.40 (-1.67) | 1.00 |
+| glazing_tau_x0.75 | lowest hourly zone temperature [degC] | 4.16, 2.89 (-1.27) | 3.89, 2.66 (-1.23) | 0.98 |
+| glazing_tau_x0.75 | highest hourly zone temperature [degC] | 48.04, 42.22 (-5.81) | 49.75, 43.55 (-6.20) | 1.07 |
+| glazing_tau_x0.75 | heating demand [kWh] | 2588, 3128 (+20.9 %) | 2563, 3092 (+20.6 %) | 0.98 |
+| glazing_tau_x0.75 | peak heating [kW] | 2.10, 2.17 (+3.2 %) | 2.11, 2.18 (+3.0 %) | 0.97 |
+| glazing_tau_x0.75 | cooling demand [kWh] | 950, 762 (-19.7 %) | 949, 754 (-20.5 %) | 1.04 |
+| common_wall_k_x2 | mean zone temperature [degC] | 24.75, 24.50 (-0.26) | 25.07, 24.77 (-0.30) | 1.15 |
+| common_wall_k_x2 | lowest hourly zone temperature [degC] | 4.16, 5.02 (+0.86) | 3.89, 4.73 (+0.83) | 0.97 |
+| common_wall_k_x2 | highest hourly zone temperature [degC] | 48.04, 45.96 (-2.08) | 49.75, 47.49 (-2.26) | 1.09 |
+| common_wall_k_x2 | heating demand [kWh] | 2588, 2467 (-4.7 %) | 2563, 2432 (-5.1 %) | 1.08 |
+| common_wall_k_x2 | peak heating [kW] | 2.10, 2.21 (+5.1 %) | 2.11, 2.22 (+5.2 %) | 1.01 |
+| common_wall_k_x2 | cooling demand [kWh] | 950, 1076 (+13.3 %) | 949, 1090 (+14.9 %) | 1.12 |
+| sunspace_mass_x0.5 | lowest hourly zone temperature [degC] | 4.16, 2.89 (-1.27) | 3.89, 2.59 (-1.31) | 1.03 |
+| sunspace_mass_x0.5 | highest hourly zone temperature [degC] | 48.04, 49.39 (+1.36) | 49.75, 51.20 (+1.45) | 1.07 |
+| sunspace_infiltration_x2 | mean zone temperature [degC] | 24.75, 24.19 (-0.57) | 25.07, 24.48 (-0.59) | 1.03 |
+| sunspace_infiltration_x2 | lowest hourly zone temperature [degC] | 4.16, 2.82 (-1.34) | 3.89, 2.50 (-1.39) | 1.03 |
+| sunspace_infiltration_x2 | highest hourly zone temperature [degC] | 48.04, 46.58 (-1.45) | 49.75, 48.27 (-1.48) | 1.02 |
+| sunspace_infiltration_x2 | heating demand [kWh] | 2588, 2708 (+4.6 %) | 2563, 2686 (+4.8 %) | 1.03 |
+| sunspace_infiltration_x2 | cooling demand [kWh] | 950, 912 (-3.9 %) | 949, 909 (-4.2 %) | 1.06 |
 
 {!validation/figures/fast_model_study_960_days_7_7.html!}
 
 {!validation/figures/fast_model_study_960_days_190_7.html!}
+
+{!validation/figures/fast_model_study_960_sensitivity.html!}
 
 ### residential_after
 
@@ -260,7 +416,9 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 | base | kitchen_001 | 20.08 / 20.05 | 17.63 / 17.64 | 20.95 / 21.10 | 125 / 124 | 0.43 / 0.42 | 0 / 0 |
 | base | living_001 | 20.16 / 20.12 | 17.84 / 17.81 | 21.26 / 21.13 | 201 / 204 | 0.86 / 0.83 | 0 / 0 |
 | base | **all zones** | 18.90 / 18.89 | 16.74 / 16.71 | 21.83 / 21.86 | 461 / 466 | 2.02 / 1.99 | 0 / 0 |
+| eps_x0.5 | **all zones** | 19.04 / 19.06 | 17.13 / 17.12 | 21.84 / 21.86 | 374 / 381 | 1.79 / 1.66 | 0 / 0 |
 | eps_x1.5 | **all zones** | 18.79 / 18.75 | 16.41 / 16.37 | 21.83 / 21.86 | 534 / 536 | 2.16 / 2.13 | 0 / 0 |
+| eps_x2 | **all zones** | 18.69 / 18.62 | 16.14 / 16.10 | 21.83 / 21.86 | 595 / 595 | 2.25 / 2.22 | 0 / 0 |
 | n50_x2 | **all zones** | 18.66 / 18.59 | 16.10 / 16.05 | 21.81 / 21.85 | 601 / 600 | 2.29 / 2.26 | 0 / 0 |
 | heat_pump_2kW | **all zones** | 18.90 / 18.89 | 16.73 / 16.71 | 21.84 / 21.86 | 461 / 466 | 1.81 / 1.77 | 0 / 0 |
 | supply_+10K | **all zones** | 19.00 / 19.02 | 16.78 / 16.77 | 21.86 / 21.95 | 466 / 474 | 2.20 / 2.22 | 0 / 0 |
@@ -268,13 +426,17 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 | tank_x3 | **all zones** | 18.90 / 18.89 | 16.74 / 16.71 | 21.85 / 21.88 | 461 / 466 | 2.00 / 1.92 | 0 / 0 |
 | heat_recovery_0.5 | **all zones** | 18.59 / 18.52 | 16.01 / 15.97 | 21.78 / 21.84 | 607 / 608 | 2.33 / 2.30 | 0 / 0 |
 | setpoint_+1K | **all zones** | 19.24 / 19.16 | 16.95 / 16.89 | 21.98 / 21.96 | 492 / 491 | 1.96 / 1.93 | 0 / 0 |
+| ventilation_x1.5 | **all zones** | 18.81 / 18.79 | 16.56 / 16.53 | 21.82 / 21.85 | 502 / 506 | 2.10 / 2.09 | 0 / 0 |
+| radiator_n_1.33 | **all zones** | 18.87 / 18.85 | 16.74 / 16.71 | 21.83 / 21.86 | 459 / 463 | 1.94 / 1.94 | 0 / 0 |
 
 **Meters and speed** (Buildings / FastModel, deviation of FastModel):
 
 | Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
 |---|---|---|---|---|---|
 | base | 461 / 466 (+1.1 %) | 128 / 129 (+0.7 %) | 17.2 / 16.8 | 139 / 139 | 456 / 150 |
+| eps_x0.5 | 374 / 381 (+1.6 %) | 104 / 105 (+1.5 %) | 17.2 / 16.8 | 139 / 139 | 744 / 135 |
 | eps_x1.5 | 534 / 536 (+0.5 %) | 150 / 149 (-0.2 %) | 17.2 / 16.8 | 139 / 139 | 418 / 150 |
+| eps_x2 | 595 / 595 (-0.0 %) | 167 / 166 (-0.5 %) | 17.2 / 16.8 | 139 / 139 | 648 / 146 |
 | n50_x2 | 601 / 600 (-0.1 %) | 169 / 168 (-0.7 %) | 17.2 / 16.8 | 139 / 139 | 440 / 103 |
 | heat_pump_2kW | 461 / 466 (+1.1 %) | 130 / 131 (+0.4 %) | 17.2 / 16.8 | 139 / 139 | 535 / 134 |
 | supply_+10K | 466 / 474 (+1.7 %) | 143 / 145 (+1.5 %) | 17.2 / 16.8 | 139 / 139 | 772 / 147 |
@@ -282,6 +444,8 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 | tank_x3 | 461 / 466 (+1.1 %) | 133 / 134 (+1.3 %) | 17.2 / 16.8 | 139 / 139 | 449 / 110 |
 | heat_recovery_0.5 | 607 / 608 (+0.1 %) | 171 / 169 (-0.7 %) | 17.2 / 16.8 | 139 / 139 | 646 / 84 |
 | setpoint_+1K | 492 / 491 (-0.3 %) | 137 / 136 (-0.6 %) | 17.2 / 16.8 | 139 / 139 | 688 / 147 |
+| ventilation_x1.5 | 502 / 506 (+0.8 %) | 141 / 141 (-0.0 %) | 25.7 / 25.2 | 139 / 139 | 453 / 88 |
+| radiator_n_1.33 | 459 / 463 (+0.8 %) | 128 / 129 (+0.3 %) | 17.2 / 16.8 | 139 / 139 | 718 / 150 |
 
 **Hour by hour**, FastModel against Buildings:
 
@@ -293,12 +457,24 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 | base | bedroom_3_001 | 0.07 | +0.02 | 0.41 | 9.9 % | +6.1 % | +6.1 % |
 | base | kitchen_001 | 0.09 | -0.03 | 0.45 | 5.4 % | -0.7 % | -0.7 % |
 | base | living_001 | 0.09 | -0.04 | 0.50 | 10.0 % | +1.3 % | +1.3 % |
+| eps_x0.5 | bathroom_001 | 0.10 | +0.03 | 0.45 | 9.6 % | -1.4 % | -1.4 % |
+| eps_x0.5 | bedroom_1_001 | 0.08 | +0.03 | 0.42 | 24.6 % | +14.4 % | +14.4 % |
+| eps_x0.5 | bedroom_2_001 | 0.07 | +0.02 | 0.42 | 8.3 % | +4.2 % | +4.2 % |
+| eps_x0.5 | bedroom_3_001 | 0.08 | +0.04 | 0.41 | 13.5 % | +6.1 % | +6.1 % |
+| eps_x0.5 | kitchen_001 | 0.04 | +0.01 | 0.32 | 2.7 % | -0.2 % | -0.2 % |
+| eps_x0.5 | living_001 | 0.04 | -0.01 | 0.27 | 7.4 % | +2.2 % | +2.2 % |
 | eps_x1.5 | bathroom_001 | 0.17 | -0.08 | 0.62 | 14.7 % | -5.3 % | -5.3 % |
 | eps_x1.5 | bedroom_1_001 | 0.08 | -0.00 | 0.43 | 13.2 % | +9.2 % | +9.2 % |
 | eps_x1.5 | bedroom_2_001 | 0.07 | +0.01 | 0.42 | 7.3 % | +5.0 % | +5.0 % |
 | eps_x1.5 | bedroom_3_001 | 0.07 | +0.01 | 0.41 | 11.1 % | +7.7 % | +7.7 % |
 | eps_x1.5 | kitchen_001 | 0.18 | -0.11 | 0.65 | 8.7 % | -2.4 % | -2.4 % |
 | eps_x1.5 | living_001 | 0.17 | -0.09 | 0.70 | 13.1 % | +0.3 % | +0.3 % |
+| eps_x2 | bathroom_001 | 0.19 | -0.12 | 0.60 | 15.0 % | -6.0 % | -6.0 % |
+| eps_x2 | bedroom_1_001 | 0.08 | -0.01 | 0.43 | 12.8 % | +9.1 % | +9.1 % |
+| eps_x2 | bedroom_2_001 | 0.07 | +0.00 | 0.42 | 7.6 % | +5.5 % | +5.5 % |
+| eps_x2 | bedroom_3_001 | 0.08 | +0.01 | 0.41 | 11.2 % | +8.3 % | +8.3 % |
+| eps_x2 | kitchen_001 | 0.25 | -0.17 | 0.72 | 9.5 % | -3.8 % | -3.8 % |
+| eps_x2 | living_001 | 0.23 | -0.14 | 0.78 | 13.9 % | -0.7 % | -0.7 % |
 | n50_x2 | bathroom_001 | 0.19 | -0.12 | 0.61 | 16.0 % | -6.3 % | -6.3 % |
 | n50_x2 | bedroom_1_001 | 0.08 | -0.01 | 0.41 | 12.5 % | +8.7 % | +8.7 % |
 | n50_x2 | bedroom_2_001 | 0.07 | -0.00 | 0.40 | 7.5 % | +5.4 % | +5.4 % |
@@ -341,16 +517,38 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 | setpoint_+1K | bedroom_3_001 | 0.08 | +0.01 | 0.39 | 30.0 % | +22.7 % | +22.7 % |
 | setpoint_+1K | kitchen_001 | 0.23 | -0.17 | 0.66 | 8.6 % | -3.8 % | -3.8 % |
 | setpoint_+1K | living_001 | 0.22 | -0.15 | 0.74 | 12.5 % | -1.3 % | -1.3 % |
+| ventilation_x1.5 | bathroom_001 | 0.14 | -0.05 | 0.55 | 13.9 % | -4.5 % | -4.5 % |
+| ventilation_x1.5 | bedroom_1_001 | 0.08 | +0.00 | 0.41 | 14.3 % | +9.8 % | +9.8 % |
+| ventilation_x1.5 | bedroom_2_001 | 0.06 | +0.01 | 0.40 | 7.7 % | +5.1 % | +5.1 % |
+| ventilation_x1.5 | bedroom_3_001 | 0.07 | +0.02 | 0.40 | 10.7 % | +7.1 % | +7.1 % |
+| ventilation_x1.5 | kitchen_001 | 0.14 | -0.07 | 0.54 | 7.4 % | -1.7 % | -1.7 % |
+| ventilation_x1.5 | living_001 | 0.13 | -0.07 | 0.60 | 11.6 % | +0.9 % | +0.9 % |
+| radiator_n_1.33 | bathroom_001 | 0.14 | -0.05 | 0.45 | 13.0 % | -4.3 % | -4.3 % |
+| radiator_n_1.33 | bedroom_1_001 | 0.08 | +0.00 | 0.41 | 15.2 % | +10.4 % | +10.4 % |
+| radiator_n_1.33 | bedroom_2_001 | 0.07 | +0.01 | 0.40 | 7.9 % | +5.2 % | +5.2 % |
+| radiator_n_1.33 | bedroom_3_001 | 0.07 | +0.02 | 0.40 | 11.6 % | +7.8 % | +7.8 % |
+| radiator_n_1.33 | kitchen_001 | 0.13 | -0.07 | 0.52 | 7.4 % | -1.8 % | -1.8 % |
+| radiator_n_1.33 | living_001 | 0.13 | -0.07 | 0.59 | 11.9 % | +0.7 % | +0.7 % |
 
 **Response to the perturbations**:
 
 | Perturbation | KPI | Buildings: base, perturbed (change) | FastModel: base, perturbed (change) | FastModel change / Buildings change |
 |---|---|---|---|---|
+| eps_x0.5 | mean zone temperature [degC] | 18.90, 19.04 (+0.14) | 18.89, 19.06 (+0.17) | 1.20 |
+| eps_x0.5 | lowest hourly zone temperature [degC] | 16.74, 17.13 (+0.39) | 16.71, 17.12 (+0.40) | 1.03 |
+| eps_x0.5 | heating demand [kWh] | 461, 374 (-18.8 %) | 466, 381 (-18.4 %) | 0.99 |
+| eps_x0.5 | peak heating [kW] | 2.02, 1.79 (-11.6 %) | 1.99, 1.66 (-16.8 %) | 1.43 |
+| eps_x0.5 | heat pump electricity [kWh] | 128, 104 (-19.3 %) | 129, 105 (-18.6 %) | 0.97 |
 | eps_x1.5 | mean zone temperature [degC] | 18.90, 18.79 (-0.11) | 18.89, 18.75 (-0.14) | 1.33 |
 | eps_x1.5 | lowest hourly zone temperature [degC] | 16.74, 16.41 (-0.32) | 16.71, 16.37 (-0.34) | 1.04 |
 | eps_x1.5 | heating demand [kWh] | 461, 534 (+15.8 %) | 466, 536 (+15.1 %) | 0.96 |
 | eps_x1.5 | peak heating [kW] | 2.02, 2.16 (+6.6 %) | 1.99, 2.13 (+6.9 %) | 1.02 |
 | eps_x1.5 | heat pump electricity [kWh] | 128, 150 (+16.5 %) | 129, 149 (+15.3 %) | 0.94 |
+| eps_x2 | mean zone temperature [degC] | 18.90, 18.69 (-0.21) | 18.89, 18.62 (-0.27) | 1.31 |
+| eps_x2 | lowest hourly zone temperature [degC] | 16.74, 16.14 (-0.60) | 16.71, 16.10 (-0.61) | 1.02 |
+| eps_x2 | heating demand [kWh] | 461, 595 (+29.0 %) | 466, 595 (+27.6 %) | 0.96 |
+| eps_x2 | peak heating [kW] | 2.02, 2.25 (+11.4 %) | 1.99, 2.22 (+11.5 %) | 0.99 |
+| eps_x2 | heat pump electricity [kWh] | 128, 167 (+30.1 %) | 129, 166 (+28.5 %) | 0.95 |
 | n50_x2 | mean zone temperature [degC] | 18.90, 18.66 (-0.24) | 18.89, 18.59 (-0.30) | 1.25 |
 | n50_x2 | lowest hourly zone temperature [degC] | 16.74, 16.10 (-0.64) | 16.71, 16.05 (-0.66) | 1.03 |
 | n50_x2 | heating demand [kWh] | 461, 601 (+30.3 %) | 466, 600 (+28.7 %) | 0.96 |
@@ -378,10 +576,27 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 | setpoint_+1K | heating demand [kWh] | 461, 492 (+6.8 %) | 466, 491 (+5.3 %) | 0.79 |
 | setpoint_+1K | peak heating [kW] | 2.02, 1.96 (-3.0 %) | 1.99, 1.93 (-3.1 %) | 1.00 |
 | setpoint_+1K | heat pump electricity [kWh] | 128, 137 (+6.9 %) | 129, 136 (+5.5 %) | 0.80 |
+| ventilation_x1.5 | mean zone temperature [degC] | 18.90, 18.81 (-0.09) | 18.89, 18.79 (-0.11) |  |
+| ventilation_x1.5 | lowest hourly zone temperature [degC] | 16.74, 16.56 (-0.18) | 16.71, 16.53 (-0.18) | 1.02 |
+| ventilation_x1.5 | heating demand [kWh] | 461, 502 (+9.0 %) | 466, 506 (+8.6 %) | 0.97 |
+| ventilation_x1.5 | peak heating [kW] | 2.02, 2.10 (+3.9 %) | 1.99, 2.09 (+4.9 %) | 1.25 |
+| ventilation_x1.5 | heat pump electricity [kWh] | 128, 141 (+9.5 %) | 129, 141 (+8.7 %) | 0.92 |
+| radiator_n_1.33 | peak heating [kW] | 2.02, 1.94 (-3.9 %) | 1.99, 1.94 (-2.5 %) | 0.62 |
+
+**Sweeps**: one parameter scaled by several factors (1 is the base case), the KPIs of both libraries and the ratio of their changes from the base case:
+
+| Parameter | Factor | mean zone temperature [degC], Buildings / FastModel | ratio | heating demand [kWh], Buildings / FastModel | ratio |
+|---|---|---|---|---|---|
+| eps | 0.5 | 19.04 / 19.06 | 1.20 | 374 / 381 | 0.99 |
+| eps | 1 | 18.90 / 18.89 |  | 461 / 466 |  |
+| eps | 1.5 | 18.79 / 18.75 | 1.33 | 534 / 536 | 0.96 |
+| eps | 2 | 18.69 / 18.62 | 1.31 | 595 / 595 | 0.96 |
 
 {!validation/figures/fast_model_study_residential_after_days_7_7.html!}
 
 {!validation/figures/fast_model_study_residential_after_sensitivity.html!}
+
+{!validation/figures/fast_model_study_residential_after_sweeps.html!}
 
 <!-- results:end -->
 
