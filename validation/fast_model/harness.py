@@ -50,9 +50,12 @@ KELVIN = 273.15
 # the heat of the emitters, the powers or meters of the productions, fans and PV arrays, the outdoor temperature.
 VARIABLES = (
     r".*(heaPorAir\\.T|\\.TAir|QHea_flow|QCoo_flow|heatPortCon\\.Q_flow|heatPortRad\\.Q_flow|"
-    r"PEle\\.y|QFue\\.y|PFan\\.y|\\.PEle|\\.QFue|\\.PFan|\\.EEle|\\.EFue|\\.EFan|\\.EPro|pv_[0-9]+\\.P|TDryBul)"
+    r"PEle\\.y|QFue\\.y|PFan\\.y|\\.PEle|\\.QFue|\\.PFan|\\.EEle|\\.EFue|\\.EFan|\\.EPro|\\.EHea|\\.ECoo|"
+    r"pv_[0-9]+\\.P|TDryBul)"
 )
 ZONE_TEMPERATURE = {BUILDINGS: "heaPorAir.T", FAST_MODEL: "TAir"}
+# J per unit of the heating and cooling meters of the ideal systems: Buildings meters J, FastModel kWh
+IDEAL_METER_UNIT = {BUILDINGS: 1.0, FAST_MODEL: 3.6e6}
 METERS = ("electricity", "fuel", "fans", "pv")
 LOG_LINES = 60  # of the OpenModelica log shown when a run fails
 
@@ -232,19 +235,26 @@ def _first_variable(reader: Reader, suffix: str) -> str | None:
     return next((str(name) for name in reader.varNames() if name == suffix or name.endswith("." + suffix)), None)
 
 
-def _zone_loads(reader: Reader, space: Space, edges: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _rate(reader: Reader, energy: str, edges: np.ndarray, joules_per_unit: float) -> np.ndarray:
+    """Mean power over the intervals [W] from the increments of an energy meter: exact whatever the output interval,
+    where the samples of a power that switches within an interval are not."""
+    readings = _on_grid(reader, energy, edges)
+    return np.asarray(np.diff(readings) * joules_per_unit / np.diff(edges))
+
+
+def _zone_loads(reader: Reader, space: Space, edges: np.ndarray, library: str) -> tuple[np.ndarray, np.ndarray]:
     """Heating and cooling delivered to a zone by its emitters [W], means over the intervals: the heating and cooling
-    of an ideal system, else the heat the radiators give to the air and to the surfaces."""
+    meters of an ideal system, else the heat the radiators give to the air and to the surfaces."""
     heating, cooling = np.zeros(len(edges) - 1), np.zeros(len(edges) - 1)
     for emission in space.emissions:
         name = str(emission.name)
         try:
-            heating += _mean(reader, find_variable(reader, f"{name}.QHea_flow"), edges)
+            heating += _rate(reader, find_variable(reader, f"{name}.EHea"), edges, IDEAL_METER_UNIT[library])
         except ValueError:
             pass
         else:
             with contextlib.suppress(ValueError):  # heating only
-                cooling += _mean(reader, find_variable(reader, f"{name}.QCoo_flow"), edges)
+                cooling += _rate(reader, find_variable(reader, f"{name}.ECoo"), edges, IDEAL_METER_UNIT[library])
             continue
         try:
             convective = find_variable(reader, f"{name}.heatPortCon.Q_flow")
@@ -307,7 +317,7 @@ def hourly_series(network: Network, library: str, result: Path, case: StudyCase)
         name = str(space.name)
         temperature = find_variable(reader, f"{name}.{ZONE_TEMPERATURE[library]}")
         columns[f"{name}.T"] = _mean(reader, temperature, edges) - KELVIN
-        columns[f"{name}.heating"], columns[f"{name}.cooling"] = _zone_loads(reader, space, edges)
+        columns[f"{name}.heating"], columns[f"{name}.cooling"] = _zone_loads(reader, space, edges, library)
         heating += columns[f"{name}.heating"]
         cooling += columns[f"{name}.cooling"]
     columns["heating"], columns["cooling"] = heating, cooling
