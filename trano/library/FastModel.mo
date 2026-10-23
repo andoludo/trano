@@ -495,25 +495,43 @@ package FastModel "Building models for model predictive control: close to Buildi
   end Interfaces;
 
   package Data "Records of constructions and glazings, written by trano from the YAML file"
-    record Construction "Opaque construction: layers from the outside (side a) to the inside (side b)"
+    record Construction
+      "Opaque construction: layers from the outside (side a) to the inside (side b), each split into nSta[i] sublayers
+       of equal thickness (Buildings.HeatTransfer.Data.OpaqueConstructions.Generic and its nSta)"
       parameter Integer nLay "Number of layers";
       parameter Real x[nLay](each unit="m") "Thickness";
       parameter Real k[nLay](each unit="W/(m.K)") "Thermal conductivity";
       parameter Real c[nLay](each unit="J/(kg.K)") "Specific heat capacity";
       parameter Real d[nLay](each unit="kg/m3") "Density";
+      // the sublayers are written out, without defaults: rumoca sizes arrays and evaluates subscripts from literal
+      // parameters only
+      parameter Integer nSta[nLay]
+        "Sublayers of each layer: the states Buildings gives it, at most 3 (FastModel); 1, a node at each layer
+         boundary (FastModelMPC, whose states are decision variables of the optimal control)";
+      parameter Integer nNod "Number of sublayers, the sum of nSta";
+      parameter Integer lay[nNod] "Layer of each sublayer, from the outside";
       parameter Real absIR_a = 0.84 "Long-wave emissivity of side a (outside)";
       parameter Real absIR_b = 0.84 "Long-wave emissivity of side b (inside)";
       parameter Real absSol_a = 0.84 "Solar absorptance of side a (outside)";
       parameter Real absSol_b = 0.84 "Solar absorptance of side b (inside)";
     end Construction;
 
-    record Glazing "Glazing: panes from the outside, angular optics at the incidence angles 0, 10, ..., 90 degrees"
+    record Glazing
+      "Glazing: panes and gas gaps from the outside (Buildings.HeatTransfer.Data.GlazingSystems.Generic), angular
+       optics at the incidence angles 0, 10, ..., 90 degrees"
       parameter Integer nPan "Number of panes";
       parameter Real x[nPan](each unit="m") "Thickness of the panes";
+      parameter Real k[nPan](each unit="W/(m.K)") "Thermal conductivity of the panes";
       parameter Real d[nPan](each unit="kg/m3") "Density of the panes";
       parameter Real c[nPan](each unit="J/(kg.K)") "Specific heat capacity of the panes";
-      parameter Real RPan[nPan](each unit="m2.K/W") "Thermal resistance of each pane";
-      parameter Real RGap[nPan - 1](each unit="m2.K/W") "Thermal resistance of each gas gap (EN 673)";
+      parameter Real xGas[nPan - 1](each unit="m") "Thickness of each gas gap";
+      parameter Real kGas[nPan - 1](each unit="W/(m.K)") "Thermal conductivity of the gas of each gap";
+      parameter Real muGas_a[nPan - 1](each unit="Pa.s") "Dynamic viscosity of the gas: a_mu + b_mu*T";
+      parameter Real muGas_b[nPan - 1](each unit="Pa.s/K") "Dynamic viscosity of the gas: a_mu + b_mu*T";
+      parameter Real cGas[nPan - 1](each unit="J/(kg.K)") "Specific heat capacity of the gas";
+      parameter Real MGas[nPan - 1](each unit="kg/mol") "Molar mass of the gas";
+      parameter Real epsGap_a[nPan - 1] "Long-wave emissivity of the pane face on the outer side of each gap";
+      parameter Real epsGap_b[nPan - 1] "Long-wave emissivity of the pane face on the inner side of each gap";
       parameter Real tau[11] "Solar transmittance at the 10 incidence angles, then hemispherical";
       parameter Real absPan[nPan, 11] "Solar absorptance of each pane at the 10 incidence angles, then hemispherical";
       parameter Real absIR_a "Long-wave emissivity of the outer pane, outside face";
@@ -666,17 +684,22 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real isFloor = if abs(sin(til)) < 1e-6 and cos(til) < 0 then 1 else 0;
     end PartialSurface;
 
-    partial model PartialOpaque "Conduction through the layers of a construction, one node at each layer boundary"
+    partial model PartialOpaque
+      "Conduction through the layers of a construction split into sublayers, one node at each sublayer boundary"
       extends PartialSurface;
       parameter Data.Construction constructionType "Construction, layers from the outside";
       parameter Boolean stateAtSurface_a = true "Capacity at the outer surface (false: it is held at a temperature)";
     protected
-      parameter Integer nLay = constructionType.nLay;
-      parameter Real C[nLay + 1](each unit="J/K") = {A*((if i > 1 then constructionType.x[i - 1]*constructionType.d[i - 1]
-        *constructionType.c[i - 1]/2 else 0) + (if i <= nLay then constructionType.x[i]*constructionType.d[i]
-        *constructionType.c[i]/2 else 0)) for i in 1:nLay + 1} "Capacity of each node";
-      parameter Real G[nLay](each unit="W/K") = {A*constructionType.k[i]/constructionType.x[i] for i in 1:nLay}
-        "Conductance of each layer";
+      parameter Integer nLay = constructionType.nNod "Number of sublayers, between nLay + 1 nodes";
+      parameter Real x[nLay](each unit="m") = {constructionType.x[constructionType.lay[j]]
+        /constructionType.nSta[constructionType.lay[j]] for j in 1:nLay} "Thickness of each sublayer";
+      parameter Real k[nLay](each unit="W/(m.K)") = {constructionType.k[constructionType.lay[j]] for j in 1:nLay};
+      parameter Real c[nLay](each unit="J/(kg.K)") = {constructionType.c[constructionType.lay[j]] for j in 1:nLay};
+      parameter Real d[nLay](each unit="kg/m3") = {constructionType.d[constructionType.lay[j]] for j in 1:nLay};
+      parameter Real C[nLay + 1](each unit="J/K") = {A*((if i > 1 then x[i - 1]*d[i - 1]*c[i - 1]/2 else 0)
+        + (if i <= nLay then x[i]*d[i]*c[i]/2 else 0)) for i in 1:nLay + 1}
+        "Capacity of each node: half of each adjacent sublayer";
+      parameter Real G[nLay](each unit="W/K") = {A*k[i]/x[i] for i in 1:nLay} "Conductance of each sublayer";
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{0,80},{80,-80}}, fillColor={175,175,175}, fillPattern=FillPattern.Solid,
             lineColor={175,175,175}),
@@ -838,6 +861,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real hFraExt(unit="W/(m2.K)") = 25 "Exterior film coefficient of the frame";
       parameter Real hFraInt(unit="W/(m2.K)") = 7.7 "Interior film coefficient of the frame";
       parameter Real cGla(unit="J/(kg.K)") = 720 "Specific heat capacity of glass when the glazing gives none";
+      parameter Real hWin(unit="m") = sqrt(A) "Height of the window: the aspect ratio of its gas gaps";
       Real T[glazing.nPan](each unit="K", each start=T_start, each fixed=true) "Pane temperatures, outside first";
       BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the window"
         annotation (Placement(transformation(extent={{-70,60},{-50,80}})));
@@ -851,8 +875,18 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real AGla(unit="m2") = A*(1 - frac) "Glass area";
       parameter Real CPan[nPan](each unit="J/K") = {AGla*glazing.x[i]*glazing.d[i]*(if glazing.c[i] > 0 then glazing.c[i]
         else cGla) for i in 1:nPan} "Capacity of each pane";
-      parameter Real GGap[nPan - 1](each unit="W/K") = {AGla/(glazing.RPan[i]/2 + glazing.RGap[i] + glazing.RPan[i + 1]/2)
-        for i in 1:nPan - 1} "Conductance between two panes";
+      parameter Real RPan[nPan](each unit="m2.K/W") = {glazing.x[i]/glazing.k[i] for i in 1:nPan}
+        "Thermal resistance of each pane";
+      parameter Real hGap0[nPan - 1](each unit="W/(m2.K)") = {Functions.gapConductance(
+        283.15 + 7.5/max(nPan - 1, 1), 283.15 - 7.5/max(nPan - 1, 1), glazing.xGas[i], glazing.kGas[i],
+        glazing.muGas_a[i], glazing.muGas_b[i], glazing.cGas[i], glazing.MGas[i], glazing.epsGap_a[i],
+        glazing.epsGap_b[i], hWin) for i in 1:nPan - 1}
+        "Conductance of each gap at the reference state of EN 673: mean 10 degC, 15 K across the glazing";
+      parameter Real RGap0[nPan - 1](each unit="m2.K/W") = {RPan[i]/2 + 1/hGap0[i] + RPan[i + 1]/2 for i in 1:nPan - 1}
+        "Resistance between the centres of two panes at the reference state";
+      parameter Real GGap[nPan - 1](each unit="W/K") = {AGla/RGap0[i] for i in 1:nPan - 1}
+        "Conductance between two panes at the reference state: the scale of the exchange (calibration)";
+      Real hGap[nPan - 1](each unit="W/(m2.K)") "Conductance of each gap at the current temperatures of its panes";
       parameter Real tauCoe[5] = Utilities.polynomialFit(cosAng, glazing.tau[1:10])
         "Direct transmittance in cos(inc)";
       parameter Real absCoe[nPan, 5] = {Utilities.polynomialFit(cosAng, glazing.absPan[i, 1:10]) for i in 1:nPan}
@@ -877,7 +911,11 @@ package FastModel "Building models for model predictive control: close to Buildi
       // several panes would index GGap[1] and T[2], which OpenModelica rejects even when the branch is not taken
       QIn[1] = -QExt;
       for i in 1:nPan - 1 loop
-        QIn[i + 1] = GGap[i]*(T[i] - T[i + 1]);
+        // the long-wave exchange across a gap grows as T^3 and its convection with the temperature difference: a
+        // sun-lit glazing at 40 degC conducts a fifth more than at the reference state
+        hGap[i] = Functions.gapConductance(T[i], T[i + 1], glazing.xGas[i], glazing.kGas[i], glazing.muGas_a[i],
+          glazing.muGas_b[i], glazing.cGas[i], glazing.MGas[i], glazing.epsGap_a[i], glazing.epsGap_b[i], hWin);
+        QIn[i + 1] = GGap[i]*RGap0[i]/(RPan[i]/2 + 1/hGap[i] + RPan[i + 1]/2)*(T[i] - T[i + 1]);
       end for;
       QIn[nPan + 1] = QInt - propsBus_a.rad.Q_flow;
       for i in 1:nPan loop
@@ -944,6 +982,40 @@ package FastModel "Building models for model predictive control: close to Buildi
         // the temperature difference: a sun-lit surface at 60 degC loses a quarter more than the linearisation at TEnv
         Q_flow := sigma*eps*A*(T^2 + TEnv^2)*(T + TEnv)*(T - TEnv);
       end skyExchange;
+
+      function gapConductance
+        "Conductance of a vertical gas gap between two panes per unit area: convection of the gas
+         (Buildings.HeatTransfer.Windows.BaseClasses.GasConvection and convectionVerticalCavity) and long-wave
+         exchange between the two panes, opaque to it, at their temperatures (Buildings exchanges exactly)"
+        input Real T_a(unit="K") "Temperature of the pane on the outer side";
+        input Real T_b(unit="K") "Temperature of the pane on the inner side";
+        input Real x(unit="m") "Thickness of the gap";
+        input Real k(unit="W/(m.K)") "Thermal conductivity of the gas";
+        input Real mu_a(unit="Pa.s") "Dynamic viscosity of the gas: mu_a + mu_b*T";
+        input Real mu_b(unit="Pa.s/K");
+        input Real c(unit="J/(kg.K)") "Specific heat capacity of the gas";
+        input Real MM(unit="kg/mol") "Molar mass of the gas";
+        input Real eps_a "Long-wave emissivity of the face of the outer pane";
+        input Real eps_b "Long-wave emissivity of the face of the inner pane";
+        input Real h(unit="m") "Height of the gap";
+        output Real hGap(unit="W/(m2.K)");
+      protected
+        Real T_m(unit="K") = (T_a + T_b)/2 "Mean temperature of the gas";
+        Real rho(unit="kg/m3") "Density of the gas at atmospheric pressure (Buildings.HeatTransfer.Data.Gases)";
+        Real Ra "Rayleigh number, at least 100 as Buildings";
+        Real Nu "Nusselt number";
+      algorithm
+        rho := 101325*MM/(8.314462618*T_m);
+        // |T_a - T_b| regularised at 0.1 K: smooth when both panes are at the same temperature
+        Ra := Utilities.smoothMax(rho^2*x^3*9.80665*c*sqrt((T_a - T_b)^2 + 0.01)/(T_m*(mu_a + mu_b*T_m)*k), 100, 10);
+        // Wright's correlations of the vertical cavity, blended over 100 around Ra = 1E4 and 5E4 as Buildings,
+        // against the correlation of the tall cavity
+        Nu := Utilities.smoothMax(
+          Utilities.regStep(Ra - 5E4, 0.0673838*Ra^(1/3),
+            Utilities.regStep(Ra - 1E4, 0.028154*Ra^0.4134, 1 + 1.7596678E-10*Ra^2.2984755, 100), 100),
+          0.242*(Ra*x/h)^0.272, 0.1);
+        hGap := Nu*k/x + sigma*(T_a^2 + T_b^2)*(T_a + T_b)/(1/eps_a + 1/eps_b - 1);
+      end gapConductance;
 
       function exteriorExchange
         "Heat from an outer surface to the outside: natural and wind-driven convection (Buildings TemperatureWind)
@@ -1185,10 +1257,12 @@ package FastModel "Building models for model predictive control: close to Buildi
 
     partial model PartialLink
       "Pressure-driven outlets of a component without resistance in Buildings: a small linear one, dpLink at the
-       nominal flow of each outlet"
+       nominal flow of each outlet. It must stay small against the branches it feeds: at 1000 Pa, the manifold of six
+       radiators of the renovated house took a fifth of the head of the living room branch, whose valve then opened
+       fully a third more often than in Buildings"
       extends PartialConserving(final GHyd=nPorts_b*GLink);
       parameter Real m_flow_nominal(unit="kg/s") = 0.15 "Nominal flow";
-      parameter Real dpLink(unit="Pa") = 1000 "Pressure drop at the nominal flow (pressure-driven flows)";
+      parameter Real dpLink(unit="Pa") = 100 "Pressure drop at the nominal flow (pressure-driven flows)";
       final parameter Real GLink(unit="kg/(s.Pa)") = m_flow_nominal/nPorts_b/dpLink "Conductance of each outlet";
     equation
       if pressureDriven then
@@ -1797,7 +1871,7 @@ package FastModel "Building models for model predictive control: close to Buildi
        capacity) charging a mixed buffer; with set flows, the reference of its circuit (no mass balance)"
       extends PartialFlow(final GHyd=GLink);
       parameter Real m_flow_nominal(unit="kg/s") = Q_flow_nominal/cpWat/5 "Nominal flow of the heating circuit";
-      parameter Real dpLink(unit="Pa") = 1000
+      parameter Real dpLink(unit="Pa") = 100
         "Pressure drop at the nominal flow (pressure-driven flows; the heating side of Buildings has none)";
       final parameter Real GLink(unit="kg/(s.Pa)") = m_flow_nominal/dpLink;
       parameter Real Q_flow_nominal(unit="W") "Heating capacity at the design outdoor and supply temperatures"

@@ -38,6 +38,9 @@
     FastModel.Envelope.Window {{ element.name }}(
         glazing={{ package_name }}.Data.Glazing.{{ element.construction.name }}(),
         A={{ element.surface }},
+        {%- if element.height %}
+        hWin={{ element.height }},
+        {%- endif %}
         frac={{ element.frame_fraction }},
         azi={{ element.azimuth }},
         til={{ macros.convert_tilt(element.tilt, library_name) }})

@@ -333,10 +333,56 @@ def test_the_closed_loop_model_discretises_the_layers_as_buildings() -> None:
         model = _model(BESTEST / "case_940.yaml", library)
         start = model.index("record heavy_wall_001")
         records[library] = model[start : model.index(";", start)]
-    assert "nLay=8" in records["FastModel"]
-    assert "x={0.0045, 0.0045, 0.0205, 0.0205, 0.0205, 0.033333, 0.033333, 0.033333}" in records["FastModel"]
-    assert "nLay=3" in records["FastModelMPC"]
-    assert "x={0.009, 0.0615, 0.1}" in records["FastModelMPC"]
+    for record in records.values():  # the layers of the YAML: FastModel.Data.Construction splits them
+        assert "nLay=3" in record
+        assert "x={0.009, 0.0615, 0.1}" in record
+    assert "nSta={2, 3, 3}" in records["FastModel"]
+    assert "nNod=8" in records["FastModel"]
+    assert "lay={1, 1, 2, 2, 2, 3, 3, 3}" in records["FastModel"]
+    assert "nSta={1, 1, 1}" in records["FastModelMPC"]
+    assert "lay={1, 2, 3}" in records["FastModelMPC"]
+
+
+WALL_ROOM = """
+package room
+  package Data
+    record Wall = FastModel.Data.Construction(nLay=2, x={0.02, 0.15}, k={0.04, 1.4}, c={1400, 900}, d={10, 2300},
+      nSta={2, 3}, nNod=5, lay={1, 1, 2, 2, 2});
+  end Data;
+  model building_mpc
+    FastModel.Interfaces.WeatherInputs weather_inputs;
+    FastModel.BoundaryConditions.Weather weather(TDryBul=weather_inputs.TDryBul, TBlaSky=weather_inputs.TBlaSky,
+      winSpe=weather_inputs.winSpe, winDir=weather_inputs.winDir, HDirNor=weather_inputs.HDirNor,
+      HDifHor=weather_inputs.HDifHor, HGloHor=weather_inputs.HGloHor);
+    FastModel.Interfaces.OccupancyInputs occupancy;
+    FastModel.Zones.Zone zone(nSurf=1, AFlo=20, hRoo=2.5);
+    FastModel.Envelope.AdiabaticWall wall(constructionType=Data.Wall(), A=10, til=FastModel.Types.Tilt.Wall);
+  equation
+    connect(weather.weaBus, zone.weaBus);
+    connect(occupancy.gai, zone.qGai_flow);
+    connect(wall.propsBus_a, zone.propsBus[1]);
+  end building_mpc;
+end room;
+"""
+
+
+@needs_connected_export
+def test_the_construction_splits_its_layers_into_sublayers() -> None:
+    """rumoca exports a wall whose two layers are split into 2 and 3 sublayers: 6 nodes, the resistance and the
+    capacity of the layers."""
+    from trano.elements.jinja import modelica_library
+
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{WALL_ROOM}", "room.building_mpc")
+    description = model.description
+    assert [name for name in description.state_names if name.startswith("wall.T")] == [
+        f"wall.T[{i}]" for i in range(1, 7)
+    ]
+    parameters = dict(zip(description.parameter_names, description.parameter_values, strict=True))
+    resistance = sum(1 / parameters[f"wall.G[{i}]"] for i in range(1, 6))
+    assert resistance == pytest.approx((0.02 / 0.04 + 0.15 / 1.4) / 10)
+    capacity = sum(parameters[f"wall.C[{i}]"] for i in range(1, 7))
+    assert capacity == pytest.approx(10 * (0.02 * 10 * 1400 + 0.15 * 2300 * 900))
+    assert parameters["wall.C[3]"] == pytest.approx(10 * (0.01 * 10 * 1400 + 0.05 * 2300 * 900) / 2)
 
 
 def _building_mpc(model: str) -> str:
@@ -478,10 +524,12 @@ def test_openmodelica_compiles_the_runnable_model(tmp_path: Path, library: str, 
 FRAME_ROOM = """
 package room
   package Data
-    record Glass = FastModel.Data.Glazing(nPan=1, x={0.004}, d={2500}, c={840}, RPan={0.004}, RGap=fill(0, 0),
-      tau={0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.2, 0, 0.7},
+    record Glass = FastModel.Data.Glazing(nPan=1, x={0.004}, k={1.0}, d={2500}, c={840}, xGas=fill(0, 0),
+      kGas=fill(0, 0), muGas_a=fill(0, 0), muGas_b=fill(0, 0), cGas=fill(0, 0), MGas=fill(0, 0), epsGap_a=fill(0, 0),
+      epsGap_b=fill(0, 0), tau={0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.2, 0, 0.7},
       absPan={{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0, 0.1}}, absIR_a=0.84, absIR_b=0.84, UFra=2.0);
-    record Slab = FastModel.Data.Construction(nLay=1, x={0.2}, k={1.4}, c={900}, d={2300});
+    record Slab = FastModel.Data.Construction(nLay=1, x={0.2}, k={1.4}, c={900}, d={2300}, nSta={1}, nNod=1,
+      lay={1});
   end Data;
   model building_mpc
     parameter Real frac = 0.3;
@@ -647,3 +695,43 @@ end Limit;
 """
     model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{probe}", "Limit")
     assert model.derivatives(0.0, np.zeros(1), np.array([x]))[0] == pytest.approx(expected, abs=1e-12)
+
+
+GAP_PROBE = """
+model Gap
+  input Real T_a;
+  input Real T_b;
+  input Real eps;
+  Real s(start=0, fixed=true);
+equation
+  der(s) = FastModel.Envelope.Functions.gapConductance(T_a, T_b, 0.012, 0.025, 3.723e-6, 4.94e-8, 1006, 0.02897, eps,
+    0.84, 2.0);
+end Gap;
+"""
+
+
+def test_the_gas_gap_conducts_with_the_temperatures_of_its_panes() -> None:
+    """The conductance of a 12 mm air gap, evaluated by rumoca: the EN 673 value at the EN 673 state (mean 10 degC,
+    15 K across), a fifth more between panes at 40 and 30 degC (the long-wave exchange grows as T^3), most of the
+    radiation gone with a low-e face."""
+    if CasadiModel is None:
+        pytest.skip("trano-optimization (rumoca) is not installed")
+    from types import SimpleNamespace
+
+    from trano.elements.glazing import gap_conductance
+    from trano.elements.jinja import modelica_library
+
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{GAP_PROBE}", "Gap")
+
+    def conductance(t_a: float, t_b: float, eps: float = 0.84) -> float:
+        return float(model.derivatives(0.0, np.zeros(1), np.array([t_a, t_b, eps]))[0])
+
+    air = SimpleNamespace(
+        thermal_conductivity=0.025, density=1.2, specific_heat_capacity=1006, viscosity_coefficients=(3.723e-6, 4.94e-8)
+    )
+    reference = conductance(290.5, 275.5)
+    assert reference == pytest.approx(gap_conductance(0.012, air, 0.84, 0.84, 15.0), rel=0.02)
+    assert conductance(313.15, 303.15) == pytest.approx(1.18 * reference, rel=0.02)
+    assert conductance(278.15, 268.15) < reference
+    assert conductance(290.5, 275.5, eps=0.04) < 0.45 * reference
+    assert conductance(293.15, 293.15) == pytest.approx(conductance(293.16, 293.14), rel=1e-4)  # smooth at dT = 0
