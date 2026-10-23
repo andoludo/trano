@@ -68,10 +68,10 @@
  "cooling_kwh": 0.0,
  "peak_heating_kw": 2.3256165081229403,
  "peak_cooling_kw": 0.0,
- "electricity_kwh": 170.64870023759994,
+ "electricity_kwh": 172.62107854076226,
  "fuel_kwh": null,
- "fans_kwh": 17.153157585099947,
+ "fans_kwh": 17.153089085246982,
  "pv_kwh": 139.27338902453192,
- "wall_time": 646.0,
- "model_hash": "c4fdc5210befab1ce32bbfd436d2c45e121410aaa6299300da33a752edbe8b60"
+ "wall_time": 659.5,
+ "model_hash": "dbfd4c6cb2c8dea3288d744cd27232f3f52289950502277d18d064a1d3e00fb1"
 }
