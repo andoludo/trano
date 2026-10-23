@@ -149,52 +149,52 @@ BESTEST 940: heavy single zone, ideal heating with a night set-back (10 degC fro
 
 | Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
 |---|---|---|---|---|---|---|---|
-| base | zone_001 | 23.35 / 23.31 | 10.00 / 10.00 | 27.00 / 27.00 | 1198 / 1384 | 3.53 / 3.95 | 2328 / 2403 |
-| insulation_x1.5 | zone_001 | 22.95 / 22.94 | 10.00 / 10.00 | 27.00 / 27.00 | 1569 / 1780 | 3.92 / 4.36 | 2124 / 2197 |
-| infiltration_x2 | zone_001 | 22.64 / 22.52 | 10.00 / 10.00 | 27.00 / 27.00 | 1847 / 2231 | 4.08 / 4.68 | 1981 / 2000 |
-| mass_x0.5 | zone_001 | 23.24 / 23.19 | 10.00 / 10.00 | 27.00 / 27.00 | 1343 / 1541 | 3.90 / 4.28 | 2554 / 2652 |
-| setpoint_+2K | zone_001 | 23.87 / 23.86 | 12.00 / 12.00 | 27.00 / 27.00 | 1653 / 1885 | 3.82 / 4.33 | 2368 / 2445 |
+| base | zone_001 | 23.35 / 23.31 | 10.00 / 10.00 | 27.00 / 27.00 | 1100 / 1225 | 3.27 / 3.64 | 2329 / 2404 |
+| insulation_x1.5 | zone_001 | 22.95 / 22.94 | 10.00 / 10.00 | 27.00 / 27.00 | 1464 / 1603 | 3.63 / 4.07 | 2125 / 2197 |
+| infiltration_x2 | zone_001 | 22.64 / 22.52 | 10.00 / 10.00 | 27.00 / 27.00 | 1742 / 2032 | 3.83 / 4.29 | 1981 / 2001 |
+| mass_x0.5 | zone_001 | 23.24 / 23.19 | 10.00 / 10.00 | 27.00 / 27.00 | 1242 / 1373 | 3.61 / 3.94 | 2554 / 2652 |
+| setpoint_+2K | zone_001 | 23.87 / 23.86 | 12.00 / 12.00 | 27.00 / 27.00 | 1544 / 1693 | 3.57 / 3.94 | 2369 / 2446 |
 
 **Meters and speed** (Buildings / FastModel, deviation of FastModel):
 
 | Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
 |---|---|---|---|---|---|
-| base | 1198 / 1384 (+15.6 %) |  /   |  /  |  /  | 68 / 26 |
-| insulation_x1.5 | 1569 / 1780 (+13.5 %) |  /   |  /  |  /  | 113 / 33 |
-| infiltration_x2 | 1847 / 2231 (+20.8 %) |  /   |  /  |  /  | 113 / 33 |
-| mass_x0.5 | 1343 / 1541 (+14.8 %) |  /   |  /  |  /  | 107 / 33 |
-| setpoint_+2K | 1653 / 1885 (+14.0 %) |  /   |  /  |  /  | 99 / 30 |
+| base | 1100 / 1225 (+11.3 %) |  /   |  /  |  /  | 110 / 32 |
+| insulation_x1.5 | 1464 / 1603 (+9.5 %) |  /   |  /  |  /  | 106 / 32 |
+| infiltration_x2 | 1742 / 2032 (+16.6 %) |  /   |  /  |  /  | 84 / 29 |
+| mass_x0.5 | 1242 / 1373 (+10.6 %) |  /   |  /  |  /  | 109 / 32 |
+| setpoint_+2K | 1544 / 1693 (+9.7 %) |  /   |  /  |  /  | 90 / 28 |
 
 **Hour by hour**, FastModel against Buildings:
 
 | Variant | Zone | T RMSE [K] | T bias [K] | T max error [K] | Heating CV(RMSE) | Heating NMBE | Heating deviation |
 |---|---|---|---|---|---|---|---|
-| base | zone_001 | 0.13 | -0.03 | 0.77 | 58.2 % | +15.6 % | +15.6 % |
-| insulation_x1.5 | zone_001 | 0.13 | -0.02 | 0.70 | 50.5 % | +13.5 % | +13.5 % |
-| infiltration_x2 | zone_001 | 0.21 | -0.12 | 0.94 | 58.8 % | +20.8 % | +20.8 % |
-| mass_x0.5 | zone_001 | 0.12 | -0.05 | 0.67 | 54.1 % | +14.8 % | +14.8 % |
-| setpoint_+2K | zone_001 | 0.11 | -0.02 | 0.67 | 50.1 % | +14.0 % | +14.0 % |
+| base | zone_001 | 0.13 | -0.03 | 0.77 | 38.1 % | +11.3 % | +11.3 % |
+| insulation_x1.5 | zone_001 | 0.13 | -0.02 | 0.70 | 31.4 % | +9.5 % | +9.5 % |
+| infiltration_x2 | zone_001 | 0.21 | -0.12 | 0.94 | 42.9 % | +16.6 % | +16.6 % |
+| mass_x0.5 | zone_001 | 0.12 | -0.05 | 0.67 | 33.7 % | +10.6 % | +10.6 % |
+| setpoint_+2K | zone_001 | 0.11 | -0.02 | 0.67 | 30.5 % | +9.7 % | +9.7 % |
 
 **Response to the perturbations**:
 
 | Perturbation | KPI | Buildings: base, perturbed (change) | FastModel: base, perturbed (change) | FastModel change / Buildings change |
 |---|---|---|---|---|
 | insulation_x1.5 | mean zone temperature [degC] | 23.35, 22.95 (-0.39) | 23.31, 22.94 (-0.38) | 0.96 |
-| insulation_x1.5 | heating demand [kWh] | 1198, 1569 (+31.0 %) | 1384, 1780 (+28.6 %) | 1.07 |
-| insulation_x1.5 | peak heating [kW] | 3.53, 3.92 (+10.9 %) | 3.95, 4.36 (+10.5 %) | 1.07 |
-| insulation_x1.5 | cooling demand [kWh] | 2328, 2124 (-8.8 %) | 2403, 2197 (-8.5 %) | 1.01 |
+| insulation_x1.5 | heating demand [kWh] | 1100, 1464 (+33.1 %) | 1225, 1603 (+30.9 %) | 1.04 |
+| insulation_x1.5 | peak heating [kW] | 3.27, 3.63 (+11.0 %) | 3.64, 4.07 (+11.7 %) | 1.18 |
+| insulation_x1.5 | cooling demand [kWh] | 2329, 2125 (-8.8 %) | 2404, 2197 (-8.6 %) | 1.01 |
 | infiltration_x2 | mean zone temperature [degC] | 23.35, 22.64 (-0.71) | 23.31, 22.52 (-0.80) | 1.13 |
-| infiltration_x2 | heating demand [kWh] | 1198, 1847 (+54.2 %) | 1384, 2231 (+61.1 %) | 1.30 |
-| infiltration_x2 | peak heating [kW] | 3.53, 4.08 (+15.5 %) | 3.95, 4.68 (+18.6 %) | 1.34 |
-| infiltration_x2 | cooling demand [kWh] | 2328, 1981 (-14.9 %) | 2403, 2000 (-16.8 %) | 1.16 |
+| infiltration_x2 | heating demand [kWh] | 1100, 1742 (+58.3 %) | 1225, 2032 (+65.9 %) | 1.26 |
+| infiltration_x2 | peak heating [kW] | 3.27, 3.83 (+16.9 %) | 3.64, 4.29 (+17.8 %) | 1.18 |
+| infiltration_x2 | cooling demand [kWh] | 2329, 1981 (-15.0 %) | 2404, 2001 (-16.8 %) | 1.16 |
 | mass_x0.5 | mean zone temperature [degC] | 23.35, 23.24 (-0.10) | 23.31, 23.19 (-0.12) | 1.16 |
-| mass_x0.5 | heating demand [kWh] | 1198, 1343 (+12.1 %) | 1384, 1541 (+11.3 %) | 1.08 |
-| mass_x0.5 | peak heating [kW] | 3.53, 3.90 (+10.3 %) | 3.95, 4.28 (+8.3 %) | 0.90 |
-| mass_x0.5 | cooling demand [kWh] | 2328, 2554 (+9.7 %) | 2403, 2652 (+10.4 %) | 1.10 |
+| mass_x0.5 | heating demand [kWh] | 1100, 1242 (+12.8 %) | 1225, 1373 (+12.1 %) | 1.05 |
+| mass_x0.5 | peak heating [kW] | 3.27, 3.61 (+10.3 %) | 3.64, 3.94 (+8.1 %) | 0.88 |
+| mass_x0.5 | cooling demand [kWh] | 2329, 2554 (+9.6 %) | 2404, 2652 (+10.3 %) | 1.11 |
 | setpoint_+2K | mean zone temperature [degC] | 23.35, 23.87 (+0.53) | 23.31, 23.86 (+0.54) | 1.03 |
 | setpoint_+2K | lowest hourly zone temperature [degC] | 10.00, 12.00 (+2.00) | 10.00, 12.00 (+2.00) | 1.00 |
-| setpoint_+2K | heating demand [kWh] | 1198, 1653 (+38.1 %) | 1384, 1885 (+36.2 %) | 1.10 |
-| setpoint_+2K | peak heating [kW] | 3.53, 3.82 (+8.2 %) | 3.95, 4.33 (+9.6 %) | 1.31 |
+| setpoint_+2K | heating demand [kWh] | 1100, 1544 (+40.3 %) | 1225, 1693 (+38.2 %) | 1.06 |
+| setpoint_+2K | peak heating [kW] | 3.27, 3.57 (+9.0 %) | 3.64, 3.94 (+8.2 %) | 1.01 |
 
 {!validation/figures/fast_model_study_940_days_7_7.html!}
 
@@ -211,14 +211,14 @@ BESTEST 960: light zone heated and cooled (20/27 degC) behind an unconditioned h
 | Variant | Zone | Mean T [degC] | Lowest T [degC] | Highest T [degC] | Heating [kWh] | Peak heating [kW] | Cooling [kWh] |
 |---|---|---|---|---|---|---|---|
 | base | sunspace_001 | 26.69 / 27.22 | 4.16 / 4.09 | 48.04 / 48.43 | 0 / 0 | 0.00 / 0.00 | 0 / 0 |
-| base | zone_001 | 22.81 / 22.80 | 20.00 / 20.00 | 27.00 / 27.00 | 2592 / 2779 | 2.10 / 2.25 | 949 / 955 |
-| base | **all zones** | 24.75 / 25.01 | 4.16 / 4.09 | 48.04 / 48.43 | 2592 / 2779 | 2.10 / 2.25 | 949 / 955 |
+| base | zone_001 | 22.81 / 22.80 | 20.00 / 20.00 | 27.00 / 27.00 | 2588 / 2776 | 2.10 / 2.25 | 950 / 956 |
+| base | **all zones** | 24.75 / 25.01 | 4.16 / 4.09 | 48.04 / 48.43 | 2588 / 2776 | 2.10 / 2.25 | 950 / 956 |
 
 **Meters and speed** (Buildings / FastModel, deviation of FastModel):
 
 | Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
 |---|---|---|---|---|---|
-| base | 2592 / 2779 (+7.2 %) |  /   |  /  |  /  | 103 / 31 |
+| base | 2588 / 2776 (+7.2 %) |  /   |  /  |  /  | 149 / 35 |
 
 **Hour by hour**, FastModel against Buildings:
 

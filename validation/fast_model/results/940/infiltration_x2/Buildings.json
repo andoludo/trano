@@ -8,20 +8,20 @@
    "mean_temperature": 22.638384629644662,
    "min_temperature": 9.999769183264846,
    "max_temperature": 27.000686789618612,
-   "heating_kwh": 1846.919221272098,
-   "cooling_kwh": 1980.7467006528045,
-   "peak_heating_kw": 4.078230258232752,
-   "peak_cooling_kw": 2.9682069065909915
+   "heating_kwh": 1741.9747115800687,
+   "cooling_kwh": 1980.6633801503942,
+   "peak_heating_kw": 3.8268345672546493,
+   "peak_cooling_kw": 3.020072332159943
   }
  ],
- "heating_kwh": 1846.919221272098,
- "cooling_kwh": 1980.7467006528045,
- "peak_heating_kw": 4.078230258232752,
- "peak_cooling_kw": 2.9682069065909915,
+ "heating_kwh": 1741.9747115800687,
+ "cooling_kwh": 1980.6633801503942,
+ "peak_heating_kw": 3.8268345672546493,
+ "peak_cooling_kw": 3.020072332159943,
  "electricity_kwh": null,
  "fuel_kwh": null,
  "fans_kwh": null,
  "pv_kwh": null,
- "wall_time": 113.3,
- "model_hash": "e45ea668356cbedbddacc2b8c10098ee4fdfa2b7f5b1c2cabf89f1d889a7a006"
+ "wall_time": 84.3,
+ "model_hash": "c597f00a4843815ffa04f32496509ad108a5f4e7d7d8db33fe67f8c935bd623b"
 }
