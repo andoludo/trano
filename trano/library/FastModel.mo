@@ -7,6 +7,7 @@ package FastModel "Building models for model predictive control: close to Buildi
   constant Real rhoWat(unit="kg/m3") = 995.586 "Density of water (Buildings.Media.Water)";
   constant Real cpAir(unit="J/(kg.K)") = 1006 "Specific heat capacity of air";
   constant Real rhoAir(unit="kg/m3") = 1.2 "Density of air";
+  constant Real RAir(unit="J/(kg.K)") = 287.0512 "Gas constant of dry air (Buildings.Media.Air)";
 
   package Icons "Icons"
     partial package Package "Package icon"
@@ -60,7 +61,24 @@ package FastModel "Building models for model predictive control: close to Buildi
       y := regStep(x2 - x1, x1, x2, deltaX);
     end smoothMin;
 
-    function smoothLimit "Once continuously differentiable limitation of x to [l, u]"
+    function smoothLimit
+      "Once continuously differentiable limitation of x to [l, u]: exactly l below l - deltaX and u above u + deltaX,
+       x between l + deltaX and u - deltaX, quadratic blends in between that never leave [l, u]"
+      input Real x;
+      input Real l;
+      input Real u;
+      input Real deltaX "Half width of the blends, below (u - l)/2";
+      output Real y;
+    protected
+      Real z "x limited from below";
+    algorithm
+      z := if x > l + deltaX then x else if x < l - deltaX then l else l + (x - l + deltaX)^2/(4*deltaX);
+      y := if z < u - deltaX then z else if z > u + deltaX then u else u - (u + deltaX - z)^2/(4*deltaX);
+    end smoothLimit;
+
+    function smoothLimitInside
+      "Once continuously differentiable limitation of x to [l + deltaX, u - deltaX], strictly inside [l, u] (for
+       arguments of functions singular at the bounds, as acos at -1 and 1)"
       input Real x;
       input Real l;
       input Real u;
@@ -68,7 +86,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       output Real y;
     algorithm
       y := smoothMin(smoothMax(x, l + deltaX, deltaX), u - deltaX, deltaX);
-    end smoothLimit;
+    end smoothLimitInside;
 
     function positivePart "Smooth max(x, 0): 0.5*(x + sqrt(x^2 + delta^2))"
       input Real x;
@@ -313,6 +331,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealOutput cosZen "Cosine of the solar zenith angle";
       RealOutput F1 "Circumsolar brightening coefficient of the Perez model";
       RealOutput F2 "Horizon brightening coefficient of the Perez model";
+      RealOutput pAtm(unit="Pa") "Atmospheric pressure";
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
           Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
@@ -339,6 +358,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       RealInput cosZen "Cosine of the solar zenith angle";
       RealInput F1 "Circumsolar brightening coefficient of the Perez model";
       RealInput F2 "Horizon brightening coefficient of the Perez model";
+      RealInput pAtm(unit="Pa") "Atmospheric pressure";
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(lineColor={255,204,51}, lineThickness=0.5, extent={{-20,-2},{20,2}}),
           Polygon(fillColor={255,215,136}, fillPattern=FillPattern.Solid,
@@ -508,6 +528,9 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real lon(unit="rad") = 0.0760 "Longitude (Uccle by default)";
       parameter Real timZon(unit="s") = 3600 "Time zone (offset of the standard time from UTC)";
       parameter Real alt(unit="m") = 100 "Altitude of the site";
+      parameter Real pAtm(unit="Pa") = 101325
+        "Atmospheric pressure, constant (Buildings' default; the runnable model takes the pressure of the site's
+         altitude when the YAML reads the pressure from the weather file)";
       Interfaces.RealInput TDryBul(unit="K") "Outdoor dry-bulb air temperature"
         annotation (Placement(transformation(extent={{-120,60},{-100,80}})));
       Interfaces.RealInput TBlaSky(unit="K") "Black-body sky temperature"
@@ -553,6 +576,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       weaBus.HDirNor = HDirNor;
       weaBus.HDifHor = HDifHor;
       weaBus.HGloHor = HGloHor;
+      weaBus.pAtm = pAtm;
       weaBus.lat = lat;
       // Solar position (Buildings.BoundaryConditions.SolarGeometry; the model time is the clock time of the year)
       weaBus.decAng = asin(-sin(23.45*pi/180)*cos((time/86400 + 10)*2*pi/365.25));
@@ -561,14 +585,14 @@ package FastModel "Building models for model predictive control: close to Buildi
       solTim = time - timZon + lon*43200/pi + eqnTim;
       weaBus.solHouAng = (solTim/3600 - 12)*2*pi/24;
       weaBus.cosZen = cos(lat)*cos(weaBus.decAng)*cos(weaBus.solHouAng) + sin(lat)*sin(weaBus.decAng);
-      zen = acos(Utilities.smoothLimit(weaBus.cosZen, -1, 1, 1e-6));
+      zen = acos(Utilities.smoothLimitInside(weaBus.cosZen, -1, 1, 1e-6));
       // Perez sky model (Buildings.BoundaryConditions.SolarIrradiation.BaseClasses)
       zenLim = Utilities.smoothMin(zen, pi/2, 0.01);
       relAirMas = exp(-0.0001184*alt)/(cos(zenLim) + 0.15*(93.9 - zenLim*180/pi)^(-1.253));
       skyBri = Utilities.smoothMin(HDifHor*relAirMas/(1366.1*(1 + 0.033*cos(2*pi*(solTim/86400 + 1)/365))), 1, 0.025);
       HDifHorBou = Utilities.smoothMax(HDifHor, 0.5e-4, 0.25e-4);
       tmp = 5.534e-6*(180/pi)^3*zen^3;
-      skyCle = Utilities.smoothLimit(((HDirNor + HDifHorBou)/HDifHorBou + tmp)/(1 + tmp), 1, 8, 0.01);
+      skyCle = Utilities.smoothLimitInside(((HDirNor + HDifHorBou)/HDifHorBou + tmp)/(1 + tmp), 1, 8, 0.01);
       for i in 1:7 loop
         b[i] = Utilities.regStep(edges[i] - skyCle, 1, 0, 0.01);
       end for;
@@ -977,6 +1001,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real TRad(unit="K") "Radiant star temperature";
       Real QVen(unit="W") "Heat brought by the ventilation";
       Real mVen_flow(unit="kg/s") "Scheduled outdoor air flow";
+      Real rho(unit="kg/m3") "Density of the zone air at the pressure of the site (ideal gas, Buildings.Media.Air)";
     protected
       Real G[nSurf](each unit="W/K") "Long-wave conductance of each surface to the star";
       Real QDir(unit="W") "Transmitted direct solar radiation";
@@ -1012,8 +1037,11 @@ package FastModel "Building models for model predictive control: close to Buildi
       end for;
       // Air
       mVen_flow = Utilities.dayTable(Utilities.timeOfDay(time), ventilationSchedule);
-      mSenFac*rhoAir*cpAir*V*der(TAir) = sum(propsBus[i].con.Q_flow for i in 1:nSurf) + heaPorAir.Q_flow + AFlo*qGai_flow.QCon
-        + (rhoAir*V*ACH/3600 + mVen_flow)*cpAir*(weaBus.TDryBul - TAir) + QVen;
+      // the infiltration is a volume flow of zone air (Buildings: ACH*V*density(pAtm, TAir)): at 1600 m it carries
+      // a fifth less heat than with the density of sea level
+      rho = weaBus.pAtm/(RAir*TAir);
+      mSenFac*rho*cpAir*V*der(TAir) = sum(propsBus[i].con.Q_flow for i in 1:nSurf) + heaPorAir.Q_flow + AFlo*qGai_flow.QCon
+        + (rho*V*ACH/3600 + mVen_flow)*cpAir*(weaBus.TDryBul - TAir) + QVen;
       heaPorAir.T = TAir;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-80,-80},{80,80}}, lineColor={95,95,95}, fillColor={95,95,95},
@@ -2311,9 +2339,8 @@ package FastModel "Building models for model predictive control: close to Buildi
         annotation (Placement(transformation(extent={{90,-50},{110,-30}})));
       Real Q_flow(unit="W") "Heat flow rate";
     equation
-      // smoothLimit saturates at 1e-3 and 1 - 1e-3: rescaled, the emitter gives no heat at y <= 0 and its nominal
-      // power at y >= 1 (a floor of 1e-3*Q_flow_nominal is a large heat with the capacities of ideal systems)
-      Q_flow = Q_flow_nominal*(Utilities.smoothLimit(y, 0, 1, 1e-3) - 1e-3)/(1 - 2e-3);
+      // no heat at y <= 0, the nominal power at y >= 1: smoothLimit reaches its bounds exactly
+      Q_flow = Q_flow_nominal*Utilities.smoothLimit(y, 0, 1, 1e-3);
       heatPortCon.Q_flow = -(1 - fraRad)*Q_flow;
       heatPortRad.Q_flow = -fraRad*Q_flow;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
@@ -2351,10 +2378,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       Controls.PI conHea(k=k, Ti=Ti, e=Utilities.dayTable(Utilities.timeOfDay(time), TSetHea) - heatPortCon.T, enable=1);
       Controls.PI conCoo(k=k, Ti=Ti, e=heatPortCon.T - Utilities.dayTable(Utilities.timeOfDay(time), TSetCoo), enable=1);
     equation
-      // the outputs of the PI controllers saturate at dY and 1 - dY (smoothLimit): rescaled, a saturated mode gives
-      // exactly no heat. Without it each mode leaked dY*capacity (1 kW with the 1 MW of BESTEST) into the other.
-      QHea_flow = (conHea.y - conHea.dY)/(1 - 2*conHea.dY)*QHea_flow_max;
-      QCoo_flow = (conCoo.y - conCoo.dY)/(1 - 2*conCoo.dY)*QCoo_flow_max;
+      // a saturated mode gives exactly no heat: smoothLimit reaches its bounds (when it saturated at dY, each mode
+      // leaked dY*capacity, 1 kW with the 1 MW of BESTEST, into the other)
+      QHea_flow = conHea.y*QHea_flow_max;
+      QCoo_flow = conCoo.y*QCoo_flow_max;
       der(EHea) = QHea_flow/3.6e6;
       der(ECoo) = QCoo_flow/3.6e6;
       heatPortCon.Q_flow = -(1 - frad)*(QHea_flow - QCoo_flow);

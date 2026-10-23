@@ -598,11 +598,32 @@ def test_the_zone_takes_the_night_ventilation_schedule() -> None:
 
 
 def test_a_saturated_ideal_system_gives_no_heat() -> None:
-    """The PI controllers of the ideal system saturate at dY and 1 - dY (smoothLimit): the heat is rescaled so that
-    the idle mode gives none. Before, heating and cooling each leaked 1e-3 of their capacity (1 kW for BESTEST)."""
+    """smoothLimit reaches its bounds exactly: a saturated PI of the ideal system gives no heat. When it saturated at
+    dY and 1 - dY, heating and cooling each leaked 1e-3 of their capacity (1 kW for BESTEST)."""
     text = (ROOT / "trano" / "library" / "FastModel.mo").read_text()
     ideal = text[text.index("model IdealHeatingCoolingPI") : text.index("end IdealHeatingCoolingPI;")]
-    assert "QHea_flow = (conHea.y - conHea.dY)/(1 - 2*conHea.dY)*QHea_flow_max;" in ideal
-    assert "QCoo_flow = (conCoo.y - conCoo.dY)/(1 - 2*conCoo.dY)*QCoo_flow_max;" in ideal
-    heater = text[text.index("model IdealHeater") : text.index("end IdealHeater;")]
-    assert "(Utilities.smoothLimit(y, 0, 1, 1e-3) - 1e-3)/(1 - 2e-3)" in heater
+    assert "QHea_flow = conHea.y*QHea_flow_max;" in ideal
+    assert "QCoo_flow = conCoo.y*QCoo_flow_max;" in ideal
+
+
+@pytest.mark.parametrize(
+    ("x", "expected"),
+    [(-1.0, 0.0), (-0.01, 0.0), (0.0, 0.0025), (0.005, 0.005625), (0.02, 0.02), (0.5, 0.5), (1.0, 0.9975), (2.0, 1.0)],
+)
+def test_the_smooth_limit_reaches_its_bounds_and_stays_inside(x: float, expected: float) -> None:
+    """The smooth limit of the controllers, evaluated by rumoca: exactly 0 and 1 beyond the blends of half width
+    0.01, never outside [0, 1], continuous with its derivative at the ends of the blends."""
+    if CasadiModel is None:
+        pytest.skip("trano-optimization (rumoca) is not installed")
+    from trano.elements.jinja import modelica_library
+
+    probe = """
+model Limit
+  input Real x;
+  Real s(start=0, fixed=true);
+equation
+  der(s) = FastModel.Utilities.smoothLimit(x, 0, 1, 0.01);
+end Limit;
+"""
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{probe}", "Limit")
+    assert model.derivatives(0.0, np.zeros(1), np.array([x]))[0] == pytest.approx(expected, abs=1e-12)

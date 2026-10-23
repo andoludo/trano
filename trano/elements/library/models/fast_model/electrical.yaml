@@ -70,6 +70,11 @@
         port: F2
         target:
           main: element
+      - component: weaBus
+        name: pAtm
+        port: pAtm
+        target:
+          main: element
     category: solar
     template: |-
       model Photovoltaic{{ element.name | capitalize }}
