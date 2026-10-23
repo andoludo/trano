@@ -12,6 +12,7 @@ on:
       - ".github/workflows/fast_model_study.yaml"
       - "validation/fast_model/**"
       - "trano/library/FastModel.mo"
+      - "trano/elements/library/library.json"
       - "trano/elements/library/models/fast_model/*.yaml"
   workflow_dispatch:
     inputs:
