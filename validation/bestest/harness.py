@@ -207,6 +207,23 @@ def _raise_keyboard_interrupt(signum: int, frame: object) -> None:
     raise KeyboardInterrupt
 
 
+RESULTS_ROOT = Path(__file__).resolve().parent.joinpath("results")
+
+
+def committed_results(library: str) -> dict[str, CaseResult]:
+    """The results of a library committed to the repository (``results/<library>/<case>.json``, written by the
+    BESTEST workflow), so that the documentation renders without the cache of the runs."""
+    return {
+        path.stem: CaseResult.model_validate_json(path.read_text())
+        for path in sorted(RESULTS_ROOT.joinpath(library).glob("*.json"))
+    }
+
+
+def load_results(library: str) -> dict[str, CaseResult]:
+    """The cached results of a library, or its committed results when nothing is cached."""
+    return cached_results(library) or committed_results(library)
+
+
 def cached_results(library: str) -> dict[str, CaseResult]:
     """Every cached result of a library, whatever its model hash."""
     results = {}

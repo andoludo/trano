@@ -6,6 +6,8 @@ frozen passes the acceptance bands (or is a listed deviation), behaves as a cond
 zone must, and reacts to each change of the standard's cases the way every reference program does.
 """
 
+from pathlib import Path
+
 import pytest
 
 from validation.bestest.cases import CASES, UnsupportedCaseError, check_support
@@ -190,3 +192,24 @@ def test_each_change_of_the_cases_acts_in_the_direction_of_every_reference_progr
 
     assert checked > 50
     assert not wrong, "\n".join(wrong)
+
+
+def test_the_section_of_a_library_replaces_its_previous_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The FastModel section is written into the page without the results of the other libraries at hand."""
+    from validation.bestest import report
+
+    page = tmp_path / "bestest.md"
+    page.write_text("# BESTEST\n\n## Buildings\n\nBuildings table\n\n## IDEAS\n\nIDEAS table\n")
+    monkeypatch.setattr(report, "DOCS_PAGE", page)
+    monkeypatch.setattr(
+        report, "render_library_section", lambda library, results, reference=None: f"## {library}\n\n{results}\n"
+    )
+    report.update_docs_section("FastModel", {"first": 1})  # type: ignore[dict-item]
+    report.update_docs_section("FastModel", {"second": 2})  # type: ignore[dict-item]
+    text = page.read_text()
+    assert text.count("## FastModel") == 1
+    assert "second" in text and "first" not in text
+    assert "Buildings table" in text and "IDEAS table" in text
+    assert text.index("## IDEAS") < text.index("## FastModel")

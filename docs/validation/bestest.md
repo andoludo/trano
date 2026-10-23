@@ -15,9 +15,10 @@ peak or 1 K. Buildings and IDEAS are gating libraries: `pytest -m bestest` fails
 their cases leaves its band, except for the deviations listed below with their reason. The
 reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
 method applied hour by hour and the reduced-order zone still deviates on several cases, so
-neither gates. Cases a library cannot describe (shading with IDEAS, which OpenModelica cannot
-compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the two simplified zones)
-are left out. The tables are rendered from the last results with
+neither gates. FastModel, the reduced library of trano that translates to CasADi, is shown for
+information in [its own section](#fastmodel). Cases a library cannot describe (shading with IDEAS,
+which OpenModelica cannot compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the
+two simplified zones; shading with FastModel) are left out. The tables are rendered from the last results with
 `python -m validation.bestest report --docs`. [A walk through the BESTEST cases](bestest_cases.md) explains a few
 cases in detail: what they are, what is expected, how the YAML describes them and how the results
 compare.

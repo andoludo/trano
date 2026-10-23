@@ -182,9 +182,10 @@ peak or 1 K. Buildings and IDEAS are gating libraries: `pytest -m bestest` fails
 their cases leaves its band, except for the deviations listed below with their reason. The
 reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
 method applied hour by hour and the reduced-order zone still deviates on several cases, so
-neither gates. Cases a library cannot describe (shading with IDEAS, which OpenModelica cannot
-compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the two simplified zones)
-are left out. The tables are rendered from the last results with
+neither gates. FastModel, the reduced library of trano that translates to CasADi, is shown for
+information in [its own section](#fastmodel). Cases a library cannot describe (shading with IDEAS,
+which OpenModelica cannot compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the
+two simplified zones; shading with FastModel) are left out. The tables are rendered from the last results with
 `python -m validation.bestest report --docs`. [A walk through the BESTEST cases](bestest_cases.md) explains a few
 cases in detail: what they are, what is expected, how the YAML describes them and how the results
 compare.
@@ -192,3 +193,73 @@ compare.
 """
     body = render_markdown(results, reference)
     return intro + body[body.index("\n") + 1 :].lstrip("\n")
+
+
+# Libraries documented in a section of their own next to the generated tables, with the library their KPIs are
+# set against and what the reader needs to know before the table.
+LIBRARY_SECTIONS: dict[str, tuple[str, str]] = {
+    "FastModel": (
+        "Buildings",
+        """The `FastModel` library (the closed-loop model of trano's FastModel components, the one rumoca translates to
+CasADi for optimal control) runs the same YAML files in OpenModelica. It follows the envelope of Buildings with fewer
+states: one capacity per layer boundary instead of `number_of_states` per layer, the long-wave exchange of a room
+linearised at 20 degC, smooth controllers without events. It is shown for information, it does not gate. The four
+cases with overhangs or side fins (610, 630, 910, 930) are left out: FastModel has no shading of the windows yet. The
+column Buildings gives the frozen value of Buildings for the same case (`expected/Buildings.json`), so that the gap
+between the two libraries reads next to the band. How the two libraries compare hour by hour and how they respond to a
+change of the parameters is studied in [FastModel against Buildings on BESTEST and a renovated
+house](fast_model_study.md).
+""",
+    ),
+}
+
+
+def render_library_section(library: str, results: dict[str, CaseResult], reference: ReferenceData | None = None) -> str:
+    """The section of a library: its introduction, the share of KPIs inside their band and the table of every KPI
+    with the value of the library it is set against."""
+    reference = reference or load_reference()
+    against, introduction = LIBRARY_SECTIONS[library]
+    frozen = frozen_values(against)
+    comparisons = [
+        comparison
+        for case_id in sorted(results, key=lambda name: (len(name), name))
+        for comparison in compare(results[case_id].kpis, reference)
+    ]
+    inside = sum(comparison.status != "fail" for comparison in comparisons)
+    lines = [
+        f"## {library}",
+        "",
+        introduction.strip(),
+        "",
+        f"{inside} of {len(comparisons)} KPIs of {len(results)} cases are inside their band"
+        + (" (known deviations included)." if any(c.status == "known" for c in comparisons) else "."),
+        "",
+        f"| Case | KPI | {library} | {against} | Band | Reference mean | Status |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for comparison in comparisons:
+        value = frozen.get(comparison.case, {}).get(comparison.kpi)
+        status = comparison.status
+        if status == "known":
+            status = f"known deviation: {comparison.known_deviation}"
+        lines.append(
+            f"| {comparison.case} | {comparison.kpi} | {comparison.value:.3f} {comparison.unit} | "
+            f"{'' if value is None else f'{value:.3f} {comparison.unit}'} | "
+            f"{comparison.lower:.3f} to {comparison.upper:.3f} | {comparison.mean:.3f} | {status} |"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def update_docs_section(library: str, results: dict[str, CaseResult], reference: ReferenceData | None = None) -> Path:
+    """Write the section of a library into the documentation page, replacing its previous version and leaving the
+    sections of the other libraries as they are (their results need not be at hand)."""
+    text = DOCS_PAGE.read_text()
+    section = render_library_section(library, results, reference)
+    start = text.find(f"\n## {library}\n")
+    if start < 0:
+        text = text.rstrip("\n") + "\n\n" + section
+    else:
+        end = text.find("\n## ", start + 1)
+        text = text[: start + 1] + section + ("\n" + text[end + 1 :] if end >= 0 else "")
+    DOCS_PAGE.write_text(text)
+    return DOCS_PAGE
