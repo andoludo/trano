@@ -1,0 +1,451 @@
+# Weather: its data are inputs of building_mpc (the weather data of a file or of a forecast), read from the data bus
+# (<variable>Weather, inputs `weather_inputs.<variable>` of the model); its weather bus, with the solar position of
+# the site, goes on the data bus for the systems outside the envelope (TDryBul, ..., as the Buildings weather bus).
+# The zones take it directly. The runnable model reads the weather file with the Buildings reader and gives
+# building_mpc the site of the file; building_mpc alone keeps the site of its parameters (Uccle by default).
+- classes:
+  - Weather
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TDryBul
+        port: TDryBul
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.WeatherInputs {{ element.name }}_inputs "Weather data: inputs of the model";
+          port: "{{ element.name }}_inputs.TDryBul"
+      - component: ""
+        name: TBlaSky
+        port: TBlaSky
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.WeatherInputs {{ element.name }}_inputs "Weather data: inputs of the model";
+          port: "{{ element.name }}_inputs.TBlaSky"
+      - component: ""
+        name: winSpe
+        port: winSpe
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.WeatherInputs {{ element.name }}_inputs "Weather data: inputs of the model";
+          port: "{{ element.name }}_inputs.winSpe"
+      - component: ""
+        name: winDir
+        port: winDir
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.WeatherInputs {{ element.name }}_inputs "Weather data: inputs of the model";
+          port: "{{ element.name }}_inputs.winDir"
+      - component: ""
+        name: HDirNor
+        port: HDirNor
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.WeatherInputs {{ element.name }}_inputs "Weather data: inputs of the model";
+          port: "{{ element.name }}_inputs.HDirNor"
+      - component: ""
+        name: HDifHor
+        port: HDifHor
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.WeatherInputs {{ element.name }}_inputs "Weather data: inputs of the model";
+          port: "{{ element.name }}_inputs.HDifHor"
+      - component: ""
+        name: HGloHor
+        port: HGloHor
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.WeatherInputs {{ element.name }}_inputs "Weather data: inputs of the model";
+          port: "{{ element.name }}_inputs.HGloHor"
+      real_outputs: &weather_signals
+      - component: weaBus
+        name: TDryBul
+        port: TDryBul
+        target:
+          main: element
+      - component: weaBus
+        name: TBlaSky
+        port: TBlaSky
+        target:
+          main: element
+      - component: weaBus
+        name: winSpe
+        port: winSpe
+        target:
+          main: element
+      - component: weaBus
+        name: winDir
+        port: winDir
+        target:
+          main: element
+      - component: weaBus
+        name: HDirNor
+        port: HDirNor
+        target:
+          main: element
+      - component: weaBus
+        name: HDifHor
+        port: HDifHor
+        target:
+          main: element
+      - component: weaBus
+        name: HGloHor
+        port: HGloHor
+        target:
+          main: element
+      - component: weaBus
+        name: lat
+        port: lat
+        target:
+          main: element
+      - component: weaBus
+        name: decAng
+        port: decAng
+        target:
+          main: element
+      - component: weaBus
+        name: solHouAng
+        port: solHouAng
+        target:
+          main: element
+      - component: weaBus
+        name: cosZen
+        port: cosZen
+        target:
+          main: element
+      - component: weaBus
+        name: F1
+        port: F1
+        target:
+          main: element
+      - component: weaBus
+        name: F2
+        port: F2
+        target:
+          main: element
+      - component: weaBus
+        name: pAtm
+        port: pAtm
+        target:
+          main: element
+    category: control
+    template: |-
+      model Weather{{ element.name | capitalize }}
+        extends FastSmoothBuildings.BoundaryConditions.Weather;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end Weather{{ element.name | capitalize }};
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    use_counter: false
+    names:
+    - weaBus
+    targets:
+    - Space
+  - &data_bus_port
+    flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |-
+    {{ package_name }}.Components.BaseClasses.Weather{{ element.name | capitalize }} {{ element.name }}
+    {%- if parameters.get("pAtm") is not none %}(pAtm={{ parameters.get("pAtm") }}){% endif %}
+  runnable:
+    declaration: |-
+      {%- set path = parameters.get("filNam") -%}
+      Buildings.BoundaryConditions.WeatherData.ReaderTMY3 {{ element.name }}_reader(filNam=
+      {%- if path -%}
+      {{ (path if path.startswith('"') or path.startswith('Modelica.') else '"' ~ path ~ '"') | safe }}
+      {%- else -%}
+      Modelica.Utilities.Files.loadResource("modelica://IDEAS/Resources/weatherdata/BEL_VLG_Uccle.064470_TMYx.2007-2021.mos")
+      {%- endif -%}
+      ) "Weather file";
+    equation: |-
+      {%- for variable in ['TDryBul', 'TBlaSky', 'winSpe', 'winDir', 'HDirNor', 'HDifHor', 'HGloHor'] %}
+      connect({{ element.name }}_reader.weaBus.{{ variable }}, mpc.{{ element.name }}_inputs.{{ variable }});
+      {%- endfor %}
+    modifier: |-
+      {%- set source = parameters.get("pAtmSou") or "" -%}
+      {{ element.name }}(lat={{ element.name }}_reader.lat, lon={{ element.name }}_reader.lon,
+        timZon={{ element.name }}_reader.timZon, alt={{ element.name }}_reader.alt
+      {%- if "File" in source -%}
+        , pAtm=101325*(1 - 2.25577e-5*{{ element.name }}_reader.alt)^5.25588
+      {%- elif parameters.get("pAtm") is not none -%}
+        , pAtm={{ parameters.get("pAtm") }}
+      {%- endif -%}
+      )
+  variant: default
+
+# The ventilation units take the outdoor air from the weather: the boundary of the other libraries is not needed.
+- classes:
+  - Boundary
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing:
+    function: default_parameters
+  ports: []
+  template: ""
+  variant: default
+
+# Internal gains per floor area (radiant and convective), read from the data bus: inputs of building_mpc
+# (`<occupancy>_gai.QCon`, `.QRad`); the runnable model computes them with the occupancy schedule of the element.
+- classes:
+  - Occupancy
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  component_template: &occupancy_component
+    bus:
+      real_inputs:
+      - component: ""
+        name: QCon
+        port: QCon
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.GainInputs {{ element.name }}_gai "Internal gains per floor area: inputs of the model";
+          port: "{{ element.name }}_gai.QCon"
+      - component: ""
+        name: QRad
+        port: QRad
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.GainInputs {{ element.name }}_gai "Internal gains per floor area: inputs of the model";
+          port: "{{ element.name }}_gai.QRad"
+    category: control
+    template: |-
+      model InternalGains{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Zones.InternalGains;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end InternalGains{{ element.name | capitalize }};
+  parameter_processing:
+    function: default_parameters
+  ports: &occupancy_ports
+  - flow: undirected
+    medium: data
+    names:
+    - gai
+    targets:
+    - Space
+  - *data_bus_port
+  template: &occupancy_template |-
+    {{ package_name }}.Components.BaseClasses.InternalGains{{ element.name | capitalize }} {{ element.name }}
+  runnable: &occupancy_runnable
+    declaration: |-
+      {{ package_name }}.Trano.Occupancy.SimpleOccupancy {{ element.name }}({{ macros.render_parameters(parameters) | safe }})
+        "Occupancy schedule";
+    equation: &occupancy_equation |-
+      connect({{ element.name }}.y[1], mpc.{{ element.name }}_gai.QRad);
+      connect({{ element.name }}.y[2], mpc.{{ element.name }}_gai.QCon);
+  variant: default
+
+- classes:
+  - Occupancy
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  component_template: *occupancy_component
+  parameter_processing:
+    function: default_parameters
+  ports: *occupancy_ports
+  template: *occupancy_template
+  # The occupants are estimated from the column of measured CO2 that the YAML names (OccupancyCo2, as the other
+  # libraries); without that column the schedule is used, without the parameters of the CO2 balance.
+  runnable:
+    declaration: |-
+      {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'co2') | map(attribute='variable') | first -%}
+      {%- if column in columns -%}
+      {{ package_name }}.Trano.Occupancy.OccupancyCo2 {{ element.name }}({{ macros.render_parameters(parameters) | safe }},
+        co2(u=data_bus.y[{{ columns.index(column) + 1 }}]))
+        "Occupancy estimated from the measured CO2";
+      {%- else -%}
+      {%- set schedule = {} -%}
+      {%- for key, value in parameters.items() if key not in ['AFlo', 'ACH', 'hRoom', 'ppmOut', 'gCO2'] -%}
+      {%- set _ = schedule.update({key: value}) -%}
+      {%- endfor -%}
+      {{ package_name }}.Trano.Occupancy.SimpleOccupancy {{ element.name }}({{ macros.render_parameters(schedule) | safe }})
+        "Occupancy schedule: no external data for the CO2";
+      {%- endif -%}
+    equation: *occupancy_equation
+  variant: co2
+
+# The data bus (DataServer, as the other libraries): the air temperature of each zone (TZon<zone>), and the
+# signals that no element writes held at their default; those that are inputs of building_mpc (model_input) are
+# connected by building_mpc. The runnable model replays the columns of the external data, if any.
+- classes:
+  - DataBus
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  component_template:
+    bus:
+      real_outputs:
+      - component: TRoo
+        name: TZon
+        port: T
+        target:
+          main: element.spaces
+    category: control
+    template: |-
+      model DataServer
+        FastSmoothBuildings.Interfaces.HeatPort port[{{ element.spaces | length }}] "Air of the zones";
+        FastSmoothBuildings.Zones.AirTemperatureSensor TRoo[{{ element.spaces | length }}] "Air temperature of the zones";
+        {{ bus_template }}
+      equation
+        {%- for space in element.spaces %}
+        connect(port[{{ loop.index }}], TRoo[{{ loop.index }}].port);
+        {%- endfor %}
+        {{ bus_ports | safe }}
+        {%- for input in element.non_connected_ports %}
+        dataBus.{{ input.bus_member }} = {{ input.default }};
+        {%- endfor %}
+      end DataServer;
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: convective
+    medium: heat
+    multi_connection: true
+    names:
+    - port
+    targets:
+    - Space
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - System
+    - Control
+    - Photovoltaic
+    use_counter: false
+  template: |-
+    {{ package_name }}.Components.BaseClasses.DataServer {{ element.name }}
+  runnable:
+    declaration: |-
+      {%- if element.validation_data.data -%}
+      Modelica.Blocks.Sources.CombiTimeTable {{ element.name }}(
+        tableOnFile=false,
+        table=[{{ element.validation_data.data | safe }}],
+        smoothness=Modelica.Blocks.Types.Smoothness.LinearSegments,
+        extrapolation=Modelica.Blocks.Types.Extrapolation.HoldLastPoint)
+        "External data: {{ element.validation_data.columns | join(', ') }}";
+      {%- endif -%}
+  variant: default
+
+# Ideal heating and cooling: a PI controller per mode towards the day schedules of set points, as trano's model for
+# Buildings and IDEAS (closed loop), or its heat flow rate, read from the data bus, is an input of building_mpc
+# (`<element>_Q.Q_flow`), between the cooling and the heating capacities (MPC); the heat is split between the air and
+# the radiant star of the zone.
+- classes:
+  - IdealHeatingCooling
+  library: FastSmoothBuildings
+  parameter_processing: &ideal_parameters
+    function: default_parameters
+  ports: &ideal_ports
+  - flow: convective
+    medium: heat
+    names:
+    - heatPortCon
+    targets:
+    - Space
+  - flow: radiative
+    medium: heat
+    names:
+    - heatPortRad
+    targets:
+    - Space
+  template: |-
+    FastSmoothBuildings.HVAC.IdealHeatingCoolingPI {{ element.name }}(
+        {%- for name in ['TSetHea', 'TSetCoo', 'QHea_flow_max', 'QCoo_flow_max', 'k', 'Ti', 'frad'] if parameters.get(name) is not none %}
+        {{ name }}={{ parameters.get(name) }}{{ ',' if not loop.last }}
+        {%- endfor %})
+  variant: default
+
+- classes:
+  - IdealHeatingCooling
+  library: FastSmoothBuildingsMPC
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: Q_flow
+        port: Q_flow
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.HeatFlowInput {{ element.name }}_Q(Q_flow(
+                min=-{{ parameters.get('QCoo_flow_max') if parameters.get('QCoo_flow_max') is not none else 1e6 }},
+                max={{ parameters.get('QHea_flow_max') if parameters.get('QHea_flow_max') is not none else 1e6 }}))
+                "Heat flow rate of {{ element.name }}: input of the model";
+          port: "{{ element.name }}_Q.Q_flow"
+    category: control
+    template: &heat_flow_template |-
+      model IdealHeatingCooling{{ element.name | capitalize }}
+        extends FastSmoothBuildings.HVAC.IdealHeatingCooling;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end IdealHeatingCooling{{ element.name | capitalize }};
+  parameter_processing: *ideal_parameters
+  ports:
+  - flow: convective
+    medium: heat
+    names:
+    - heatPortCon
+    targets:
+    - Space
+  - flow: radiative
+    medium: heat
+    names:
+    - heatPortRad
+    targets:
+    - Space
+  - &data_bus_system_port
+    flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |-
+    {{ package_name }}.Components.BaseClasses.IdealHeatingCooling{{ element.name | capitalize }} {{ element.name }}(
+        fraRad={{ parameters.get('frad') if parameters.get('frad') is not none else 0 }})
+  runnable:
+    declaration: |-
+      {%- if element.name ~ '_Q' not in columns -%}
+      Modelica.Blocks.Sources.Constant {{ element.name }}_Q(k=0) "No heating or cooling without external data";
+      {%- endif -%}
+    equation: |-
+      {%- if element.name ~ '_Q' in columns -%}
+      connect(data_bus.y[{{ columns.index(element.name ~ '_Q') + 1 }}], mpc.{{ element.name }}_Q.Q_flow);
+      {%- else -%}
+      connect({{ element.name }}_Q.y, mpc.{{ element.name }}_Q.Q_flow);
+      {%- endif -%}
+  variant: default

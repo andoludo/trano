@@ -146,7 +146,7 @@ def test_every_variant_generates_a_fast_model(case_id: str, tmp_path: Path) -> N
         model = network_for(variant_yaml(case, variant, directory), FAST_MODEL, directory).model(
             include_container=False
         )
-        assert "FastModel.Zones." in model, variant
+        assert "FastSmoothBuildings.Zones." in model, variant
 
 
 def test_the_base_cases_generate_the_buildings_model(tmp_path: Path) -> None:

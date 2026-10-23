@@ -1,0 +1,44 @@
+# Systems the FastSmoothBuildings library does not model yet: generating a model with them fails with a clear message.
+- classes:
+  - VAV
+  - VAVControl
+  - PowerSensor
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing: &no_parameters
+    function: default_parameters
+  ports: []
+  template: |-
+    {{ unsupported(element.__class__.__name__ ~ ' ' ~ element.name ~ ': not modelled by the FastSmoothBuildings library yet.') }}
+  variant: default
+- classes:
+  - VAV
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing: *no_parameters
+  ports: []
+  template: |-
+    {{ unsupported('VAV ' ~ element.name ~ ': not modelled by the FastSmoothBuildings library yet.') }}
+  variant: complex
+- classes:
+  - VAVControl
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing: *no_parameters
+  ports: []
+  template: |-
+    {{ unsupported('VAV control ' ~ element.name ~ ': not modelled by the FastSmoothBuildings library yet.') }}
+  variant: constant
+- classes:
+  - AirHandlingUnit
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing: *no_parameters
+  ports: []
+  template: |-
+    {{ unsupported('Air handling unit ' ~ element.name ~ ' (' ~ element.variant ~ '): the FastSmoothBuildings library models the balanced ventilation unit with heat recovery (system_d) only.') }}
+  variant: default
+- classes:
+  - AirHandlingUnit
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing: *no_parameters
+  ports: []
+  template: |-
+    {{ unsupported('Air handling unit ' ~ element.name ~ ' (test): the FastSmoothBuildings library models the balanced ventilation unit with heat recovery (system_d) only.') }}
+  variant: test

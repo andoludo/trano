@@ -11,9 +11,9 @@ on:
     paths:
       - ".github/workflows/fast_model_study.yaml"
       - "validation/fast_model/**"
-      - "trano/library/FastModel.mo"
+      - "pyproject.toml"
       - "trano/elements/library/library.json"
-      - "trano/elements/library/models/fast_model/*.yaml"
+      - "trano/elements/library/models/fast_smooth_buildings/*.yaml"
   workflow_dispatch:
     inputs:
       cases:

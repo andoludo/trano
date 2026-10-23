@@ -1,0 +1,103 @@
+# PV array (Buildings PVSimpleOriented) on the weather of the site, read from the data bus, with its production meter.
+- classes:
+  - Photovoltaic
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  component_template:
+    bus:
+      real_inputs:
+      - component: weaBus
+        name: TDryBul
+        port: TDryBul
+        target:
+          main: element
+      - component: weaBus
+        name: TBlaSky
+        port: TBlaSky
+        target:
+          main: element
+      - component: weaBus
+        name: winSpe
+        port: winSpe
+        target:
+          main: element
+      - component: weaBus
+        name: winDir
+        port: winDir
+        target:
+          main: element
+      - component: weaBus
+        name: HDirNor
+        port: HDirNor
+        target:
+          main: element
+      - component: weaBus
+        name: HDifHor
+        port: HDifHor
+        target:
+          main: element
+      - component: weaBus
+        name: HGloHor
+        port: HGloHor
+        target:
+          main: element
+      - component: weaBus
+        name: lat
+        port: lat
+        target:
+          main: element
+      - component: weaBus
+        name: decAng
+        port: decAng
+        target:
+          main: element
+      - component: weaBus
+        name: solHouAng
+        port: solHouAng
+        target:
+          main: element
+      - component: weaBus
+        name: cosZen
+        port: cosZen
+        target:
+          main: element
+      - component: weaBus
+        name: F1
+        port: F1
+        target:
+          main: element
+      - component: weaBus
+        name: F2
+        port: F2
+        target:
+          main: element
+      - component: weaBus
+        name: pAtm
+        port: pAtm
+        target:
+          main: element
+    category: solar
+    template: |-
+      model Photovoltaic{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Electrical.Photovoltaic;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end Photovoltaic{{ element.name | capitalize }};
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |-
+    {{ package_name }}.Components.BaseClasses.Photovoltaic{{ element.name | capitalize }} {{ element.name }}(
+        A={{ parameters.A }},
+        eta={{ parameters.eta }},
+        til={{ parameters.til }},
+        azi={{ parameters.azi }})
+  variant: default

@@ -15,7 +15,7 @@ from validation.bestest.reference import KPIS, Kpi, ReferenceData, load_referenc
 from validation.bestest.report import KNOWN_DEVIATIONS, Comparison, acceptance_band, frozen_values
 from validation.bestest.kpi import KpiResults
 
-GATING_LIBRARIES = ("Buildings", "IDEAS", "FastModel")
+GATING_LIBRARIES = ("Buildings", "IDEAS", "FastSmoothBuildings")
 SETPOINT_TOLERANCE = 0.25  # [K] the ideal system lets the hourly mean leave its set point by this much at most
 
 # (case, base case): what the standard changes from one case to the other.
@@ -197,7 +197,7 @@ def test_each_change_of_the_cases_acts_in_the_direction_of_every_reference_progr
 def test_the_section_of_a_library_replaces_its_previous_version(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The FastModel section is written into the page without the results of the other libraries at hand."""
+    """The FastSmoothBuildings section is written into the page without the results of the other libraries at hand."""
     from validation.bestest import report
 
     page = tmp_path / "bestest.md"
@@ -206,10 +206,10 @@ def test_the_section_of_a_library_replaces_its_previous_version(
     monkeypatch.setattr(
         report, "render_library_section", lambda library, results, reference=None: f"## {library}\n\n{results}\n"
     )
-    report.update_docs_section("FastModel", {"first": 1})  # type: ignore[dict-item]
-    report.update_docs_section("FastModel", {"second": 2})  # type: ignore[dict-item]
+    report.update_docs_section("FastSmoothBuildings", {"first": 1})  # type: ignore[dict-item]
+    report.update_docs_section("FastSmoothBuildings", {"second": 2})  # type: ignore[dict-item]
     text = page.read_text()
-    assert text.count("## FastModel") == 1
+    assert text.count("## FastSmoothBuildings") == 1
     assert "second" in text and "first" not in text
     assert "Buildings table" in text and "IDEAS table" in text
-    assert text.index("## IDEAS") < text.index("## FastModel")
+    assert text.index("## IDEAS") < text.index("## FastSmoothBuildings")

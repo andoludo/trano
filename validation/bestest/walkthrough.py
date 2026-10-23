@@ -29,7 +29,7 @@ LIBRARY_LABELS = {
     "Buildings": "Buildings",
     "IDEAS": "IDEAS",
     "reduced_order": "reduced order",
-    "FastModel": "FastModel",
+    "FastSmoothBuildings": "FastSmoothBuildings",
     "iso_13790": "ISO 13790",
 }
 HOURS_PER_DAY = 24
@@ -260,7 +260,7 @@ LIBRARY_COLORS = {
     "IDEAS": "#d62728",
     "reduced_order": "#2ca02c",
     "iso_13790": "#9467bd",
-    "FastModel": "#1baf7a",
+    "FastSmoothBuildings": "#1baf7a",
 }
 _WIDTH, _HEIGHT = 720, 320
 _LEFT, _RIGHT, _TOP, _BOTTOM = 56, 16, 20, 40

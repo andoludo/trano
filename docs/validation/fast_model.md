@@ -1,17 +1,17 @@
-# FastModel against Buildings and IDEAS
+# FastSmoothBuildings against Buildings and IDEAS
 
-The models of the `FastModel` library translate into a CasADi ODE: `FastModel` simulates the building in closed
-loop with its own controllers, `FastModelMPC` takes the controls as inputs for optimal control. How close they stay
+The models of the `FastSmoothBuildings` library translate into a CasADi ODE: `FastSmoothBuildings` simulates the building in closed
+loop with its own controllers, `FastSmoothBuildingsMPC` takes the controls as inputs for optimal control. How close they stay
 to the Buildings and IDEAS models of the same YAML file is measured by `validation/mpc`, in two ways:
 
-* `--models FastModel` **replays** the controls of the reference through the runnable `FastModelMPC` model: the
+* `--models FastSmoothBuildings` **replays** the controls of the reference through the runnable `FastSmoothBuildingsMPC` model: the
   envelope, the zones and the systems are compared with the controls taken out of the comparison;
-* `--models FastModelClosedLoop` simulates the closed-loop `FastModel` model with its own controllers, as the
+* `--models FastModelClosedLoop` simulates the closed-loop `FastSmoothBuildings` model with its own controllers, as the
   reference runs with its own: nothing is replayed.
 
 ```bash
-python -m validation.mpc compare 600FF residential_before --models FastModel FastModelClosedLoop
-python -m validation.mpc compare residential_after --models FastModel FastModelClosedLoop --references Buildings IDEAS
+python -m validation.mpc compare 600FF residential_before --models FastSmoothBuildings FastModelClosedLoop
+python -m validation.mpc compare residential_after --models FastSmoothBuildings FastModelClosedLoop --references Buildings IDEAS
 python -m validation.mpc report
 ```
 
@@ -21,7 +21,7 @@ then the runnable model of the other library **replays** what its systems did:
 * the heat of the ideal emitters of each zone, for the envelope cases;
 * the flow of each radiator branch, the position of each three-way valve and the part load ratio of the boiler
   (or the speed of the heat pump compressor), for the hydronic cases, and the air flow of the ventilation unit.
-  Everything else is simulated by the `FastModel` model: the production, the water circuits, the radiators, the
+  Everything else is simulated by the `FastSmoothBuildings` model: the production, the water circuits, the radiators, the
   ventilation, the PV array and the zones.
 
 Weather, solar irradiance (direct, Perez diffuse) and occupancy come from the same Buildings blocks in both
@@ -49,69 +49,69 @@ stroke time, sensors without dynamics).
 
 | Case | Model | Reference | Zone | RMSE [K] | Bias [K] | Max error [K] | Mean reference [degC] | Heat [kWh] | Radiator heat CV(RMSE) | Radiator heat NMBE |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 600FF | FastModel | Buildings | zone_001 | 0.39 | +0.09 | 1.64 | 24.66 | 0 |  |  |
-| 900FF | FastModel | Buildings | zone_001 | 0.33 | -0.08 | 1.42 | 24.93 | 0 |  |  |
-| 600 | FastModel | Buildings | zone_001 | 0.65 | -0.07 | 2.73 | 23.12 | -1523 |  |  |
-| 900 | FastModel | Buildings | zone_001 | 0.41 | -0.11 | 1.76 | 24.04 | -677 |  |  |
-| three_zones_ideal | FastModel | Buildings | space_001 | 0.18 | -0.03 | 0.77 | 18.46 | 1441 |  |  |
-| three_zones_ideal | FastModel | Buildings | space_002 | 0.22 | -0.03 | 1.07 | 18.51 | 793 |  |  |
-| three_zones_ideal | FastModel | Buildings | space_003 | 0.49 | -0.05 | 1.69 | 18.50 | 683 |  |  |
-| heat_pump_house | FastModel | Buildings | bedroom_1_001 | 0.18 | +0.10 | 0.84 | 18.76 | 57 | 3.2 % | +0.6 % |
-| heat_pump_house | FastModel | Buildings | livingroom_001 | 0.28 | +0.18 | 0.67 | 18.59 | 146 | 3.0 % | -0.2 % |
-| heat_pump_house | FastModel | Buildings | kitchen_001 | 0.33 | +0.20 | 1.03 | 20.09 | 64 | 3.0 % | -0.2 % |
-| heat_pump_house | FastModel | Buildings | bathroom_001 | 0.21 | +0.11 | 1.65 | 20.94 | 41 | 3.5 % | +0.1 % |
-| heat_pump_house | FastModel | Buildings | bedroom_2_001 | 0.22 | +0.18 | 0.92 | 19.72 | 82 | 2.3 % | -0.6 % |
-| heat_pump_house | FastModel | Buildings | bedroom_3_001 | 0.15 | +0.09 | 0.52 | 18.17 | 4 | 27.7 % | +2.3 % |
-| residential_before | FastModel | Buildings | living_001 | 0.17 | -0.11 | 0.50 | 19.35 | 827 | 1.2 % | -0.2 % |
-| residential_before | FastModel | Buildings | kitchen_001 | 0.14 | -0.07 | 0.53 | 19.35 | 414 | 1.1 % | -0.2 % |
-| residential_before | FastModel | Buildings | bedroom_1_001 | 0.15 | -0.07 | 0.53 | 17.32 | 482 | 0.8 % | -0.3 % |
-| residential_before | FastModel | Buildings | bedroom_2_001 | 0.14 | -0.07 | 0.71 | 17.31 | 544 | 0.7 % | -0.3 % |
-| residential_before | FastModel | Buildings | bedroom_3_001 | 0.12 | -0.06 | 0.51 | 17.32 | 250 | 0.8 % | -0.3 % |
-| residential_before | FastModel | Buildings | bathroom_001 | 0.20 | -0.05 | 1.35 | 17.58 | 239 | 2.8 % | -0.3 % |
-| residential_after | FastModel | Buildings | living_001 | 0.17 | -0.13 | 0.56 | 20.16 | 201 | 1.8 % | -0.3 % |
-| residential_after | FastModel | Buildings | kitchen_001 | 0.14 | -0.09 | 0.34 | 20.08 | 125 | 1.8 % | -0.6 % |
-| residential_after | FastModel | Buildings | bedroom_1_001 | 0.13 | -0.08 | 0.38 | 18.14 | 23 | 2.9 % | -0.2 % |
-| residential_after | FastModel | Buildings | bedroom_2_001 | 0.12 | -0.08 | 0.34 | 17.90 | 46 | 2.3 % | -0.3 % |
-| residential_after | FastModel | Buildings | bedroom_3_001 | 0.12 | -0.06 | 0.36 | 18.02 | 15 | 2.2 % | -0.4 % |
-| residential_after | FastModel | Buildings | bathroom_001 | 0.13 | -0.06 | 0.49 | 19.10 | 51 | 4.3 % | -0.6 % |
-| residential_after | FastModel | IDEAS | living_001 | 0.36 | +0.25 | 0.98 | 20.14 | 215 | 1.8 % | -0.5 % |
-| residential_after | FastModel | IDEAS | kitchen_001 | 0.36 | +0.25 | 1.01 | 20.08 | 129 | 1.6 % | -0.5 % |
-| residential_after | FastModel | IDEAS | bedroom_1_001 | 0.32 | +0.14 | 0.84 | 18.11 | 21 | 3.3 % | +0.8 % |
-| residential_after | FastModel | IDEAS | bedroom_2_001 | 0.31 | +0.16 | 0.83 | 17.88 | 45 | 2.2 % | +0.5 % |
-| residential_after | FastModel | IDEAS | bedroom_3_001 | 0.33 | +0.18 | 0.86 | 17.99 | 14 | 2.4 % | +0.4 % |
-| residential_after | FastModel | IDEAS | bathroom_001 | 0.39 | +0.23 | 1.16 | 19.05 | 52 | 4.1 % | -0.7 % |
+| 600FF | FastSmoothBuildings | Buildings | zone_001 | 0.39 | +0.09 | 1.64 | 24.66 | 0 |  |  |
+| 900FF | FastSmoothBuildings | Buildings | zone_001 | 0.33 | -0.08 | 1.42 | 24.93 | 0 |  |  |
+| 600 | FastSmoothBuildings | Buildings | zone_001 | 0.65 | -0.07 | 2.73 | 23.12 | -1523 |  |  |
+| 900 | FastSmoothBuildings | Buildings | zone_001 | 0.41 | -0.11 | 1.76 | 24.04 | -677 |  |  |
+| three_zones_ideal | FastSmoothBuildings | Buildings | space_001 | 0.18 | -0.03 | 0.77 | 18.46 | 1441 |  |  |
+| three_zones_ideal | FastSmoothBuildings | Buildings | space_002 | 0.22 | -0.03 | 1.07 | 18.51 | 793 |  |  |
+| three_zones_ideal | FastSmoothBuildings | Buildings | space_003 | 0.49 | -0.05 | 1.69 | 18.50 | 683 |  |  |
+| heat_pump_house | FastSmoothBuildings | Buildings | bedroom_1_001 | 0.18 | +0.10 | 0.84 | 18.76 | 57 | 3.2 % | +0.6 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | livingroom_001 | 0.28 | +0.18 | 0.67 | 18.59 | 146 | 3.0 % | -0.2 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | kitchen_001 | 0.33 | +0.20 | 1.03 | 20.09 | 64 | 3.0 % | -0.2 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | bathroom_001 | 0.21 | +0.11 | 1.65 | 20.94 | 41 | 3.5 % | +0.1 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | bedroom_2_001 | 0.22 | +0.18 | 0.92 | 19.72 | 82 | 2.3 % | -0.6 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | bedroom_3_001 | 0.15 | +0.09 | 0.52 | 18.17 | 4 | 27.7 % | +2.3 % |
+| residential_before | FastSmoothBuildings | Buildings | living_001 | 0.17 | -0.11 | 0.50 | 19.35 | 827 | 1.2 % | -0.2 % |
+| residential_before | FastSmoothBuildings | Buildings | kitchen_001 | 0.14 | -0.07 | 0.53 | 19.35 | 414 | 1.1 % | -0.2 % |
+| residential_before | FastSmoothBuildings | Buildings | bedroom_1_001 | 0.15 | -0.07 | 0.53 | 17.32 | 482 | 0.8 % | -0.3 % |
+| residential_before | FastSmoothBuildings | Buildings | bedroom_2_001 | 0.14 | -0.07 | 0.71 | 17.31 | 544 | 0.7 % | -0.3 % |
+| residential_before | FastSmoothBuildings | Buildings | bedroom_3_001 | 0.12 | -0.06 | 0.51 | 17.32 | 250 | 0.8 % | -0.3 % |
+| residential_before | FastSmoothBuildings | Buildings | bathroom_001 | 0.20 | -0.05 | 1.35 | 17.58 | 239 | 2.8 % | -0.3 % |
+| residential_after | FastSmoothBuildings | Buildings | living_001 | 0.17 | -0.13 | 0.56 | 20.16 | 201 | 1.8 % | -0.3 % |
+| residential_after | FastSmoothBuildings | Buildings | kitchen_001 | 0.14 | -0.09 | 0.34 | 20.08 | 125 | 1.8 % | -0.6 % |
+| residential_after | FastSmoothBuildings | Buildings | bedroom_1_001 | 0.13 | -0.08 | 0.38 | 18.14 | 23 | 2.9 % | -0.2 % |
+| residential_after | FastSmoothBuildings | Buildings | bedroom_2_001 | 0.12 | -0.08 | 0.34 | 17.90 | 46 | 2.3 % | -0.3 % |
+| residential_after | FastSmoothBuildings | Buildings | bedroom_3_001 | 0.12 | -0.06 | 0.36 | 18.02 | 15 | 2.2 % | -0.4 % |
+| residential_after | FastSmoothBuildings | Buildings | bathroom_001 | 0.13 | -0.06 | 0.49 | 19.10 | 51 | 4.3 % | -0.6 % |
+| residential_after | FastSmoothBuildings | IDEAS | living_001 | 0.36 | +0.25 | 0.98 | 20.14 | 215 | 1.8 % | -0.5 % |
+| residential_after | FastSmoothBuildings | IDEAS | kitchen_001 | 0.36 | +0.25 | 1.01 | 20.08 | 129 | 1.6 % | -0.5 % |
+| residential_after | FastSmoothBuildings | IDEAS | bedroom_1_001 | 0.32 | +0.14 | 0.84 | 18.11 | 21 | 3.3 % | +0.8 % |
+| residential_after | FastSmoothBuildings | IDEAS | bedroom_2_001 | 0.31 | +0.16 | 0.83 | 17.88 | 45 | 2.2 % | +0.5 % |
+| residential_after | FastSmoothBuildings | IDEAS | bedroom_3_001 | 0.33 | +0.18 | 0.86 | 17.99 | 14 | 2.4 % | +0.4 % |
+| residential_after | FastSmoothBuildings | IDEAS | bathroom_001 | 0.39 | +0.23 | 1.16 | 19.05 | 52 | 4.1 % | -0.7 % |
 
 | Case | Model | Reference | Water temperature | RMSE [K] | Bias [K] | Mean reference [degC] | Time compared (circulating) |
 |---|---|---|---|---|---|---|---|
-| heat_pump_house | FastModel | Buildings | boiler_001 supply | 0.66 | +0.09 | 37.8 | 64 % |
-| heat_pump_house | FastModel | Buildings | boiler_001 return | 1.35 | +0.08 | 26.6 | 64 % |
-| heat_pump_house | FastModel | Buildings | temperature_sensor_001 | 1.21 | +0.10 | 37.8 | 64 % |
-| residential_before | FastModel | Buildings | generator_001 supply | 0.55 | -0.18 | 74.7 | 84 % |
-| residential_before | FastModel | Buildings | generator_001 return | 1.40 | -0.30 | 39.6 | 84 % |
-| residential_before | FastModel | Buildings | temperature_sensor_001 | 0.57 | -0.23 | 74.7 | 84 % |
-| residential_after | FastModel | Buildings | generator_001 supply | 0.72 | -0.09 | 35.4 | 68 % |
-| residential_after | FastModel | Buildings | generator_001 return | 1.75 | -0.49 | 29.3 | 68 % |
-| residential_after | FastModel | Buildings | temperature_sensor_001 | 1.39 | -0.05 | 35.3 | 68 % |
-| residential_after | FastModel | Buildings | ahu_001 supply air | 0.30 | +0.29 | 16.0 | 100 % |
-| residential_after | FastModel | IDEAS | generator_001 supply | 0.80 | +0.28 | 35.4 | 69 % |
-| residential_after | FastModel | IDEAS | generator_001 return | 1.68 | -0.11 | 29.6 | 69 % |
-| residential_after | FastModel | IDEAS | temperature_sensor_001 | 1.41 | +0.32 | 35.4 | 69 % |
-| residential_after | FastModel | IDEAS | ahu_001 supply air | 0.27 | +0.16 | 16.4 | 100 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | boiler_001 supply | 0.66 | +0.09 | 37.8 | 64 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | boiler_001 return | 1.35 | +0.08 | 26.6 | 64 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | temperature_sensor_001 | 1.21 | +0.10 | 37.8 | 64 % |
+| residential_before | FastSmoothBuildings | Buildings | generator_001 supply | 0.55 | -0.18 | 74.7 | 84 % |
+| residential_before | FastSmoothBuildings | Buildings | generator_001 return | 1.40 | -0.30 | 39.6 | 84 % |
+| residential_before | FastSmoothBuildings | Buildings | temperature_sensor_001 | 0.57 | -0.23 | 74.7 | 84 % |
+| residential_after | FastSmoothBuildings | Buildings | generator_001 supply | 0.72 | -0.09 | 35.4 | 68 % |
+| residential_after | FastSmoothBuildings | Buildings | generator_001 return | 1.75 | -0.49 | 29.3 | 68 % |
+| residential_after | FastSmoothBuildings | Buildings | temperature_sensor_001 | 1.39 | -0.05 | 35.3 | 68 % |
+| residential_after | FastSmoothBuildings | Buildings | ahu_001 supply air | 0.30 | +0.29 | 16.0 | 100 % |
+| residential_after | FastSmoothBuildings | IDEAS | generator_001 supply | 0.80 | +0.28 | 35.4 | 69 % |
+| residential_after | FastSmoothBuildings | IDEAS | generator_001 return | 1.68 | -0.11 | 29.6 | 69 % |
+| residential_after | FastSmoothBuildings | IDEAS | temperature_sensor_001 | 1.41 | +0.32 | 35.4 | 69 % |
+| residential_after | FastSmoothBuildings | IDEAS | ahu_001 supply air | 0.27 | +0.16 | 16.4 | 100 % |
 
 | Case | Model | Reference | System | Energy | Reference [kWh] | Model [kWh] | Deviation |
 |---|---|---|---|---|---|---|---|
-| heat_pump_house | FastModel | Buildings | boiler_001 | electricity | 117.9 | 116.0 | -1.6 % |
-| residential_before | FastModel | Buildings | generator_001 | fuel | 3387.0 | 3387.1 | +0.0 % |
-| residential_after | FastModel | Buildings | generator_001 | electricity | 130.6 | 128.3 | -1.8 % |
-| residential_after | FastModel | Buildings | ahu_001 | electricity | 17.2 | 17.0 | -0.6 % |
-| residential_after | FastModel | Buildings | pv_001 | production | 139.3 | 139.3 | +0.0 % |
-| residential_after | FastModel | IDEAS | generator_001 | electricity | 134.8 | 133.5 | -1.0 % |
-| residential_after | FastModel | IDEAS | ahu_001 | electricity | 17.2 | 16.8 | -2.1 % |
-| residential_after | FastModel | IDEAS | pv_001 | production | 139.3 | 139.3 | +0.0 % |
+| heat_pump_house | FastSmoothBuildings | Buildings | boiler_001 | electricity | 117.9 | 116.0 | -1.6 % |
+| residential_before | FastSmoothBuildings | Buildings | generator_001 | fuel | 3387.0 | 3387.1 | +0.0 % |
+| residential_after | FastSmoothBuildings | Buildings | generator_001 | electricity | 130.6 | 128.3 | -1.8 % |
+| residential_after | FastSmoothBuildings | Buildings | ahu_001 | electricity | 17.2 | 17.0 | -0.6 % |
+| residential_after | FastSmoothBuildings | Buildings | pv_001 | production | 139.3 | 139.3 | +0.0 % |
+| residential_after | FastSmoothBuildings | IDEAS | generator_001 | electricity | 134.8 | 133.5 | -1.0 % |
+| residential_after | FastSmoothBuildings | IDEAS | ahu_001 | electricity | 17.2 | 16.8 | -2.1 % |
+| residential_after | FastSmoothBuildings | IDEAS | pv_001 | production | 139.3 | 139.3 | +0.0 % |
 
 ## Results: closed loop
 
-The closed-loop `FastModel` model of each case, with its own controllers and pressure-driven water circuits, against
+The closed-loop `FastSmoothBuildings` model of each case, with its own controllers and pressure-driven water circuits, against
 the reference with its own controls (the column Heat is the heat of the reference):
 
 | Case | Model | Reference | Zone | RMSE [K] | Bias [K] | Max error [K] | Mean reference [degC] | Heat [kWh] | Radiator heat CV(RMSE) | Radiator heat NMBE |
@@ -178,10 +178,10 @@ the reference with its own controls (the column Heat is the heat of the referenc
 
 ## Reading the results
 
-**Envelope.** The `FastModel` zone follows Buildings within 0.33–0.39 K (RMSE) in the free-floating BESTEST
+**Envelope.** The `FastSmoothBuildings` zone follows Buildings within 0.33–0.39 K (RMSE) in the free-floating BESTEST
 cases. In the heated and
 cooled BESTEST cases the replay of the Buildings heat is open loop, so that any difference accumulates until the
-envelope removes it; the `FastModel` zone stays within 0.41–0.65 K.
+envelope removes it; the `FastSmoothBuildings` zone stays within 0.41–0.65 K.
 
 **Multi-zone envelope.** With walls and floors shared between zones, the three-zone house stays within
 0.18–0.49 K of Buildings.
@@ -189,7 +189,7 @@ envelope removes it; the `FastModel` zone stays within 0.41–0.65 K.
 **Hydronics.** In the three hydronic houses (the residential house before renovation with its gas boiler, after
 renovation with its heat pump, ventilation and PV, and the heat pump test house), only the branch flows, the three-way valve positions and the boiler part
 load ratio or the heat pump compressor speed are replayed; the production, the water circuits, the radiators and
-the zones are simulated by the `FastModel` model. The radiators deliver the heat of Buildings within 0.7–4.3 % CV(RMSE)
+the zones are simulated by the `FastSmoothBuildings` model. The radiators deliver the heat of Buildings within 0.7–4.3 % CV(RMSE)
 and a bias below 1 % (the 28 % of the nearly unheated bedroom 3 of the heat pump house is on 4 kWh in four
 weeks); the zones follow within 0.12–0.33 K; the boiler supply and the heat pump buffer within 0.55–0.75 K. The
 supply errors were 0.3–0.5 K before the Buildings models took trano's default performance options, with the same
@@ -199,35 +199,35 @@ the renovated house follow Buildings over the four weeks: heat pump electricity 
 test house), fans −0.6 %, PV
 production 0.0 %.
 
-**IDEAS.** The renovated house is also replayed from its IDEAS simulation: FastModel stays within 0.31–0.39 K of
+**IDEAS.** The renovated house is also replayed from its IDEAS simulation: FastSmoothBuildings stays within 0.31–0.39 K of
 the IDEAS zones, 0.14–0.25 K too warm on average, the radiators within 1.6–4.1 % CV(RMSE), the heat pump
-electricity within −1.0 % and the fans within −2.1 %. The envelope of FastModel is that of Buildings: the bias
+electricity within −1.0 % and the fans within −2.1 %. The envelope of FastSmoothBuildings is that of Buildings: the bias
 comes from the envelope models of the two libraries, above all the ground below the slab (ISO 13370 in IDEAS, a
-fixed temperature in Buildings and FastModel). See the [FastModel reference](../reference/fast_model.md#showcase-a-renovated-house-with-every-system)
+fixed temperature in Buildings and FastSmoothBuildings). See the [FastSmoothBuildings reference](../reference/fast_model.md#showcase-a-renovated-house-with-every-system)
 for the figures.
 
 **Ventilation.** The supply air of the renovated house's unit stays within 0.30 K of Buildings, 0.29 K too warm on
 average: in Buildings the extract flow is 3 % below the supply flow (part of the supply leaves through the
 infiltration paths of the zones, as the pressures set it), so that the heat exchanger recovers on a smaller
-stream; the `FastModel` unit is balanced. The
+stream; the `FastSmoothBuildings` unit is balanced. The
 return temperatures (1.35–1.75 K, small bias) mix the outlets of radiators whose flows the thermostatic valves
 modulate within the replay interval.
 
-**Closed loop.** With its own controllers, FastModel follows the zones of Buildings within 0.05–0.25 K, closer
+**Closed loop.** With its own controllers, FastSmoothBuildings follows the zones of Buildings within 0.05–0.25 K, closer
 than the replay: a controller corrects the small differences of the envelope as the Buildings controller does,
 where the replayed heat is open loop (BESTEST 600 and 900: 0.06 and 0.14 K against 0.65 and 0.41 K). The free-floating
 cases have no controller and match the replay. Against IDEAS, the renovated house stays within 0.14–0.23 K. The
 meters follow within a few percent: boiler fuel +1.2 %, heat pump electricity −1.1 to −3.1 % (−4.1 % against
 IDEAS), fans −2.1 %, PV 0.0 %. The boiler supply follows within 0.11 K. The heat pump circuits differ most: the
 supply and return water within about 2 K and the radiator heat within 6–16 % CV(RMSE) hour by hour (the bedrooms
-that barely need heat aside), because the heat pump of FastModel has no minimum on and off times and its
+that barely need heat aside), because the heat pump of FastSmoothBuildings has no minimum on and off times and its
 hysteresis switches within 10 s, so that it starts and stops at other instants than in Buildings.
 
 ## Differences that remain
 
-* In the replay, each `Valve` of `FastModelMPC` sets the flow of its branch, `y·m_flow_nominal`, as an MPC
+* In the replay, each `Valve` of `FastSmoothBuildingsMPC` sets the flow of its branch, `y·m_flow_nominal`, as an MPC
   decides it; in Buildings the flow that a valve opening gives depends on the pressures of the whole circuit. The
-  closed-loop `FastModel` computes them, with the resistances linearised at their nominal flows.
+  closed-loop `FastSmoothBuildings` computes them, with the resistances linearised at their nominal flows.
 * The closed-loop controllers have no event: a hysteresis switches within 10 s, and the heat pump has no minimum on
   and off times (see above).
 * The heat pump interpolates the EN 14511 tables in the source temperature as Buildings does, smoothed at the
