@@ -44,7 +44,50 @@ power by the CV(RMSE) and NMBE of ASHRAE Guideline 14.
 The night ventilation of 950FF is modelled by `ventilationSchedule` in trano's Buildings zone; the FastModel zone
 did not take that parameter until this study (it silently dropped the fan), it does now.
 
-## Results
+## Summary
+
+FastModel follows Buildings closely on the zone temperatures everywhere, and on the heat delivered and the meters
+of the renovated house. The single-zone BESTEST cases in Denver show two systematic gaps: FastModel heats 7 to 16 %
+more over the year, and its heavy constructions respond faster than those of Buildings. Most of the excess comes
+from the air density of the infiltration, the rest from the walls being lumped into fewer capacities. Parameter
+changes move both libraries the same way and, for the renovated house, by the same amount within a few percent.
+Changes that act through the infiltration in Denver move FastModel 15 to 30 % more. A set point change through
+thermostatic valves moves it 20 % less, because the flow of the radiator branches is shared differently.
+
+| Case | Zone temperature, hourly RMSE | Heating demand, Buildings / FastModel | Peak heating | OpenModelica time |
+|---|---|---|---|---|
+| 950FF, free floating, night ventilation | 0.29 K | (free floating) | | 108 / 30 s |
+| 940, set-back heating and cooling | 0.13 K | 1198 / 1384 kWh (+15.6 %) | 3.53 / 3.95 kW (+12 %) | 68 / 26 s |
+| 960, zone behind a sun-space | 0.11 K (zone), 0.87 K (sun-space) | 2592 / 2779 kWh (+7.2 %) | 2.10 / 2.25 kW (+7 %) | 103 / 31 s |
+| Renovated house, 28 days | 0.06 to 0.12 K per room | 461 / 464 kWh (+0.7 %) | 2.02 / 1.99 kW (−1 %) | 746 / 119 s |
+
+How much FastModel moves when Buildings moves by one (ratio of the changes of the main KPI, 1.00 is perfect):
+
+| Perturbation | 950FF (mean temperature) | 940 (heating demand) | Renovated house (heating demand) |
+|---|---|---|---|
+| Insulation conductivity x1.5 | 0.99 | 1.07 | 0.96 |
+| Infiltration x2 | 1.12 | 1.30 | 0.95 |
+| Wall mass x0.5 | 1.45 (0.11 against 0.16 K) | 1.08 | |
+| Heating set points +2 K (940), living and kitchen +1 K (house) | | 1.10 | 0.80 |
+| Heat recovery 0.8 to 0.5 | | | 0.97 |
+| Radiators x0.7 | | | 1.41 (−2.8 against −3.9 %) |
+| Heat pump supply +10 K (electricity) | | | 1.09 |
+| Buffer tank x3 (electricity) | | | 1.12 |
+| Heat pump 3 to 2 kW (peak heating; the demand does not move) | | | 1.03 |
+
+The study found and fixed two defects of FastModel on the way:
+
+* **The night ventilation was dropped.** The `ventilation_schedule` of a zone (BESTEST 650, 950 and their
+  free-floating variants) never reached the FastModel zone, so these cases ran without their fan. The zone now
+  takes it, as a day table added to the infiltration.
+* **The ideal heating and cooling leaked.** Both PI controllers of `IdealHeatingCoolingPI` saturate at 0.1 % of
+  their output (`smoothLimit`), which is 1 kW of heating and 1 kW of cooling around the clock with the 1 MW systems
+  of BESTEST. The net load was right, but the heating and cooling demands were 8 and 4 times too large (940:
+  10.1 MWh of heating and 11.2 MWh of cooling). The heat is now rescaled so that a saturated mode gives none.
+
+## Results case by case
+
+Rendered by `python -m validation.fast_model report --docs` from `validation/fast_model/results`.
 
 <!-- results:start -->
 ### 950FF
@@ -137,29 +180,21 @@ BESTEST 940: heavy single zone, ideal heating with a night set-back (10 degC fro
 | Perturbation | KPI | Buildings: base, perturbed (change) | FastModel: base, perturbed (change) | FastModel change / Buildings change |
 |---|---|---|---|---|
 | insulation_x1.5 | mean zone temperature [degC] | 23.35, 22.95 (-0.39) | 23.31, 22.94 (-0.38) | 0.96 |
-| insulation_x1.5 | lowest hourly zone temperature [degC] | 10.00, 10.00 (-0.00) | 10.00, 10.00 (+0.00) |  |
-| insulation_x1.5 | highest hourly zone temperature [degC] | 27.00, 27.00 (-0.00) | 27.00, 27.00 (+0.00) |  |
 | insulation_x1.5 | heating demand [kWh] | 1198, 1569 (+31.0 %) | 1384, 1780 (+28.6 %) | 1.07 |
-| insulation_x1.5 | peak heating [kW] | 4, 4 (+10.9 %) | 4, 4 (+10.5 %) | 1.07 |
+| insulation_x1.5 | peak heating [kW] | 3.53, 3.92 (+10.9 %) | 3.95, 4.36 (+10.5 %) | 1.07 |
 | insulation_x1.5 | cooling demand [kWh] | 2328, 2124 (-8.8 %) | 2403, 2197 (-8.5 %) | 1.01 |
 | infiltration_x2 | mean zone temperature [degC] | 23.35, 22.64 (-0.71) | 23.31, 22.52 (-0.80) | 1.13 |
-| infiltration_x2 | lowest hourly zone temperature [degC] | 10.00, 10.00 (-0.00) | 10.00, 10.00 (+0.00) |  |
-| infiltration_x2 | highest hourly zone temperature [degC] | 27.00, 27.00 (-0.00) | 27.00, 27.00 (+0.00) |  |
 | infiltration_x2 | heating demand [kWh] | 1198, 1847 (+54.2 %) | 1384, 2231 (+61.1 %) | 1.30 |
-| infiltration_x2 | peak heating [kW] | 4, 4 (+15.5 %) | 4, 5 (+18.6 %) | 1.34 |
+| infiltration_x2 | peak heating [kW] | 3.53, 4.08 (+15.5 %) | 3.95, 4.68 (+18.6 %) | 1.34 |
 | infiltration_x2 | cooling demand [kWh] | 2328, 1981 (-14.9 %) | 2403, 2000 (-16.8 %) | 1.16 |
 | mass_x0.5 | mean zone temperature [degC] | 23.35, 23.24 (-0.10) | 23.31, 23.19 (-0.12) | 1.16 |
-| mass_x0.5 | lowest hourly zone temperature [degC] | 10.00, 10.00 (-0.00) | 10.00, 10.00 (+0.00) |  |
-| mass_x0.5 | highest hourly zone temperature [degC] | 27.00, 27.00 (+0.00) | 27.00, 27.00 (-0.00) |  |
 | mass_x0.5 | heating demand [kWh] | 1198, 1343 (+12.1 %) | 1384, 1541 (+11.3 %) | 1.08 |
-| mass_x0.5 | peak heating [kW] | 4, 4 (+10.3 %) | 4, 4 (+8.3 %) | 0.90 |
+| mass_x0.5 | peak heating [kW] | 3.53, 3.90 (+10.3 %) | 3.95, 4.28 (+8.3 %) | 0.90 |
 | mass_x0.5 | cooling demand [kWh] | 2328, 2554 (+9.7 %) | 2403, 2652 (+10.4 %) | 1.10 |
 | setpoint_+2K | mean zone temperature [degC] | 23.35, 23.87 (+0.53) | 23.31, 23.86 (+0.54) | 1.03 |
 | setpoint_+2K | lowest hourly zone temperature [degC] | 10.00, 12.00 (+2.00) | 10.00, 12.00 (+2.00) | 1.00 |
-| setpoint_+2K | highest hourly zone temperature [degC] | 27.00, 27.00 (-0.00) | 27.00, 27.00 (+0.00) |  |
 | setpoint_+2K | heating demand [kWh] | 1198, 1653 (+38.1 %) | 1384, 1885 (+36.2 %) | 1.10 |
-| setpoint_+2K | peak heating [kW] | 4, 4 (+8.2 %) | 4, 4 (+9.6 %) | 1.31 |
-| setpoint_+2K | cooling demand [kWh] | 2328, 2368 (+1.7 %) | 2403, 2445 (+1.8 %) | 1.08 |
+| setpoint_+2K | peak heating [kW] | 3.53, 3.82 (+8.2 %) | 3.95, 4.33 (+9.6 %) | 1.31 |
 
 {!validation/figures/fast_model_study_940_days_7_7.html!}
 
@@ -211,61 +246,13 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 | base | kitchen_001 | 20.08 / 20.06 | 17.63 / 17.69 | 20.95 / 21.09 | 125 / 124 | 0.43 / 0.42 | 0 / 0 |
 | base | living_001 | 20.16 / 20.13 | 17.84 / 17.86 | 21.26 / 21.13 | 201 / 203 | 0.86 / 0.83 | 0 / 0 |
 | base | **all zones** | 18.90 / 18.90 | 16.74 / 16.76 | 21.83 / 21.86 | 461 / 464 | 2.02 / 1.99 | 0 / 0 |
-| eps_x1.5 | bathroom_001 | 18.89 / 18.82 | 16.88 / 16.86 | 21.83 / 21.86 | 52 / 49 | 0.32 / 0.30 | 0 / 0 |
-| eps_x1.5 | bedroom_1_001 | 18.03 / 18.03 | 16.77 / 16.78 | 20.52 / 20.82 | 35 / 37 | 0.23 / 0.24 | 0 / 0 |
-| eps_x1.5 | bedroom_2_001 | 17.83 / 17.84 | 16.41 / 16.43 | 20.52 / 20.80 | 60 / 62 | 0.28 / 0.29 | 0 / 0 |
-| eps_x1.5 | bedroom_3_001 | 17.95 / 17.97 | 16.95 / 16.96 | 20.50 / 20.82 | 21 / 23 | 0.12 / 0.12 | 0 / 0 |
-| eps_x1.5 | kitchen_001 | 19.97 / 19.88 | 17.31 / 17.33 | 20.96 / 21.08 | 138 / 135 | 0.45 / 0.42 | 0 / 0 |
-| eps_x1.5 | living_001 | 20.08 / 20.00 | 17.56 / 17.53 | 21.04 / 21.05 | 228 / 228 | 0.89 / 0.85 | 0 / 0 |
 | eps_x1.5 | **all zones** | 18.79 / 18.76 | 16.41 / 16.43 | 21.83 / 21.86 | 534 / 534 | 2.16 / 2.13 | 0 / 0 |
-| n50_x2 | bathroom_001 | 18.63 / 18.53 | 16.56 / 16.58 | 21.81 / 21.85 | 53 / 49 | 0.33 / 0.30 | 0 / 0 |
-| n50_x2 | bedroom_1_001 | 17.90 / 17.90 | 16.46 / 16.47 | 20.24 / 20.56 | 45 / 48 | 0.27 / 0.27 | 0 / 0 |
-| n50_x2 | bedroom_2_001 | 17.75 / 17.75 | 16.10 / 16.11 | 20.23 / 20.54 | 70 / 72 | 0.32 / 0.33 | 0 / 0 |
-| n50_x2 | bedroom_3_001 | 17.86 / 17.87 | 16.67 / 16.69 | 20.25 / 20.58 | 29 / 30 | 0.14 / 0.14 | 0 / 0 |
-| n50_x2 | kitchen_001 | 19.87 / 19.74 | 17.14 / 17.17 | 20.91 / 20.94 | 145 / 140 | 0.45 / 0.43 | 0 / 0 |
-| n50_x2 | living_001 | 19.95 / 19.83 | 17.28 / 17.21 | 20.93 / 20.97 | 260 / 257 | 0.90 / 0.88 | 0 / 0 |
 | n50_x2 | **all zones** | 18.66 / 18.60 | 16.10 / 16.11 | 21.81 / 21.85 | 601 / 597 | 2.29 / 2.25 | 0 / 0 |
-| heat_pump_2kW | bathroom_001 | 19.09 / 19.07 | 17.14 / 17.18 | 21.84 / 21.86 | 51 / 49 | 0.31 / 0.30 | 0 / 0 |
-| heat_pump_2kW | bedroom_1_001 | 18.14 / 18.15 | 17.07 / 17.09 | 20.52 / 20.82 | 24 / 25 | 0.18 / 0.18 | 0 / 0 |
-| heat_pump_2kW | bedroom_2_001 | 17.90 / 17.92 | 16.73 / 16.75 | 20.52 / 20.80 | 46 / 47 | 0.23 / 0.23 | 0 / 0 |
-| heat_pump_2kW | bedroom_3_001 | 18.02 / 18.04 | 17.19 / 17.21 | 20.50 / 20.82 | 15 / 16 | 0.09 / 0.09 | 0 / 0 |
-| heat_pump_2kW | kitchen_001 | 20.08 / 20.06 | 17.62 / 17.68 | 20.96 / 21.07 | 125 / 124 | 0.41 / 0.41 | 0 / 0 |
-| heat_pump_2kW | living_001 | 20.16 / 20.13 | 17.83 / 17.85 | 21.25 / 21.10 | 201 / 204 | 0.81 / 0.78 | 0 / 0 |
 | heat_pump_2kW | **all zones** | 18.90 / 18.90 | 16.73 / 16.75 | 21.84 / 21.86 | 461 / 464 | 1.81 / 1.77 | 0 / 0 |
-| supply_+10K | bathroom_001 | 19.50 / 19.56 | 17.44 / 17.55 | 21.86 / 21.93 | 64 / 64 | 0.42 / 0.42 | 0 / 0 |
-| supply_+10K | bedroom_1_001 | 18.18 / 18.22 | 17.18 / 17.22 | 20.52 / 20.82 | 20 / 21 | 0.17 / 0.17 | 0 / 0 |
-| supply_+10K | bedroom_2_001 | 17.92 / 17.95 | 16.78 / 16.81 | 20.52 / 20.80 | 44 / 45 | 0.22 / 0.22 | 0 / 0 |
-| supply_+10K | bedroom_3_001 | 18.05 / 18.09 | 17.29 / 17.34 | 20.50 / 20.82 | 13 / 13 | 0.09 / 0.08 | 0 / 0 |
-| supply_+10K | kitchen_001 | 20.14 / 20.17 | 17.68 / 17.77 | 21.13 / 21.33 | 126 / 126 | 0.44 / 0.45 | 0 / 0 |
-| supply_+10K | living_001 | 20.20 / 20.22 | 17.89 / 17.94 | 21.31 / 21.30 | 200 / 204 | 0.89 / 0.91 | 0 / 0 |
 | supply_+10K | **all zones** | 19.00 / 19.03 | 16.78 / 16.81 | 21.86 / 21.93 | 466 / 472 | 2.20 / 2.22 | 0 / 0 |
-| radiators_x0.7 | bathroom_001 | 18.70 / 18.64 | 16.90 / 16.81 | 21.77 / 21.85 | 40 / 38 | 0.25 / 0.25 | 0 / 0 |
-| radiators_x0.7 | bedroom_1_001 | 18.09 / 18.09 | 16.97 / 16.93 | 20.54 / 20.85 | 28 / 31 | 0.19 / 0.20 | 0 / 0 |
-| radiators_x0.7 | bedroom_2_001 | 17.88 / 17.88 | 16.65 / 16.63 | 20.53 / 20.83 | 50 / 53 | 0.24 / 0.24 | 0 / 0 |
-| radiators_x0.7 | bedroom_3_001 | 17.98 / 17.99 | 17.08 / 17.06 | 20.51 / 20.84 | 19 / 20 | 0.10 / 0.10 | 0 / 0 |
-| radiators_x0.7 | kitchen_001 | 19.77 / 19.64 | 17.44 / 17.33 | 20.94 / 21.05 | 114 / 110 | 0.35 / 0.34 | 0 / 0 |
-| radiators_x0.7 | living_001 | 19.99 / 19.87 | 17.60 / 17.36 | 21.17 / 21.07 | 197 / 195 | 0.74 / 0.71 | 0 / 0 |
 | radiators_x0.7 | **all zones** | 18.73 / 18.69 | 16.65 / 16.63 | 21.77 / 21.85 | 448 / 446 | 1.81 / 1.79 | 0 / 0 |
-| tank_x3 | bathroom_001 | 19.08 / 19.08 | 17.18 / 17.21 | 21.85 / 21.88 | 50 / 49 | 0.32 / 0.30 | 0 / 0 |
-| tank_x3 | bedroom_1_001 | 18.14 / 18.15 | 17.09 / 17.10 | 20.52 / 20.82 | 24 / 25 | 0.18 / 0.18 | 0 / 0 |
-| tank_x3 | bedroom_2_001 | 17.90 / 17.92 | 16.74 / 16.76 | 20.52 / 20.80 | 46 / 47 | 0.23 / 0.23 | 0 / 0 |
-| tank_x3 | bedroom_3_001 | 18.02 / 18.04 | 17.20 / 17.22 | 20.50 / 20.82 | 15 / 16 | 0.09 / 0.09 | 0 / 0 |
-| tank_x3 | kitchen_001 | 20.08 / 20.07 | 17.63 / 17.70 | 21.01 / 21.19 | 125 / 124 | 0.42 / 0.42 | 0 / 0 |
-| tank_x3 | living_001 | 20.16 / 20.13 | 17.84 / 17.87 | 21.27 / 21.17 | 201 / 204 | 0.85 / 0.83 | 0 / 0 |
 | tank_x3 | **all zones** | 18.90 / 18.90 | 16.74 / 16.76 | 21.85 / 21.88 | 461 / 464 | 2.00 / 1.90 | 0 / 0 |
-| heat_recovery_0.5 | bathroom_001 | 18.31 / 18.21 | 16.18 / 16.20 | 21.78 / 21.83 | 53 / 50 | 0.33 / 0.31 | 0 / 0 |
-| heat_recovery_0.5 | bedroom_1_001 | 17.87 / 17.87 | 16.36 / 16.38 | 20.22 / 20.54 | 50 / 53 | 0.29 / 0.29 | 0 / 0 |
-| heat_recovery_0.5 | bedroom_2_001 | 17.72 / 17.73 | 16.01 / 16.02 | 20.21 / 20.51 | 74 / 77 | 0.33 / 0.34 | 0 / 0 |
-| heat_recovery_0.5 | bedroom_3_001 | 17.81 / 17.82 | 16.52 / 16.53 | 20.19 / 20.53 | 34 / 35 | 0.16 / 0.16 | 0 / 0 |
-| heat_recovery_0.5 | kitchen_001 | 19.82 / 19.67 | 17.01 / 17.03 | 20.90 / 20.94 | 147 / 142 | 0.46 / 0.43 | 0 / 0 |
-| heat_recovery_0.5 | living_001 | 20.00 / 19.89 | 17.36 / 17.31 | 20.94 / 20.99 | 248 / 248 | 0.88 / 0.87 | 0 / 0 |
 | heat_recovery_0.5 | **all zones** | 18.59 / 18.53 | 16.01 / 16.02 | 21.78 / 21.83 | 607 / 606 | 2.33 / 2.30 | 0 / 0 |
-| setpoint_+1K | bathroom_001 | 19.34 / 19.26 | 17.46 / 17.33 | 21.83 / 21.85 | 50 / 47 | 0.31 / 0.30 | 0 / 0 |
-| setpoint_+1K | bedroom_1_001 | 18.27 / 18.27 | 17.33 / 17.29 | 20.74 / 20.82 | 14 / 17 | 0.15 / 0.16 | 0 / 0 |
-| setpoint_+1K | bedroom_2_001 | 17.98 / 17.99 | 16.95 / 16.94 | 20.52 / 20.80 | 35 / 38 | 0.20 / 0.21 | 0 / 0 |
-| setpoint_+1K | bedroom_3_001 | 18.11 / 18.12 | 17.42 / 17.39 | 20.50 / 20.82 | 9 / 11 | 0.08 / 0.08 | 0 / 0 |
-| setpoint_+1K | kitchen_001 | 20.77 / 20.61 | 18.28 / 18.16 | 21.88 / 21.90 | 139 / 134 | 0.43 / 0.41 | 0 / 0 |
-| setpoint_+1K | living_001 | 20.93 / 20.79 | 18.43 / 18.17 | 21.98 / 21.96 | 245 / 242 | 0.88 / 0.84 | 0 / 0 |
 | setpoint_+1K | **all zones** | 19.24 / 19.17 | 16.95 / 16.94 | 21.98 / 21.96 | 492 / 489 | 1.96 / 1.93 | 0 / 0 |
 
 **Meters and speed** (Buildings / FastModel, deviation of FastModel):
@@ -347,51 +334,35 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 |---|---|---|---|---|
 | eps_x1.5 | mean zone temperature [degC] | 18.90, 18.79 (-0.11) | 18.90, 18.76 (-0.14) | 1.32 |
 | eps_x1.5 | lowest hourly zone temperature [degC] | 16.74, 16.41 (-0.32) | 16.76, 16.43 (-0.33) | 1.01 |
-| eps_x1.5 | highest hourly zone temperature [degC] | 21.83, 21.83 (+0.00) | 21.86, 21.86 (-0.00) |  |
 | eps_x1.5 | heating demand [kWh] | 461, 534 (+15.8 %) | 464, 534 (+15.0 %) | 0.96 |
-| eps_x1.5 | peak heating [kW] | 2, 2 (+6.6 %) | 2, 2 (+7.0 %) | 1.04 |
+| eps_x1.5 | peak heating [kW] | 2.02, 2.16 (+6.6 %) | 1.99, 2.13 (+7.0 %) | 1.04 |
 | eps_x1.5 | heat pump electricity [kWh] | 128, 150 (+16.5 %) | 129, 149 (+15.8 %) | 0.96 |
 | n50_x2 | mean zone temperature [degC] | 18.90, 18.66 (-0.24) | 18.90, 18.60 (-0.30) | 1.24 |
 | n50_x2 | lowest hourly zone temperature [degC] | 16.74, 16.10 (-0.64) | 16.76, 16.11 (-0.65) | 1.01 |
-| n50_x2 | highest hourly zone temperature [degC] | 21.83, 21.81 (-0.03) | 21.86, 21.85 (-0.01) |  |
 | n50_x2 | heating demand [kWh] | 461, 601 (+30.3 %) | 464, 597 (+28.6 %) | 0.95 |
-| n50_x2 | peak heating [kW] | 2, 2 (+13.2 %) | 2, 2 (+13.5 %) | 1.00 |
+| n50_x2 | peak heating [kW] | 2.02, 2.29 (+13.2 %) | 1.99, 2.25 (+13.5 %) | 1.00 |
 | n50_x2 | heat pump electricity [kWh] | 128, 169 (+31.5 %) | 129, 167 (+29.7 %) | 0.94 |
-| heat_pump_2kW | mean zone temperature [degC] | 18.90, 18.90 (-0.00) | 18.90, 18.90 (-0.00) |  |
-| heat_pump_2kW | lowest hourly zone temperature [degC] | 16.74, 16.73 (-0.01) | 16.76, 16.75 (-0.00) |  |
-| heat_pump_2kW | highest hourly zone temperature [degC] | 21.83, 21.84 (+0.00) | 21.86, 21.86 (-0.00) |  |
-| heat_pump_2kW | heating demand [kWh] | 461, 461 (-0.0 %) | 464, 464 (+0.0 %) |  |
-| heat_pump_2kW | peak heating [kW] | 2, 2 (-10.4 %) | 2, 2 (-10.9 %) | 1.03 |
-| heat_pump_2kW | heat pump electricity [kWh] | 128, 130 (+1.6 %) | 129, 130 (+1.3 %) | 0.80 |
+| heat_pump_2kW | peak heating [kW] | 2.02, 1.81 (-10.4 %) | 1.99, 1.77 (-10.9 %) | 1.03 |
 | supply_+10K | mean zone temperature [degC] | 18.90, 19.00 (+0.10) | 18.90, 19.03 (+0.13) | 1.34 |
-| supply_+10K | lowest hourly zone temperature [degC] | 16.74, 16.78 (+0.04) | 16.76, 16.81 (+0.05) |  |
-| supply_+10K | highest hourly zone temperature [degC] | 21.83, 21.86 (+0.03) | 21.86, 21.93 (+0.07) |  |
-| supply_+10K | heating demand [kWh] | 461, 466 (+1.2 %) | 464, 472 (+1.8 %) | 1.53 |
-| supply_+10K | peak heating [kW] | 2, 2 (+8.8 %) | 2, 2 (+11.9 %) | 1.33 |
+| supply_+10K | peak heating [kW] | 2.02, 2.20 (+8.8 %) | 1.99, 2.22 (+11.9 %) | 1.33 |
 | supply_+10K | heat pump electricity [kWh] | 128, 143 (+11.4 %) | 129, 145 (+12.4 %) | 1.09 |
 | radiators_x0.7 | mean zone temperature [degC] | 18.90, 18.73 (-0.16) | 18.90, 18.69 (-0.21) | 1.30 |
-| radiators_x0.7 | lowest hourly zone temperature [degC] | 16.74, 16.65 (-0.09) | 16.76, 16.63 (-0.12) | 1.38 |
-| radiators_x0.7 | highest hourly zone temperature [degC] | 21.83, 21.77 (-0.06) | 21.86, 21.85 (-0.01) | 0.19 |
+| radiators_x0.7 | lowest hourly zone temperature [degC] | 16.74, 16.65 (-0.09) | 16.76, 16.63 (-0.12) |  |
 | radiators_x0.7 | heating demand [kWh] | 461, 448 (-2.8 %) | 464, 446 (-3.9 %) | 1.41 |
-| radiators_x0.7 | peak heating [kW] | 2, 2 (-10.7 %) | 2, 2 (-10.0 %) | 0.91 |
+| radiators_x0.7 | peak heating [kW] | 2.02, 1.81 (-10.7 %) | 1.99, 1.79 (-10.0 %) | 0.91 |
 | radiators_x0.7 | heat pump electricity [kWh] | 128, 125 (-2.6 %) | 129, 124 (-3.5 %) | 1.34 |
-| tank_x3 | mean zone temperature [degC] | 18.90, 18.90 (-0.00) | 18.90, 18.90 (-0.00) |  |
-| tank_x3 | lowest hourly zone temperature [degC] | 16.74, 16.74 (+0.00) | 16.76, 16.76 (+0.00) |  |
-| tank_x3 | highest hourly zone temperature [degC] | 21.83, 21.85 (+0.02) | 21.86, 21.88 (+0.02) |  |
-| tank_x3 | heating demand [kWh] | 461, 461 (-0.0 %) | 464, 464 (+0.0 %) |  |
-| tank_x3 | peak heating [kW] | 2, 2 (-1.0 %) | 2, 2 (-4.5 %) | 4.20 |
+| tank_x3 | peak heating [kW] | 2.02, 2.00 (-1.0 %) | 1.99, 1.90 (-4.5 %) |  |
 | tank_x3 | heat pump electricity [kWh] | 128, 133 (+3.3 %) | 129, 133 (+3.6 %) | 1.12 |
 | heat_recovery_0.5 | mean zone temperature [degC] | 18.90, 18.59 (-0.31) | 18.90, 18.53 (-0.37) | 1.19 |
 | heat_recovery_0.5 | lowest hourly zone temperature [degC] | 16.74, 16.01 (-0.73) | 16.76, 16.02 (-0.74) | 1.01 |
-| heat_recovery_0.5 | highest hourly zone temperature [degC] | 21.83, 21.78 (-0.06) | 21.86, 21.83 (-0.03) | 0.54 |
 | heat_recovery_0.5 | heating demand [kWh] | 461, 607 (+31.6 %) | 464, 606 (+30.5 %) | 0.97 |
-| heat_recovery_0.5 | peak heating [kW] | 2, 2 (+15.0 %) | 2, 2 (+15.6 %) | 1.02 |
+| heat_recovery_0.5 | peak heating [kW] | 2.02, 2.33 (+15.0 %) | 1.99, 2.30 (+15.6 %) | 1.02 |
 | heat_recovery_0.5 | heat pump electricity [kWh] | 128, 171 (+32.9 %) | 129, 169 (+31.6 %) | 0.96 |
 | setpoint_+1K | mean zone temperature [degC] | 18.90, 19.24 (+0.34) | 18.90, 19.17 (+0.27) | 0.81 |
 | setpoint_+1K | lowest hourly zone temperature [degC] | 16.74, 16.95 (+0.22) | 16.76, 16.94 (+0.18) | 0.84 |
 | setpoint_+1K | highest hourly zone temperature [degC] | 21.83, 21.98 (+0.14) | 21.86, 21.96 (+0.10) | 0.71 |
 | setpoint_+1K | heating demand [kWh] | 461, 492 (+6.8 %) | 464, 489 (+5.4 %) | 0.80 |
-| setpoint_+1K | peak heating [kW] | 2, 2 (-3.0 %) | 2, 2 (-3.0 %) | 0.98 |
+| setpoint_+1K | peak heating [kW] | 2.02, 1.96 (-3.0 %) | 1.99, 1.93 (-3.0 %) | 0.98 |
 | setpoint_+1K | heat pump electricity [kWh] | 128, 137 (+6.9 %) | 129, 136 (+5.4 %) | 0.78 |
 
 {!validation/figures/fast_model_study_residential_after_days_7_7.html!}
@@ -402,8 +373,71 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 
 ## Reading the results
 
-<!-- written from the results above -->
+**Free-floating zone (950FF).** With its night fan, the heavy zone follows Buildings within 0.29 K hour by hour,
+over a year from −12 to 37 degC, and the mean, lowest and highest temperatures agree within 0.1 K. The response to
+the insulation is the same within 2 % on the mean and the extremes. Doubling the infiltration cools FastModel 12 to
+15 % more than Buildings, which is the air density (see below). Halving the mass of the concrete blocks raises the
+highest temperature by 1.75 K in FastModel against 1.54 K in Buildings: with one capacity per layer boundary,
+removing mass from FastModel's walls removes it from the nodes the room sees.
+
+**Set-back heating (940).** The temperature follows within 0.13 K, but FastModel needs 186 kWh more heating in the
+year (+15.6 %) and its morning peak is 12 % higher. The hourly heat shows where:
+
+| Heating over the year, by period | Buildings | FastModel |
+|---|---|---|
+| Night set-back, 23:00 to 07:00 | 3 kWh | 53 kWh |
+| Reheat, 07:00 to 09:00 | 376 kWh | 433 kWh |
+| Day, 09:00 to 23:00 | 819 kWh | 899 kWh |
+
+At night FastModel's room cools faster and reaches the 10 degC set-back on cold nights where Buildings stays above
+it; on sunny winter mornings it warms more slowly (0.6 to 0.8 K cooler from 10:00 to 12:00). Both come from the
+lumped heavy walls: the inner concrete node exchanges with the room faster than the 18 states per 0.2 m of
+Buildings. The rest of the excess, and most of it, is the infiltration: doubling it adds 847 kWh in FastModel and
+649 kWh in Buildings, a ratio of 1.30 where the air density alone predicts 1.21 (1.2 kg/m3 in FastModel, 0.99 kg/m3
+at the 83 kPa of Denver in Buildings). At the base infiltration, the density accounts for about 140 of the 186 kWh.
+The hourly CV(RMSE) of the heat, 50 to 58 %, is high because the heat is concentrated in two morning hours that
+FastModel delivers a little earlier and larger; it is not a sign of a different steady state.
+
+**Sun-space (960).** The heated zone behind the sun-space follows within 0.11 K and needs 7 % more heating, the
+same Denver infiltration gap with a smaller share of the losses. The unheated heavy sun-space is the weakest
+result of the study: 0.87 K RMSE, 0.53 K too warm on average, its highest temperature 48.4 against 48.0 degC. Two
+gaps add up there: the long-wave exchange inside the zone is linearised at 20 degC while its surfaces run from 4 to
+48 degC, and its heavy floor and walls are lumped.
+
+**Renovated house.** Every room follows within 0.03 to 0.23 K hour by hour, the heat of the radiators within 5 to
+13 % CV(RMSE) and a few percent of bias, and the meters agree within 1.2 % (heat pump, every variant), 2.3 % (fans) and 0 % (PV).
+The responses to the envelope (EPS conductivity, airtightness, heat recovery) agree within 3 to 5 %: in Uccle,
+FastModel and Buildings use nearly the same air density, so the infiltration gap of Denver disappears. The systems
+respond alike too: a 2 kW heat pump lowers the peak by 10.4 % in Buildings and 10.9 % in FastModel without changing
+the demand, a supply 10 K warmer costs 11.4 and 12.4 % more electricity, a buffer three times larger 3.3 and 3.6 %.
+Two responses differ by 20 % or more. Raising the set point of the living room and the kitchen by 1 K raises the mean
+temperature of the living room by 0.77 K in Buildings and 0.66 K in FastModel (kitchen: 0.69 and 0.55 K), and the
+bedrooms then receive 10 to 20 % more heat in FastModel than in Buildings, against 3 to 6 % in the base case. Smaller radiators (x0.7) lower the demand by 3.9 % instead of 2.8 %. Both depend on how
+the flow is shared between radiator branches when the thermostatic valves move (see below). FastModel simulates
+the 28 days six times faster in OpenModelica.
 
 ## What FastModel lacks, and why the sensitivities differ
 
-<!-- written from the results above; the plan is in fast_model_improvement_plan.md -->
+Ranked by what they change in the results above; the [improvement plan](fast_model_improvement_plan.md) turns each
+into a change with its cost and the check that closes it.
+
+1. **Constant air density.** The zone takes \(\rho = 1.2\) kg/m3 for the infiltration where trano's Buildings zone
+   uses the density at the site pressure. Every result that goes through the infiltration is 20 % too large at
+   1600 m (940: +140 kWh of the +186 kWh; infiltration sensitivities 1.12 to 1.30), and right at sea level (the
+   renovated house: 0.95).
+2. **Lumped walls.** One capacity per layer boundary instead of `number_of_states` per layer. The steady state and
+   the response to a conductivity are right (insulation: 0.96 to 1.07), the dynamics are not: faster night cooling
+   and slower morning warm-up of heavy zones, a 12 % higher reheat peak, a 13 to 45 % larger response of the
+   temperatures to a change of mass.
+3. **Flow sharing between radiator branches.** The resistances are linearised at their nominal flows, where
+   Buildings solves quadratic laws with the valve authority: when some valves open more (set point +1 K), FastModel
+   gives the other branches more flow than Buildings (bedrooms +10 to 20 % of heat) and the rooms whose set point
+   rose less (response 0.80).
+4. **Linearised long-wave exchange.** Exact at 20 degC, it misses the exchange between a 48 degC floor and a 5 degC
+   window: the sun-space is 0.53 K too warm on average.
+5. **Heat pump without safety times, smooth limits that do not reach their bounds.** The peak responses to the buffer
+   size and the supply temperature differ by 30 % or more on small changes (buffer x3: −4.5 against −1.0 % of peak),
+   the controllers saturate at 0.1 % of their range (this is what made the ideal systems leak), and the smooth
+   limits overshoot slightly near their bounds (−11 W of heating in 940 at 10:00).
+6. **Missing features.** Overhangs and side fins (BESTEST 610, 630, 910 and 930 cannot be run), unbalanced
+   ventilation, wind- and stack-driven infiltration, ISO 13370 ground, moisture.

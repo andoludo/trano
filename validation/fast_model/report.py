@@ -40,6 +40,8 @@ ENERGY_KPIS = (
     ("cooling_kwh", "cooling demand", "kWh"),
     ("electricity_kwh", "heat pump electricity", "kWh"),
 )
+TEMPERATURE_RESOLUTION = 0.1  # [K] smallest change of a temperature KPI a sensitivity ratio is drawn from
+ENERGY_RESOLUTION = 0.02  # smallest relative change of a load or a meter a sensitivity ratio is drawn from
 TEMPERATURE_KPIS = (
     ("mean_temperature", "mean zone temperature", "degC"),
     ("min_temperature", "lowest hourly zone temperature", "degC"),
@@ -80,7 +82,8 @@ def kpi_table(case: StudyCase) -> str:
         buildings, fast_model = _runs(case, variant)
         available = buildings or fast_model
         zones = [zone.zone for zone in available.zones] if available is not None else []
-        for zone in zones:
+        # a perturbed multi-zone case shows the totals of the building only, the base case every zone
+        for zone in zones if variant == BASE or len(zones) == 1 else []:
             pair = [run.zone(zone) if run is not None else None for run in (buildings, fast_model)]
             lines.append(
                 f"| {variant} | {zone} | {_pair(pair, 'mean_temperature', 2)} | {_pair(pair, 'min_temperature', 2)} | "
@@ -189,7 +192,10 @@ def sensitivity_rows(case: StudyCase) -> list[dict[str, object]]:
                 continue
             delta_reference = reference[1] - reference[0]  # type: ignore[operator]
             delta_model = model[1] - model[0]  # type: ignore[operator]
-            tolerance = 0.05 if unit == "degC" else 0.01 * abs(reference[0])  # type: ignore[arg-type]
+            # a change smaller than these moves within the noise of an hourly KPI: no ratio is drawn from it
+            tolerance = TEMPERATURE_RESOLUTION if unit == "degC" else ENERGY_RESOLUTION * abs(reference[0])  # type: ignore[arg-type]
+            if abs(delta_reference) <= tolerance and abs(delta_model) <= tolerance:
+                continue  # neither library moves
             rows.append(
                 {
                     "perturbation": perturbation.id,
@@ -218,7 +224,7 @@ def sensitivity_table(case: StudyCase) -> str:
     ]
     for row in sensitivity_rows(case):
         unit = str(row["unit"])
-        digits = 2 if unit == "degC" else 0
+        digits = 0 if unit == "kWh" else 2
         relative = unit != "degC"
         base_b, pert_b = float(row["buildings_base"]), float(row["buildings"])  # type: ignore[arg-type]
         base_f, pert_f = float(row["fast_model_base"]), float(row["fast_model"])  # type: ignore[arg-type]
