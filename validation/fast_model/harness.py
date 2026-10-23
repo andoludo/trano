@@ -51,6 +51,7 @@ VARIABLES = (
 )
 ZONE_TEMPERATURE = {BUILDINGS: "heaPorAir.T", FAST_MODEL: "TAir"}
 METERS = ("electricity", "fuel", "fans", "pv")
+LOG_LINES = 60  # of the OpenModelica log shown when a run fails
 
 
 class ZoneKpis(BaseModel):
@@ -171,7 +172,13 @@ def run(case_id: str, variant: str = BASE, library: str = BUILDINGS, force: bool
         hash_file.unlink(missing_ok=True)
     before = hash_file.read_text() if hash_file.exists() else None
     started = time.monotonic()
-    result = _simulate(network, directory, options(case), _container_suffix(f"study-{case.id}-{variant}-{library}"))
+    try:
+        result = _simulate(network, directory, options(case), _container_suffix(f"study-{case.id}-{variant}-{library}"))
+    except RuntimeError:
+        log = directory / "omc.log"
+        if log.exists():
+            logger.error("Last lines of %s:\n%s", log, "\n".join(log.read_text().splitlines()[-LOG_LINES:]))
+        raise
     if hash_file.read_text() != before or not timing.exists():
         timing.write_text(f"{time.monotonic() - started:.1f}")
     frame = hourly_series(network, library, result, case)

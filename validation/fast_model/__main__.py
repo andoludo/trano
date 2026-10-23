@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import re
 from typing import Any
 
 from validation.fast_model.cases import BASE, CASES
@@ -29,6 +30,17 @@ def plan(cases: list[str] | None = None, variants: list[str] | None = None) -> l
             if not variants or variant in variants or (variant == BASE and BASE in variants)
         )
     return rows
+
+
+def plan_from_message(message: str) -> list[dict[str, str]]:
+    """The plan a commit message asks for: ``[study]`` for every run, ``[study 960 residential_after | base]`` for
+    the cases before the bar and the variants after it."""
+    match = re.search(r"\[study([^\]]*)\]", message)
+    if match is None:
+        return []
+    cases_part, _, variants_part = match.group(1).partition("|")
+    cases = [word for word in cases_part.split() if word in CASES]
+    return plan(cases or None, variants_part.split() or None)
 
 
 def _list() -> None:
@@ -67,6 +79,7 @@ def main() -> None:
     planned = commands.add_parser("plan", help="the (case, variant) matrix as JSON")
     planned.add_argument("cases", nargs="*")
     planned.add_argument("--variants", nargs="*", default=[])
+    planned.add_argument("--from-message", default=None, help="a commit message holding a [study ...] tag")
     runner = commands.add_parser("run", help="simulate a case with both libraries")
     runner.add_argument("case", choices=list(CASES))
     runner.add_argument("--variants", nargs="*", default=None, help="all variants of the case by default")
@@ -80,7 +93,12 @@ def main() -> None:
     if arguments.command == "list":
         _list()
     elif arguments.command == "plan":
-        print(json.dumps(plan(arguments.cases or None, arguments.variants or None), separators=(",", ":")))
+        rows = (
+            plan_from_message(arguments.from_message)
+            if arguments.from_message is not None
+            else plan(arguments.cases or None, arguments.variants or None)
+        )
+        print(json.dumps(rows, separators=(",", ":")))
     elif arguments.command == "run":
         _run(arguments.case, arguments.variants, arguments.libraries, arguments.force)
     else:

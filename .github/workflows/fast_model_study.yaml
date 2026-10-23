@@ -5,7 +5,8 @@ name: FastModel study
 # committed to the branch the workflow runs on. On demand only: a year of Buildings per BESTEST variant.
 on:
   # A workflow that is not on the default branch cannot be dispatched by hand: a push whose message carries [study]
-  # runs it on its branch (the results the workflow commits do not carry it, so it does not run on itself).
+  # runs it on its branch, [study 960 residential_after | base] a part of it (the results the workflow commits do not
+  # carry the tag, so it does not run on itself).
   push:
     paths:
       - ".github/workflows/fast_model_study.yaml"
@@ -39,8 +40,17 @@ jobs:
           enable-cache: true
       - run: uv sync --group dev
       - id: plan
+        env:
+          MESSAGE: ${{ github.event.head_commit.message }}
+          CASES: ${{ inputs.cases }}
+          VARIANTS: ${{ inputs.variants }}
         run: |
-          echo "matrix=$(uv run python -m validation.fast_model plan ${{ inputs.cases }} --variants ${{ inputs.variants }})" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            matrix=$(uv run python -m validation.fast_model plan $CASES --variants $VARIANTS)
+          else
+            matrix=$(uv run python -m validation.fast_model plan --from-message "$MESSAGE")
+          fi
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   simulate:
     needs: plan

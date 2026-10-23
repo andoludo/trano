@@ -153,3 +153,15 @@ def test_the_plan_lists_every_variant() -> None:
     assert len(rows) == sum(len(case.variants) for case in CASES.values())
     assert plan(["950FF"], ["base"]) == [{"case": "950FF", "variant": "base"}]
     assert {row["variant"] for row in plan(["residential_after"], ["base", "eps_x1.5"])} == {"base", "eps_x1.5"}
+
+
+def test_a_commit_message_selects_the_runs() -> None:
+    from validation.fast_model.__main__ import plan_from_message
+
+    assert plan_from_message("no tag") == []
+    assert len(plan_from_message("Fix [study]")) == len(plan())
+    assert plan_from_message("Retry [study 960 residential_after | base]") == [
+        {"case": "960", "variant": "base"},
+        {"case": "residential_after", "variant": "base"},
+    ]
+    assert {row["case"] for row in plan_from_message("[study 940]")} == {"940"}
