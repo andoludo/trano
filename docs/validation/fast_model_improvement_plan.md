@@ -13,18 +13,62 @@ house, it stays within 1 % of the meters and 5 % of the sensitivities, except wh
 flow of the circuit (set point response 0.80). Two defects were fixed during the study: the night ventilation that
 FastModel dropped and the 1 kW leak of its ideal systems.
 
-| Priority | Change | Evidence in the study | Cost | Closed when |
-|---|---|---|---|---|
-| 1 | Air density from the site pressure | 940: about 140 of the +186 kWh; infiltration responses 1.12 to 1.30 in Denver, 0.95 in Uccle | one expression, no state | 940 heating within 5 % of Buildings, infiltration ratios 0.9 to 1.1 |
-| 2 | Discretise the layers (`number_of_states`) | 940: night heating 53 against 3 kWh, reheat peak +12 %; mass responses 1.13 to 1.45; sun-space +0.53 K | states: 4 to about 12 per heavy wall | 940 peak within 5 %, 950FF mass ratios 0.9 to 1.1, sun-space bias within 0.2 K |
-| 3 | Quadratic flow laws on the radiator branches | house, set point +1 K: response 0.80, bedrooms +10 to 20 % of heat; radiators x0.7: 1.41 | an algebraic loop in the circuit (closed loop only) | set point and radiator ratios 0.9 to 1.1, bedroom NMBE within 5 % |
-| 4 | Long-wave exchange around the current surface temperatures | sun-space: 0.87 K RMSE, highest temperature +0.4 K | none (moving linearisation) | sun-space RMSE below 0.5 K |
-| 5 | Exact smooth limits, heat pump safety times | ideal systems leaked 1 kW (fixed by rescaling); −11 W overshoot; buffer and supply peak responses 1.33 to 4.5 | one state per heat pump | no saturated controller output above 1e-6 of its range; peak ratios 0.8 to 1.2 |
-| 6 | Shading, unbalanced ventilation, wind- and stack-driven infiltration, ISO 13370 ground | BESTEST 610, 630, 910, 930 not runnable; supply air 0.3 K warm | per feature | the four shading cases inside the BESTEST bands |
+| Priority | Change | Evidence in the study | Cost | Closed when | Status |
+|---|---|---|---|---|---|
+| 1 | Air density from the site pressure | 940: about 140 of the +186 kWh; infiltration responses 1.12 to 1.30 in Denver, 0.95 in Uccle | one expression, no state | 940 heating within 5 % of Buildings, infiltration ratios 0.9 to 1.1 | done (phase 1) |
+| 2 | Discretise the layers (`number_of_states`) | 940: night heating 53 against 3 kWh, reheat peak +12 %; mass responses 1.13 to 1.45; sun-space +0.53 K | states: 4 to about 12 per heavy wall | 940 peak within 5 %, 950FF mass ratios 0.9 to 1.1, sun-space bias within 0.2 K | done (phase 2) |
+| 3 | Quadratic flow laws on the radiator branches | house, set point +1 K: response 0.80, bedrooms +10 to 20 % of heat; radiators x0.7: 1.41 | an algebraic loop in the circuit (closed loop only) | set point and radiator ratios 0.9 to 1.1, bedroom NMBE within 5 % | open |
+| 4 | Long-wave exchange around the current surface temperatures | sun-space: 0.87 K RMSE, highest temperature +0.4 K | none (moving linearisation) | sun-space RMSE below 0.5 K | done: room exchange around the surface temperatures, exact sky exchange |
+| 5 | Exact smooth limits, heat pump safety times | ideal systems leaked 1 kW (fixed by rescaling); −11 W overshoot; buffer and supply peak responses 1.33 to 4.5 | one state per heat pump | no saturated controller output above 1e-6 of its range; peak ratios 0.8 to 1.2 | smooth limits done (phase 1), safety times open |
+| 6 | Shading, unbalanced ventilation, wind- and stack-driven infiltration, ISO 13370 ground | BESTEST 610, 630, 910, 930 not runnable; supply air 0.3 K warm | per feature | the four shading cases inside the BESTEST bands | open |
 
 The [study](fast_model_study.md) is the yardstick: each change is merged with its run of
 `python -m validation.fast_model` (the workflow `fast_model_study.yaml`) and the BESTEST run of FastModel, and the
 tables of the study and of the [BESTEST page](bestest.md) are rendered from the new results.
+
+## Progress
+
+The first phases are in the library (`trano/library/FastModel.mo`, its templates and `library.json`). Every step
+kept the models smooth and without events, and every FastModel model still exports to CasADi with rumoca
+(`tests/test_fast_model.py`). Each step was measured on the BESTEST cases FastModel can describe (23 of 27: the four
+with shading are left out) against the band of the standard and against the values of Buildings for the same YAML:
+
+| Library | Cases | KPIs inside their band | Annual heating against Buildings, mean (range) | Annual cooling against Buildings, mean (range) | Loads, mean gap | Free-floating temperatures, mean gap (largest) |
+|---|---|---|---|---|---|---|
+| Before (first FastModel run) | 22 | 83 of 85 | +9.0 % (+5.0 to +20.4 %) | +3.1 % (+1.5 to +4.3 %) | 5.6 % | 0.48 K (1.49 K) |
+| Air density, exact smooth limits (phase 1) | 22 | 85 of 85 | −0.4 % (−3.6 to +2.6 %) | +5.5 % (+3.0 to +9.2 %) | 3.4 % | 1.04 K (4.39 K) |
+| Discretised walls, single glazing (phase 2) | 23 | 87 of 89 | −0.6 % (−3.3 to +2.1 %) | +5.5 % (+1.7 to +9.3 %) | 3.1 % | 1.16 K (4.57 K) |
+| Room long-wave exchange around the surface temperatures | 23 | 89 of 89 | −0.6 % (−3.2 to +1.6 %) | +5.0 % (−0.1 to +8.1 %) | 2.7 % | 0.93 K (3.82 K) |
+| Exact long-wave exchange with sky and ground | 23 | 89 of 89 | +0.6 % (−1.0 to +2.5 %) | +2.4 % (−2.2 to +6.6 %) | 2.0 % | 0.80 K (3.52 K) |
+
+What each step did:
+
+* **Air density at the site** (phase 1). The weather bus carries the atmospheric pressure (101325 Pa, or the pressure
+  of the site's altitude when the YAML reads it from the weather file), and the zone uses the ideal-gas density at
+  that pressure and its air temperature. The heating of the Denver cases fell from +9 % to −0.4 % of Buildings.
+  It also showed that the excess infiltration had hidden a heat surplus: with it gone, FastModel cooled 5 % more
+  than Buildings and its free-floating peaks rose by up to 4 K above those of Buildings.
+* **Smooth limits that reach their bounds** (phase 1). `smoothLimit` is exactly its bound beyond a quadratic blend
+  and never leaves the range; it used to saturate 0.1 % inside, which made the ideal systems leak 1 kW of heating
+  and of cooling at all times. The solar angles keep the interior limit (`smoothLimitInside`), acos being singular
+  at the bounds.
+* **Discretised walls** (phase 2). The closed-loop model splits each layer into the states Buildings gives it, at most
+  three sublayers; FastModelMPC keeps one node per layer boundary, its states being the decision variables of the
+  optimal control. The reheat peak of 940 after the night set-back fell from +8 % to +2 % of Buildings. The single
+  glazing of 670 runs at last: its record wrote an empty array, `{}`, that OpenModelica does not parse.
+* **Long-wave exchange in the room** around the mean surface temperature when the YAML sets
+  `linearize_emissive_power: false`, as every BESTEST case does (Buildings then exchanges exactly). The cooling
+  excess fell by about half a point and the free-floating peaks by up to 0.8 K.
+* **Exact long-wave exchange with sky and ground** for outer walls and windows,
+  \(\sigma\varepsilon A (T^4 - T_{env}^4)\) instead of its linearisation at \(T_{env}\): a sun-lit outer surface
+  loses a quarter more at 60 degC. The cooling excess fell from +5.0 to +2.4 % on average.
+
+**Still open.** The free-floating zones of the light constructions still peak 2 to 3.5 K above Buildings (600FF,
+650FF, 680FF), and the well-insulated 980 cools 6.6 % more: FastModel still keeps a little too much of the sun on
+the hottest days. The next candidates are the angular optics of the glazing (a quartic fit of the transmittance of
+Buildings), the distribution of the direct sun in the room and the interior convection at large temperature
+differences; each can be checked on 600FF and 680FF alone. Priorities 3 (flow sharing between radiator branches), 5
+(heat pump safety times) and 6 (shading) are unchanged.
 
 ## Gaps found by reading the equations
 
