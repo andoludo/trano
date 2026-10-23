@@ -30,10 +30,12 @@ library for every Modelica library. The Modelica name of every parameter in ever
 
 The models trano generates are **validated against ASHRAE Standard 140 (BESTEST)**: the 27 single-zone cases
 are simulated for a year with every library and compared with the acceptance limits of the standard and the
-spread of the reference programs. Buildings and IDEAS pass every case (see the
+spread of the reference programs. Buildings, IDEAS and FastModel (the smooth library that exports to CasADi for
+MPC) pass every case (see the
 [validation results](https://andoludo.github.io/trano/validation/bestest/) and the
 [walk through the cases](https://andoludo.github.io/trano/validation/bestest_cases/)); the two simplified
-zones are reported for information. Simulations run in the official OpenModelica image.
+zones are reported for information. Simulations run in the official OpenModelica image. The analysis of FastModel
+against Buildings and as an MPC model, with its scripts and results, is in [`analysis/fast_model`](analysis/fast_model/README.md).
 
 ## ✨ Key Features
 

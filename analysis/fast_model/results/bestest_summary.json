@@ -1,0 +1,34 @@
+{
+ "all_cases": {
+  "cases": 27,
+  "kpis": 105,
+  "inside": 105,
+  "annual_heating_mean": 0.002321,
+  "annual_heating_min": -0.009286,
+  "annual_heating_max": 0.024558,
+  "annual_cooling_mean": 0.012737,
+  "annual_cooling_min": -0.022506,
+  "annual_cooling_max": 0.044452,
+  "loads_mean_abs": 0.011386,
+  "loads_max_abs": 0.044452,
+  "temperatures_mean_abs_k": 0.382248,
+  "temperatures_max_abs_k": 1.704231
+ },
+ "shading_cases": {
+  "cases": 4,
+  "kpis": 16,
+  "inside": 16,
+  "annual_heating_mean": 0.003821,
+  "annual_heating_min": -0.002378,
+  "annual_heating_max": 0.009175,
+  "annual_cooling_mean": 0.008883,
+  "annual_cooling_min": 0.002407,
+  "annual_cooling_max": 0.014116,
+  "loads_mean_abs": 0.007292,
+  "loads_max_abs": 0.022182,
+  "temperatures_mean_abs_k": null,
+  "temperatures_max_abs_k": null,
+  "largest_gap_to_buildings": 0.022182
+ },
+ "outside_band": []
+}

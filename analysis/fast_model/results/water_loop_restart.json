@@ -1,0 +1,42 @@
+{
+ "case": "residential_before",
+ "patches": [],
+ "balances": {
+  "days 8 to 10": {
+   "days": [
+    8.0,
+    10.0
+   ],
+   "Buildings": {
+    "fuel_meter_kwh": 232.32543,
+    "fuel_from_samples_kwh": 230.284407,
+    "fuel_samples_error": -0.008785,
+    "jacket_loss_kwh": 9.172674,
+    "pump_heat_kwh": 0.285869,
+    "water_in_kwh": 188.58981,
+    "radiators_kwh": 188.095829,
+    "stored_kwh": null,
+    "residual_kwh": 0.493981,
+    "fuel_per_heat": 1.235144,
+    "mean_boiler_temperature_degc": 74.718878
+   },
+   "FastModel": {
+    "fuel_meter_kwh": 236.693996,
+    "fuel_from_samples_kwh": 238.234388,
+    "fuel_samples_error": 0.006508,
+    "jacket_loss_kwh": 9.17167,
+    "pump_heat_kwh": 0.0,
+    "water_in_kwh": 192.018226,
+    "radiators_kwh": 191.294177,
+    "stored_kwh": 0.463566,
+    "residual_kwh": 0.260484,
+    "fuel_per_heat": 1.23733,
+    "mean_boiler_temperature_degc": 74.711456
+   }
+  }
+ },
+ "lowest_boiler_temperature_degc": {
+  "Buildings": 72.01595,
+  "FastModel": 72.232413
+ }
+}

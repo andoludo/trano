@@ -61,10 +61,11 @@ bounds, walls discretised as Buildings, long-wave exchange as the YAML asks, exa
 ventilation and the radiators and with the sweeps, found two more gaps that the library then closed: the gas gaps of
 the glazing held at their EN 673 conductance, and resistances in the hydraulic links that Buildings does not have. The
 tables below are those of the **third run**, on the library as it is now. The house before renovation joined in a
-**fourth run** on the same library, which also reads the gas and the electricity from the energy meters of the
-systems instead of samples of their powers: samples five minutes apart caught or missed the two-minute bursts of the
-boiler at full power when the valves open (1 % of the gas, in opposite directions for the two libraries), and moved
-the electricity responses of the heat pump of the renovated house by up to 0.13.
+**fourth run** on the same library, which also reads the gas and the electricity of both libraries from the energy
+meters of the systems instead of samples of their powers: samples five minutes apart caught or missed the two-minute
+bursts of the boiler at full power when the valves open (0.75 % of the gas of Buildings, 0.6 % of FastModel's, in
+opposite directions), and moved the electricity of the heat pump of the renovated house by 2 % and its responses by
+up to 0.15.
 
 FastModel follows Buildings within 0.05 to 0.08 K hour by hour on the zones of the BESTEST cases (0.46 K in the
 unheated sun-space of 960), within 0.06 to 0.10 K on the rooms of the renovated house and within 0.02 to 0.09 K on
@@ -73,15 +74,15 @@ responds to every change of the envelope, the sun, the gains and the ideal syste
 does: 24 perturbations out of 24 *alike* (every ratio within 0.9 to 1.1, or the two changes within 0.05 K or 0.5 %).
 In the renovated house, 10 of 12 are alike or close; the two that differ are peaks of the heat pump (the buffer x3 and
 the EPS x0.5). In the house before renovation with its gas boiler, the six changes that move the results are alike,
-the gas included (ratios 0.98 to 1.01); see [below](#does-a-change-of-the-yaml-move-both-libraries-alike).
+the gas included (ratios 0.99 to 1.01); see [below](#does-a-change-of-the-yaml-move-both-libraries-alike).
 
 | Case | Zone temperature, hourly RMSE | Heating demand, Buildings / FastModel | Peak heating | OpenModelica time |
 |---|---|---|---|---|
 | 950FF, free floating, night ventilation | 0.08 K (second run 0.10 K, first 0.29 K) | (free floating) | | 80 / 34 s |
 | 940, set-back heating and cooling | 0.05 K (0.08 K, 0.13 K) | 1100 / 1096 kWh, −0.4 % (+0.3 %, +11 %) | 3.27 / 3.30 kW, +1 % (+2 %, +8 %) | 110 / 37 s |
 | 960, zone behind a sun-space | 0.07 K zone, 0.46 K sun-space (0.10 and 0.68 K; 0.11 and 0.87 K) | 2588 / 2575 kWh, −0.5 % (−1.0 %) | 2.10 / 2.11 kW | 149 / 42 s |
-| Renovated house, 28 days | 0.06 to 0.10 K per room (0.06 to 0.12 K) | 461 / 468 kWh, +1.5 % (+1.1 %); electricity 128 / 131 kWh, +1.7 % | 2.02 / 2.05 kW | 456 / 167 s |
-| House before renovation, gas boiler, 28 days | 0.02 to 0.09 K per room | 2755 / 2802 kWh, +1.7 %; gas 3365 / 3454 kWh, +2.6 % | 8.70 / 8.78 kW | 260 / 108 s |
+| Renovated house, 28 days | 0.06 to 0.10 K per room (0.06 to 0.12 K) | 461 / 468 kWh, +1.5 % (+1.1 %); electricity 131 / 131 kWh, −0.2 % | 2.02 / 2.05 kW | 759 / 155 s |
+| House before renovation, gas boiler, 28 days | 0.02 to 0.09 K per room | 2755 / 2802 kWh, +1.7 %; gas 3391 / 3454 kWh, +1.9 % | 8.70 / 8.78 kW | 268 / 112 s |
 
 (The heating of the first run is that of the meters of the ideal system, as here: +11 % in 940. The first version of
 this page gave +15.6 %, read from hourly samples of the heat flow, which overstated both libraries.)
@@ -134,20 +135,20 @@ parentheses where the library changed them):
 * **Coupling of two zones (960).** The common wall x2, the sun-space mass x0.5 and its infiltration x2: 0.94 to 1.10
   (the common wall 0.97 to 1.15 in the second run).
 * **Ideal systems.** The heating set points of 940 +2 K: 0.99 to 1.00.
-* **Heat pump house (after renovation).** The supply set point +10 K (peak and electricity 1.01 and 1.08; second run
-  1.30 and 1.08), the radiator exponent (peak 0.93; second run 0.62), the heat recovery and the buffer's electricity
-  are alike. The set point +1 K of the living room and kitchen (heating 0.87, electricity 0.83; second run 0.79 and
-  0.80) and smaller radiators (heating 1.28 and electricity 1.32, on changes of 3 %: both libraries end within 1 % of
-  each other) are close. Two differ, both on the peak of the heat pump: a buffer three times larger (FastModel's peak
-  falls by 5 %, Buildings' by 1 %) and the EPS x0.5 (peak 1.51). The heat pump of FastModel has no safety times and
-  takes its condenser from the buffer temperature: it starts and stops at other instants, and at full load its supply
-  water is 0.4 K cooler than in Buildings.
+* **Heat pump house (after renovation).** The supply set point +10 K (peak and electricity 1.01 and 1.04; second run
+  1.30 and 1.08), the radiator exponent (peak 0.93; second run 0.62) and the heat recovery are alike. The set point
+  +1 K of the living room and kitchen (heating 0.87, electricity 0.85; second run 0.79 and 0.80) and smaller radiators
+  (heating 1.28 and electricity 1.30, on changes of 3 %: both libraries end within 1 % of each other) are close. Two
+  differ, both on the peak of the heat pump: a buffer three times larger (FastModel's peak falls by 5 %, Buildings' by
+  1 %) and the EPS x0.5 (peak 1.51). The heat pump of FastModel has no safety times and takes its condenser from the
+  buffer temperature: it starts and stops at other instants, and at full load its supply water is 0.4 K cooler than
+  in Buildings.
 * **Boiler house (before renovation).** The supply set point −10 K and radiators x0.7 lower the peak by 12 % in both
   libraries (1.06); the set point +1 K of the living room and kitchen raises the heating and the gas by about 5 % in
-  both (0.99 and 0.98). A 10 kW boiler instead of 16 kW changes nothing in either, the peak of the house (8.7 kW)
-  staying below it, nor do the radiator exponent and the glazing gap beyond 2 %. The gas follows the heat: 2.6 % above
-  Buildings in the base case, for 1.7 % more heat delivered to the rooms; both water loops close their energy balance
-  within 0.3 % (two days checked from the meters).
+  both (0.99 and 0.99). A 10 kW boiler instead of 16 kW changes nothing in either, the peak of the house (8.7 kW)
+  staying below it, nor do the radiator exponent and the glazing gap beyond 2 %. The gas follows the heat: 1.9 % above
+  Buildings in the base case, for 1.7 % more heat delivered to the rooms; per unit of heat both burn the same gas
+  within 0.2 %, and both water loops close their energy balance within 0.15 % over the month.
 
 What had to be added to FastModel to get there, in the order of the plan: the air density of the site, smooth limits
 that reach their bounds, the walls discretised as Buildings, the long-wave exchange as the YAML asks (in the room,
@@ -880,7 +881,7 @@ free-floating BESTEST cases show the same trend, smaller now (the largest gap of
 1.7 K, see the [BESTEST page](bestest.md#fastmodel)).
 
 **Renovated house.** Every room follows within 0.06 to 0.10 K hour by hour, the heat of the radiators within 4 to
-11 % CV(RMSE), and the meters within 1.8 % (heat pump), 2.3 % (fans) and 0 % (PV). The responses to the envelope (EPS
+11 % CV(RMSE), and the meters within 0.2 % (heat pump), 2.0 % (fans) and 0 % (PV). The responses to the envelope (EPS
 conductivity from x0.5 to x2, airtightness, heat recovery, ventilation flow) agree within 3 % on the heating. The
 second run had attributed the gap of the set point response (0.79) to the flow laws of the radiator branches; the
 branch flows of both libraries, measured hour by hour, showed otherwise: the flow laws are the same (trano's Buildings
@@ -888,14 +889,14 @@ valves and radiators are linearised too), but with the living room valve fully o
 against 43.9 g/s in Buildings, because the sensor feeding the six radiators had a resistance (1000 Pa at its nominal
 flow) that Buildings does not have, a fifth of the head of a branch. With 100 Pa the set point response rose to 0.87.
 What is left is the heat pump: while the living room valve is open, its supply water is 0.4 K cooler than in Buildings,
-and its electricity responds less (0.83) to the set point. FastModel simulates the 28 days three times faster in
+and its electricity responds less (0.85) to the set point. FastModel simulates the 28 days three times faster in
 OpenModelica.
 
 **House before renovation.** The same house with its gas boiler at 75 degC: every room follows within 0.02 to 0.09 K
 hour by hour (largest error 0.5 K in the first hours, as both models settle from their initial temperatures; 0.32 K
-at most after the first day), the heat of the radiators
-within 1.4 to 3.1 % CV(RMSE), and the heating demand is 1.7 % above Buildings in every variant (1.5 to 1.8 %), the gas
-2.6 %. Every change that moves the results moves both libraries alike: the cavity insulation (−23 % of heating and of
+at most after the first day), the heat of the radiators within 1.4 to 3.1 % CV(RMSE), and the heating demand is
+1.7 % above Buildings in every variant (1.5 to 1.8 %), the gas 1.9 %, the same gas per unit of heat within 0.2 %.
+Every change that moves the results moves both libraries alike: the cavity insulation (−22 to −23 % of heating and of
 gas), the airtightness from x0.5 to x1.5 (heating ratios 1.00, the peak 0.88 to 0.98), the supply temperature and the
 radiator size (peak 1.06), the set point (0.99). The boiler of FastModel is that of Buildings (`BoilerPolynomial`, its
 heat loss counted twice as Buildings 13 does), driven by the same P controller on its water temperature; when the
@@ -909,7 +910,7 @@ change, its cost and the check that closes it, with a formulation that keeps the
 and CasADi.
 
 1. **The heat pump at full load and its safety times.** The supply water 0.4 K cool at full load, the electricity
-   response to the set point (0.83), the peaks of the buffer and of the EPS x0.5: the
+   response to the set point (0.85), the peaks of the buffer and of the EPS x0.5: the
    condenser from the EN 14511 table instead of the buffer temperature, and a smooth surrogate of the minimum run time.
 2. **The sun on the opaque surfaces.** 8 % less response to the solar absorptance; the outside exchanges and the
    discretisation are ruled out.
