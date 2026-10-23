@@ -314,9 +314,29 @@ def test_fast_model_mpc_is_fast_model_under_another_name() -> None:
     closed_loop, mpc = Library.from_configuration("FastModel"), Library.from_configuration("FastModelMPC")
     assert mpc.name == "FastModelMPC"
     assert mpc.base_library() == "FastModel"
-    assert mpc.templates == closed_loop.templates
+    # the MPC model keeps one node per layer boundary; the closed-loop model discretises the layers
+    assert mpc.templates.model_copy(update={"construction": None}) == closed_loop.templates.model_copy(
+        update={"construction": None}
+    )
+    assert mpc.templates.construction != closed_loop.templates.construction
     assert mpc.package_template == closed_loop.package_template
     assert mpc.parameter_library == closed_loop.parameter_library
+
+
+def test_the_closed_loop_model_discretises_the_layers_as_buildings() -> None:
+    """BESTEST heavy wall: wood siding, foam and 0.1 m of concrete blocks with 18 states per 0.2 m of reference
+    concrete (number_of_states). The closed-loop model splits each layer into the states Buildings gives it, at most
+    three; the MPC model keeps one node per layer boundary. The steady-state resistance and the capacity of the wall
+    are the same."""
+    records = {}
+    for library in ("FastModel", "FastModelMPC"):
+        model = _model(BESTEST / "case_940.yaml", library)
+        start = model.index("record heavy_wall_001")
+        records[library] = model[start : model.index(";", start)]
+    assert "nLay=8" in records["FastModel"]
+    assert "x={0.0045, 0.0045, 0.0205, 0.0205, 0.0205, 0.033333, 0.033333, 0.033333}" in records["FastModel"]
+    assert "nLay=3" in records["FastModelMPC"]
+    assert "x={0.009, 0.0615, 0.1}" in records["FastModelMPC"]
 
 
 def _building_mpc(model: str) -> str:
