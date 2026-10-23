@@ -17,8 +17,11 @@ trano create-model house.yaml FastSmoothBuildings       # closed loop
 trano create-model house.yaml FastSmoothBuildingsMPC    # the model for optimal control
 ```
 
-The generated package embeds the library (without its examples and documentation). The former names `FastModel` and
-`FastModelMPC` are still accepted, with a deprecation warning.
+The generated package embeds the library (without its examples and documentation). With `--no-embed-libraries`
+(`Library.embed_libraries = False`), it declares `uses(FastSmoothBuildings(version=...))` instead, and the library is
+loaded beside it from the installed `fastsmoothbuildings` package: `Network.libraries` gives its folder, which
+rumoca reads as a root (`CasadiModel.from_modelica(text, name, roots=network.libraries)`) and OpenModelica loads
+before the model. The former names `FastModel` and `FastModelMPC` are still accepted, with a deprecation warning.
 
 The [documentation of FastSmoothBuildings](https://andoludo.github.io/FastSmoothBuildings/) describes its components
 and their equations, class by class, its validation against Buildings and ASHRAE 140, and the analysis behind it. The

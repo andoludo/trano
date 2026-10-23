@@ -18,10 +18,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import fastsmoothbuildings
+
 from trano.data_models.conversion import convert_network
 from trano.elements.jinja import UnsupportedElementError, modelica_library
 from trano.elements.library.library import Library
 from trano.simulate.simulate import SimulationOptions, simulate
+from trano.topology import Network
 
 try:
     from trano_optimization import CasadiModel, OptimalControl, OptimalControlSettings, Roles
@@ -75,11 +78,15 @@ needs_connected_export = pytest.mark.skipif(
 )
 
 
-def _model(path: Path, library: str = "FastSmoothBuildingsMPC", include_container: bool = True) -> str:
+def _network(path: Path, library: str = "FastSmoothBuildingsMPC", embed_libraries: bool = True) -> Network:
+    library_ = Library.from_configuration(library).model_copy(update={"embed_libraries": embed_libraries})
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        network = convert_network(path.stem, path, library=Library.from_configuration(library))
-        return network.model(include_container=include_container)
+        return convert_network(path.stem, path, library=library_)
+
+
+def _model(path: Path, library: str = "FastSmoothBuildingsMPC", include_container: bool = True) -> str:
+    return _network(path, library).model(include_container=include_container)
 
 
 @cache
@@ -190,6 +197,47 @@ def test_the_containers_leave_the_model_unchanged(path: Path, library: str) -> N
         np.asarray(flat_model.derivatives(0.0, flat.initial_state, inputs, flat.parameter_values)).ravel(),
         rtol=1e-9,
         atol=1e-12,
+    )
+
+
+@pytest.mark.parametrize("library", ["FastSmoothBuildings", "FastSmoothBuildingsMPC"])
+def test_a_package_uses_the_library_beside_it_instead_of_embedding_it(library: str) -> None:
+    path = MODELS / "single_zone_hydronic.yaml"
+    embedded, referenced = _network(path, library), _network(path, library, embed_libraries=False)
+
+    text = referenced.model()
+
+    assert embedded.libraries == ()
+    assert referenced.libraries == (fastsmoothbuildings.LIBRARY,)
+    assert "package FastSmoothBuildings" in embedded.model()
+    assert "package FastSmoothBuildings" not in text
+    assert f'annotation (uses(FastSmoothBuildings(version="{fastsmoothbuildings.__version__}")));' in text
+    assert text.rstrip().endswith(f"end {path.stem};")
+
+
+@needs_connected_export
+@pytest.mark.parametrize("library", ["FastSmoothBuildings", "FastSmoothBuildingsMPC"])
+def test_rumoca_translates_the_package_with_the_library_beside_it_as_with_it_embedded(library: str) -> None:
+    """The same CasADi model: names, start values, parameters and derivatives."""
+    path = MODELS / "single_zone_hydronic.yaml"
+    name = f"{path.stem}.building_mpc"
+    referenced_network = _network(path, library, embed_libraries=False)
+    embedded = CasadiModel.from_modelica(_network(path, library).model(), name)
+    referenced = CasadiModel.from_modelica(referenced_network.model(), name, roots=referenced_network.libraries)
+
+    for description in (embedded.description, referenced.description):
+        assert description.state_names, description
+    assert referenced.description.state_names == embedded.description.state_names
+    assert referenced.description.input_names == embedded.description.input_names
+    np.testing.assert_array_equal(referenced.description.initial_state, embedded.description.initial_state)
+    np.testing.assert_array_equal(referenced.description.parameter_values, embedded.description.parameter_values)
+    inputs = np.array(
+        [KELVIN + 5 if "TDryBul" in n or "TBlaSky" in n else 1.0 for n in embedded.description.input_names]
+    )
+    state = embedded.description.initial_state
+    np.testing.assert_array_equal(
+        np.asarray(referenced.derivatives(3600.0, state, inputs)).ravel(),
+        np.asarray(embedded.derivatives(3600.0, state, inputs)).ravel(),
     )
 
 

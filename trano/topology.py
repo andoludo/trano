@@ -25,7 +25,7 @@ from trano.elements.construction import (
     Material,
 )
 from trano.elements.containers import containers_factory, ContainerInput
-from trano.elements.jinja import ENVIRONMENT
+from trano.elements.jinja import ENVIRONMENT, modelica_library_path
 from trano.elements.library.library import Library
 from trano.elements.space import Space
 from trano.elements.system import (
@@ -332,6 +332,14 @@ class Network:  # : PLR0904, #TODO: fix this
                     ]
                 }"""
             )
+
+    @property
+    def libraries(self) -> tuple[Path, ...]:
+        """The folders of the Modelica libraries the model uses without embedding them: tools load them beside it
+        (trano-simulate mounts them, rumoca reads them as roots)."""
+        if self.library.embed_libraries:
+            return ()
+        return tuple(modelica_library_path(name) for name in self.library.modelica_libraries)
 
     def model(self, include_container: bool = True, data_bus: DataBus | None = None) -> str:
         include_container = include_container and self.library.use_containers

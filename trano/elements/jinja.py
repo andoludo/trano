@@ -7,6 +7,7 @@ compiled-template cache is shared by all renderers.
 
 from functools import cache
 from pathlib import Path
+from types import ModuleType
 
 from jinja2 import Environment, FileSystemLoader, Template
 from markupsafe import Markup
@@ -25,15 +26,31 @@ def modelica_number(value: float) -> str:
     return f"{float(value):.10g}"
 
 
+def _modelica_package(name: str) -> ModuleType:
+    """The Python package that carries a Modelica library trano generates models with: FastSmoothBuildings."""
+    if name != "FastSmoothBuildings":
+        raise ValueError(f"trano uses no Modelica library {name} from a Python package")
+    import fastsmoothbuildings
+
+    return fastsmoothbuildings
+
+
 @cache
 def modelica_library(name: str) -> Markup:
     """The Modelica source of a library that a generated package embeds: FastSmoothBuildings, from its Python package,
     without its examples, validation models, guide and documentation (the library itself carries them)."""
-    if name != "FastSmoothBuildings":
-        raise ValueError(f"trano embeds no Modelica library {name}")
-    import fastsmoothbuildings
+    bundle = _modelica_package(name).bundle(documentation=False, examples=False)
+    return Markup(bundle)  # noqa: S704 - the library, not user input
 
-    return Markup(fastsmoothbuildings.bundle(documentation=False, examples=False))  # noqa: S704 - the library, not user input
+
+def modelica_library_path(name: str) -> Path:
+    """The folder of a library that a generated package uses without embedding it: where tools load it from."""
+    return Path(_modelica_package(name).LIBRARY)
+
+
+def modelica_library_version(name: str) -> str:
+    """The version of a library, for the ``uses`` annotation of a package that does not embed it."""
+    return str(_modelica_package(name).__version__)
 
 
 class UnsupportedElementError(NotImplementedError):
@@ -47,6 +64,7 @@ def unsupported(message: str) -> str:
 
 ENVIRONMENT.filters["mo"] = modelica_number
 ENVIRONMENT.globals["modelica_library"] = modelica_library
+ENVIRONMENT.globals["modelica_library_version"] = modelica_library_version
 ENVIRONMENT.globals["unsupported"] = unsupported
 
 # For small inline templates that don't use the macros/templates directory.

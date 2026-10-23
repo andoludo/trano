@@ -95,6 +95,7 @@
         "name": "FastSmoothBuildings",
         "parameters_from": "buildings",
         "package_template": "fast_smooth_buildings.jinja2",
+        "modelica_libraries": ["FastSmoothBuildings"],
         "use_containers": true,
         "connectors": {
             "heat": "FastSmoothBuildings.Interfaces.HeatPort",
