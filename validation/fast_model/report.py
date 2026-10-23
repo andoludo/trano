@@ -39,6 +39,7 @@ ENERGY_KPIS = (
     ("peak_heating_kw", "peak heating", "kW"),
     ("cooling_kwh", "cooling demand", "kWh"),
     ("electricity_kwh", "heat pump electricity", "kWh"),
+    ("fuel_kwh", "boiler fuel", "kWh"),
 )
 TEMPERATURE_RESOLUTION = 0.1  # [K] smallest change of a temperature KPI a sensitivity ratio is drawn from
 ENERGY_RESOLUTION = 0.02  # smallest relative change of a load or a meter a sensitivity ratio is drawn from
@@ -58,6 +59,7 @@ SUMMARY_KPIS = (
     ("cooling_kwh", "cooling"),
     ("peak_heating_kw", "peak heating"),
     ("electricity_kwh", "heat pump electricity"),
+    ("fuel_kwh", "boiler fuel"),
 )
 ALIKE, CLOSE = (0.9, 1.1), (0.8, 1.25)
 # or the two changes apart by at most: (alike, close) [K] for a temperature, [% of the base case] for an energy
@@ -133,8 +135,9 @@ def _pair(items: Iterable[object], name: str, digits: int) -> str:
 def meters_table(case: StudyCase) -> str:
     """Meters and speed of both libraries per variant: heat pump electricity, fuel, fans, PV, OpenModelica time."""
     lines = [
-        "| Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |",
-        "|---|---|---|---|---|---|",
+        "| Variant | Heating [kWh] | Heat pump electricity [kWh] | Boiler fuel [kWh] | Fans [kWh] | PV [kWh] "
+        "| OpenModelica time [s] |",
+        "|---|---|---|---|---|---|---|",
     ]
     for variant in _variants_with_results(case):
         runs = list(_runs(case, variant))
@@ -142,6 +145,7 @@ def meters_table(case: StudyCase) -> str:
         lines.append(
             f"| {variant} | {_pair(runs, 'heating_kwh', 0)} {_deviation(runs, 'heating_kwh')} | "
             f"{_pair(runs, 'electricity_kwh', 0)} {_deviation(runs, 'electricity_kwh')} | "
+            f"{_pair(runs, 'fuel_kwh', 0)} {_deviation(runs, 'fuel_kwh')} | "
             f"{_pair(runs, 'fans_kwh', 1)} | {_pair(runs, 'pv_kwh', 0)} | {times} |"
         )
     return "\n".join(lines)
@@ -614,7 +618,7 @@ def write_docs() -> Path:
     if DOCS_PAGE.exists():
         text = DOCS_PAGE.read_text()
     else:
-        text = f"# FastModel against Buildings: BESTEST and a renovated house\n\n{START}\n{END}\n"
+        text = f"# FastModel against Buildings: BESTEST and a house before and after renovation\n\n{START}\n{END}\n"
     if START not in text or END not in text:
         raise ValueError(f"{DOCS_PAGE} must hold the markers {START} and {END}")
     head, rest = text.split(START, 1)

@@ -2,8 +2,8 @@
 
 What to change in the `FastModel` library so that it stays within the bands of Buildings on the zone temperatures,
 the heating power and the heating demand **and** responds to a parameter change as Buildings does. The plan follows
-from the [study of BESTEST 950FF, 940, 960 and the renovated house](fast_model_study.md) and from a reading of the
-equations of `trano/library/FastModel.mo` against the Buildings components they stand for. Each item names the gap,
+from the [study of BESTEST 950FF, 940, 960 and the house before and after renovation](fast_model_study.md) and from a
+reading of the equations of `trano/library/FastModel.mo` against the Buildings components they stand for. Each item names the gap,
 the evidence, the change, its cost in states or in smoothness (FastModel must stay an explicit, event-free ODE for
 rumoca and CasADi) and the validation that closes it.
 
@@ -25,7 +25,7 @@ the gaps of the last stage and the ones still open.
 | 6 | Shading, unbalanced ventilation, wind- and stack-driven infiltration, ISO 13370 ground | BESTEST 610, 630, 910, 930 not runnable; supply air 0.3 K warm | per feature | the four shading cases inside the BESTEST bands | shading done (phase 4): the four cases inside their bands, within 2.2 % of Buildings; the rest open |
 | 7 | Gas gaps of the glazing at the temperatures of their panes | free-floating zones 0.2 to 0.9 K warm on average, up to 3.5 K at their peaks; 680FF RMSE 1.17 K | none in states (an explicit function of the pane temperatures) | free-floating temperatures within 0.5 K on average | done (phase 3): 0.38 K on average, 1.70 K at most |
 | 8 | Response to the solar absorptance of the outer surfaces | 0.6 to 0.9: ratios 0.91 to 0.93 on every KPI of 950FF and 940 | to be found | ratios 0.95 to 1.05 | open: the irradiance, the outside convection and sky exchange and the discretisation are ruled out |
-| 9 | Heat pump at full load: capacity map, safety times | house: supply water 0.4 K cooler while the living room valve is open; set point +1 K: heating 0.87, electricity 0.76; buffer x3: peak −5 % against −1 %; EPS x0.5: peak 1.51 | none for the map; one state per heat pump for the safety times | supply within 0.2 K at full load, peak ratios 0.8 to 1.2 | open |
+| 9 | Heat pump at full load: capacity map, safety times | house: supply water 0.4 K cooler while the living room valve is open; set point +1 K: heating 0.87, electricity 0.83; buffer x3: peak −5 % against −1 %; EPS x0.5: peak 1.51 | none for the map; one state per heat pump for the safety times | supply within 0.2 K at full load, peak ratios 0.8 to 1.2 | open |
 
 The [study](fast_model_study.md) is the yardstick: each change is merged with its run of
 `python -m validation.fast_model` (the workflow `fast_model_study.yaml`) and the BESTEST run of FastModel, and the
@@ -95,6 +95,13 @@ What each step did:
   one model copied into the other by its name stays at its place. Before, `T[2]` of the MPC model was a layer boundary
   and `T[2]` of the closed-loop model a node inside the first layer; mpctrano's spin-up, which copies the states by
   name, started the MPC model with the inner surfaces of its walls inside the insulation.
+* **The house before renovation** (study, fourth run, no change of the library). The gas boiler at 75 degC, its
+  three-way valve and six radiators with thermostatic valves follow Buildings in closed loop: rooms within 0.02 to
+  0.09 K hour by hour, heating +1.7 %, gas +2.6 %, and the six changes that move the results (cavity insulation,
+  airtightness, supply temperature, radiator size, set point) alike, gas included. It exports to CasADi (160 states as
+  FastModelMPC, 224 in closed loop) and IPOPT solves its optimal control with the boiler and the valves as controls.
+  The study now reads the gas and the electricity from the energy meters: samples of the powers five minutes apart
+  put the gas 1 % off when the boiler fires at full power for two minutes as the valves open.
 * **Overhangs and side fins** (phase 4). The window takes the geometry of the YAML (`overhang`, `side_fins`) and
   shades its direct irradiance by the sunlit fraction of `Buildings.HeatTransfer.Windows.Overhang` and `SideFins`,
   ported to `Envelope.Functions.overhangSunlitFraction` and `sideFinsSunlitFraction`: the same areas of the shadow
@@ -110,7 +117,7 @@ What each step did:
 **Still open.** The free-floating zones of the light, well-insulated constructions still peak 1 to 1.7 K above
 Buildings (600FF, 650FF, 680FF) and the 960 sun-space is 0.4 K warm on average. FastModel responds 8 % less than
 Buildings to the solar absorptance of the outer surfaces (priority 8). In the renovated house, the supply water is
-0.4 K cooler when the heat pump runs at full load, and the responses to the set point (heating 0.87, electricity 0.76),
+0.4 K cooler when the heat pump runs at full load, and the responses to the set point (heating 0.87, electricity 0.83),
 to the buffer and to the peaks go through the heat pump (priority 9).
 Unbalanced ventilation, wind- and stack-driven infiltration and the ISO 13370 ground are not modelled (priority 6). The [proposals](#proposals-for-the-remaining-gaps) give a formulation of each
 that keeps the model explicit and smooth.
