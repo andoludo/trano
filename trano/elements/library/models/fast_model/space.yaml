@@ -75,6 +75,9 @@
         ventilationSchedule={{ element.parameters.ventilation_schedule }},
         {%- endif %}
         {%- endif %}
+        {%- if (element.parameters.linearize_emissive_power | string | lower) == 'false' %}
+        linearizeRadiation=false,
+        {%- endif %}
         {%- if element.parameters.interior_convection_coefficient is not none %}
         hConInt={{ element.parameters.interior_convection_coefficient }},
         {%- endif %}

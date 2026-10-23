@@ -990,6 +990,9 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real hConInt(unit="W/(m2.K)") = 0 "Fixed interior convection coefficient, 0 for the natural law";
       parameter Real hConExt(unit="W/(m2.K)") = 0 "Fixed exterior convection coefficient, 0 for the wind law";
       parameter Real T0Rad(unit="K") = 293.15 "Linearization temperature of the long-wave exchange";
+      parameter Boolean linearizeRadiation = true
+        "true: the long-wave exchange is linearised at T0Rad (Buildings' default); false: at the current mean surface
+         temperature of the zone, close to the exact exchange of Buildings when it does not linearise";
       Interfaces.WeatherBusIn weaBus "Weather"
         annotation (Placement(transformation(extent={{-90,90},{-70,110}})));
       Interfaces.ZoneSurfaceBus propsBus[nSurf] "Surfaces"
@@ -1003,6 +1006,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real TAir(unit="K", start=T_start, fixed=true) "Zone air temperature";
       Real TRad(unit="K") "Radiant star temperature";
       Real QVen(unit="W") "Heat brought by the ventilation";
+      Real TLin(unit="K") "Temperature at which the long-wave exchange is linearised";
       Real mVen_flow(unit="kg/s") "Scheduled outdoor air flow";
       Real rho(unit="kg/m3") "Density of the zone air at the pressure of the site (ideal gas, Buildings.Media.Air)";
     protected
@@ -1014,11 +1018,14 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real kDif[nSurf] "Share of the diffuse radiation absorbed by each surface";
       Real kDir[nSurf] "Share of the direct radiation absorbed by each surface (floors first)";
     equation
+      // the mean surface temperature, weighted as the exchange: explicit in the states of the surfaces
+      TLin = if linearizeRadiation then T0Rad else sum(propsBus[i].epsLw*propsBus[i].A*propsBus[i].rad.T
+        for i in 1:nSurf)/sum(propsBus[i].epsLw*propsBus[i].A for i in 1:nSurf);
       for i in 1:nSurf loop
         connect(weaBus, propsBus[i].wea);
         propsBus[i].hConInt = hConInt;
         propsBus[i].hConExt = hConExt;
-        G[i] = 4*sigma*T0Rad^3*propsBus[i].epsLw*propsBus[i].A;
+        G[i] = 4*sigma*TLin^3*propsBus[i].epsLw*propsBus[i].A;
         propsBus[i].con.T = TAir;
       end for;
       // Long-wave exchange through a radiant star: the exact equivalent of Buildings' linearized radiosity exchange
