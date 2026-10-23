@@ -1,0 +1,118 @@
+name: FastModel study
+
+# FastModel against Buildings on BESTEST cases and the renovated house (validation/fast_model): every (case, variant)
+# pair is simulated with both libraries in its own job, the results are collected, the report rendered and both are
+# committed to the branch the workflow runs on. On demand only: a year of Buildings per BESTEST variant.
+on:
+  workflow_dispatch:
+    inputs:
+      cases:
+        description: "Case ids to run, separated by spaces (all when empty)"
+        required: false
+        default: ""
+      variants:
+        description: "Variants to run, separated by spaces (all when empty; 'base' for the unperturbed cases)"
+        required: false
+        default: ""
+
+env:
+  TRANO_MODELICA_LIBRARIES: ${{ github.workspace }}/.cache/omlibs
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --group dev
+      - id: plan
+        run: |
+          echo "matrix=$(uv run python -m validation.fast_model plan ${{ inputs.cases }} --variants ${{ inputs.variants }})" >> "$GITHUB_OUTPUT"
+
+  simulate:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --group dev
+      - name: Modelica libraries
+        uses: ./.github/actions/modelica-libraries
+      - name: Restore the cached runs
+        uses: actions/cache@v4
+        with:
+          path: .cache/fast_model_study/${{ matrix.case }}/${{ matrix.variant }}
+          key: fast-model-study-${{ matrix.case }}-${{ matrix.variant }}-${{ github.run_id }}
+          restore-keys: fast-model-study-${{ matrix.case }}-${{ matrix.variant }}-
+      - name: Simulate with Buildings and FastModel
+        run: uv run python -m validation.fast_model run ${{ matrix.case }} --variants ${{ matrix.variant }}
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: study-${{ matrix.case }}-${{ matrix.variant }}
+          path: validation/fast_model/results/${{ matrix.case }}/${{ matrix.variant }}
+          if-no-files-found: ignore
+      - name: Keep the OpenModelica logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.case }}-${{ matrix.variant }}
+          path: |
+            .cache/fast_model_study/${{ matrix.case }}/${{ matrix.variant }}/*/omc.log
+            .cache/fast_model_study/${{ matrix.case }}/${{ matrix.variant }}/*/*.yaml
+          if-no-files-found: ignore
+
+  collect:
+    needs: simulate
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --group dev
+      - name: Download the results of every job
+        uses: actions/download-artifact@v4
+        with:
+          pattern: study-*
+          path: collected
+      - name: Place the results
+        run: |
+          shopt -s nullglob
+          for directory in collected/study-*; do
+            name=$(basename "$directory"); name=${name#study-}
+            case_id=${name%%-*}; variant=${name#*-}
+            mkdir -p "validation/fast_model/results/$case_id/$variant"
+            cp -r "$directory"/. "validation/fast_model/results/$case_id/$variant/"
+          done
+          find validation/fast_model/results -type f | sort
+      - name: Render the report and the documentation page
+        run: uv run python -m validation.fast_model report --docs
+      - name: Commit the results and the page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add validation/fast_model/results docs/validation
+          git commit -m "FastModel study: results of run ${{ github.run_id }}" || { echo "nothing to commit"; exit 0; }
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin "${{ github.ref_name }}" && git push origin "HEAD:${{ github.ref_name }}" && exit 0
+            sleep 15
+          done
+          exit 1

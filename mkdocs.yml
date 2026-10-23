@@ -81,6 +81,8 @@ nav:
       - A walk through the BESTEST cases: validation/bestest_cases.md
       - Residential reference cases: validation/residential_reference_cases.md
       - FastModel against Buildings: validation/fast_model.md
+      - FastModel against Buildings on BESTEST and a renovated house: validation/fast_model_study.md
+      - FastModel improvement plan: validation/fast_model_improvement_plan.md
       - Simulation performance: validation/simulation_performance.md
 
 markdown_extensions:

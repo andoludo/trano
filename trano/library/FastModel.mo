@@ -955,6 +955,9 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real hRoo(unit="m") "Height";
       parameter Real V(unit="m3") = AFlo*hRoo "Air volume";
       parameter Real ACH(unit="1/h") = 0 "Air changes per hour by infiltration of outdoor air";
+      parameter Real ventilationSchedule[:, 2] = [0, 0]
+        "Day schedule of outdoor air brought in on top of the infiltration (night ventilation): time since midnight [s]
+         and mass flow rate [kg/s], repeated daily; a step where the table repeats an instant, as trano's Buildings zone";
       parameter Real mSenFac = 1 "Factor for the sensible heat capacity of the air";
       parameter Real T_start(unit="K") = 294.15 "Initial temperature";
       parameter Real hConInt(unit="W/(m2.K)") = 0 "Fixed interior convection coefficient, 0 for the natural law";
@@ -973,6 +976,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real TAir(unit="K", start=T_start, fixed=true) "Zone air temperature";
       Real TRad(unit="K") "Radiant star temperature";
       Real QVen(unit="W") "Heat brought by the ventilation";
+      Real mVen_flow(unit="kg/s") "Scheduled outdoor air flow";
     protected
       Real G[nSurf](each unit="W/K") "Long-wave conductance of each surface to the star";
       Real QDir(unit="W") "Transmitted direct solar radiation";
@@ -1007,8 +1011,9 @@ package FastModel "Building models for model predictive control: close to Buildi
         propsBus[i].rad.Q_flow = -(G[i]*(TRad - propsBus[i].rad.T) + kDir[i]*QDir + kDif[i]*QDif);
       end for;
       // Air
+      mVen_flow = Utilities.dayTable(Utilities.timeOfDay(time), ventilationSchedule);
       mSenFac*rhoAir*cpAir*V*der(TAir) = sum(propsBus[i].con.Q_flow for i in 1:nSurf) + heaPorAir.Q_flow + AFlo*qGai_flow.QCon
-        + rhoAir*cpAir*V*ACH/3600*(weaBus.TDryBul - TAir) + QVen;
+        + (rhoAir*V*ACH/3600 + mVen_flow)*cpAir*(weaBus.TDryBul - TAir) + QVen;
       heaPorAir.T = TAir;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{-80,-80},{80,80}}, lineColor={95,95,95}, fillColor={95,95,95},

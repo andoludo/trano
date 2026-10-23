@@ -71,6 +71,9 @@
         T_start={{ parameters.T_start }},
         {%- if element.variant == 'infiltration' %}
         ACH={{ parameters.get('ACH') if parameters.get('ACH') is not none else 0.15 }},
+        {%- if element.parameters.ventilation_schedule is not none %}
+        ventilationSchedule={{ element.parameters.ventilation_schedule }},
+        {%- endif %}
         {%- endif %}
         {%- if element.parameters.interior_convection_coefficient is not none %}
         hConInt={{ element.parameters.interior_convection_coefficient }},

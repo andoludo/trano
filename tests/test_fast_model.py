@@ -584,3 +584,14 @@ def test_simulate_fast_model() -> None:
             _, temperature = result.values(zone)
             assert temperature.min() > KELVIN + 10, zone
             assert temperature.max() < KELVIN + 40, zone
+
+
+def test_the_zone_takes_the_night_ventilation_schedule() -> None:
+    """BESTEST 950FF: the scheduled outdoor air of the zone (Buildings' ventilationSchedule) reaches the FastModel zone;
+    a zone without a schedule keeps the default of the library."""
+    model = _model(BESTEST / "case_950FF.yaml", "FastModel", include_container=False)
+    assert (
+        "ventilationSchedule=[0, 0.391389; 25200, 0.391389; 25200, 0; 64800, 0; 64800, 0.391389; 86400, 0.391389]"
+        in model
+    )
+    assert "ventilationSchedule=" not in _model(BESTEST / "case_600FF.yaml", "FastModel", include_container=False)
