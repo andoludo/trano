@@ -5,23 +5,23 @@
  "zones": [
   {
    "zone": "zone_001",
-   "mean_temperature": 22.6679354877754,
-   "min_temperature": 9.999899242487231,
-   "max_temperature": 27.000698842472502,
-   "heating_kwh": 1734.5729792324328,
-   "cooling_kwh": 2018.7454017938703,
-   "peak_heating_kw": 3.8491743997210506,
-   "peak_cooling_kw": 3.0269841743217967
+   "mean_temperature": 22.667927989015258,
+   "min_temperature": 9.999899290336543,
+   "max_temperature": 27.0006986663077,
+   "heating_kwh": 1734.574330215945,
+   "cooling_kwh": 2018.7495574229415,
+   "peak_heating_kw": 3.8490694301076473,
+   "peak_cooling_kw": 3.026976884388205
   }
  ],
- "heating_kwh": 1734.5729792324328,
- "cooling_kwh": 2018.7454017938703,
- "peak_heating_kw": 3.8491743997210506,
- "peak_cooling_kw": 3.0269841743217967,
+ "heating_kwh": 1734.574330215945,
+ "cooling_kwh": 2018.7495574229415,
+ "peak_heating_kw": 3.8490694301076473,
+ "peak_cooling_kw": 3.026976884388205,
  "electricity_kwh": null,
  "fuel_kwh": null,
  "fans_kwh": null,
  "pv_kwh": null,
- "wall_time": 27.3,
- "model_hash": "2c0dd8552fe4a4be58aa7c804503dfef809ef1351f8802261bb7bb6214f4c3b4"
+ "wall_time": 37.2,
+ "model_hash": "bbb5783d4d6087f5a60e634cb1294fed7f4f1a52633c815bc335aad9821c6a0c"
 }

@@ -32,6 +32,6 @@
  "fuel_kwh": null,
  "fans_kwh": null,
  "pv_kwh": null,
- "wall_time": 143.9,
- "model_hash": "8eb66c4cb33d35019d321003e446615533d9d35dc4d657461ed2f0aba4938a8b"
+ "wall_time": 123.3,
+ "model_hash": "028e2d9bfe2734d8502b096962598f03a18a5309269eecd6f2d8447ee15a219d"
 }
