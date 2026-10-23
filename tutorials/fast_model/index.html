@@ -1275,10 +1275,6 @@
       
         
       
-        
-      
-        
-      
     
     
     
@@ -1413,7 +1409,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../validation/fast_model/" class="md-nav__link">
+      <a href="https://andoludo.github.io/FastSmoothBuildings/validation/study/" class="md-nav__link">
         
   
   
@@ -1421,62 +1417,6 @@
     
   
     FastSmoothBuildings against Buildings
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../validation/fast_model_study/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    FastSmoothBuildings against Buildings on BESTEST and a house before and after renovation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../validation/fast_model_improvement_plan/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    FastSmoothBuildings improvement plan
   
 
     
@@ -1910,12 +1850,12 @@ estimation and the closed loop:</p>
 own in the CasADi function, at their values: an identification adjusts the effective ones (conductances,
 capacities).</p>
 <h2 id="how-close-to-buildings">How close to Buildings</h2>
-<p><code>python -m validation.mpc</code> simulates the Buildings model of a YAML file and compares it with FastSmoothBuildings in two
-ways: it <strong>replays</strong> what the systems of Buildings did (the heat of ideal emitters, or the branch flows, valve
-positions and boiler or heat pump controls) through the runnable <code>FastSmoothBuildingsMPC</code> model (<code>--models FastSmoothBuildings</code>), or it
-simulates the closed-loop <code>FastSmoothBuildings</code> with its own controllers (<code>--models FastModelClosedLoop</code>); then it compares
-the zones, the water temperatures and the meters. See the <a href="../../validation/fast_model/">validation page</a> for the
-results.</p>
+<p>The study of FastSmoothBuildings against Buildings lives with the library, in the
+<a href="https://github.com/andoludo/FastSmoothBuildings">FastSmoothBuildings repository</a> (<code>study/</code>): it simulates the
+Buildings model of a YAML file and compares it with FastSmoothBuildings, replaying what the systems of Buildings did
+through the runnable <code>FastSmoothBuildingsMPC</code> model or running the closed-loop <code>FastSmoothBuildings</code> with its own
+controllers, and it measures how both libraries respond to changes of the YAML. See its
+<a href="https://andoludo.github.io/FastSmoothBuildings/validation/replay/">validation pages</a> for the results.</p>
 <h2 id="limits">Limits</h2>
 <ul>
 <li>One production (boiler or heat pump) per hydraulic circuit, and mixing three-way valves (the bypass from the
