@@ -21,8 +21,8 @@ from validation.fast_model.harness import (
 )
 
 
-def test_the_cases_are_the_complex_bestest_cases_and_the_renovated_house() -> None:
-    assert list(CASES) == ["950FF", "940", "960", "residential_after"]
+def test_the_cases_are_the_complex_bestest_cases_and_the_house_after_and_before_renovation() -> None:
+    assert list(CASES) == ["950FF", "940", "960", "residential_after", "residential_before"]
     assert all(case.path.exists() for case in CASES.values())
     assert CASES["950FF"].variants == [
         "base",
@@ -36,6 +36,7 @@ def test_the_cases_are_the_complex_bestest_cases_and_the_renovated_house() -> No
     assert {"setpoint_+2K", "gap_k_x0.5", "insulation_x0.5", "infiltration_x3"} <= set(CASES["940"].variants)
     assert len(CASES["960"].perturbations) == 4
     assert len(CASES["residential_after"].perturbations) == 12
+    assert len(CASES["residential_before"].perturbations) == 9
     assert {perturbation.group for case in CASES.values() for perturbation in case.perturbations} == {
         "envelope",
         "system",
@@ -60,6 +61,7 @@ def test_the_sweeps_scale_one_parameter_by_several_factors() -> None:
         "insulation_x2",
     ]
     assert list(sweeps(CASES["residential_after"])) == ["eps"]
+    assert list(sweeps(CASES["residential_before"])) == ["n50"]
     assert sweeps(CASES["960"]) == {}
 
 
@@ -118,6 +120,14 @@ def test_the_perturbations_change_what_they_say(tmp_path: Path) -> None:
     )
     exponent = document("residential_after", "radiator_n_1.33")["spaces"][0]["emissions"][0]["radiator"]
     assert exponent["parameters"]["exponent_for_heat_transfer"] == 1.33
+
+    cavity = document("residential_before", "cavity_insulated")["material"]
+    assert next(m for m in cavity if m["id"] == "CAVITY_AIR_5CM:001")["thermal_conductivity"] == 0.035
+    boiler = document("residential_before", "boiler_10kW")["systems"][0]["boiler"]["parameters"]
+    assert boiler["nominal_heating_power"] == 10000
+    supply = document("residential_before", "supply_-10K")["systems"][0]["boiler"]["parameters"]
+    assert supply["supply_temperature_setpoint"] == 338.15
+    assert document("residential_before", "n50_x0.5")["spaces"][0]["parameters"]["n50"] == 6.0
 
 
 def test_offset_schedule() -> None:

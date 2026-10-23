@@ -266,15 +266,18 @@ def _zone_loads(reader: Reader, space: Space, edges: np.ndarray, library: str) -
 
 
 def _meter(reader: Reader, powers: tuple[str, ...], energy: str, edges: np.ndarray) -> np.ndarray | None:
-    """Mean power over the intervals [W], from a power variable or from the increments of a kWh meter."""
+    """Mean power over the intervals [W], from the increments of a kWh meter, else from a power variable.
+
+    The meter is exact whatever the output interval; the samples of a power are not: a boiler that fires at full
+    power for two minutes when the radiator valves open is caught or missed by samples five minutes apart (1 % of the
+    fuel of the house before renovation, in opposite directions for the two libraries)."""
+    with contextlib.suppress(ValueError):
+        readings = _on_grid(reader, find_variable(reader, energy), edges)
+        return np.asarray(np.diff(readings) * 1000.0 * HOUR / np.diff(edges))
     for suffix in powers:
         with contextlib.suppress(ValueError):
             return _mean(reader, find_variable(reader, suffix), edges)
-    try:
-        readings = _on_grid(reader, find_variable(reader, energy), edges)
-    except ValueError:
-        return None
-    return np.asarray(np.diff(readings) * 1000.0 * HOUR / np.diff(edges))
+    return None
 
 
 def _add(columns: dict[str, np.ndarray], name: str, values: np.ndarray | None) -> None:

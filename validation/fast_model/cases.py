@@ -388,6 +388,58 @@ RESIDENTIAL_PERTURBATIONS = (
     ),
 )
 
+RESIDENTIAL_BEFORE_PERTURBATIONS = (
+    Perturbation(
+        "cavity_insulated",
+        "cavity of the external walls filled with insulation (0.278 to 0.035 W/(m.K): U 1.47 to 0.52 W/(m2.K))",
+        ENVELOPE,
+        set_material(("CAVITY_AIR_5CM:001",), "thermal_conductivity", 0.035),
+    ),
+    *sweep(
+        "n50",
+        "airtightness n50 (12 1/h) in every room",
+        ENVELOPE,
+        (0.5, 1.5),
+        lambda factor: scale_space_parameter("n50", factor),
+    ),
+    Perturbation(
+        "gap_k_x0.5",
+        "conductivity of the air of the glazing gaps x0.5 (U-value of the glazing 2.9 to 2.6 W/(m2.K))",
+        ENVELOPE,
+        scale_gas("AIR:001", "thermal_conductivity", 0.5),
+    ),
+    Perturbation(
+        "boiler_10kW",
+        "boiler rated 10 kW instead of 16 kW (design heat loss 10.7 kW)",
+        SYSTEM,
+        system_parameter("boiler", "GENERATOR:001", "nominal_heating_power", 10000),
+    ),
+    Perturbation(
+        "supply_-10K",
+        "supply set point of the boiler 65 degC instead of 75 degC",
+        SYSTEM,
+        system_parameter("boiler", "GENERATOR:001", "supply_temperature_setpoint", 338.15),
+    ),
+    Perturbation(
+        "radiators_x0.7",
+        "nominal power of every radiator x0.7",
+        SYSTEM,
+        scale_emission_parameter("radiator", "nominal_heating_power_positive_for_heating", 0.7),
+    ),
+    Perturbation(
+        "setpoint_+1K",
+        "set point of the living room and the kitchen 22 degC instead of 21 degC",
+        SYSTEM,
+        emission_control_parameter("temperature_heating_setpoint", 295.15, ("LIVING:001", "KITCHEN:001")),
+    ),
+    Perturbation(
+        "radiator_n_1.33",
+        "exponent of the EN 442 law of every radiator 1.33 instead of 1.24",
+        SYSTEM,
+        emission_parameter("radiator", "exponent_for_heat_transfer", 1.33),
+    ),
+)
+
 CASES = {
     case.id: case
     for case in (
@@ -426,6 +478,17 @@ CASES = {
             description="Six-zone semi-detached house after renovation: air-to-water heat pump with a buffer, "
             "radiators with thermostatic valves, balanced ventilation with heat recovery, PV, January, Uccle",
             perturbations=RESIDENTIAL_PERTURBATIONS,
+            trace_windows=((7, 7),),
+        ),
+        StudyCase(
+            id="residential_before",
+            path=EXAMPLES / "residential_before_renovation.yaml",
+            days=28,
+            output_interval=300,
+            description="The same house before renovation: non-condensing gas boiler at 75 degC, radiators with "
+            "thermostatic valves, uninsulated cavity walls and attic, old double glazing, natural ventilation by "
+            "infiltration (n50 = 12 1/h), January, Uccle",
+            perturbations=RESIDENTIAL_BEFORE_PERTURBATIONS,
             trace_windows=((7, 7),),
         ),
     )

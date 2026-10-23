@@ -241,7 +241,11 @@ def test_the_roles_come_from_the_model() -> None:
 @needs_connected_export
 @pytest.mark.parametrize(
     "path",
-    [MODELS / "single_zone_hydronic.yaml", MODELS / "house_infiltration_air_water_heat_pump.yaml"],
+    [
+        MODELS / "single_zone_hydronic.yaml",
+        MODELS / "house_infiltration_air_water_heat_pump.yaml",
+        ROOT / "examples" / "residential_before_renovation.yaml",
+    ],
     ids=lambda path: path.stem,
 )
 def test_rumoca_translates_the_closed_loop_model(path: Path) -> None:
@@ -517,12 +521,22 @@ def test_the_optimal_control_heats_the_zone() -> None:
 
 
 @needs_connected_export
-def test_the_optimal_control_heats_the_renovated_house_with_its_heat_pump() -> None:
-    """The six zones of the renovated house, their radiators, the heat pump and its buffer, the ventilation unit:
-    rumoca exports the whole house and IPOPT holds every zone at its set point on a cold night."""
-    model = _export(ROOT / "examples" / "residential_after_renovation.yaml")
+@pytest.mark.parametrize(
+    ("path", "meter"),
+    [
+        (ROOT / "examples" / "residential_before_renovation.yaml", "fuel"),
+        (ROOT / "examples" / "residential_after_renovation.yaml", "electricity"),
+    ],
+    ids=["before_renovation_gas_boiler", "after_renovation_heat_pump"],
+)
+def test_the_optimal_control_heats_the_residential_house(path: Path, meter: str) -> None:
+    """The six zones of the house, their radiators and valves, the gas boiler before renovation, the heat pump with
+    its buffer and the ventilation unit after: rumoca exports the whole house and IPOPT holds every zone at its set
+    point on a cold night, paying for the energy of the generator."""
+    model = _export(path)
     ocp = OptimalControl(model, settings=OptimalControlSettings(time_step=3600))
     assert any("generator" in name for name in ocp.roles.controls)
+    assert meter in ocp.roles.meters.values()
     hours = 12
     weather = dict(zip(WEATHER, [KELVIN, KELVIN - 10, 3.0, math.pi, 0.0, 0.0, 0.0], strict=True))
     disturbances = np.array([[weather.get(name, 0.0)] * hours for name in ocp.roles.disturbances])
@@ -548,6 +562,7 @@ def test_the_optimal_control_heats_the_renovated_house_with_its_heat_pump() -> N
         ("FastModel", MODELS / "single_zone_hydronic.yaml"),
         ("FastModel", MODELS / "single_zone_hydronic_emission_from_data.yaml"),
         ("FastModel", MODELS / "house_infiltration_air_water_heat_pump.yaml"),
+        ("FastModel", ROOT / "examples" / "residential_before_renovation.yaml"),
         ("FastModel", ROOT / "examples" / "residential_after_renovation.yaml"),
     ],
     ids=lambda value: value.stem if isinstance(value, Path) else value,
