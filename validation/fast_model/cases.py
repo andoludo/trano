@@ -19,7 +19,7 @@ BESTEST_CASES = ROOT / "validation" / "bestest" / "cases"
 EXAMPLES = ROOT / "examples"
 DAY = 86400
 BASE = "base"
-ENVELOPE, SYSTEM = "envelope", "system"
+ENVELOPE, SYSTEM, USE = "envelope", "system", "use"
 
 Document = dict[str, Any]
 Change = Callable[[Document], None]
@@ -46,6 +46,55 @@ def scale_material(id_: str, name: str, factor: float) -> Change:
     return change
 
 
+def set_material(ids: tuple[str, ...], name: str, value: float) -> Change:
+    """Set a property of materials (``shortwave_emissivity`` of the outer layers, ...)."""
+
+    def change(document: Document) -> None:
+        for id_ in ids:
+            _by_id(document["material"], id_)[name] = value
+
+    return change
+
+
+def scale_glass(id_: str, name: str, factor: float) -> Change:
+    """Multiply an optical property of a glass, given per pane as a list (``solar_transmittance``)."""
+
+    def change(document: Document) -> None:
+        item = _by_id(document["glass_material"], id_)
+        item[name] = [round(float(value) * factor, 6) for value in item[name]]
+
+    return change
+
+
+def scale_gas(id_: str, name: str, factor: float) -> Change:
+    """Multiply a property of the gas of the glazing gaps (``thermal_conductivity``)."""
+
+    def change(document: Document) -> None:
+        item = _by_id(document["gas"], id_)
+        item[name] = round(float(item[name]) * factor, 6)
+
+    return change
+
+
+def _gain_value(entry: str) -> float:
+    numerator, _, denominator = entry.partition("/")
+    return float(numerator) / float(denominator or 1)
+
+
+def scale_gains(factor: float, spaces: tuple[str, ...] | None = None) -> Change:
+    """Multiply the internal gains of the spaces: the radiant, convective and latent rows of ``[120/48; 80/48; 0]``."""
+
+    def change(document: Document) -> None:
+        for space in _spaces(document, spaces):
+            parameters = space.get("occupancy", {}).get("parameters")
+            if parameters is None or "gain" not in parameters:
+                continue
+            rows = parameters["gain"].strip("[] ").split(";")
+            parameters["gain"] = "[" + "; ".join(f"{factor * _gain_value(row.strip()):.6g}" for row in rows) + "]"
+
+    return change
+
+
 def scale_space_parameter(name: str, factor: float, spaces: tuple[str, ...] | None = None) -> Change:
     """Multiply a parameter of the spaces (``ach``, ``n50``), all of them by default."""
 
@@ -65,6 +114,34 @@ def scale_emission_parameter(kind: str, name: str, factor: float) -> Change:
                 if kind in emission:
                     parameters = emission[kind]["parameters"]
                     parameters[name] = round(float(parameters[name]) * factor, 6)
+
+    return change
+
+
+def emission_parameter(kind: str, name: str, value: float) -> Change:
+    """Set a parameter of every emission element of a kind (``radiator``) in every space."""
+
+    def change(document: Document) -> None:
+        for space in document["spaces"]:
+            for emission in space.get("emissions", []):
+                if kind in emission:
+                    emission[kind].setdefault("parameters", {})[name] = value
+
+    return change
+
+
+def scale_ventilation(factor: float) -> Change:
+    """Multiply the nominal flow of the air handling units and of every supply and extract duct of the spaces."""
+
+    def change(document: Document) -> None:
+        for system in document["systems"]:
+            unit = system.get("air_handling_unit")
+            if unit is not None:
+                unit["parameters"]["m_flow_nominal"] = round(float(unit["parameters"]["m_flow_nominal"]) * factor, 6)
+        for space in document["spaces"]:
+            for duct in (*space.get("ventilation_inlets", []), *space.get("ventilation_outlets", [])):
+                parameters = duct["duct"]["parameters"]
+                parameters["nominal_mass_flow_rate"] = round(float(parameters["nominal_mass_flow_rate"]) * factor, 6)
 
     return change
 
@@ -119,8 +196,21 @@ def system_parameter(kind: str, id_: str, name: str, value: float | bool) -> Cha
 class Perturbation:
     id: str
     description: str
-    group: str  # ENVELOPE or SYSTEM
+    group: str  # ENVELOPE, SYSTEM or USE
     change: Change
+    sweep: str | None = None  # the parameter scaled, for the steps of a sweep (the base case is its factor 1)
+    factor: float = 1.0  # the factor of the step
+
+
+def sweep(
+    name: str, description: str, group: str, factors: tuple[float, ...], scale: Callable[[float], Change]
+) -> tuple[Perturbation, ...]:
+    """Steps of one parameter scaled by several factors, ``<name>_x<factor>``: whether a library follows the other
+    over a range of values, not only for one step, and whether its response bends as the other's does."""
+    return tuple(
+        Perturbation(f"{name}_x{factor:g}", f"{description} x{factor:g}", group, scale(factor), name, factor)
+        for factor in factors
+    )
 
 
 @dataclass(frozen=True)
@@ -152,33 +242,98 @@ class StudyCase:
         return next(perturbation for perturbation in self.perturbations if perturbation.id == variant)
 
 
+MASS = Perturbation(
+    "mass_x0.5",
+    "density of the concrete blocks of the walls x0.5 (half the thermal mass of the walls)",
+    ENVELOPE,
+    scale_material("CONCRETE_BLOCK:001", "density", 0.5),
+)
+
+
+def _insulation(factor: float) -> Change:
+    return scale_material("FOAM_INSULATION:001", "thermal_conductivity", factor)
+
+
+def _infiltration(factor: float) -> Change:
+    return scale_space_parameter("ach", factor)
+
+
+INSULATION = "conductivity of the wall insulation (FOAM_INSULATION, 0.04 W/(m.K))"
+INFILTRATION = "infiltration (0.414 air changes per hour)"
 BESTEST_ENVELOPE = (
+    *sweep("insulation", INSULATION, ENVELOPE, (1.5,), _insulation),
+    *sweep("infiltration", INFILTRATION, ENVELOPE, (2.0,), _infiltration),
+    MASS,
+)
+# the sun and the gains: what drives the free-floating zones, and where FastModel keeps a little too much heat
+BESTEST_SOLAR = (
     Perturbation(
-        "insulation_x1.5",
-        "conductivity of the wall insulation x1.5 (FOAM_INSULATION 0.04 to 0.06 W/(m.K))",
+        "glazing_tau_x0.75",
+        "solar transmittance of the panes x0.75 (0.834 to 0.626: each pane absorbs 0.30 instead of 0.09)",
         ENVELOPE,
-        scale_material("FOAM_INSULATION:001", "thermal_conductivity", 1.5),
+        scale_glass("CLEAR_GLASS:001", "solar_transmittance", 0.75),
     ),
     Perturbation(
-        "infiltration_x2",
-        "infiltration x2 (0.414 to 0.828 air changes per hour)",
+        "absorptance_0.9",
+        "solar absorptance of the outer surfaces of the walls and the roof 0.9 instead of 0.6",
         ENVELOPE,
-        scale_space_parameter("ach", 2.0),
+        set_material(("WOOD_SIDING:001", "ROOF_DECK:001"), "shortwave_emissivity", 0.9),
+    ),
+    Perturbation("gains_x2", "internal gains x2 (200 to 400 W)", USE, scale_gains(2.0)),
+)
+BESTEST_940 = (
+    *sweep("insulation", INSULATION, ENVELOPE, (0.5, 0.75, 1.5, 2.0), _insulation),
+    *sweep("infiltration", INFILTRATION, ENVELOPE, (0.5, 1.5, 2.0, 3.0), _infiltration),
+    MASS,
+    Perturbation(
+        "gap_k_x0.5",
+        "conductivity of the gas of the glazing gap x0.5 (U-value of the glazing 2.9 to 2.6 W/(m2.K))",
+        ENVELOPE,
+        scale_gas("AIR:001", "thermal_conductivity", 0.5),
+    ),
+    *BESTEST_SOLAR,
+    Perturbation(
+        "setpoint_+2K",
+        "heating set points +2 K (12 degC at night, 22 degC by day)",
+        SYSTEM,
+        ideal_setpoint_offset("heating_setpoint_schedule", 2.0),
+    ),
+)
+SUNSPACE = ("SUNSPACE:001",)
+BESTEST_960 = (
+    Perturbation(
+        "glazing_tau_x0.75",
+        "solar transmittance of the panes of the sun-space x0.75 (0.834 to 0.626)",
+        ENVELOPE,
+        scale_glass("CLEAR_GLASS:001", "solar_transmittance", 0.75),
     ),
     Perturbation(
-        "mass_x0.5",
-        "density of the concrete blocks of the walls x0.5 (half the thermal mass of the walls)",
+        "common_wall_k_x2",
+        "conductivity of the concrete wall between the zone and the sun-space x2 (0.51 to 1.02 W/(m.K))",
+        ENVELOPE,
+        scale_material("CONCRETE_WALL:001", "thermal_conductivity", 2.0),
+    ),
+    Perturbation(
+        "sunspace_mass_x0.5",
+        "density of the concrete blocks of the sun-space walls x0.5",
         ENVELOPE,
         scale_material("CONCRETE_BLOCK:001", "density", 0.5),
+    ),
+    Perturbation(
+        "sunspace_infiltration_x2",
+        "infiltration of the sun-space x2 (0.414 to 0.828 air changes per hour)",
+        ENVELOPE,
+        scale_space_parameter("ach", 2.0, SUNSPACE),
     ),
 )
 
 RESIDENTIAL_PERTURBATIONS = (
-    Perturbation(
-        "eps_x1.5",
-        "conductivity of the EPS of the facade insulation x1.5 (0.032 to 0.048 W/(m.K))",
+    *sweep(
+        "eps",
+        "conductivity of the EPS of the facade insulation (0.032 W/(m.K))",
         ENVELOPE,
-        scale_material("EPS:001", "thermal_conductivity", 1.5),
+        (0.5, 1.5, 2.0),
+        lambda factor: scale_material("EPS:001", "thermal_conductivity", factor),
     ),
     Perturbation(
         "n50_x2", "airtightness n50 x2 (3 to 6 1/h) in every room", ENVELOPE, scale_space_parameter("n50", 2.0)
@@ -219,6 +374,18 @@ RESIDENTIAL_PERTURBATIONS = (
         SYSTEM,
         emission_control_parameter("temperature_heating_setpoint", 295.15, ("LIVING:001", "KITCHEN:001")),
     ),
+    Perturbation(
+        "ventilation_x1.5",
+        "flow of the ventilation unit and of every duct x1.5 (150 to 225 m3/h)",
+        SYSTEM,
+        scale_ventilation(1.5),
+    ),
+    Perturbation(
+        "radiator_n_1.33",
+        "exponent of the EN 442 law of every radiator 1.33 instead of 1.24",
+        SYSTEM,
+        emission_parameter("radiator", "exponent_for_heat_transfer", 1.33),
+    ),
 )
 
 CASES = {
@@ -230,7 +397,7 @@ CASES = {
             days=365,
             description="BESTEST 950FF: heavy single zone, free floating, night ventilation of 1700 m3/h from "
             "18:00 to 07:00, Denver",
-            perturbations=BESTEST_ENVELOPE,
+            perturbations=(*BESTEST_ENVELOPE, *BESTEST_SOLAR),
             trace_windows=((7, 7), (190, 7)),
         ),
         StudyCase(
@@ -239,15 +406,7 @@ CASES = {
             days=365,
             description="BESTEST 940: heavy single zone, ideal heating with a night set-back (10 degC from 23:00 to "
             "07:00, 20 degC by day) and cooling at 27 degC, Denver",
-            perturbations=(
-                *BESTEST_ENVELOPE,
-                Perturbation(
-                    "setpoint_+2K",
-                    "heating set points +2 K (12 degC at night, 22 degC by day)",
-                    SYSTEM,
-                    ideal_setpoint_offset("heating_setpoint_schedule", 2.0),
-                ),
-            ),
+            perturbations=BESTEST_940,
             trace_windows=((7, 7), (190, 7)),
         ),
         StudyCase(
@@ -256,6 +415,7 @@ CASES = {
             days=365,
             description="BESTEST 960: light zone heated and cooled (20/27 degC) behind an unconditioned heavy "
             "sun-space, Denver",
+            perturbations=BESTEST_960,
             trace_windows=((7, 7), (190, 7)),
         ),
         StudyCase(

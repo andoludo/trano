@@ -24,13 +24,43 @@ from validation.fast_model.harness import (
 def test_the_cases_are_the_complex_bestest_cases_and_the_renovated_house() -> None:
     assert list(CASES) == ["950FF", "940", "960", "residential_after"]
     assert all(case.path.exists() for case in CASES.values())
-    assert CASES["950FF"].variants == ["base", "insulation_x1.5", "infiltration_x2", "mass_x0.5"]
-    assert "setpoint_+2K" in CASES["940"].variants
-    assert len(CASES["residential_after"].perturbations) == 8
+    assert CASES["950FF"].variants == [
+        "base",
+        "insulation_x1.5",
+        "infiltration_x2",
+        "mass_x0.5",
+        "glazing_tau_x0.75",
+        "absorptance_0.9",
+        "gains_x2",
+    ]
+    assert {"setpoint_+2K", "gap_k_x0.5", "insulation_x0.5", "infiltration_x3"} <= set(CASES["940"].variants)
+    assert len(CASES["960"].perturbations) == 4
+    assert len(CASES["residential_after"].perturbations) == 12
     assert {perturbation.group for case in CASES.values() for perturbation in case.perturbations} == {
         "envelope",
         "system",
+        "use",
     }
+    for case in CASES.values():
+        assert len(set(case.variants)) == len(case.variants), case.id
+
+
+def test_the_sweeps_scale_one_parameter_by_several_factors() -> None:
+    from validation.fast_model.report import sweeps
+
+    steps = sweeps(CASES["940"])
+    assert {name: [step.factor for step in group] for name, group in steps.items()} == {
+        "insulation": [0.5, 0.75, 1.5, 2.0],
+        "infiltration": [0.5, 1.5, 2.0, 3.0],
+    }
+    assert [step.id for step in steps["insulation"]] == [
+        "insulation_x0.5",
+        "insulation_x0.75",
+        "insulation_x1.5",
+        "insulation_x2",
+    ]
+    assert list(sweeps(CASES["residential_after"])) == ["eps"]
+    assert sweeps(CASES["960"]) == {}
 
 
 def test_every_perturbation_changes_its_case(tmp_path: Path) -> None:
@@ -68,6 +98,26 @@ def test_the_perturbations_change_what_they_say(tmp_path: Path) -> None:
     }
     assert controls["LIVING:001"] == controls["KITCHEN:001"] == 295.15
     assert controls["BEDROOM_1:001"] == 291.15
+
+    sweep_step = document("940", "insulation_x0.75")
+    assert next(m for m in sweep_step["material"] if m["id"] == "FOAM_INSULATION:001")["thermal_conductivity"] == 0.03
+    glass = next(g for g in document("950FF", "glazing_tau_x0.75")["glass_material"] if g["id"] == "CLEAR_GLASS:001")
+    assert glass["solar_transmittance"] == [pytest.approx(0.6255)]
+    absorptance = {m["id"]: m["shortwave_emissivity"] for m in document("940", "absorptance_0.9")["material"]}
+    assert absorptance["WOOD_SIDING:001"] == absorptance["ROOF_DECK:001"] == 0.9
+    assert absorptance["PLASTERBOARD:001"] == 0.6
+    assert document("940", "gains_x2")["spaces"][0]["occupancy"]["parameters"]["gain"] == "[5; 3.33333; 0]"
+    assert document("940", "gap_k_x0.5")["gas"][0]["thermal_conductivity"] == 0.0125
+    sunspace = document("960", "sunspace_infiltration_x2")["spaces"]
+    assert {space["id"]: space["parameters"]["ach"] for space in sunspace} == {"ZONE:001": 0.414, "SUNSPACE:001": 0.828}
+    ventilation = document("residential_after", "ventilation_x1.5")
+    unit = next(s["air_handling_unit"] for s in ventilation["systems"] if "air_handling_unit" in s)
+    assert unit["parameters"]["m_flow_nominal"] == pytest.approx(0.075)
+    assert ventilation["spaces"][0]["ventilation_inlets"][0]["duct"]["parameters"]["nominal_mass_flow_rate"] == (
+        pytest.approx(0.01333 * 1.5)
+    )
+    exponent = document("residential_after", "radiator_n_1.33")["spaces"][0]["emissions"][0]["radiator"]
+    assert exponent["parameters"]["exponent_for_heat_transfer"] == 1.33
 
 
 def test_offset_schedule() -> None:

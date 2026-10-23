@@ -14,7 +14,7 @@ import pandas as pd
 import plotly.graph_objects as go  # type: ignore[import-untyped]
 from plotly.subplots import make_subplots  # type: ignore[import-untyped]
 
-from validation.fast_model.cases import BASE, CASES, ROOT, StudyCase
+from validation.fast_model.cases import BASE, CASES, ROOT, Perturbation, StudyCase
 from validation.fast_model.harness import (
     BUILDINGS,
     FAST_MODEL,
@@ -47,6 +47,8 @@ TEMPERATURE_KPIS = (
     ("min_temperature", "lowest hourly zone temperature", "degC"),
     ("max_temperature", "highest hourly zone temperature", "degC"),
 )
+# KPIs followed along a sweep: the loads where the case has them, the mean temperature always
+SWEEP_KPIS = ("mean_temperature", "heating_kwh", "cooling_kwh")
 
 
 def _number(value: float | None, digits: int = 1) -> str:
@@ -240,6 +242,81 @@ def sensitivity_table(case: StudyCase) -> str:
     return "\n".join(lines)
 
 
+def sweeps(case: StudyCase) -> dict[str, list[Perturbation]]:
+    """The steps of each parameter swept in the case, by the name of the parameter."""
+    grouped: dict[str, list[Perturbation]] = {}
+    for perturbation in case.perturbations:
+        if perturbation.sweep is not None:
+            grouped.setdefault(perturbation.sweep, []).append(perturbation)
+    return grouped
+
+
+def sweep_rows(case: StudyCase) -> list[dict[str, object]]:
+    """For each swept parameter and factor (the base case is the factor 1): the KPIs of both libraries and the ratio
+    of their changes from the base case. A ratio that stays put along the sweep means that FastModel bends as
+    Buildings does; one that drifts, that the two libraries agree on a small step and part on a large one."""
+    base_buildings, base_fast_model = _runs(case, BASE)
+    if base_buildings is None or base_fast_model is None:
+        return []
+    kpis = [kpi for kpi in _kpis_of(case, base_buildings) if kpi[0] in SWEEP_KPIS]
+    rows: list[dict[str, object]] = []
+    for name, steps in sweeps(case).items():
+        points = sorted([(1.0, BASE), *((step.factor, step.id) for step in steps)])
+        for factor, variant in points:
+            buildings, fast_model = _runs(case, variant)
+            if buildings is None or fast_model is None:
+                continue
+            for kpi, label, unit in kpis:
+                values = (buildings.value(kpi), fast_model.value(kpi))
+                bases = (base_buildings.value(kpi), base_fast_model.value(kpi))
+                if None in values or None in bases:
+                    continue
+                delta_buildings = values[0] - bases[0]  # type: ignore[operator]
+                delta_fast_model = values[1] - bases[1]  # type: ignore[operator]
+                tolerance = TEMPERATURE_RESOLUTION if unit == "degC" else ENERGY_RESOLUTION * abs(bases[0])  # type: ignore[arg-type]
+                rows.append(
+                    {
+                        "sweep": name,
+                        "factor": factor,
+                        "variant": variant,
+                        "kpi": kpi,
+                        "label": label,
+                        "unit": unit,
+                        "buildings": values[0],
+                        "fast_model": values[1],
+                        "ratio": delta_fast_model / delta_buildings if abs(delta_buildings) > tolerance else None,
+                    }
+                )
+    return rows
+
+
+def sweep_table(case: StudyCase) -> str:
+    rows = sweep_rows(case)
+    kpis = list(dict.fromkeys((str(row["kpi"]), str(row["label"]), str(row["unit"])) for row in rows))
+    header = "| Parameter | Factor | " + " | ".join(
+        f"{label} [{unit}], Buildings / FastModel | ratio" for _, label, unit in kpis
+    )
+    lines = [header + " |", "|---|---|" + "---|---|" * len(kpis)]
+    by_point: dict[tuple[str, float], dict[str, dict[str, object]]] = {}
+    for row in rows:
+        by_point.setdefault((str(row["sweep"]), float(row["factor"])), {})[str(row["kpi"])] = row  # type: ignore[arg-type]
+    for (name, factor), cells in by_point.items():
+        parts = []
+        for kpi, _, unit in kpis:
+            cell = cells.get(kpi)
+            if cell is None:
+                parts += ["", ""]
+                continue
+            digits = 0 if unit == "kWh" else 2
+            ratio = cell["ratio"]
+            parts += [
+                f"{float(cell['buildings']):.{digits}f} / {float(cell['fast_model']):.{digits}f}",  # type: ignore[arg-type]
+                "" if ratio is None else f"{float(ratio):.2f}",  # type: ignore[arg-type]
+            ]
+        lines.append(f"| {name} | {factor:g} | " + " | ".join(parts) + " |")
+    return "\n".join(lines)
+
+
 def _change(base: float, perturbed: float, relative: bool, digits: int) -> str:
     if relative and abs(base) > 1e-9:
         return _percent((perturbed - base) / base)
@@ -259,6 +336,14 @@ def render_case(case: StudyCase) -> str:
     parts += ["", "**Hour by hour**, FastModel against Buildings:", "", fidelity_table(case)]
     if sensitivity_rows(case):
         parts += ["", "**Response to the perturbations**:", "", sensitivity_table(case)]
+    if sweep_rows(case):
+        parts += [
+            "",
+            "**Sweeps**: one parameter scaled by several factors (1 is the base case), the KPIs of both libraries "
+            "and the ratio of their changes from the base case:",
+            "",
+            sweep_table(case),
+        ]
     for name in figure_names(case):
         parts += ["", f"{{!validation/figures/{name}.html!}}"]
     return "\n".join(parts) + "\n"
@@ -394,10 +479,49 @@ def sensitivity_figure(case: StudyCase) -> go.Figure | None:
     return _layout(figure, f"{case.id}: response of each library to the perturbations", 380)
 
 
+def sweep_figure(case: StudyCase) -> go.Figure | None:
+    """Each KPI against the factor of each swept parameter, Buildings and FastModel."""
+    rows = sweep_rows(case)
+    if not rows:
+        return None
+    names = list(dict.fromkeys(str(row["sweep"]) for row in rows))
+    kpis = list(dict.fromkeys((str(row["kpi"]), str(row["label"]), str(row["unit"])) for row in rows))
+    figure = make_subplots(
+        rows=len(kpis),
+        cols=len(names),
+        shared_xaxes=False,
+        subplot_titles=[f"{label} [{unit}], {name}" for _, label, unit in kpis for name in names],
+        vertical_spacing=0.12,
+    )
+    for row_index, (kpi, _, _) in enumerate(kpis, start=1):
+        for column, name in enumerate(names, start=1):
+            selected = [row for row in rows if row["sweep"] == name and row["kpi"] == kpi]
+            for library, key in ((BUILDINGS, "buildings"), (FAST_MODEL, "fast_model")):
+                figure.add_trace(
+                    go.Scatter(
+                        x=[float(row["factor"]) for row in selected],  # type: ignore[arg-type]
+                        y=[float(row[key]) for row in selected],  # type: ignore[arg-type]
+                        mode="lines+markers",
+                        name=library,
+                        legendgroup=library,
+                        showlegend=row_index == 1 and column == 1,
+                        line={"color": COLORS[library], "width": 2},
+                        marker={"size": 7},
+                    ),
+                    row=row_index,
+                    col=column,
+                )
+            figure.update_xaxes(title_text="factor", row=row_index, col=column)
+    figure.update_layout(hovermode="closest")
+    return _layout(figure, f"{case.id}: KPIs along the sweeps, Buildings and FastModel", 300 * len(kpis) + 90)
+
+
 def figure_names(case: StudyCase) -> list[str]:
     names = [f"fast_model_study_{case.id}_days_{first}_{days}" for first, days in case.trace_windows]
     if sensitivity_rows(case):
         names.append(f"fast_model_study_{case.id}_sensitivity")
+    if sweep_rows(case):
+        names.append(f"fast_model_study_{case.id}_sweeps")
     return names
 
 
@@ -411,6 +535,9 @@ def write_figures() -> list[Path]:
         figure = sensitivity_figure(case)
         if figure is not None:
             written.append(_write(figure, f"fast_model_study_{case.id}_sensitivity"))
+        figure = sweep_figure(case)
+        if figure is not None:
+            written.append(_write(figure, f"fast_model_study_{case.id}_sweeps"))
     return written
 
 
