@@ -861,6 +861,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real cExtPos = Utilities.convectionCoefficient(pi - til, true);
       parameter Real cExtNeg = Utilities.convectionCoefficient(pi - til, false);
       Real QAbs[nPan](each unit="W") "Absorbed solar radiation of each pane";
+      Real QIn[nPan + 1](each unit="W")
+        "Heat flowing inwards across each interface: outside to the outer pane, between panes, inner pane to the room";
     equation
       connect(propsBus_a.wea, sol.weaBus);
       cosInc = Utilities.positivePart(sol.cosInc, 1e-2);
@@ -871,15 +873,16 @@ package FastModel "Building models for model predictive control: close to Buildi
         + Functions.skyExchange(T[1], AGla, til, glazing.absIR_a, propsBus_a.wea.TDryBul, propsBus_a.wea.TBlaSky);
       QInt = Functions.interiorConvection(T[nPan] - propsBus_a.con.T, AGla, cIntPos, cIntNeg, propsBus_a.hConInt);
       QFra = GFra*(propsBus_a.con.T - propsBus_a.wea.TDryBul);
-      if nPan == 1 then
-        CPan[1]*der(T[1]) = QAbs[1] - QExt - QInt + propsBus_a.rad.Q_flow;
-      else
-        CPan[1]*der(T[1]) = QAbs[1] - QExt - GGap[1]*(T[1] - T[2]);
-        for i in 2:nPan - 1 loop
-          der(T[i]) = (QAbs[i] + GGap[i - 1]*(T[i - 1] - T[i]) - GGap[i]*(T[i] - T[i + 1]))/CPan[i];
-        end for;
-        CPan[nPan]*der(T[nPan]) = QAbs[nPan] + GGap[nPan - 1]*(T[nPan - 1] - T[nPan]) - QInt + propsBus_a.rad.Q_flow;
-      end if;
+      // one balance per pane, without a branch on the number of panes: a single pane has no gap, and the branch of
+      // several panes would index GGap[1] and T[2], which OpenModelica rejects even when the branch is not taken
+      QIn[1] = -QExt;
+      for i in 1:nPan - 1 loop
+        QIn[i + 1] = GGap[i]*(T[i] - T[i + 1]);
+      end for;
+      QIn[nPan + 1] = QInt - propsBus_a.rad.Q_flow;
+      for i in 1:nPan loop
+        CPan[i]*der(T[i]) = QAbs[i] + QIn[i] - QIn[i + 1];
+      end for;
       // the room air loses the heat that leaves through the frame and takes the heat of the inner pane
       propsBus_a.con.Q_flow = QFra - QInt;
       propsBus_a.rad.T = T[nPan];

@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 CACHE_ROOT = Path(__file__).resolve().parents[2].joinpath(".cache", "bestest")
 SECONDS_PER_YEAR = 365 * 24 * 3600
 TOLERANCE = 1e-6
+LOG_LINES = 40  # of the OpenModelica log shown when a case does not simulate
 HOURS_PER_YEAR = 365 * 24  # one output point per hour: the KPIs are hourly statistics
 LIBRARIES = ("Buildings", "IDEAS", "iso_13790", "reduced_order", "FastModel")
 # Result variable holding the zone air temperature, per library.
@@ -156,7 +157,8 @@ def run_case(
     output = outcome.output.decode(errors="replace") if isinstance(outcome.output, bytes) else str(outcome.output)
     directory.joinpath("omc.log").write_text(output)
     if not is_success(outcome, options=options):
-        raise RuntimeError(f"Case {case_id} with {library} did not simulate; see {directory / 'omc.log'}")
+        tail = "\n".join(output.splitlines()[-LOG_LINES:])
+        raise RuntimeError(f"Case {case_id} with {library} did not simulate; see {directory / 'omc.log'}:\n{tail}")
     result_file = directory.joinpath("results", f"case_{case_id}.building_res.mat")
     signals = signals_for(network, library, result_file, case)
     kpis = extract_kpis(result_file, case_id, library, signals, case.trace_days)
