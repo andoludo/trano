@@ -55,9 +55,10 @@ def _register_variant_folders(folders: list[Path] | None) -> None:
         register_variants_folder(folder)
 
 
-def _create_network(model: str, library: str) -> Network:
+def _create_network(model: str, library: str, embed_libraries: bool = True) -> Network:
     model_ = Path(model).resolve()
-    return convert_network(str(model_.stem), model_, library=Library.from_configuration(library))
+    library_ = Library.from_configuration(library).model_copy(update={"embed_libraries": embed_libraries})
+    return convert_network(str(model_.stem), model_, library=library_)
 
 
 def _simulation_result_path(model_path: Path) -> Path:
@@ -98,6 +99,14 @@ def create_model(
             "--no-containers writes all of them in a single flat model."
         ),
     ] = True,
+    embed_libraries: Annotated[
+        bool,
+        typer.Option(
+            help="Embed the Modelica library the model uses (FastSmoothBuildings) in the generated package; "
+            "--no-embed-libraries declares it in the uses annotation of the package instead, to load it beside the "
+            "model (the folder of the installed fastsmoothbuildings package)."
+        ),
+    ] = True,
     variants_folder: VariantsFolderOption = None,
 ) -> None:
     _register_variant_folders(variants_folder)
@@ -111,7 +120,7 @@ def create_model(
             description=f"Generating model {modelica_model_path.name} with library {library}",
             total=None,
         )
-        network = _create_network(model, library)
+        network = _create_network(model, library, embed_libraries)
         modelica_model = network.model(include_container=containers)
         progress.update(task, completed=True)
         task = progress.add_task(description="Writing model to file...", total=None)

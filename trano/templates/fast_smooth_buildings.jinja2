@@ -10,7 +10,11 @@
 package {{ network.name }}
 {{ Trano.Trano_library(None, None, data_bus_connector) }}
 
-{{ modelica_library("FastSmoothBuildings") }}
+{% if library.embed_libraries %}
+{% for name in library.modelica_libraries %}
+{{ modelica_library(name) }}
+{% endfor %}
+{% endif %}
 
 {{ data.data | safe }}
 
@@ -67,4 +71,11 @@ equation
   {{ parts.equation | safe }}
 {% endfor %}
 end building;
+{% if library.modelica_libraries and not library.embed_libraries %}
+  annotation (uses(
+    {%- for name in library.modelica_libraries -%}
+    {{ name }}(version="{{ modelica_library_version(name) }}"){{ ", " if not loop.last }}
+    {%- endfor -%}
+  ));
+{% endif %}
 end {{ network.name }};

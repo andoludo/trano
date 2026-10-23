@@ -97,6 +97,16 @@ class Library(BaseModel):
         default="base.jinja2", description="Template of the Modelica package generated for a network."
     )
     use_containers: bool = Field(default=True, description="Group the components in containers (sub-models).")
+    modelica_libraries: tuple[str, ...] = Field(
+        default=(),
+        description="Modelica libraries the generated package uses from a Python package (FastSmoothBuildings), "
+        "beside those installed in OpenModelica.",
+    )
+    embed_libraries: bool = Field(
+        default=True,
+        description="Embed the modelica_libraries in the generated package; otherwise the package declares them in "
+        "its uses annotation and the tools load them beside it (Network.libraries).",
+    )
     connectors: Connectors = Field(default_factory=lambda: Connectors(**_base("connectors")))
     data_bus_template: str = Field(
         default_factory=lambda: _base("data_bus_template"),
