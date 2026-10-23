@@ -595,3 +595,14 @@ def test_the_zone_takes_the_night_ventilation_schedule() -> None:
         in model
     )
     assert "ventilationSchedule=" not in _model(BESTEST / "case_600FF.yaml", "FastModel", include_container=False)
+
+
+def test_a_saturated_ideal_system_gives_no_heat() -> None:
+    """The PI controllers of the ideal system saturate at dY and 1 - dY (smoothLimit): the heat is rescaled so that
+    the idle mode gives none. Before, heating and cooling each leaked 1e-3 of their capacity (1 kW for BESTEST)."""
+    text = (ROOT / "trano" / "library" / "FastModel.mo").read_text()
+    ideal = text[text.index("model IdealHeatingCoolingPI") : text.index("end IdealHeatingCoolingPI;")]
+    assert "QHea_flow = (conHea.y - conHea.dY)/(1 - 2*conHea.dY)*QHea_flow_max;" in ideal
+    assert "QCoo_flow = (conCoo.y - conCoo.dY)/(1 - 2*conCoo.dY)*QCoo_flow_max;" in ideal
+    heater = text[text.index("model IdealHeater") : text.index("end IdealHeater;")]
+    assert "(Utilities.smoothLimit(y, 0, 1, 1e-3) - 1e-3)/(1 - 2e-3)" in heater

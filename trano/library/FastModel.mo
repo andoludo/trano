@@ -2311,7 +2311,9 @@ package FastModel "Building models for model predictive control: close to Buildi
         annotation (Placement(transformation(extent={{90,-50},{110,-30}})));
       Real Q_flow(unit="W") "Heat flow rate";
     equation
-      Q_flow = Q_flow_nominal*Utilities.smoothLimit(y, 0, 1, 1e-3);
+      // smoothLimit saturates at 1e-3 and 1 - 1e-3: rescaled, the emitter gives no heat at y <= 0 and its nominal
+      // power at y >= 1 (a floor of 1e-3*Q_flow_nominal is a large heat with the capacities of ideal systems)
+      Q_flow = Q_flow_nominal*(Utilities.smoothLimit(y, 0, 1, 1e-3) - 1e-3)/(1 - 2e-3);
       heatPortCon.Q_flow = -(1 - fraRad)*Q_flow;
       heatPortRad.Q_flow = -fraRad*Q_flow;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
@@ -2349,8 +2351,10 @@ package FastModel "Building models for model predictive control: close to Buildi
       Controls.PI conHea(k=k, Ti=Ti, e=Utilities.dayTable(Utilities.timeOfDay(time), TSetHea) - heatPortCon.T, enable=1);
       Controls.PI conCoo(k=k, Ti=Ti, e=heatPortCon.T - Utilities.dayTable(Utilities.timeOfDay(time), TSetCoo), enable=1);
     equation
-      QHea_flow = conHea.y*QHea_flow_max;
-      QCoo_flow = conCoo.y*QCoo_flow_max;
+      // the outputs of the PI controllers saturate at dY and 1 - dY (smoothLimit): rescaled, a saturated mode gives
+      // exactly no heat. Without it each mode leaked dY*capacity (1 kW with the 1 MW of BESTEST) into the other.
+      QHea_flow = (conHea.y - conHea.dY)/(1 - 2*conHea.dY)*QHea_flow_max;
+      QCoo_flow = (conCoo.y - conCoo.dY)/(1 - 2*conCoo.dY)*QCoo_flow_max;
       der(EHea) = QHea_flow/3.6e6;
       der(ECoo) = QCoo_flow/3.6e6;
       heatPortCon.Q_flow = -(1 - frad)*(QHea_flow - QCoo_flow);
