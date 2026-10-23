@@ -986,7 +986,7 @@
   <span class="md-ellipsis">
     
   
-    FastModel, models close to Buildings in closed loop and for MPC
+    FastSmoothBuildings, models close to Buildings in closed loop and for MPC
   
 
     
@@ -1217,7 +1217,7 @@
   <span class="md-ellipsis">
     
   
-    FastModel
+    FastSmoothBuildings
   
 
     
@@ -1402,7 +1402,7 @@
   <span class="md-ellipsis">
     
   
-    FastModel against Buildings
+    FastSmoothBuildings against Buildings
   
 
     
@@ -1430,7 +1430,7 @@
   <span class="md-ellipsis">
     
   
-    FastModel against Buildings on BESTEST and a house before and after renovation
+    FastSmoothBuildings against Buildings on BESTEST and a house before and after renovation
   
 
     
@@ -1458,7 +1458,7 @@
   <span class="md-ellipsis">
     
   
-    FastModel improvement plan
+    FastSmoothBuildings improvement plan
   
 
     
@@ -1632,7 +1632,7 @@
 <p>Trano is <strong>Modelica library agnostic</strong> but is natively designed to work with:<br />
 ✅ <strong>Validated detailed Modelica libraries</strong> (e.g., <strong><a href="https://github.com/lbl-srg/modelica-buildings">Buildings</a></strong>, <strong><a href="https://github.com/open-ideas/IDEAS">IDEAS</a></strong>,...)<br />
 ✅ <strong>Reduced-order models</strong> (e.g., <strong><a href="https://github.com/RWTH-EBC/AixLib">AIXLIB</a></strong>, <strong>ISO13790</strong>,...)<br />
-✅ <strong>Models for optimal control</strong> (<strong><a href="reference/fast_model/">FastModel</a></strong>: close to Buildings, closed loop or for optimal control, translated to CasADi)<br />
+✅ <strong>Models for optimal control</strong> (<strong><a href="reference/fast_model/">FastSmoothBuildings</a></strong>: close to Buildings, closed loop or for optimal control, translated to CasADi)<br />
 ✅ <strong>your library...</strong>  </p>
 <h2 id="supported-libraries-and-validation">🧪 Supported libraries and validation</h2>
 <table>
@@ -1670,13 +1670,13 @@
 <td>simplified, informational</td>
 </tr>
 <tr>
-<td><code>FastModel</code></td>
+<td><code>FastSmoothBuildings</code></td>
 <td>-</td>
-<td><code>FastModel.Zones.Zone</code> (the physics of <code>MixedAir</code>), with the hydronic and ventilation systems and their controllers</td>
+<td><code>FastSmoothBuildings.Zones.Zone</code> (the physics of <code>MixedAir</code>), with the hydronic and ventilation systems and their controllers</td>
 <td>close to Buildings, closed loop, CasADi ready</td>
 </tr>
 <tr>
-<td><code>FastModelMPC</code></td>
+<td><code>FastSmoothBuildingsMPC</code></td>
 <td>-</td>
 <td>the same, the controls of the systems as inputs</td>
 <td>optimal control, CasADi ready</td>
