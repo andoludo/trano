@@ -125,7 +125,7 @@ BESTEST 960: light zone heated and cooled (20/27 degC) behind an unconditioned h
 
 | Variant | Heating [kWh] | Heat pump electricity [kWh] | Fans [kWh] | PV [kWh] | OpenModelica time [s] |
 |---|---|---|---|---|---|
-| base |  / 11539  |  /   |  /  |  /  |  / 35 |
+| base |  / 11539  |  /   |  /  |  /  |  / 30 |
 
 **Hour by hour**, FastModel against Buildings:
 
