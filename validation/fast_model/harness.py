@@ -47,10 +47,11 @@ TOLERANCE = 1e-6
 HOUR = 3600.0
 KELVIN = 273.15
 # The result variables the series need, in either library (OpenModelica's variableFilter): zone air temperatures,
-# the heat of the emitters, the powers or meters of the productions, fans and PV arrays, the outdoor temperature.
+# the heat of the emitters, the powers and meters of the productions, fans and PV arrays, the outdoor temperature.
+# The meters are variables in FastModel (EFue) and integrators in Buildings (EFue.y): the filter matches whole names.
 VARIABLES = (
     r".*(heaPorAir\\.T|\\.TAir|QHea_flow|QCoo_flow|heatPortCon\\.Q_flow|heatPortRad\\.Q_flow|"
-    r"PEle\\.y|QFue\\.y|PFan\\.y|\\.PEle|\\.QFue|\\.PFan|\\.EEle|\\.EFue|\\.EFan|\\.EPro|\\.EHea|\\.ECoo|"
+    r"PEle\\.y|QFue\\.y|PFan\\.y|\\.PEle|\\.QFue|\\.PFan|\\.(EEle|EFue|EFan|EPro|EHea|ECoo)(\\.y)?|"
     r"pv_[0-9]+\\.P|TDryBul)"
 )
 ZONE_TEMPERATURE = {BUILDINGS: "heaPorAir.T", FAST_MODEL: "TAir"}
@@ -270,10 +271,12 @@ def _meter(reader: Reader, powers: tuple[str, ...], energy: str, edges: np.ndarr
 
     The meter is exact whatever the output interval; the samples of a power are not: a boiler that fires at full
     power for two minutes when the radiator valves open is caught or missed by samples five minutes apart (1 % of the
-    fuel of the house before renovation, in opposite directions for the two libraries)."""
-    with contextlib.suppress(ValueError):
-        readings = _on_grid(reader, find_variable(reader, energy), edges)
-        return np.asarray(np.diff(readings) * 1000.0 * HOUR / np.diff(edges))
+    fuel of the house before renovation, in opposite directions for the two libraries). The meter is the output of an
+    integrator in Buildings (``EFue.y``) and a variable in FastModel (``EFue``), in kWh in both."""
+    for meter in (f"{energy}.y", energy):
+        with contextlib.suppress(ValueError):
+            readings = _on_grid(reader, find_variable(reader, meter), edges)
+            return np.asarray(np.diff(readings) * 1000.0 * HOUR / np.diff(edges))
     for suffix in powers:
         with contextlib.suppress(ValueError):
             return _mean(reader, find_variable(reader, suffix), edges)
