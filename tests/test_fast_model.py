@@ -339,15 +339,19 @@ def test_the_closed_loop_model_discretises_the_layers_as_buildings() -> None:
     assert "nSta={2, 3, 3}" in records["FastModel"]
     assert "nNod=8" in records["FastModel"]
     assert "lay={1, 1, 2, 2, 2, 3, 3, 3}" in records["FastModel"]
+    assert "nod={1, 3, 6, 9}" in records["FastModel"]  # the layer boundaries: the states T of both models
+    assert "sub={2, 4, 5, 7, 8}" in records["FastModel"]
     assert "nSta={1, 1, 1}" in records["FastModelMPC"]
     assert "lay={1, 2, 3}" in records["FastModelMPC"]
+    assert "nod={1, 2, 3, 4}" in records["FastModelMPC"]
+    assert "sub=fill(0, 0)" in records["FastModelMPC"]
 
 
 WALL_ROOM = """
 package room
   package Data
     record Wall = FastModel.Data.Construction(nLay=2, x={0.02, 0.15}, k={0.04, 1.4}, c={1400, 900}, d={10, 2300},
-      nSta={2, 3}, nNod=5, lay={1, 1, 2, 2, 2});
+      nSta={2, 3}, nNod=5, lay={1, 1, 2, 2, 2}, nod={1, 3, 6}, sub={2, 4, 5});
   end Data;
   model building_mpc
     FastModel.Interfaces.WeatherInputs weather_inputs;
@@ -368,15 +372,21 @@ end room;
 
 @needs_connected_export
 def test_the_construction_splits_its_layers_into_sublayers() -> None:
-    """rumoca exports a wall whose two layers are split into 2 and 3 sublayers: 6 nodes, the resistance and the
-    capacity of the layers."""
+    """rumoca exports a wall whose two layers are split into 2 and 3 sublayers: 6 nodes, the three layer boundaries
+    T (the states of FastModelMPC) and three nodes inside the layers TSub, the resistance and the capacity of the
+    layers."""
     from trano.elements.jinja import modelica_library
 
     model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{WALL_ROOM}", "room.building_mpc")
     description = model.description
-    assert [name for name in description.state_names if name.startswith("wall.T")] == [
-        f"wall.T[{i}]" for i in range(1, 7)
-    ]
+    assert {name for name in description.state_names if name.startswith("wall.T")} == {
+        "wall.T[1]",
+        "wall.T[2]",
+        "wall.T[3]",
+        "wall.TSub[1]",
+        "wall.TSub[2]",
+        "wall.TSub[3]",
+    }
     parameters = dict(zip(description.parameter_names, description.parameter_values, strict=True))
     resistance = sum(1 / parameters[f"wall.G[{i}]"] for i in range(1, 6))
     assert resistance == pytest.approx((0.02 / 0.04 + 0.15 / 1.4) / 10)
@@ -529,7 +539,7 @@ package room
       epsGap_b=fill(0, 0), tau={0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.5, 0.2, 0, 0.7},
       absPan={{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0, 0.1}}, absIR_a=0.84, absIR_b=0.84, UFra=2.0);
     record Slab = FastModel.Data.Construction(nLay=1, x={0.2}, k={1.4}, c={900}, d={2300}, nSta={1}, nNod=1,
-      lay={1});
+      lay={1}, nod={1, 2}, sub=fill(0, 0));
   end Data;
   model building_mpc
     parameter Real frac = 0.3;
@@ -735,3 +745,19 @@ def test_the_gas_gap_conducts_with_the_temperatures_of_its_panes() -> None:
     assert conductance(278.15, 268.15) < reference
     assert conductance(290.5, 275.5, eps=0.04) < 0.45 * reference
     assert conductance(293.15, 293.15) == pytest.approx(conductance(293.16, 293.14), rel=1e-4)  # smooth at dT = 0
+
+
+@needs_connected_export
+def test_the_closed_loop_and_mpc_models_share_the_layer_boundaries() -> None:
+    """The closed-loop model splits the layers, the MPC model does not: both name T the temperatures of the layer
+    boundaries, so that a state copied from one model into the other by its name (mpctrano's spin-up) stays at its
+    place; the nodes inside the layers are TSub, in the closed-loop model only."""
+    path = MODELS / "single_zone_hydronic.yaml"
+    mpc = _export(path).description.state_names
+    closed_loop_model = CasadiModel.from_modelica(_model(path, "FastModel"), f"{path.stem}.building_mpc")
+    closed_loop = closed_loop_model.description.state_names
+    boundaries = {name for name in mpc if ".T[" in name}
+    assert boundaries
+    assert boundaries <= set(closed_loop)
+    assert any(".TSub[" in name for name in closed_loop)
+    assert not any(".TSub[" in name for name in mpc)

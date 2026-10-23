@@ -510,6 +510,8 @@ package FastModel "Building models for model predictive control: close to Buildi
          boundary (FastModelMPC, whose states are decision variables of the optimal control)";
       parameter Integer nNod "Number of sublayers, the sum of nSta";
       parameter Integer lay[nNod] "Layer of each sublayer, from the outside";
+      parameter Integer nod[nLay + 1] "Node of each layer boundary, from the outside (nod[1] = 1)";
+      parameter Integer sub[nNod - nLay] "Nodes inside the layers, from the outside";
       parameter Real absIR_a = 0.84 "Long-wave emissivity of side a (outside)";
       parameter Real absIR_b = 0.84 "Long-wave emissivity of side b (inside)";
       parameter Real absSol_a = 0.84 "Solar absorptance of side a (outside)";
@@ -685,21 +687,40 @@ package FastModel "Building models for model predictive control: close to Buildi
     end PartialSurface;
 
     partial model PartialOpaque
-      "Conduction through the layers of a construction split into sublayers, one node at each sublayer boundary"
+      "Conduction through the layers of a construction split into sublayers, a node at each sublayer boundary: the
+       temperatures of the layer boundaries are T, the same states in FastModel and FastModelMPC (a state of one
+       model copied into the other by its name stays at its place), those of the nodes inside the layers TSub"
       extends PartialSurface;
       parameter Data.Construction constructionType "Construction, layers from the outside";
       parameter Boolean stateAtSurface_a = true "Capacity at the outer surface (false: it is held at a temperature)";
+      Real TSub[constructionType.nNod - constructionType.nLay](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the nodes inside the layers, outside first (none with one sublayer a layer)";
     protected
-      parameter Integer nLay = constructionType.nNod "Number of sublayers, between nLay + 1 nodes";
-      parameter Real x[nLay](each unit="m") = {constructionType.x[constructionType.lay[j]]
-        /constructionType.nSta[constructionType.lay[j]] for j in 1:nLay} "Thickness of each sublayer";
-      parameter Real k[nLay](each unit="W/(m.K)") = {constructionType.k[constructionType.lay[j]] for j in 1:nLay};
-      parameter Real c[nLay](each unit="J/(kg.K)") = {constructionType.c[constructionType.lay[j]] for j in 1:nLay};
-      parameter Real d[nLay](each unit="kg/m3") = {constructionType.d[constructionType.lay[j]] for j in 1:nLay};
-      parameter Real C[nLay + 1](each unit="J/K") = {A*((if i > 1 then x[i - 1]*d[i - 1]*c[i - 1]/2 else 0)
-        + (if i <= nLay then x[i]*d[i]*c[i]/2 else 0)) for i in 1:nLay + 1}
+      parameter Integer nLay = constructionType.nLay "Number of layers";
+      parameter Integer nSub = constructionType.nNod "Number of sublayers, between nSub + 1 nodes";
+      parameter Real x[nSub](each unit="m") = {constructionType.x[constructionType.lay[j]]
+        /constructionType.nSta[constructionType.lay[j]] for j in 1:nSub} "Thickness of each sublayer";
+      parameter Real k[nSub](each unit="W/(m.K)") = {constructionType.k[constructionType.lay[j]] for j in 1:nSub};
+      parameter Real c[nSub](each unit="J/(kg.K)") = {constructionType.c[constructionType.lay[j]] for j in 1:nSub};
+      parameter Real d[nSub](each unit="kg/m3") = {constructionType.d[constructionType.lay[j]] for j in 1:nSub};
+      parameter Real C[nSub + 1](each unit="J/K") = {A*((if i > 1 then x[i - 1]*d[i - 1]*c[i - 1]/2 else 0)
+        + (if i <= nSub then x[i]*d[i]*c[i]/2 else 0)) for i in 1:nSub + 1}
         "Capacity of each node: half of each adjacent sublayer";
-      parameter Real G[nLay](each unit="W/K") = {A*k[i]/x[i] for i in 1:nLay} "Conductance of each sublayer";
+      parameter Real G[nSub](each unit="W/K") = {A*k[i]/x[i] for i in 1:nSub} "Conductance of each sublayer";
+      Real TNod[nSub + 1](each unit="K") "Temperature of every node, outside first";
+      Real QNod[nSub + 1](each unit="W") "Heat into every node from its sublayers and, at the surfaces, Q_a and Q_b";
+      Real Q_a(unit="W") "Heat into the outer surface from the outside";
+      Real Q_b(unit="W") "Heat into the inner surface from the room";
+    equation
+      // the subscripts are bounded in both branches: OpenModelica checks the branch that is not taken
+      for j in 1:nSub + 1 loop
+        QNod[j] = (if j > 1 then G[max(j - 1, 1)]*(TNod[max(j - 1, 1)] - TNod[j]) else Q_a)
+          - (if j <= nSub then G[min(j, nSub)]*(TNod[j] - TNod[min(j + 1, nSub + 1)]) else -Q_b);
+      end for;
+      for m in 1:nSub - nLay loop
+        TNod[constructionType.sub[m]] = TSub[m];
+        C[constructionType.sub[m]]*der(TSub[m]) = QNod[constructionType.sub[m]];
+      end for;
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Rectangle(extent={{0,80},{80,-80}}, fillColor={175,175,175}, fillPattern=FillPattern.Solid,
             lineColor={175,175,175}),
@@ -723,7 +744,8 @@ package FastModel "Building models for model predictive control: close to Buildi
 
     model OuterWall "Exterior wall or roof: wind and sky at the outside, sun, conduction, room exchanges"
       extends PartialOpaque;
-      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, outside first";
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the layer boundaries, outside first";
       BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the outer surface"
         annotation (Placement(transformation(extent={{-70,60},{-50,80}})));
       Real QSol(unit="W") "Absorbed solar radiation";
@@ -738,11 +760,12 @@ package FastModel "Building models for model predictive control: close to Buildi
       QExt = Functions.exteriorExchange(T[1], A, til, azi, cExtPos, cExtNeg, constructionType.absIR_a, propsBus_a.hConExt,
         propsBus_a.wea.TDryBul, propsBus_a.wea.TBlaSky, propsBus_a.wea.winSpe, propsBus_a.wea.winDir);
       QInt = Functions.interiorConvection(T[nLay + 1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
-      C[1]*der(T[1]) = QSol - QExt - G[1]*(T[1] - T[2]);
-      for i in 2:nLay loop
-        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
+      Q_a = QSol - QExt;
+      Q_b = propsBus_a.rad.Q_flow - QInt;
+      for b in 1:nLay + 1 loop
+        TNod[constructionType.nod[b]] = T[b];
+        C[constructionType.nod[b]]*der(T[b]) = QNod[constructionType.nod[b]];
       end for;
-      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
       propsBus_a.rad.T = T[nLay + 1];
       propsBus_a.A = A;
@@ -761,20 +784,19 @@ package FastModel "Building models for model predictive control: close to Buildi
       extends PartialOpaque(final stateAtSurface_a=false);
       parameter Boolean outdoorAir = false "true: the outer surface at the outdoor air temperature";
       parameter Real TGro(unit="K") = 283.15 "Ground temperature";
-      Real T[nLay](each unit="K", each start=T_start, each fixed=true) "Node temperatures, the outer surface excluded";
+      Real T[nLay](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the layer boundaries, the outer surface excluded";
       Real QInt(unit="W") "Heat from the inner surface to the room air";
-    protected
-      Real TNod[nLay + 1](each unit="K") "Node temperatures, the outer surface first";
     equation
       TNod[1] = if outdoorAir then propsBus_a.wea.TDryBul else TGro;
-      for i in 1:nLay loop
-        TNod[i + 1] = T[i];
-      end for;
+      // the outer surface is held at its temperature: its balance is not solved
+      Q_a = 0;
       QInt = Functions.interiorConvection(T[nLay] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
-      for i in 1:nLay - 1 loop
-        der(T[i]) = (G[i]*(TNod[i] - T[i]) - G[i + 1]*(T[i] - T[i + 1]))/C[i + 1];
+      Q_b = propsBus_a.rad.Q_flow - QInt;
+      for b in 2:nLay + 1 loop
+        TNod[constructionType.nod[b]] = T[b - 1];
+        C[constructionType.nod[b]]*der(T[b - 1]) = QNod[constructionType.nod[b]];
       end for;
-      C[nLay + 1]*der(T[nLay]) = G[nLay]*(TNod[nLay] - T[nLay]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
       propsBus_a.rad.T = T[nLay];
       propsBus_a.A = A;
@@ -791,15 +813,17 @@ package FastModel "Building models for model predictive control: close to Buildi
 
     model AdiabaticWall "Wall without heat flow through its outer surface"
       extends PartialOpaque;
-      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, outside first";
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the layer boundaries, outside first";
       Real QInt(unit="W") "Heat from the inner surface to the room air";
     equation
       QInt = Functions.interiorConvection(T[nLay + 1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
-      C[1]*der(T[1]) = -G[1]*(T[1] - T[2]);
-      for i in 2:nLay loop
-        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
+      Q_a = 0;
+      Q_b = propsBus_a.rad.Q_flow - QInt;
+      for b in 1:nLay + 1 loop
+        TNod[constructionType.nod[b]] = T[b];
+        C[constructionType.nod[b]]*der(T[b]) = QNod[constructionType.nod[b]];
       end for;
-      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt + propsBus_a.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt;
       propsBus_a.rad.T = T[nLay + 1];
       propsBus_a.A = A;
@@ -819,7 +843,8 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real absSol = 0.84 "Solar absorptance of both faces (Buildings surBou)";
       Interfaces.SurfaceBus propsBus_b "Connection to the zone of side b"
         annotation (Placement(transformation(extent={{-110,-10},{-90,10}})));
-      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true) "Node temperatures, side a first";
+      Real T[nLay + 1](each unit="K", each start=T_start, each fixed=true)
+        "Temperatures of the layer boundaries, side a first";
       Real QInt_a(unit="W") "Heat from side a to the air of its zone";
       Real QInt_b(unit="W") "Heat from side b to the air of its zone";
     protected
@@ -829,11 +854,12 @@ package FastModel "Building models for model predictive control: close to Buildi
     equation
       QInt_a = Functions.interiorConvection(T[1] - propsBus_a.con.T, A, cIntPos, cIntNeg, propsBus_a.hConInt);
       QInt_b = Functions.interiorConvection(T[nLay + 1] - propsBus_b.con.T, A, cPos_b, cNeg_b, propsBus_b.hConInt);
-      C[1]*der(T[1]) = -G[1]*(T[1] - T[2]) - QInt_a + propsBus_a.rad.Q_flow;
-      for i in 2:nLay loop
-        der(T[i]) = (G[i - 1]*(T[i - 1] - T[i]) - G[i]*(T[i] - T[i + 1]))/C[i];
+      Q_a = propsBus_a.rad.Q_flow - QInt_a;
+      Q_b = propsBus_b.rad.Q_flow - QInt_b;
+      for b in 1:nLay + 1 loop
+        TNod[constructionType.nod[b]] = T[b];
+        C[constructionType.nod[b]]*der(T[b]) = QNod[constructionType.nod[b]];
       end for;
-      C[nLay + 1]*der(T[nLay + 1]) = G[nLay]*(T[nLay] - T[nLay + 1]) - QInt_b + propsBus_b.rad.Q_flow;
       propsBus_a.con.Q_flow = -QInt_a;
       propsBus_a.rad.T = T[1];
       propsBus_a.A = A;
