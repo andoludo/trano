@@ -375,17 +375,20 @@ compare.
 
 ## FastModel
 
-The `FastModel` library (the closed-loop model of trano's FastModel components, the one rumoca translates to
-CasADi for optimal control) runs the same YAML files in OpenModelica. It follows the envelope of Buildings with fewer
-states: one capacity per layer boundary instead of `number_of_states` per layer, the long-wave exchange of a room
-linearised at 20 degC, smooth controllers without events. It is shown for information, it does not gate. The four
-cases with overhangs or side fins (610, 630, 910, 930) are left out: FastModel has no shading of the windows yet. The
-column Buildings gives the frozen value of Buildings for the same case (`expected/Buildings.json`), so that the gap
-between the two libraries reads next to the band. How the two libraries compare hour by hour and how they respond to a
-change of the parameters is studied in [FastModel against Buildings on BESTEST and a renovated
-house](fast_model_study.md).
+The `FastModel` library is trano's reduced model of the same building: the closed-loop model whose components
+rumoca translates to a CasADi ODE for optimal control and calibration. It runs the same YAML files in OpenModelica.
+Its walls are discretised as Buildings discretises them (`number_of_states`, at most three sublayers per layer), its
+zones take the air density of the site and exchange long-wave radiation as the YAML asks (linearised at 20 degC or
+around the current surface temperatures), its outer surfaces exchange with sky and ground exactly, and its controllers
+are smooth and without events. It is shown for information, it does not gate. The four cases with overhangs or side
+fins (610, 630, 910, 930) are left out: FastModel does not shade its windows yet. The column Buildings gives the
+frozen value of Buildings for the same case (`expected/Buildings.json`), so that the gap between the two libraries
+reads next to the band. How the two libraries compare hour by hour, and how they respond to a change of the
+parameters, is studied in [FastModel against Buildings on BESTEST and a renovated house](fast_model_study.md); how
+FastModel came to these results is told in the [improvement plan](fast_model_improvement_plan.md).
 
 89 of 89 KPIs of 23 cases are inside their band.
+Against Buildings, the loads differ by 2.0 % on average and 6.6 % at most, the temperatures of the free-floating zones by 0.80 K on average and 3.52 K at most.
 
 | Case | KPI | FastModel | Buildings | Band | Reference mean | Status |
 |---|---|---|---|---|---|---|

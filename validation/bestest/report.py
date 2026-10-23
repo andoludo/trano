@@ -195,20 +195,23 @@ compare.
     return intro + body[body.index("\n") + 1 :].lstrip("\n")
 
 
+LOAD_FLOOR = 0.2  # [MWh or kW] loads below it are left out of the relative gaps between two libraries
 # Libraries documented in a section of their own next to the generated tables, with the library their KPIs are
 # set against and what the reader needs to know before the table.
 LIBRARY_SECTIONS: dict[str, tuple[str, str]] = {
     "FastModel": (
         "Buildings",
-        """The `FastModel` library (the closed-loop model of trano's FastModel components, the one rumoca translates to
-CasADi for optimal control) runs the same YAML files in OpenModelica. It follows the envelope of Buildings with fewer
-states: one capacity per layer boundary instead of `number_of_states` per layer, the long-wave exchange of a room
-linearised at 20 degC, smooth controllers without events. It is shown for information, it does not gate. The four
-cases with overhangs or side fins (610, 630, 910, 930) are left out: FastModel has no shading of the windows yet. The
-column Buildings gives the frozen value of Buildings for the same case (`expected/Buildings.json`), so that the gap
-between the two libraries reads next to the band. How the two libraries compare hour by hour and how they respond to a
-change of the parameters is studied in [FastModel against Buildings on BESTEST and a renovated
-house](fast_model_study.md).
+        """The `FastModel` library is trano's reduced model of the same building: the closed-loop model whose components
+rumoca translates to a CasADi ODE for optimal control and calibration. It runs the same YAML files in OpenModelica.
+Its walls are discretised as Buildings discretises them (`number_of_states`, at most three sublayers per layer), its
+zones take the air density of the site and exchange long-wave radiation as the YAML asks (linearised at 20 degC or
+around the current surface temperatures), its outer surfaces exchange with sky and ground exactly, and its controllers
+are smooth and without events. It is shown for information, it does not gate. The four cases with overhangs or side
+fins (610, 630, 910, 930) are left out: FastModel does not shade its windows yet. The column Buildings gives the
+frozen value of Buildings for the same case (`expected/Buildings.json`), so that the gap between the two libraries
+reads next to the band. How the two libraries compare hour by hour, and how they respond to a change of the
+parameters, is studied in [FastModel against Buildings on BESTEST and a renovated house](fast_model_study.md); how
+FastModel came to these results is told in the [improvement plan](fast_model_improvement_plan.md).
 """,
     ),
 }
@@ -226,6 +229,15 @@ def render_library_section(library: str, results: dict[str, CaseResult], referen
         for comparison in compare(results[case_id].kpis, reference)
     ]
     inside = sum(comparison.status != "fail" for comparison in comparisons)
+    loads, temperatures = [], []
+    for comparison in comparisons:
+        value = frozen.get(comparison.case, {}).get(comparison.kpi)
+        if value is None:
+            continue
+        if comparison.unit == "degC":
+            temperatures.append(abs(comparison.value - value))
+        elif abs(value) > LOAD_FLOOR:
+            loads.append(abs(comparison.value / value - 1))
     lines = [
         f"## {library}",
         "",
@@ -233,6 +245,14 @@ def render_library_section(library: str, results: dict[str, CaseResult], referen
         "",
         f"{inside} of {len(comparisons)} KPIs of {len(results)} cases are inside their band"
         + (" (known deviations included)." if any(c.status == "known" for c in comparisons) else "."),
+    ]
+    if loads and temperatures:
+        lines.append(
+            f"Against {against}, the loads differ by {100 * sum(loads) / len(loads):.1f} % on average and "
+            f"{100 * max(loads):.1f} % at most, the temperatures of the free-floating zones by "
+            f"{sum(temperatures) / len(temperatures):.2f} K on average and {max(temperatures):.2f} K at most."
+        )
+    lines += [
         "",
         f"| Case | KPI | {library} | {against} | Band | Reference mean | Status |",
         "|---|---|---|---|---|---|---|",

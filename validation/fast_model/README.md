@@ -24,5 +24,8 @@ python -m validation.fast_model report --docs                  # docs/validation
 Both libraries are simulated by OpenModelica in the trano container (FastModel is a Modelica library, so the CasADi
 export is not involved). The hourly series (`<library>.csv.gz`) and the KPIs (`<library>.json`) of every run are
 committed under `results/<case>/<variant>/`; the report and the documentation page are rendered from them without
-Docker. The workflow `.github/workflows/fast_model_study.yaml` runs the whole matrix on demand and commits the results
-and the rendered page to the branch it runs on.
+Docker. The workflow `.github/workflows/fast_model_study.yaml` runs the matrix and commits the results and the
+rendered page to the branch it runs on: on demand from the default branch, or on a push to any branch whose commit
+message carries a tag, `[study]` for every run or `[study 940 residential_after | base]` for the cases before the bar
+and the variants after it. A change of the FastModel library (`trano/library/FastModel.mo`, its templates,
+`library.json`) is expected to carry `[study]`, so that the study page follows the library.
