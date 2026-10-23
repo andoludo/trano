@@ -25,13 +25,15 @@ def modelica_number(value: float) -> str:
     return f"{float(value):.10g}"
 
 
-MODELICA_LIBRARIES = Path(__file__).parents[1].joinpath("library")
-
-
 @cache
 def modelica_library(name: str) -> Markup:
-    """The Modelica source of a library shipped with trano (``trano/library/<name>.mo``)."""
-    return Markup(MODELICA_LIBRARIES.joinpath(f"{name}.mo").read_text())  # noqa: S704 - a file of trano
+    """The Modelica source of a library that a generated package embeds: FastSmoothBuildings, from its Python package,
+    without its examples, validation models, guide and documentation (the library itself carries them)."""
+    if name != "FastSmoothBuildings":
+        raise ValueError(f"trano embeds no Modelica library {name}")
+    import fastsmoothbuildings
+
+    return Markup(fastsmoothbuildings.bundle(documentation=False, examples=False))  # noqa: S704 - the library, not user input
 
 
 class UnsupportedElementError(NotImplementedError):

@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 
 from trano.elements.library.base import LibraryData
+from trano.elements.library.library import DEPRECATED_NAMES
 
 _BUILTIN_MODELS_PATH = Path(__file__).parent.joinpath("models")
 _EXTRA_VARIANT_PATHS: list[Path] = []
@@ -94,9 +95,14 @@ def external_variant_has_fluid_ports(component_key: str, variant: str) -> bool |
     ]
     if not definitions:
         return None
-    return any(
-        port.get("medium") == "fluid" for definition in definitions for port in definition.get("ports") or []
-    )
+    return any(port.get("medium") == "fluid" for definition in definitions for port in definition.get("ports") or [])
+
+
+def _current_names(libraries: str | list[str]) -> str | list[str]:
+    """The libraries of a variant, their former names replaced (FastModel is FastSmoothBuildings)."""
+    if isinstance(libraries, str):
+        return DEPRECATED_NAMES.get(libraries, libraries)
+    return [DEPRECATED_NAMES.get(name, name) for name in libraries]
 
 
 class Components(BaseModel):
@@ -110,7 +116,11 @@ class Components(BaseModel):
         return cls(components=components)
 
     def get_components(self, component_name: str) -> list[LibraryData]:
-        libraries_data = [LibraryData.model_validate(c) for c in self.components if component_name in c["classes"]]
+        libraries_data = [
+            LibraryData.model_validate(c | {"library": _current_names(c["library"])})
+            for c in self.components
+            if component_name in c["classes"]
+        ]
         variants = [(ld.variant, library) for ld in libraries_data for library in ld.library]
         if len(set(variants)) != len(variants):
             raise ValueError(f"Duplicate variant for {component_name}")

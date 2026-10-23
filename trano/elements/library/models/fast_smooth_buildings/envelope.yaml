@@ -1,0 +1,140 @@
+# Surfaces of the FastSmoothBuildings zones, one element each (the windows are cut out of their host walls by trano:
+# `opaque_surface`). Each connects to the propsBus of its zone; constructions and glazings are records of the
+# Data package of the model.
+- classes:
+  - ExternalWall
+  - ExternalDoor
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |-
+    FastSmoothBuildings.Envelope.OuterWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.opaque_surface }},
+        azi={{ element.azimuth }},
+        til={{ macros.convert_tilt(element.tilt, library_name) }})
+  variant: default
+
+- classes:
+  - Window
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |-
+    FastSmoothBuildings.Envelope.Window {{ element.name }}(
+        glazing={{ package_name }}.Data.Glazing.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        {%- if element.height %}
+        hWin={{ element.height }},
+        {%- endif %}
+        {%- if element.overhang %}
+        haveOverhang=true,
+        depOve={{ element.overhang.depth }},
+        gapOve={{ element.overhang.gap }},
+        wLOve={{ element.overhang.width_left }},
+        wROve={{ element.overhang.width_right }},
+        {%- endif %}
+        {%- if element.side_fins %}
+        haveSideFins=true,
+        depFin={{ element.side_fins.depth }},
+        gapFin={{ element.side_fins.gap }},
+        hFin={{ element.side_fins.height }},
+        {%- endif %}
+        frac={{ element.frame_fraction }},
+        azi={{ element.azimuth }},
+        til={{ macros.convert_tilt(element.tilt, library_name) }})
+  variant: default
+
+- classes:
+  - FloorOnGround
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing:
+    function: default_parameters
+  ports: &single_surface
+  - flow: undirected
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  template: |-
+    FastSmoothBuildings.Envelope.BoundaryWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        {%- if element.ground_temperature is not none %}
+        TGro={{ element.ground_temperature }},
+        {%- endif %}
+        til=FastSmoothBuildings.Types.Tilt.Floor)
+  variant: default
+
+# A raised floor over outdoor air (ASHRAE 140): the outer surface follows the outdoor dry-bulb temperature.
+- classes:
+  - FloorOnGround
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing:
+    function: default_parameters
+  ports: *single_surface
+  template: |-
+    FastSmoothBuildings.Envelope.BoundaryWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        outdoorAir=true,
+        til=FastSmoothBuildings.Types.Tilt.Floor)
+  variant: outdoor_air
+
+- classes:
+  - AdiabaticWall
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing:
+    function: default_parameters
+  ports: *single_surface
+  template: |-
+    FastSmoothBuildings.Envelope.AdiabaticWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        azi={{ element.azimuth }},
+        til={{ macros.convert_tilt(element.tilt, library_name) }})
+  variant: default
+
+# A wall or floor between two zones: side a faces the zone connected to propsBus_a, with the tilt the element has
+# in that zone (a floor between storeys is the ceiling of the zone below); side b faces the other way.
+- classes:
+  - InternalElement
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: interchangeable_port
+    medium: data
+    names:
+    - propsBus_a
+    targets:
+    - Space
+  - flow: interchangeable_port
+    medium: data
+    names:
+    - propsBus_b
+    targets:
+    - Space
+  template: |-
+    {%- set zone_a = macros.connected_element(element, 'propsBus_a') -%}
+    FastSmoothBuildings.Envelope.InternalWall {{ element.name }}(
+        constructionType={{ package_name }}.Data.Constructions.{{ element.construction.name }}(),
+        A={{ element.surface }},
+        azi={{ element.azimuth }},
+        til={{ macros.convert_tilt(element.get_tilt(zone_a) if zone_a else element.tilt, library_name) }})
+  variant: default

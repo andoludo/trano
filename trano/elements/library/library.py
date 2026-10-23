@@ -1,6 +1,7 @@
 import json
+import warnings
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Final, cast
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -32,6 +33,22 @@ class Connectors(BaseModel):
     medium: bool = Field(description="The fluid ports take the medium as a replaceable package")
 
 
+DEPRECATED_NAMES: Final = {"FastModel": "FastSmoothBuildings", "FastModelMPC": "FastSmoothBuildingsMPC"}
+
+
+def library_name(name: str) -> str:
+    """The name of a library, its former name replaced (with a deprecation warning)."""
+    if name not in DEPRECATED_NAMES:
+        return name
+    warnings.warn(
+        f"The library {name} is now {DEPRECATED_NAMES[name]} (the Modelica library FastSmoothBuildings); the name "
+        f"{name} will be removed in trano 1.0.",
+        DeprecationWarning,
+        stacklevel=3,
+    )
+    return DEPRECATED_NAMES[name]
+
+
 def _read_library_json() -> dict[str, dict[str, Any]]:
     return cast(dict[str, dict[str, Any]], json.loads(Path(__file__).parent.joinpath("library.json").read_text()))
 
@@ -44,7 +61,8 @@ def _base(key: str) -> Any:  # noqa: ANN401
 def read_libraries() -> dict[str, dict[str, Any]]:
     """The libraries of library.json; a library with ``extends`` takes the entry of that library, its own keys
     replacing the inherited ones, and the keys of an inherited object merged with its own (every library extends
-    the abstract ``base``; FastModelMPC is FastModel under another name). Abstract entries are not libraries."""
+    the abstract ``base``; FastSmoothBuildingsMPC is FastSmoothBuildings under another name). Abstract entries are not
+    libraries."""
     libraries = _read_library_json()
     return {name: _resolve(name, libraries) for name in libraries if not libraries[name].get("abstract")}
 
@@ -73,7 +91,7 @@ class Library(BaseModel):
     default_parameters: dict[str, Any] = Field(default_factory=dict)  # TODO: this should be baseparameters
     parameters_from: str | None = Field(
         default=None,
-        description="Library whose parameter names the elements take (FastModel: the names of Buildings).",
+        description="Library whose parameter names the elements take (FastSmoothBuildings: the names of Buildings).",
     )
     package_template: str = Field(
         default="base.jinja2", description="Template of the Modelica package generated for a network."
@@ -103,6 +121,7 @@ class Library(BaseModel):
     @classmethod
     def from_configuration(cls, name: str) -> "Library":
         libraries = read_libraries()
+        name = library_name(name)
 
         if name not in libraries:
             raise UnknownLibraryError(f"Library {name} not found. Available libraries: {list(libraries)}")

@@ -1,6 +1,6 @@
-# FastModel: models close to Buildings, in closed loop and for MPC
+# FastSmoothBuildings: models close to Buildings, in closed loop and for MPC
 
-The `FastModel` library turns a YAML
+The `FastSmoothBuildings` library turns a YAML
 file into a model **close to the Buildings library** that **still translates into a CasADi ODE** (with
 [rumoca](https://github.com/cognipilot/rumoca)) for simulation, state estimation and model predictive control
 with IPOPT:
@@ -15,30 +15,30 @@ with IPOPT:
 
 The library has two configurations, built from the same components and templates:
 
-* `FastModel` simulates the building **in closed loop**, as the Buildings and IDEAS models do: the controllers of
+* `FastSmoothBuildings` simulates the building **in closed loop**, as the Buildings and IDEAS models do: the controllers of
   the YAML are part of the model (written without events) and the water flows follow the pressures of the
   circuits;
-* `FastModelMPC` is the model for **optimal control**: the controllers are left out, the controls of the systems
+* `FastSmoothBuildingsMPC` is the model for **optimal control**: the controllers are left out, the controls of the systems
   are inputs that the optimisation decides, and each valve sets the flow of its branch.
 
 ```bash
-trano create-model house.yaml FastModel       # closed loop: writes house.mo
-trano simulate-model house.yaml FastModel     # runnable, like the other libraries
-trano create-model house.yaml FastModelMPC    # the controls as inputs, for optimal control
+trano create-model house.yaml FastSmoothBuildings       # closed loop: writes house.mo
+trano simulate-model house.yaml FastSmoothBuildings     # runnable, like the other libraries
+trano create-model house.yaml FastSmoothBuildingsMPC    # the controls as inputs, for optimal control
 ```
 
 ## A library like Buildings and IDEAS
 
-`FastModel` is used exactly as trano uses Buildings and IDEAS: a Modelica library and one template per element of
+`FastSmoothBuildings` is used exactly as trano uses Buildings and IDEAS: a Modelica library and one template per element of
 the YAML, without code of its own.
 
-* `trano/library/FastModel.mo` holds the components (the physics), embedded in every generated package;
+* `trano/library/FastSmoothBuildings.mo` holds the components (the physics), embedded in every generated package;
 * `trano/elements/library/models/fast_model/*.yaml` hold the templates that declare a component for each element
   of the YAML, with its ports, as the templates of the other libraries;
-* the `FastModel` entry of `library.json` writes the constructions and glazings as records of a `Data` package,
-  takes the parameter names of Buildings, and the package template `templates/fast_model.jinja2`; the
-  `FastModelMPC` entry extends it under another name, and the templates render each element for the library they
-  are given (`library == 'FastModel'`: controllers and pressure-driven circuits; `'FastModelMPC'`: inputs).
+* the `FastSmoothBuildings` entry of `library.json` writes the constructions and glazings as records of a `Data` package,
+  takes the parameter names of Buildings, and the package template `templates/fast_smooth_buildings.jinja2`; the
+  `FastSmoothBuildingsMPC` entry extends it under another name, and the templates render each element for the library they
+  are given (`library == 'FastSmoothBuildings'`: controllers and pressure-driven circuits; `'FastSmoothBuildingsMPC'`: inputs).
 
 The walls, windows and floors are elements of their own connected to the bus of their zone, as in IDEAS: each
 `OuterWall`, `Window`, `BoundaryWall` (floor on ground or over outdoor air), `AdiabaticWall` or `InternalWall`
@@ -61,12 +61,12 @@ and transmittance), the solar radiation a window transmits, and the weather.
 The generated package holds two models:
 
 * `building_mpc`, the building: an explicit ODE whose inputs are the weather data, the internal gains and, with
-  `FastModelMPC`, the controls of the systems. It contains no table, no event and no component of another
+  `FastSmoothBuildingsMPC`, the controls of the systems. It contains no table, no event and no component of another
   library;
 * `building`, the runnable model: `building_mpc` fed with the weather file (the Buildings reader, which also gives
   `building_mpc` the location of the site), the occupancy schedules, and the external data of the network: the
-  controls replayed from it with `FastModelMPC` (each held at 1 without data), the set points of the
-  `MonitoredSetpoint` emission controls with `FastModel`.
+  controls replayed from it with `FastSmoothBuildingsMPC` (each held at 1 without data), the set points of the
+  `MonitoredSetpoint` emission controls with `FastSmoothBuildings`.
 
 Every component carries the icon of the Buildings model it follows (valves, pumps, radiators, boilers, heat pumps,
 walls, windows, zones, weather...), and its ports are placed on that icon, so that the model reads in a Modelica
@@ -75,17 +75,17 @@ editor as a Buildings model does.
 `building_mpc` is built as the Buildings and IDEAS models are, by the same code and configuration: its components
 are grouped in the containers of `containers.yaml` (`envelope`, `emission`, `distribution`, `production`, `bus`,
 `ventilation`, `solar`), which `building_mpc` extends as `Components.Containers.building`. The containers are linked
-by array ports (`heatPortCon[n]`, `port_a[n]`...) of the FastModel connector types that `library.json` gives
+by array ports (`heatPortCon[n]`, `port_a[n]`...) of the FastSmoothBuildings connector types that `library.json` gives
 (`connectors`), and all share one data bus, `dataBus`. As with the other libraries, the components exchange their
 signals on the data bus: the data server of the `bus` container writes the air temperature of each zone, an emission
 control reads it and writes the opening of its valve, the collector control of the circuit reads the openings... and
 the systems outside the envelope read the weather there. A signal that no component writes is an input of
 `building_mpc` when its component says so (`model_input` in its YAML template: the weather data, the internal gains,
-the controls of `FastModelMPC`); the inputs are at the top of `building_mpc`, connected to the data bus. The data bus is
+the controls of `FastSmoothBuildingsMPC`); the inputs are at the top of `building_mpc`, connected to the data bus. The data bus is
 the expandable connector of the other libraries with the signals of the network declared (`data_bus_template`), as
 rumoca does not add members to an expandable connector. The states carry the container in their names
 (`envelope1.space_001.TAir`). The containers do not change the equations; leave them out with
-`network.model(include_container=False)` or `trano create-model house.yaml FastModel --no-containers` for a single
+`network.model(include_container=False)` or `trano create-model house.yaml FastSmoothBuildings --no-containers` for a single
 flat `building_mpc`.
 
 ### Rules for an explicit ODE
@@ -96,9 +96,9 @@ Every component keeps a few rules, so that rumoca translates the assembled model
   radiant star of a room, the mixing of water flows);
 * the equations are smooth: power laws and table interpolations are regularised, conditions are inside functions;
   the controllers have no event (a hysteresis is a fast bistable state, a PI controller has anti-windup);
-* with `FastModelMPC`, flows are **set**: each valve sets the flow of its branch, a mixing valve the share of supply
+* with `FastSmoothBuildingsMPC`, flows are **set**: each valve sets the flow of its branch, a mixing valve the share of supply
   water, mass balances the rest; the production (boiler, heat pump) or the ventilation unit closes the balance of
-  its circuit, one per circuit. With `FastModel`, they are **pressure-driven**: each component has a pressure node of
+  its circuit, one per circuit. With `FastSmoothBuildings`, they are **pressure-driven**: each component has a pressure node of
   small compliance at its inlet, every flow follows from the pressures, the pumps run on their curves;
 * a port with several connections is an array, one element per connection, sized by the template from the
   connections trano made: the inlets of a component mix, its outlets leave at its outlet temperature;
@@ -107,8 +107,8 @@ Every component keeps a few rules, so that rumoca translates the assembled model
 
 ### Inputs of `building_mpc`
 
-The closed-loop `FastModel` takes the weather, the internal gains and, for a `MonitoredSetpoint` emission control,
-its set point `<control>_TSet`; `FastModelMPC` takes the controls too:
+The closed-loop `FastSmoothBuildings` takes the weather, the internal gains and, for a `MonitoredSetpoint` emission control,
+its set point `<control>_TSet`; `FastSmoothBuildingsMPC` takes the controls too:
 
 | Input | Role |
 |---|---|
@@ -143,7 +143,7 @@ from trano.data_models.conversion import convert_network
 from trano.elements.library.library import Library
 from trano_optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings
 
-network = convert_network("house", Path("house.yaml"), library=Library.from_configuration("FastModelMPC"))
+network = convert_network("house", Path("house.yaml"), library=Library.from_configuration("FastSmoothBuildingsMPC"))
 model = CasadiModel.from_modelica(network.model(), "house.building_mpc")
 ocp = OptimalControl(model, settings=OptimalControlSettings(time_step=3600))
 
@@ -175,10 +175,10 @@ capacities).
 
 ## How close to Buildings
 
-`python -m validation.mpc` simulates the Buildings model of a YAML file and compares it with FastModel in two
+`python -m validation.mpc` simulates the Buildings model of a YAML file and compares it with FastSmoothBuildings in two
 ways: it **replays** what the systems of Buildings did (the heat of ideal emitters, or the branch flows, valve
-positions and boiler or heat pump controls) through the runnable `FastModelMPC` model (`--models FastModel`), or it
-simulates the closed-loop `FastModel` with its own controllers (`--models FastModelClosedLoop`); then it compares
+positions and boiler or heat pump controls) through the runnable `FastSmoothBuildingsMPC` model (`--models FastSmoothBuildings`), or it
+simulates the closed-loop `FastSmoothBuildings` with its own controllers (`--models FastModelClosedLoop`); then it compares
 the zones, the water temperatures and the meters. See the [validation page](../validation/fast_model.md) for the
 results.
 
@@ -189,7 +189,7 @@ results.
 * Ventilation units are balanced (supply = extract) and of the `system_d` kind.
 * Boilers with a storage tank, water-to-water heat pumps, chillers, domestic hot water, batteries, EV chargers and
   VAV systems are not modelled: generating a model with them stops with a message naming them.
-* With `FastModelMPC`, flows are set by the valves; the pressure-driven sharing of flow between branches is
+* With `FastSmoothBuildingsMPC`, flows are set by the valves; the pressure-driven sharing of flow between branches is
   modelled in the closed loop only, with the resistances linearised at their nominal flows.
 * The closed-loop controllers have no event: a hysteresis switches within 10 s, and the minimum on and off times of
   the heat pump are not modelled.

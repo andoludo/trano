@@ -68,21 +68,21 @@ nav:
     - Zone with ventilation: tutorials/zone_with_ventilation.md
     - Model with photovoltaics: tutorials/zone_with_photovoltaics.md
     - A house before and after renovation: tutorials/residential_renovation.md
-    - FastModel, models close to Buildings in closed loop and for MPC: tutorials/fast_model.md
+    - FastSmoothBuildings, models close to Buildings in closed loop and for MPC: tutorials/fast_model.md
     - Component variants: tutorials/component_variants.md
   - How-to Guides: how-to guides/index.md
   - Explanation: explanation/index.md
   - Reference:
       - Components: reference/components.md
       - Parameters: reference/parameters.md
-      - FastModel: reference/fast_model.md
+      - FastSmoothBuildings: reference/fast_model.md
   - Validation:
       - ASHRAE 140 (BESTEST): validation/bestest.md
       - A walk through the BESTEST cases: validation/bestest_cases.md
       - Residential reference cases: validation/residential_reference_cases.md
-      - FastModel against Buildings: validation/fast_model.md
-      - FastModel against Buildings on BESTEST and a house before and after renovation: validation/fast_model_study.md
-      - FastModel improvement plan: validation/fast_model_improvement_plan.md
+      - FastSmoothBuildings against Buildings: validation/fast_model.md
+      - FastSmoothBuildings against Buildings on BESTEST and a house before and after renovation: validation/fast_model_study.md
+      - FastSmoothBuildings improvement plan: validation/fast_model_improvement_plan.md
       - Simulation performance: validation/simulation_performance.md
 
 markdown_extensions:

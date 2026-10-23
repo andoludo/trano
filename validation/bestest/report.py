@@ -178,9 +178,9 @@ Each case is a trano YAML file (`validation/bestest/cases/`), simulated for a ye
 library. The annual heating and cooling loads must fall inside the acceptance limits of the
 standard; the peak loads and the free-floating temperatures must fall inside the spread of the
 reference programs (BSIMAC, CSE, DeST, EnergyPlus, ESP-r, TRNSYS) widened by 5 % of the largest
-peak or 1 K. Buildings, IDEAS and FastModel are gating libraries: `pytest -m bestest` fails when
+peak or 1 K. Buildings, IDEAS and FastSmoothBuildings are gating libraries: `pytest -m bestest` fails when
 one of their cases leaves its band, except for the deviations listed below with their reason;
-FastModel, the reduced library of trano that translates to CasADi, has [its own section](#fastmodel).
+FastSmoothBuildings, the reduced library of trano that translates to CasADi, has [its own section](#fastmodel).
 The reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
 method applied hour by hour and the reduced-order zone still deviates on several cases, so
 neither gates. Cases a library cannot describe (shading with IDEAS, which OpenModelica cannot
@@ -199,9 +199,10 @@ LOAD_FLOOR = 0.2  # [MWh or kW] loads below it are left out of the relative gaps
 # Libraries documented in a section of their own next to the generated tables, with the library their KPIs are
 # set against and what the reader needs to know before the table.
 LIBRARY_SECTIONS: dict[str, tuple[str, str]] = {
-    "FastModel": (
+    "FastSmoothBuildings": (
         "Buildings",
-        """The `FastModel` library is trano's reduced model of the same building: the closed-loop model whose components
+        """The `FastSmoothBuildings` library is trano's reduced model of the same building: the closed-loop model
+        whose components
 rumoca translates to a CasADi ODE for optimal control and calibration. It runs the same YAML files in OpenModelica.
 Its walls are discretised as Buildings discretises them (`number_of_states`, at most three sublayers per layer), its
 zones take the air density of the site and exchange long-wave radiation as the YAML asks (linearised at 20 degC or
@@ -210,8 +211,10 @@ glazings conduct at the temperatures of their panes (long-wave exchange and conv
 windows are shaded by overhangs and side fins as in Buildings, and its controllers are smooth and without events. It
 gates as Buildings and IDEAS do, on the 27 cases. The column Buildings gives the frozen value of Buildings for the
 same case (`expected/Buildings.json`), so that the gap between the two libraries reads next to the band. How the two
-libraries compare hour by hour, and how they respond to a change of the parameters, is studied in [FastModel against
-Buildings on BESTEST and a house before and after renovation](fast_model_study.md); how FastModel came to these
+libraries compare hour by hour, and how they respond to a change of the parameters, is studied in [FastSmoothBuildings
+against
+Buildings on BESTEST and a house before and after renovation](fast_model_study.md); how FastSmoothBuildings came to
+these
 results is told in the [improvement plan](fast_model_improvement_plan.md).
 """,
     ),

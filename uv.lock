@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.11, <4.0"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -571,6 +571,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/84/11/81debfd0c4f8542c746c95d0267d9dd31b8e18ec21ed7ab89569de1bbfea/faker-40.22.0.tar.gz", hash = "sha256:0df62f975c97f79be3d89d626c4ee1518604cb4fea94f7629697f0529fc757d5", size = 1972732, upload-time = "2026-06-09T22:11:57.112Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ca/99/05e89cc2849df99c782edba7b0f7cd0f87f399fc7737dfa9dfc400dcdaaa/faker-40.22.0-py3-none-any.whl", hash = "sha256:d625adfc227deb316eaed6a366b7073a71228975c1524d6a52de797c7588052d", size = 2012839, upload-time = "2026-06-09T22:11:54.533Z" },
+]
+
+[[package]]
+name = "fastsmoothbuildings"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/bb/2dd23e9621632a78c34ce5c136c1650dfcfc608f3200eda382eb6f837b66/fastsmoothbuildings-0.2.0.tar.gz", hash = "sha256:2de257eb639f0ff2b2788d25e15f34100861ea7929ff28fb952452c8ebd4a313", size = 165071, upload-time = "2026-10-23T19:21:44.757Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d7/a0/dfd4292ef10a76eb3029af10aa5654a4736b1ed96375798b3d6529f62076/fastsmoothbuildings-0.2.0-py3-none-any.whl", hash = "sha256:670762b13ae0d544158661511bf356d69843e579fbaada4662aaded180dfd0c9", size = 244099, upload-time = "2026-10-23T19:21:43.352Z" },
 ]
 
 [[package]]
@@ -3306,10 +3315,10 @@ wheels = [
 name = "trano"
 version = "0.60.0"
 source = { editable = "." }
-default-groups = "all"
 dependencies = [
     { name = "buildingspy" },
     { name = "docker" },
+    { name = "fastsmoothbuildings" },
     { name = "jinja2" },
     { name = "linkml" },
     { name = "networkx" },
@@ -3351,6 +3360,7 @@ docs = [
 requires-dist = [
     { name = "buildingspy", specifier = ">=5.2.0,<6" },
     { name = "docker", specifier = ">=7.1.0,<8" },
+    { name = "fastsmoothbuildings", specifier = ">=0.2.0,<1" },
     { name = "jinja2", specifier = ">=3.1.6,<4" },
     { name = "linkml", specifier = ">=1.11.1,<2" },
     { name = "networkx", specifier = ">=3.6.1,<4" },

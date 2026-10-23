@@ -1,0 +1,363 @@
+# Controls. FastSmoothBuildings (closed loop): the controllers of trano's Buildings models without events
+# (FastSmoothBuildings.Controls); an emission control reads the air temperature of its zone on the data bus (TZon<zone>) and
+# drives its valve or ideal emitter through the port y, whose opening it writes on the data bus (y<valve>) for the
+# collector control of the circuit; a three-way valve control reads its temperature sensor through the port u; the
+# collector control writes the largest opening of its valves (yMax<control>) for the boiler control, and is referenced
+# by the pump it drives, as the boiler control by its production. FastSmoothBuildingsMPC: no controller, the controls are
+# inputs of building_mpc.
+- classes:
+  - EmissionControl
+  library: FastSmoothBuildingsMPC
+  parameter_processing: &no_parameters
+    function: default_parameters
+  ports: []
+  template: ""
+  variant: default
+- classes:
+  - EmissionControl
+  library: FastSmoothBuildingsMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: onoff
+- classes:
+  - EmissionControl
+  library: FastSmoothBuildingsMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: PController
+- classes:
+  - EmissionControl
+  library: FastSmoothBuildingsMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: MonitoredSetpoint
+- classes:
+  - BoilerControl
+  library: FastSmoothBuildingsMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: default
+- classes:
+  - BoilerControl
+  library: FastSmoothBuildingsMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: complex
+- classes:
+  - BoilerControl
+  library: FastSmoothBuildingsMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: simple
+- classes:
+  - ThreeWayValveControl
+  - CollectorControl
+  - AhuControl
+  library: FastSmoothBuildingsMPC
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: default
+
+# Closed loop
+- classes:
+  - EmissionControl
+  library: FastSmoothBuildings
+  parameter_processing: &emission_parameters
+    function: default_parameters
+  ports: &emission_ports
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - y
+    targets:
+    - System
+    use_counter: false
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionPI{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Controls.EmissionPI;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end EmissionPI{{ element.name | capitalize }};
+  template: |-
+    {{ package_name }}.Components.BaseClasses.EmissionPI{{ element.name | capitalize }} {{ element.name }}(
+        schedule={{ parameters.schedule }},
+        THeaSet={{ parameters.THeaSet }},
+        THeaSetBack={{ parameters.THeaSetBack }})
+  variant: default
+- classes:
+  - EmissionControl
+  library: FastSmoothBuildings
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionOnOff{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Controls.EmissionOnOff;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end EmissionOnOff{{ element.name | capitalize }};
+  parameter_processing: *emission_parameters
+  ports: *emission_ports
+  template: |-
+    {{ package_name }}.Components.BaseClasses.EmissionOnOff{{ element.name | capitalize }} {{ element.name }}(
+        schedule={{ parameters.schedule }},
+        THeaSet={{ parameters.THeaSet }},
+        THeaSetBack={{ parameters.THeaSetBack }})
+  variant: onoff
+- classes:
+  - EmissionControl
+  library: FastSmoothBuildings
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      real_outputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionP{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Controls.EmissionP;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end EmissionP{{ element.name | capitalize }};
+  parameter_processing: *emission_parameters
+  ports: *emission_ports
+  template: |-
+    {{ package_name }}.Components.BaseClasses.EmissionP{{ element.name | capitalize }} {{ element.name }}(
+        schedule={{ parameters.schedule }},
+        THeaSet={{ parameters.THeaSet }},
+        THeaSetBack={{ parameters.THeaSetBack }},
+        k={{ parameters.k }})
+  variant: PController
+# The set point of MonitoredSetpoint, read from the data bus, is an input of building_mpc (<control>_TSet, a
+# disturbance): the runnable model replays the column of the external data that the YAML names for it, or holds the
+# occupied set point without it.
+- classes:
+  - EmissionControl
+  library: FastSmoothBuildings
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        name: TZon
+        port: TZon
+        target:
+          main: element.space_name
+      - component: ""
+        name: TSet
+        port: TSet
+        target:
+          main: element.name
+        model_input:
+          declaration: |-
+            FastSmoothBuildings.Interfaces.RealInput {{ element.name }}_TSet(unit="K") "Set point of {{ element.name }}: input of the model";
+          port: "{{ element.name }}_TSet"
+      real_outputs:
+      - component: ""
+        name: y
+        port: y
+        target:
+          main: element.controllable_element.name
+    category: control
+    template: |-
+      model EmissionMonitored{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Controls.EmissionMonitored;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end EmissionMonitored{{ element.name | capitalize }};
+  parameter_processing: *emission_parameters
+  ports: *emission_ports
+  template: |-
+    {{ package_name }}.Components.BaseClasses.EmissionMonitored{{ element.name | capitalize }} {{ element.name }}(
+        k={{ parameters.k }})
+  runnable:
+    declaration: |-
+      {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'MonitoredSetpoint') | map(attribute='variable') | first -%}
+      {%- if column not in columns -%}
+      Modelica.Blocks.Sources.Constant {{ element.name }}_TSet(k={{ parameters.THeaSet }}) "Set point held without external data";
+      {%- endif -%}
+    equation: |-
+      {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'MonitoredSetpoint') | map(attribute='variable') | first -%}
+      {%- if column in columns -%}
+      connect(data_bus.y[{{ columns.index(column) + 1 }}], mpc.{{ element.name }}_TSet);
+      {%- else -%}
+      connect({{ element.name }}_TSet.y, mpc.{{ element.name }}_TSet);
+      {%- endif -%}
+  variant: MonitoredSetpoint
+# Boiler controls: the demand of the variant simple (FastSmoothBuildings.Controls.BoilerDemand) drives its production; the
+# variants default and complex charge a storage tank, which FastSmoothBuildings does not model: their production has demand.
+- classes:
+  - BoilerControl
+  library: FastSmoothBuildings
+  parameter_processing: *no_parameters
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        multi: true
+        name: yMax
+        port: yMax
+        target:
+          main: element.pump_controls
+    category: control
+    template: |-
+      model BoilerDemand{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Controls.BoilerDemand;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end BoilerDemand{{ element.name | capitalize }};
+  ports: &control_bus_port
+  - flow: undirected
+    medium: data
+    multi_connection: true
+    names:
+    - dataBus
+    targets:
+    - DataBus
+    use_counter: false
+  template: |-
+    {%- if element.pump_controls -%}
+    {{ package_name }}.Components.BaseClasses.BoilerDemand{{ element.name | capitalize }} {{ element.name }}(n={{ element.pump_controls | length }})
+    {%- endif -%}
+  variant: simple
+- classes:
+  - BoilerControl
+  library: FastSmoothBuildings
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: default
+- classes:
+  - BoilerControl
+  library: FastSmoothBuildings
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: complex
+- classes:
+  - CollectorControl
+  library: FastSmoothBuildings
+  parameter_processing:
+    function: default_parameters
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        default: 1
+        multi: true
+        name: y
+        port: yVal
+        target:
+          main: element.valves
+          sub: name
+      real_outputs:
+      - component: ""
+        name: yMax
+        port: yMax
+        target:
+          main: element.name
+    category: control
+    template: |-
+      model CollectorControl{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Controls.CollectorControl;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+        {%- if not element.valves %}
+        yVal[1] = 1;
+        {%- endif %}
+      end CollectorControl{{ element.name | capitalize }};
+  ports: *control_bus_port
+  template: |-
+    {%- set pump = element.controllable_element.name -%}
+    {{ package_name }}.Components.BaseClasses.CollectorControl{{ element.name | capitalize }} {{ element.name }}(
+        nVal={{ [(element.valves or []) | length, 1] | max }},
+        k={{ parameters.get('k', 1) }},
+        dpRel={{ pump }}.dp/{{ pump }}.dp_nominal)
+  variant: default
+- classes:
+  - ThreeWayValveControl
+  library: FastSmoothBuildings
+  parameter_processing:
+    function: default_parameters
+  ports:
+  - flow: undirected
+    medium: data
+    names:
+    - y
+    targets:
+    - ThreeWayValve
+  - flow: undirected
+    medium: data
+    names:
+    - u
+    targets:
+    - TemperatureSensor
+  template: |-
+    FastSmoothBuildings.Controls.ThreeWayValveControl {{ element.name }}(
+        TColSet={{ element.bus_input_default('TColSet') or 363.15 }},
+        k={{ parameters.get('k', 1) }})
+  variant: default
+- classes:
+  - AhuControl
+  library: FastSmoothBuildings
+  parameter_processing: *no_parameters
+  ports: []
+  template: ""
+  variant: default

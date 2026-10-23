@@ -15,7 +15,7 @@ on:
       libraries:
         description: "Libraries to run, as a JSON list"
         required: false
-        default: '["Buildings", "IDEAS", "FastModel"]'
+        default: '["Buildings", "IDEAS", "FastSmoothBuildings"]'
       commit_results:
         description: "Commit the results (validation/bestest/results/<library>) to the branch the workflow runs on"
         type: boolean
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        library: ${{ fromJSON(github.event.inputs.libraries || '["Buildings", "IDEAS", "FastModel"]') }}
+        library: ${{ fromJSON(github.event.inputs.libraries || '["Buildings", "IDEAS", "FastSmoothBuildings"]') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -99,7 +99,7 @@ jobs:
             cp "$result" "validation/bestest/results/$LIBRARY/$(basename "$(dirname "$result")").json"
           done
           uv run python -m validation.bestest freeze --library "$LIBRARY"
-          if [ "$LIBRARY" = "FastModel" ]; then
+          if [ "$LIBRARY" = "FastSmoothBuildings" ]; then
             uv run python -m validation.bestest report --docs-library "$LIBRARY"
           fi
           git config user.name "github-actions[bot]"

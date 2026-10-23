@@ -31,7 +31,7 @@ Each variant is a YAML entry that contains:
 | ---------------------- | ----------------------------------------------------------------------------------- |
 | `classes`              | The Trano element class(es) this variant applies to (e.g. `Radiator`).              |
 | `variant`              | The string name used to select this variant from a YAML model.                      |
-| `library`              | The library (or list of libraries) this variant targets (`default`, `ideas`, `buildings`, `FastModel`, ...). |
+| `library`              | The library (or list of libraries) this variant targets (`default`, `ideas`, `buildings`, `FastSmoothBuildings`, ...). |
 | `template`             | The Jinja2 template rendered into the generated Modelica model.                     |
 | `ports`                | Connection ports the component exposes (fluid, heat, data, weather).                |
 | `parameter_processing` | How the user-provided parameters are mapped to the template.                        |

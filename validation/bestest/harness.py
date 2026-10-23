@@ -36,17 +36,17 @@ SECONDS_PER_YEAR = 365 * 24 * 3600
 TOLERANCE = 1e-6
 LOG_LINES = 40  # of the OpenModelica log shown when a case does not simulate
 HOURS_PER_YEAR = 365 * 24  # one output point per hour: the KPIs are hourly statistics
-LIBRARIES = ("Buildings", "IDEAS", "iso_13790", "reduced_order", "FastModel")
+LIBRARIES = ("Buildings", "IDEAS", "iso_13790", "reduced_order", "FastSmoothBuildings")
 # Result variable holding the zone air temperature, per library.
 TEMPERATURE_VARIABLE = {
     "Buildings": "heaPorAir.T",
     "IDEAS": "TAir",
     "iso_13790": "TAir",
     "reduced_order": "TAir",
-    "FastModel": "TAir",
+    "FastSmoothBuildings": "TAir",
 }
-# Unit of the energy meters of the ideal system, per library: J, except FastModel's kWh meters.
-ENERGY_UNIT = {"FastModel": 3.6e6}
+# Unit of the energy meters of the ideal system, per library: J, except FastSmoothBuildings's kWh meters.
+ENERGY_UNIT = {"FastSmoothBuildings": 3.6e6}
 
 
 class CaseResult(BaseModel):
