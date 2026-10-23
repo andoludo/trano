@@ -41,6 +41,19 @@
         {%- if element.height %}
         hWin={{ element.height }},
         {%- endif %}
+        {%- if element.overhang %}
+        haveOverhang=true,
+        depOve={{ element.overhang.depth }},
+        gapOve={{ element.overhang.gap }},
+        wLOve={{ element.overhang.width_left }},
+        wROve={{ element.overhang.width_right }},
+        {%- endif %}
+        {%- if element.side_fins %}
+        haveSideFins=true,
+        depFin={{ element.side_fins.depth }},
+        gapFin={{ element.side_fins.gap }},
+        hFin={{ element.side_fins.height }},
+        {%- endif %}
         frac={{ element.frame_fraction }},
         azi={{ element.azimuth }},
         til={{ macros.convert_tilt(element.tilt, library_name) }})

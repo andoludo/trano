@@ -202,15 +202,24 @@ def test_the_package_holds_the_model_and_its_runnable_wrapper() -> None:
 @needs_connected_export
 @pytest.mark.parametrize(
     ("path", "states"),
-    [(BESTEST / "case_600FF.yaml", 25), (MODELS / "single_zone_hydronic.yaml", 27)],
-    ids=["600FF", "single_zone_hydronic"],
+    [
+        (BESTEST / "case_600FF.yaml", 25),
+        (BESTEST / "case_630.yaml", 27),  # overhangs and side fins
+        (MODELS / "single_zone_hydronic.yaml", 27),
+    ],
+    ids=["600FF", "630", "single_zone_hydronic"],
 )
 def test_rumoca_translates_the_model(path: Path, states: int) -> None:
-    description = _export(path).description
+    model = _export(path)
+    description = model.description
     assert len(description.states) == states
     assert description.input_names[:0] == []
     assert set(WEATHER) <= set(description.input_names)
     assert all(np.isfinite(description.initial_state))
+    sun = dict(zip(WEATHER, [KELVIN + 15, KELVIN + 5, 3.0, math.pi, 700.0, 100.0, 500.0], strict=True))
+    inputs = np.array([sun.get(name, 0.0) for name in description.input_names])
+    for hour in (0, 9, 12, 15):
+        assert np.all(np.isfinite(model.derivatives(3600.0 * hour, description.initial_state, inputs)))
 
 
 @needs_connected_export
@@ -507,6 +516,30 @@ def test_the_optimal_control_heats_the_zone() -> None:
     assert simulated[zone] == pytest.approx(result.states[zone], abs=0.2)
 
 
+@needs_connected_export
+def test_the_optimal_control_heats_the_renovated_house_with_its_heat_pump() -> None:
+    """The six zones of the renovated house, their radiators, the heat pump and its buffer, the ventilation unit:
+    rumoca exports the whole house and IPOPT holds every zone at its set point on a cold night."""
+    model = _export(ROOT / "examples" / "residential_after_renovation.yaml")
+    ocp = OptimalControl(model, settings=OptimalControlSettings(time_step=3600))
+    assert any("generator" in name for name in ocp.roles.controls)
+    hours = 12
+    weather = dict(zip(WEATHER, [KELVIN, KELVIN - 10, 3.0, math.pi, 0.0, 0.0, 0.0], strict=True))
+    disturbances = np.array([[weather.get(name, 0.0)] * hours for name in ocp.roles.disturbances])
+    result = ocp.solve(
+        model.description.initial_state,
+        disturbances,
+        np.full(hours, KELVIN + 20),
+        price=np.full(hours, 0.25),
+        start_time=0.0,
+    )
+    assert result.success, result.status
+    names = model.description.state_names
+    zones = [names.index(zone) for zone in ocp.roles.comfort if zone in names]
+    assert len(zones) == 6
+    assert result.states[zones, 3:].min() > KELVIN + 20 - 0.1
+
+
 @pytest.mark.compile
 @pytest.mark.parametrize(
     ("library", "path"),
@@ -761,3 +794,41 @@ def test_the_closed_loop_and_mpc_models_share_the_layer_boundaries() -> None:
     assert boundaries <= set(closed_loop)
     assert any(".TSub[" in name for name in closed_loop)
     assert not any(".TSub[" in name for name in mpc)
+
+
+SHADE_PROBE = """
+model Shade
+  input Real verAzi;
+  input Real alt;
+  Real overhang(start=0, fixed=true);
+  Real fins(start=0, fixed=true);
+equation
+  der(overhang) = FastModel.Envelope.Functions.overhangSunlitFraction(verAzi, alt, 0, 2.0, 3.0, 1.0, 0.0, 10.0, 10.0);
+  der(fins) = FastModel.Envelope.Functions.sideFinsSunlitFraction(verAzi, alt, 2.0, 3.0, 1.0, 0.0, 0.0);
+end Shade;
+"""
+
+
+@pytest.mark.parametrize(
+    ("ver_azi", "alt", "overhang", "fins"),
+    [
+        (0.0, math.pi / 4, 0.5, 1.0),  # the sun facing the wall: a 1 m overhang shades 1 m of the 2 m window
+        (0.0, math.pi / 3, 1 - math.sqrt(3) / 2, 1.0),
+        # a low sun 45 degrees aside: the overhang shades a strip of tan(0.05)/cos(45) = 7 cm, a 1 m fin shades
+        # 1 m of the 3 m width but for the small triangle above its shadow
+        (math.pi / 4, 0.05, 1 - math.tan(0.05) / math.cos(math.pi / 4) / 2, 0.672),
+        (0.0, -0.2, 0.0, 0.0),  # the sun below the horizon
+        (2.0, 0.5, 0.0, 0.0),  # the sun behind the wall
+    ],
+)
+def test_overhangs_and_side_fins_shade_as_buildings(ver_azi: float, alt: float, overhang: float, fins: float) -> None:
+    """The sunlit fractions of Buildings' Overhang and SideFins, evaluated by rumoca, on geometries whose shadow is
+    known: smooth, explicit functions of the solar angles."""
+    if CasadiModel is None:
+        pytest.skip("trano-optimization (rumoca) is not installed")
+    from trano.elements.jinja import modelica_library
+
+    model = CasadiModel.from_modelica(f"{modelica_library('FastModel')}\n{SHADE_PROBE}", "Shade")
+    fractions = model.derivatives(0.0, np.zeros(2), np.array([ver_azi, alt]))
+    assert fractions[0] == pytest.approx(overhang, abs=0.02)
+    assert fractions[1] == pytest.approx(fins, abs=0.02)

@@ -888,6 +888,18 @@ package FastModel "Building models for model predictive control: close to Buildi
       parameter Real hFraInt(unit="W/(m2.K)") = 7.7 "Interior film coefficient of the frame";
       parameter Real cGla(unit="J/(kg.K)") = 720 "Specific heat capacity of glass when the glazing gives none";
       parameter Real hWin(unit="m") = sqrt(A) "Height of the window: the aspect ratio of its gas gaps";
+      parameter Real wWin(unit="m") = A/hWin "Width of the window";
+      parameter Boolean haveOverhang = false "true: an overhang shades the window (Buildings Overhang)"
+        annotation (Evaluate=true);
+      parameter Real depOve(unit="m") = 0 "Depth of the overhang";
+      parameter Real gapOve(unit="m") = 0 "Distance between the top of the window and the overhang";
+      parameter Real wLOve(unit="m") = 0 "Extension of the overhang beyond the left edge, seen from outside";
+      parameter Real wROve(unit="m") = 0 "Extension of the overhang beyond the right edge, seen from outside";
+      parameter Boolean haveSideFins = false "true: side fins shade the window (Buildings SideFins)"
+        annotation (Evaluate=true);
+      parameter Real depFin(unit="m") = 0 "Depth of the side fins";
+      parameter Real gapFin(unit="m") = 0 "Distance between the window edges and the fins";
+      parameter Real hFin(unit="m") = 0 "Extension of the fins above the top of the window";
       Real T[glazing.nPan](each unit="K", each start=T_start, each fixed=true) "Pane temperatures, outside first";
       BoundaryConditions.TiltedSurface sol(final azi=azi, final til=til) "Irradiance on the window"
         annotation (Placement(transformation(extent={{-70,60},{-50,80}})));
@@ -895,8 +907,12 @@ package FastModel "Building models for model predictive control: close to Buildi
       Real QInt(unit="W") "Heat from the inner pane to the room air";
       Real QFra(unit="W") "Heat through the frame, from the room air to the outside";
       Real cosInc "Cosine of incidence, 0 when the sun is behind the window";
+      Real fraSun "Fraction of the glass lit by the direct sun (1 without overhang or side fins)";
     protected
       constant Real cosAng[10] = {cos(i*pi/18) for i in 0:9} "Cosine of the tabulated incidence angles";
+      Real alt(unit="rad") "Solar altitude";
+      Real verAzi(unit="rad") "Angle between the horizontal projection of the sun's rays and the wall normal";
+      Real side "Horizontal component of the sun's direction to the left of the normal, seen from outside";
       parameter Integer nPan = glazing.nPan;
       parameter Real AGla(unit="m2") = A*(1 - frac) "Glass area";
       parameter Real CPan[nPan](each unit="J/K") = {AGla*glazing.x[i]*glazing.d[i]*(if glazing.c[i] > 0 then glazing.c[i]
@@ -926,8 +942,22 @@ package FastModel "Building models for model predictive control: close to Buildi
     equation
       connect(propsBus_a.wea, sol.weaBus);
       cosInc = Utilities.positivePart(sol.cosInc, 1e-2);
+      // shading by an overhang and side fins (Buildings FixedShade): the direct irradiance of the lit fraction of the
+      // glass, the diffuse irradiance unchanged
+      alt = asin(Utilities.smoothLimitInside(propsBus_a.wea.cosZen, -1, 1, 1e-4));
+      verAzi = acos(Utilities.smoothLimitInside(sol.cosInc/Utilities.smoothMax(cos(alt), 1e-3, 1e-4), -1, 1, 1e-4));
+      side = cos(propsBus_a.wea.decAng)*sin(propsBus_a.wea.solHouAng)*cos(azi) + (sin(propsBus_a.wea.decAng)
+        *cos(propsBus_a.wea.lat) - cos(propsBus_a.wea.decAng)*cos(propsBus_a.wea.solHouAng)*sin(propsBus_a.wea.lat))
+        *sin(azi);
+      fraSun = if haveOverhang and haveSideFins then Utilities.smoothMax(
+          Functions.overhangSunlitFraction(verAzi, alt, side, hWin, wWin, depOve, gapOve, wLOve, wROve)
+          + Functions.sideFinsSunlitFraction(verAzi, alt, hWin, wWin, depFin, gapFin, hFin) - 1, 1e-3, 5e-4)
+        elseif haveOverhang then Functions.overhangSunlitFraction(verAzi, alt, side, hWin, wWin, depOve, gapOve, wLOve,
+          wROve)
+        elseif haveSideFins then Functions.sideFinsSunlitFraction(verAzi, alt, hWin, wWin, depFin, gapFin, hFin)
+        else 1;
       for i in 1:nPan loop
-        QAbs[i] = AGla*(sol.HDir*Utilities.polynomial(absCoe[i, :], cosInc) + sol.HDif*glazing.absPan[i, 11]);
+        QAbs[i] = AGla*(fraSun*sol.HDir*Utilities.polynomial(absCoe[i, :], cosInc) + sol.HDif*glazing.absPan[i, 11]);
       end for;
       QExt = AGla*(4 + 4*sqrt(propsBus_a.wea.winSpe^2 + 0.01))*(T[1] - propsBus_a.wea.TDryBul)
         + Functions.skyExchange(T[1], AGla, til, glazing.absIR_a, propsBus_a.wea.TDryBul, propsBus_a.wea.TBlaSky);
@@ -955,7 +985,7 @@ package FastModel "Building models for model predictive control: close to Buildi
       propsBus_a.absSol = glazing.absPan[nPan, 11];
       propsBus_a.tauSol = glazing.tau[11];
       propsBus_a.isFloor = 0;
-      propsBus_a.QTraDir = AGla*sol.HDir*Utilities.polynomial(tauCoe, cosInc);
+      propsBus_a.QTraDir = AGla*fraSun*sol.HDir*Utilities.polynomial(tauCoe, cosInc);
       propsBus_a.QTraDif = AGla*sol.HDif*glazing.tau[11];
       annotation (Icon(coordinateSystem(preserveAspectRatio=false, extent={{-100,-100},{100,100}}), graphics={
           Line(points={{-37,-44},{14,-44}}, color={0,0,0}),
@@ -1042,6 +1072,99 @@ package FastModel "Building models for model predictive control: close to Buildi
           0.242*(Ra*x/h)^0.272, 0.1);
         hGap := Nu*k/x + sigma*(T_a^2 + T_b^2)*(T_a + T_b)/(1/eps_a + 1/eps_b - 1);
       end gapConductance;
+
+      function overhangSunlitFraction
+        "Fraction of a window lit by the direct sun below an overhang: the superposition of rectangles of
+         Buildings.HeatTransfer.Windows.BaseClasses.Overhang, with its smooth minima, maxima and steps, explicit"
+        input Real verAzi(unit="rad") "Angle between the horizontal projection of the sun's rays and the wall normal";
+        input Real alt(unit="rad") "Solar altitude";
+        input Real side "Positive when the sun is left of the normal, seen from outside: the width wL shades";
+        input Real hWin(unit="m") "Window height";
+        input Real wWin(unit="m") "Window width";
+        input Real dep(unit="m") "Depth of the overhang";
+        input Real gap(unit="m") "Distance between the top of the window and the overhang";
+        input Real wL(unit="m") "Extension of the overhang beyond the left edge of the window";
+        input Real wR(unit="m") "Extension of the overhang beyond the right edge of the window";
+        output Real fraSun "Sunlit fraction of the window area";
+      protected
+        Real AWin(unit="m2") = hWin*wWin;
+        Real del(unit="m") = wWin/100 "Width over which the minima and maxima are smoothed";
+        Real w(unit="m") "wL or wR, depending on the side of the sun";
+        Real tmpH[4](each unit="m") "Heights of the rectangles of the superposition";
+        Real tmpW[4](each unit="m") "Widths of the rectangles of the superposition";
+        Real y1(unit="m") "Vertical distance between the overhang and the lower edge of its shadow";
+        Real x1(unit="m") "Horizontal distance between the window side and the corner of the shadow";
+        Real ratio "y1/x1";
+        Real x2(unit="m") "Where the shadow line crosses the lower edge of a rectangle";
+        Real cut(unit="m");
+        Real area[4](each unit="m2") "Shaded areas of the rectangles";
+        Real shdArea(unit="m2");
+      algorithm
+        w := Utilities.regStep(side, wL, wR, 0.005);
+        tmpH := {gap, gap + hWin, gap, gap + hWin};
+        tmpW := {w + wWin, w, w, w + wWin};
+        // tan(alt)/cos(verAzi) and tan(verAzi), bounded when the sun grazes the wall or stands behind it
+        y1 := dep*sin(alt)/Utilities.smoothMax(cos(alt), 1e-3, 1e-4)/Utilities.smoothMax(cos(verAzi), 1e-3, 1e-4);
+        x1 := dep*sin(verAzi)/Utilities.smoothMax(cos(verAzi), 1e-3, 1e-4);
+        ratio := y1/Utilities.smoothMax(x1, 1e-8*hWin, 1e-9*hWin);
+        for i in 1:4 loop
+          x2 := x1*tmpH[i]/Utilities.smoothMax(y1, 1e-8*hWin, 1e-9*hWin);
+          cut := Utilities.smoothMin(x1, x2, del) - tmpW[i];
+          area[i] := Utilities.smoothMin(y1, tmpH[i], del)*tmpW[i]
+            - Utilities.smoothMin(y1, tmpH[i], del)*Utilities.smoothMin(x2, y1, del)/2
+            + Utilities.smoothMax(ratio*cut, 0, del)*Utilities.smoothMax(cut, 0, del)/2;
+        end for;
+        shdArea := area[4] + area[3] - area[2] - area[1];
+        // all in the shade with the sun behind the wall or below the horizon
+        fraSun := Utilities.smoothMin(Utilities.smoothMax(1 - Utilities.smoothMax(
+          Utilities.regStep(pi/2 - verAzi, shdArea, AWin, 0.01), Utilities.regStep(alt, shdArea, AWin, 0.01), 0.01)/AWin,
+          0, 0.01), 1, 0.01);
+      end overhangSunlitFraction;
+
+      function sideFinsSunlitFraction
+        "Fraction of a window lit by the direct sun between two side fins: the superposition of rectangles of
+         Buildings.HeatTransfer.Windows.BaseClasses.SideFins, with its smooth minima, maxima and steps, explicit"
+        input Real verAzi(unit="rad") "Angle between the horizontal projection of the sun's rays and the wall normal";
+        input Real alt(unit="rad") "Solar altitude";
+        input Real hWin(unit="m") "Window height";
+        input Real wWin(unit="m") "Window width";
+        input Real dep(unit="m") "Depth of the fins";
+        input Real gap(unit="m") "Distance between the window edges and the fins";
+        input Real h(unit="m") "Extension of the fins above the top of the window";
+        output Real fraSun "Sunlit fraction of the window area";
+      protected
+        constant Real delta = 1e-6 "Small number to avoid a division by zero";
+        Real AWin(unit="m2") = hWin*wWin;
+        Real del(unit="m") = wWin/100 "Width over which the minima and maxima are smoothed";
+        Real tmpH[4](each unit="m") = {h + hWin, h, h + hWin, h} "Heights of the rectangles of the superposition";
+        Real tmpW[4](each unit="m") = {gap + wWin, gap + wWin, gap, gap} "Widths of the rectangles of the superposition";
+        Real verAzi_t "tan(verAzi), at least delta";
+        Real verAzi_c "cos(verAzi), at least delta";
+        Real alt_t "tan(alt), at least delta";
+        Real lambda_t "Tangent of the angle between the horizontal and the sun's rays projected on the wall";
+        Real y2(unit="m") "Vertical distance between the top of a fin and the corner of its shadow";
+        Real x2(unit="m") "Horizontal distance between a fin and the corner of its shadow";
+        Real minX(unit="m");
+        Real minY(unit="m");
+        Real area[4](each unit="m2") "Shaded areas of the rectangles";
+        Real shdArea(unit="m2");
+      algorithm
+        verAzi_c := Utilities.smoothMax(cos(verAzi), delta, delta/10);
+        verAzi_t := Utilities.smoothMax(sin(verAzi)/Utilities.smoothMax(cos(verAzi), 1e-3, 1e-4), delta, delta/10);
+        alt_t := Utilities.smoothMax(sin(alt)/Utilities.smoothMax(cos(alt), 1e-3, 1e-4), delta, delta/10);
+        lambda_t := Utilities.smoothMax(alt_t/verAzi_t, delta, delta/10);
+        y2 := dep*alt_t/verAzi_c;
+        x2 := dep*verAzi_t;
+        for i in 1:4 loop
+          minX := Utilities.smoothMin(tmpH[i]/lambda_t, Utilities.smoothMin(x2, tmpW[i], del), del);
+          minY := Utilities.smoothMin(tmpH[i], Utilities.smoothMin(y2, tmpW[i]*lambda_t, del), del);
+          area[i] := tmpH[i]*minX - minX*minY/2;
+        end for;
+        shdArea := area[1] + area[4] - area[2] - area[3];
+        // all in the shade with the sun behind the wall or below the horizon
+        fraSun := 1 - Utilities.smoothMax(Utilities.regStep(pi/2 - verAzi, shdArea, AWin, 0.01),
+          Utilities.regStep(alt, shdArea, AWin, 0.01), 1e-4*AWin)/AWin;
+      end sideFinsSunlitFraction;
 
       function exteriorExchange
         "Heat from an outer surface to the outside: natural and wind-driven convection (Buildings TemperatureWind)
