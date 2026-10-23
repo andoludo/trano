@@ -15,7 +15,7 @@ on:
       libraries:
         description: "Libraries to run, as a JSON list"
         required: false
-        default: '["Buildings", "IDEAS"]'
+        default: '["Buildings", "IDEAS", "FastModel"]'
       commit_results:
         description: "Commit the results (validation/bestest/results/<library>) to the branch the workflow runs on"
         type: boolean
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        library: ${{ fromJSON(github.event.inputs.libraries || '["Buildings", "IDEAS"]') }}
+        library: ${{ fromJSON(github.event.inputs.libraries || '["Buildings", "IDEAS", "FastModel"]') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -81,8 +81,6 @@ jobs:
         run: uv run python -m validation.bestest run ${{ github.event.inputs.cases }} --library ${{ matrix.library }} --workers 2
 
       - name: Compare with the reference
-        # FastModel does not gate (tests/test_bestest.py): its comparison is the report
-        if: matrix.library != 'FastModel'
         run: uv run pytest -m bestest -k ${{ matrix.library }}
 
       - name: Render the report

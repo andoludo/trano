@@ -178,14 +178,14 @@ Each case is a trano YAML file (`validation/bestest/cases/`), simulated for a ye
 library. The annual heating and cooling loads must fall inside the acceptance limits of the
 standard; the peak loads and the free-floating temperatures must fall inside the spread of the
 reference programs (BSIMAC, CSE, DeST, EnergyPlus, ESP-r, TRNSYS) widened by 5 % of the largest
-peak or 1 K. Buildings and IDEAS are gating libraries: `pytest -m bestest` fails when one of
-their cases leaves its band, except for the deviations listed below with their reason. The
-reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
+peak or 1 K. Buildings, IDEAS and FastModel are gating libraries: `pytest -m bestest` fails when
+one of their cases leaves its band, except for the deviations listed below with their reason;
+FastModel, the reduced library of trano that translates to CasADi, has [its own section](#fastmodel).
+The reduced-order (AixLib) and ISO 13790 zones are shown for information: ISO 13790 is a monthly
 method applied hour by hour and the reduced-order zone still deviates on several cases, so
-neither gates. FastModel, the reduced library of trano that translates to CasADi, is shown for
-information in [its own section](#fastmodel). Cases a library cannot describe (shading with IDEAS,
-which OpenModelica cannot compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the
-two simplified zones; shading with FastModel) are left out. The tables are rendered from the last results with
+neither gates. Cases a library cannot describe (shading with IDEAS, which OpenModelica cannot
+compile for IDEAS 3.0.0; shading, sun-space and night ventilation with the two simplified zones)
+are left out. The tables are rendered from the last results with
 `python -m validation.bestest report --docs`. [A walk through the BESTEST cases](bestest_cases.md) explains a few
 cases in detail: what they are, what is expected, how the YAML describes them and how the results
 compare.
@@ -206,13 +206,13 @@ rumoca translates to a CasADi ODE for optimal control and calibration. It runs t
 Its walls are discretised as Buildings discretises them (`number_of_states`, at most three sublayers per layer), its
 zones take the air density of the site and exchange long-wave radiation as the YAML asks (linearised at 20 degC or
 around the current surface temperatures), its outer surfaces exchange with sky and ground exactly, the gas gaps of its
-glazings conduct at the temperatures of their panes (long-wave exchange and convection of the gas, as Buildings), and
-its controllers are smooth and without events. It is shown for information, it does not gate. The four cases with
-overhangs or side fins (610, 630, 910, 930) are left out: FastModel does not shade its windows yet. The column
-Buildings gives the frozen value of Buildings for the same case (`expected/Buildings.json`), so that the gap between
-the two libraries reads next to the band. How the two libraries compare hour by hour, and how they respond to a change
-of the parameters, is studied in [FastModel against Buildings on BESTEST and a renovated house](fast_model_study.md);
-how FastModel came to these results is told in the [improvement plan](fast_model_improvement_plan.md).
+glazings conduct at the temperatures of their panes (long-wave exchange and convection of the gas, as Buildings), its
+windows are shaded by overhangs and side fins as in Buildings, and its controllers are smooth and without events. It
+gates as Buildings and IDEAS do, on the 27 cases. The column Buildings gives the frozen value of Buildings for the
+same case (`expected/Buildings.json`), so that the gap between the two libraries reads next to the band. How the two
+libraries compare hour by hour, and how they respond to a change of the parameters, is studied in [FastModel against
+Buildings on BESTEST and a renovated house](fast_model_study.md); how FastModel came to these results is told in the
+[improvement plan](fast_model_improvement_plan.md).
 """,
     ),
 }

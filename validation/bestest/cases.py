@@ -345,8 +345,6 @@ UNSUPPORTED_FEATURES: dict[str, frozenset[str]] = {
     "IDEAS": frozenset({"shading"}),
     "reduced_order": frozenset({"night_ventilation", "shading", "sunspace"}),
     "iso_13790": frozenset({"night_ventilation", "shading", "sunspace"}),
-    # FastModel has no overhangs or side fins: its windows would be unshaded.
-    "FastModel": frozenset({"shading"}),
 }
 
 

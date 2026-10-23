@@ -15,7 +15,7 @@ from validation.bestest.reference import KPIS, Kpi, ReferenceData, load_referenc
 from validation.bestest.report import KNOWN_DEVIATIONS, Comparison, acceptance_band, frozen_values
 from validation.bestest.kpi import KpiResults
 
-GATING_LIBRARIES = ("Buildings", "IDEAS")
+GATING_LIBRARIES = ("Buildings", "IDEAS", "FastModel")
 SETPOINT_TOLERANCE = 0.25  # [K] the ideal system lets the hourly mean leave its set point by this much at most
 
 # (case, base case): what the standard changes from one case to the other.
