@@ -34,8 +34,9 @@ spread of the reference programs. Buildings, IDEAS and FastSmoothBuildings (the 
 MPC) pass every case (see the
 [validation results](https://andoludo.github.io/trano/validation/bestest/) and the
 [walk through the cases](https://andoludo.github.io/trano/validation/bestest_cases/)); the two simplified
-zones are reported for information. Simulations run in the official OpenModelica image. The analysis of FastSmoothBuildings
-against Buildings and as an MPC model, with its scripts and results, is in [`analysis/fast_model`](analysis/fast_model/README.md).
+zones are reported for information. Simulations run in the official OpenModelica image. The library FastSmoothBuildings, its
+study against Buildings and its analysis as an MPC model live in [its own repository](https://github.com/andoludo/FastSmoothBuildings)
+([documentation](https://andoludo.github.io/FastSmoothBuildings/)).
 
 ## ✨ Key Features
 

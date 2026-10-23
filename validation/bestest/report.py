@@ -211,11 +211,10 @@ glazings conduct at the temperatures of their panes (long-wave exchange and conv
 windows are shaded by overhangs and side fins as in Buildings, and its controllers are smooth and without events. It
 gates as Buildings and IDEAS do, on the 27 cases. The column Buildings gives the frozen value of Buildings for the
 same case (`expected/Buildings.json`), so that the gap between the two libraries reads next to the band. How the two
-libraries compare hour by hour, and how they respond to a change of the parameters, is studied in [FastSmoothBuildings
-against
-Buildings on BESTEST and a house before and after renovation](fast_model_study.md); how FastSmoothBuildings came to
-these
-results is told in the [improvement plan](fast_model_improvement_plan.md).
+libraries compare hour by hour, and how they respond to a change of the parameters, is studied in the
+[documentation of FastSmoothBuildings](https://andoludo.github.io/FastSmoothBuildings/validation/study/); how the
+library came to these results is told in its
+[improvement plan](https://andoludo.github.io/FastSmoothBuildings/validation/improvement_plan/).
 """,
     ),
 }
