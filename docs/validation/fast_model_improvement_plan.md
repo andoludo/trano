@@ -22,7 +22,7 @@ the gaps of the last stage and the ones still open.
 | 3 | Small resistances on the hydraulic links (not the flow law: trano's Buildings valves and radiators are linearised too) | house, set point +1 K: response 0.80; with the living room valve open, 36.6 against 43.9 g/s, the valve fully open 59 % of the pumping time against 44 % | none (a parameter) | set point responses within 10 % | done (phase 3); the supply water at full load is still 0.4 K cool (priority 9) |
 | 4 | Long-wave exchange around the current surface temperatures | sun-space: 0.87 K RMSE, highest temperature +0.4 K | none (moving linearisation) | sun-space RMSE below 0.5 K | done: room exchange around the surface temperatures, exact sky exchange |
 | 5 | Exact smooth limits, heat pump safety times | ideal systems leaked 1 kW (fixed by rescaling); −11 W overshoot; buffer and supply peak responses 1.33 to 4.5 | one state per heat pump | no saturated controller output above 1e-6 of its range; peak ratios 0.8 to 1.2 | smooth limits done (phase 1), safety times open |
-| 6 | Shading, unbalanced ventilation, wind- and stack-driven infiltration, ISO 13370 ground | BESTEST 610, 630, 910, 930 not runnable; supply air 0.3 K warm | per feature | the four shading cases inside the BESTEST bands | open |
+| 6 | Shading, unbalanced ventilation, wind- and stack-driven infiltration, ISO 13370 ground | BESTEST 610, 630, 910, 930 not runnable; supply air 0.3 K warm | per feature | the four shading cases inside the BESTEST bands | shading done (phase 4): the four cases inside their bands, within 2.2 % of Buildings; the rest open |
 | 7 | Gas gaps of the glazing at the temperatures of their panes | free-floating zones 0.2 to 0.9 K warm on average, up to 3.5 K at their peaks; 680FF RMSE 1.17 K | none in states (an explicit function of the pane temperatures) | free-floating temperatures within 0.5 K on average | done (phase 3): 0.38 K on average, 1.70 K at most |
 | 8 | Response to the solar absorptance of the outer surfaces | 0.6 to 0.9: ratios 0.91 to 0.93 on every KPI of 950FF and 940 | to be found | ratios 0.95 to 1.05 | open: the irradiance, the outside convection and sky exchange and the discretisation are ruled out |
 | 9 | Heat pump at full load: capacity map, safety times | house: supply water 0.4 K cooler while the living room valve is open; set point +1 K: heating 0.87, electricity 0.76; buffer x3: peak −5 % against −1 %; EPS x0.5: peak 1.51 | none for the map; one state per heat pump for the safety times | supply within 0.2 K at full load, peak ratios 0.8 to 1.2 | open |
@@ -35,8 +35,9 @@ tables of the study and of the [BESTEST page](bestest.md) are rendered from the 
 
 The first phases are in the library (`trano/library/FastModel.mo`, its templates and `library.json`). Every step
 kept the models smooth and without events, and every FastModel model still exports to CasADi with rumoca
-(`tests/test_fast_model.py`). Each step was measured on the BESTEST cases FastModel can describe (23 of 27: the four
-with shading are left out) against the band of the standard and against the values of Buildings for the same YAML:
+(`tests/test_fast_model.py`). Each step was measured on the BESTEST cases FastModel can describe (23 of 27 until the four
+with shading could run, all 27 since) against the band of the standard and against the values of Buildings for the
+same YAML:
 
 | Library | Cases | KPIs inside their band | Annual heating against Buildings, mean (range) | Annual cooling against Buildings, mean (range) | Loads, mean gap | Free-floating temperatures, mean gap (largest) |
 |---|---|---|---|---|---|---|
@@ -46,6 +47,7 @@ with shading are left out) against the band of the standard and against the valu
 | Room long-wave exchange around the surface temperatures | 23 | 89 of 89 | −0.6 % (−3.2 to +1.6 %) | +5.0 % (−0.1 to +8.1 %) | 2.7 % | 0.93 K (3.82 K) |
 | Exact long-wave exchange with sky and ground | 23 | 89 of 89 | +0.6 % (−1.0 to +2.5 %) | +2.4 % (−2.2 to +6.6 %) | 2.0 % | 0.80 K (3.52 K) |
 | Gas gaps at the temperatures of their panes, small hydraulic links (phase 3) | 23 | 89 of 89 | +0.2 % (−0.9 to +2.5 %) | +1.4 % (−2.3 to +4.4 %) | 1.2 % | 0.38 K (1.70 K) |
+| Overhangs and side fins (phase 4) | 27 | 105 of 105 | +0.2 % (−0.9 to +2.5 %) | +1.3 % (−2.3 to +4.4 %) | 1.1 % | 0.38 K (1.70 K) |
 
 What each step did:
 
@@ -93,13 +95,24 @@ What each step did:
   one model copied into the other by its name stays at its place. Before, `T[2]` of the MPC model was a layer boundary
   and `T[2]` of the closed-loop model a node inside the first layer; mpctrano's spin-up, which copies the states by
   name, started the MPC model with the inner surfaces of its walls inside the insulation.
+* **Overhangs and side fins** (phase 4). The window takes the geometry of the YAML (`overhang`, `side_fins`) and
+  shades its direct irradiance by the sunlit fraction of `Buildings.HeatTransfer.Windows.Overhang` and `SideFins`,
+  ported to `Envelope.Functions.overhangSunlitFraction` and `sideFinsSunlitFraction`: the same areas of the shadow
+  in the plane of the window, with `smoothMax`/`smoothMin` in place of `max`/`min`, the tangents written as a sine
+  over a cosine kept away from zero, and `regStep` blends where Buildings switches (the sun behind the wall, below
+  the horizon). With both, the fractions combine as in Buildings (\(f_{ove} + f_{fin} - 1\), kept above 0.001).
+  The diffuse irradiance is not shaded, as in Buildings. A unit test checks the fractions against their closed form
+  at a few sun positions. The four shading cases run and pass every KPI, within 2.2 % of Buildings (910 peak
+  cooling), and FastModel gates in BESTEST as Buildings and IDEAS do. A window without shading keeps its fraction
+  at 1 through an evaluated parameter: the six-zone house still exports with rumoca (189 states, 28 inputs for
+  FastModelMPC) and IPOPT solves its 12-hour optimal control in about a minute.
 
 **Still open.** The free-floating zones of the light, well-insulated constructions still peak 1 to 1.7 K above
 Buildings (600FF, 650FF, 680FF) and the 960 sun-space is 0.4 K warm on average. FastModel responds 8 % less than
 Buildings to the solar absorptance of the outer surfaces (priority 8). In the renovated house, the supply water is
 0.4 K cooler when the heat pump runs at full load, and the responses to the set point (heating 0.87, electricity 0.76),
 to the buffer and to the peaks go through the heat pump (priority 9).
-Shading is not modelled (priority 6). The [proposals](#proposals-for-the-remaining-gaps) give a formulation of each
+Unbalanced ventilation, wind- and stack-driven infiltration and the ISO 13370 ground are not modelled (priority 6). The [proposals](#proposals-for-the-remaining-gaps) give a formulation of each
 that keeps the model explicit and smooth.
 
 ## Gaps found by reading the equations
@@ -176,10 +189,10 @@ flow equal to the supply minus the infiltration pushed out, as the pressures of 
 
 ### 8. Missing features
 
-Overhangs and side fins (BESTEST 610, 630, 910, 930), storage tanks on boilers, water-to-water heat pumps, chillers,
+Storage tanks on boilers, water-to-water heat pumps, chillers,
 domestic hot water, batteries, EV chargers, VAV, air handling units other than system D, power sensors, moisture,
-wind- and stack-driven infiltration, the ISO 13370 ground of IDEAS. The night ventilation schedule was missing
-and is added by this branch.
+wind- and stack-driven infiltration, the ISO 13370 ground of IDEAS. The night ventilation schedule and the overhangs and side fins (BESTEST 610,
+630, 910, 930) were missing and are added by this branch.
 
 ## Proposals for the remaining gaps
 
@@ -197,7 +210,6 @@ or in BESTEST.
 | Response to the outer solar absorptance (0.91) | Find where the heat goes: compare the outer surface temperatures and the conduction into the room of a sun-lit wall in both libraries (the irradiance, the outside convection with its wind modifier, the sky exchange and the sublayers, up to 9, are ruled out); the room-side long-wave exchange of the opaque surfaces (radiant star against Buildings' radiosity) is the next suspect | none until the cause is known | absorptance ratios 0.95 to 1.05 |
 | Supply water at full load | The condenser outlet and the capacity from the EN 14511 table of the heat pump, interpolated as the other optics and curves of FastModel are (a polynomial fit evaluated in Modelica, smooth in the source and condenser temperatures) instead of the buffer temperature | parameters only | supply within 0.2 K of Buildings at full load, set point responses within 5 % |
 | Heat pump safety times | A first-order lag on the compressor command, \(\tau \dot y = y_{on} - y\), with \(\tau\) a third of the minimum run time of the YAML: the compressor follows its hysteresis but cannot start and stop faster than the safety times allow, on average, without an event (Buildings holds each start and stop exactly, with events) | one state per heat pump | buffer and supply peak ratios 0.8 to 1.2 |
-| Shading (overhangs, side fins) | The shaded fraction of Buildings' `Overhang` and `SideFins`, algebraic in the solar angles and the geometry of the YAML, with `smoothMin`/`smoothMax` in place of `min`/`max`, applied to the direct irradiance of the window | parameters only | BESTEST 610, 630, 910, 930 inside their bands |
 | Unbalanced ventilation | The extract of a ventilation unit equal to its supply minus the air the infiltration paths push out, as the pressures of Buildings share it: an explicit expression of the flows | none | supply air within 0.1 K |
 | Wind- and stack-driven infiltration | \(\dot m = \rho A_L \sqrt{C_s \sqrt{\Delta T^2 + \delta^2} + C_w v^2}\) (LBL), explicit in the weather and the zone temperature | parameters only | infiltration responses within 10 % against IDEAS |
 | Ground (ISO 13370) | A virtual layer of soil with its periodic temperature, as IDEAS: two states per floor on the ground | two states per floor | ground losses within 10 % of IDEAS |
@@ -247,7 +259,8 @@ or in BESTEST.
 ### Phase 4: coverage
 
 7. **Overhangs and side fins** (`Buildings.HeatTransfer.Windows.Overhang` and `SideFins` geometry, a smooth shaded
-   fraction of the direct irradiance), so that BESTEST 610, 630, 910 and 930 run with FastModel.
+   fraction of the direct irradiance), so that BESTEST 610, 630, 910 and 930 run with FastModel. *Done:* the four
+   cases inside their bands, within 2.2 % of Buildings.
 8. **Unbalanced ventilation** (extract = supply minus the air pushed out by the infiltration paths), **wind- and
    stack-driven infiltration**, the **ISO 13370 ground** of IDEAS for the comparisons with IDEAS.
 
@@ -257,5 +270,6 @@ or in BESTEST.
   when the commit carries `[study]`); a test reads its committed results and fails when a zone RMSE exceeds 0.5 K
   (1 K for a free-floating BESTEST zone), a heating demand deviates by more than 10 %, or a sensitivity ratio leaves
   0.8 to 1.25, with the deviations understood listed as BESTEST does.
-* FastModel joins the BESTEST validation as an informative library, with frozen values (`expected/FastModel.json`)
-  that catch regressions, and becomes gating once phases 1 and 2 bring it inside the bands.
+* FastModel gates in the BESTEST validation as Buildings and IDEAS do (`pytest -m bestest`, the workflow
+  `bestest.yaml`): its 27 cases inside their bands, the direction of every change between two cases as the reference
+  programs, and frozen values (`expected/FastModel.json`) that catch the drifts inside the bands.

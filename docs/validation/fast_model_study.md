@@ -132,9 +132,10 @@ parentheses where the library changed them):
 
 What had to be added to FastModel to get there, in the order of the plan: the air density of the site, smooth limits
 that reach their bounds, the walls discretised as Buildings, the long-wave exchange as the YAML asks (in the room,
-with the sky), the gas gaps at the temperatures of their panes and hydraulic links without the resistances Buildings
-does not have. What it still needs is in the [improvement plan](fast_model_improvement_plan.md#proposals-for-the-remaining-gaps):
-the heat pump at full load and its safety times, the response to the sun on the opaque surfaces, and shading.
+with the sky), the gas gaps at the temperatures of their panes, hydraulic links without the resistances Buildings
+does not have, and the overhangs and side fins of Buildings (the four shading cases of BESTEST now run and pass).
+What it still needs is in the [improvement plan](fast_model_improvement_plan.md#proposals-for-the-remaining-gaps):
+the heat pump at full load and its safety times and the response to the sun on the opaque surfaces.
 
 ## Results case by case
 
@@ -737,5 +738,4 @@ and CasADi.
    discretisation are ruled out.
 3. **The sun kept in the zones that nothing cools**, smaller now: the sun-space 0.42 K warm, the free-floating peaks of
    the light BESTEST zones 1 to 1.7 K high.
-4. **Missing features.** Overhangs and side fins (BESTEST 610, 630, 910 and 930 cannot be run), unbalanced
-   ventilation, wind- and stack-driven infiltration, ISO 13370 ground, moisture.
+4. **Missing features.** Unbalanced ventilation, wind- and stack-driven infiltration, ISO 13370 ground, moisture.
