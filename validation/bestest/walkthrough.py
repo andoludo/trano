@@ -29,6 +29,7 @@ LIBRARY_LABELS = {
     "Buildings": "Buildings",
     "IDEAS": "IDEAS",
     "reduced_order": "reduced order",
+    "FastModel": "FastModel",
     "iso_13790": "ISO 13790",
 }
 HOURS_PER_DAY = 24
@@ -254,7 +255,7 @@ def case_yaml_sections(case: Case, paths: list[str]) -> list[tuple[str, str]]:
 # --------------------------------------------------------------------------- #
 
 PROGRAM_COLOR = "#9aa5b1"
-LIBRARY_COLORS = {"Buildings": "#1f77b4", "IDEAS": "#d62728", "reduced_order": "#2ca02c", "iso_13790": "#9467bd"}
+LIBRARY_COLORS = {"Buildings": "#1f77b4", "IDEAS": "#d62728", "reduced_order": "#2ca02c", "iso_13790": "#9467bd", "FastModel": "#1baf7a"}
 _WIDTH, _HEIGHT = 720, 320
 _LEFT, _RIGHT, _TOP, _BOTTOM = 56, 16, 20, 40
 
