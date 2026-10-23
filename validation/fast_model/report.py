@@ -49,6 +49,20 @@ TEMPERATURE_KPIS = (
 )
 # KPIs followed along a sweep: the loads where the case has them, the mean temperature always
 SWEEP_KPIS = ("mean_temperature", "heating_kwh", "cooling_kwh")
+# KPIs of the summary of the responses, and the bands of its verdicts
+SUMMARY_KPIS = (
+    ("mean_temperature", "mean T"),
+    ("min_temperature", "lowest T"),
+    ("max_temperature", "highest T"),
+    ("heating_kwh", "heating"),
+    ("cooling_kwh", "cooling"),
+    ("peak_heating_kw", "peak heating"),
+    ("electricity_kwh", "heat pump electricity"),
+)
+ALIKE, CLOSE = (0.9, 1.1), (0.8, 1.25)
+# or the two changes apart by at most: (alike, close) [K] for a temperature, [% of the base case] for an energy
+DIFFERENCES = {"degC": (0.05, 0.1), "energy": (0.5, 1.0)}
+VERDICTS = ("alike", "close", "differs")
 
 
 def _number(value: float | None, digits: int = 1) -> str:
@@ -349,8 +363,62 @@ def render_case(case: StudyCase) -> str:
     return "\n".join(parts) + "\n"
 
 
+def agreement(row: dict[str, object]) -> int:
+    """0 when the two libraries respond alike to a perturbation on a KPI, 1 when closely, 2 when they differ: by the
+    ratio of their changes, or by the difference of their changes when both are small (a ratio of two changes of a
+    tenth of a kelvin says little)."""
+    delta_buildings, delta_fast_model = float(row["delta_buildings"]), float(row["delta_fast_model"])  # type: ignore[arg-type]
+    temperature = row["unit"] == "degC"
+    scale = 1.0 if temperature else abs(float(row["buildings_base"])) / 100  # type: ignore[arg-type]
+    difference = abs(delta_fast_model - delta_buildings) / scale  # [K] or [% of the base case]
+    tolerances = DIFFERENCES["degC" if temperature else "energy"]
+    ratio = row["ratio"]
+    for level, (low, high), tolerance in ((0, ALIKE, tolerances[0]), (1, CLOSE, tolerances[1])):
+        if difference <= tolerance or (ratio is not None and low <= float(ratio) <= high):  # type: ignore[arg-type]
+            return level
+    return 2
+
+
+def response_summary() -> str:
+    """Every perturbation of the study at a glance: on each main KPI, the change FastModel sees divided by the change
+    Buildings sees (blank where neither moves beyond the resolution, "FastModel only" where Buildings does not move),
+    and a verdict."""
+    header = " | ".join(label for _, label in SUMMARY_KPIS)
+    lines = [f"| Case | Perturbation | {header} | Verdict |", "|---|---|" + "---|" * len(SUMMARY_KPIS) + "---|"]
+    for case in CASES.values():
+        rows: dict[str, dict[str, dict[str, object]]] = {}
+        for row in sensitivity_rows(case):
+            rows.setdefault(str(row["perturbation"]), {})[str(row["kpi"])] = row
+        for perturbation in case.perturbations:
+            if None in _runs(case, perturbation.id):
+                continue
+            moved = rows.get(perturbation.id, {})
+            cells = []
+            for kpi, _ in SUMMARY_KPIS:
+                if kpi not in moved:
+                    cells.append("")
+                    continue
+                ratio = moved[kpi]["ratio"]
+                cells.append("FastModel only" if ratio is None else f"{float(ratio):.2f}")  # type: ignore[arg-type]
+            levels = [agreement(moved[kpi]) for kpi, _ in SUMMARY_KPIS if kpi in moved]
+            verdict = VERDICTS[max(levels)] if levels else "neither moves"
+            lines.append(f"| {case.id} | {perturbation.id} | " + " | ".join(cells) + f" | {verdict} |")
+    return "\n".join(lines)
+
+
 def render_report() -> str:
-    return "\n".join(render_case(case) for case in CASES.values())
+    summary = (
+        "### Responses at a glance\n\n"
+        "For each perturbation, the change FastModel sees divided by the change Buildings sees, on the main KPIs of "
+        "the case (the mean zone temperature, the heating and cooling demands, the peak heating, the electricity of "
+        "the heat pump, the lowest and highest hourly zone temperatures; blank where neither library moves by more "
+        "than 0.1 K or 2 %). The verdict is *alike* when, on every KPI, the ratio lies within "
+        f"{ALIKE[0]} to {ALIKE[1]} or the two changes differ by at most {DIFFERENCES['degC'][0]} K or "
+        f"{DIFFERENCES['energy'][0]} % of the base case; *close* within {CLOSE[0]} to {CLOSE[1]}, "
+        f"{DIFFERENCES['degC'][1]} K or {DIFFERENCES['energy'][1]} %; "
+        "*differs* otherwise.\n\n" + response_summary() + "\n"
+    )
+    return "\n".join([summary, *(render_case(case) for case in CASES.values())])
 
 
 # ------------------------------------------------------------------------------------------------------- figures

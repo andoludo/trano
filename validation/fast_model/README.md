@@ -11,8 +11,11 @@ heating demand, and of whether a parameter change moves both libraries alike. Th
 | residential_after | `examples/residential_after_renovation.yaml`: six zones, heat pump, buffer, radiators, heat recovery, PV | 28 days of January |
 
 Each case has *perturbations*: one field of the YAML changed (the conductivity of an insulation, the infiltration, the
-thermal mass, the rating of the heat pump, a set point, ...) and simulated with both libraries, so that the response of
-each library to the same change can be compared.
+thermal mass, the glazing, the solar absorptance, the gains, the rating of the heat pump, a set point, ...) and
+simulated with both libraries, so that the response of each library to the same change can be compared. Some
+parameters are *swept* (`sweep` in `cases.py`: the same field scaled by several factors), to see whether the two
+libraries keep agreeing over a range of values. The report opens with every response at a glance: the ratio of the
+change of FastModel to the change of Buildings on each main KPI, and a verdict (alike, close, differs).
 
 ```bash
 python -m validation.fast_model list

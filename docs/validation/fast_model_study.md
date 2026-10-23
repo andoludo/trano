@@ -27,14 +27,17 @@ The cases, chosen among the complex ones:
 | **Residential, after renovation** | [`examples/residential_after_renovation.yaml`](residential_reference_cases.md): six zones, air-to-water heat pump with a 100 l buffer, radiators with thermostatic valves, balanced ventilation with heat recovery, PV, Uccle | every system FastModel models, in closed loop, over 28 days of January |
 
 For each case the **perturbations** change one field of the YAML and are simulated with both libraries; the table
-"Response to the perturbations" gives, for each KPI, the change seen by Buildings, the change seen by FastModel and
-their ratio (1.0 would be a perfect agreement on the sensitivity, whatever the offset between the two libraries):
+"Response to the perturbations" of each case gives, for each KPI, the change seen by Buildings, the change seen by
+FastModel and their ratio (1.0 would be a perfect agreement on the sensitivity, whatever the offset between the two
+libraries). Two parameters of 940 and one of the house are **swept**: scaled by several factors, so that the study
+shows whether FastModel follows Buildings over a range of values and bends as it does, not only for one step.
 
-| Case | Envelope perturbations | System perturbations |
+| Case | Envelope | Use and systems |
 |---|---|---|
-| 950FF | insulation conductivity x1.5, infiltration x2, wall mass x0.5 | |
-| 940 | the same | heating set points +2 K |
-| residential_after | EPS conductivity x1.5, n50 x2 | heat pump 2 kW instead of 3 kW, supply set point +10 K, radiators x0.7, buffer tank x3, heat recovery 0.5 instead of 0.8, living room and kitchen set point +1 K |
+| 950FF | insulation conductivity x1.5, infiltration x2, wall mass x0.5, solar transmittance of the glazing x0.75, solar absorptance of the outer surfaces 0.9 instead of 0.6 | internal gains x2 |
+| 940 | **insulation conductivity x0.5, x0.75, x1.5, x2** and **infiltration x0.5, x1.5, x2, x3** (sweeps), wall mass x0.5, gas of the glazing gap x0.5 (U-value of the glazing 2.9 to 2.6 W/(m2.K)), solar transmittance x0.75, solar absorptance 0.9 | internal gains x2, heating set points +2 K |
+| 960 | solar transmittance of the sun-space glazing x0.75, conductivity of the common wall x2, mass of the sun-space walls x0.5, infiltration of the sun-space x2 | |
+| residential_after | **EPS conductivity x0.5, x1.5, x2** (sweep), n50 x2 | heat pump 2 kW instead of 3 kW, supply set point +10 K, radiators x0.7, buffer tank x3, heat recovery 0.5 instead of 0.8, living room and kitchen set point +1 K, flow of the ventilation x1.5, radiator exponent 1.33 instead of 1.24 |
 
 The KPIs: mean, lowest and highest hourly zone temperature; heating and cooling demand (the heat delivered to the
 zones); peak heating (largest hourly mean); the heat pump electricity and the OpenModelica time. Hour by hour, the
@@ -46,43 +49,32 @@ did not take that parameter until this study (it silently dropped the fan), it d
 
 ## Summary
 
-The study was run twice. The **first run** (the library as it was when the study started) found FastModel close to
-Buildings on the zone temperatures, but 11 to 16 % high on the heating of the Denver cases and quicker than Buildings
-in its heavy walls, and it found four defects; the [improvement plan](fast_model_improvement_plan.md) ranked the gaps.
-The library was then changed as the plan says (air density at the site, smooth limits that reach their bounds, walls
-discretised as Buildings, long-wave exchange as the YAML asks, exact exchange with the sky), and the tables below are
-those of the **second run**, on the library as it is now.
+The study was run three times. The **first run** (the library as it was when the study started) found FastModel close
+to Buildings on the zone temperatures, but 11 to 16 % high on the heating of the Denver cases and quicker than
+Buildings in its heavy walls, and it found four defects (below). The library was changed as the
+[improvement plan](fast_model_improvement_plan.md) says (air density at the site, smooth limits that reach their
+bounds, walls discretised as Buildings, long-wave exchange as the YAML asks, exact exchange with the sky) before the
+**second run**. The second run, with the perturbations extended to the glazing, the sun, the gains, the sun-space, the
+ventilation and the radiators and with the sweeps, found two more gaps that the library then closed: the gas gaps of
+the glazing held at their EN 673 conductance, and resistances in the hydraulic links that Buildings does not have. The
+tables below are those of the **third run**, on the library as it is now.
 
-FastModel now follows Buildings within 0.1 K hour by hour on the zones of the BESTEST cases and within 0.03 to 0.23 K
-on the rooms of the renovated house; its heating demand is within 1.1 % of Buildings in every base case and within 1.7 % in every variant, and it responds
-to a change of the envelope as Buildings does within 1 to 10 %. What is left: the unheated sun-space of 960 stays
-0.6 K too warm, and in the renovated house a set point or radiator change moves the heat between the rooms
-differently, because FastModel shares the flow between radiator branches with linearised resistances.
+FastModel follows Buildings within 0.05 to 0.08 K hour by hour on the zones of the BESTEST cases (0.46 K in the
+unheated sun-space of 960) and within 0.06 to 0.10 K on the rooms of the renovated house; its heating demand is within 1.5 % of Buildings in every base case, and it
+responds to every change of the envelope, the sun, the gains and the ideal systems of the BESTEST cases as Buildings
+does: 24 perturbations out of 24 *alike* (every ratio within 0.9 to 1.1, or the two changes within 0.05 K or 0.5 %).
+In the renovated house, 8 of 12 are alike or close; the four that differ all go through the heat pump (its
+electricity and its peaks), see [below](#does-a-change-of-the-yaml-move-both-libraries-alike).
 
 | Case | Zone temperature, hourly RMSE | Heating demand, Buildings / FastModel | Peak heating | OpenModelica time |
 |---|---|---|---|---|
-| 950FF, free floating, night ventilation | 0.10 K (first run 0.29 K) | (free floating) | | 108 / 30 s |
-| 940, set-back heating and cooling | 0.08 K (0.13 K) | 1100 / 1103 kWh, +0.3 % (+11 %) | 3.27 / 3.33 kW, +2 % (+8 %) | 110 / 35 s |
-| 960, zone behind a sun-space | 0.10 K zone, 0.68 K sun-space (0.11 K, 0.87 K) | 2588 / 2563 kWh, −1.0 % | 2.10 / 2.11 kW | 149 / 42 s |
-| Renovated house, 28 days | 0.06 to 0.12 K per room (unchanged) | 461 / 466 kWh, +1.1 % | 2.02 / 1.99 kW | 456 / 150 s |
+| 950FF, free floating, night ventilation | 0.08 K (second run 0.10 K, first 0.29 K) | (free floating) | | 80 / 34 s |
+| 940, set-back heating and cooling | 0.05 K (0.08 K, 0.13 K) | 1100 / 1096 kWh, −0.4 % (+0.3 %, +11 %) | 3.27 / 3.30 kW, +1 % (+2 %, +8 %) | 110 / 37 s |
+| 960, zone behind a sun-space | 0.07 K zone, 0.46 K sun-space (0.10 and 0.68 K; 0.11 and 0.87 K) | 2588 / 2575 kWh, −0.5 % (−1.0 %) | 2.10 / 2.11 kW | 149 / 42 s |
+| Renovated house, 28 days | 0.06 to 0.10 K per room (0.06 to 0.12 K) | 461 / 468 kWh, +1.5 % (+1.1 %) | 2.02 / 2.05 kW | 456 / 158 s |
 
 (The heating of the first run is that of the meters of the ideal system, as here: +11 % in 940. The first version of
 this page gave +15.6 %, read from hourly samples of the heat flow, which overstated both libraries.)
-
-How much FastModel moves when Buildings moves by one (ratio of the changes of the main KPI, 1.00 is perfect; first
-run in parentheses):
-
-| Perturbation | 950FF (mean temperature) | 940 (heating demand) | Renovated house (heating demand) |
-|---|---|---|---|
-| Insulation conductivity x1.5 | 1.07 (0.99) | 1.01 (1.07) | 0.96 (0.96) |
-| Infiltration x2 | 1.03 (1.12) | 1.00 (1.30) | 0.96 (0.95) |
-| Wall mass x0.5 | 1.11 (1.45) | 1.02 (1.08) | |
-| Heating set points +2 K (940), living and kitchen +1 K (house) | | 0.98 (1.10) | 0.79 (0.80) |
-| Heat recovery 0.8 to 0.5 | | | 0.97 (0.97) |
-| Radiators x0.7 | | | 1.41 (1.41) |
-| Heat pump supply +10 K (electricity) | | | 1.08 (1.09) |
-| Buffer tank x3 (electricity) | | | 1.17 (1.12) |
-| Heat pump 3 to 2 kW (peak heating; the demand does not move) | | | 1.07 (1.03) |
 
 The first run found four defects, fixed before the second:
 
@@ -99,11 +91,99 @@ The first run found four defects, fixed before the second:
 * **The flat Buildings model is under-determined** (an electrical load of the data bus without its equation); the
   study renders Buildings with its containers, as the BESTEST validation does.
 
+## Does a change of the YAML move both libraries alike?
+
+A reduced model is physically sound for design and calibration when a change of a parameter of the building moves
+its results as it moves the results of the detailed model. The table *Responses at a glance* at the top of the
+results gives, for each of the 36 perturbations, the ratio of the changes on each main KPI and a verdict; the
+sections of the cases give the changes themselves and the sweeps. By family (ratios of the third run, second run in
+parentheses where the library changed them):
+
+* **Conduction through the envelope.** The conductivity of the insulation moves the heating of 940 by the same amount
+  in both libraries over the whole sweep, from x0.5 to x2 (ratios 1.00 to 1.01, constant: FastModel bends as Buildings
+  does), the cooling by 7 to 8 % more (9 to 11 %); the conductivity of the EPS of the house moves its heating by 0.98
+  to 1.00 from x0.5 to x2. The steady-state resistances are the same in both libraries; what differs a little is the
+  share of the sun the envelope returns to the room in summer.
+* **Air.** The infiltration of 940 from x0.5 to x3: heating 0.99 to 1.00, cooling 1.00 to 1.01; n50 x2, heat recovery
+  0.5 and the ventilation flow x1.5 of the house: heating 0.97 to 0.99. The air density at the site (first stage of the
+  plan) made these agree; it was 1.30 in Denver at the start.
+* **Thermal mass.** Half the mass of the walls: 0.96 to 1.09 (1.45 at the start, before the walls were discretised as
+  Buildings).
+* **Glazing.** The solar transmittance x0.75: 0.97 to 1.02 on the loads, 1.04 to 1.08 on the highest temperatures; the
+  gas of the gap x0.5 (the U-value of the glazing): 1.02 to 1.07 (second run 1.03 to 1.21), since the gaps conduct at
+  the temperatures of their panes.
+* **Gains.** Internal gains x2: 0.99 to 1.01.
+* **Sun on the opaque surfaces.** The solar absorptance of the outer surfaces 0.6 to 0.9: 0.91 to 0.93 on every KPI of
+  950FF and 940. FastModel takes 8 % less of the extra sun into the room. The irradiance, the outside convection with
+  its wind modifier, the long-wave exchange with sky and ground and the discretisation of the walls (tried up to nine
+  sublayers) are those of Buildings; the cause is still to be found ([plan](fast_model_improvement_plan.md),
+  priority 8). It is the one envelope parameter FastModel underestimates; its ratios stay within 0.9 to 1.1, the
+  verdict *alike*.
+* **Coupling of two zones (960).** The common wall x2, the sun-space mass x0.5 and its infiltration x2: 0.94 to 1.10
+  (the common wall 0.97 to 1.15 in the second run).
+* **Ideal systems.** The heating set points of 940 +2 K: 0.99 to 1.00.
+* **Hydronic systems of the house.** The supply set point +10 K (peak and electricity 1.01 and 1.03; second run 1.30
+  and 1.08), the radiator exponent (peak 0.93; second run 0.62) and the heat recovery are alike. Four differ, and all go through the heat pump: the set
+  point +1 K of the living room and kitchen (heating 0.87, electricity 0.76; second run 0.79 and 0.80), smaller
+  radiators (heating 1.28 and electricity 1.45, on changes of 3 %: both libraries end within 1 % of each other), a
+  buffer three times larger (FastModel's peak falls by 5 %, Buildings' by 1 %) and the EPS x0.5 (peak 1.51). The
+  heat pump of FastModel has no safety times and takes its condenser from the buffer temperature: it starts and stops
+  at other instants, and at full load its supply water is 0.4 K cooler than in Buildings.
+
+What had to be added to FastModel to get there, in the order of the plan: the air density of the site, smooth limits
+that reach their bounds, the walls discretised as Buildings, the long-wave exchange as the YAML asks (in the room,
+with the sky), the gas gaps at the temperatures of their panes and hydraulic links without the resistances Buildings
+does not have. What it still needs is in the [improvement plan](fast_model_improvement_plan.md#proposals-for-the-remaining-gaps):
+the heat pump at full load and its safety times, the response to the sun on the opaque surfaces, and shading.
+
 ## Results case by case
 
 Rendered by `python -m validation.fast_model report --docs` from `validation/fast_model/results`.
 
 <!-- results:start -->
+### Responses at a glance
+
+For each perturbation, the change FastModel sees divided by the change Buildings sees, on the main KPIs of the case (the mean zone temperature, the heating and cooling demands, the peak heating, the electricity of the heat pump, the lowest and highest hourly zone temperatures; blank where neither library moves by more than 0.1 K or 2 %). The verdict is *alike* when, on every KPI, the ratio lies within 0.9 to 1.1 or the two changes differ by at most 0.05 K or 0.5 % of the base case; *close* within 0.8 to 1.25, 0.1 K or 1.0 %; *differs* otherwise.
+
+| Case | Perturbation | mean T | lowest T | highest T | heating | cooling | peak heating | heat pump electricity | Verdict |
+|---|---|---|---|---|---|---|---|---|---|
+| 950FF | insulation_x1.5 | 1.07 | 1.01 | 1.15 |  |  |  |  | alike |
+| 950FF | infiltration_x2 | 1.02 | 1.09 | 0.98 |  |  |  |  | alike |
+| 950FF | mass_x0.5 | 1.09 | 1.00 | 1.03 |  |  |  |  | alike |
+| 950FF | glazing_tau_x0.75 | 1.00 | 0.90 | 1.08 |  |  |  |  | alike |
+| 950FF | absorptance_0.9 | 0.91 | 0.93 | 0.91 |  |  |  |  | alike |
+| 950FF | gains_x2 | 1.00 | 0.99 | 1.00 |  |  |  |  | alike |
+| 940 | insulation_x0.5 | 1.01 |  |  | 1.00 | 1.07 | 1.00 |  | alike |
+| 940 | insulation_x0.75 | 1.01 |  |  | 1.00 | 1.07 | 1.00 |  | alike |
+| 940 | insulation_x1.5 | 1.01 |  |  | 1.01 | 1.08 | 1.00 |  | alike |
+| 940 | insulation_x2 | 1.02 |  |  | 1.01 | 1.08 | 1.02 |  | alike |
+| 940 | infiltration_x0.5 | 0.99 |  |  | 0.99 | 1.00 | 0.99 |  | alike |
+| 940 | infiltration_x1.5 | 0.99 |  |  | 1.00 | 1.00 | 0.99 |  | alike |
+| 940 | infiltration_x2 | 0.99 |  |  | 1.00 | 1.01 | 0.99 |  | alike |
+| 940 | infiltration_x3 | 1.00 |  |  | 1.00 | 1.01 | 0.99 |  | alike |
+| 940 | mass_x0.5 | 1.05 |  |  | 1.01 | 1.03 | 0.96 |  | alike |
+| 940 | gap_k_x0.5 | 1.03 |  |  | 1.02 | 1.07 | 1.02 |  | alike |
+| 940 | glazing_tau_x0.75 | 0.99 |  |  | 0.98 | 1.02 | FastModel only |  | alike |
+| 940 | absorptance_0.9 | 0.91 |  |  | 0.92 | 0.91 |  |  | alike |
+| 940 | gains_x2 | 0.99 |  |  | 0.99 | 1.01 | 0.99 |  | alike |
+| 940 | setpoint_+2K | 0.99 | 1.00 |  | 0.99 |  | 0.99 |  | alike |
+| 960 | glazing_tau_x0.75 | 0.99 | 0.99 | 1.04 | 0.98 | 1.01 | 0.97 |  | alike |
+| 960 | common_wall_k_x2 | 1.08 | 0.94 | 1.03 | 1.10 | 1.09 | 0.98 |  | alike |
+| 960 | sunspace_mass_x0.5 |  | 1.02 | 1.01 |  |  |  |  | alike |
+| 960 | sunspace_infiltration_x2 | 1.00 | 1.05 | 0.97 | 1.01 | 1.00 |  |  | alike |
+| residential_after | eps_x0.5 | 1.14 | 1.02 |  | 1.00 |  | 1.51 | 0.99 | differs |
+| residential_after | eps_x1.5 | 1.24 | 1.03 |  | 0.98 |  | 1.01 | 0.93 | alike |
+| residential_after | eps_x2 | 1.23 | 1.00 |  | 0.98 |  | 0.98 | 0.95 | alike |
+| residential_after | n50_x2 | 1.17 | 1.02 |  | 0.97 |  | 1.00 | 0.95 | alike |
+| residential_after | heat_pump_2kW |  |  |  |  |  | 1.21 |  | close |
+| residential_after | supply_+10K | 1.23 |  |  |  |  | 1.01 | 1.03 | alike |
+| residential_after | radiators_x0.7 | 1.21 | FastModel only |  | 1.28 |  | 1.01 | 1.45 | differs |
+| residential_after | tank_x3 |  |  |  |  |  | FastModel only | 0.85 | differs |
+| residential_after | heat_recovery_0.5 | 1.13 | 1.01 |  | 0.98 |  | 1.01 | 0.96 | alike |
+| residential_after | setpoint_+1K | 0.87 | 0.89 | 0.65 | 0.87 |  | 1.04 | 0.76 | differs |
+| residential_after | ventilation_x1.5 |  | 1.02 |  | 0.99 |  | 1.14 | 0.96 | close |
+| residential_after | radiator_n_1.33 |  |  |  |  |  | 0.93 |  | alike |
+
 ### 950FF
 
 BESTEST 950FF: heavy single zone, free floating, night ventilation of 1700 m3/h from 18:00 to 07:00, Denver.
@@ -602,15 +682,15 @@ Six-zone semi-detached house after renovation: air-to-water heat pump with a buf
 
 ## Reading the results
 
-**Free-floating zone (950FF).** With its night fan, the heavy zone follows Buildings within 0.10 K hour by hour over
-a year from −12 to 37 degC (0.29 K in the first run); the mean, lowest and highest temperatures agree within 0.3 K.
-Its responses to the insulation, the infiltration and the mass agree within 3 to 11 % on the mean temperature and
-within 0 to 19 % on the highest one, a few hundredths of a kelvin. In the first run, doubling the infiltration cooled
-FastModel 12 % more than Buildings (the air density) and halving the mass raised its peak 13 % more (the lumped
-walls).
+**Free-floating zone (950FF).** With its night fan, the heavy zone follows Buildings within 0.08 K hour by hour over a
+year from −12 to 37 degC (0.29 K in the first run); the mean, lowest and highest temperatures agree within 0.15 K. It
+responds to the insulation, the infiltration, the mass, the glazing and the gains as Buildings does (ratios 0.90 to
+1.15 on temperature changes of a few tenths of a kelvin), and 9 % less to the solar absorptance of its walls. In the
+first run, doubling the infiltration cooled FastModel 12 % more than Buildings (the air density) and halving the mass
+raised its peak 13 % more (the lumped walls).
 
-**Set-back heating (940).** The temperature follows within 0.08 K, the heating demand within 0.3 %, the morning peak
-within 2 %, the hourly heat within 6.3 % CV(RMSE). In the first run, FastModel heated 11 % more, its peak was 8 %
+**Set-back heating (940).** The temperature follows within 0.05 K, the heating demand within 0.4 %, the morning peak
+within 1 %, the hourly heat within 4.6 % CV(RMSE). In the first run, FastModel heated 11 % more, its peak was 8 %
 higher and its hourly heat scattered by 58 % CV(RMSE), for two reasons the study separated:
 
 | Heating over the year, by period, first run | Buildings | FastModel |
@@ -621,41 +701,41 @@ higher and its hourly heat scattered by 58 % CV(RMSE), for two reasons the study
 
 the lumped heavy walls cooled the room faster at night and warmed it slower on sunny mornings, and the
 infiltration carried a fifth too much heat: FastModel took 1.2 kg/m3 where the air of Denver, at 83 kPa, weighs
-0.99 kg/m3 (doubling the infiltration then added 30 % more heating in FastModel than in Buildings; now 0 %). Every
-perturbation of 940 now moves the heating demand within 2 % of Buildings and the cooling within 1 to 10 %.
+0.99 kg/m3 (doubling the infiltration then added 30 % more heating in FastModel than in Buildings; now 0 %). The
+sweeps show that the agreement is not a coincidence of one step: from half to twice the insulation and from half to
+three times the infiltration, the heating of FastModel moves by the change of Buildings within 1 %.
 
-**Sun-space (960).** The heated zone follows within 0.10 K, its heating within 1.0 % and its cooling within 0.1 %.
-The unheated heavy sun-space is the weakest result: 0.68 K RMSE (0.87 K in the first run), 0.60 K too warm on
-average, its highest temperature 49.8 against 48.0 degC. The free-floating BESTEST cases show the same trend (their
-peaks are 0.3 to 3.5 K above those of Buildings, see the [BESTEST page](bestest.md#fastmodel)): FastModel still
-keeps a little too much of the sun in a zone that nothing cools.
+**Sun-space (960).** The heated zone follows within 0.07 K, its heating within 0.5 % and its cooling within 2.3 %.
+The unheated heavy sun-space is the weakest temperature: 0.46 K RMSE (0.68 K in the second run, 0.87 K in the first),
+0.42 K too warm on average, its highest temperature 49.1 against 48.0 degC. The gas gaps of its glazing, held at their
+conductance at 10 degC until the third run, kept the sun in: a sun-lit glazing at 40 degC conducts a fifth more. The
+free-floating BESTEST cases show the same trend, smaller now (the largest gap of their temperatures went from 3.5 to
+1.7 K, see the [BESTEST page](bestest.md#fastmodel)).
 
-**Renovated house.** Every room follows within 0.03 to 0.23 K hour by hour, the heat of the radiators within 5 to
-14 % CV(RMSE), and the meters within 1.5 % (heat pump, every variant), 2.1 % (fans) and 0 % (PV). The responses to
-the envelope (EPS conductivity, airtightness, heat recovery) agree within 3 to 5 %, and the systems respond alike
-too: a 2 kW heat pump lowers the peak by 10 and 11 % without changing the demand, a supply 10 K warmer costs
-11 and 12 % more electricity. Two responses still differ by 20 % or more. Raising the set point of the living room
-and the kitchen by 1 K raises the mean temperature of the living room by 0.78 K in Buildings and 0.67 K in FastModel
-(kitchen: 0.69 and 0.55 K), and the bedrooms then receive 12 to 25 % more heat in FastModel than in Buildings,
-against 4 to 9 % in the base case; smaller radiators (x0.7) leave the demand unchanged in both, but move it between
-the rooms differently. Both depend on how the flow is shared between radiator branches when the thermostatic valves
-move. FastModel simulates the 28 days three times faster in OpenModelica (the discretised walls cost about a quarter
-of its speed).
+**Renovated house.** Every room follows within 0.06 to 0.10 K hour by hour, the heat of the radiators within 4 to
+11 % CV(RMSE), and the meters within 1.8 % (heat pump), 2.3 % (fans) and 0 % (PV). The responses to the envelope (EPS
+conductivity from x0.5 to x2, airtightness, heat recovery, ventilation flow) agree within 3 % on the heating. The
+second run had attributed the gap of the set point response (0.79) to the flow laws of the radiator branches; the
+branch flows of both libraries, measured hour by hour, showed otherwise: the flow laws are the same (trano's Buildings
+valves and radiators are linearised too), but with the living room valve fully open FastModel passed 36.6 g/s
+against 43.9 g/s in Buildings, because the sensor feeding the six radiators had a resistance (1000 Pa at its nominal
+flow) that Buildings does not have, a fifth of the head of a branch. With 100 Pa the set point response rose to 0.87.
+What is left is the heat pump: while the living room valve is open, its supply water is 0.4 K cooler than in Buildings,
+and its electricity responds less (0.76) to the set point. FastModel simulates the 28 days three times faster in
+OpenModelica.
 
 ## What FastModel still lacks
 
 Ranked by what they change in the results above; the [improvement plan](fast_model_improvement_plan.md) gives the
-change, its cost and the check that closes it, and the progress made so far.
+change, its cost and the check that closes it, with a formulation that keeps the model explicit and smooth for rumoca
+and CasADi.
 
-1. **Flow sharing between radiator branches.** The resistances of the closed-loop circuit are linearised at their
-   nominal flows, where Buildings solves quadratic laws with the valve authority: when some valves open more (set
-   point +1 K), FastModel gives the other branches more flow than Buildings (bedrooms +12 to 25 % of heat) and the
-   rooms whose set point rose less (response 0.79).
-2. **Sun kept in zones that nothing cools.** The sun-space and the free-floating peaks are too warm by 0.6 K on
-   average and up to 3.5 K at the hottest hour. The candidates are the angular optics of the glazing (a quartic fit of
-   those of Buildings), the distribution of the direct sun in the room and the interior convection at large
-   temperature differences.
-3. **Heat pump without safety times.** The peak responses to the buffer size and the supply temperature differ by
-   20 to 30 % (the heat pump starts and stops at other instants than in Buildings).
+1. **The heat pump at full load and its safety times.** The supply water 0.4 K cool at full load, the electricity
+   responses to the set point (0.76) and to the buffer (0.85), the peaks of the buffer and of the EPS x0.5: the
+   condenser from the EN 14511 table instead of the buffer temperature, and a smooth surrogate of the minimum run time.
+2. **The sun on the opaque surfaces.** 8 % less response to the solar absorptance; the outside exchanges and the
+   discretisation are ruled out.
+3. **The sun kept in the zones that nothing cools**, smaller now: the sun-space 0.42 K warm, the free-floating peaks of
+   the light BESTEST zones 1 to 1.7 K high.
 4. **Missing features.** Overhangs and side fins (BESTEST 610, 630, 910 and 930 cannot be run), unbalanced
    ventilation, wind- and stack-driven infiltration, ISO 13370 ground, moisture.

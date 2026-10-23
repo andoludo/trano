@@ -215,3 +215,23 @@ def test_a_commit_message_selects_the_runs() -> None:
         {"case": "residential_after", "variant": "base"},
     ]
     assert {row["case"] for row in plan_from_message("[study 940]")} == {"940"}
+
+
+def test_the_verdict_takes_the_ratio_or_the_difference_of_the_changes() -> None:
+    from validation.fast_model.report import agreement
+
+    def row(unit: str, base: float, buildings: float, fast_model: float) -> dict[str, object]:
+        return {
+            "unit": unit,
+            "buildings_base": base,
+            "delta_buildings": buildings,
+            "delta_fast_model": fast_model,
+            "ratio": fast_model / buildings,
+        }
+
+    assert agreement(row("degC", 20.0, 0.10, 0.13)) == 0  # a ratio of 1.3 on a tenth of a kelvin: 0.03 K apart
+    assert agreement(row("degC", 20.0, 1.0, 1.08)) == 0
+    assert agreement(row("degC", 20.0, 1.0, 1.2)) == 1
+    assert agreement(row("kWh", 1000.0, 100.0, 120.0)) == 1  # ratio 1.2, 2 % of the base case apart
+    assert agreement(row("kWh", 1000.0, 100.0, 150.0)) == 2
+    assert agreement(row("kWh", 1000.0, 20.0, 28.0)) == 1  # ratio 1.4, 0.8 % of the base case apart
