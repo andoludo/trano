@@ -27,7 +27,10 @@ from trano_simulate.simulate import CONTAINER_MODEL_DIR, SimulationOptions
 from validation.bestest.harness import reset_element_names
 from validation.bestest.kpi import find_variable
 from validation.fast_model.cases import BASE, CASES, ROOT, StudyCase
-from validation.mpc.harness import _interval_mean, _of_type, _on_grid, _reader, _simulate
+from trano.utils.utils import is_success
+from trano_simulate.simulate import simulate
+from validation.bestest.harness import model_hash
+from validation.mpc.harness import _interval_mean, _of_type, _on_grid, _reader
 
 if TYPE_CHECKING:
     from buildingspy.io.outputfile import Reader  # type: ignore
@@ -154,6 +157,28 @@ def options(case: StudyCase) -> SimulationOptions:
         number_of_intervals=(case.end_time - case.start_time) // case.output_interval,
         variable_filter=VARIABLES,
     )
+
+
+def _simulate(network: Network, directory: Path, options: SimulationOptions, name: str) -> Path:
+    """Simulate unless the cached result was produced by the same model; return the result file.
+
+    Buildings is rendered with its containers, as the BESTEST validation does: its flat rendering leaves the
+    electrical load of the data bus under-determined. FastModel is rendered flat (``mpc.<component>``)."""
+    model = network.model(include_container=network.library.name == BUILDINGS)
+    expected = model_hash(model, name, options)
+    result = directory / "results" / f"{network.name}.building_res.mat"
+    hash_file = directory / "model.hash"
+    if result.exists() and hash_file.exists() and hash_file.read_text() == expected:
+        logger.info("%s read from the cache", directory)
+        return result
+    directory.joinpath("model.mo").write_text(model)
+    outcome = simulate(directory, network, options=options, container_name=name, model=model)
+    output = outcome.output.decode(errors="replace") if isinstance(outcome.output, bytes) else str(outcome.output)
+    directory.joinpath("omc.log").write_text(output)
+    if not is_success(outcome, options=options):
+        raise RuntimeError(f"{network.name} did not simulate; see {directory / 'omc.log'}")
+    hash_file.write_text(expected)
+    return result
 
 
 def _container_suffix(text: str) -> str:
