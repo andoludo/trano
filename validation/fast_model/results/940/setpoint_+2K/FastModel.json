@@ -1,0 +1,27 @@
+{
+ "case": "940",
+ "variant": "setpoint_+2K",
+ "library": "FastModel",
+ "zones": [
+  {
+   "zone": "zone_001",
+   "mean_temperature": 23.859044368240955,
+   "min_temperature": 11.998926301002541,
+   "max_temperature": 27.001112483872305,
+   "heating_kwh": 1884.9152114260555,
+   "cooling_kwh": 2445.382702980396,
+   "peak_heating_kw": 4.327063124399516,
+   "peak_cooling_kw": 3.116367943480015
+  }
+ ],
+ "heating_kwh": 1884.9152114260555,
+ "cooling_kwh": 2445.382702980396,
+ "peak_heating_kw": 4.327063124399516,
+ "peak_cooling_kw": 3.116367943480015,
+ "electricity_kwh": null,
+ "fuel_kwh": null,
+ "fans_kwh": null,
+ "pv_kwh": null,
+ "wall_time": 29.5,
+ "model_hash": "d1a74732cadb591e0d02c98db7effb6c89dd57939cf41c76d58aee1d238a8cf9"
+}
