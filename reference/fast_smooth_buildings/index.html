@@ -1456,11 +1456,15 @@ own repository, released on PyPI as <code>fastsmoothbuildings</code>, which tran
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>trano<span class="w"> </span>create-model<span class="w"> </span>house.yaml<span class="w"> </span>FastSmoothBuildings<span class="w">       </span><span class="c1"># closed loop</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>trano<span class="w"> </span>create-model<span class="w"> </span>house.yaml<span class="w"> </span>FastSmoothBuildingsMPC<span class="w">    </span><span class="c1"># the model for optimal control</span>
 </span></code></pre></div>
-<p>The generated package embeds the library (without its examples and documentation). With <code>--no-embed-libraries</code>
-(<code>Library.embed_libraries = False</code>), it declares <code>uses(FastSmoothBuildings(version=...))</code> instead, and the library is
-loaded beside it from the installed <code>fastsmoothbuildings</code> package: <code>Network.libraries</code> gives its folder, which
-rumoca reads as a root (<code>CasadiModel.from_modelica(text, name, roots=network.libraries)</code>) and OpenModelica loads
-before the model.</p>
+<p>As with Buildings and IDEAS, the generated package does not hold the library: it declares
+<code>uses(FastSmoothBuildings(version=...))</code>, and the library is loaded beside it from the installed <code>fastsmoothbuildings</code>
+package. <code>Network.libraries</code> gives its folder: trano-simulate loads it before the model (mounted in the container),
+rumoca reads it as a root (<code>CasadiModel.from_modelica(text, name, roots=network.libraries)</code>). To open a generated
+package in OMEdit or Dymola, add the folder that holds the library to the <code>MODELICAPATH</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import fastsmoothbuildings; print(fastsmoothbuildings.ROOT)&quot;</span>
+</span></code></pre></div>
+<p><code>--embed-libraries</code> (<code>Library.embed_libraries = True</code>) writes the library into the package instead (without its
+examples and documentation): a single self-contained file to send.</p>
 <p>The <a href="https://andoludo.github.io/FastSmoothBuildings/">documentation of FastSmoothBuildings</a> describes its components
 and their equations, class by class, its validation against Buildings and ASHRAE 140, and the analysis behind it. The
 <a href="../../tutorials/fast_smooth_buildings/">FastSmoothBuildings tutorial</a> shows how to use the generated models in CasADi.</p>
