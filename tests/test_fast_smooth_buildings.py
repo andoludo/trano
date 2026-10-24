@@ -94,15 +94,14 @@ def _export(path: Path) -> CasadiModel:
     return CasadiModel.from_modelica(_model(path), f"{path.stem}.building_mpc")
 
 
-def test_fast_model_is_templates_and_modelica() -> None:
-    assert not (ROOT / "trano" / "fast_model").exists()
+def test_fast_smooth_buildings_is_templates_and_the_library_of_its_package() -> None:
     templates = ROOT / "trano" / "elements" / "library" / "models" / "fast_smooth_buildings"
     assert {path.stem for path in templates.glob("*.yaml")} >= {"space", "envelope", "hydronics", "ventilation"}
     assert not (ROOT / "trano" / "library").exists()  # the Modelica library is the package fastsmoothbuildings
     assert modelica_library("FastSmoothBuildings").startswith("package FastSmoothBuildings")
 
 
-def _fast_model_classes() -> dict[str, tuple[bool, str, str]]:
+def _library_classes() -> dict[str, tuple[bool, str, str]]:
     """Models and connectors of FastSmoothBuildings.mo by name: whether they are partial, model or connector, and
     their body."""
     text = str(modelica_library("FastSmoothBuildings"))
@@ -122,13 +121,13 @@ def _has_icon(name: str, classes: dict[str, tuple[bool, str, str]]) -> bool:
 
 
 def test_every_component_has_the_icon_of_its_buildings_model() -> None:
-    classes = _fast_model_classes()
+    classes = _library_classes()
     missing = [name for name, (partial, _, _) in classes.items() if not partial and not _has_icon(name, classes)]
     assert not missing
 
 
 def test_every_port_is_placed_on_the_icon() -> None:
-    classes = _fast_model_classes()
+    classes = _library_classes()
     connectors = {"RealInput", "RealOutput"} | {name for name, (_, kind, _) in classes.items() if kind == "connector"}
     unplaced = [
         f"{name}.{component}"
@@ -375,7 +374,7 @@ def test_unmodelled_systems_are_reported(library: str) -> None:
         _model(MODELS / "single_zone_air_handling_unit_complex_vav.yaml", library)
 
 
-def test_fast_model_mpc_is_fast_model_under_another_name() -> None:
+def test_fast_smooth_buildings_mpc_is_fast_smooth_buildings_under_another_name() -> None:
     closed_loop, mpc = (
         Library.from_configuration("FastSmoothBuildings"),
         Library.from_configuration("FastSmoothBuildingsMPC"),
@@ -634,7 +633,9 @@ def test_openmodelica_compiles_the_runnable_model(tmp_path: Path, library: str, 
         warnings.simplefilter("ignore")
         network = convert_network(path.stem, path, library=Library.from_configuration(library))
     options = SimulationOptions(check_only=True)
-    results = simulate(tmp_path, network, options=options, container_name=f"compile_fast_model_{tmp_path.name}")
+    results = simulate(
+        tmp_path, network, options=options, container_name=f"compile_fast_smooth_buildings_{tmp_path.name}"
+    )
     assert is_success(results, options=options), results.output.decode(errors="replace")[-3000:]
 
 
@@ -757,7 +758,7 @@ def test_the_heat_pump_control_keeps_its_defaults_when_the_yaml_sets_none() -> N
 
 
 @pytest.mark.simulate
-def test_simulate_fast_model() -> None:
+def test_simulate_fast_smooth_buildings() -> None:
     """The runnable model of the containers simulates in OpenModelica, its zones at plausible temperatures."""
     from buildingspy.io.outputfile import Reader
 

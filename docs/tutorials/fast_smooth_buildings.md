@@ -33,7 +33,7 @@ trano create-model house.yaml FastSmoothBuildingsMPC    # the controls as inputs
 the YAML, without code of its own.
 
 * `trano/library/FastSmoothBuildings.mo` holds the components (the physics), embedded in every generated package;
-* `trano/elements/library/models/fast_model/*.yaml` hold the templates that declare a component for each element
+* `trano/elements/library/models/fast_smooth_buildings/*.yaml` hold the templates that declare a component for each element
   of the YAML, with its ports, as the templates of the other libraries;
 * the `FastSmoothBuildings` entry of `library.json` writes the constructions and glazings as records of a `Data` package,
   takes the parameter names of Buildings, and the package template `templates/fast_smooth_buildings.jinja2`; the

@@ -28,9 +28,6 @@ class LibraryChoice(str, Enum):
     buildings = "Buildings"
     fast_smooth_buildings = "FastSmoothBuildings"
     fast_smooth_buildings_mpc = "FastSmoothBuildingsMPC"
-    # deprecated names of FastSmoothBuildings, until trano 1.0
-    fast_model = "FastModel"
-    fast_model_mpc = "FastModelMPC"
 
 
 VariantsFolderOption = Annotated[
@@ -88,8 +85,7 @@ def create_model(
         typer.Argument(
             help="Library to be used: a simulation library, 'FastSmoothBuildings' for a closed-loop model close to "
             "Buildings that rumoca translates to CasADi, or 'FastSmoothBuildingsMPC' for the same model with the "
-            "controls of its systems as inputs, for optimal control ('FastModel' and 'FastModelMPC' are their former "
-            "names)."
+            "controls of its systems as inputs, for optimal control."
         ),
     ] = LibraryChoice.buildings,
     containers: Annotated[

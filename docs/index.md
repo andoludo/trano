@@ -10,7 +10,7 @@
 Trano is **Modelica library agnostic** but is natively designed to work with:  
 ✅ **Validated detailed Modelica libraries** (e.g., **[Buildings](https://github.com/lbl-srg/modelica-buildings)**, **[IDEAS](https://github.com/open-ideas/IDEAS)**,...)  
 ✅ **Reduced-order models** (e.g., **[AIXLIB](https://github.com/RWTH-EBC/AixLib)**, **ISO13790**,...)  
-✅ **Models for optimal control** (**[FastSmoothBuildings](reference/fast_model.md)**: close to Buildings, closed loop or for optimal control, translated to CasADi)  
+✅ **Models for optimal control** (**[FastSmoothBuildings](reference/fast_smooth_buildings.md)**: close to Buildings, closed loop or for optimal control, translated to CasADi)  
 ✅ **your library...**  
 
 ## 🧪 Supported libraries and validation
