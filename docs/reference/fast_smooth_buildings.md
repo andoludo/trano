@@ -16,11 +16,18 @@ trano create-model house.yaml FastSmoothBuildings       # closed loop
 trano create-model house.yaml FastSmoothBuildingsMPC    # the model for optimal control
 ```
 
-The generated package embeds the library (without its examples and documentation). With `--no-embed-libraries`
-(`Library.embed_libraries = False`), it declares `uses(FastSmoothBuildings(version=...))` instead, and the library is
-loaded beside it from the installed `fastsmoothbuildings` package: `Network.libraries` gives its folder, which
-rumoca reads as a root (`CasadiModel.from_modelica(text, name, roots=network.libraries)`) and OpenModelica loads
-before the model.
+As with Buildings and IDEAS, the generated package does not hold the library: it declares
+`uses(FastSmoothBuildings(version=...))`, and the library is loaded beside it from the installed `fastsmoothbuildings`
+package. `Network.libraries` gives its folder: trano-simulate loads it before the model (mounted in the container),
+rumoca reads it as a root (`CasadiModel.from_modelica(text, name, roots=network.libraries)`). To open a generated
+package in OMEdit or Dymola, add the folder that holds the library to the `MODELICAPATH`:
+
+```bash
+python -c "import fastsmoothbuildings; print(fastsmoothbuildings.ROOT)"
+```
+
+`--embed-libraries` (`Library.embed_libraries = True`) writes the library into the package instead (without its
+examples and documentation): a single self-contained file to send.
 
 The [documentation of FastSmoothBuildings](https://andoludo.github.io/FastSmoothBuildings/) describes its components
 and their equations, class by class, its validation against Buildings and ASHRAE 140, and the analysis behind it. The
