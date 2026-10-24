@@ -10,7 +10,7 @@
 Trano is **Modelica library agnostic** but is natively designed to work with:  
 ✅ **Validated detailed Modelica libraries** (e.g., **[Buildings](https://github.com/lbl-srg/modelica-buildings)**, **[IDEAS](https://github.com/open-ideas/IDEAS)**,...)  
 ✅ **Reduced-order models** (e.g., **[AIXLIB](https://github.com/RWTH-EBC/AixLib)**, **ISO13790**,...)  
-✅ **Models for optimal control** (**[FastSmoothBuildings](https://andoludo.github.io/trano/reference/fast_model/)**: close to Buildings, closed loop or for optimal control, translated to CasADi)  
+✅ **Models for optimal control** (**[FastSmoothBuildings](https://andoludo.github.io/trano/reference/fast_smooth_buildings/)**: close to Buildings, closed loop or for optimal control, translated to CasADi)  
 ✅ **your library...**  
 
 ## 🧪 Supported libraries and validation
@@ -72,7 +72,7 @@ environment variable.
 📚 **Tutorial:** [Creating and using component variants](https://andoludo.github.io/trano/tutorials/component_variants/)
 
 ### 🎛️ **Models for optimal control**
-- `FastSmoothBuildings` library: `trano create-model house.yaml FastSmoothBuildings` generates a model **close to Buildings** (layered walls, windows with their angular optics, long-wave and solar exchanges in the rooms, radiators, valves, boilers, heat pumps, ventilation with heat recovery, PV) that **rumoca translates to a CasADi ODE**. `FastSmoothBuildings` simulates the building in **closed loop** with its controllers and pressure-driven water circuits; `FastSmoothBuildingsMPC` leaves the controllers out, so that `trano_optimization` (the [trano-optimization](https://github.com/andoludo/trano-optimization) package, installed next to trano) decides the controls: it simulates the model, estimates its state and solves optimal control problems with IPOPT. In closed loop, FastSmoothBuildings follows Buildings within 0.05–0.39 K on the zone temperatures (0.05–0.25 K with controlled heating) (see the [FastSmoothBuildings reference](https://andoludo.github.io/trano/reference/fast_model/)).
+- `FastSmoothBuildings` library: `trano create-model house.yaml FastSmoothBuildings` generates a model **close to Buildings** (layered walls, windows with their angular optics, long-wave and solar exchanges in the rooms, radiators, valves, boilers, heat pumps, ventilation with heat recovery, PV) that **rumoca translates to a CasADi ODE**. `FastSmoothBuildings` simulates the building in **closed loop** with its controllers and pressure-driven water circuits; `FastSmoothBuildingsMPC` leaves the controllers out, so that `trano_optimization` (the [trano-optimization](https://github.com/andoludo/trano-optimization) package, installed next to trano) decides the controls: it simulates the model, estimates its state and solves optimal control problems with IPOPT. In closed loop, FastSmoothBuildings follows Buildings within 0.05–0.39 K on the zone temperatures (0.05–0.25 K with controlled heating) (see the [FastSmoothBuildings reference](https://andoludo.github.io/trano/reference/fast_smooth_buildings/)).
 
 🚀 **With Trano, creating and modifying detailed BES models has never been easier!**  
 
