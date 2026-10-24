@@ -78,11 +78,16 @@ needs_connected_export = pytest.mark.skipif(
 )
 
 
-def _network(path: Path, library: str = "FastSmoothBuildingsMPC", embed_libraries: bool = True) -> Network:
+def _network(path: Path, library: str = "FastSmoothBuildingsMPC", embed_libraries: bool = False) -> Network:
     library_ = Library.from_configuration(library).model_copy(update={"embed_libraries": embed_libraries})
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         return convert_network(path.stem, path, library=library_)
+
+
+def _translate(text: str, name: str) -> CasadiModel:
+    """rumoca's CasADi model of a generated package, the library read from its folder as the package uses it."""
+    return CasadiModel.from_modelica(text, name, roots=[fastsmoothbuildings.LIBRARY])
 
 
 def _model(path: Path, library: str = "FastSmoothBuildingsMPC", include_container: bool = True) -> str:
@@ -91,7 +96,7 @@ def _model(path: Path, library: str = "FastSmoothBuildingsMPC", include_containe
 
 @cache
 def _export(path: Path) -> CasadiModel:
-    return CasadiModel.from_modelica(_model(path), f"{path.stem}.building_mpc")
+    return _translate(_model(path), f"{path.stem}.building_mpc")
 
 
 def test_fast_smooth_buildings_is_templates_and_the_library_of_its_package() -> None:
@@ -179,15 +184,15 @@ def test_the_containers_can_be_left_out(library: str) -> None:
 def test_the_containers_leave_the_model_unchanged(path: Path, library: str) -> None:
     """Same states, inputs and derivatives with and without containers."""
     name = f"{path.stem}.building_mpc"
-    flat = CasadiModel.from_modelica(_model(path, library, include_container=False), name).description
-    grouped_model = CasadiModel.from_modelica(_model(path, library), name)
+    flat = _translate(_model(path, library, include_container=False), name).description
+    grouped_model = _translate(_model(path, library), name)
     grouped = grouped_model.description
     states = [re.sub(r"^[a-z]+1\.", "", state) for state in grouped.state_names]
     assert sorted(states) == sorted(flat.state_names)
     assert grouped.input_names == flat.input_names
     order = [states.index(state) for state in flat.state_names]
     np.testing.assert_allclose(grouped.initial_state[order], flat.initial_state)
-    flat_model = CasadiModel.from_modelica(_model(path, library, include_container=False), name)
+    flat_model = _translate(_model(path, library, include_container=False), name)
     inputs = np.array([KELVIN + 5 if "TDryBul" in n or "TBlaSky" in n else 1.0 for n in flat.input_names])
     np.testing.assert_allclose(
         np.asarray(grouped_model.derivatives(0.0, grouped.initial_state, inputs, grouped.parameter_values)).ravel()[
@@ -200,9 +205,10 @@ def test_the_containers_leave_the_model_unchanged(path: Path, library: str) -> N
 
 
 @pytest.mark.parametrize("library", ["FastSmoothBuildings", "FastSmoothBuildingsMPC"])
-def test_a_package_uses_the_library_beside_it_instead_of_embedding_it(library: str) -> None:
+def test_a_package_uses_the_library_beside_it_and_embeds_it_on_demand(library: str) -> None:
+    """As Buildings and IDEAS: the package declares the library in its uses annotation, the tools load it beside."""
     path = MODELS / "single_zone_hydronic.yaml"
-    embedded, referenced = _network(path, library), _network(path, library, embed_libraries=False)
+    embedded, referenced = _network(path, library, embed_libraries=True), _network(path, library)
 
     text = referenced.model()
 
@@ -220,8 +226,8 @@ def test_rumoca_translates_the_package_with_the_library_beside_it_as_with_it_emb
     """The same CasADi model: names, start values, parameters and derivatives."""
     path = MODELS / "single_zone_hydronic.yaml"
     name = f"{path.stem}.building_mpc"
-    referenced_network = _network(path, library, embed_libraries=False)
-    embedded = CasadiModel.from_modelica(_network(path, library).model(), name)
+    referenced_network = _network(path, library)
+    embedded = CasadiModel.from_modelica(_network(path, library, embed_libraries=True).model(), name)
     referenced = CasadiModel.from_modelica(referenced_network.model(), name, roots=referenced_network.libraries)
 
     for description in (embedded.description, referenced.description):
@@ -242,7 +248,7 @@ def test_rumoca_translates_the_package_with_the_library_beside_it_as_with_it_emb
 
 def test_the_package_holds_the_model_and_its_runnable_wrapper() -> None:
     model = _model(MODELS / "single_zone_hydronic.yaml")
-    assert "package FastSmoothBuildings" in model
+    assert "annotation (uses(FastSmoothBuildings(" in model
     assert "model building_mpc" in model
     assert "building_mpc mpc(envelope1(weather(lat=weather_reader.lat" in model
     assert "Buildings.BoundaryConditions.WeatherData.ReaderTMY3 weather_reader" in model
@@ -301,7 +307,7 @@ def test_the_roles_come_from_the_model() -> None:
 )
 def test_rumoca_translates_the_closed_loop_model(path: Path) -> None:
     """The closed-loop model is an explicit ODE too: weather and gains in, no control."""
-    model = CasadiModel.from_modelica(_model(path, "FastSmoothBuildings"), f"{path.stem}.building_mpc")
+    model = _translate(_model(path, "FastSmoothBuildings"), f"{path.stem}.building_mpc")
     description = model.description
     assert set(WEATHER) <= set(description.input_names)
     assert not Roles.infer(description).controls
@@ -313,7 +319,7 @@ def test_the_controllers_expose_their_smoothing_as_parameters() -> None:
     """The width of every smooth transition and the switching time of every hysteresis are parameters of the
     closed-loop model (a calibration widens them), at the values of the switching controllers by default."""
     path = MODELS / "house_infiltration_air_water_heat_pump.yaml"
-    model = CasadiModel.from_modelica(_model(path, "FastSmoothBuildings"), f"{path.stem}.building_mpc")
+    model = _translate(_model(path, "FastSmoothBuildings"), f"{path.stem}.building_mpc")
     values = dict(zip(model.description.parameter_names, model.description.parameter_values, strict=True))
     smoothing = {name for name in values if name.endswith((".dU", ".dY", ".dMax", ".dT", ".dtSet", ".tau"))}
 
@@ -874,7 +880,7 @@ def test_the_closed_loop_and_mpc_models_share_the_layer_boundaries() -> None:
     place; the nodes inside the layers are TSub, in the closed-loop model only."""
     path = MODELS / "single_zone_hydronic.yaml"
     mpc = _export(path).description.state_names
-    closed_loop_model = CasadiModel.from_modelica(_model(path, "FastSmoothBuildings"), f"{path.stem}.building_mpc")
+    closed_loop_model = _translate(_model(path, "FastSmoothBuildings"), f"{path.stem}.building_mpc")
     closed_loop = closed_loop_model.description.state_names
     boundaries = {name for name in mpc if ".T[" in name}
     assert boundaries

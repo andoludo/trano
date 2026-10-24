@@ -52,7 +52,7 @@ def _register_variant_folders(folders: list[Path] | None) -> None:
         register_variants_folder(folder)
 
 
-def _create_network(model: str, library: str, embed_libraries: bool = True) -> Network:
+def _create_network(model: str, library: str, embed_libraries: bool = False) -> Network:
     model_ = Path(model).resolve()
     library_ = Library.from_configuration(library).model_copy(update={"embed_libraries": embed_libraries})
     return convert_network(str(model_.stem), model_, library=library_)
@@ -98,11 +98,11 @@ def create_model(
     embed_libraries: Annotated[
         bool,
         typer.Option(
-            help="Embed the Modelica library the model uses (FastSmoothBuildings) in the generated package; "
-            "--no-embed-libraries declares it in the uses annotation of the package instead, to load it beside the "
-            "model (the folder of the installed fastsmoothbuildings package)."
+            help="Embed the Modelica library the model uses (FastSmoothBuildings) in the generated package, a single "
+            "self-contained file; by default the package declares it in its uses annotation, as Buildings and IDEAS, "
+            "and it is loaded beside the model from the installed fastsmoothbuildings package."
         ),
-    ] = True,
+    ] = False,
     variants_folder: VariantsFolderOption = None,
 ) -> None:
     _register_variant_folders(variants_folder)

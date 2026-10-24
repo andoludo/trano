@@ -86,9 +86,10 @@ class Library(BaseModel):
         "beside those installed in OpenModelica.",
     )
     embed_libraries: bool = Field(
-        default=True,
-        description="Embed the modelica_libraries in the generated package; otherwise the package declares them in "
-        "its uses annotation and the tools load them beside it (Network.libraries).",
+        default=False,
+        description="Embed the modelica_libraries in the generated package (a single self-contained file); by "
+        "default the package declares them in its uses annotation and the tools load them beside it "
+        "(Network.libraries), as Buildings and IDEAS.",
     )
     connectors: Connectors = Field(default_factory=lambda: Connectors(**_base("connectors")))
     data_bus_template: str = Field(

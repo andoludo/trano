@@ -32,7 +32,10 @@ trano create-model house.yaml FastSmoothBuildingsMPC    # the controls as inputs
 `FastSmoothBuildings` is used exactly as trano uses Buildings and IDEAS: a Modelica library and one template per element of
 the YAML, without code of its own.
 
-* `trano/library/FastSmoothBuildings.mo` holds the components (the physics), embedded in every generated package;
+* the [FastSmoothBuildings](https://github.com/andoludo/FastSmoothBuildings) library holds the components (the
+  physics), installed with trano as the `fastsmoothbuildings` package: a generated package declares it in its `uses`
+  annotation and the tools load it beside the model, as Buildings and IDEAS (`--embed-libraries` writes it into the
+  package instead);
 * `trano/elements/library/models/fast_smooth_buildings/*.yaml` hold the templates that declare a component for each element
   of the YAML, with its ports, as the templates of the other libraries;
 * the `FastSmoothBuildings` entry of `library.json` writes the constructions and glazings as records of a `Data` package,
@@ -144,7 +147,7 @@ from trano.elements.library.library import Library
 from trano_optimization import KELVIN, CasadiModel, OptimalControl, OptimalControlSettings
 
 network = convert_network("house", Path("house.yaml"), library=Library.from_configuration("FastSmoothBuildingsMPC"))
-model = CasadiModel.from_modelica(network.model(), "house.building_mpc")
+model = CasadiModel.from_modelica(network.model(), "house.building_mpc", roots=network.libraries)
 ocp = OptimalControl(model, settings=OptimalControlSettings(time_step=3600))
 
 hours = np.arange(24)

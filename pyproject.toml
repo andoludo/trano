@@ -40,7 +40,7 @@ dependencies = [
     "typer>=0.19.2,<1",
     "pydot>=3.0.4,<4",
     "yattag>=1.16.1,<2",
-    "trano-simulate>=0.2.0,<1",
+    "trano-simulate>=0.3.0,<1",
     "fastsmoothbuildings>=0.2.0,<1",
 ]
 

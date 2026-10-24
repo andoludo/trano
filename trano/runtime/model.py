@@ -19,7 +19,7 @@ import logging
 from collections.abc import Mapping, Sequence
 from contextlib import ExitStack
 from dataclasses import asdict, dataclass, field
-from pathlib import Path
+from pathlib import Path, PurePath
 from types import TracebackType
 from typing import Self
 
@@ -42,6 +42,7 @@ from trano_simulate.simulate import (
     SimulationOptions,
     client,
     container,
+    library_directory,
     load_statements,
 )
 from trano.topology import Network
@@ -131,14 +132,17 @@ def build_script(  # noqa: PLR0913
     build_directory: str = BUILD_DIRECTORY,
     flags: tuple[str, ...] = OPENMODELICA_FLAGS,
     environment: ModelicaEnvironment = MODELICA_ENVIRONMENT,
+    libraries: Sequence[PurePath] = (),
 ) -> str:
     """The OpenModelica script compiling ``model_name`` into ``/simulation/<build_directory>``.
 
     ``buildModel`` takes the keyword arguments of ``simulate``: they become the default experiment
-    (and variable filter) of the init file, which the runs can override.
+    (and variable filter) of the init file, which the runs can override. ``libraries`` are the folders, as ``omc``
+    sees them, of the libraries the model uses without embedding them (FastSmoothBuildings).
     """
     flag_statement = f'\n    setCommandLineOptions("{" ".join(flags)}"); getErrorString();' if flags else ""
-    return f"""{flag_statement}{load_statements(model, model_file, environment)}
+    loads = load_statements(model, model_file, environment, libraries=libraries)
+    return f"""{flag_statement}{loads}
     getErrorString();
     cd("{CONTAINER_PROJECT}/{build_directory}");
     buildModel({model_name}, {options.simulate_arguments}, outputFormat="{RESULT_FORMAT}");
@@ -182,8 +186,11 @@ def build_model(  # noqa: PLR0913
         library=network.library.name,
     )
     script = directory / "build.mos"
-    script.write_text(build_script(model, model_file, compiled.model_name, options, build_directory, flags))
-    with container(client(), project_path, container_name=container_name) as container_:
+    libraries = [library_directory(library, CONTAINER_MODEL_DIR) for library in network.libraries]
+    script.write_text(
+        build_script(model, model_file, compiled.model_name, options, build_directory, flags, libraries=libraries)
+    )
+    with container(client(), project_path, container_name=container_name, libraries=network.libraries) as container_:
         result = container_.exec_run(cmd=f"omc {CONTAINER_PROJECT}/{build_directory}/build.mos")
     log = result.output.decode(errors="replace")
     directory.joinpath("build.log").write_text(log)
