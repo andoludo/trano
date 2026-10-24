@@ -873,7 +873,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/fast_model/" class="md-nav__link">
+      <a href="../../tutorials/fast_smooth_buildings/" class="md-nav__link">
         
   
   
@@ -1446,9 +1446,8 @@
 <p><a href="https://github.com/andoludo/FastSmoothBuildings">FastSmoothBuildings</a> is a Modelica library of buildings and their
 systems written as smooth, event-free, explicit ordinary differential equations: in closed loop it follows the
 Buildings library, and with the controls of its systems as inputs <a href="https://github.com/CogniPilot/rumoca">rumoca</a>
-translates it into a CasADi model for model predictive control, state estimation and calibration. It was trano's
-<code>FastModel</code> library and now lives in its own repository, released on PyPI as <code>fastsmoothbuildings</code>, which trano
-depends on.</p>
+translates it into a CasADi model for model predictive control, state estimation and calibration. It lives in its
+own repository, released on PyPI as <code>fastsmoothbuildings</code>, which trano depends on.</p>
 <p>trano generates models with it as with Buildings and IDEAS, in two configurations of the same templates:</p>
 <ul>
 <li><strong><code>FastSmoothBuildings</code></strong>, the closed loop: the controllers of the YAML are part of the model;</li>
@@ -1461,10 +1460,10 @@ depends on.</p>
 (<code>Library.embed_libraries = False</code>), it declares <code>uses(FastSmoothBuildings(version=...))</code> instead, and the library is
 loaded beside it from the installed <code>fastsmoothbuildings</code> package: <code>Network.libraries</code> gives its folder, which
 rumoca reads as a root (<code>CasadiModel.from_modelica(text, name, roots=network.libraries)</code>) and OpenModelica loads
-before the model. The former names <code>FastModel</code> and <code>FastModelMPC</code> are still accepted, with a deprecation warning.</p>
+before the model.</p>
 <p>The <a href="https://andoludo.github.io/FastSmoothBuildings/">documentation of FastSmoothBuildings</a> describes its components
 and their equations, class by class, its validation against Buildings and ASHRAE 140, and the analysis behind it. The
-<a href="../../tutorials/fast_model/">FastSmoothBuildings tutorial</a> shows how to use the generated models in CasADi.</p>
+<a href="../../tutorials/fast_smooth_buildings/">FastSmoothBuildings tutorial</a> shows how to use the generated models in CasADi.</p>
 
 
 
