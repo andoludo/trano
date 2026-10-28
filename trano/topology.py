@@ -37,10 +37,14 @@ from trano.elements.system import (
 )
 from trano.elements.types import Tilt
 from trano.elements.utils import generate_normalized_layout
-from trano.exceptions import SystemsNotConnectedError
+from trano.exceptions import InvalidModelNameError, SystemsNotConnectedError
 from trano.performance import PerformanceOptions, apply_performance_options
 
 logger = logging.getLogger(__name__)
+
+# the classes a generated package declares beside the model: a package of one of these names hides itself from the
+# references inside it (``building.Components...`` resolves ``building`` to the model ``building``)
+RESERVED_MODEL_NAMES = frozenset({"building", "building_mpc", "Components", "Data", "Trano", "FastSmoothBuildings"})
 
 
 def all_subclasses(cls: type[BaseElement]) -> list[type[BaseElement]]:
@@ -81,6 +85,11 @@ class Network:  # : PLR0904, #TODO: fix this
         diagram_scale: int | None = None,
         performance: PerformanceOptions | None = None,
     ) -> None:
+        if name in RESERVED_MODEL_NAMES:
+            raise InvalidModelNameError(
+                f"A model cannot be named {name!r}: its generated package declares a class of that name "
+                f"({', '.join(sorted(RESERVED_MODEL_NAMES))}). Rename the YAML file, e.g. 'my_{name}.yaml'."
+            )
         reset_element_names()
         self.graph: DiGraph = DiGraph()
         self.edge_attributes: list[Connection] = []
