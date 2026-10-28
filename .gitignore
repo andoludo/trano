@@ -177,6 +177,7 @@ cython_debug/
 # Working directory of tests/test_simulate.py::test_simulate_house_complex
 tests/simulation/
 validation/bestest/_reports/
+validation/systems/_reports/
 
 # OpenModelica logs and result files used as test fixtures
 !tests/data/omc_logs/*.log

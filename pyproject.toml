@@ -93,6 +93,7 @@ markers = [
     "compile: OpenModelica checks of every model of the repository (Docker, about a minute per model)",
     "runtime: compile once and change parameters at run time: readback, impact and equivalence (Docker, hours)",
     "simulation: simulations with the local runtime, which need OpenModelica's omc on the PATH",
+    "systems: the systems validation (validation/systems): a week per case and library (Docker or local omc, hours)",
 ]
 addopts = "-ra"
 

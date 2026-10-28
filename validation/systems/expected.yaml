@@ -1,0 +1,95 @@
+# Bands of the KPIs of the systems validation, with the physical reasoning behind each one.
+#
+# A band holds for the three libraries unless `libraries` says otherwise. The KPIs are named as in
+# validation/systems/kpi.py (UNITS lists them). `pytest -m systems` fails when a KPI leaves its band.
+#
+# Heat pump: the Vitocal 251-A08 EN 14511 table scaled to 4 kW at -8/45 degC. The table COP at the measured
+# condenser outlet (the supply set point plus the 5 K band the compressor controller aims at, about 48 degC for
+# a 45 degC set point) and source temperature is the reference; the measured COP while running stays within
+# 15 % of it: below it because of the start-up and part-load losses of the refrigerant cycle model and the
+# condenser pump, above it when the condenser runs cooler than the mean.
+
+hp_winter:
+  - {kpi: hp_scop, min: 2.4, max: 3.6, why: "A-1/W45 point of the table gives 2.85; cycling, part load and the pump take up to 15 % off"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured condenser outlet and source temperatures"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the safety control holds the compressor at least 300 s once started", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_shortest_stop_min, min: 5, why: "the safety control keeps the compressor off at least 300 s once stopped", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_speed_min_running, min: 0.29, why: "the compressor never runs below its minimum speed yComMin = 0.3", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_speed_max, max: 1.0, why: "the compressor speed is a fraction of the maximum"}
+  - {kpi: hp_starts_per_day, max: 30, why: "a 100 l buffer on a 4 kW heat pump holds the cycling to a start every hour or two at part load"}
+  - {kpi: hp_supply_setpoint_max_c, max: 45.01, why: "the heating curve never asks more than the design supply temperature"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 36, max: 44, why: "at -1 degC the curve from 45 degC (-8 degC) to 30 degC (16 degC) gives 40.6 degC"}
+  - {kpi: hp_buffer_below_band_hours, max: 3, why: "the buffer stays inside its charging band while the heat pump keeps up with the load"}
+  - {kpi: hp_pump_share, max: 0.1, why: "the condenser pump draws a few percent of the compressor electricity"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "2.4 kW design loss at -8 degC: 1.5 to 2 kW on average over the week at -1 degC with the night setback"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its 21 degC set point during occupancy, apart from the morning recovery"}
+  - {kpi: hours_below_setpoint, max: 50, why: "the morning recovery from the 16 degC setback takes a few hours a day with a 45 degC radiator"}
+
+hp_shoulder:
+  - {kpi: hp_scop, min: 2.8, max: 4.5, why: "at 5 to 9 degC the curve asks 33 to 36 degC: the table gives 3.5 to 4.2 at A7/W38"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 30, max: 38, why: "the heating curve at 5 to 9 degC outdoor"}
+  - {kpi: hp_starts_per_day, max: 40, why: "part load: shorter runs, more starts, still bounded by the buffer and the minimum times"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the minimum on time of the safety control", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_speed_max, max: 1.0, why: "the compressor speed is a fraction of the maximum"}
+  - {kpi: zone_mean_occupied_c, min: 20, max: 23, why: "the zone is held at its set point; solar gains may push it above"}
+
+hp_summer:
+  - {kpi: hp_run_hours, max: 0.5, why: "above the 16 degC heating limit the heat pump does not heat"}
+  - {kpi: hp_electricity_kwh, max: 1, why: "no compressor run, no condenser pump run"}
+  - {kpi: hp_heat_kwh, max: 5, why: "no heat delivered in July"}
+  - {kpi: zone_min_c, min: 18, why: "the zone floats above the set points in July"}
+
+hp_no_buffer:
+  - {kpi: hp_scop, min: 2.3, max: 3.6, why: "the same heat pump and week as hp_winter, more cycling on the small hydraulic separator"}
+  - {kpi: hp_cop_ratio, min: 0.8, max: 1.1, why: "more start-ups than with the buffer, each with its losses"}
+  - {kpi: hp_starts_per_day, min: 10, max: 80, why: "a 60 l separator holds the cycling to a start every 20 to 60 minutes at part load"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the minimum on time of the safety control", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_shortest_stop_min, min: 5, why: "the minimum off time of the safety control", libraries: [Buildings, IDEAS]}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+
+# Constant source temperature and a flat 45 degC curve (Buildings and IDEAS): the condenser outlet runs at
+# about 48 degC, where the table gives 2.17 at -10 degC, 2.28 at -7 degC, 2.99 at 2 degC, 3.53 at 7 degC and
+# 4.06 at 12 degC (table_cop of kpi.py).
+hp_source_m10:
+  - {kpi: hp_source_running_c, min: -10.5, max: -9.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 1.85, max: 2.5, why: "table 2.17 at A-10/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+hp_source_m7:
+  - {kpi: hp_source_running_c, min: -7.5, max: -6.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 1.95, max: 2.65, why: "table 2.28 at A-7/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+hp_source_2:
+  - {kpi: hp_source_running_c, min: 1.5, max: 2.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 2.55, max: 3.45, why: "table 2.99 at A2/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+hp_source_7:
+  - {kpi: hp_source_running_c, min: 6.5, max: 7.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 3.0, max: 4.1, why: "table 3.53 at A7/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+hp_source_12:
+  - {kpi: hp_source_running_c, min: 11.5, max: 12.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 3.45, max: 4.7, why: "table 4.06 at A12/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+
+# Supply temperature sweep at a constant 7 degC source: the table gives 4.47 at A7/W38 and 2.97 at A7/W58.
+hp_supply_35:
+  - {kpi: hp_condenser_out_running_c, min: 34, max: 42, why: "the compressor controller aims 5 K above the 35 degC set point"}
+  - {kpi: hp_cop_running, min: 3.8, max: 5.15, why: "table 4.47 at A7/W38, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 34.9, max: 35.1, why: "the flat heating curve"}
+hp_supply_55:
+  - {kpi: hp_condenser_out_running_c, min: 54, max: 62, why: "the compressor controller aims 5 K above the 55 degC set point"}
+  - {kpi: hp_cop_running, min: 2.5, max: 3.45, why: "table 2.97 at A7/W58, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 54.9, max: 55.1, why: "the flat heating curve"}
