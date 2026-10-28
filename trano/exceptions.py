@@ -12,6 +12,7 @@ __all__ = [
     "IncompatiblePortsError",
     "InvalidBuildingStructureError",
     "InvalidModelError",
+    "InvalidModelNameError",
     "InvalidSensorInletError",
     "NoConnectionFoundError",
     "OpenModelicaNotFoundError",
@@ -55,6 +56,14 @@ class InvalidBuildingStructureError(Exception): ...
 
 
 class InvalidSensorInletError(Exception): ...
+
+
+class InvalidModelNameError(ValueError):
+    """The name of the model is the name of a class its generated package declares (``building``, ``Components``...).
+
+    Inside the package, ``<name>.Components.BaseClasses...`` would resolve ``<name>`` to that class instead of the
+    package, and the model would not compile.
+    """
 
 
 class InvalidModelError(ValueError):

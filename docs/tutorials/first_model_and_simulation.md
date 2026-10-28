@@ -219,7 +219,7 @@ The code snippet imports the `create_model` function from the `trano.main` modul
     - Description: The path to the YAML file that contains configuration settings for the model being created.
 
 
-The model is created in the same folder as the configuration file, with the extension .mo. In this case, the model is saved as `first_model.mo`. Provided that the necessary libraries, such as the Buildings library, are loaded, the generated model can be opened in OpenModelica, as illustrated in the figure below. Additionally, if not specified, Trano utilizes the Buildings library to generate the model.
+The model is created in the same folder as the configuration file, with the extension .mo. In this case, the model is saved as `first_model.mo`. The file name is also the name of the generated Modelica package, so it cannot be the name of a class the package declares (`building`, `building_mpc`, `Components`, `Data`, `Trano` or `FastSmoothBuildings`): Trano refuses such a name and asks to rename the file. Provided that the necessary libraries, such as the Buildings library, are loaded, the generated model can be opened in OpenModelica, as illustrated in the figure below. Additionally, if not specified, Trano utilizes the Buildings library to generate the model.
 
 ![Generated model](./img/first_simulation_1.jpg)
 
