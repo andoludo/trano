@@ -1871,7 +1871,7 @@ rendered for the Buildings library:</p>
 </ul>
 </li>
 </ul>
-<p>The model is created in the same folder as the configuration file, with the extension .mo. In this case, the model is saved as <code>first_model.mo</code>. Provided that the necessary libraries, such as the Buildings library, are loaded, the generated model can be opened in OpenModelica, as illustrated in the figure below. Additionally, if not specified, Trano utilizes the Buildings library to generate the model.</p>
+<p>The model is created in the same folder as the configuration file, with the extension .mo. In this case, the model is saved as <code>first_model.mo</code>. The file name is also the name of the generated Modelica package, so it cannot be the name of a class the package declares (<code>building</code>, <code>building_mpc</code>, <code>Components</code>, <code>Data</code>, <code>Trano</code> or <code>FastSmoothBuildings</code>): Trano refuses such a name and asks to rename the file. Provided that the necessary libraries, such as the Buildings library, are loaded, the generated model can be opened in OpenModelica, as illustrated in the figure below. Additionally, if not specified, Trano utilizes the Buildings library to generate the model.</p>
 <p><img alt="Generated model" src="../img/first_simulation_1.jpg" /></p>
 <p>If one opens the main building components, the generated components are subdivided into various sub-components, as illustrated below. The envelope sub-component holds the walls, the roof, the floor and the windows; the emission sub-component holds the ideal heating and cooling system.</p>
 <p><img alt="Building components" src="../img/first_simulation_2.jpg" /></p>
