@@ -93,3 +93,18 @@ def test_the_model_hash_ignores_layout_and_the_order_of_records() -> None:
     assert model_hash(one, "Buildings", options) == model_hash(other, "Buildings", options)
     assert model_hash(one, "Buildings", options) != model_hash(changed, "Buildings", options)
     assert model_hash(one, "Buildings", options) != model_hash(one, "IDEAS", options)
+
+
+def test_the_model_hash_ignores_the_order_of_declarations_after_an_annotation() -> None:
+    """The templates emit some declarations in set order; the annotation closing the previous one must not
+    glue them together."""
+    from trano.simulate.simulate import SimulationOptions
+    from validation.bestest.harness import model_hash
+
+    options = SimulationOptions(end_time=3600)
+    declarations = ["Modelica.Blocks.Sources.RealExpression a(y=1);", "Modelica.Blocks.Sources.RealExpression b(y=2);"]
+    head = "model m\n  DataBus dataBus annotation (Placement(x=1));\n"
+    one = head + "\n".join(declarations) + "\nend m;"
+    other = head + "\n".join(declarations[::-1]) + "\nend m;"
+
+    assert model_hash(one, "Buildings", options) == model_hash(other, "Buildings", options)

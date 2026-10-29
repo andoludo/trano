@@ -78,6 +78,7 @@ nav:
       - FastSmoothBuildings: reference/fast_smooth_buildings.md
   - Validation:
       - ASHRAE 140 (BESTEST): validation/bestest.md
+      - Systems (heat pumps, boilers, valves, ventilation): validation/systems.md
       - A walk through the BESTEST cases: validation/bestest_cases.md
       - Residential reference cases: validation/residential_reference_cases.md
       - FastSmoothBuildings against Buildings: https://andoludo.github.io/FastSmoothBuildings/validation/study/

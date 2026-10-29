@@ -172,7 +172,7 @@ BoilerParameters:
       range: string
     temperature_heatpump_source:
       alias: TSouSet
-      description: Constant source temperature of the heat pump [K], used when heat_pump_source_outdoor_air is false (and by the water-water heat pump)
+      description: Constant source temperature of the heat pump [K], the water loop of the water-water heat pump, or the source of the air-water heat pump when heat_pump_source_outdoor_air is false
       ifabsent: float(286.15)
       range: float
       minimum_value: 223.15
@@ -233,12 +233,12 @@ BoilerParameters:
         iso_13790: {handled: true}
     heat_pump_nominal_source_temperature:
       alias: TEvaHea_nominal
-      description: Source (outdoor air) temperature at the rating point of the air-water heat pump [K], where it delivers the nominal heating power at the supply temperature set point; the design outdoor temperature by default
+      description: Source temperature at the rating point of the heat pump [K], where it delivers the nominal heating power at the supply temperature set point; the design outdoor temperature (air-water), the coldest ground temperature (ground-source) or the source temperature (water-water) by default
       range: float
       minimum_value: 223.15
       maximum_value: 423.15
       libraries:
-        buildings: &hp_source_temperature {name: TEvaHea_nominal, variants: [air_water_heat_pump]}
+        buildings: &hp_source_temperature {name: TEvaHea_nominal, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_source_temperature
         reduced_order: *hp_source_temperature
         iso_13790: *hp_source_temperature
@@ -248,16 +248,16 @@ BoilerParameters:
       range: float
       minimum_value: 0
       libraries:
-        buildings: &hp_source_flow {name: mSou_flow_nominal, variants: [air_water_heat_pump, water_water_heat_pump]}
+        buildings: &hp_source_flow {name: mSou_flow_nominal, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_source_flow
         reduced_order: *hp_source_flow
         iso_13790: *hp_source_flow
     heat_pump_source_outdoor_air:
       alias: useOutdoorAirSource
-      description: Whether the evaporator of the air-water heat pump takes the outdoor air of the weather data (true by default) or the constant temperature_heatpump_source
+      description: Whether the evaporator of the air-water heat pump takes the outdoor air of the weather data (true by default) or the constant temperature_heatpump_source (a sweep of the source temperature); Buildings and IDEAS only
       range: string
       libraries:
-        buildings: &hp_air_water_only {name: useOutdoorAirSource, variants: [air_water_heat_pump]}
+        buildings: &hp_air_water_only {name: useOutdoorAirSource, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_air_water_only
         reduced_order: *hp_air_water_only
         iso_13790: *hp_air_water_only
@@ -268,7 +268,7 @@ BoilerParameters:
       minimum_value: 223.15
       maximum_value: 423.15
       libraries:
-        buildings: &hp_design_outdoor {name: TOutDes, variants: [air_water_heat_pump]}
+        buildings: &hp_design_outdoor {name: TOutDes, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_design_outdoor
         reduced_order: *hp_design_outdoor
         iso_13790: *hp_design_outdoor
@@ -279,7 +279,7 @@ BoilerParameters:
       minimum_value: 223.15
       maximum_value: 423.15
       libraries:
-        buildings: &hp_heating_limit {name: TOutHeaLim, variants: [air_water_heat_pump]}
+        buildings: &hp_heating_limit {name: TOutHeaLim, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_heating_limit
         reduced_order: *hp_heating_limit
         iso_13790: *hp_heating_limit
@@ -290,7 +290,7 @@ BoilerParameters:
       minimum_value: 223.15
       maximum_value: 423.15
       libraries:
-        buildings: &hp_minimum_supply {name: TSupMin, variants: [air_water_heat_pump]}
+        buildings: &hp_minimum_supply {name: TSupMin, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_minimum_supply
         reduced_order: *hp_minimum_supply
         iso_13790: *hp_minimum_supply
@@ -300,7 +300,7 @@ BoilerParameters:
       range: float
       minimum_value: 0
       libraries:
-        buildings: &hp_band {name: dTHys, variants: [air_water_heat_pump]}
+        buildings: &hp_band {name: dTHys, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_band
         reduced_order: *hp_band
         iso_13790: *hp_band
@@ -310,7 +310,7 @@ BoilerParameters:
       range: float
       minimum_value: 0
       libraries:
-        buildings: &hp_min_on {name: minOnTime, variants: [air_water_heat_pump]}
+        buildings: &hp_min_on {name: minOnTime, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_min_on
         reduced_order: *hp_min_on
         iso_13790: *hp_min_on
@@ -320,10 +320,113 @@ BoilerParameters:
       range: float
       minimum_value: 0
       libraries:
-        buildings: &hp_min_off {name: minOffTime, variants: [air_water_heat_pump]}
+        buildings: &hp_min_off {name: minOffTime, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
         ideas: *hp_min_off
         reduced_order: *hp_min_off
         iso_13790: *hp_min_off
+    heat_pump_data:
+      description: >-
+        Performance data of the heat pump (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump):
+        an EN 14511 record of Buildings 13 scaled to the nominal heating power (Vitocal251A08, the default of the
+        air-water heat pump, an 8 kW air-water unit; SingleSplitRXM20R, a 2 kW air-air split; WAMAK_WaterToWater_220kW,
+        a 220 kW water-water unit), `table` for the tables of heat_pump_table_heating_capacity and
+        heat_pump_table_electrical_power, or `carnot` (the default of the ground-source and water-water heat
+        pumps) for a constant Carnot effectiveness heat_pump_carnot_effectiveness
+      range: string
+      render: false
+      libraries:
+        buildings: &hp_handled {handled: true}
+        ideas: *hp_handled
+        reduced_order: *hp_handled
+        iso_13790: *hp_handled
+    heat_pump_carnot_effectiveness:
+      description: >-
+        Carnot effectiveness of the heat pump when heat_pump_data is carnot [1]: the COP is this fraction of the
+        Carnot COP between the condenser outlet plus 5 K and the source minus 5 K (air) or 2 K (water); 0.45 by
+        default, about 3.7 at A7/W35 and 4.4 at B0/W35
+      range: float
+      minimum_value: 0.1
+      maximum_value: 0.8
+      render: false
+      libraries:
+        buildings: *hp_handled
+        ideas: *hp_handled
+        reduced_order: *hp_handled
+        iso_13790: *hp_handled
+    heat_pump_table_source_temperatures:
+      description: Source temperatures of the performance tables of the heat pump (heat_pump_data table) [K], the columns of the tables, increasing
+      range: float
+      multivalued: true
+      render: false
+      libraries:
+        buildings: *hp_handled
+        ideas: *hp_handled
+        reduced_order: *hp_handled
+        iso_13790: *hp_handled
+    heat_pump_table_condenser_temperatures:
+      description: Condenser outlet (supply) temperatures of the performance tables of the heat pump (heat_pump_data table) [K], the rows of the tables, increasing
+      range: float
+      multivalued: true
+      render: false
+      libraries:
+        buildings: *hp_handled
+        ideas: *hp_handled
+        reduced_order: *hp_handled
+        iso_13790: *hp_handled
+    heat_pump_table_heating_capacity:
+      description: >-
+        Heating capacity table of the heat pump (heat_pump_data table) [W]: one row per condenser temperature, the
+        values per source temperature separated by commas, the rows by semicolons, as "4490, 5170, 6470; 4230,
+        4900, 6260"; a 0 marks a point outside the operating envelope
+      range: string
+      render: false
+      libraries:
+        buildings: *hp_handled
+        ideas: *hp_handled
+        reduced_order: *hp_handled
+        iso_13790: *hp_handled
+    heat_pump_table_electrical_power:
+      description: Electrical power table of the heat pump (heat_pump_data table) [W], laid out as heat_pump_table_heating_capacity
+      range: string
+      render: false
+      libraries:
+        buildings: *hp_handled
+        ideas: *hp_handled
+        reduced_order: *hp_handled
+        iso_13790: *hp_handled
+    ground_temperature_mean:
+      alias: TGroMea
+      description: Mean temperature of the ground loop of the ground-source heat pump over the year [K], 283.15 by default
+      range: float
+      minimum_value: 253.15
+      maximum_value: 323.15
+      libraries:
+        buildings: &hp_ground_only {name: TGroMea, variants: [ground_source_heat_pump]}
+        ideas: *hp_ground_only
+        reduced_order: *hp_ground_only
+        iso_13790: *hp_ground_only
+    ground_temperature_amplitude:
+      alias: TGroAmp
+      description: Amplitude of the annual variation of the ground loop temperature of the ground-source heat pump [K], 3 by default (the loop is coldest at the end of the heating season)
+      range: float
+      minimum_value: 0
+      maximum_value: 20
+      libraries:
+        buildings: &hp_ground_amplitude {name: TGroAmp, variants: [ground_source_heat_pump]}
+        ideas: *hp_ground_amplitude
+        reduced_order: *hp_ground_amplitude
+        iso_13790: *hp_ground_amplitude
+    ground_coldest_day:
+      alias: groColDay
+      description: Day of the year when the ground loop of the ground-source heat pump is coldest [d], 45 (mid-February) by default
+      range: float
+      minimum_value: 0
+      maximum_value: 366
+      libraries:
+        buildings: &hp_ground_day {name: groColDay, variants: [ground_source_heat_pump]}
+        ideas: *hp_ground_day
+        reduced_order: *hp_ground_day
+        iso_13790: *hp_ground_day
     temperature_initial:
       alias: T_start
       description: Initial temperature of the boiler and of the tank water [K], 293.15 by default
@@ -1447,7 +1550,7 @@ AhuParameters:
       ifabsent: string(2*100*1.2/3600)
       range: string
       libraries:
-        buildings: &ahu_flow [{name: mAir_flow_nominal, when_given: true, variants: [default]}, {name: m_flow_nominal, variants: [test, system_d]}]
+        buildings: &ahu_flow [{name: mAir_flow_nominal, when_given: true, variants: [default]}, {name: m_flow_nominal, variants: [test, system_d, system_c]}]
         ideas: *ahu_flow
         reduced_order: *ahu_flow
         iso_13790: *ahu_flow
@@ -1457,7 +1560,7 @@ AhuParameters:
       ifabsent: string(200)
       range: string
       libraries:
-        buildings: &ahu_dp {name: dp_nominal, variants: [test, system_d]}
+        buildings: &ahu_dp {name: dp_nominal, variants: [test, system_d, system_c]}
         ideas: *ahu_dp
         reduced_order: *ahu_dp
         iso_13790: *ahu_dp
@@ -1521,6 +1624,74 @@ AhuParameters:
         ideas: *ahu_oa_p
         reduced_order: *ahu_oa_p
         iso_13790: *ahu_oa_p
+    fan_schedule:
+      alias: fanSchedule
+      description: >-
+        Day schedule of the fans of a balanced (system_d) or extract (system_c) ventilation unit: rows of time since
+        midnight [s] and fraction of the design flow, held until the next row, as "[0, 0.5; 25200, 1; 79200, 0.5]"
+        for half the flow at night; the design flow all day by default
+      range: string
+      libraries:
+        buildings: &ahu_schedule {name: fanSchedule, variants: [system_d, system_c]}
+        ideas: *ahu_schedule
+        reduced_order: *ahu_schedule
+        iso_13790: *ahu_schedule
+    summer_bypass:
+      alias: useBypass
+      description: >-
+        Whether the balanced ventilation unit (system_d) leads the outdoor air around its heat recovery when the
+        outdoor air is above bypass_outdoor_temperature and cooler than the extract air (free cooling), false by
+        default
+      range: string
+      libraries:
+        buildings: &ahu_bypass {name: useBypass, variants: [system_d]}
+        ideas: *ahu_bypass
+        reduced_order: *ahu_bypass
+        iso_13790: *ahu_bypass
+    bypass_outdoor_temperature:
+      alias: TOutByp
+      description: Outdoor temperature above which the summer bypass of the balanced ventilation unit may open [K], 288.15 by default
+      range: float
+      minimum_value: 223.15
+      maximum_value: 323.15
+      libraries:
+        buildings: &ahu_bypass_temperature {name: TOutByp, variants: [system_d]}
+        ideas: *ahu_bypass_temperature
+        reduced_order: *ahu_bypass_temperature
+        iso_13790: *ahu_bypass_temperature
+    supply_air_minimum_temperature:
+      alias: TSupMin
+      description: >-
+        Minimum supply air temperature held by an electric post-heater after the supply fan of the balanced
+        ventilation unit (system_d) [K]; no post-heater when absent
+      range: float
+      minimum_value: 273.15
+      maximum_value: 323.15
+      libraries:
+        buildings: &ahu_post_heater {name: TSupMin, variants: [system_d]}
+        ideas: *ahu_post_heater
+        reduced_order: *ahu_post_heater
+        iso_13790: *ahu_post_heater
+    post_heater_power:
+      alias: QHeaPos_flow_nominal
+      description: Capacity of the electric post-heater of the balanced ventilation unit [W], the design flow heated by 25 K by default
+      range: float
+      minimum_value: 0
+      libraries:
+        buildings: &ahu_post_heater_power {name: QHeaPos_flow_nominal, variants: [system_d]}
+        ideas: *ahu_post_heater_power
+        reduced_order: *ahu_post_heater_power
+        iso_13790: *ahu_post_heater_power
+    trickle_vent_dp_nominal:
+      alias: dpVen_nominal
+      description: Pressure drop of the trickle vents of the rooms at the design flow of the extract ventilation unit (system_c) [Pa], 10 by default
+      range: float
+      minimum_value: 0
+      libraries:
+        buildings: &ahu_vents {name: dpVen_nominal, variants: [system_c]}
+        ideas: *ahu_vents
+        reduced_order: *ahu_vents
+        iso_13790: *ahu_vents
   classes:
   - AirHandlingUnit
 PhotovoltaicParameters:

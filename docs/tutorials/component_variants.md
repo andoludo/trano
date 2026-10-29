@@ -76,7 +76,8 @@ for c in get_components_registry().components:
 | Variant     | Use case                                                                  |
 | ----------- | ------------------------------------------------------------------------- |
 | `default`   | Detailed AHU partial model with VAV boxes, dampers and fans (needs an `ahu_control`). |
-| `system_d`  | System-D mechanical balanced ventilation with heat recovery.              |
+| `system_d`  | System-D mechanical balanced ventilation with heat recovery, a fan schedule, an optional summer bypass and an optional electric post-heater. |
+| `system_c`  | System-C mechanical extract ventilation: one extract fan, the outdoor air through the trickle vents of the rooms. |
 | `test`      | Simplified HVAC model — no VAV boxes.                                     |
 
 #### Emission Control (`EmissionControl`)
@@ -92,8 +93,9 @@ for c in get_components_registry().components:
 | ------------------------ | ------------------------------------------------------------------------ |
 | `default`                | Gas boiler with a thermal storage tank.                                  |
 | `without_storage`        | Gas boiler without storage (direct loop).                                |
-| `water_water_heat_pump`  | Water/water heat pump as production system.                              |
-| `air_water_heat_pump`    | Air/water heat pump as production system.                                |
+| `air_water_heat_pump`    | Air/water heat pump with its buffer on the outdoor air; `heat_pump_data` picks an EN 14511 record of Buildings, the tables of the YAML or a Carnot model. |
+| `ground_source_heat_pump` | Brine/water heat pump on a ground loop whose temperature follows an annual sine (Carnot by default). |
+| `water_water_heat_pump`  | Water/water heat pump on a water loop at a constant temperature (Carnot by default). |
 
 #### Boiler Control (`BoilerControl`)
 | Variant   | Use case                                                  |

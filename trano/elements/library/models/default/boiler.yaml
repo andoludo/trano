@@ -112,55 +112,6 @@
   component_template:
     bus:
       real_inputs:
-      - component: pumpDemandSignal
-        name: y
-        port: u
-        target:
-          main: |-
-            element.name
-      real_outputs: []
-    category: boiler
-    template: "\n    model WaterWaterHeatPump{{ element.name | capitalize}}\n    extends\
-      \ {{ package_name }}.Trano.Fluid.Boilers.PartialWaterWaterHeatPump;\n    {{bus_template}}\n\
-      \    equation\n    {{bus_ports | safe}}\n     end WaterWaterHeatPump{{ element.name\
-      \ | capitalize}};\n     "
-
-  library: default
-  parameter_processing:
-    function: default_parameters
-  ports:
-  - flow: inlet
-    medium: fluid
-    multi_connection: true
-    names:
-    - port_a
-    use_counter: false
-  - flow: outlet
-    medium: fluid
-    multi_connection: true
-    names:
-    - port_b
-    use_counter: false
-  - flow: undirected
-    medium: data
-    multi_connection: true
-    names:
-    - dataBus
-    targets:
-    - Control
-    - DataBus
-    use_counter: false
-  template: "\n{{package_name}}.Components.BaseClasses.\nWaterWaterHeatPump{{ element.name\
-    \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}())\
-    \ \"Boiler\" "
-  variant: water_water_heat_pump
-
-- classes:
-  - Boiler
-  component_template:
-    bus:
-      real_inputs:
       # heat demand of the heating circuit (simple boiler control); always on when nothing drives it
       - component: pumpDemandSignal
         name: y
@@ -256,13 +207,12 @@
     \ \"Boiler\" "
   variant: without_storage
 
-
-
-
+# Heat pumps of the ModularReversible family of Buildings on Trano.Fluid.Boilers.PartialModularHeatPump: the outdoor
+# air, a ground loop or a water loop as source, a performance table or a Carnot model (heat_pump_data).
 - classes:
   - Boiler
   component_template:
-    bus:
+    bus: &heat_pump_bus
       real_inputs:
       # heat demand of the heating circuit (simple boiler control); always on when nothing drives it
       - component: pumpDemandSignal
@@ -299,6 +249,18 @@
         target:
           main: |-
             element.name
+      - component: COP
+        name: cop
+        port: y
+        target:
+          main: |-
+            element.name
+      - component: SCOP
+        name: seasonal_cop
+        port: y
+        target:
+          main: |-
+            element.name
       - component: supTemp
         name: supply_temperature
         port: T
@@ -317,6 +279,12 @@
         target:
           main: |-
             element.name
+      - component: TSouExp
+        name: source_temperature
+        port: y
+        target:
+          main: |-
+            element.name
       - component: ySet
         name: compressor_speed
         port: y
@@ -327,17 +295,16 @@
     # the outdoor temperature comes from the weather data on the data bus
     template: |-
       model AirWaterHeatPump{{ element.name | capitalize}}
-      extends {{ package_name }}.Trano.Fluid.Boilers.PartialAirWaterHeatPump;
+      extends {{ package_name }}.Trano.Fluid.Boilers.PartialModularHeatPump;
       {{bus_template}}
       equation
       {{bus_ports | safe}}
       connect(dataBus.TDryBul, TOut.u);
       end AirWaterHeatPump{{ element.name | capitalize}};
-
   library: default
   parameter_processing:
     function: default_parameters
-  ports:
+  ports: &heat_pump_ports
   - flow: inlet
     medium: fluid
     multi_connection: true
@@ -359,8 +326,66 @@
     - Control
     - DataBus
     use_counter: false
-  template: "\n{{package_name}}.Components.BaseClasses.\nAirWaterHeatPump{{ element.name\
-    \ | capitalize}} {{ element.name }}(\n{{ macros.render_parameters(parameters)\
-    \ | safe}},\nredeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}())\
-    \ \"Boiler\" "
+  template: |-
+    {{package_name}}.Components.BaseClasses.AirWaterHeatPump{{ element.name | capitalize}} {{ element.name }}(
+    {{ macros.heat_pump(element, parameters, air=true) }},
+    {{ macros.render_parameters(parameters) | safe}},
+    redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}()) "Air-water heat pump"
   variant: air_water_heat_pump
+
+- classes:
+  - Boiler
+  component_template:
+    bus: *heat_pump_bus
+    category: boiler
+    # the ground loop: a brine (water) source whose temperature follows an annual sine; the outdoor air still
+    # drives the heating curve and the heating season
+    template: |-
+      model GroundSourceHeatPump{{ element.name | capitalize}}
+      extends {{ package_name }}.Trano.Fluid.Boilers.PartialModularHeatPump(
+        redeclare package MediumSou = Buildings.Media.Water,
+        useOutdoorAirSource=false,
+        useGroundSource=true);
+      {{bus_template}}
+      equation
+      {{bus_ports | safe}}
+      connect(dataBus.TDryBul, TOut.u);
+      end GroundSourceHeatPump{{ element.name | capitalize}};
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports: *heat_pump_ports
+  template: |-
+    {{package_name}}.Components.BaseClasses.GroundSourceHeatPump{{ element.name | capitalize}} {{ element.name }}(
+    {{ macros.heat_pump(element, parameters, air=false) }},
+    {{ macros.render_parameters(parameters) | safe}},
+    redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}()) "Ground-source heat pump"
+  variant: ground_source_heat_pump
+
+- classes:
+  - Boiler
+  component_template:
+    bus: *heat_pump_bus
+    category: boiler
+    # a water loop at the constant temperature_heatpump_source (a well, a river or a waste heat loop)
+    template: |-
+      model WaterWaterHeatPump{{ element.name | capitalize}}
+      extends {{ package_name }}.Trano.Fluid.Boilers.PartialModularHeatPump(
+        redeclare package MediumSou = Buildings.Media.Water,
+        useOutdoorAirSource=false,
+        useGroundSource=false);
+      {{bus_template}}
+      equation
+      {{bus_ports | safe}}
+      connect(dataBus.TDryBul, TOut.u);
+      end WaterWaterHeatPump{{ element.name | capitalize}};
+  library: default
+  parameter_processing:
+    function: default_parameters
+  ports: *heat_pump_ports
+  template: |-
+    {{package_name}}.Components.BaseClasses.WaterWaterHeatPump{{ element.name | capitalize}} {{ element.name }}(
+    {{ macros.heat_pump(element, parameters, air=false) }},
+    {{ macros.render_parameters(parameters) | safe}},
+    redeclare package MediumW = MediumW, fue = Buildings.Fluid.Data.Fuels.{{ element.parameters.fuel or 'NaturalGasLowerHeatingValue' }}()) "Water-water heat pump"
+  variant: water_water_heat_pump

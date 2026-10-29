@@ -31,6 +31,7 @@ MODEL_FILES = sorted(
         *ROOT.joinpath("tests", "models").glob("*.yaml"),
         *ROOT.joinpath("tests", "tutorials").glob("*.yaml"),
         *ROOT.joinpath("examples").glob("*.yaml"),
+        *ROOT.joinpath("validation", "systems", "cases").glob("*.yaml"),  # the systems validation, every variant
         ROOT.joinpath("trano", "verification.yaml"),
     ]
 )

@@ -1,0 +1,246 @@
+# Bands of the KPIs of the systems validation, with the physical reasoning behind each one.
+#
+# A band holds for the three libraries unless `libraries` says otherwise. The KPIs are named as in
+# validation/systems/kpi.py (UNITS lists them). `pytest -m systems` fails when a KPI leaves its band.
+#
+# Heat pump: the Vitocal 251-A08 EN 14511 table scaled to 4 kW at -8/45 degC. The table COP at the measured
+# condenser outlet (the supply set point plus the 5 K band the compressor controller aims at, about 48 degC for
+# a 45 degC set point) and source temperature is the reference; the measured COP while running stays within
+# 15 % of it: below it because of the start-up and part-load losses of the refrigerant cycle model and the
+# condenser pump, above it when the condenser runs cooler than the mean.
+
+hp_winter:
+  - {kpi: hp_scop, min: 2.4, max: 3.6, why: "A-1/W45 point of the table gives 2.85; cycling, part load and the pump take up to 15 % off"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured condenser outlet and source temperatures"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the safety control holds the compressor at least 300 s once started", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_shortest_stop_min, min: 5, why: "the safety control keeps the compressor off at least 300 s once stopped", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_speed_min_running, min: 0.29, why: "the compressor never runs below its minimum speed yComMin = 0.3", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_speed_max, max: 1.0, why: "the compressor speed is a fraction of the maximum"}
+  - {kpi: hp_starts_per_day, max: 30, why: "a 100 l buffer on a 4 kW heat pump holds the cycling to a start every hour or two at part load"}
+  - {kpi: hp_supply_setpoint_max_c, max: 45.01, why: "the heating curve never asks more than the design supply temperature"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 36, max: 44, why: "at -1 degC the curve from 45 degC (-8 degC) to 30 degC (16 degC) gives 40.6 degC"}
+  - {kpi: hp_buffer_below_band_hours, max: 6, why: "the buffer stays inside its charging band while the heat pump keeps up with the load (the smooth hysteresis of FastSmoothBuildings lets it dip a little longer)"}
+  - {kpi: hp_pump_share, max: 0.1, why: "the condenser pump draws a few percent of the compressor electricity", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "2.4 kW design loss at -8 degC: 1.5 to 2 kW on average over the week at -1 degC with the night setback"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its 21 degC set point during occupancy, apart from the morning recovery"}
+  - {kpi: hours_below_setpoint, max: 50, why: "the morning recovery from the 16 degC setback takes a few hours a day with a 45 degC radiator"}
+
+hp_shoulder:
+  - {kpi: hp_scop, min: 2.8, max: 4.9, why: "at 5 to 9 degC the curve asks 33 to 36 degC: the table gives 4.0 to 4.7 at A7/W38 to A9/W37"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 30, max: 38, why: "the heating curve at 5 to 9 degC outdoor"}
+  - {kpi: hp_starts_per_day, max: 40, why: "part load: shorter runs, more starts, still bounded by the buffer and the minimum times"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the minimum on time of the safety control", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_speed_max, max: 1.0, why: "the compressor speed is a fraction of the maximum"}
+  - {kpi: zone_mean_occupied_c, min: 20, max: 23, why: "the zone is held at its set point; solar gains may push it above"}
+
+hp_summer:
+  - {kpi: hp_run_hours, max: 0.5, why: "above the 16 degC heating limit the heat pump does not heat"}
+  - {kpi: hp_electricity_kwh, max: 1, why: "no compressor run, no condenser pump run"}
+  - {kpi: hp_heat_kwh, max: 5, why: "no heat delivered in July"}
+  - {kpi: zone_min_c, min: 18, why: "the zone floats above the set points in July"}
+
+hp_no_buffer:
+  - {kpi: hp_scop, min: 2.3, max: 3.6, why: "the same heat pump and week as hp_winter, more cycling on the small hydraulic separator"}
+  - {kpi: hp_cop_ratio, min: 0.8, max: 1.1, why: "more start-ups than with the buffer, each with its losses"}
+  - {kpi: hp_starts_per_day, min: 10, max: 80, why: "a 60 l separator holds the cycling to a start every 20 to 60 minutes at part load"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the minimum on time of the safety control", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_shortest_stop_min, min: 5, why: "the minimum off time of the safety control", libraries: [Buildings, IDEAS]}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+
+# Constant source temperature and a flat 45 degC curve (Buildings and IDEAS): the condenser outlet runs at
+# about 48 degC, where the table gives 2.17 at -10 degC, 2.28 at -7 degC, 2.99 at 2 degC, 3.53 at 7 degC and
+# 4.06 at 12 degC (table_cop of kpi.py).
+hp_source_m10:
+  - {kpi: hp_source_running_c, min: -10.5, max: -9.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 1.85, max: 2.5, why: "table 2.17 at A-10/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+hp_source_m7:
+  - {kpi: hp_source_running_c, min: -7.5, max: -6.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 1.95, max: 2.65, why: "table 2.28 at A-7/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+hp_source_2:
+  - {kpi: hp_source_running_c, min: 1.5, max: 2.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 2.55, max: 3.45, why: "table 2.99 at A2/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+hp_source_7:
+  - {kpi: hp_source_running_c, min: 6.5, max: 7.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 3.0, max: 4.1, why: "table 3.53 at A7/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+hp_source_12:
+  - {kpi: hp_source_running_c, min: 11.5, max: 12.5, why: "the evaporator takes the constant source temperature of the YAML"}
+  - {kpi: hp_condenser_out_running_c, min: 44, max: 52, why: "the compressor controller aims 5 K above the 45 degC set point"}
+  - {kpi: hp_cop_running, min: 3.45, max: 4.7, why: "table 4.06 at A12/W48, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 44.9, max: 45.1, why: "the flat heating curve"}
+
+# Supply temperature sweep at a constant 7 degC source: the table gives 4.47 at A7/W38 and 2.97 at A7/W58.
+hp_supply_35:
+  - {kpi: hp_condenser_out_running_c, min: 34, max: 42, why: "the compressor controller aims 5 K above the 35 degC set point"}
+  - {kpi: hp_cop_running, min: 3.8, max: 5.15, why: "table 4.47 at A7/W38, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 34.9, max: 35.1, why: "the flat heating curve"}
+hp_supply_55:
+  - {kpi: hp_condenser_out_running_c, min: 54, max: 62, why: "the compressor controller aims 5 K above the 55 degC set point"}
+  - {kpi: hp_cop_running, min: 2.5, max: 3.45, why: "table 2.97 at A7/W58, within 15 %"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_supply_setpoint_mean_c, min: 54.9, max: 55.1, why: "the flat heating curve"}
+
+# The other heat pump models and sources of the catalogue (Buildings and IDEAS), the coldest week.
+hp_table_winter:
+  - {kpi: hp_scop, min: 2.4, max: 3.6, why: "the Vitocal data given as a table: the same heat pump as hp_winter"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the same table"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "the load of hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+hp_carnot_winter:
+  - {kpi: hp_scop, min: 2.0, max: 3.4, why: "0.45 of the Carnot COP between 50 degC + 5 K and -1 degC - 5 K is 2.6, less with the frosting of the evaporator around 0 degC"}
+  - {kpi: hp_speed_min_running, min: 0.29, why: "the compressor never runs below its minimum speed"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the minimum on time of the safety control"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "the load of hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+gshp_winter:
+  - {kpi: hp_source_running_c, min: 6.5, max: 8.5, why: "the ground loop at 10 degC mean, 3 K below it in mid-February: about 7.5 degC in late January"}
+  - {kpi: hp_scop, min: 3.0, max: 4.6, why: "0.45 of the Carnot COP between 45 degC + 5 K and 7.5 degC - 2 K is 3.3 at full supply temperature, more along the heating curve"}
+  - {kpi: hp_cop_running, min: 2.8, max: 4.8, why: "0.45 of the Carnot COP at 45.6 degC + 5 K and 7.3 degC - 2 K is 3.2, less the start-ups and the pump; above the air-water one (2.7) on a source 8 K warmer"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "the load of hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+wwhp_winter:
+  - {kpi: hp_source_running_c, min: 11.5, max: 12.5, why: "the water loop at the constant 12 degC of the YAML"}
+  - {kpi: hp_scop, min: 3.2, max: 5.0, why: "0.45 of the Carnot COP between 45 degC + 5 K and 12 degC - 2 K is 3.6 at full supply temperature, more along the heating curve"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "the load of hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+
+# Gas boilers: BoilerPolynomial of Buildings, efficiency 0.9 on the lower heating value unless the curve says
+# otherwise; the fuel record NaturalGasLowerHeatingValue gives 50 MJ/kg at 0.84 kg/m3, 11.67 kWh/m3.
+boiler_storage_winter:
+  - {kpi: boiler_efficiency, min: 0.80, max: 0.91, why: "0.9 of the curve minus the standing losses of the boiler (counted twice by Buildings 13) and of the 200 l tank"}
+  - {kpi: boiler_kwh_per_m3, min: 11.6, max: 11.75, why: "the fuel volume follows the heating value of the fuel record, 11.67 kWh/m3", libraries: [Buildings, IDEAS]}
+  - {kpi: boiler_water_max_c, max: 95, why: "the tank control stops the boiler when the tank bottom passes the set point plus 5 K; the boiler water stays below boiling"}
+  - {kpi: tank_top_max_c, min: 70, max: 92, why: "the tank top passes the 70 degC set point while the bottom catches up", libraries: [Buildings, IDEAS]}
+  - {kpi: boiler_starts_per_day, min: 1, max: 40, why: "a 200 l tank on a 6 kW boiler: a charge every hour or two under load"}
+  - {kpi: boiler_heat_kwh, min: 80, max: 250, why: "the load of the zone in the coldest week with the tank losses"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+boiler_no_storage_winter:
+  - {kpi: boiler_efficiency, min: 0.84, max: 0.91, why: "0.9 of the curve minus the standing loss of the boiler (1 % at the double-counted UA of Buildings 13), no tank"}
+  - {kpi: boiler_kwh_per_m3, min: 11.6, max: 11.75, why: "the heating value of the fuel record", libraries: [Buildings, IDEAS]}
+  - {kpi: boiler_water_max_c, max: 85, why: "a proportional controller holds the boiler water at the 70 degC set point with a small overshoot"}
+  - {kpi: boiler_heat_kwh, min: 80, max: 250, why: "the load of the zone in the coldest week"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+boiler_condensing_winter:
+  - {kpi: boiler_eta_firing, min: 0.93, max: 0.99, why: "the curve gives 0.97 at 40 degC and 0.95 at 50 degC: the boiler feeds 45/35 radiators", libraries: [Buildings, IDEAS]}
+  - {kpi: boiler_efficiency, min: 0.90, max: 0.99, why: "the condensing curve minus the standing loss"}
+  - {kpi: boiler_water_max_c, max: 60, why: "the set point is 45 degC"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+boiler_storage_shoulder:
+  - {kpi: boiler_efficiency, min: 0.70, max: 0.91, why: "part load: the tank losses weigh more against a smaller heat demand"}
+  - {kpi: boiler_starts_per_day, max: 40, why: "the tank buffers the part load"}
+  - {kpi: zone_mean_occupied_c, min: 20, max: 23.5, why: "the zone is held at its set point, solar gains may push it above"}
+boiler_storage_summer:
+  - {kpi: boiler_fuel_kwh, max: 45, why: "no heat demand, yet the default control charges the tank whenever the outdoor air drops below its 15 degC cut-off, which July nights in Uccle do: the standing losses of a tank kept at 75 to 85 degC, about 200 W (FastSmoothBuildings has no tank: its boiler idles at its set point)"}
+  - {kpi: boiler_heat_kwh, max: 40, why: "the heat only replaces the losses of the tank and of the boiler"}
+  - {kpi: zone_min_c, min: 18, why: "the zone floats above the set points in July"}
+
+# Radiator valves (Buildings TwoWayEqualPercentage, 10 kPa valve, 5 kPa fixed) under the emission controls, on the
+# boiler with storage at 70 degC, the coldest week.
+valve_p:
+  - {kpi: zone_tracking_rmse_k, max: 1.5, why: "a proportional band of 1 K (gain 5 on a 0 to 1 opening is 0.2 K per 100 %) and the morning recovery"}
+  - {kpi: valve_movements_per_day, max: 60, why: "a proportional controller follows the load without hunting"}
+  - {kpi: valve_hours_closed, min: 20, why: "the valve closes at night when the set point falls back to 16 degC"}
+  - {kpi: pump_hours_without_demand, max: 1, why: "the collector control stops the pump when the valve is closed"}
+  - {kpi: mixing_error_k, max: 3, why: "the PI of the mixing valve holds the 70 degC supply within a few kelvin while the pump runs"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+valve_pi:
+  - {kpi: zone_tracking_rmse_k, max: 1.5, why: "the Guideline 36 heating loop holds the set point without steady error"}
+  - {kpi: valve_movements_per_day, max: 80, why: "the integral action may hunt slightly"}
+  - {kpi: pump_hours_without_demand, max: 1, why: "the collector control stops the pump when the valve is closed"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+valve_onoff:
+  - {kpi: zone_tracking_rmse_k, max: 1.5, why: "an on-off controller swings around the set point within its band"}
+  - {kpi: valve_hours_open, min: 10, why: "the valve is either fully open or closed"}
+  - {kpi: pump_hours_without_demand, max: 1, why: "the collector control stops the pump when the valve is closed"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+valve_nonlinear:
+  - {kpi: zone_tracking_rmse_k, max: 1.5, why: "the flow law of the valve does not change what the controller achieves"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+
+# Ventilation: 150 m3/h (0.05 kg/s) through a 100 m2 zone held at 21 degC by an ideal heater.
+no_ventilation_winter:
+  - {kpi: heating_kwh, min: 80, max: 220, why: "the load of the zone with its infiltration only (n50 = 3)"}
+  - {kpi: hours_below_setpoint, max: 10, why: "an 8 kW ideal heater holds the set point"}
+hrv_winter:
+  - {kpi: vent_effectiveness_measured, min: 0.78, max: 0.9, why: "0.8 of the exchanger plus the heat of the fans in the supply air"}
+  - {kpi: vent_supply_mean_c, min: 14, max: 20, why: "at -1 degC outdoor and 21 degC inside, 0.8 recovery gives 16.6 degC: the unit blows air a few kelvin below the room"}
+  - {kpi: vent_sfp_w_per_m3s, min: 400, max: 2000, why: "two fans at 200 Pa with the efficiency of the preconfigured movers: 0.4 to 2 kW per m3/s, the range of real units (0.3 to 0.5 W per m3/h)"}
+  - {kpi: vent_fan_electricity_kwh, min: 2, max: 12, why: "15 to 70 W for 168 h"}
+  - {kpi: vent_heat_loss_kwh, min: 15, max: 60, why: "0.05 kg/s x 1006 J/(kg.K) x 4 to 6 K x 168 h: 34 to 50 kWh of the room's heat leaves with the supply air deficit"}
+  - {kpi: heating_kwh, min: 100, max: 260, why: "the load of no_ventilation_winter plus the ventilation loss"}
+balanced_no_recovery_winter:
+  - {kpi: vent_effectiveness_measured, max: 0.1, why: "no recovery: the supply air is the outdoor air warmed by the fans"}
+  - {kpi: vent_supply_mean_c, min: -2, max: 2, why: "the outdoor air of the coldest week, -1 degC on average"}
+  - {kpi: vent_heat_loss_kwh, min: 120, max: 240, why: "0.05 kg/s x 1006 J/(kg.K) x 22 K x 168 h: 186 kWh, the full ventilation loss"}
+no_ventilation_summer:
+  - {kpi: heating_kwh, max: 5, why: "no heating in July"}
+hrv_summer:
+  - {kpi: vent_hours_supply_above_zone, min: 10, why: "without a bypass the recovery warms the supply air above the room whenever the outdoor air is warmer"}
+hrv_bypass_summer:
+  - {kpi: vent_bypass_hours, min: 20, why: "the bypass opens when the outdoor air is above 15 degC and the room is warmer than it: most July nights"}
+hrv_night_setback_winter:
+  - {kpi: vent_fan_electricity_kwh, max: 10, why: "half the flow from 22 to 7 h: the fan electricity falls by a third or more against hrv_winter"}
+  - {kpi: vent_flow_kg_s, min: 0.038, max: 0.045, why: "0.05 kg/s for 15 h and 0.025 kg/s for 9 h: 0.041 kg/s on average"}
+hrv_postheater_winter:
+  - {kpi: vent_supply_min_c, min: 17.0, why: "the post-heater holds the supply air at 18 degC, within the band of its PI"}
+  - {kpi: vent_heater_electricity_kwh, min: 2, max: 40, why: "0.05 kg/s heated from about 16.6 to 18 degC: 70 W on average, more in the cold nights"}
+extract_only_winter:
+  - {kpi: vent_supply_mean_c, min: -2, max: 2, why: "the outdoor air enters through the trickle vents at its own temperature"}
+  - {kpi: vent_effectiveness_measured, max: 0.05, why: "no recovery"}
+  - {kpi: vent_sfp_w_per_m3s, min: 150, max: 1000, why: "one fan at 200 Pa nominal: the Buildings fan draws 174 W/(m3/s) at the pressure drop of its duct, the IDEAS one 215"}
+  - {kpi: vent_heat_loss_kwh, min: 120, max: 240, why: "the full ventilation loss, as balanced_no_recovery_winter"}
+natural_winter:
+  - {kpi: heating_kwh, min: 180, max: 400, why: "the load of no_ventilation_winter plus 150 m3/h of outdoor air at -1 degC: about 186 kWh more"}
+ahu_g36_winter:
+  - {kpi: vent_flow_kg_s, max: 0.001, why: "the Guideline 36 unit of trano never starts its fans with one VAV box and the defaults of its controller: the zone gets no ventilation (and the unit has no coil to condition the air it would supply)"}
+  - {kpi: heating_kwh, min: 80, max: 220, why: "the load of no_ventilation_winter, the unit bringing no air"}
+
+# Houses: the six-zone test house (design heat loss about 2.6 kW at -8 degC) for a fortnight from the coldest day.
+# The zone KPIs are those of the first room of the file (bedroom 1, heated to 21 degC from 14 to 23 h).
+house_air_water_heat_pump:
+  - {kpi: hp_scop, min: 2.4, max: 3.8, why: "the air-water heat pump on 45/35 radiators along its heating curve in the coldest fortnight"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the minimum on time of the safety control", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_heat_kwh, min: 150, max: 700, why: "a 2.6 kW design loss house with heat recovery ventilation over two cold weeks"}
+  - {kpi: vent_effectiveness_measured, min: 0.74, max: 0.92, why: "the 0.8 recovery plus the heat of the fans, measured against the mean of six rooms whose bedrooms, cooler than the living rooms, feed most of the extract"}
+  - {kpi: vent_flow_kg_s, min: 0.075, max: 0.09, why: "0.1 kg/s by day and 0.05 kg/s at night: 0.083 kg/s on average"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 is heated to 21 degC in the afternoon and evening only; the occupied hours of the KPI (7 to 22 h) include its morning setback"}
+house_ground_source_heat_pump:
+  - {kpi: hp_scop, min: 2.8, max: 4.6, why: "0.45 of the Carnot COP on a 7 to 8 degC ground loop, more along the heating curve"}
+  - {kpi: hp_source_running_c, min: 6.5, max: 8.5, why: "the ground loop at 10 degC mean, near its coldest in late January"}
+  - {kpi: hp_heat_kwh, min: 150, max: 700, why: "the load of house_air_water_heat_pump"}
+  - {kpi: vent_effectiveness_measured, min: 0.74, max: 0.92, why: "the 0.8 recovery plus the heat of the fans, measured against the mean of six rooms whose bedrooms, cooler than the living rooms, feed most of the extract"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 as in house_air_water_heat_pump"}
+house_condensing_boiler:
+  - {kpi: boiler_eta_firing, min: 0.93, max: 0.99, why: "the condensing curve at 45 degC"}
+  - {kpi: boiler_efficiency, min: 0.88, max: 0.99, why: "the condensing curve minus the standing loss of the boiler"}
+  - {kpi: boiler_kwh_per_m3, min: 11.6, max: 11.75, why: "the heating value of the fuel record"}
+  - {kpi: vent_effectiveness_measured, max: 0.05, why: "the extract ventilation recovers nothing"}
+  - {kpi: vent_sfp_w_per_m3s, min: 100, max: 1000, why: "one extract fan at 200 Pa"}
+  - {kpi: boiler_heat_kwh, min: 250, max: 1000, why: "the house with 360 m3/h of unrecovered outdoor air over two cold weeks"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 as in house_air_water_heat_pump"}
+house_boiler_storage:
+  - {kpi: boiler_efficiency, min: 0.80, max: 0.91, why: "0.9 of the curve minus the losses of the boiler and of the tank"}
+  - {kpi: boiler_kwh_per_m3, min: 11.6, max: 11.75, why: "the heating value of the fuel record"}
+  - {kpi: boiler_starts_per_day, min: 1, max: 40, why: "the 200 l tank on an 8 kW boiler"}
+  - {kpi: boiler_heat_kwh, min: 250, max: 1000, why: "the house with 360 m3/h of outdoor air through the windows over two cold weeks"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 under an on-off thermostat"}
+house_heat_pump_pv:
+  - {kpi: hp_scop, min: 2.4, max: 3.8, why: "the air-water heat pump of house_air_water_heat_pump"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_heat_kwh, min: 150, max: 700, why: "the load of house_air_water_heat_pump"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 as in house_air_water_heat_pump"}

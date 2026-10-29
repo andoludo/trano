@@ -13,7 +13,7 @@ linting:
 
 # ── Tests ──────────────────────────────────────────────────────────────────────
 tests:
-	uv run pytest -m "not simulate and not bestest and not compile and not runtime"
+	uv run pytest -m "not simulate and not bestest and not compile and not runtime and not systems"
 
 compile:
 	uv run pytest -m compile
@@ -29,3 +29,6 @@ all: install linting tests
 bestest:
 	uv run python -m validation.bestest run --workers 2
 	uv run pytest -m bestest
+systems:
+	uv run python -m validation.systems run --workers 2
+	uv run pytest -m systems

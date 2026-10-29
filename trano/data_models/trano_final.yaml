@@ -28,6 +28,18 @@ classes:
         description: Static pressure of the building the supply fan maintains [Pa],
           12 by default (default variant)
         range: float
+      bypass_outdoor_temperature:
+        description: Outdoor temperature above which the summer bypass of the balanced
+          ventilation unit may open [K], 288.15 by default
+        maximum_value: 323.15
+        minimum_value: 223.15
+        range: float
+      fan_schedule:
+        description: 'Day schedule of the fans of a balanced (system_d) or extract
+          (system_c) ventilation unit: rows of time since midnight [s] and fraction
+          of the design flow, held until the next row, as "[0, 0.5; 25200, 1; 79200,
+          0.5]" for half the flow at night; the design flow all day by default'
+        range: string
       heat_exchanger_effectiveness:
         description: Heat exchanger effectiveness [1]
         ifabsent: string(0.8)
@@ -42,14 +54,36 @@ classes:
           variant, ASHRAE 62.1)
         minimum_value: 0
         range: float
+      post_heater_power:
+        description: Capacity of the electric post-heater of the balanced ventilation
+          unit [W], the design flow heated by 25 K by default
+        minimum_value: 0
+        range: float
       return_dp_nominal:
         description: Pressure rise of the return fan [Pa], the nominal pressure rise
           by default
         minimum_value: 0
         range: float
+      summer_bypass:
+        description: Whether the balanced ventilation unit (system_d) leads the outdoor
+          air around its heat recovery when the outdoor air is above bypass_outdoor_temperature
+          and cooler than the extract air (free cooling), false by default
+        range: string
+      supply_air_minimum_temperature:
+        description: Minimum supply air temperature held by an electric post-heater
+          after the supply fan of the balanced ventilation unit (system_d) [K]; no
+          post-heater when absent
+        maximum_value: 323.15
+        minimum_value: 273.15
+        range: float
       supply_dp_nominal:
         description: Pressure rise of the supply fan [Pa], the nominal pressure rise
           by default
+        minimum_value: 0
+        range: float
+      trickle_vent_dp_nominal:
+        description: Pressure drop of the trickle vents of the rooms at the design
+          flow of the extract ventilation unit (system_c) [Pa], 10 by default
         minimum_value: 0
         range: float
     description: Parameters of an air handling unit
@@ -227,10 +261,47 @@ classes:
           as NaturalGasLowerHeatingValue (the default), NaturalGasHigherHeatingValue,
           HeatingOilLowerHeatingValue or WoodAirDriedLowerHeatingValue
         range: string
+      ground_coldest_day:
+        description: Day of the year when the ground loop of the ground-source heat
+          pump is coldest [d], 45 (mid-February) by default
+        maximum_value: 366
+        minimum_value: 0
+        range: float
+      ground_temperature_amplitude:
+        description: Amplitude of the annual variation of the ground loop temperature
+          of the ground-source heat pump [K], 3 by default (the loop is coldest at
+          the end of the heating season)
+        maximum_value: 20
+        minimum_value: 0
+        range: float
+      ground_temperature_mean:
+        description: Mean temperature of the ground loop of the ground-source heat
+          pump over the year [K], 283.15 by default
+        maximum_value: 323.15
+        minimum_value: 253.15
+        range: float
+      heat_pump_carnot_effectiveness:
+        description: 'Carnot effectiveness of the heat pump when heat_pump_data is
+          carnot [1]: the COP is this fraction of the Carnot COP between the condenser
+          outlet plus 5 K and the source minus 5 K (air) or 2 K (water); 0.45 by default,
+          about 3.7 at A7/W35 and 4.4 at B0/W35'
+        maximum_value: 0.8
+        minimum_value: 0.1
+        range: float
+      heat_pump_data:
+        description: 'Performance data of the heat pump (air_water_heat_pump, ground_source_heat_pump,
+          water_water_heat_pump): an EN 14511 record of Buildings 13 scaled to the
+          nominal heating power (Vitocal251A08, the default of the air-water heat
+          pump, an 8 kW air-water unit; SingleSplitRXM20R, a 2 kW air-air split; WAMAK_WaterToWater_220kW,
+          a 220 kW water-water unit), `table` for the tables of heat_pump_table_heating_capacity
+          and heat_pump_table_electrical_power, or `carnot` (the default of the ground-source
+          and water-water heat pumps) for a constant Carnot effectiveness heat_pump_carnot_effectiveness'
+        range: string
       heat_pump_nominal_source_temperature:
-        description: Source (outdoor air) temperature at the rating point of the air-water
-          heat pump [K], where it delivers the nominal heating power at the supply
-          temperature set point; the design outdoor temperature by default
+        description: Source temperature at the rating point of the heat pump [K],
+          where it delivers the nominal heating power at the supply temperature set
+          point; the design outdoor temperature (air-water), the coldest ground temperature
+          (ground-source) or the source temperature (water-water) by default
         maximum_value: 423.15
         minimum_value: 223.15
         range: float
@@ -242,12 +313,33 @@ classes:
       heat_pump_source_outdoor_air:
         description: Whether the evaporator of the air-water heat pump takes the outdoor
           air of the weather data (true by default) or the constant temperature_heatpump_source
+          (a sweep of the source temperature); Buildings and IDEAS only
         range: string
       heat_pump_source_temperature:
         description: Same as temperature_heatpump_source
         range: float
       heat_pump_supply_setpoint:
         description: Same as temperature_supply_setpoint_heat_pump
+        range: float
+      heat_pump_table_condenser_temperatures:
+        description: Condenser outlet (supply) temperatures of the performance tables
+          of the heat pump (heat_pump_data table) [K], the rows of the tables, increasing
+        multivalued: true
+        range: float
+      heat_pump_table_electrical_power:
+        description: Electrical power table of the heat pump (heat_pump_data table)
+          [W], laid out as heat_pump_table_heating_capacity
+        range: string
+      heat_pump_table_heating_capacity:
+        description: 'Heating capacity table of the heat pump (heat_pump_data table)
+          [W]: one row per condenser temperature, the values per source temperature
+          separated by commas, the rows by semicolons, as "4490, 5170, 6470; 4230,
+          4900, 6260"; a 0 marks a point outside the operating envelope'
+        range: string
+      heat_pump_table_source_temperatures:
+        description: Source temperatures of the performance tables of the heat pump
+          (heat_pump_data table) [K], the columns of the tables, increasing
+        multivalued: true
         range: float
       heating_limit_temperature:
         description: Outdoor temperature above which the air-water heat pump does
@@ -313,8 +405,9 @@ classes:
         minimum_value: 0
         range: float
       temperature_heatpump_source:
-        description: Constant source temperature of the heat pump [K], used when heat_pump_source_outdoor_air
-          is false (and by the water-water heat pump)
+        description: Constant source temperature of the heat pump [K], the water loop
+          of the water-water heat pump, or the source of the air-water heat pump when
+          heat_pump_source_outdoor_air is false
         ifabsent: float(286.15)
         maximum_value: 423.15
         minimum_value: 223.15
@@ -2327,8 +2420,15 @@ enums:
   AirHandlingUnitVariant:
     description: Air handling unit models
     permissible_values:
-      default: null
-      system_d: null
+      default:
+        description: Guideline 36 multizone air handling unit with its economizer
+          and VAV boxes
+      system_c:
+        description: Mechanical extract ventilation, the outdoor air drawn through
+          the trickle vents of the rooms
+      system_d:
+        description: Balanced ventilation with heat recovery, an optional summer bypass,
+          fan schedule and post-heater
       test: null
   BoilerControlVariant:
     description: Control laws of the generators
@@ -2339,10 +2439,17 @@ enums:
   BoilerVariant:
     description: Boiler and heat pump models
     permissible_values:
-      air_water_heat_pump: null
+      air_water_heat_pump:
+        description: Air-water heat pump with its buffer, on the outdoor air of the
+          weather data
       default:
         description: Gas boiler with a storage tank
-      water_water_heat_pump: null
+      ground_source_heat_pump:
+        description: Ground-source (brine-water) heat pump with its buffer, on a ground
+          loop whose temperature follows an annual sine
+      water_water_heat_pump:
+        description: Water-water heat pump with its buffer, on a water loop at a constant
+          temperature
       without_storage:
         description: Gas boiler without storage tank
   DefaultVariant:
@@ -2388,8 +2495,10 @@ enums:
       air_water_heat_pump: null
       complex: null
       default: null
+      ground_source_heat_pump: null
       ideal: null
       idealbus: null
+      system_c: null
       system_d: null
       test: null
       water_water_heat_pump: null

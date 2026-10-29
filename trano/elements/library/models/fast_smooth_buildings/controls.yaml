@@ -276,19 +276,61 @@
     {{ package_name }}.Components.BaseClasses.BoilerDemand{{ element.name | capitalize }} {{ element.name }}(n={{ element.pump_controls | length }})
     {%- endif -%}
   variant: simple
+# The boilers of the default and complex controls (tank temperature checks in Buildings) fire on demand here:
+# the library has no storage tank, so their boiler behaves as the simple variant.
 - classes:
   - BoilerControl
   library: FastSmoothBuildings
   parameter_processing: *no_parameters
-  ports: []
-  template: ""
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        multi: true
+        name: yMax
+        port: yMax
+        target:
+          main: element.pump_controls
+    category: control
+    template: |-
+      model BoilerDemand{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Controls.BoilerDemand;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end BoilerDemand{{ element.name | capitalize }};
+  ports: *control_bus_port
+  template: |-
+    {%- if element.pump_controls -%}
+    {{ package_name }}.Components.BaseClasses.BoilerDemand{{ element.name | capitalize }} {{ element.name }}(n={{ element.pump_controls | length }})
+    {%- endif -%}
   variant: default
 - classes:
   - BoilerControl
   library: FastSmoothBuildings
   parameter_processing: *no_parameters
-  ports: []
-  template: ""
+  component_template:
+    bus:
+      real_inputs:
+      - component: ""
+        multi: true
+        name: yMax
+        port: yMax
+        target:
+          main: element.pump_controls
+    category: control
+    template: |-
+      model BoilerDemand{{ element.name | capitalize }}
+        extends FastSmoothBuildings.Controls.BoilerDemand;
+        {{ bus_template }}
+      equation
+        {{ bus_ports | safe }}
+      end BoilerDemand{{ element.name | capitalize }};
+  ports: *control_bus_port
+  template: |-
+    {%- if element.pump_controls -%}
+    {{ package_name }}.Components.BaseClasses.BoilerDemand{{ element.name | capitalize }} {{ element.name }}(n={{ element.pump_controls | length }})
+    {%- endif -%}
   variant: complex
 - classes:
   - CollectorControl
@@ -349,10 +391,13 @@
     - u
     targets:
     - TemperatureSensor
+  # The controller of the library is proportional: a PI asked in the YAML (controller_type PI, ti) comes with a
+  # small gain that would leave a steady-state error here, so the gain of the YAML is only taken for a P controller.
   template: |-
+    {%- set proportional = 'PI' not in (parameters.get('controllerType') or '') and parameters.get('Ti') is none %}
     FastSmoothBuildings.Controls.ThreeWayValveControl {{ element.name }}(
         TColSet={{ element.bus_input_default('TColSet') or 363.15 }},
-        k={{ parameters.get('k', 1) }})
+        k={{ parameters.get('k', 1) if proportional else 1 }})
   variant: default
 - classes:
   - AhuControl

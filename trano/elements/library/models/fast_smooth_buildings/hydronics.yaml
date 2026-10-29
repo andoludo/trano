@@ -483,9 +483,12 @@
     {%- if parameters.useStorageTank | string | lower == 'true' -%}
     {{ unsupported('Boiler ' ~ element.name ~ ' has a storage tank: the FastSmoothBuildings library has no tank yet.') }}
     {%- endif -%}
-    {%- set demand = element.control.name ~ '.y' if element.control and element.control.variant == 'simple' and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
+    {%- set demand = element.control.name ~ '.y' if element.control and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
+    {#- the boiler without storage holds TempSet; the boiler with a storage tank in Buildings holds the set point of
+        its tank control here, the library having no tank -#}
+    {%- set tank_set_point = element.control.parameters.tsup_nominal if element.variant == 'default' and element.control and element.control.parameters and element.control.parameters.tsup_nominal is not none else none -%}
     FastSmoothBuildings.Controls.BoilerTemperatureControl {{ element.name }}_control(
-        TempSet={{ parameters.get('TempSet', 353.15) }}, T={{ element.name }}.T, demand={{ demand }})
+        TempSet={{ tank_set_point or parameters.get('TempSet', 353.15) }}, T={{ element.name }}.T, demand={{ demand }})
         "Firing of {{ element.name }}";
     FastSmoothBuildings.Hydronics.Boiler {{ element.name }}(
         nPorts_a={{ macros.connections(element, 'port_a') }},
@@ -675,7 +678,13 @@
   parameter_processing: *boiler_parameters
   ports: *boiler_bus_ports
   template: |-
-    {%- set demand = element.control.name ~ '.y' if element.control and element.control.variant == 'simple' and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
+    {%- if element.parameters.heat_pump_data not in (none, 'Vitocal251A08') -%}
+    {{ unsupported('Production ' ~ element.name ~ ': the heat pump of the FastSmoothBuildings library is the Vitocal 251-A08 table, not ' ~ element.parameters.heat_pump_data ~ '.') }}
+    {%- endif -%}
+    {%- if element.parameters.heat_pump_source_outdoor_air | string | lower == 'false' -%}
+    {{ unsupported('Production ' ~ element.name ~ ': the heat pump of the FastSmoothBuildings library takes the outdoor air as source (heat_pump_source_outdoor_air).') }}
+    {%- endif -%}
+    {%- set demand = element.control.name ~ '.y' if element.control and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
     FastSmoothBuildings.Controls.HeatPumpControl {{ element.name }}_control(
         TSet={{ parameters.TSet }},
         {%- for name in ['TOutDes', 'TSupMin', 'TOutHeaLim', 'dTHys'] %}
@@ -814,6 +823,14 @@
   library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
   parameter_processing: *boiler_parameters
   ports: *multi_fluid_ports
-  template: |-
-    {{ unsupported('Production ' ~ element.name ~ ' (water_water_heat_pump): the FastSmoothBuildings library models boilers and air-to-water heat pumps.') }}
+  template: &water_source_unsupported |-
+    {{ unsupported('Production ' ~ element.name ~ ' (' ~ element.variant ~ '): the FastSmoothBuildings library models boilers and air-to-water heat pumps.') }}
   variant: water_water_heat_pump
+
+- classes:
+  - Boiler
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing: *boiler_parameters
+  ports: *multi_fluid_ports
+  template: *water_source_unsupported
+  variant: ground_source_heat_pump

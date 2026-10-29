@@ -131,6 +131,18 @@
     - DataBus
     use_counter: false
   template: &unit_template |-
+    {%- if element.parameters.summer_bypass | string | lower == 'true' -%}
+    {{ unsupported('Ventilation ' ~ element.name ~ ': the heat recovery unit of the FastSmoothBuildings library has no summer bypass.') }}
+    {%- endif -%}
+    {%- if element.parameters.supply_air_minimum_temperature is not none -%}
+    {{ unsupported('Ventilation ' ~ element.name ~ ': the heat recovery unit of the FastSmoothBuildings library has no post-heater.') }}
+    {%- endif -%}
+    {%- if library == 'FastSmoothBuildings' and element.parameters.fan_schedule is not none %}
+    Modelica.Blocks.Sources.CombiTimeTable {{ element.name }}_sch(
+        table={{ element.parameters.fan_schedule }},
+        extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic,
+        smoothness=Modelica.Blocks.Types.Smoothness.ConstantSegments) "Fan schedule of {{ element.name }}";
+    {%- endif %}
     {{ package_name }}.Components.BaseClasses.HeatRecoveryUnit{{ element.name | capitalize }} {{ element.name }}(
         nPorts_a={{ macros.connections(element, 'port_a') }},
         nPorts_b={{ macros.connections(element, 'port_b') }},
@@ -139,7 +151,7 @@
         dpSup_nominal={{ parameters.dpSup_nominal if parameters.dpSup_nominal is defined else parameters.dp_nominal }},
         dpRet_nominal={{ parameters.dpRet_nominal if parameters.dpRet_nominal is defined else parameters.dp_nominal }}
         {%- if library == 'FastSmoothBuildings' %},
-        y=1{% endif %})
+        y={{ element.name ~ '_sch.y[1]' if element.parameters.fan_schedule is not none else 1 }}{% endif %})
   variant: system_d
 
 - classes:
@@ -244,3 +256,12 @@
       connect({{ element.name }}_y.y, mpc.{{ element.name }}_y.y);
       {%- endif -%}
   variant: system_d
+
+- classes:
+  - AirHandlingUnit
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing: *unit_parameters
+  ports: *unit_ports
+  template: |-
+    {{ unsupported('Ventilation ' ~ element.name ~ ' (system_c): the FastSmoothBuildings library models balanced ventilation with heat recovery (system_d).') }}
+  variant: system_c
