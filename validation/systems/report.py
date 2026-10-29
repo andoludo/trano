@@ -93,8 +93,8 @@ def _format(value: float | None) -> str:
     return f"{value:.3g}" if abs(value) < 1000 else f"{value:.0f}"
 
 
-def render_family(family: Family, results: dict[str, dict[str, CaseResult]]) -> list[str]:
-    """One table per case of the family: KPI, value per library, band, status."""
+def render_family(family: Family, results: dict[str, dict[str, CaseResult]], figures: bool = False) -> list[str]:
+    """One table per case of the family: KPI, value per library, band, status; the figure of the case after it."""
     expected = load_expected()
     lines: list[str] = []
     for case in CASES.values():
@@ -129,13 +129,17 @@ def render_family(family: Family, results: dict[str, dict[str, CaseResult]]) -> 
                 + f" | {band.text if band else ''} | {status} |"
             )
         lines.append("")
+        if figures and any(results[library][case.id].traces for library in libraries):
+            from validation.systems.figures import figure_name
+
+            lines += [FIGURE.format(name=figure_name(case.id)), ""]
     return lines
 
 
-def render_markdown(results: dict[str, dict[str, CaseResult]]) -> str:
+def render_markdown(results: dict[str, dict[str, CaseResult]], figures: bool = False) -> str:
     lines = ["# Systems validation results", ""]
     for family in Family:
-        family_lines = render_family(family, results)
+        family_lines = render_family(family, results, figures)
         if family_lines:
             lines += [f"## {family.value.replace('_', ' ').capitalize()}", "", *family_lines]
     return "\n".join(lines)
@@ -168,8 +172,13 @@ are rendered from the last results with `python -m validation.systems report --d
 """
 
 
+FIGURE = "{{!validation/figures/{name}.html!}}"  # markdown_include, as the tutorial pages do
+
+
 def render_docs(results: dict[str, dict[str, CaseResult]]) -> str:
-    body = render_markdown(results)
+    """The documentation page: the introduction, then the tables of every family, each case followed by the figure
+    of its week (written by ``figures.write_figure``)."""
+    body = render_markdown(results, figures=True)
     return INTRO + body[body.index("\n") + 1 :].lstrip("\n")
 
 

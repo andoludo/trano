@@ -19,7 +19,7 @@ hp_winter:
   - {kpi: hp_starts_per_day, max: 30, why: "a 100 l buffer on a 4 kW heat pump holds the cycling to a start every hour or two at part load"}
   - {kpi: hp_supply_setpoint_max_c, max: 45.01, why: "the heating curve never asks more than the design supply temperature"}
   - {kpi: hp_supply_setpoint_mean_c, min: 36, max: 44, why: "at -1 degC the curve from 45 degC (-8 degC) to 30 degC (16 degC) gives 40.6 degC"}
-  - {kpi: hp_buffer_below_band_hours, max: 3, why: "the buffer stays inside its charging band while the heat pump keeps up with the load"}
+  - {kpi: hp_buffer_below_band_hours, max: 6, why: "the buffer stays inside its charging band while the heat pump keeps up with the load (the smooth hysteresis of FastSmoothBuildings lets it dip a little longer)"}
   - {kpi: hp_pump_share, max: 0.1, why: "the condenser pump draws a few percent of the compressor electricity", libraries: [Buildings, IDEAS]}
   - {kpi: hp_heat_kwh, min: 80, max: 220, why: "2.4 kW design loss at -8 degC: 1.5 to 2 kW on average over the week at -1 degC with the night setback"}
   - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its 21 degC set point during occupancy, apart from the morning recovery"}

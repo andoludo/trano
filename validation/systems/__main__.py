@@ -33,9 +33,13 @@ def report_results(directory: Path, docs: bool) -> None:
     results = {library: cases for library in LIBRARIES if (cases := load_results(library))}
     write_report(results, directory)
     if docs:
+        from validation.systems.figures import write_figure
+
         DOCS_PAGE.parent.mkdir(parents=True, exist_ok=True)
+        for case_id in {case_id for cases in results.values() for case_id in cases}:
+            write_figure(case_id, {library: cases[case_id] for library, cases in results.items() if case_id in cases})
         DOCS_PAGE.write_text(render_docs(results))
-        print(f"wrote {DOCS_PAGE}")
+        print(f"wrote {DOCS_PAGE} and its figures")
     else:
         print(render_markdown(results))
 

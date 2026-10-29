@@ -418,7 +418,7 @@ VENTILATION_CASES = [
 FORTNIGHT = 14
 
 
-def house_case(  # noqa: PLR0913
+def house_case(
     case_id: str,
     description: str,
     generator: dict[str, Any],
@@ -488,8 +488,7 @@ HOUSE_CASES = [
 ]
 
 CASES: dict[str, Case] = {
-    case.id: case
-    for case in [*HEAT_PUMP_CASES, *BOILER_CASES, *HYDRONIC_CASES, *VENTILATION_CASES, *HOUSE_CASES]
+    case.id: case for case in [*HEAT_PUMP_CASES, *BOILER_CASES, *HYDRONIC_CASES, *VENTILATION_CASES, *HOUSE_CASES]
 }
 
 

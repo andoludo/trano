@@ -348,7 +348,7 @@ def house(  # noqa: PLR0913
     changes their control (variant, parameters); ``ventilation`` is the unit of ``ventilation_unit`` or
     ``guideline36_unit`` whose ducts every room gets, or ``natural_ventilation`` [kg/s] of outdoor air through the
     windows of every room; ``photovoltaic_area`` [m2] adds a PV array on the roof."""
-    description = yaml.safe_load(HOUSE.read_text())
+    description: dict[str, Any] = yaml.safe_load(HOUSE.read_text())
     spaces = description["spaces"]
     radiators, valves = [], []
     for index, space in enumerate(spaces, start=1):
@@ -356,8 +356,12 @@ def house(  # noqa: PLR0913
             if "radiator" in emission:
                 radiators.append(emission["radiator"]["id"])
                 if radiator_rating:
-                    emission["radiator"]["parameters"]["water_inlet_temperature_at_nominal_condition"] = radiator_rating[0]
-                    emission["radiator"]["parameters"]["water_outlet_temperature_at_nominal_condition"] = radiator_rating[1]
+                    emission["radiator"]["parameters"]["water_inlet_temperature_at_nominal_condition"] = (
+                        radiator_rating[0]
+                    )
+                    emission["radiator"]["parameters"]["water_outlet_temperature_at_nominal_condition"] = (
+                        radiator_rating[1]
+                    )
             if "valve" in emission:
                 valves.append(emission["valve"]["id"])
                 if valve_control:

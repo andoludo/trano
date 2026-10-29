@@ -1,0 +1,88 @@
+name: Systems validation
+
+# The systems validation (validation/systems): a week per case and library for the heat pumps, boilers, valves,
+# pumps and ventilation units, and a fortnight for the house demonstrators. Results are cached by the generated
+# model, so unchanged cases are read back instead of simulated again. Weekly and on demand.
+on:
+  schedule:
+    - cron: "23 4 * * 2"
+  workflow_dispatch:
+    inputs:
+      family:
+        description: "Family to run (heat_pump, boiler, hydronics, ventilation, house; all when empty)"
+        required: false
+        default: ""
+      libraries:
+        description: "Libraries to run, as a JSON list"
+        required: false
+        default: '["Buildings", "IDEAS", "FastSmoothBuildings"]'
+      commit_results:
+        description: "Commit the results (validation/systems/results/<library>) to the branch the workflow runs on"
+        type: boolean
+        required: false
+        default: false
+
+env:
+  TRANO_MODELICA_LIBRARIES: ${{ github.workspace }}/.cache/omlibs
+
+jobs:
+  systems:
+    runs-on: ubuntu-latest
+    timeout-minutes: 600
+    strategy:
+      fail-fast: false
+      matrix:
+        library: ${{ fromJSON(github.event.inputs.libraries || '["Buildings", "IDEAS", "FastSmoothBuildings"]') }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Modelica libraries
+        uses: ./.github/actions/modelica-libraries
+
+      - name: Restore the results of the previous runs
+        uses: actions/cache@v4
+        with:
+          path: .cache/systems
+          key: systems-${{ matrix.library }}-${{ github.run_id }}
+          restore-keys: systems-${{ matrix.library }}-
+
+      - name: Simulate the cases
+        run: |
+          family="${{ github.event.inputs.family }}"
+          uv run python -m validation.systems run ${family:+--family $family} --library ${{ matrix.library }}
+
+      - name: Gate on the bands
+        run: uv run pytest -m systems -k "${{ matrix.library }}" -rA
+
+      - name: Report
+        if: always()
+        run: uv run python -m validation.systems report
+
+      - name: Keep the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: systems-report-${{ matrix.library }}
+          path: validation/systems/_reports/
+
+      - name: Commit the results
+        if: ${{ github.event.inputs.commit_results == 'true' }}
+        run: |
+          uv run python -m validation.systems commit --library ${{ matrix.library }}
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add validation/systems/results
+          git diff --cached --quiet || git commit -m "Systems validation: results of ${{ matrix.library }} (run ${{ github.run_id }})"
+          git pull --rebase origin ${{ github.ref_name }}
+          git push origin HEAD:${{ github.ref_name }}
