@@ -71,8 +71,9 @@ def _cached(directory: Path, expected_hash: str) -> CaseResult | None:
     return result.model_copy(update={"wall_time": 0.0}) if result.model_hash == expected_hash else None
 
 
-def run_case(case_id: str, library: str = "Buildings", force: bool = False) -> CaseResult:
-    """Simulate the case with the library (unless cached) and return its KPIs."""
+def run_case(case_id: str, library: str = "Buildings", force: bool = False, refresh_kpis: bool = False) -> CaseResult:
+    """Simulate the case with the library (unless cached) and return its KPIs; ``refresh_kpis`` reads the KPIs again
+    from the simulated result file (after a change of ``kpi.py``), ``force`` simulates again."""
     case = CASES[case_id]
     if not case.supports(library):
         raise ValueError(f"Case {case_id} does not run with {library}; its libraries are {case.libraries}")
@@ -84,7 +85,7 @@ def run_case(case_id: str, library: str = "Buildings", force: bool = False) -> C
     network.set_weather_path(directory, model_directory(runtime, directory))
     model = network.model()
     expected_hash = model_hash(model, library, options)
-    if not force and (cached := _cached(directory, expected_hash)) is not None:
+    if not force and not refresh_kpis and (cached := _cached(directory, expected_hash)) is not None:
         logger.info("Case %s with %s read from the cache", case_id, library)
         return cached
     result_file = directory.joinpath("results", f"{case_id}.building_res.mat")
@@ -113,16 +114,18 @@ def run_case(case_id: str, library: str = "Buildings", force: bool = False) -> C
     return result
 
 
-def run_cases(case_ids: list[str], library: str = "Buildings", force: bool = False, workers: int = 1) -> dict[str, Any]:
+def run_cases(
+    case_ids: list[str], library: str = "Buildings", force: bool = False, workers: int = 1, refresh_kpis: bool = False
+) -> dict[str, Any]:
     """Run several cases, ``workers`` at a time, each in its own process (the model generation keeps state at
     module level, so two networks built in parallel threads corrupt each other). Returns the results of the cases
     that ran and the error message of the others."""
     signal.signal(signal.SIGTERM, _raise_keyboard_interrupt)
-    arguments = [(case_id, library, force) for case_id in case_ids if CASES[case_id].supports(library)]
+    arguments = [(case_id, library, force, refresh_kpis) for case_id in case_ids if CASES[case_id].supports(library)]
     with multiprocessing.get_context("spawn").Pool(workers) as pool:
         outcomes = pool.starmap(_run_case_or_error, arguments)
     results: dict[str, Any] = {}
-    for (case_id, _, _), outcome in zip(arguments, outcomes, strict=True):
+    for (case_id, *_), outcome in zip(arguments, outcomes, strict=True):
         results[case_id] = outcome
         if not isinstance(outcome, CaseResult):
             logger.error("Case %s with %s failed: %s", case_id, library, outcome)

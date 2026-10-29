@@ -445,7 +445,7 @@ def hydronic_kpis(result: Result, network: Network, traces: dict[str, list[float
     return kpis
 
 
-def ventilation_kpis(result: Result, network: Network, traces: dict[str, list[float]]) -> Kpis:
+def ventilation_kpis(result: Result, network: Network, traces: dict[str, list[float]]) -> Kpis:  # noqa: C901
     kpis: Kpis = {}
     heatings = _elements(network, IdealHeatingCooling)
     if heatings:
@@ -468,7 +468,11 @@ def ventilation_kpis(result: Result, network: Network, traces: dict[str, list[fl
         fan_power = Series(supply_fan.time, supply_fan.values + on_grid(supply_fan, return_fan))
     heater = result.series([f"{unit}.PHea.y"])
     bypass = result.series([f"{unit}.yByp.y"])
-    flow = result.series([f"{unit}.fanSup.m_flow", "duct_001.m_flow", f"{unit}.m_flow_nominal"])
+    flow = result.series([f"{unit}.fanSup.m_flow", f"{unit}.fanExt.m_flow"])  # the flow of the unit, every duct
+    if flow is None:  # FastSmoothBuildings: the unit sets the fraction y of its design flow
+        speed, nominal = result.series([f"{unit}.y"]), result.series([f"{unit}.m_flow_nominal"])
+        if speed is not None and nominal is not None:
+            flow = Series(speed.time, speed.values * float(nominal.values[0]))
     recovered = result.series([f"{unit}.QRec.y"])
     time = supply.time
     zone_on, outdoor_on, extract_on = on_grid(supply, zone), on_grid(supply, outdoor), on_grid(supply, extract)

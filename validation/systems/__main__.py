@@ -56,7 +56,8 @@ def main(argv: list[str] | None = None) -> None:
     run.add_argument("--family", choices=[family.value for family in Family])
     run.add_argument("--library", choices=LIBRARIES, action="append", help="default: the three libraries")
     run.add_argument("--workers", type=int, default=1, help="simulations run at a time")
-    run.add_argument("--force", action="store_true", help="ignore the cached results")
+    run.add_argument("--force", action="store_true", help="simulate again, ignoring the cached results")
+    run.add_argument("--refresh-kpis", action="store_true", help="read the KPIs again from the simulated results")
     report = commands.add_parser("report", help="the report of the results (cached and committed)")
     report.add_argument("--directory", type=Path, default=REPORT_DIR)
     report.add_argument("--docs", action="store_true", help="also write the documentation page")
@@ -81,7 +82,11 @@ def _run(arguments: argparse.Namespace) -> None:
     failed = []
     for library in arguments.library or LIBRARIES:
         results = run_cases(
-            selected_cases(arguments.cases, arguments.family), library, arguments.force, arguments.workers
+            selected_cases(arguments.cases, arguments.family),
+            library,
+            arguments.force,
+            arguments.workers,
+            arguments.refresh_kpis,
         )
         for case_id, outcome in results.items():
             if isinstance(outcome, CaseResult):
