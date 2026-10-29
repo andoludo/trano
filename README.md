@@ -38,6 +38,12 @@ zones are reported for information. Simulations run in the official OpenModelica
 study against Buildings and its analysis as an MPC model live in [its own repository](https://github.com/andoludo/FastSmoothBuildings)
 ([documentation](https://andoludo.github.io/FastSmoothBuildings/)).
 
+The **systems** are validated too: the heat pumps (COP against their EN 14511 table, electricity, cycling),
+the gas boilers (efficiency, gas, cycling), the valves and pumps, and the ventilation units (supply air
+temperature, recovered heat, fan electricity) are simulated one at a time on a study zone and on combined
+houses with the three libraries, and every KPI is held to a band with its physical reasoning
+(`validation/systems`, [results](https://andoludo.github.io/trano/validation/systems/)).
+
 ## ✨ Key Features
 
 ### 🛠️ **Built for Open-Source BES**
