@@ -334,7 +334,7 @@ def render(description: dict[str, Any], header: str) -> str:
     return comment + include + yaml.safe_dump(description, sort_keys=False, width=120)
 
 
-def house(  # noqa: PLR0913
+def house(  # noqa: PLR0913, C901
     generator: dict[str, Any],
     supply: float,
     radiator_rating: tuple[float, float] | None = None,
