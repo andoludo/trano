@@ -168,3 +168,83 @@ AHU or the ground-source heat pump until its library gains it) the table says so
   campaign gate; a `systems.yaml` workflow on schedule and on demand, with the library and result caches of
   the BESTEST workflow.
 * A commit per phase on `claude/trano-model-validation-yaml-2adefc`.
+
+## Findings (coldest week of the Uccle weather unless said otherwise, `python -m validation.systems report`)
+
+### Heat pumps
+
+* **The air-water heat pump of Buildings and IDEAS behaves as its data sheet.** Over a sweep of constant source
+  temperatures (-10, -7, 2, 7, 12 degC) at a flat 45 degC supply, the COP while running is 0.95 to 0.99 of the
+  Vitocal 251-A08 table at the measured condenser outlet (49 degC) and source temperatures; the 5 % gap is the
+  start-up transient of the refrigerant cycle and the condenser pump. The COP falls with the supply temperature
+  (4.1 at 35 degC, 3.4 at 45 degC, 2.8 at 55 degC at a 7 degC source) and rises with the source as the table does.
+* **Electricity and heat are accounted for**: the meters on the bus integrate compressor plus condenser pump; the
+  seasonal COP of the coldest week is 2.83 (Buildings), 2.84 (IDEAS), 2.90 (FastSmoothBuildings) on radiators at
+  45/35 degC with the heating curve, 4.3 to 4.5 in a mild March week; in July the heat pump does not run (IDEAS
+  starts it once for 8 minutes when the outdoor air dips below the 16 degC heating limit).
+* **The safety control holds**: no run shorter than 5 minutes, no stop shorter than 5 minutes, the compressor never
+  below its minimum speed (Buildings, IDEAS); the buffer stays in its band. Without a buffer (a 60 l hydraulic
+  separator) the starts rise from 14 to 22 a day at the same seasonal COP.
+* **The same heat pump given as a table of the YAML reproduces the library record** (seasonal COP 2.82 against
+  2.83). A Carnot model at the default effectiveness of 0.45 under-estimates the Vitocal by 23 % in the coldest
+  week (2.19): 0.45 is a conservative value that keeps a data-free study on the safe side; 0.58 would match this
+  unit. The ground-source heat pump on a 10 degC ground loop reaches 3.1, the water-water one on a 12 degC loop 3.5.
+* **Fixed**: the water-water heat pump had no electricity, no energy meters and ran at a fixed set point whatever the
+  demand; it now shares the architecture of the air-water one. The COP (instantaneous and seasonal) and the source
+  temperature are on the data bus. FastSmoothBuildings ignored `heat_pump_source_outdoor_air` and
+  `temperature_heatpump_source` silently; it now reports them as unsupported.
+* **Sizing lesson kept in the cases**: with the linear heating curve (45 degC at -8 degC, 30 degC at 16 degC) a
+  radiator rated exactly for the design loss leaves the room short on cold mornings after the night setback; the
+  cases oversize the radiator by a third, as a heat pump retrofit does.
+
+### Gas boilers
+
+* **The boiler with storage** burns 207 kWh for 182 kWh of heat in the coldest week (efficiency 0.88: the 0.9 curve
+  minus the standing losses of the boiler, counted twice by Buildings 13, and of the 200 l tank), 3.3 starts a day;
+  the fuel volume follows the heating value of the fuel record, 11.67 kWh/m3 (50 MJ/kg at 0.84 kg/m3). The tank top
+  reaches 85 degC for a 70 degC set point: the control charges until the tank bottom passes the set point plus 5 K.
+* **The boiler without storage** modulates continuously under its proportional controller (the water holds 70.0
+  degC, 96 to 104 firing hours a week, 2 starts a day), efficiency 0.875. **The condensing curve** (0.97 at 40 degC
+  to 0.90 at 70 degC) on 45/35 radiators gives 0.958 while firing and 0.94 over the week.
+* **Finding, not changed**: the default (storage) control charges the tank whenever the outdoor air is below its 15
+  degC cut-off, with or without heat demand: 33 kWh of gas in a July week for a zone at 23 degC, the standing losses
+  of a tank kept at 75 to 85 degC. A lower `threshold_outdoor_air_cutoff` or a demand condition would stop it; the
+  choice is left to the user (see the decisions below).
+* **Fixed in FastSmoothBuildings**: its boilers under the default and complex controls had no demand and idled at 80
+  degC all year (16 kWh of gas in a July week); they now fire on demand and hold the set point of the tank control.
+
+### Valves, pumps and mixing circuits
+
+* The radiator valve holds the zone within 0.7 K RMSE of its set point under the proportional controller, 1.2 K under
+  the Guideline 36 loop (slower, 6 movements a day) and 0.55 K under the on-off thermostat (43 to 53 movements a day);
+  the valve closes 60 to 90 hours a week (the night setback), the pump never runs without demand, and the
+  linearised flow law (trano's default) changes the opening (0.52 against 0.38) but not the comfort. The pumps draw
+  little (0.1 to 0.15 kWh a week at 1.5 W): the preconfigured mover at 30 kPa and 0.07 kg/s.
+* The mixing valve holds its supply set point within 1.4 to 1.9 K (PI) with the tank at 85 degC.
+* **Finding, validator**: a radiator valve returning directly to the generator (`inlets: [VALVE]` on the boiler)
+  passes the validation but does not compile (the containers connect the production to the distribution only); a
+  model named like a container (`ventilation`, `emission`, ...) does not compile either. Both are left for a
+  validation rule (see the decisions).
+* **Fixed in FastSmoothBuildings**: the three-way valve controller of the library is proportional; the PI gain of the
+  YAML (0.1) left a 7 K steady-state error and cold rooms (19.1 degC); the gain of the YAML is now only taken for a P
+  controller, and the rooms follow Buildings within 0.2 K.
+
+### Ventilation
+
+* **Does it blow cold air?** Yes, by a few kelvin, as a real unit without a post-heater: at -1 degC outdoor and 21 degC
+  inside, the balanced unit with 80 % recovery supplies 16.2 degC on average (12.8 degC at the coldest hour), the
+  measured effectiveness being 0.84 with the heat of the fans. Without recovery the supply is the outdoor air (-0.7
+  degC), as with the extract-only system and the natural ventilation.
+* **The energy is accounted for**: the heating of the zone rises by 26 kWh with the recovery unit (the computed loss of
+  the supply air deficit is 28 kWh), by 160 kWh without recovery, by 166 kWh with the extract-only system and the
+  natural ventilation (0.05 kg/s x 1006 J/(kg.K) x 22 K x 168 h = 186 kWh, less the hours of setback). The fans draw
+  43 W (1 030 W per m3/s for the two fans at 200 Pa, the range of real units), 9 W for the extract fan alone; the
+  three libraries agree within 5 %.
+* **Summer**: without a bypass the unit warms the supply above the room 97 hours of the July week; with the bypass
+  (new) it opens 75 hours and the supply rises above the room 68 hours only, the remaining ones being those when the
+  outdoor air itself is warmer than the room. The post-heater (new) holds the supply at 18.0 degC for 15 kWh of
+  electricity a week and takes 10 kWh off the zone heating. The fan schedule (new) at half flow at night saves a
+  quarter of the fan electricity.
+* **The Guideline 36 unit** of trano has no heating or cooling coil: it supplies the mixed outdoor and return air
+  unconditioned (quantified in `ahu_g36_winter`); giving it coils and a hot water source is a design choice left
+  to the user.
