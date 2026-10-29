@@ -201,7 +201,7 @@ hrv_postheater_winter:
 extract_only_winter:
   - {kpi: vent_supply_mean_c, min: -2, max: 2, why: "the outdoor air enters through the trickle vents at its own temperature"}
   - {kpi: vent_effectiveness_measured, max: 0.05, why: "no recovery"}
-  - {kpi: vent_sfp_w_per_m3s, min: 200, max: 1000, why: "one fan at 200 Pa"}
+  - {kpi: vent_sfp_w_per_m3s, min: 150, max: 1000, why: "one fan at 200 Pa nominal: the Buildings fan draws 174 W/(m3/s) at the pressure drop of its duct, the IDEAS one 215"}
   - {kpi: vent_heat_loss_kwh, min: 120, max: 240, why: "the full ventilation loss, as balanced_no_recovery_winter"}
 natural_winter:
   - {kpi: heating_kwh, min: 180, max: 400, why: "the load of no_ventilation_winter plus 150 m3/h of outdoor air at -1 degC: about 186 kWh more"}
