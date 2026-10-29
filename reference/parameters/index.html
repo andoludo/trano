@@ -1412,6 +1412,8 @@
       
         
       
+        
+      
     
     
     
@@ -1470,6 +1472,34 @@
     
   
     ASHRAE 140 (BESTEST)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/systems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Systems (heat pumps, boilers, valves, ventilation)
   
 
     
@@ -1926,19 +1956,19 @@
 <td><code>m_flow_nominal</code></td>
 <td>Nominal mass flow rate [kg/s]</td>
 <td><code>2*100*1.2/3600</code></td>
-<td><code>mAir_flow_nominal</code> (when given; default variant); <code>m_flow_nominal</code> (test, system_d variant)</td>
-<td><code>mAir_flow_nominal</code> (when given; default variant); <code>m_flow_nominal</code> (test, system_d variant)</td>
-<td><code>mAir_flow_nominal</code> (when given; default variant); <code>m_flow_nominal</code> (test, system_d variant)</td>
-<td><code>mAir_flow_nominal</code> (when given; default variant); <code>m_flow_nominal</code> (test, system_d variant)</td>
+<td><code>mAir_flow_nominal</code> (when given; default variant); <code>m_flow_nominal</code> (test, system_d, system_c variant)</td>
+<td><code>mAir_flow_nominal</code> (when given; default variant); <code>m_flow_nominal</code> (test, system_d, system_c variant)</td>
+<td><code>mAir_flow_nominal</code> (when given; default variant); <code>m_flow_nominal</code> (test, system_d, system_c variant)</td>
+<td><code>mAir_flow_nominal</code> (when given; default variant); <code>m_flow_nominal</code> (test, system_d, system_c variant)</td>
 </tr>
 <tr>
 <td><code>dp_nominal</code></td>
 <td>Nominal pressure raise [Pa]</td>
 <td><code>200</code></td>
-<td><code>dp_nominal</code> (test, system_d variant)</td>
-<td><code>dp_nominal</code> (test, system_d variant)</td>
-<td><code>dp_nominal</code> (test, system_d variant)</td>
-<td><code>dp_nominal</code> (test, system_d variant)</td>
+<td><code>dp_nominal</code> (test, system_d, system_c variant)</td>
+<td><code>dp_nominal</code> (test, system_d, system_c variant)</td>
+<td><code>dp_nominal</code> (test, system_d, system_c variant)</td>
+<td><code>dp_nominal</code> (test, system_d, system_c variant)</td>
 </tr>
 <tr>
 <td><code>heat_exchanger_effectiveness</code></td>
@@ -1993,6 +2023,60 @@
 <td><code>ratOAFlo_P</code> (default variant)</td>
 <td><code>ratOAFlo_P</code> (default variant)</td>
 <td><code>ratOAFlo_P</code> (default variant)</td>
+</tr>
+<tr>
+<td><code>fan_schedule</code></td>
+<td>Day schedule of the fans of a balanced (system_d) or extract (system_c) ventilation unit: rows of time since midnight [s] and fraction of the design flow, held until the next row, as "[0, 0.5; 25200, 1; 79200, 0.5]" for half the flow at night; the design flow all day by default</td>
+<td>library default</td>
+<td><code>fanSchedule</code> (system_d, system_c variant)</td>
+<td><code>fanSchedule</code> (system_d, system_c variant)</td>
+<td><code>fanSchedule</code> (system_d, system_c variant)</td>
+<td><code>fanSchedule</code> (system_d, system_c variant)</td>
+</tr>
+<tr>
+<td><code>summer_bypass</code></td>
+<td>Whether the balanced ventilation unit (system_d) leads the outdoor air around its heat recovery when the outdoor air is above bypass_outdoor_temperature and cooler than the extract air (free cooling), false by default</td>
+<td>library default</td>
+<td><code>useBypass</code> (system_d variant)</td>
+<td><code>useBypass</code> (system_d variant)</td>
+<td><code>useBypass</code> (system_d variant)</td>
+<td><code>useBypass</code> (system_d variant)</td>
+</tr>
+<tr>
+<td><code>bypass_outdoor_temperature</code></td>
+<td>Outdoor temperature above which the summer bypass of the balanced ventilation unit may open [K], 288.15 by default</td>
+<td>library default</td>
+<td><code>TOutByp</code> (system_d variant)</td>
+<td><code>TOutByp</code> (system_d variant)</td>
+<td><code>TOutByp</code> (system_d variant)</td>
+<td><code>TOutByp</code> (system_d variant)</td>
+</tr>
+<tr>
+<td><code>supply_air_minimum_temperature</code></td>
+<td>Minimum supply air temperature held by an electric post-heater after the supply fan of the balanced ventilation unit (system_d) [K]; no post-heater when absent</td>
+<td>library default</td>
+<td><code>TSupMin</code> (system_d variant)</td>
+<td><code>TSupMin</code> (system_d variant)</td>
+<td><code>TSupMin</code> (system_d variant)</td>
+<td><code>TSupMin</code> (system_d variant)</td>
+</tr>
+<tr>
+<td><code>post_heater_power</code></td>
+<td>Capacity of the electric post-heater of the balanced ventilation unit [W], the design flow heated by 25 K by default</td>
+<td>library default</td>
+<td><code>QHeaPos_flow_nominal</code> (system_d variant)</td>
+<td><code>QHeaPos_flow_nominal</code> (system_d variant)</td>
+<td><code>QHeaPos_flow_nominal</code> (system_d variant)</td>
+<td><code>QHeaPos_flow_nominal</code> (system_d variant)</td>
+</tr>
+<tr>
+<td><code>trickle_vent_dp_nominal</code></td>
+<td>Pressure drop of the trickle vents of the rooms at the design flow of the extract ventilation unit (system_c) [Pa], 10 by default</td>
+<td>library default</td>
+<td><code>dpVen_nominal</code> (system_c variant)</td>
+<td><code>dpVen_nominal</code> (system_c variant)</td>
+<td><code>dpVen_nominal</code> (system_c variant)</td>
+<td><code>dpVen_nominal</code> (system_c variant)</td>
 </tr>
 </tbody>
 </table>
@@ -2246,7 +2330,7 @@
 </tr>
 <tr>
 <td><code>temperature_heatpump_source</code>, <code>heat_pump_source_temperature</code></td>
-<td>Constant source temperature of the heat pump [K], used when heat_pump_source_outdoor_air is false (and by the water-water heat pump)</td>
+<td>Constant source temperature of the heat pump [K], the water loop of the water-water heat pump, or the source of the air-water heat pump when heat_pump_source_outdoor_air is false</td>
 <td><code>286.15</code></td>
 <td><code>TSouSet</code></td>
 <td><code>TSouSet</code></td>
@@ -2327,84 +2411,165 @@
 </tr>
 <tr>
 <td><code>heat_pump_nominal_source_temperature</code></td>
-<td>Source (outdoor air) temperature at the rating point of the air-water heat pump [K], where it delivers the nominal heating power at the supply temperature set point; the design outdoor temperature by default</td>
+<td>Source temperature at the rating point of the heat pump [K], where it delivers the nominal heating power at the supply temperature set point; the design outdoor temperature (air-water), the coldest ground temperature (ground-source) or the source temperature (water-water) by default</td>
 <td>library default</td>
-<td><code>TEvaHea_nominal</code> (air_water_heat_pump variant)</td>
-<td><code>TEvaHea_nominal</code> (air_water_heat_pump variant)</td>
-<td><code>TEvaHea_nominal</code> (air_water_heat_pump variant)</td>
-<td><code>TEvaHea_nominal</code> (air_water_heat_pump variant)</td>
+<td><code>TEvaHea_nominal</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TEvaHea_nominal</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TEvaHea_nominal</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TEvaHea_nominal</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>heat_pump_source_mass_flow</code></td>
 <td>Mass flow rate of the source side of the heat pump [kg/s], the one of the performance data scaled to the nominal heating power by default</td>
 <td>library default</td>
-<td><code>mSou_flow_nominal</code> (air_water_heat_pump, water_water_heat_pump variant)</td>
-<td><code>mSou_flow_nominal</code> (air_water_heat_pump, water_water_heat_pump variant)</td>
-<td><code>mSou_flow_nominal</code> (air_water_heat_pump, water_water_heat_pump variant)</td>
-<td><code>mSou_flow_nominal</code> (air_water_heat_pump, water_water_heat_pump variant)</td>
+<td><code>mSou_flow_nominal</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>mSou_flow_nominal</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>mSou_flow_nominal</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>mSou_flow_nominal</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>heat_pump_source_outdoor_air</code></td>
-<td>Whether the evaporator of the air-water heat pump takes the outdoor air of the weather data (true by default) or the constant temperature_heatpump_source</td>
+<td>Whether the evaporator of the air-water heat pump takes the outdoor air of the weather data (true by default) or the constant temperature_heatpump_source (a sweep of the source temperature); Buildings and IDEAS only</td>
 <td>library default</td>
-<td><code>useOutdoorAirSource</code> (air_water_heat_pump variant)</td>
-<td><code>useOutdoorAirSource</code> (air_water_heat_pump variant)</td>
-<td><code>useOutdoorAirSource</code> (air_water_heat_pump variant)</td>
-<td><code>useOutdoorAirSource</code> (air_water_heat_pump variant)</td>
+<td><code>useOutdoorAirSource</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>useOutdoorAirSource</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>useOutdoorAirSource</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>useOutdoorAirSource</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>design_outdoor_temperature</code></td>
 <td>Design outdoor temperature of the heating curve of the air-water heat pump [K], 265.15 (-8 degC, Uccle, NBN EN 12831) by default</td>
 <td>library default</td>
-<td><code>TOutDes</code> (air_water_heat_pump variant)</td>
-<td><code>TOutDes</code> (air_water_heat_pump variant)</td>
-<td><code>TOutDes</code> (air_water_heat_pump variant)</td>
-<td><code>TOutDes</code> (air_water_heat_pump variant)</td>
+<td><code>TOutDes</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TOutDes</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TOutDes</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TOutDes</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>heating_limit_temperature</code></td>
 <td>Outdoor temperature above which the air-water heat pump does not heat [K], 289.15 by default</td>
 <td>library default</td>
-<td><code>TOutHeaLim</code> (air_water_heat_pump variant)</td>
-<td><code>TOutHeaLim</code> (air_water_heat_pump variant)</td>
-<td><code>TOutHeaLim</code> (air_water_heat_pump variant)</td>
-<td><code>TOutHeaLim</code> (air_water_heat_pump variant)</td>
+<td><code>TOutHeaLim</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TOutHeaLim</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TOutHeaLim</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TOutHeaLim</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>minimum_supply_temperature</code></td>
 <td>Supply temperature of the heating curve of the air-water heat pump at the heating limit [K], 303.15 by default</td>
 <td>library default</td>
-<td><code>TSupMin</code> (air_water_heat_pump variant)</td>
-<td><code>TSupMin</code> (air_water_heat_pump variant)</td>
-<td><code>TSupMin</code> (air_water_heat_pump variant)</td>
-<td><code>TSupMin</code> (air_water_heat_pump variant)</td>
+<td><code>TSupMin</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TSupMin</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TSupMin</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TSupMin</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>buffer_temperature_band</code></td>
 <td>Width of the buffer temperature band switching the air-water heat pump on and off around the supply set point [K], 5 by default</td>
 <td>library default</td>
-<td><code>dTHys</code> (air_water_heat_pump variant)</td>
-<td><code>dTHys</code> (air_water_heat_pump variant)</td>
-<td><code>dTHys</code> (air_water_heat_pump variant)</td>
-<td><code>dTHys</code> (air_water_heat_pump variant)</td>
+<td><code>dTHys</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>dTHys</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>dTHys</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>dTHys</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>compressor_minimum_on_time</code></td>
 <td>Minimum time the compressor of the air-water heat pump runs once started [s], 300 by default</td>
 <td>library default</td>
-<td><code>minOnTime</code> (air_water_heat_pump variant)</td>
-<td><code>minOnTime</code> (air_water_heat_pump variant)</td>
-<td><code>minOnTime</code> (air_water_heat_pump variant)</td>
-<td><code>minOnTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOnTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>minOnTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>minOnTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>minOnTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>compressor_minimum_off_time</code></td>
 <td>Minimum time the compressor of the air-water heat pump stays off once stopped [s], 300 by default</td>
 <td>library default</td>
-<td><code>minOffTime</code> (air_water_heat_pump variant)</td>
-<td><code>minOffTime</code> (air_water_heat_pump variant)</td>
-<td><code>minOffTime</code> (air_water_heat_pump variant)</td>
-<td><code>minOffTime</code> (air_water_heat_pump variant)</td>
+<td><code>minOffTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>minOffTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>minOffTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>minOffTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+</tr>
+<tr>
+<td><code>heat_pump_data</code></td>
+<td>Performance data of the heat pump (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump): an EN 14511 record of Buildings 13 scaled to the nominal heating power (Vitocal251A08, the default of the air-water heat pump, an 8 kW air-water unit; SingleSplitRXM20R, a 2 kW air-air split; WAMAK_WaterToWater_220kW, a 220 kW water-water unit), <code>table</code> for the tables of heat_pump_table_heating_capacity and heat_pump_table_electrical_power, or <code>carnot</code> (the default of the ground-source and water-water heat pumps) for a constant Carnot effectiveness heat_pump_carnot_effectiveness</td>
+<td>library default</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>heat_pump_carnot_effectiveness</code></td>
+<td>Carnot effectiveness of the heat pump when heat_pump_data is carnot [1]: the COP is this fraction of the Carnot COP between the condenser outlet plus 5 K and the source minus 5 K (air) or 2 K (water); 0.45 by default, about 3.7 at A7/W35 and 4.4 at B0/W35</td>
+<td>library default</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>heat_pump_table_source_temperatures</code></td>
+<td>Source temperatures of the performance tables of the heat pump (heat_pump_data table) [K], the columns of the tables, increasing</td>
+<td>library default</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>heat_pump_table_condenser_temperatures</code></td>
+<td>Condenser outlet (supply) temperatures of the performance tables of the heat pump (heat_pump_data table) [K], the rows of the tables, increasing</td>
+<td>library default</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>heat_pump_table_heating_capacity</code></td>
+<td>Heating capacity table of the heat pump (heat_pump_data table) [W]: one row per condenser temperature, the values per source temperature separated by commas, the rows by semicolons, as "4490, 5170, 6470; 4230, 4900, 6260"; a 0 marks a point outside the operating envelope</td>
+<td>library default</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>heat_pump_table_electrical_power</code></td>
+<td>Electrical power table of the heat pump (heat_pump_data table) [W], laid out as heat_pump_table_heating_capacity</td>
+<td>library default</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>ground_temperature_mean</code></td>
+<td>Mean temperature of the ground loop of the ground-source heat pump over the year [K], 283.15 by default</td>
+<td>library default</td>
+<td><code>TGroMea</code> (ground_source_heat_pump variant)</td>
+<td><code>TGroMea</code> (ground_source_heat_pump variant)</td>
+<td><code>TGroMea</code> (ground_source_heat_pump variant)</td>
+<td><code>TGroMea</code> (ground_source_heat_pump variant)</td>
+</tr>
+<tr>
+<td><code>ground_temperature_amplitude</code></td>
+<td>Amplitude of the annual variation of the ground loop temperature of the ground-source heat pump [K], 3 by default (the loop is coldest at the end of the heating season)</td>
+<td>library default</td>
+<td><code>TGroAmp</code> (ground_source_heat_pump variant)</td>
+<td><code>TGroAmp</code> (ground_source_heat_pump variant)</td>
+<td><code>TGroAmp</code> (ground_source_heat_pump variant)</td>
+<td><code>TGroAmp</code> (ground_source_heat_pump variant)</td>
+</tr>
+<tr>
+<td><code>ground_coldest_day</code></td>
+<td>Day of the year when the ground loop of the ground-source heat pump is coldest [d], 45 (mid-February) by default</td>
+<td>library default</td>
+<td><code>groColDay</code> (ground_source_heat_pump variant)</td>
+<td><code>groColDay</code> (ground_source_heat_pump variant)</td>
+<td><code>groColDay</code> (ground_source_heat_pump variant)</td>
+<td><code>groColDay</code> (ground_source_heat_pump variant)</td>
 </tr>
 <tr>
 <td><code>temperature_initial</code></td>

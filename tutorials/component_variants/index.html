@@ -1502,6 +1502,8 @@
       
         
       
+        
+      
     
     
     
@@ -1560,6 +1562,34 @@
     
   
     ASHRAE 140 (BESTEST)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/systems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Systems (heat pumps, boilers, valves, ventilation)
   
 
     
@@ -2225,7 +2255,11 @@ list can always be discovered with:</p>
 </tr>
 <tr>
 <td><code>system_d</code></td>
-<td>System-D mechanical balanced ventilation with heat recovery.</td>
+<td>System-D mechanical balanced ventilation with heat recovery, a fan schedule, an optional summer bypass and an optional electric post-heater.</td>
+</tr>
+<tr>
+<td><code>system_c</code></td>
+<td>System-C mechanical extract ventilation: one extract fan, the outdoor air through the trickle vents of the rooms.</td>
 </tr>
 <tr>
 <td><code>test</code></td>
@@ -2278,12 +2312,16 @@ list can always be discovered with:</p>
 <td>Gas boiler without storage (direct loop).</td>
 </tr>
 <tr>
-<td><code>water_water_heat_pump</code></td>
-<td>Water/water heat pump as production system.</td>
+<td><code>air_water_heat_pump</code></td>
+<td>Air/water heat pump with its buffer on the outdoor air; <code>heat_pump_data</code> picks an EN 14511 record of Buildings, the tables of the YAML or a Carnot model.</td>
 </tr>
 <tr>
-<td><code>air_water_heat_pump</code></td>
-<td>Air/water heat pump as production system.</td>
+<td><code>ground_source_heat_pump</code></td>
+<td>Brine/water heat pump on a ground loop whose temperature follows an annual sine (Carnot by default).</td>
+</tr>
+<tr>
+<td><code>water_water_heat_pump</code></td>
+<td>Water/water heat pump on a water loop at a constant temperature (Carnot by default).</td>
 </tr>
 </tbody>
 </table>
