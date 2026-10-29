@@ -208,3 +208,39 @@ natural_winter:
 ahu_g36_winter:
   - {kpi: vent_flow_kg_s, max: 0.001, why: "the Guideline 36 unit of trano never starts its fans with one VAV box and the defaults of its controller: the zone gets no ventilation (and the unit has no coil to condition the air it would supply)"}
   - {kpi: heating_kwh, min: 80, max: 220, why: "the load of no_ventilation_winter, the unit bringing no air"}
+
+# Houses: the six-zone test house (design heat loss about 2.6 kW at -8 degC) for a fortnight from the coldest day.
+# The zone KPIs are those of the first room of the file (bedroom 1, heated to 21 degC from 14 to 23 h).
+house_air_water_heat_pump:
+  - {kpi: hp_scop, min: 2.4, max: 3.8, why: "the air-water heat pump on 45/35 radiators along its heating curve in the coldest fortnight"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the minimum on time of the safety control", libraries: [Buildings, IDEAS]}
+  - {kpi: hp_heat_kwh, min: 150, max: 700, why: "a 2.6 kW design loss house with heat recovery ventilation over two cold weeks"}
+  - {kpi: vent_effectiveness_measured, min: 0.78, max: 0.92, why: "the 0.8 recovery plus the heat of the fans"}
+  - {kpi: vent_flow_kg_s, min: 0.075, max: 0.09, why: "0.1 kg/s by day and 0.05 kg/s at night: 0.083 kg/s on average"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 is heated to 21 degC in the afternoon and evening only; the occupied hours of the KPI (7 to 22 h) include its morning setback"}
+house_ground_source_heat_pump:
+  - {kpi: hp_scop, min: 2.8, max: 4.6, why: "0.45 of the Carnot COP on a 7 to 8 degC ground loop, more along the heating curve"}
+  - {kpi: hp_source_running_c, min: 6.5, max: 8.5, why: "the ground loop at 10 degC mean, near its coldest in late January"}
+  - {kpi: hp_heat_kwh, min: 150, max: 700, why: "the load of house_air_water_heat_pump"}
+  - {kpi: vent_effectiveness_measured, min: 0.78, max: 0.92, why: "the 0.8 recovery plus the heat of the fans"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 as in house_air_water_heat_pump"}
+house_condensing_boiler:
+  - {kpi: boiler_eta_firing, min: 0.93, max: 0.99, why: "the condensing curve at 45 degC"}
+  - {kpi: boiler_efficiency, min: 0.88, max: 0.99, why: "the condensing curve minus the standing loss of the boiler"}
+  - {kpi: boiler_kwh_per_m3, min: 11.6, max: 11.75, why: "the heating value of the fuel record"}
+  - {kpi: vent_effectiveness_measured, max: 0.05, why: "the extract ventilation recovers nothing"}
+  - {kpi: vent_sfp_w_per_m3s, min: 100, max: 1000, why: "one extract fan at 200 Pa"}
+  - {kpi: boiler_heat_kwh, min: 250, max: 1000, why: "the house with 360 m3/h of unrecovered outdoor air over two cold weeks"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 as in house_air_water_heat_pump"}
+house_boiler_storage:
+  - {kpi: boiler_efficiency, min: 0.80, max: 0.91, why: "0.9 of the curve minus the losses of the boiler and of the tank"}
+  - {kpi: boiler_kwh_per_m3, min: 11.6, max: 11.75, why: "the heating value of the fuel record"}
+  - {kpi: boiler_starts_per_day, min: 1, max: 40, why: "the 200 l tank on an 8 kW boiler"}
+  - {kpi: boiler_heat_kwh, min: 250, max: 1000, why: "the house with 360 m3/h of outdoor air through the windows over two cold weeks"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 under an on-off thermostat"}
+house_heat_pump_pv:
+  - {kpi: hp_scop, min: 2.4, max: 3.8, why: "the air-water heat pump of house_air_water_heat_pump"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
+  - {kpi: hp_heat_kwh, min: 150, max: 700, why: "the load of house_air_water_heat_pump"}
+  - {kpi: zone_mean_occupied_c, min: 18.5, max: 23, why: "bedroom 1 as in house_air_water_heat_pump"}

@@ -251,3 +251,26 @@ AHU or the ground-source heat pump until its library gains it) the table says so
   single-zone configuration never raises, and the unit has no heating or cooling coil to condition the air it
   would supply. Making it a usable system (coils, a hot water source, a working operating mode) is a design
   choice left to the user; the cases keep it as a documented limitation.
+
+## Decisions left to the user
+
+Everything above was done without a decision; these points need one.
+
+1. **Storage boiler charging without demand.** The default control charges the tank whenever the outdoor air is
+   below `threshold_outdoor_air_cutoff` (15 degC), so a heating-only tank burns about 200 W of gas on cool July
+   nights. Options: gate the charging on the demand of the circuits (as the `simple` variant and FastSmoothBuildings
+   now do), switch the cut-off to a daily mean, or leave it and document the parameter.
+2. **Carnot effectiveness default.** 0.45 (with the 5 K approach temperatures of Buildings) under-estimates the
+   Vitocal 251-A08 by 23 % in the coldest week; 0.58 would match it. 0.45 keeps a data-free study conservative.
+3. **Two validation rules.** A radiator valve wired straight into the generator (`inlets: [VALVE:001]` on the boiler)
+   and a model whose file is named like a container (`ventilation`, `emission`, `production`...) pass the validation
+   and fail in OpenModelica; both deserve a message (Python, `trano/validation`).
+4. **The Guideline 36 air handling unit** needs coils, a hot water source and an operating mode that starts its fans
+   before it can be assessed; or it stays documented as a research configuration.
+5. **CO2 demand-controlled ventilation** on `system_d` needs the unit to know its spaces (the air handling unit only
+   hands them to its `ahu_control` today): one attribute in `trano/elements/system.py`, then a template change.
+6. **FastSmoothBuildings library** (its own repository): a replaceable heat pump table, a summer bypass and a
+   post-heater on the recovery unit, an extract-only unit, a PI on the three-way valve, a storage tank.
+7. **The gas heating value**: the default fuel record of Buildings gives 11.67 kWh/m3 (50 MJ/kg at 0.84 kg/m3); the
+   gas of the Belgian grid is 9.1 (L) to 10.3 (H) kWh/m3 on the lower heating value, so the gas volume on the bus is
+   12 to 22 % low against a real meter. A trano fuel record with the local heating value, or a note.
