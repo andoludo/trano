@@ -7,6 +7,7 @@ The gate (``pytest -m systems``) simulates a week per case and library, in Docke
 from __future__ import annotations
 
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -115,3 +116,29 @@ def test_case_kpis_are_inside_their_bands(case_id: str, library: str) -> None:
 
     result = run_case(case_id, library)
     assert not (failed := failures(result)), "\n".join(failed)
+
+
+def test_report_and_figure_render_from_results(tmp_path: Path) -> None:
+    """The report judges a synthetic result against its bands and the figure of a case renders from its traces."""
+    from validation.systems.figures import write_figure
+    from validation.systems.harness import CaseResult
+    from validation.systems.report import compare, failures, render_markdown
+
+    result = CaseResult(
+        case="hp_winter",
+        library="Buildings",
+        kpis={"hp_scop": 2.8, "hp_cop_ratio": 1.5, "zone_mean_occupied_c": 20.6},
+        model_hash="x",
+        wall_time=1.0,
+        traces={"zone_c": [20.0] * 48, "outdoor_c": [0.0] * 48, "hp_power_w": [500.0] * 48},
+    )
+    statuses = {comparison.band.kpi: comparison.status for comparison in compare(result)}
+    assert statuses["hp_scop"] == "pass"
+    assert statuses["hp_cop_ratio"] == "fail"
+    assert statuses["hp_heat_kwh"] == "missing"
+    assert any("hp_cop_ratio: 1.500" in line for line in failures(result))
+    markdown = render_markdown({"Buildings": {"hp_winter": result}})
+    assert "### `hp_winter`" in markdown
+    assert "| hp_scop [-] | 2.8 | 2.4 to 3.6 | pass |" in markdown
+    path = write_figure("hp_winter", {"Buildings": result}, tmp_path)
+    assert path.read_text().startswith("<div")
