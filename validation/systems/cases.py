@@ -413,8 +413,83 @@ VENTILATION_CASES = [
     ),
 ]
 
+# --- houses: the six-zone house with each family of systems, two weeks from the coldest day ------------------------
+
+FORTNIGHT = 14
+
+
+def house_case(  # noqa: PLR0913
+    case_id: str,
+    description: str,
+    generator: dict[str, Any],
+    supply: float,
+    libraries: tuple[str, ...] = LIBRARIES,
+    **house: Any,  # noqa: ANN401
+) -> Case:
+    return Case(
+        id=case_id,
+        family=Family.house,
+        description=description,
+        days=FORTNIGHT,
+        output_interval=900,
+        libraries=libraries,
+        building=models.house(generator, supply, **house),
+    )
+
+
+HOUSE_CASES = [
+    house_case(
+        "house_air_water_heat_pump",
+        "Six-zone house: air-water heat pump (4 kW at -8/45 degC, 150 l buffer, heating curve), one mixing circuit "
+        "on radiators rated 45/35 under proportional valves, balanced ventilation with heat recovery at half flow "
+        "at night",
+        models.air_water_heat_pump(power=4000.0, buffer_volume=0.15),
+        45.0 + KELVIN,
+        ventilation=models.ventilation_unit(flow=0.1, parameters={"fan_schedule": NIGHT_SETBACK}),
+    ),
+    house_case(
+        "house_ground_source_heat_pump",
+        "Six-zone house: ground-source heat pump (Carnot, 10 degC ground loop), the same circuit and radiators, "
+        "balanced ventilation with heat recovery",
+        models.air_water_heat_pump(power=4000.0, buffer_volume=0.15, variant="ground_source_heat_pump"),
+        45.0 + KELVIN,
+        libraries=TABLE_LIBRARIES,
+        ventilation=models.ventilation_unit(flow=0.1),
+    ),
+    house_case(
+        "house_condensing_boiler",
+        "Six-zone house: condensing boiler without storage at 45 degC on the 45/35 radiators, mechanical extract "
+        "ventilation (system C)",
+        models.gas_boiler(power=8000.0, supply=45.0 + KELVIN, storage=False, parameters=CONDENSING_CURVE),
+        45.0 + KELVIN,
+        libraries=TABLE_LIBRARIES,
+        ventilation=models.ventilation_unit(variant="system_c", flow=0.1),
+    ),
+    house_case(
+        "house_boiler_storage",
+        "Six-zone house: gas boiler with a 200 l storage tank at 70 degC, radiators re-rated 70/50 under on-off "
+        "valves, natural ventilation through the windows (system A)",
+        models.gas_boiler(power=8000.0, supply=70.0 + KELVIN),
+        70.0 + KELVIN,
+        libraries=TABLE_LIBRARIES,
+        radiator_rating=(70.0 + KELVIN, 50.0 + KELVIN),
+        valve_control={"variant": "onoff"},
+        natural_ventilation=0.1,
+    ),
+    house_case(
+        "house_heat_pump_pv",
+        "Six-zone house: the air-water heat pump of house_air_water_heat_pump with 20 m2 of photovoltaics on the "
+        "roof and balanced ventilation with heat recovery",
+        models.air_water_heat_pump(power=4000.0, buffer_volume=0.15),
+        45.0 + KELVIN,
+        ventilation=models.ventilation_unit(flow=0.1),
+        photovoltaic_area=20.0,
+    ),
+]
+
 CASES: dict[str, Case] = {
-    case.id: case for case in [*HEAT_PUMP_CASES, *BOILER_CASES, *HYDRONIC_CASES, *VENTILATION_CASES]
+    case.id: case
+    for case in [*HEAT_PUMP_CASES, *BOILER_CASES, *HYDRONIC_CASES, *VENTILATION_CASES, *HOUSE_CASES]
 }
 
 

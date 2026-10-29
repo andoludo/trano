@@ -9,9 +9,14 @@ dictionaries trano reads; ``render`` writes them as the YAML of a case.
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 from typing import Any
 
 import yaml
+
+HOUSE = Path(__file__).resolve().parents[2].joinpath("tests", "models", "house_infiltration_air_water_heat_pump.yaml")
+"""The six-zone house of trano's tests: two storeys, 110 m2, renovated (design heat loss about 2.6 kW at -8 degC),
+a radiator rated at 45/35 degC in every room under a proportional valve with its own schedule."""
 
 KELVIN = 273.15
 FLOOR_AREA = 100.0  # [m2]
@@ -324,4 +329,94 @@ def building(
 def render(description: dict[str, Any], header: str) -> str:
     """The YAML of a building description, on trano's default library of materials and constructions."""
     comment = "".join(f"# {line}\n" for line in header.splitlines())
-    return comment + "default: !include_default\n" + yaml.safe_dump(description, sort_keys=False, width=120)
+    # a description with its own materials (the house) does not take the default library: the ids would clash
+    include = "" if "material" in description else "default: !include_default\n"
+    return comment + include + yaml.safe_dump(description, sort_keys=False, width=120)
+
+
+def house(  # noqa: PLR0913
+    generator: dict[str, Any],
+    supply: float,
+    radiator_rating: tuple[float, float] | None = None,
+    valve_control: dict[str, Any] | None = None,
+    ventilation: tuple[dict[str, Any], list[dict[str, Any]]] | None = None,
+    natural_ventilation: float | None = None,
+    photovoltaic_area: float | None = None,
+) -> dict[str, Any]:
+    """The six-zone house with its systems replaced: ``generator`` feeds every radiator through one mixing circuit
+    holding ``supply`` [K]; ``radiator_rating`` re-rates the radiators (supply, return) [K] and ``valve_control``
+    changes their control (variant, parameters); ``ventilation`` is the unit of ``ventilation_unit`` or
+    ``guideline36_unit`` whose ducts every room gets, or ``natural_ventilation`` [kg/s] of outdoor air through the
+    windows of every room; ``photovoltaic_area`` [m2] adds a PV array on the roof."""
+    description = yaml.safe_load(HOUSE.read_text())
+    spaces = description["spaces"]
+    radiators, valves = [], []
+    for index, space in enumerate(spaces, start=1):
+        for emission in space["emissions"]:
+            if "radiator" in emission:
+                radiators.append(emission["radiator"]["id"])
+                if radiator_rating:
+                    emission["radiator"]["parameters"]["water_inlet_temperature_at_nominal_condition"] = radiator_rating[0]
+                    emission["radiator"]["parameters"]["water_outlet_temperature_at_nominal_condition"] = radiator_rating[1]
+            if "valve" in emission:
+                valves.append(emission["valve"]["id"])
+                if valve_control:
+                    control = emission["valve"]["control"]["emission_control"]
+                    control["variant"] = valve_control.get("variant", control.get("variant"))
+                    control.setdefault("parameters", {}).update(valve_control.get("parameters", {}))
+        if ventilation:
+            flow = ventilation[1][0]["air_handling_unit"]["parameters"]["m_flow_nominal"] / len(spaces)
+            space["ventilation_inlets"] = [
+                {"duct": {"id": f"SUPPLY_DUCT:{index:03d}", "parameters": {"nominal_mass_flow_rate": round(flow, 4)}}}
+            ]
+            space["ventilation_outlets"] = [
+                {"duct": {"id": f"EXTRACT_DUCT:{index:03d}", "parameters": {"nominal_mass_flow_rate": round(flow, 4)}}}
+            ]
+        if natural_ventilation:
+            space["parameters"]["ventilation_schedule"] = f"[0, {natural_ventilation / len(spaces):.4f}]"
+    generator = copy.deepcopy(generator)
+    generator["outlets"] = [THREE_WAY_VALVE]
+    generator["inlets"] = [SPLIT_VALVE]
+    flow = round(sum(0.12 for _ in radiators) / len(radiators), 4)  # the circuit of the test house: 0.12 kg/s
+    description["systems"] = [
+        {"boiler": generator},
+        {
+            "three_way_valve": {
+                "id": THREE_WAY_VALVE,
+                "parameters": {"m_flow_nominal": flow},
+                "control": {
+                    "three_way_valve_control": {
+                        "id": "THREE_WAY_VALVE_CONTROL:001",
+                        "parameters": {
+                            "supply_temperature_setpoint": supply,
+                            "controller_type": "Buildings.Controls.OBC.CDL.Types.SimpleController.PI",
+                            "k": 0.1,
+                            "ti": 300,
+                        },
+                    }
+                },
+                "inlets": [SPLIT_VALVE],
+                "outlets": [TEMPERATURE_SENSOR],
+            }
+        },
+        {"temperature_sensor": {"id": TEMPERATURE_SENSOR, "outlets": [PUMP]}},
+        {
+            "pump": {
+                "id": PUMP,
+                "parameters": {"m_flow_nominal": flow},
+                "control": {"collector_control": None},
+                "outlets": radiators,
+            }
+        },
+        {"split_valve": {"id": SPLIT_VALVE, "inlets": valves, "outlets": [GENERATOR]}},
+    ]
+    if ventilation:
+        unit = copy.deepcopy(ventilation[1][0])
+        unit["air_handling_unit"]["inlets"] = [f"EXTRACT_DUCT:{index:03d}" for index in range(1, len(spaces) + 1)]
+        unit["air_handling_unit"]["outlets"] = [f"SUPPLY_DUCT:{index:03d}" for index in range(1, len(spaces) + 1)]
+        description["systems"].append(unit)
+    if photovoltaic_area:
+        description["solar"] = [
+            {"photovoltaic": {"id": "PV:001", "parameters": {"area": photovoltaic_area, "azimuth": 0.0, "tilt": 35.0}}}
+        ]
+    return description
