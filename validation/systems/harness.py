@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from buildingspy.io.outputfile import Reader  # type: ignore[import-untyped]
 from pydantic import BaseModel, Field
 
 from trano.data_models.conversion import convert_network
@@ -100,7 +101,7 @@ def run_case(case_id: str, library: str = "Buildings", force: bool = False, refr
         wall_time = time.monotonic() - started
         output = outcome.output.decode(errors="replace") if isinstance(outcome.output, bytes) else str(outcome.output)
         directory.joinpath("omc.log").write_text(output)
-        if not is_success(outcome, options=options):
+        if not is_success(outcome, options=options) and not _simulated_to_the_end(result_file, options):
             tail = "\n".join(output.splitlines()[-LOG_LINES:])
             raise RuntimeError(f"Case {case_id} with {library} did not simulate; see {directory / 'omc.log'}:\n{tail}")
         simulated.write_text(expected_hash)
@@ -112,6 +113,20 @@ def run_case(case_id: str, library: str = "Buildings", force: bool = False, refr
     )
     directory.joinpath("result.json").write_text(result.model_dump_json(indent=2))
     return result
+
+
+def _simulated_to_the_end(result_file: Path, options: SimulationOptions) -> bool:
+    """Whether the result file holds the whole experiment. The runtime keeps the tail of OpenModelica's output, and
+    the translation warnings of IDEAS (unbalanced connectors, one line per surface) fill that tail on the house
+    models, hiding the verdict of the executable: the result file then tells whether the simulation finished."""
+    if not result_file.exists():
+        return False
+    reader = Reader(str(result_file), "dymola")
+    for name in reader.varNames():
+        time, _ = reader.values(name)
+        if len(time) > 2:  # a parameter is stored with two points, a trajectory with more
+            return bool(time[-1] >= options.end_time - options.end_time * 1e-9)
+    return False
 
 
 def run_cases(

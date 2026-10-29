@@ -468,12 +468,14 @@ HOUSE_CASES = [
     house_case(
         "house_boiler_storage",
         "Six-zone house: gas boiler with a 200 l storage tank at 70 degC, radiators re-rated 70/50 under on-off "
-        "valves, natural ventilation through the windows (system A)",
+        "valves (1 % leakage so that the loop keeps a flow path when they all close), natural ventilation through "
+        "the windows (system A)",
         models.gas_boiler(power=8000.0, supply=70.0 + KELVIN),
         70.0 + KELVIN,
         libraries=TABLE_LIBRARIES,
         radiator_rating=(70.0 + KELVIN, 50.0 + KELVIN),
         valve_control={"variant": "onoff"},
+        valve_parameters={"valve_leakage": 0.01},
         natural_ventilation=0.1,
     ),
     house_case(

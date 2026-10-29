@@ -23,7 +23,8 @@ The runs use the runtime of `trano_simulate`: Docker by default, or the `omc` of
 are cached in `.cache/systems/<library>/<case>` by the hash of the generated model: a case whose model did not
 change is read back; a case whose KPI code changed is re-read from its result file without simulating again.
 Run the libraries in parallel (one process each) rather than several cases of one library at a time with the
-local runtime: concurrent `omc` translations in the same OpenModelica home collide.
+local runtime: concurrent `omc` translations in the same OpenModelica home collide. A house model takes `omc` to
+about 6 GB while it translates, so on a machine with less than 16 GB run the house family one library at a time.
 
 Adding a case: a builder in `cases.py` (the YAML blocks come from `models.py`), `generate`, the bands in
 `expected.yaml`, and a KPI function in `kpi.py` when the family is new. A band names the libraries it holds

@@ -141,22 +141,22 @@ library allows):
 
 ### Phase 5: combined demonstrators
 
-One YAML per family on the same house (the six-zone house of `examples/residential_after_renovation.yaml`
-or the smaller `house_infiltration_*` house, whichever simulates fast enough), each simulated with
-Buildings, IDEAS and FastSmoothBuildings, a heating-season month:
+One YAML per family on the same six-zone house (`validation/systems/cases/house_*.yaml`, built from
+`examples/residential_after_renovation.yaml` by `models.house`), the coldest fortnight of the Uccle weather, each
+simulated with the libraries that support its systems:
 
-| YAML | Production | Distribution and emission | Ventilation |
-|---|---|---|---|
-| `house_air_water_heat_pump.yaml` | air-water heat pump, buffer, heating curve | pump, two mixing circuits, radiators rated at 45/35 with P valves | `system_d` with bypass and night setback |
-| `house_ground_source_heat_pump.yaml` | ground-source heat pump | direct circuit, low-temperature radiators | `system_d` |
-| `house_condensing_boiler.yaml` | boiler without storage, condensing curve | mixing circuit, radiators 70/50 | `system_c` extract only |
-| `house_boiler_storage.yaml` | boiler with storage tank | collector pump, radiators with on-off valves | `system_a` |
-| `house_heat_pump_pv.yaml` | air-water heat pump + PV | as the first | `system_d` |
+| Case | Production | Distribution and emission | Ventilation | Libraries |
+|---|---|---|---|---|
+| `house_air_water_heat_pump` | air-water heat pump (Vitocal table), 150 l buffer, heating curve | one mixing circuit at 45 degC, radiators 45/35 under P valves | `system_d`, 80 % recovery, half flow at night | Buildings, IDEAS, FastSmoothBuildings |
+| `house_ground_source_heat_pump` | ground-source heat pump (Carnot, 10 degC ground) | as above | `system_d` | Buildings, IDEAS |
+| `house_condensing_boiler` | boiler without storage, condensing curve, 45 degC | as above | `system_c` extract only | Buildings, IDEAS |
+| `house_boiler_storage` | boiler with a 200 l tank at 70 degC | mixing circuit at 70 degC, radiators 70/50 under on-off valves (1 % leakage) | natural ventilation (`system_a`) | Buildings, IDEAS |
+| `house_heat_pump_pv` | the air-water heat pump with 20 m2 of photovoltaics | as the first | `system_d` | Buildings, IDEAS, FastSmoothBuildings |
 
-For each: the KPI table per library (heating energy per m2, electricity or gas, seasonal COP or efficiency,
-fan energy, comfort hours below the set point, supply temperatures) with the bands that make them realistic,
-and figures of a trace week. Where a library does not support a system (FastSmoothBuildings and the VAV
-AHU or the ground-source heat pump until its library gains it) the table says so.
+For each: the KPI table per library (heat and electricity or gas, seasonal COP or efficiency, fan energy, hours
+below the set point, supply temperatures) with the bands that make them realistic, and the figure of the
+fortnight. The ground-source heat pump, the boilers and the extract-only unit are not in FastSmoothBuildings
+(`Case.libraries`), which the report says.
 
 ### Phase 6: documentation, tests and CI
 
@@ -252,6 +252,35 @@ AHU or the ground-source heat pump until its library gains it) the table says so
   would supply. Making it a usable system (coils, a hot water source, a working operating mode) is a design
   choice left to the user; the cases keep it as a documented limitation.
 
+### Houses (the six-zone house, the coldest fortnight, `house_*`)
+
+* **The systems combine as they do alone.** The air-water heat pump house reaches an SCOP of 3.0 with Buildings and
+  IDEAS (COP while running 0.89 of the EN 14511 table at the measured conditions), 294 and 271 kWh of heat for 98
+  and 90 kWh of electricity, the rooms at 21.9 degC in the occupied hours and never below the set point; the
+  ground-source house 3.1 on its 7 degC loop. The condensing boiler house fires at 95.7 % of the fuel (94.8 % overall)
+  at 45 degC; the storage boiler house at 90 % (88 % with the losses of the tank), the tank cycling between 61 and
+  84 degC seven times a day with firings of at least 41 minutes. The two libraries agree within 8 % on the energies.
+* **Ventilation in a house.** The recovery unit supplies 16 degC on average at 0.5 degC outdoor, the measured
+  effectiveness being 0.77 to 0.78 against the mean of the six rooms (the cooler bedrooms feed most of the extract),
+  for 22 to 29 kWh of fan electricity a fortnight; the extract-only system of the condensing boiler house loses 610
+  kWh of heat through the 360 m3/h it draws, which the 45/35 radiators cannot replace in the coldest hours (144 to 159
+  hours below the set point, 20.0 degC in the occupied hours).
+* **Six on-off valves closing together stop Buildings.** With the default valve leakage (0.01 % of the nominal
+  flow coefficient) and the pump off, the hydraulic loop of the storage boiler house has no flow path: the pressure
+  of the loop is undetermined and the non-linear solver gives up after four hours (`house_boiler_storage` before
+  the fix). A leakage of 1 % (`valve_leakage: 0.01` on the valves, the case now) keeps a path and the fortnight runs;
+  IDEAS simulated the original model. The single-zone `valve_onoff` case did not show it: one valve closing leaves
+  the pump control and the storage charging pump in step with it.
+* **FastSmoothBuildings houses are colder.** The two heat pump houses it supports hold 19.3 degC in the occupied
+  hours (170 hours below the set point) against 21.9 degC for Buildings and IDEAS, with valves 60 % open on average
+  against 34 %: the radiators of its reduced-order rooms deliver less at the same 43 degC supply (224 kWh against
+  294 kWh), while the heat pump itself matches (SCOP 2.95, COP ratio 1.0). The single-zone cases did not show it
+  (`hp_winter` agrees within the bands); the difference comes from the multi-zone house (internal walls, the zone
+  model of the library). Left as a finding for the library.
+* **The log tail of OpenModelica** that the local runtime keeps (its last 20 000 characters) is filled by the
+  unbalanced-connector warnings IDEAS prints for every surface of the house, hiding the verdict of the
+  simulation: the harness now reads the result file to tell a finished simulation from a failed one.
+
 ## Decisions left to the user
 
 Everything above was done without a decision; these points need one.
@@ -274,3 +303,10 @@ Everything above was done without a decision; these points need one.
 7. **The gas heating value**: the default fuel record of Buildings gives 11.67 kWh/m3 (50 MJ/kg at 0.84 kg/m3); the
    gas of the Belgian grid is 9.1 (L) to 10.3 (H) kWh/m3 on the lower heating value, so the gas volume on the bus is
    12 to 22 % low against a real meter. A trano fuel record with the local heating value, or a note.
+8. **Valve leakage of on-off valves.** Buildings needs a flow path when every two-way valve of a loop closes
+   together (see the houses): either the default `valve_leakage` rises from 0.0001 to 0.01 for every valve (a
+   real thermostatic valve leaks about that), or only the on-off emission control sets it, or the houses keep it
+   per case as now.
+9. **FastSmoothBuildings on the multi-zone house** runs 2.5 K colder than Buildings and IDEAS with the same
+   radiators and heat pump; the cause is in the library's zone or radiator model and the comparison of the single
+   rooms would locate it.

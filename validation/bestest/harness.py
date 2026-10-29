@@ -73,9 +73,11 @@ def normalized_model(model: str) -> str:
     """The statements of the model, sorted, without annotations and whitespace.
 
     Layout coordinates differ between renders and the order of the data records (materials,
-    constructions) between processes: neither changes the simulation, so neither changes the hash.
+    constructions) and of some declarations between processes: none changes the simulation, so none changes
+    the hash. An annotation ends its statement, so it is replaced by the semicolon it carries: otherwise the
+    declaration it closes would merge with whatever statement follows it, and the hash would depend on the order.
     """
-    without_annotations = re.sub(r"annotation\s*\(.*?\)\s*;", "", model, flags=re.DOTALL)  # they hold no semicolon
+    without_annotations = re.sub(r"annotation\s*\(.*?\)\s*;", ";", model, flags=re.DOTALL)  # they hold no semicolon
     pieces = re.split(r";|\b(?=(?:record|package|model|end|equation)\b)", without_annotations)
     statements = {re.sub(r"\s+", "", piece) for piece in pieces} - {""}
     return ";".join(sorted(statements))

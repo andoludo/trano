@@ -339,15 +339,17 @@ def house(  # noqa: PLR0913, C901
     supply: float,
     radiator_rating: tuple[float, float] | None = None,
     valve_control: dict[str, Any] | None = None,
+    valve_parameters: dict[str, Any] | None = None,
     ventilation: tuple[dict[str, Any], list[dict[str, Any]]] | None = None,
     natural_ventilation: float | None = None,
     photovoltaic_area: float | None = None,
 ) -> dict[str, Any]:
     """The six-zone house with its systems replaced: ``generator`` feeds every radiator through one mixing circuit
-    holding ``supply`` [K]; ``radiator_rating`` re-rates the radiators (supply, return) [K] and ``valve_control``
-    changes their control (variant, parameters); ``ventilation`` is the unit of ``ventilation_unit`` or
-    ``guideline36_unit`` whose ducts every room gets, or ``natural_ventilation`` [kg/s] of outdoor air through the
-    windows of every room; ``photovoltaic_area`` [m2] adds a PV array on the roof."""
+    holding ``supply`` [K]; ``radiator_rating`` re-rates the radiators (supply, return) [K], ``valve_control``
+    changes their control (variant, parameters) and ``valve_parameters`` the valves themselves; ``ventilation`` is
+    the unit of ``ventilation_unit`` or ``guideline36_unit`` whose ducts every room gets, or ``natural_ventilation``
+    [kg/s] of outdoor air through the windows of every room; ``photovoltaic_area`` [m2] adds a PV array on the
+    roof."""
     description: dict[str, Any] = yaml.safe_load(HOUSE.read_text())
     spaces = description["spaces"]
     radiators, valves = [], []
@@ -364,6 +366,8 @@ def house(  # noqa: PLR0913, C901
                     )
             if "valve" in emission:
                 valves.append(emission["valve"]["id"])
+                if valve_parameters:
+                    emission["valve"].setdefault("parameters", {}).update(valve_parameters)
                 if valve_control:
                     control = emission["valve"]["control"]["emission_control"]
                     control["variant"] = valve_control.get("variant", control.get("variant"))
