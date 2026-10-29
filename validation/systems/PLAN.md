@@ -245,6 +245,9 @@ AHU or the ground-source heat pump until its library gains it) the table says so
   outdoor air itself is warmer than the room. The post-heater (new) holds the supply at 18.0 degC for 15 kWh of
   electricity a week and takes 10 kWh off the zone heating. The fan schedule (new) at half flow at night saves a
   quarter of the fan electricity.
-* **The Guideline 36 unit** of trano has no heating or cooling coil: it supplies the mixed outdoor and return air
-  unconditioned (quantified in `ahu_g36_winter`); giving it coils and a hot water source is a design choice left
-  to the user.
+* **The Guideline 36 unit** of trano (variant `default`, with a VAV box and its controller at their defaults) does
+  not ventilate at all in the week simulated (`ahu_g36_winter`): its fans stay off (0 kg/s, 0 W), the zone heating
+  equals the case without ventilation. The controller waits for an occupancy mode and zone requests that the
+  single-zone configuration never raises, and the unit has no heating or cooling coil to condition the air it
+  would supply. Making it a usable system (coils, a hot water source, a working operating mode) is a design
+  choice left to the user; the cases keep it as a documented limitation.

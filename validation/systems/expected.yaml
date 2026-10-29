@@ -206,4 +206,5 @@ extract_only_winter:
 natural_winter:
   - {kpi: heating_kwh, min: 180, max: 400, why: "the load of no_ventilation_winter plus 150 m3/h of outdoor air at -1 degC: about 186 kWh more"}
 ahu_g36_winter:
-  - {kpi: vent_supply_mean_c, max: 12, why: "the Guideline 36 unit of trano has no heating coil: it supplies mixed outdoor and return air without conditioning"}
+  - {kpi: vent_flow_kg_s, max: 0.001, why: "the Guideline 36 unit of trano never starts its fans with one VAV box and the defaults of its controller: the zone gets no ventilation (and the unit has no coil to condition the air it would supply)"}
+  - {kpi: heating_kwh, min: 80, max: 220, why: "the load of no_ventilation_winter, the unit bringing no air"}
