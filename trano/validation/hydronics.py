@@ -28,7 +28,7 @@ SETPOINT_MARGIN = 5.0  # K, above the highest supply when the set point is raise
 MINIMUM_VALVE_AUTHORITY = 0.25
 UNDERSIZED_FLOW_RATIO = 0.5  # nominal pump flow below half of the flow the emitters need at their nominal dT
 BOUNDARY_KINDS = frozenset({"boiler", "split_valve"})
-HEAT_PUMP_VARIANTS = frozenset({"air_water_heat_pump", "water_water_heat_pump"})
+HEAT_PUMP_VARIANTS = frozenset({"air_water_heat_pump", "ground_source_heat_pump", "water_water_heat_pump"})
 HEAT_PUMP_RADIATOR_DT = 10.0  # K, water temperature drop recommended for the radiators of a heat pump
 RADIATOR_SUPPLY_MARGIN = 5.0  # K, rated inlet above the heat pump supply before the radiator is reported
 

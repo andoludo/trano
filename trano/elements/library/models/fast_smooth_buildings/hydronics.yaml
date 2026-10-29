@@ -675,6 +675,12 @@
   parameter_processing: *boiler_parameters
   ports: *boiler_bus_ports
   template: |-
+    {%- if element.parameters.heat_pump_data not in (none, 'Vitocal251A08') -%}
+    {{ unsupported('Production ' ~ element.name ~ ': the heat pump of the FastSmoothBuildings library is the Vitocal 251-A08 table, not ' ~ element.parameters.heat_pump_data ~ '.') }}
+    {%- endif -%}
+    {%- if element.parameters.heat_pump_source_outdoor_air | string | lower == 'false' -%}
+    {{ unsupported('Production ' ~ element.name ~ ': the heat pump of the FastSmoothBuildings library takes the outdoor air as source (heat_pump_source_outdoor_air).') }}
+    {%- endif -%}
     {%- set demand = element.control.name ~ '.y' if element.control and element.control.variant == 'simple' and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
     FastSmoothBuildings.Controls.HeatPumpControl {{ element.name }}_control(
         TSet={{ parameters.TSet }},
@@ -814,6 +820,14 @@
   library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
   parameter_processing: *boiler_parameters
   ports: *multi_fluid_ports
-  template: |-
-    {{ unsupported('Production ' ~ element.name ~ ' (water_water_heat_pump): the FastSmoothBuildings library models boilers and air-to-water heat pumps.') }}
+  template: &water_source_unsupported |-
+    {{ unsupported('Production ' ~ element.name ~ ' (' ~ element.variant ~ '): the FastSmoothBuildings library models boilers and air-to-water heat pumps.') }}
   variant: water_water_heat_pump
+
+- classes:
+  - Boiler
+  library: [FastSmoothBuildings, FastSmoothBuildingsMPC]
+  parameter_processing: *boiler_parameters
+  ports: *multi_fluid_ports
+  template: *water_source_unsupported
+  variant: ground_source_heat_pump

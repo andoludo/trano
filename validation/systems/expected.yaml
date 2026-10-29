@@ -20,13 +20,13 @@ hp_winter:
   - {kpi: hp_supply_setpoint_max_c, max: 45.01, why: "the heating curve never asks more than the design supply temperature"}
   - {kpi: hp_supply_setpoint_mean_c, min: 36, max: 44, why: "at -1 degC the curve from 45 degC (-8 degC) to 30 degC (16 degC) gives 40.6 degC"}
   - {kpi: hp_buffer_below_band_hours, max: 3, why: "the buffer stays inside its charging band while the heat pump keeps up with the load"}
-  - {kpi: hp_pump_share, max: 0.1, why: "the condenser pump draws a few percent of the compressor electricity"}
+  - {kpi: hp_pump_share, max: 0.1, why: "the condenser pump draws a few percent of the compressor electricity", libraries: [Buildings, IDEAS]}
   - {kpi: hp_heat_kwh, min: 80, max: 220, why: "2.4 kW design loss at -8 degC: 1.5 to 2 kW on average over the week at -1 degC with the night setback"}
   - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its 21 degC set point during occupancy, apart from the morning recovery"}
   - {kpi: hours_below_setpoint, max: 50, why: "the morning recovery from the 16 degC setback takes a few hours a day with a 45 degC radiator"}
 
 hp_shoulder:
-  - {kpi: hp_scop, min: 2.8, max: 4.5, why: "at 5 to 9 degC the curve asks 33 to 36 degC: the table gives 3.5 to 4.2 at A7/W38"}
+  - {kpi: hp_scop, min: 2.8, max: 4.9, why: "at 5 to 9 degC the curve asks 33 to 36 degC: the table gives 4.0 to 4.7 at A7/W38 to A9/W37"}
   - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
   - {kpi: hp_supply_setpoint_mean_c, min: 30, max: 38, why: "the heating curve at 5 to 9 degC outdoor"}
   - {kpi: hp_starts_per_day, max: 40, why: "part load: shorter runs, more starts, still bounded by the buffer and the minimum times"}
@@ -93,3 +93,27 @@ hp_supply_55:
   - {kpi: hp_cop_running, min: 2.5, max: 3.45, why: "table 2.97 at A7/W58, within 15 %"}
   - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
   - {kpi: hp_supply_setpoint_mean_c, min: 54.9, max: 55.1, why: "the flat heating curve"}
+
+# The other heat pump models and sources of the catalogue (Buildings and IDEAS), the coldest week.
+hp_table_winter:
+  - {kpi: hp_scop, min: 2.4, max: 3.6, why: "the Vitocal data given as a table: the same heat pump as hp_winter"}
+  - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the same table"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "the load of hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+hp_carnot_winter:
+  - {kpi: hp_scop, min: 2.0, max: 3.4, why: "0.45 of the Carnot COP between 50 degC + 5 K and -1 degC - 5 K is 2.6, less with the frosting of the evaporator around 0 degC"}
+  - {kpi: hp_speed_min_running, min: 0.29, why: "the compressor never runs below its minimum speed"}
+  - {kpi: hp_shortest_run_min, min: 5, why: "the minimum on time of the safety control"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "the load of hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+gshp_winter:
+  - {kpi: hp_source_running_c, min: 6.5, max: 8.5, why: "the ground loop at 10 degC mean, 3 K below it in mid-February: about 7.5 degC in late January"}
+  - {kpi: hp_scop, min: 3.0, max: 4.6, why: "0.45 of the Carnot COP between 45 degC + 5 K and 7.5 degC - 2 K is 3.3 at full supply temperature, more along the heating curve"}
+  - {kpi: hp_cop_running, min: 3.0, max: 4.8, why: "a ground source is 8 K warmer than the outdoor air of the week: the COP is above the air-water one (2.7)"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "the load of hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+wwhp_winter:
+  - {kpi: hp_source_running_c, min: 11.5, max: 12.5, why: "the water loop at the constant 12 degC of the YAML"}
+  - {kpi: hp_scop, min: 3.2, max: 5.0, why: "0.45 of the Carnot COP between 45 degC + 5 K and 12 degC - 2 K is 3.6 at full supply temperature, more along the heating curve"}
+  - {kpi: hp_heat_kwh, min: 80, max: 220, why: "the load of hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}

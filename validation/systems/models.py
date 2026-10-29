@@ -146,13 +146,14 @@ def air_water_heat_pump(
     supply: float = 45.0 + KELVIN,
     buffer_volume: float | None = 0.1,
     parameters: dict[str, Any] | None = None,
+    variant: str = "air_water_heat_pump",
 ) -> dict[str, Any]:
-    """An air-to-water heat pump of ``power`` [W] at the design outdoor temperature and ``supply`` [K], charging a
-    buffer tank of ``buffer_volume`` [m3] (a hydraulic separator when None), with trano's simple generator control
-    (on when a room needs heat)."""
+    """A heat pump of ``power`` [W] at the design source temperature and ``supply`` [K], charging a buffer tank of
+    ``buffer_volume`` [m3] (a hydraulic separator when None), with trano's simple generator control (on when a room
+    needs heat); ``variant`` picks the source: the outdoor air, a ground loop or a water loop."""
     block: dict[str, Any] = {
         "id": GENERATOR,
-        "variant": "air_water_heat_pump",
+        "variant": variant,
         "parameters": {
             "nominal_heating_power": power,
             "temperature_supply_setpoint_heat_pump": supply,

@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+import plotly.graph_objects as go  # type: ignore[import-untyped]
+from plotly.subplots import make_subplots  # type: ignore[import-untyped]
 
 from validation.systems.cases import CASES, Family
 from validation.systems.harness import CaseResult
@@ -42,7 +42,7 @@ def case_figure(case_id: str, results: dict[str, CaseResult]) -> go.Figure:
     figure = make_subplots(
         rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.08, subplot_titles=("Temperatures", "Powers")
     )
-    dashes = {library: dash for library, dash in zip(libraries, ("solid", "dash", "dot"), strict=False)}
+    dashes = dict(zip(libraries, ("solid", "dash", "dot"), strict=False))
     outdoor_drawn = False
     for library in libraries:
         traces = results[library].traces

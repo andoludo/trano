@@ -77,3 +77,67 @@ connect({{ connection.left.container_type }}1.{{ connection.left.equation }},{{ 
     {% raw %}{{% endraw %}{%- for path in paths -%}{% raw %}{{% endraw %} {{ path | join(', ') }} {% raw %}}{% endraw %}
     {{ "," if not loop.last }}{%- endfor %}{% raw %}}{% endraw %}
 {%- endmacro %}
+
+{%- macro heat_pump_table_rows(condensers, matrix) -%}
+{#- Rows of an EN 14511 table of the YAML: the condenser temperature then the values of the row. -#}
+{%- for row in (matrix | replace('[', '') | replace(']', '')).strip().strip(';').split(';') -%}
+; {{ condensers[loop.index0] }}, {{ row | trim }}
+{%- endfor -%}
+{%- endmacro -%}
+
+{%- macro heat_pump(element, parameters, air=true) -%}
+{#- The heat pump component of Trano.Fluid.Boilers.PartialModularHeatPump, redeclared after `heat_pump_data`: an
+    EN 14511 record of Buildings 13 (Vitocal251A08, SingleSplitRXM20R, WAMAK_WaterToWater_220kW), `table` (the
+    tables of the YAML) or `carnot` (a constant Carnot effectiveness). The default is the Vitocal record for an air
+    source and the Carnot model for a water source. -#}
+{%- set data = element.parameters.heat_pump_data or ('Vitocal251A08' if air else 'carnot') -%}
+{%- if data == 'carnot' -%}
+redeclare Buildings.Fluid.HeatPumps.ModularReversible.Modular heaPum(
+      use_rev=false,
+      dTCon_nominal=5,
+      dTEva_nominal={{ 5 if air else 3 }},
+      use_evaCap=false,
+      use_conCap=false,
+      redeclare model RefrigerantCycleHeatPumpHeating =
+        Buildings.Fluid.HeatPumps.ModularReversible.RefrigerantCycle.ConstantCarnotEffectiveness (
+          {%- if air %}
+          redeclare Buildings.Fluid.HeatPumps.ModularReversible.RefrigerantCycle.Frosting.FunctionalIcingFactor iceFacCal(
+            redeclare function icingFactor =
+              Buildings.Fluid.HeatPumps.ModularReversible.RefrigerantCycle.Frosting.Functions.wetterAfjei1997),
+          {%- else %}
+          redeclare Buildings.Fluid.HeatPumps.ModularReversible.RefrigerantCycle.Frosting.NoFrosting iceFacCal,
+          {%- endif %}
+          etaCarnot_nominal={{ element.parameters.heat_pump_carnot_effectiveness or 0.45 }},
+          TAppCon_nominal=5,
+          TAppEva_nominal={{ 5 if air else 2 }}),
+      redeclare model RefrigerantCycleInertia =
+        Buildings.Fluid.HeatPumps.ModularReversible.RefrigerantCycle.Inertias.VariableOrder (
+          refIneFreConst=1/300,
+          nthOrd=1,
+          initType=Modelica.Blocks.Types.Init.InitialOutput))
+{%- elif data == 'table' -%}
+{%- set sources = element.parameters.heat_pump_table_source_temperatures -%}
+{%- set condensers = element.parameters.heat_pump_table_condenser_temperatures -%}
+redeclare Buildings.Fluid.HeatPumps.ModularReversible.TableData2D heaPum(
+      allowDifferentDeviceIdentifiers=true,
+      redeclare Buildings.Fluid.HeatPumps.ModularReversible.Data.TableData2D.GenericHeatPump datTabHea(
+        tabQCon_flow=[0, {{ sources | join(', ') }}{{ heat_pump_table_rows(condensers, element.parameters.heat_pump_table_heating_capacity) }}],
+        tabPEle=[0, {{ sources | join(', ') }}{{ heat_pump_table_rows(condensers, element.parameters.heat_pump_table_electrical_power) }}],
+        tabUppBou=[{{ sources | first }}, {{ condensers | last }}; {{ sources | last }}, {{ condensers | last }}],
+        mCon_flow_nominal={{ parameters.Q_flow_nominal }}/4184/5,
+        mEva_flow_nominal={{ parameters.Q_flow_nominal }}/{{ '1006/5' if air else '4184/3' }},
+        dpCon_nominal=0,
+        dpEva_nominal=0,
+        devIde="{{ element.name }}",
+        use_TConOutForTab=true,
+        use_TEvaOutForTab=false,
+        use_TConOutForOpeEnv=true,
+        use_TEvaOutForOpeEnv=false),
+      redeclare Buildings.Fluid.Chillers.ModularReversible.Data.TableData2D.EN14511.Vitocal251A08 datTabCoo)
+{%- else -%}
+redeclare Buildings.Fluid.HeatPumps.ModularReversible.TableData2D heaPum(
+      allowDifferentDeviceIdentifiers=true,
+      redeclare Buildings.Fluid.HeatPumps.ModularReversible.Data.TableData2D.EN14511.{{ data }} datTabHea,
+      redeclare Buildings.Fluid.Chillers.ModularReversible.Data.TableData2D.EN14511.Vitocal251A08 datTabCoo)
+{%- endif -%}
+{%- endmacro -%}

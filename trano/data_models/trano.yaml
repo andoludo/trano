@@ -1088,6 +1088,7 @@ enums:
       default:
       air_water_heat_pump:
       complex:
+      ground_source_heat_pump:
       ideal:
       idealbus:
       system_d:
@@ -1104,7 +1105,11 @@ enums:
       default:
         description: Gas boiler with a storage tank
       air_water_heat_pump:
+        description: Air-water heat pump with its buffer, on the outdoor air of the weather data
+      ground_source_heat_pump:
+        description: Ground-source (brine-water) heat pump with its buffer, on a ground loop whose temperature follows an annual sine
       water_water_heat_pump:
+        description: Water-water heat pump with its buffer, on a water loop at a constant temperature
       without_storage:
         description: Gas boiler without storage tank
   RadiatorVariant:

@@ -78,6 +78,26 @@ RADIATOR_45_HEAT_PUMP = models.radiator_and_valve(45.0 + KELVIN, 35.0 + KELVIN, 
 TABLE_LIBRARIES = ("Buildings", "IDEAS")
 """The libraries whose heat pump takes a constant source temperature: FastSmoothBuildings always takes the
 outdoor air (the YAML parameters of the source are not among those its template passes)."""
+VITOCAL_TABLE = {
+    "heat_pump_data": "table",
+    "heat_pump_table_source_temperatures": [253.15, 258.15, 266.15, 275.15, 280.15, 283.15, 293.15, 303.15, 308.15],
+    "heat_pump_table_condenser_temperatures": [308.15, 318.15, 328.15, 338.15, 343.15],
+    "heat_pump_table_heating_capacity": (
+        "4490, 5170, 6470, 6790, 8000, 10210, 12330, 12310, 13090; "
+        "4230, 4900, 6260, 6780, 8370, 9970, 11520, 13040, 12640; "
+        "3780, 4710, 6030, 6830, 8380, 9940, 11500, 13070, 13110; "
+        "0, 3170, 4610, 6320, 8140, 9550, 11290, 12100, 12180; "
+        "0, 0, 3830, 5560, 7600, 8700, 11290, 12500, 12590"
+    ),
+    "heat_pump_table_electrical_power": (
+        "2128, 2238, 2396, 1835, 1633, 2006, 1720, 1465, 1558; "
+        "2299, 2402, 2641, 2173, 2244, 2462, 2110, 1734, 1584; "
+        "2305, 2631, 2899, 2493, 2669, 2915, 2556, 2164, 2081; "
+        "0, 2032, 2478, 2760, 3095, 3375, 3085, 2521, 2511; "
+        "0, 0, 2201, 2699, 3193, 3398, 3330, 2822, 2817"
+    ),
+}
+"""The EN 14511 data of the Vitocal 251-A08 as the YAML gives a table: the record of Buildings written out."""
 FLAT_CURVE = {"minimum_supply_temperature": 45.0 + KELVIN, "heating_limit_temperature": 35.0 + KELVIN}
 """A heating curve flat at 45 degC and a heating limit the summer never reaches: the heat pump always holds the
 same supply temperature, whatever the weather, so that its COP depends on the source temperature only."""
@@ -146,6 +166,37 @@ HEAT_PUMP_CASES = [
         )
         for t in (-10, -7, 2, 7, 12)
     ],
+    heat_pump_case(
+        "hp_table_winter",
+        "The air-water heat pump given as a table (heat_pump_data: table) holding the Vitocal 251-A08 data: it "
+        "must reproduce hp_winter",
+        companion="hp_winter",
+        heat_pump={"parameters": VITOCAL_TABLE},
+        libraries=TABLE_LIBRARIES,
+    ),
+    heat_pump_case(
+        "hp_carnot_winter",
+        "The air-water heat pump as a Carnot model (effectiveness 0.45, frosting of the evaporator) in the "
+        "coldest week",
+        companion="hp_winter",
+        heat_pump={"parameters": {"heat_pump_data": "carnot"}},
+        libraries=TABLE_LIBRARIES,
+    ),
+    heat_pump_case(
+        "gshp_winter",
+        "Ground-source heat pump (Carnot, effectiveness 0.45) on a ground loop at 10 degC (3 K annual swing) in "
+        "the coldest week",
+        companion="hp_winter",
+        heat_pump={"variant": "ground_source_heat_pump"},
+        libraries=TABLE_LIBRARIES,
+    ),
+    heat_pump_case(
+        "wwhp_winter",
+        "Water-water heat pump (Carnot, effectiveness 0.45) on a water loop at 12 degC in the coldest week",
+        companion="hp_winter",
+        heat_pump={"variant": "water_water_heat_pump", "parameters": {"temperature_heatpump_source": 285.15}},
+        libraries=TABLE_LIBRARIES,
+    ),
     *[
         heat_pump_case(
             f"hp_supply_{s}",
