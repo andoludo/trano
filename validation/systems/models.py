@@ -37,7 +37,7 @@ SUPPLY_DUCT, EXTRACT_DUCT = "DUCT:001", "DUCT:002"
 AHU = "AHU:001"
 
 
-def zone(n50: float = 3.0, window_area: float = 10.0) -> dict[str, Any]:
+def zone(n50: float = 3.0, window_area: float = 10.0, natural_ventilation: float | None = None) -> dict[str, Any]:
     """A 10 m x 10 m x 2.7 m zone of the default constructions: filled cavity walls (U 0.28), a warm flat roof
     (U 0.17), an insulated slab, low-e double glazing facing south, airtight to ``n50``, occupied from 7 to 19 h.
 
@@ -48,7 +48,13 @@ def zone(n50: float = 3.0, window_area: float = 10.0) -> dict[str, Any]:
         "id": ZONE,
         "variant": "infiltration",
         "occupancy": {"parameters": {"occupancy": "3600*{7, 19}"}},
-        "parameters": {"floor_area": FLOOR_AREA, "average_room_height": HEIGHT, "n50": n50},
+        "parameters": {
+            "floor_area": FLOOR_AREA,
+            "average_room_height": HEIGHT,
+            "n50": n50,
+            # system A: outdoor air brought in all day through the windows and vents, no fan, no recovery
+            **({"ventilation_schedule": f"[0, {natural_ventilation}]"} if natural_ventilation else {}),
+        },
         "external_boundaries": {
             "external_walls": [
                 {"surface": 30.0, "azimuth": 0, "tilt": "wall", "construction": "CAVITYWALL:001"},
@@ -262,6 +268,35 @@ def ventilation_unit(
                 "heat_exchanger_effectiveness": effectiveness,
                 **(parameters or {}),
             },
+            "inlets": [EXTRACT_DUCT],
+            "outlets": [SUPPLY_DUCT],
+        }
+    }
+    return ducts, [unit]
+
+
+def guideline36_unit(flow: float = VENTILATION_FLOW) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """The Guideline 36 multizone air handling unit of trano (variant default) with its economizer and a VAV box
+    (variant complex) in the zone, as in the test models of trano."""
+    ducts = {
+        "ventilation_inlets": [
+            {"duct": {"id": SUPPLY_DUCT, "parameters": {"nominal_mass_flow_rate": flow}}},
+            {
+                "vav": {
+                    "id": "VAV:001",
+                    "variant": "complex",
+                    "parameters": {"nominal_mass_flow_rate": flow, "cooling_air_flow_nominal": flow},
+                    "control": {"vav_control": {"id": "VAV_CONTROL:001"}},
+                }
+            },
+        ],
+        "ventilation_outlets": [{"duct": {"id": EXTRACT_DUCT, "parameters": {"nominal_mass_flow_rate": flow}}}],
+    }
+    unit = {
+        "air_handling_unit": {
+            "id": AHU,
+            "parameters": {"m_flow_nominal": flow},
+            "control": {"ahu_control": {"id": "AHU_CONTROL:001"}},
             "inlets": [EXTRACT_DUCT],
             "outlets": [SUPPLY_DUCT],
         }

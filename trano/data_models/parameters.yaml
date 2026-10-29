@@ -1550,7 +1550,7 @@ AhuParameters:
       ifabsent: string(2*100*1.2/3600)
       range: string
       libraries:
-        buildings: &ahu_flow [{name: mAir_flow_nominal, when_given: true, variants: [default]}, {name: m_flow_nominal, variants: [test, system_d]}]
+        buildings: &ahu_flow [{name: mAir_flow_nominal, when_given: true, variants: [default]}, {name: m_flow_nominal, variants: [test, system_d, system_c]}]
         ideas: *ahu_flow
         reduced_order: *ahu_flow
         iso_13790: *ahu_flow
@@ -1560,7 +1560,7 @@ AhuParameters:
       ifabsent: string(200)
       range: string
       libraries:
-        buildings: &ahu_dp {name: dp_nominal, variants: [test, system_d]}
+        buildings: &ahu_dp {name: dp_nominal, variants: [test, system_d, system_c]}
         ideas: *ahu_dp
         reduced_order: *ahu_dp
         iso_13790: *ahu_dp
@@ -1624,6 +1624,74 @@ AhuParameters:
         ideas: *ahu_oa_p
         reduced_order: *ahu_oa_p
         iso_13790: *ahu_oa_p
+    fan_schedule:
+      alias: fanSchedule
+      description: >-
+        Day schedule of the fans of a balanced (system_d) or extract (system_c) ventilation unit: rows of time since
+        midnight [s] and fraction of the design flow, held until the next row, as "[0, 0.5; 25200, 1; 79200, 0.5]"
+        for half the flow at night; the design flow all day by default
+      range: string
+      libraries:
+        buildings: &ahu_schedule {name: fanSchedule, variants: [system_d, system_c]}
+        ideas: *ahu_schedule
+        reduced_order: *ahu_schedule
+        iso_13790: *ahu_schedule
+    summer_bypass:
+      alias: useBypass
+      description: >-
+        Whether the balanced ventilation unit (system_d) leads the outdoor air around its heat recovery when the
+        outdoor air is above bypass_outdoor_temperature and cooler than the extract air (free cooling), false by
+        default
+      range: string
+      libraries:
+        buildings: &ahu_bypass {name: useBypass, variants: [system_d]}
+        ideas: *ahu_bypass
+        reduced_order: *ahu_bypass
+        iso_13790: *ahu_bypass
+    bypass_outdoor_temperature:
+      alias: TOutByp
+      description: Outdoor temperature above which the summer bypass of the balanced ventilation unit may open [K], 288.15 by default
+      range: float
+      minimum_value: 223.15
+      maximum_value: 323.15
+      libraries:
+        buildings: &ahu_bypass_temperature {name: TOutByp, variants: [system_d]}
+        ideas: *ahu_bypass_temperature
+        reduced_order: *ahu_bypass_temperature
+        iso_13790: *ahu_bypass_temperature
+    supply_air_minimum_temperature:
+      alias: TSupMin
+      description: >-
+        Minimum supply air temperature held by an electric post-heater after the supply fan of the balanced
+        ventilation unit (system_d) [K]; no post-heater when absent
+      range: float
+      minimum_value: 273.15
+      maximum_value: 323.15
+      libraries:
+        buildings: &ahu_post_heater {name: TSupMin, variants: [system_d]}
+        ideas: *ahu_post_heater
+        reduced_order: *ahu_post_heater
+        iso_13790: *ahu_post_heater
+    post_heater_power:
+      alias: QHeaPos_flow_nominal
+      description: Capacity of the electric post-heater of the balanced ventilation unit [W], the design flow heated by 25 K by default
+      range: float
+      minimum_value: 0
+      libraries:
+        buildings: &ahu_post_heater_power {name: QHeaPos_flow_nominal, variants: [system_d]}
+        ideas: *ahu_post_heater_power
+        reduced_order: *ahu_post_heater_power
+        iso_13790: *ahu_post_heater_power
+    trickle_vent_dp_nominal:
+      alias: dpVen_nominal
+      description: Pressure drop of the trickle vents of the rooms at the design flow of the extract ventilation unit (system_c) [Pa], 10 by default
+      range: float
+      minimum_value: 0
+      libraries:
+        buildings: &ahu_vents {name: dpVen_nominal, variants: [system_c]}
+        ideas: *ahu_vents
+        reduced_order: *ahu_vents
+        iso_13790: *ahu_vents
   classes:
   - AirHandlingUnit
 PhotovoltaicParameters:

@@ -323,6 +323,7 @@ def ventilation_case(  # noqa: PLR0913
     companion: str | None = None,
     libraries: tuple[str, ...] = LIBRARIES,
     unit: tuple[dict[str, Any], list[dict[str, Any]]] | None = None,
+    natural_ventilation: float | None = None,
 ) -> Case:
     ducts, systems = unit if unit is not None else ({}, [])
     return Case(
@@ -332,8 +333,17 @@ def ventilation_case(  # noqa: PLR0913
         start_day=start_day,
         companion=companion,
         libraries=libraries,
-        building=models.building(models.zone(), emissions=models.ideal_heating(), systems=systems, ventilation=ducts),
+        building=models.building(
+            models.zone(natural_ventilation=natural_ventilation),
+            emissions=models.ideal_heating(),
+            systems=systems,
+            ventilation=ducts,
+        ),
     )
+
+
+NIGHT_SETBACK = "[0, 0.5; 25200, 1; 79200, 0.5]"
+"""Half the design flow from 22 to 7 h."""
 
 
 VENTILATION_CASES = [
@@ -359,6 +369,47 @@ VENTILATION_CASES = [
         SUMMER,
         companion="no_ventilation_summer",
         unit=models.ventilation_unit(),
+    ),
+    ventilation_case(
+        "hrv_bypass_summer",
+        "The same unit with its summer bypass (open above 15 degC outdoor when the extract air is warmer)",
+        SUMMER,
+        companion="hrv_summer",
+        libraries=TABLE_LIBRARIES,
+        unit=models.ventilation_unit(parameters={"summer_bypass": "true"}),
+    ),
+    ventilation_case(
+        "hrv_night_setback_winter",
+        "The unit at half its flow from 22 to 7 h (fan schedule)",
+        companion="hrv_winter",
+        unit=models.ventilation_unit(parameters={"fan_schedule": NIGHT_SETBACK}),
+    ),
+    ventilation_case(
+        "hrv_postheater_winter",
+        "The unit with an electric post-heater holding the supply air at 18 degC",
+        companion="hrv_winter",
+        libraries=TABLE_LIBRARIES,
+        unit=models.ventilation_unit(parameters={"supply_air_minimum_temperature": 18.0 + KELVIN}),
+    ),
+    ventilation_case(
+        "extract_only_winter",
+        "Mechanical extract ventilation (system_c), 150 m3/h: outdoor air through the trickle vents, one fan",
+        companion="no_ventilation_winter",
+        libraries=TABLE_LIBRARIES,
+        unit=models.ventilation_unit(variant="system_c"),
+    ),
+    ventilation_case(
+        "natural_winter",
+        "Natural ventilation (system A): 150 m3/h of outdoor air through the vents and windows all day, no fan",
+        companion="no_ventilation_winter",
+        natural_ventilation=models.VENTILATION_FLOW,
+    ),
+    ventilation_case(
+        "ahu_g36_winter",
+        "The Guideline 36 multizone air handling unit of trano (default variant) with a VAV box: it has no coils",
+        companion="no_ventilation_winter",
+        libraries=TABLE_LIBRARIES,
+        unit=models.guideline36_unit(),
     ),
 ]
 

@@ -1091,6 +1091,7 @@ enums:
       ground_source_heat_pump:
       ideal:
       idealbus:
+      system_c:
       system_d:
       test:
       water_water_heat_pump:
@@ -1125,7 +1126,11 @@ enums:
     description: Air handling unit models
     permissible_values:
       default:
+        description: Guideline 36 multizone air handling unit with its economizer and VAV boxes
+      system_c:
+        description: Mechanical extract ventilation, the outdoor air drawn through the trickle vents of the rooms
       system_d:
+        description: Balanced ventilation with heat recovery, an optional summer bypass, fan schedule and post-heater
       test:
   VavVariant:
     description: VAV box models

@@ -28,6 +28,18 @@ classes:
         description: Static pressure of the building the supply fan maintains [Pa],
           12 by default (default variant)
         range: float
+      bypass_outdoor_temperature:
+        description: Outdoor temperature above which the summer bypass of the balanced
+          ventilation unit may open [K], 288.15 by default
+        maximum_value: 323.15
+        minimum_value: 223.15
+        range: float
+      fan_schedule:
+        description: 'Day schedule of the fans of a balanced (system_d) or extract
+          (system_c) ventilation unit: rows of time since midnight [s] and fraction
+          of the design flow, held until the next row, as "[0, 0.5; 25200, 1; 79200,
+          0.5]" for half the flow at night; the design flow all day by default'
+        range: string
       heat_exchanger_effectiveness:
         description: Heat exchanger effectiveness [1]
         ifabsent: string(0.8)
@@ -42,14 +54,36 @@ classes:
           variant, ASHRAE 62.1)
         minimum_value: 0
         range: float
+      post_heater_power:
+        description: Capacity of the electric post-heater of the balanced ventilation
+          unit [W], the design flow heated by 25 K by default
+        minimum_value: 0
+        range: float
       return_dp_nominal:
         description: Pressure rise of the return fan [Pa], the nominal pressure rise
           by default
         minimum_value: 0
         range: float
+      summer_bypass:
+        description: Whether the balanced ventilation unit (system_d) leads the outdoor
+          air around its heat recovery when the outdoor air is above bypass_outdoor_temperature
+          and cooler than the extract air (free cooling), false by default
+        range: string
+      supply_air_minimum_temperature:
+        description: Minimum supply air temperature held by an electric post-heater
+          after the supply fan of the balanced ventilation unit (system_d) [K]; no
+          post-heater when absent
+        maximum_value: 323.15
+        minimum_value: 273.15
+        range: float
       supply_dp_nominal:
         description: Pressure rise of the supply fan [Pa], the nominal pressure rise
           by default
+        minimum_value: 0
+        range: float
+      trickle_vent_dp_nominal:
+        description: Pressure drop of the trickle vents of the rooms at the design
+          flow of the extract ventilation unit (system_c) [Pa], 10 by default
         minimum_value: 0
         range: float
     description: Parameters of an air handling unit
@@ -2386,8 +2420,15 @@ enums:
   AirHandlingUnitVariant:
     description: Air handling unit models
     permissible_values:
-      default: null
-      system_d: null
+      default:
+        description: Guideline 36 multizone air handling unit with its economizer
+          and VAV boxes
+      system_c:
+        description: Mechanical extract ventilation, the outdoor air drawn through
+          the trickle vents of the rooms
+      system_d:
+        description: Balanced ventilation with heat recovery, an optional summer bypass,
+          fan schedule and post-heater
       test: null
   BoilerControlVariant:
     description: Control laws of the generators
@@ -2457,6 +2498,7 @@ enums:
       ground_source_heat_pump: null
       ideal: null
       idealbus: null
+      system_c: null
       system_d: null
       test: null
       water_water_heat_pump: null

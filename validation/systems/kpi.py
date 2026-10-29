@@ -102,6 +102,8 @@ UNITS: dict[str, str] = {
     "vent_recovered_kwh": "kWh",
     "vent_heat_loss_kwh": "kWh",
     "vent_hours_supply_above_zone": "h",
+    "vent_heater_electricity_kwh": "kWh",
+    "vent_bypass_hours": "h",
 }
 
 
@@ -421,7 +423,8 @@ def hydronic_kpis(result: Result, network: Network, traces: dict[str, list[float
         pump = _name(pumps[0])
         pump_power = result.series([f"{pump}.pumRad.P", f"{pump}.P"])
         if pump_power is not None:
-            running = np.asarray(pump_power.values > 0.5, dtype=bool)
+            threshold = RUNNING_FRACTION * max(float(pump_power.values.max()), 0.0)
+            running = np.asarray(pump_power.values > threshold, dtype=bool)
             kpis["pump_electricity_kwh"] = pump_power.integral_kwh()
             kpis["pump_run_hours"] = pump_power.hours_where(running)
             kpis["pump_hours_without_demand"] = pump_power.hours_where(running & (on_grid(pump_power, opening) < 0.01))
@@ -430,7 +433,9 @@ def hydronic_kpis(result: Result, network: Network, traces: dict[str, list[float
     set_point = result.series(["three_way_valve_control_001.conVal.u_s", "three_way_valve_control_001.TColSet"])
     pump_power = result.series([f"{_name(pumps[0])}.pumRad.P", f"{_name(pumps[0])}.P"]) if pumps else None
     if sensor is not None and set_point is not None and pump_power is not None:
-        running = np.asarray(on_grid(sensor, pump_power) > 0.5, dtype=bool)
+        running = np.asarray(
+            on_grid(sensor, pump_power) > RUNNING_FRACTION * max(float(pump_power.values.max()), 0.0), dtype=bool
+        )
         if running.any():
             deviation = sensor.values - on_grid(sensor, set_point)
             kpis["mixing_error_k"] = float(np.abs(deviation[running]).mean())
@@ -457,7 +462,12 @@ def ventilation_kpis(result: Result, network: Network, traces: dict[str, list[fl
     outdoor = result.require(["dataBus.TDryBul", f"{unit}.weaBus.TDryBul", "weaBus.TDryBul"])
     supply = result.require([f"{unit}.TSup.T", f"{unit}.TSup"])
     extract = result.series([f"{unit}.TExt"]) or zone
-    fan_power = result.require([f"{unit}.PFan.y", f"{unit}.PFan"])
+    fan_power = result.series([f"{unit}.PFan.y", f"{unit}.PFan", f"dataBus.fan_power{unit.capitalize()}"])
+    if fan_power is None:  # the Guideline 36 unit: its supply and return fans
+        supply_fan, return_fan = result.require([f"{unit}.fanSup.P"]), result.require([f"{unit}.fanSup1.P"])
+        fan_power = Series(supply_fan.time, supply_fan.values + on_grid(supply_fan, return_fan))
+    heater = result.series([f"{unit}.PHea.y"])
+    bypass = result.series([f"{unit}.yByp.y"])
     flow = result.series([f"{unit}.fanSup.m_flow", "duct_001.m_flow", f"{unit}.m_flow_nominal"])
     recovered = result.series([f"{unit}.QRec.y"])
     time = supply.time
@@ -487,6 +497,10 @@ def ventilation_kpis(result: Result, network: Network, traces: dict[str, list[fl
             recovered = Series(time, flow_values * CP_AIR * (supply.values - outdoor_on))
     if recovered is not None:
         kpis["vent_recovered_kwh"] = recovered.integral_kwh()
+    if heater is not None:
+        kpis["vent_heater_electricity_kwh"] = heater.integral_kwh()
+    if bypass is not None:
+        kpis["vent_bypass_hours"] = bypass.hours_where(bypass.values > 0.5)
     traces["vent_supply_c"] = [value - KELVIN for value in supply.hourly()]
     return kpis
 
