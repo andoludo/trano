@@ -1,3 +1,6 @@
+---
+description: "Describe a single-zone house in YAML, generate its Modelica building energy model with Trano and simulate it with OpenModelica in a few lines of Python."
+---
 # First model and simulation
 This tutorial will guide you in creating and simulating your first Building Energy Simulation model in Modelica using the Trano library. All you need is a configuration file and a few lines of code. This introductory tutorial demonstrates the simplicity of running building energy simulations with Trano, showcasing how to browse and modify the model using OpenModelica. Alternatively, you can run the simulation directly through Trano with the official OpenModelica Docker image. Additionally, Trano features automatic report generation for key parameters.
 

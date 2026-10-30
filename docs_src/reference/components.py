@@ -2,6 +2,15 @@ from pathlib import Path
 
 import yaml
 
+FRONT_MATTER = (
+    "---\n"
+    'title: "Components"\n'
+    'description: "Reference of every Trano component variant and the Jinja template that produces its Modelica '
+    'code for the Buildings, IDEAS and AixLib libraries."\n'
+    "---\n"
+    "# Components\n"
+)
+
 
 def _as_list(value: str | list[str]) -> list[str]:
     return [value] if isinstance(value, str) else value
@@ -41,7 +50,7 @@ The following template is used for this component:
 ```
 \n
 """
-    Path(__file__).parents[2].joinpath("docs/reference/components.md").write_text(components_text)
+    Path(__file__).parents[2].joinpath("docs/reference/components.md").write_text(FRONT_MATTER + components_text)
 
 
 if __name__ == "__main__":

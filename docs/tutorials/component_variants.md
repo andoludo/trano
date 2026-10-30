@@ -1,3 +1,6 @@
+---
+description: "Select and define component variants (radiators, spaces, controls, air handling units, boilers) to swap the Modelica model behind each Trano component."
+---
 # Component variants
 
 Most components in Trano (radiators, spaces, controls, air handling units,

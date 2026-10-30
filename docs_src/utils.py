@@ -82,9 +82,20 @@ And if have to use title tags, use tags "###" or "####".
 class Tutorial(BaseModel):
     title: str
     contents: list[Text | TitleText | CleanedText | CommentObject | CommentCodeObject | DisplayObject | DisplayImage]
+    description: str | None = None
+    """Meta description of the page (search engine snippet); keep it under about 160 characters."""
+    page_title: str | None = None
+    """Title of the HTML document when it should differ from the heading of the page."""
+
+    def front_matter(self) -> str:
+        meta = {"title": self.page_title, "description": self.description}
+        lines = [f'{key}: "{value.replace(chr(34), chr(92) + chr(34))}"' for key, value in meta.items() if value]
+        if not lines:
+            return ""
+        return "---\n" + "\n".join(lines) + "\n---\n"
 
     def build(self) -> str:
-        output = f"# {self.title}\n"
+        output = f"{self.front_matter()}# {self.title}\n"
         for content in self.contents:
             output += f"{content.write()}\n\n"
         return output

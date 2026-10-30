@@ -1,3 +1,6 @@
+---
+description: "Generate the same building with the IDEAS Modelica library instead of Buildings by changing one argument: Trano is Modelica library agnostic."
+---
 # Model with another library
 Switching libraries is seamless with Trano. This tutorial demonstrates how to generate a model using the IDEAS library from the same YAML file previously utilized.
 

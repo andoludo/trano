@@ -1,3 +1,8 @@
+---
+title: "Components"
+description: "Reference of every Trano component variant and the Jinja template that produces its Modelica code for the Buildings, IDEAS and AixLib libraries."
+---
+# Components
 
 ## Occupancy
 

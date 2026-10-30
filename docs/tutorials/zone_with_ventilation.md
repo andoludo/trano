@@ -1,3 +1,6 @@
+---
+description: "Add an air handling unit and ventilation to a Trano Modelica building model from the YAML configuration."
+---
 # Zone with ventilation
 The tutorial below demonstrates how to add ventilation to the building model.
 

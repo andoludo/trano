@@ -1,3 +1,6 @@
+---
+description: "Add an ideal heating system and its control to a multi-zone Trano model and simulate it with the Buildings and IDEAS Modelica libraries."
+---
 # Multi-zone with ideal heating
 The previous sections focused on simulating the building envelope without a system, providing insight into constructing Trano's YAML input files. This section shifts to simulating a building with a heating system. The building consists of three zones, equipped with an ideal heating system. 
 

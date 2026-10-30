@@ -1,3 +1,6 @@
+---
+description: "Heat several zones through mixing circuits with three-way valves and collectors in a Trano hydronic heating model simulated with IDEAS."
+---
 # Hydronic heating with mixing circuits
 
 This tutorial heats the three zones of the [hydronic heating tutorial](multi-zone_with_hydronic_heating.md) with

@@ -1,25 +1,35 @@
 [project]
 name = "trano"
 version = "0.67.0"
-description = ""
+description = "Generate Modelica building energy simulation models (Buildings, IDEAS, AixLib, FastSmoothBuildings) from YAML, JSON or RDF, validated against ASHRAE 140, for OpenModelica, Dymola and model predictive control"
 authors = [{ name = "Ando Andriamamonjy", email = "andoludovic.andriamamonjy@gmail.com" }]
 requires-python = ">=3.11,<4.0"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 keywords = [
-    "energy simulation",
-    "modelica",
-    "interoperability",
     "building energy simulation",
-    "buildings",
-    "ideas",
+    "building energy modelling",
+    "modelica",
+    "openmodelica",
+    "buildings library",
+    "ideas library",
+    "aixlib",
+    "bestest",
+    "model predictive control",
+    "mpc",
+    "hvac",
+    "interoperability",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python",
     "Typing :: Typed",
     "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -46,7 +56,10 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://andoludo.github.io/trano/"
+Documentation = "https://andoludo.github.io/trano/"
 Repository = "https://github.com/andoludo/trano"
+Issues = "https://github.com/andoludo/trano/issues"
+Changelog = "https://github.com/andoludo/trano/releases"
 
 [project.scripts]
 trano = "trano.main:app"

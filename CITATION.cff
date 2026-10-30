@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use Trano in your work, please cite it as below."
+type: software
+title: "Trano: automated generation of Modelica building energy simulation models"
+abstract: >-
+  Trano is a Python package that generates building energy simulation models in Modelica
+  (Buildings, IDEAS, AixLib, FastSmoothBuildings) from a YAML, JSON or RDF description of the
+  building, its HVAC systems and their controls. The generated models are validated against
+  ASHRAE Standard 140 (BESTEST) and can be translated to CasADi for model predictive control.
+authors:
+  - family-names: Andriamamonjy
+    given-names: Ando
+    email: andoludovic.andriamamonjy@gmail.com
+version: 0.67.0
+date-released: 2026-10-29
+license: Apache-2.0
+repository-code: "https://github.com/andoludo/trano"
+url: "https://andoludo.github.io/trano/"
+keywords:
+  - building energy simulation
+  - Modelica
+  - OpenModelica
+  - model predictive control
+  - BESTEST
+  - HVAC

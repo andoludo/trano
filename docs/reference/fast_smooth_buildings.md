@@ -1,3 +1,6 @@
+---
+description: "FastSmoothBuildings: a smooth Modelica building library close to Buildings, translated to CasADi by rumoca for simulation, state estimation and optimal control."
+---
 # FastSmoothBuildings
 
 [FastSmoothBuildings](https://github.com/andoludo/FastSmoothBuildings) is a Modelica library of buildings and their
