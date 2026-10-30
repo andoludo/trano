@@ -1,6 +1,6 @@
 [project]
 name = "trano"
-version = "0.67.0"
+version = "0.68.0"
 description = "Generate Modelica building energy simulation models (Buildings, IDEAS, AixLib, FastSmoothBuildings) from YAML, JSON or RDF, validated against ASHRAE 140, for OpenModelica, Dymola and model predictive control"
 authors = [{ name = "Ando Andriamamonjy", email = "andoludovic.andriamamonjy@gmail.com" }]
 requires-python = ">=3.11,<4.0"
