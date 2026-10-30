@@ -1,6 +1,12 @@
 site_name: Trano
-site_description: Automated building energy simulation tool with Modelica
-repo_name: trano
+site_url: https://andoludo.github.io/trano/
+site_description: >-
+  Trano generates Modelica building energy simulation models (Buildings, IDEAS, AixLib,
+  FastSmoothBuildings) from YAML, JSON or RDF, validated against ASHRAE 140 BESTEST, for
+  OpenModelica, Dymola and model predictive control.
+site_author: Ando Andriamamonjy
+copyright: Copyright &copy; Ando Andriamamonjy, Apache-2.0
+repo_name: andoludo/trano
 repo_url: https://github.com/andoludo/trano
 theme:
   name: material
@@ -52,8 +58,20 @@ theme:
   logo: img/trano.webp
   favicon: img/trano.webp
   language: en
+# Placeholder sections without content yet: kept in the repository, left out of the built site.
+exclude_docs: |
+  explanation/
+  how-to guides/
 plugins:
   - search
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/andoludo/trano
+      name: Trano on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/trano/
+      name: Trano on PyPI
 nav:
   - Trano: index.md
   - Getting-started:
@@ -70,8 +88,6 @@ nav:
     - A house before and after renovation: tutorials/residential_renovation.md
     - FastSmoothBuildings, models close to Buildings in closed loop and for MPC: tutorials/fast_smooth_buildings.md
     - Component variants: tutorials/component_variants.md
-  - How-to Guides: how-to guides/index.md
-  - Explanation: explanation/index.md
   - Reference:
       - Components: reference/components.md
       - Parameters: reference/parameters.md

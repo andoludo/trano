@@ -4,19 +4,24 @@ from docs_src.utils import Tutorial, Text
 
 INDEXES = [
     Tutorial(
-        title="""
-<div style="display: flex; align-items: center;">
-  <img src="img/trano.webp" alt="Image" style="width: 120px; height: 140px; margin-right: 10px;">
-  <span style="color: #FFBF00; font-size: 96px; font-weight: bold;">Trano</span>
-</div>
-""",
+        title="Trano: building energy simulation models in Modelica, generated from YAML",
+        page_title="Generate Modelica building energy simulation models from YAML",
+        description=(
+            "Trano is a Python tool that generates Modelica building energy simulation models (Buildings, IDEAS, "
+            "AixLib, FastSmoothBuildings) from YAML, JSON or RDF, validated against ASHRAE 140 BESTEST and ready for "
+            "OpenModelica, Dymola and model predictive control."
+        ),
         contents=[
             Text(
                 content="""
-**Trano** is an innovative Python package that automates the creation of complex **Building Energy Simulation 
-(BES)** Modelica models from simplified information contained in widely used data formats like **YAML, JSON, or 
-RDF**. Unlike traditional tools that directly convert **BIM** to **BES**, Trano introduces an intermediate step, 
-paving the way for seamless integration with **IFC translators**.  
+<img src="img/trano.webp" alt="Trano logo" style="width: 120px; height: 140px; float: left; margin-right: 16px;">
+
+**Trano** is a Python package that generates **building energy simulation** (BES, building energy modelling) models 
+in **Modelica** from a simple description of the building in **YAML, JSON or RDF**: envelope, HVAC systems and their 
+controls, and electrical systems. The generated models are simulated with **OpenModelica** (or Dymola), validated 
+against **ASHRAE 140 (BESTEST)**, and, with the FastSmoothBuildings library, translated to CasADi for **model 
+predictive control (MPC)**. Unlike tools that directly convert **BIM** to BES, Trano introduces an intermediate, 
+library-independent description, paving the way for seamless integration with **IFC translators**.  
 
 Trano is **Modelica library agnostic** but is natively designed to work with:  
 ✅ **Validated detailed Modelica libraries** (e.g., **[Buildings](https://github.com/lbl-srg/modelica-buildings)**, 
@@ -40,7 +45,7 @@ Trano is **Modelica library agnostic** but is natively designed to work with:
 
 ### 🎨 **Easy to Use & Modify**
 - Generates **graphical representations** of components & connections 🎭.
-![building.jpg](docs/img/building.jpg)
+![Graphical representation of a generated building model](img/building.jpg)
 - Fully **modular design** for seamless modifications:
   - **Envelope** 🏠
   - **Emission** 💨

@@ -1,3 +1,6 @@
+---
+description: "Every YAML parameter of Trano with its default and its Modelica name in Buildings, IDEAS, AixLib and FastSmoothBuildings."
+---
 # Parameters
 
 Every parameter is optional: a parameter left out of the YAML is not written to the Modelica model, so the library's own default applies ("library default" below), unless trano has a default of its own. The library columns give the Modelica name the parameter is rendered under; a dash means the library does not take it (a value given anyway is ignored with a warning). *numerical* marks simulation settings rather than physical properties. The page is generated from `trano/data_models/parameters.yaml`.

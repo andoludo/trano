@@ -1,0 +1,3 @@
+# Golden Modelica files produced by trano for the tests: keep them out of the language statistics,
+# so that GitHub classifies the repository as the Python project it is.
+tests/data/*.mo linguist-generated=true

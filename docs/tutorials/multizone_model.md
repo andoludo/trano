@@ -1,3 +1,6 @@
+---
+description: "Add zones to a Trano YAML file to generate a three-zone Modelica building model, with the walls between the zones, from the same configuration."
+---
 # Multizone model
 Similarly to changing libraries, building a multi-zone model is as easy as adding a few lines to the configuration file. This tutorial demonstrates how to generate a model for a three-zone building.
 

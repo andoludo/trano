@@ -1,3 +1,6 @@
+---
+description: "Validation of the heat pumps, gas boilers, valves, pumps and ventilation units in Trano-generated Modelica models against physical KPIs."
+---
 # Systems validation
 
 Do the heating and ventilation systems trano generates behave as the real ones do? Each case below puts one

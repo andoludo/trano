@@ -1,3 +1,6 @@
+---
+description: "Add photovoltaic arrays and a heat pump to a Trano building model and simulate the electricity balance with the Buildings Modelica library."
+---
 # Zone with photovoltaics
 The following tutorial demonstrates how to add photovoltaic (PV) systems to buildings.
 

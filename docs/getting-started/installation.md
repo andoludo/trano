@@ -1,3 +1,6 @@
+---
+description: "Install Trano with pip, the Modelica libraries it generates models for, OpenModelica or its Docker image, and the optional Graphviz dependency used to lay out the model diagrams."
+---
 # Installation
 ## Optional dependencies
 

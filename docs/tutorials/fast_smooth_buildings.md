@@ -1,3 +1,6 @@
+---
+description: "Generate FastSmoothBuildings models from YAML: Modelica buildings close to Buildings in closed loop, translated to CasADi for model predictive control (MPC)."
+---
 # FastSmoothBuildings: models close to Buildings, in closed loop and for MPC
 
 The `FastSmoothBuildings` library turns a YAML

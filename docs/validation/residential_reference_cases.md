@@ -1,3 +1,6 @@
+---
+description: "A Belgian semi-detached house before and after renovation simulated with the IDEAS and Buildings libraries from the same Trano YAML files."
+---
 # Residential reference cases: IDEAS and Buildings
 
 Two YAML files describe the same Belgian semi-detached house before and after a deep renovation:

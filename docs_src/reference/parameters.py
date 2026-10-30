@@ -4,6 +4,12 @@ from pathlib import Path
 
 from trano.elements.library.parameters import PARAMETERS, LibraryMapping, ParameterSpec, parameter_specs
 
+FRONT_MATTER = (
+    "---\n"
+    'description: "Every YAML parameter of Trano with its default and its Modelica name in Buildings, IDEAS, AixLib '
+    'and FastSmoothBuildings."\n'
+    "---\n"
+)
 COLUMNS = {
     "buildings": "Buildings",
     "ideas": "IDEAS",
@@ -52,6 +58,7 @@ def render_parameters() -> str:
     for class_name, model in PARAMETERS.items():
         classes_of.setdefault(model, []).append(class_name)
     lines = [
+        FRONT_MATTER.rstrip("\n"),
         "# Parameters",
         "",
         "Every parameter is optional: a parameter left out of the YAML is not written to the Modelica "

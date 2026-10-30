@@ -5,6 +5,10 @@ from docs_src.utils import CleanedText, DisplayObject, TitleText, Tutorial, Text
 INSTALLATIONS = [
     Tutorial(
         title="Installation",
+        description=(
+            "Install Trano with pip, the Modelica libraries it generates models for, OpenModelica or its Docker "
+            "image, and the optional Graphviz dependency used to lay out the model diagrams."
+        ),
         contents=[
             TitleText(content="""Optional dependencies"""),
             CleanedText(

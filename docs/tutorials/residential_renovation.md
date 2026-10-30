@@ -1,3 +1,6 @@
+---
+description: "Model a Belgian semi-detached house before and after a deep renovation with Trano and compare its heating demand with the IDEAS and Buildings libraries."
+---
 # A house before and after renovation
 
 This tutorial models a whole house twice: a Belgian semi-detached house built before 1970, and the
