@@ -1,3 +1,7 @@
-# Golden Modelica files produced by trano for the tests: keep them out of the language statistics,
-# so that GitHub classifies the repository as the Python project it is.
+# Linguist: trano is a Python project. GitHub classified it as Modelica because the golden
+# Modelica files of the tests (17 MB) outweigh the Python sources (1.3 MB). Everything that is
+# not source code is marked so that only the Python sources and the Jinja templates count.
 tests/data/*.mo linguist-generated=true
+docs/**/figures/*.html linguist-generated=true
+docs/** linguist-documentation=true
+*.py linguist-language=Python
