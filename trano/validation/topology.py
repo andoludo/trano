@@ -112,6 +112,8 @@ def check_controls(graph: ModelGraph) -> Iterator[Issue]:
             yield from _check_control_variant(component)
             continue
         required = REQUIRED_CONTROLS.get(component.kind)
+        if component.kind == "valve" and component.space is None:
+            required = None  # a valve under systems without a control is fixed open: a bypass
         if required:
             yield Issue(
                 "error",

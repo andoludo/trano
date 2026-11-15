@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, NamedTuple, Union
 
 from trano.elements import Control
 from trano.elements.base import BaseElement
-from trano.elements.types import BaseVariant, ContainerTypes
+from trano.elements.types import BaseVariant, ContainerTypes, Medium
 from pydantic import model_validator, BaseModel, Field
 
 from trano.exceptions import InvalidBuildingStructureError, InvalidSensorInletError, WrongSystemFlowError
@@ -145,7 +145,12 @@ class Weather(BaseWeather):
         )
 
 
-class Valve(SpaceHeatingSystem): ...
+class Valve(SpaceHeatingSystem):
+    def system_ports_connected(self) -> bool:
+        """Without a control (a bypass under systems) the template fixes its opening: its signal stays unconnected."""
+        return all(
+            port.connected for port in self.ports if not port.no_check and (self.control or port.medium != Medium.data)
+        )
 
 
 class ThreeWayValve(DistributionSystem): ...
@@ -198,7 +203,8 @@ class HydronicSystemControl(BaseModel):
 
     def _get_linked_valves(self, network: "Network") -> list[Valve]:
         valves_: list[Valve] = []
-        valves = [node for node in network.graph.nodes if isinstance(node, Valve)]
+        # the controlled valves only: a valve without a control (a bypass) is fixed open and asks for nothing
+        valves = [node for node in network.graph.nodes if isinstance(node, Valve) and node.control is not None]
         for valve in valves:
             path = list(nx.shortest_path(network.graph, self, valve))
             p = path[1:-1]

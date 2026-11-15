@@ -1900,6 +1900,10 @@ classes:
         power_sensor:
           name: power_sensor
           required: true
+    - slot_conditions:
+        valve:
+          name: valve
+          required: true
     slots:
     - split_valve
     - three_way_valve
@@ -1909,6 +1913,7 @@ classes:
     - heat_meter_sensor
     - air_handling_unit
     - power_sensor
+    - valve
   TemperatureSensor:
     description: Water temperature sensor
     is_a: System
@@ -2145,7 +2150,9 @@ classes:
     - variant
   Valve:
     description: Two-way valve of a radiator, driven by the emission control of its
-      space
+      space. Under systems and without a control, a fixed-open valve, e.g. the bypass
+      from the supply to the return that keeps the water flowing when the radiator
+      valves close; m_flow_nominal and dp_valve_nominal size it
     is_a: System
     slot_usage:
       control:
@@ -2857,7 +2864,8 @@ slots:
     description: Use m flow f dp else dp f m flow; its meaning, range and default
       depend on the class (see slot_usage).
   valve:
-    description: The valve of the radiator listed before it
+    description: The valve of the radiator listed before it, or under systems a fixed-open
+      valve (bypass)
     inlined: true
     multivalued: false
     range: Valve

@@ -32,6 +32,9 @@
     {%- if element.parameters.flow_coefficient_type %}
     CvData={{ library_name }}.Fluid.Types.CvTypes.{{ element.parameters.flow_coefficient_type }},
     {%- endif %}
+    {%- if not element.control %}
+    y=1,
+    {%- endif %}
     redeclare package Medium = MediumW
 
     ) "Radiator valve" 

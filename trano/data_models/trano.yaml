@@ -423,6 +423,7 @@ classes:
       - heat_meter_sensor
       - air_handling_unit
       - power_sensor
+      - valve
     exactly_one_of:
       - slot_conditions: {split_valve: {name: split_valve, required: true}}
       - slot_conditions: {three_way_valve: {name: three_way_valve, required: true}}
@@ -432,6 +433,7 @@ classes:
       - slot_conditions: {heat_meter_sensor: {name: heat_meter_sensor, required: true}}
       - slot_conditions: {air_handling_unit: {name: air_handling_unit, required: true}}
       - slot_conditions: {power_sensor: {name: power_sensor, required: true}}
+      - slot_conditions: {valve: {name: valve, required: true}}
   Solar:
     description: One solar component of the building (exactly one key per entry)
     slots:
@@ -512,7 +514,10 @@ classes:
       parameters:
         range: IdealHeatingCoolingParameter
   Valve:
-    description: Two-way valve of a radiator, driven by the emission control of its space
+    description: >-
+      Two-way valve of a radiator, driven by the emission control of its space. Under systems and without a
+      control, a fixed-open valve, e.g. the bypass from the supply to the return that keeps the water flowing
+      when the radiator valves close; m_flow_nominal and dp_valve_nominal size it
     is_a: System
     attributes:
       variant:
@@ -928,7 +933,7 @@ slots:
     multivalued: false
     inlined: true
   valve:
-    description: The valve of the radiator listed before it
+    description: The valve of the radiator listed before it, or under systems a fixed-open valve (bypass)
     range: Valve
     multivalued: false
     inlined: true
