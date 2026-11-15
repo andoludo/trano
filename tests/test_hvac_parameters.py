@@ -153,6 +153,73 @@ def test_the_supply_set_point_and_the_source_belong_to_their_variants() -> None:
     assert "TEvaHea_nominal=280.0" in rendered(air_water) and "mSou_flow_nominal=2.0" in rendered(air_water)
 
 
+def test_the_compressor_modulation_of_a_heat_pump_is_set_in_the_yaml() -> None:
+    """The lowest compressor speed and the controller of the speed decide how a heat pump cycles at part load."""
+    parameters = P("Boiler")(
+        compressor_minimum_speed=0.5, compressor_controller_gain=0.3, compressor_controller_integral_time=120
+    )
+    for variant in ("air_water_heat_pump", "ground_source_heat_pump", "water_water_heat_pump"):
+        heat_pump = rendered(elements.Boiler(name="hp", variant=variant, parameters=parameters))
+        assert "yComMin=0.5" in heat_pump and "kCom=0.3" in heat_pump and "TiCom=120.0" in heat_pump
+    default = rendered(elements.Boiler(name="hp", variant="air_water_heat_pump", parameters=P("Boiler")()))
+    assert not re.search(r"\b(yComMin|kCom|TiCom)=", default)  # the defaults of the model
+    assert "yComMin" not in rendered(elements.Boiler(name="boiler", parameters=parameters))  # a gas boiler has none
+
+
+def test_a_compressor_keeps_a_range_between_its_lowest_and_its_full_speed(tmp_path: Path) -> None:
+    """compressor_minimum_speed = 1 leaves the controller of the speed no range: Buildings stops on the limiter
+    of its controller and FastSmoothBuildings at the first step of the solver."""
+    from trano.exceptions import InvalidModelError
+
+    model, anchor = "house_infiltration_air_water_heat_pump", "tank_volume: 0.15"
+    assert "yComMin=0.95" in yaml_model(tmp_path, model, "Buildings", **{anchor: "compressor_minimum_speed: 0.95"})
+    with pytest.raises(InvalidModelError, match=r"compressor_minimum_speed: must be <= 0.95"):
+        yaml_model(tmp_path, model, "Buildings", **{anchor: "compressor_minimum_speed: 1.0"})
+
+
+def test_the_band_of_the_on_off_control_and_the_gains_of_the_pi_control_are_set_in_the_yaml(tmp_path: Path) -> None:
+    import yaml
+
+    from trano.elements.library.parameters import library_parameters
+
+    parameters = P("EmissionControl")(on_off_band=0.5, heating_loop_gain=0.4, heating_loop_integral_time=600)
+    for library in ("Buildings", "IDEAS"):
+        on_off = library_parameters(parameters, library, "onoff")
+        assert on_off["bandwidth"] == 0.5 and "kHeaCon" not in on_off
+        pi = library_parameters(parameters, library, "default")
+        assert (pi["kHeaCon"], pi["TiHeaCon"]) == (0.4, 600.0) and "bandwidth" not in pi
+    assert "bandwidth" not in library_parameters(P("EmissionControl")(), "Buildings", "onoff")  # the model's default
+
+    data = yaml.safe_load(MODELS.joinpath("house_infiltration_air_water_heat_pump.yaml").read_text())
+    controls = [
+        emission["valve"]["control"]["emission_control"]
+        for space in data["spaces"]
+        for emission in space.get("emissions", [])
+        if "valve" in emission and "control" in emission["valve"]
+    ]
+    controls[0]["variant"] = "onoff"
+    controls[0].setdefault("parameters", {})["on_off_band"] = 0.5
+    controls[1].pop("variant", None)
+    controls[1].setdefault("parameters", {}).update({"heating_loop_gain": 0.4, "heating_loop_integral_time": 600})
+    path = tmp_path / "room_controls.yaml"
+    path.write_text(yaml.safe_dump(data))
+    model = re.sub(r"\s+", " ", convert_network("room_controls", path).model())
+    assert "OnOffController onOffController(bandwidth=bandwidth)" in model
+    assert "emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)" in model
+    assert re.search(r"EmissionControlOnOff\w+ \w+\([^)]*bandwidth=0\.5", model)
+    assert re.search(r"BaseClasses\. ?EmissionControl[A-Z]\w+ \w+\([^)]*kHeaCon=0\.4[^)]*TiHeaCon=600", model)
+
+
+def test_the_fans_of_a_ventilation_unit_hold_their_flow_when_the_ducts_need_more_than_their_pressure_rise() -> None:
+    """Buildings stops a mover above 2.24 times its nominal pressure rise: a unit described with a low dp_nominal
+    stopped in the first hour, where the fans of trano 0.65 delivered less flow."""
+    package = trano_package()
+    system_d = package[package.index("model PartialSystemD") : package.index("end PartialSystemD;")]
+    system_c = package[package.index("model PartialSystemC") : package.index("end PartialSystemC;")]
+    assert system_d.count("dpMax=dpFanMax") == 2 and system_c.count("dpMax=dpFanMax") == 1
+    assert "parameter Real dpFanMax=10*dp_nominal" in system_d and "parameter Real dpFanMax=10*dp_nominal" in system_c
+
+
 def test_the_boiler_flow_resistance_is_only_linearized_when_asked() -> None:
     assert "linearizeFlowResistance=false" in rendered(elements.Boiler(name="boiler", parameters=P("Boiler")()))
     assert "linearizeFlowResistance=true" in rendered(

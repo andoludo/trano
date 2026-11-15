@@ -35,8 +35,10 @@
         parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
           parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
       parameter Real k(min=0) = 1 "Gain of controller";
+      parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+      parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
       Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-      emissionControl
+      emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
       {% raw %}annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); {% endraw %}
       Modelica.Blocks.Interfaces.RealOutput y
       {% raw %}annotation (Placement(transformation(extent={{100,-8},{120,12}})));{% endraw %}
@@ -141,6 +143,7 @@
     template: |-
       model EmissionControlOnOff{{ element.name | capitalize}}
         parameter Real schedule[:]=3600*{7,19};
+        parameter Modelica.Units.SI.TemperatureDifference bandwidth=0.1 "Band of the on/off control";
 
       parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
       parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
@@ -164,7 +167,7 @@
       Trano.Controls.BaseClasses.DataBus dataBus {% raw %}annotation (Placement(
             transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
               extent={{-120,62},{-78,98}})));{% endraw %}
-        Modelica.Blocks.Logical.OnOffController onOffController
+        Modelica.Blocks.Logical.OnOffController onOffController(bandwidth=bandwidth)
           {% raw %}annotation (Placement(transformation(extent={{22,-16},{42,4}})));{% endraw %}
         Modelica.Blocks.Math.BooleanToReal booleanToReal
           {% raw %}annotation (Placement(transformation(extent={{54,-16},{74,4}})));{% endraw %}

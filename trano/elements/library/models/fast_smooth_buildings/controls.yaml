@@ -114,6 +114,12 @@
     {{ package_name }}.Components.BaseClasses.EmissionPI{{ element.name | capitalize }} {{ element.name }}(
         schedule={{ parameters.schedule }},
         THeaSet={{ parameters.THeaSet }},
+        {%- if parameters.get('kHeaCon') is not none %}
+        kHea={{ parameters.kHeaCon }},
+        {%- endif %}
+        {%- if parameters.get('TiHeaCon') is not none %}
+        TiHea={{ parameters.TiHeaCon }},
+        {%- endif %}
         THeaSetBack={{ parameters.THeaSetBack }})
   variant: default
 - classes:
@@ -147,6 +153,9 @@
     {{ package_name }}.Components.BaseClasses.EmissionOnOff{{ element.name | capitalize }} {{ element.name }}(
         schedule={{ parameters.schedule }},
         THeaSet={{ parameters.THeaSet }},
+        {%- if parameters.get('bandwidth') is not none %}
+        bandwidth={{ parameters.bandwidth }},
+        {%- endif %}
         THeaSetBack={{ parameters.THeaSetBack }})
   variant: onoff
 - classes:

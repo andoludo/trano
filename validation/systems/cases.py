@@ -76,6 +76,9 @@ RADIATOR_70 = models.radiator_and_valve(70.0 + KELVIN, 50.0 + KELVIN)
 # the morning recovery after the night setback.
 RADIATOR_45_HEAT_PUMP = models.radiator_and_valve(45.0 + KELVIN, 35.0 + KELVIN, power=4000.0)
 TABLE_LIBRARIES = ("Buildings", "IDEAS")
+PARITY_LIBRARIES = ("Buildings", "FastSmoothBuildings")
+"""The libraries of the cases that compare the effect of one parameter between the reference library and
+FastSmoothBuildings (IDEAS takes the same Trano models as Buildings)."""
 """The libraries whose heat pump takes a constant source temperature: FastSmoothBuildings always takes the
 outdoor air (the YAML parameters of the source are not among those its template passes)."""
 VITOCAL_TABLE = {
@@ -207,6 +210,43 @@ HEAT_PUMP_CASES = [
         )
         for s in (35, 55)
     ],
+    # The parameters of the compressor and of the buffer set in the YAML: each case changes one of them from its
+    # companion, with Buildings and FastSmoothBuildings, so that the effect of the parameter can be compared
+    # between the two libraries (the campaign of the calibration parameters).
+    heat_pump_case(
+        "hp_min_speed_60",
+        "The shoulder week with a compressor that cannot run below 60 % of its speed (compressor_minimum_speed): "
+        "less modulation, more starts",
+        start_day=SHOULDER,
+        companion="hp_shoulder",
+        heat_pump={"parameters": {"compressor_minimum_speed": 0.6}},
+        libraries=PARITY_LIBRARIES,
+    ),
+    heat_pump_case(
+        "hp_fast_controller",
+        "The shoulder week with a compressor controller five times stiffer (gain 0.5 1/K, integral time 60 s)",
+        start_day=SHOULDER,
+        companion="hp_shoulder",
+        heat_pump={"parameters": {"compressor_controller_gain": 0.5, "compressor_controller_integral_time": 60.0}},
+        libraries=PARITY_LIBRARIES,
+    ),
+    heat_pump_case(
+        "hp_long_minimum_times",
+        "The shoulder week with a compressor held 20 minutes on once started and 20 minutes off once stopped "
+        "(compressor_minimum_on_time, compressor_minimum_off_time): fewer, longer runs",
+        start_day=SHOULDER,
+        companion="hp_shoulder",
+        heat_pump={"parameters": {"compressor_minimum_on_time": 1200.0, "compressor_minimum_off_time": 1200.0}},
+        libraries=PARITY_LIBRARIES,
+    ),
+    heat_pump_case(
+        "hp_buffer_losses",
+        "The coldest week with a poorly insulated buffer (insulation 0.4 W/(m.K)) in a 5 degC room "
+        "(insulation_conductivity, ambient_temperature): the heat pump delivers the loss on top of the load",
+        companion="hp_winter",
+        heat_pump={"parameters": {"insulation_conductivity": 0.4, "ambient_temperature": 5.0 + KELVIN}},
+        libraries=PARITY_LIBRARIES,
+    ),
 ]
 
 # --- boilers -----------------------------------------------------------------------------------------------------
@@ -274,7 +314,11 @@ BOILER_CASES = [
 
 
 def valve_case(
-    case_id: str, description: str, companion: str | None = None, emission: dict[str, Any] | None = None
+    case_id: str,
+    description: str,
+    companion: str | None = None,
+    emission: dict[str, Any] | None = None,
+    libraries: tuple[str, ...] = LIBRARIES,
 ) -> Case:
     """A case of the valve family: ``emission`` holds the arguments of ``models.radiator_and_valve``."""
     emission = emission or {}
@@ -283,6 +327,7 @@ def valve_case(
         family=Family.hydronics,
         description=description,
         companion=companion,
+        libraries=libraries,
         building=models.building(
             models.zone(),
             emissions=models.radiator_and_valve(70.0 + KELVIN, 50.0 + KELVIN, **emission),
@@ -304,6 +349,23 @@ HYDRONIC_CASES = [
         "Radiator valve under an on-off controller",
         companion="valve_p",
         emission={"control_variant": "onoff"},
+    ),
+    valve_case(
+        "valve_onoff_band",
+        "The on-off case with a band of 1 K instead of 0.1 K (on_off_band): fewer switches, a wider swing",
+        companion="valve_onoff",
+        emission={"control_variant": "onoff", "control_parameters": {"on_off_band": 1.0}},
+        libraries=PARITY_LIBRARIES,
+    ),
+    valve_case(
+        "valve_pi_gain",
+        "The heating loop ten times stiffer (heating_loop_gain 1 1/K, heating_loop_integral_time 300 s)",
+        companion="valve_pi",
+        emission={
+            "control_variant": "default",
+            "control_parameters": {"heating_loop_gain": 1.0, "heating_loop_integral_time": 300.0},
+        },
+        libraries=PARITY_LIBRARIES,
     ),
     valve_case(
         "valve_nonlinear",

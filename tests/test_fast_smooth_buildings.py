@@ -754,13 +754,81 @@ def test_the_heat_pump_control_takes_the_heating_curve_of_the_yaml(tmp_path: Pat
     assert "dTHys=3" in control.group(1)
 
 
+def _heat_pump_house(tmp_path: Path, **parameters: float) -> Path:
+    import yaml
+
+    data = yaml.safe_load((MODELS / "house_infiltration_air_water_heat_pump.yaml").read_text())
+    [boiler] = [system["boiler"] for system in data["systems"] if "boiler" in system]
+    boiler["parameters"].update(parameters)
+    path = tmp_path / "heat_pump_parameters.yaml"
+    path.write_text(yaml.safe_dump(data))
+    return path
+
+
+def test_the_heat_pump_takes_the_compressor_modulation_and_the_buffer_losses_of_the_yaml(tmp_path: Path) -> None:
+    """The lowest compressor speed and its controller reach the control; the insulation, the surroundings and the
+    initial temperature of the buffer reach the heat pump. They used to be dropped without a word."""
+    path = _heat_pump_house(
+        tmp_path,
+        compressor_minimum_speed=0.6,
+        compressor_controller_gain=0.3,
+        compressor_controller_integral_time=120,
+        insulation_conductivity=0.03,
+        ambient_temperature=283.15,
+        temperature_initial=313.15,
+    )
+    model = _building_mpc(_model(path, "FastSmoothBuildings")).replace(" ", "")
+    control = re.search(r"FastSmoothBuildings\.Controls\.HeatPumpControlboiler_001_control\((.*?)\)", model, re.DOTALL)
+    assert control is not None
+    assert "yComMin=0.6," in control.group(1) and "kCom=0.3," in control.group(1) and "TiCom=120" in control.group(1)
+    for library in ("FastSmoothBuildings", "FastSmoothBuildingsMPC"):
+        model = _building_mpc(_model(path, library)).replace(" ", "")
+        heat_pump = re.search(r"BaseClasses\.HeatPumpBoiler_001boiler_001\((.*?)\)", model, re.DOTALL)
+        assert heat_pump is not None
+        assert "kIns=0.03," in heat_pump.group(1) and "TAmb=283.15," in heat_pump.group(1)
+        assert "T_start=313.15," in heat_pump.group(1)
+
+
+def test_the_heat_pump_control_takes_the_minimum_on_and_off_times_of_the_compressor(tmp_path: Path) -> None:
+    """compressor_minimum_on_time and compressor_minimum_off_time reach the control, which holds the compressor on
+    and off as the safety control of the Buildings model does; left out, the control keeps its 300 s."""
+    path = _heat_pump_house(tmp_path, compressor_minimum_on_time=1200, compressor_minimum_off_time=900)
+    model = _building_mpc(_model(path, "FastSmoothBuildings")).replace(" ", "")
+    control = re.search(r"FastSmoothBuildings\.Controls\.HeatPumpControlboiler_001_control\((.*?)\)", model, re.DOTALL)
+    assert control is not None
+    assert "minOnTime=1200" in control.group(1) and "minOffTime=900" in control.group(1)
+
+
+def test_the_room_controls_take_their_band_and_their_gains_from_the_yaml(tmp_path: Path) -> None:
+    import yaml
+
+    data = yaml.safe_load((MODELS / "house_infiltration_air_water_heat_pump.yaml").read_text())
+    controls = [
+        emission["valve"]["control"]["emission_control"]
+        for space in data["spaces"]
+        for emission in space.get("emissions", [])
+        if "valve" in emission and "control" in emission["valve"]
+    ]
+    controls[0]["variant"] = "onoff"
+    controls[0].setdefault("parameters", {})["on_off_band"] = 0.6
+    controls[1].pop("variant", None)
+    controls[1].setdefault("parameters", {}).update({"heating_loop_gain": 0.4, "heating_loop_integral_time": 600})
+    path = tmp_path / "room_controls.yaml"
+    path.write_text(yaml.safe_dump(data))
+    model = _building_mpc(_model(path, "FastSmoothBuildings")).replace(" ", "")
+    on_off = re.search(r"BaseClasses\.EmissionOnOff\w+\((.*?)\)", model, re.DOTALL)
+    pi = re.search(r"BaseClasses\.EmissionPI\w+\((.*?)\)", model, re.DOTALL)
+    assert on_off is not None and "bandwidth=0.6," in on_off.group(1)
+    assert pi is not None and "kHea=0.4," in pi.group(1) and "TiHea=600" in pi.group(1)
+
+
 def test_the_heat_pump_control_keeps_its_defaults_when_the_yaml_sets_none() -> None:
     model = _building_mpc(
         _model(MODELS / "house_infiltration_air_water_heat_pump.yaml", "FastSmoothBuildings")
     ).replace(" ", "")
     control = re.search(r"FastSmoothBuildings\.Controls\.HeatPumpControlboiler_001_control\((.*?)\)", model, re.DOTALL)
     assert control is not None
-    assert not re.search(r"\b(TSupMin|TOutHeaLim|dTHys)=", control.group(1))
+    assert not re.search(r"\b(TSupMin|TOutHeaLim|dTHys|kCom|TiCom|yComMin|minOnTime|minOffTime)=", control.group(1))
 
 
 @pytest.mark.simulate

@@ -1080,6 +1080,9 @@ model PartialSystemD
       "Medium model" annotation (choicesAllMatching=true);
   parameter Real m_flow_nominal=2*100*1.2/3600 "Design air mass flow rate of the unit";
   parameter Real dp_nominal=200 "Pressure rise of the fans at the design flow";
+  parameter Real dpFanMax=10*dp_nominal
+    "Pressure rise of a fan above which the simulation stops (a closed path). The fans hold the design flow: when the
+     ducts and the rooms need more than dp_nominal, the fans deliver it and their electricity follows";
   parameter Real dpSup_nominal=dp_nominal "Pressure rise of the supply fan";
   parameter Real dpRet_nominal=dp_nominal "Pressure rise of the return fan";
   parameter Real eps=0.8 "Effectiveness of the heat recovery";
@@ -1096,12 +1099,14 @@ model PartialSystemD
     redeclare package Medium = Medium,
     m_flow_nominal=m_flow_nominal,
     dp_nominal=dpSup_nominal,
+    dpMax=dpFanMax,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Supply fan"
     annotation (Placement(transformation(extent={{4,6},{24,26}})));
   Buildings.Fluid.Movers.Preconfigured.FlowControlled_m_flow fanRet(
     redeclare package Medium = Medium,
     m_flow_nominal=m_flow_nominal,
     dp_nominal=dpRet_nominal,
+    dpMax=dpFanMax,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Return fan"
     annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
   Buildings.Fluid.HeatExchangers.ConstantEffectiveness hex(
@@ -1287,6 +1292,9 @@ model PartialSystemC
       "Medium model" annotation (choicesAllMatching=true);
   parameter Real m_flow_nominal=2*100*1.2/3600 "Design air mass flow rate of the unit";
   parameter Real dp_nominal=200 "Pressure rise of the extract fan at the design flow";
+  parameter Real dpFanMax=10*dp_nominal
+    "Pressure rise of a fan above which the simulation stops (a closed path). The fan holds the design flow: when the
+     ducts and the rooms need more than dp_nominal, the fan delivers it and its electricity follows";
   parameter Real dpVen_nominal=10 "Pressure drop of the trickle vents at the design flow";
   parameter Real fanSchedule[:, 2]=[0, 1]
     "Day schedule of the fan: time since midnight [s], fraction of the design flow (held until the next row)";
@@ -1294,6 +1302,7 @@ model PartialSystemC
     redeclare package Medium = Medium,
     m_flow_nominal=m_flow_nominal,
     dp_nominal=dp_nominal,
+    dpMax=dpFanMax,
     energyDynamics=Modelica.Fluid.Types.Dynamics.FixedInitial) "Extract fan"
     annotation (Placement(transformation(extent={{24,-34},{4,-14}})));
   Buildings.Fluid.FixedResistances.PressureDrop resVen(

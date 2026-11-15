@@ -687,7 +687,7 @@
     {%- set demand = element.control.name ~ '.y' if element.control and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
     FastSmoothBuildings.Controls.HeatPumpControl {{ element.name }}_control(
         TSet={{ parameters.TSet }},
-        {%- for name in ['TOutDes', 'TSupMin', 'TOutHeaLim', 'dTHys'] %}
+        {%- for name in ['TOutDes', 'TSupMin', 'TOutHeaLim', 'dTHys', 'kCom', 'TiCom', 'yComMin', 'minOnTime', 'minOffTime'] %}
         {%- if parameters.get(name) is not none %}
         {{ name }}={{ parameters[name] }},
         {%- endif %}
@@ -708,6 +708,11 @@
         VTan={{ parameters.VTan }},
         hTan={{ parameters.hTan }},
         dIns={{ parameters.dIns }},
+        {%- for name, target in [('kIns', 'kIns'), ('TAmbient', 'TAmb'), ('T_start', 'T_start')] %}
+        {%- if parameters.get(name) is not none %}
+        {{ target }}={{ parameters[name] }},
+        {%- endif %}
+        {%- endfor %}
         pressureDriven=true,
         m_flow_nominal={{ parameters.nominal_mass_flow_radiator_loop }},
         y={{ element.name }}_control.y)
@@ -814,6 +819,11 @@
         useStorageTank={{ parameters.useStorageTank | string | lower }},
         VTan={{ parameters.VTan }},
         hTan={{ parameters.hTan }},
+        {%- for name, target in [('kIns', 'kIns'), ('TAmbient', 'TAmb'), ('T_start', 'T_start')] %}
+        {%- if parameters.get(name) is not none %}
+        {{ target }}={{ parameters[name] }},
+        {%- endif %}
+        {%- endfor %}
         dIns={{ parameters.dIns }})
   runnable: *control_runnable_boiler
   variant: air_water_heat_pump

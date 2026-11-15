@@ -203,6 +203,17 @@ classes:
         description: Coefficients for efficiency curve
         ifabsent: string({0.9})
         range: string
+      compressor_controller_gain:
+        description: 'Gain of the controller holding the supply temperature with the
+          compressor speed [1/K], 0.1 by default: the share of the full speed added
+          per kelvin the condenser outlet is below its set point'
+        minimum_value: 0
+        range: float
+      compressor_controller_integral_time:
+        description: Integral time of the controller of the compressor speed [s],
+          300 by default
+        minimum_value: 0
+        range: float
       compressor_minimum_off_time:
         description: Minimum time the compressor of the air-water heat pump stays
           off once stopped [s], 300 by default
@@ -212,6 +223,16 @@ classes:
         description: Minimum time the compressor of the air-water heat pump runs once
           started [s], 300 by default
         minimum_value: 0
+        range: float
+      compressor_minimum_speed:
+        description: 'Lowest speed the compressor of the heat pump runs at, as a fraction
+          of its full speed [1], 0.3 by default. Below the heat this speed delivers
+          the heat pump cannot modulate: it charges its buffer and stops, in cycles
+          (see buffer_temperature_band). At most 0.95, a compressor that hardly modulates:
+          the controller of the speed needs a range between its lowest and its full
+          speed'
+        maximum_value: 0.95
+        minimum_value: 0.05
         range: float
       design_outdoor_temperature:
         description: Design outdoor temperature of the heating curve of the air-water
@@ -779,6 +800,23 @@ classes:
     - emission_control
   EmissionControlParameters:
     attributes:
+      heating_loop_gain:
+        description: 'Gain of the heating loop of the default (PI) control of an emitter
+          [1/K], 0.1 by default: the opening added per kelvin the room is below its
+          set point'
+        minimum_value: 0
+        range: float
+      heating_loop_integral_time:
+        description: Integral time of the heating loop of the default (PI) control
+          of an emitter [s], 900 by default
+        minimum_value: 0
+        range: float
+      on_off_band:
+        description: 'Band of the on/off control of an emitter (variant onoff) [K],
+          0.1 by default: the emitter opens when the room is half the band below its
+          set point and closes when it is half the band above'
+        minimum_value: 0
+        range: float
       schedule:
         description: Schedule of switching times that toggles the heating set point
           between the occupied set point and the setback value

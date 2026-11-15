@@ -324,6 +324,45 @@ BoilerParameters:
         ideas: *hp_min_off
         reduced_order: *hp_min_off
         iso_13790: *hp_min_off
+    compressor_minimum_speed:
+      alias: yComMin
+      description: >-
+        Lowest speed the compressor of the heat pump runs at, as a fraction of its full speed [1], 0.3 by default.
+        Below the heat this speed delivers the heat pump cannot modulate: it charges its buffer and stops, in
+        cycles (see buffer_temperature_band). At most 0.95, a compressor that hardly modulates: the controller of
+        the speed needs a range between its lowest and its full speed
+      range: float
+      minimum_value: 0.05
+      maximum_value: 0.95
+      libraries:
+        buildings: &hp_speed_min {name: yComMin, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
+        ideas: *hp_speed_min
+        reduced_order: *hp_speed_min
+        iso_13790: *hp_speed_min
+    compressor_controller_gain:
+      alias: kCom
+      description: >-
+        Gain of the controller holding the supply temperature with the compressor speed [1/K], 0.1 by default: the
+        share of the full speed added per kelvin the condenser outlet is below its set point
+      range: float
+      minimum_value: 0
+      positive: true
+      libraries:
+        buildings: &hp_speed_gain {name: kCom, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
+        ideas: *hp_speed_gain
+        reduced_order: *hp_speed_gain
+        iso_13790: *hp_speed_gain
+    compressor_controller_integral_time:
+      alias: TiCom
+      description: Integral time of the controller of the compressor speed [s], 300 by default
+      range: float
+      minimum_value: 0
+      positive: true
+      libraries:
+        buildings: &hp_speed_time {name: TiCom, variants: [air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump]}
+        ideas: *hp_speed_time
+        reduced_order: *hp_speed_time
+        iso_13790: *hp_speed_time
     heat_pump_data:
       description: >-
         Performance data of the heat pump (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump):
@@ -512,6 +551,43 @@ EmissionControlParameters:
       ifabsent: float(5)
       range: float
       minimum_value: 0
+    heating_loop_gain:
+      alias: kHeaCon
+      description: >-
+        Gain of the heating loop of the default (PI) control of an emitter [1/K], 0.1 by default: the opening added
+        per kelvin the room is below its set point
+      range: float
+      minimum_value: 0
+      positive: true
+      libraries:
+        buildings: &pi_gain {name: kHeaCon, variants: [default]}
+        ideas: *pi_gain
+        reduced_order: *pi_gain
+        iso_13790: *pi_gain
+    heating_loop_integral_time:
+      alias: TiHeaCon
+      description: Integral time of the heating loop of the default (PI) control of an emitter [s], 900 by default
+      range: float
+      minimum_value: 0
+      positive: true
+      libraries:
+        buildings: &pi_time {name: TiHeaCon, variants: [default]}
+        ideas: *pi_time
+        reduced_order: *pi_time
+        iso_13790: *pi_time
+    on_off_band:
+      alias: bandwidth
+      description: >-
+        Band of the on/off control of an emitter (variant onoff) [K], 0.1 by default: the emitter opens when the
+        room is half the band below its set point and closes when it is half the band above
+      range: float
+      minimum_value: 0
+      positive: true
+      libraries:
+        buildings: &onoff_band {name: bandwidth, variants: [onoff]}
+        ideas: *onoff_band
+        reduced_order: *onoff_band
+        iso_13790: *onoff_band
     data:
       alias: data
       description: Occupancy data sources

@@ -94,6 +94,34 @@ hp_supply_55:
   - {kpi: hp_cop_ratio, min: 0.85, max: 1.1, why: "COP while running against the table at the measured conditions"}
   - {kpi: hp_supply_setpoint_mean_c, min: 54.9, max: 55.1, why: "the flat heating curve"}
 
+# The parameters of the compressor and of the buffer set in the YAML, with Buildings and FastSmoothBuildings: each
+# case changes one parameter of its companion (hp_shoulder, or hp_winter for the buffer), and its bands state the
+# effect the parameter must have with both libraries. Measured (Buildings / FastSmoothBuildings): run hours 16.1 /
+# 19.3 in hp_shoulder and 12.7 / 15.3 with a minimum speed of 0.6; shortest run 5.9 / 5 min and 20 / 20 min with
+# minimum times of 20 min; heat delivered 151 / 150 kWh in hp_winter and 181 / 175 kWh with the leaky buffer.
+hp_min_speed_60:
+  - {kpi: hp_speed_min_running, min: 0.59, why: "the compressor never runs below compressor_minimum_speed = 0.6", libraries: [Buildings]}
+  - {kpi: hp_run_hours, max: 16, why: "at least 60 % of the full speed: the same heat in fewer hours than hp_shoulder (16 to 19 h)"}
+  - {kpi: hp_heat_kwh, min: 45, max: 60, why: "the load of the week does not depend on how the compressor modulates"}
+  - {kpi: hp_scop, min: 2.8, max: 4.9, why: "as hp_shoulder, slightly lower: a higher speed lifts the condenser temperature"}
+  - {kpi: hp_starts_per_day, max: 40, why: "less modulation, a few more starts, still bounded by the buffer"}
+  - {kpi: zone_mean_occupied_c, min: 20, max: 23, why: "the zone is held at its set point"}
+hp_fast_controller:
+  - {kpi: hp_heat_kwh, min: 45, max: 60, why: "the load of the week does not depend on the controller of the speed"}
+  - {kpi: hp_scop, min: 2.8, max: 4.9, why: "as hp_shoulder: a stiffer controller runs the compressor faster for shorter, a few percent off the COP"}
+  - {kpi: hp_starts_per_day, max: 40, why: "the buffer still bounds the cycling"}
+  - {kpi: zone_mean_occupied_c, min: 20, max: 23, why: "the zone is held at its set point"}
+hp_long_minimum_times:
+  - {kpi: hp_shortest_run_min, min: 19, why: "compressor_minimum_on_time = 1200 s holds the compressor 20 minutes once started"}
+  - {kpi: hp_shortest_stop_min, min: 19, why: "compressor_minimum_off_time = 1200 s keeps the compressor off 20 minutes once stopped"}
+  - {kpi: hp_starts_per_day, max: 9.5, why: "longer runs, fewer starts than hp_shoulder (9.4 to 10.6 a day)"}
+  - {kpi: hp_heat_kwh, min: 45, max: 60, why: "the load of the week does not depend on the minimum times"}
+  - {kpi: zone_mean_occupied_c, min: 20, max: 23, why: "the zone is held at its set point"}
+hp_buffer_losses:
+  - {kpi: hp_heat_kwh, min: 168, max: 195, why: "a 100 l buffer (1.25 m2) behind 0.1 m of insulation at 0.4 W/(m.K) loses 5 W/K: 175 to 190 W at 40 degC in a 5 degC room, 25 to 32 kWh over the week on top of the 150 kWh of hp_winter"}
+  - {kpi: hp_scop, min: 2.4, max: 3.6, why: "the heat pump works at the same temperatures as in hp_winter"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22, why: "the zone is held at its set point apart from the morning recovery"}
+
 # The other heat pump models and sources of the catalogue (Buildings and IDEAS), the coldest week.
 hp_table_winter:
   - {kpi: hp_scop, min: 2.4, max: 3.6, why: "the Vitocal data given as a table: the same heat pump as hp_winter"}
@@ -167,6 +195,14 @@ valve_onoff:
   - {kpi: valve_hours_open, min: 10, why: "the valve is either fully open or closed"}
   - {kpi: pump_hours_without_demand, max: 1, why: "the collector control stops the pump when the valve is closed"}
   - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+valve_onoff_band:
+  - {kpi: valve_movements_per_day, max: 35, why: "on_off_band = 1 K: a third of the switches of valve_onoff (43 to 13 a day with Buildings, 85 to 30 with FastSmoothBuildings)"}
+  - {kpi: zone_tracking_rmse_k, max: 1.5, why: "the zone swings within the wider band"}
+  - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}
+valve_pi_gain:
+  - {kpi: zone_tracking_rmse_k, max: 0.9, why: "heating_loop_gain = 1: the loop follows the set point closer than valve_pi (1.19 to 0.78 K with Buildings, 0.75 to 0.62 K with FastSmoothBuildings)"}
+  - {kpi: valve_movements_per_day, min: 10, max: 80, why: "a stiffer loop moves the valve more (5.6 to 26 a day with Buildings, 3.9 to 17 with FastSmoothBuildings)"}
+  - {kpi: zone_mean_occupied_c, min: 20.5, max: 22.5, why: "the zone is held at its set point, with a shorter morning recovery"}
 valve_nonlinear:
   - {kpi: zone_tracking_rmse_k, max: 1.5, why: "the flow law of the valve does not change what the controller achieves"}
   - {kpi: zone_mean_occupied_c, min: 19.5, max: 22.5, why: "the zone is held at its set point apart from the morning recovery"}

@@ -6770,8 +6770,10 @@ end building;
   parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
     parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
+emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 
@@ -6828,8 +6830,10 @@ connect(dataBus.OccupiedSpace_3, occSch2.occupied);
   parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
     parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
+emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 
@@ -6886,8 +6890,10 @@ connect(dataBus.OccupiedSpace_2, occSch2.occupied);
   parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
     parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
+emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 
@@ -6944,8 +6950,10 @@ connect(dataBus.OccupiedSpace_1, occSch2.occupied);
   parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
     parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
+emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 
@@ -7002,8 +7010,10 @@ connect(dataBus.OccupiedSpace_6, occSch2.occupied);
   parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
     parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
+emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 
@@ -7078,8 +7088,10 @@ connect(dataBus.OccupiedSpace_8, occSch2.occupied);
   parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
     parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
+emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 
@@ -7145,8 +7157,10 @@ connect(dataBus.OccupiedSpace_11, occSch2.occupied);
   parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
     parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
+emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 
@@ -7203,8 +7217,10 @@ connect(dataBus.OccupiedSpace_5, occSch2.occupied);
   parameter   Modelica.Units.SI.Temperature THeaSet= 273.15+24;
     parameter   Modelica.Units.SI.Temperature THeaSetBack= 273.15+16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real kHeaCon(min=0) = 0.1 "Gain of the heating loop";
+parameter Modelica.Units.SI.Time TiHeaCon = 900 "Integral time of the heating loop";
 Buildings.Controls.OBC.ASHRAE.G36.ThermalZones.ControlLoops
-emissionControl
+emissionControl(kHeaCon=kHeaCon, TiHeaCon=TiHeaCon)
 annotation (Placement(transformation(extent={{-36,-36},{28,38}}))); Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 
