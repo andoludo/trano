@@ -137,11 +137,25 @@
     {%- if element.parameters.supply_air_minimum_temperature is not none -%}
     {{ unsupported('Ventilation ' ~ element.name ~ ': the heat recovery unit of the FastSmoothBuildings library has no post-heater.') }}
     {%- endif -%}
-    {%- if library == 'FastSmoothBuildings' and element.parameters.fan_schedule is not none %}
-    Modelica.Blocks.Sources.CombiTimeTable {{ element.name }}_sch(
-        table={{ element.parameters.fan_schedule }},
-        extrapolation=Modelica.Blocks.Types.Extrapolation.Periodic,
-        smoothness=Modelica.Blocks.Types.Smoothness.ConstantSegments) "Fan schedule of {{ element.name }}";
+    {#- The fan schedule as a day table of the library (Utilities.dayTable, linear between its rows): each row of the
+        YAML is held until 60 s before the next one, where the fraction ramps to the next value. A table of the
+        Modelica Standard Library is not part of what rumoca translates. #}
+    {%- set fan_speed = '1' -%}
+    {%- if library == 'FastSmoothBuildings' and element.parameters.fan_schedule is not none -%}
+    {%- set rows = [] -%}
+    {%- for row in (element.parameters.fan_schedule | string | replace('[', '') | replace(']', '')).split(';') -%}
+    {%- set _ = rows.append([row.split(',')[0] | float, row.split(',')[1] | float]) -%}
+    {%- endfor -%}
+    {%- if rows[0][0] != 0 -%}
+    {{ unsupported('Ventilation ' ~ element.name ~ ': the fan schedule of the FastSmoothBuildings library starts at midnight (its first row at 0 s).') }}
+    {%- endif -%}
+    {%- set points = [] -%}
+    {%- for row in rows -%}
+    {%- set end = rows[loop.index][0] if not loop.last else 86400.0 -%}
+    {%- set _ = points.append(row[0] ~ ', ' ~ row[1]) -%}
+    {%- set _ = points.append((end - ([60, (end - row[0]) / 2] | min)) ~ ', ' ~ row[1]) -%}
+    {%- endfor -%}
+    {%- set fan_speed = 'FastSmoothBuildings.Utilities.dayTable(FastSmoothBuildings.Utilities.timeOfDay(time), [' ~ points | join('; ') ~ '])' -%}
     {%- endif %}
     {{ package_name }}.Components.BaseClasses.HeatRecoveryUnit{{ element.name | capitalize }} {{ element.name }}(
         nPorts_a={{ macros.connections(element, 'port_a') }},
@@ -151,7 +165,7 @@
         dpSup_nominal={{ parameters.dpSup_nominal if parameters.dpSup_nominal is defined else parameters.dp_nominal }},
         dpRet_nominal={{ parameters.dpRet_nominal if parameters.dpRet_nominal is defined else parameters.dp_nominal }}
         {%- if library == 'FastSmoothBuildings' %},
-        y={{ element.name ~ '_sch.y[1]' if element.parameters.fan_schedule is not none else 1 }}{% endif %})
+        y={{ fan_speed }}{% endif %})
   variant: system_d
 
 - classes:

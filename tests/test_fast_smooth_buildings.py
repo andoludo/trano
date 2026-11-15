@@ -754,6 +754,36 @@ def test_the_heat_pump_control_takes_the_heating_curve_of_the_yaml(tmp_path: Pat
     assert "dTHys=3" in control.group(1)
 
 
+def _scheduled_fans(tmp_path: Path, schedule: str) -> Path:
+    import yaml
+
+    data = yaml.safe_load((ROOT / "examples" / "residential_after_renovation.yaml").read_text())
+    [ahu] = [system["air_handling_unit"] for system in data["systems"] if "air_handling_unit" in system]
+    ahu["parameters"]["fan_schedule"] = schedule
+    path = tmp_path / "ahu_fan_schedule.yaml"
+    path.write_text(yaml.safe_dump(data))
+    return path
+
+
+def test_the_fan_schedule_is_a_day_table_of_the_library(tmp_path: Path) -> None:
+    """Each row of the schedule is held until a minute before the next one, in Utilities.dayTable: a table of the
+    Modelica Standard Library is not among what rumoca translates, and a model with a fan schedule did not compile."""
+    path = _scheduled_fans(tmp_path, "[0, 0.5; 25200, 1; 79200, 0.5]")
+    model = _building_mpc(_model(path, "FastSmoothBuildings")).replace(" ", "")
+    unit = re.search(r"BaseClasses\.HeatRecoveryUnitAhu_001ahu_001\((.*?)\)\)", model, re.DOTALL)
+    assert unit is not None
+    assert (
+        "y=FastSmoothBuildings.Utilities.dayTable(FastSmoothBuildings.Utilities.timeOfDay(time),"
+        "[0.0,0.5;25140.0,0.5;25200.0,1.0;79140.0,1.0;79200.0,0.5;86340.0,0.5]" in unit.group(1)
+    )
+    assert "CombiTimeTable" not in model and "Modelica.Blocks" not in model
+
+
+def test_a_fan_schedule_starts_at_midnight(tmp_path: Path) -> None:
+    with pytest.raises(UnsupportedElementError, match="starts at midnight"):
+        _model(_scheduled_fans(tmp_path, "[25200, 1; 79200, 0.5]"), "FastSmoothBuildings")
+
+
 def _heat_pump_house(tmp_path: Path, **parameters: float) -> Path:
     import yaml
 
