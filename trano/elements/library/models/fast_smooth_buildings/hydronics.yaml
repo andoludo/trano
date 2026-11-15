@@ -401,7 +401,7 @@
         m_flow_nominal={{ parameters.m_flow_nominal }},
         {%- if library == 'FastSmoothBuildings' %}
         pressureDriven=true,
-        y={{ element.control.name ~ '.y' if element.control else '1' }})
+        y={{ '1' if element.parameters and (element.parameters.constant_speed | string | lower == 'true') else (element.control.name ~ '.y' if element.control else '1') }})
         {%- else %}
         y=1)
         {%- endif %}
@@ -483,7 +483,8 @@
     {%- if parameters.useStorageTank | string | lower == 'true' -%}
     {{ unsupported('Boiler ' ~ element.name ~ ' has a storage tank: the FastSmoothBuildings library has no tank yet.') }}
     {%- endif -%}
-    {%- set demand = element.control.name ~ '.y' if element.control and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
+    {%- set always_on = element.control and element.control.parameters and (element.control.parameters.always_on | string | lower == 'true') -%}
+    {%- set demand = '1' if always_on else (element.control.name ~ '.y' if element.control and (element.control.pumps or []) | selectattr('control') | list else '1') -%}
     {#- the boiler without storage holds TempSet; the boiler with a storage tank in Buildings holds the set point of
         its tank control here, the library having no tank -#}
     {%- set tank_set_point = element.control.parameters.tsup_nominal if element.variant == 'default' and element.control and element.control.parameters and element.control.parameters.tsup_nominal is not none else none -%}
@@ -684,7 +685,8 @@
     {%- if element.parameters.heat_pump_source_outdoor_air | string | lower == 'false' -%}
     {{ unsupported('Production ' ~ element.name ~ ': the heat pump of the FastSmoothBuildings library takes the outdoor air as source (heat_pump_source_outdoor_air).') }}
     {%- endif -%}
-    {%- set demand = element.control.name ~ '.y' if element.control and (element.control.pumps or []) | selectattr('control') | list else '1' -%}
+    {%- set always_on = element.control and element.control.parameters and (element.control.parameters.always_on | string | lower == 'true') -%}
+    {%- set demand = '1' if always_on else (element.control.name ~ '.y' if element.control and (element.control.pumps or []) | selectattr('control') | list else '1') -%}
     FastSmoothBuildings.Controls.HeatPumpControl {{ element.name }}_control(
         TSet={{ parameters.TSet }},
         {%- for name in ['TOutDes', 'TSupMin', 'TOutHeaLim', 'dTHys', 'kCom', 'TiCom', 'yComMin', 'minOnTime', 'minOffTime'] %}
