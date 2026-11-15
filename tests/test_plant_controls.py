@@ -29,13 +29,13 @@ def _systems(doc: dict, kind: str) -> list[dict]:
 
 
 def _heat_pump_demand(text: str) -> str:
-    match = re.search(r"HeatPumpControl \w+\(.*?demand=([^,]+),", text, re.S)
+    match = re.search(r"HeatPumpControl \w+\(.*?demand=([^,]+),", text, re.DOTALL)
     assert match, "no HeatPumpControl instantiation"
     return match.group(1).strip()
 
 
 def _pump_inputs(text: str) -> list[str]:
-    return [m.strip() for m in re.findall(r"Hydronics\.Pump \w+\(.*?y=([^)]+)\)", text, re.S)]
+    return [m.strip() for m in re.findall(r"Hydronics\.Pump \w+\(.*?y=([^)]+)\)", text, re.DOTALL)]
 
 
 def test_without_the_keys_the_demand_and_the_pumps_follow_their_controls(tmp_path: Path) -> None:
