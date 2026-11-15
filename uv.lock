@@ -575,11 +575,11 @@ wheels = [
 
 [[package]]
 name = "fastsmoothbuildings"
-version = "0.2.0"
+version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f3/bb/2dd23e9621632a78c34ce5c136c1650dfcfc608f3200eda382eb6f837b66/fastsmoothbuildings-0.2.0.tar.gz", hash = "sha256:2de257eb639f0ff2b2788d25e15f34100861ea7929ff28fb952452c8ebd4a313", size = 165071, upload-time = "2026-10-23T19:21:44.757Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/41/a4/ffe05f0d5051ee4760491c4fc4a791dc291b8a2473e31a21c299e1d442a8/fastsmoothbuildings-0.7.0.tar.gz", hash = "sha256:cd26025237136f31fd6227f2fb3b1ffde0b3fe5a5e8b9d304d9870e46119547c", size = 218634, upload-time = "2026-11-15T10:21:56.093Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/a0/dfd4292ef10a76eb3029af10aa5654a4736b1ed96375798b3d6529f62076/fastsmoothbuildings-0.2.0-py3-none-any.whl", hash = "sha256:670762b13ae0d544158661511bf356d69843e579fbaada4662aaded180dfd0c9", size = 244099, upload-time = "2026-10-23T19:21:43.352Z" },
+    { url = "https://files.pythonhosted.org/packages/66/8e/722dc6f5ca62159b7baecff5c88cc5c623471798d223c8dba57ee7826255/fastsmoothbuildings-0.7.0-py3-none-any.whl", hash = "sha256:e5912f899f195b3bf10381c253dc52e99de735388543320f27deed383c0212df", size = 320639, upload-time = "2026-11-15T10:21:54.972Z" },
 ]
 
 [[package]]
@@ -3361,7 +3361,7 @@ docs = [
 requires-dist = [
     { name = "buildingspy", specifier = ">=5.2.0,<6" },
     { name = "docker", specifier = ">=7.1.0,<8" },
-    { name = "fastsmoothbuildings", specifier = ">=0.2.0,<1" },
+    { name = "fastsmoothbuildings", specifier = ">=0.7.0,<1" },
     { name = "jinja2", specifier = ">=3.1.6,<4" },
     { name = "linkml", specifier = ">=1.11.1,<2" },
     { name = "networkx", specifier = ">=3.6.1,<4" },
