@@ -2403,6 +2403,33 @@
 <td><code>minOffTime</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
 </tr>
 <tr>
+<td><code>compressor_minimum_speed</code></td>
+<td>Lowest speed the compressor of the heat pump runs at, as a fraction of its full speed [1], 0.3 by default. Below the heat this speed delivers the heat pump cannot modulate: it charges its buffer and stops, in cycles (see buffer_temperature_band). At most 0.95, a compressor that hardly modulates: the controller of the speed needs a range between its lowest and its full speed</td>
+<td>library default</td>
+<td><code>yComMin</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>yComMin</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>yComMin</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>yComMin</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+</tr>
+<tr>
+<td><code>compressor_controller_gain</code></td>
+<td>Gain of the controller holding the supply temperature with the compressor speed [1/K], 0.1 by default: the share of the full speed added per kelvin the condenser outlet is below its set point</td>
+<td>library default</td>
+<td><code>kCom</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>kCom</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>kCom</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>kCom</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+</tr>
+<tr>
+<td><code>compressor_controller_integral_time</code></td>
+<td>Integral time of the controller of the compressor speed [s], 300 by default</td>
+<td>library default</td>
+<td><code>TiCom</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TiCom</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TiCom</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+<td><code>TiCom</code> (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump variant)</td>
+</tr>
+<tr>
 <td><code>heat_pump_data</code></td>
 <td>Performance data of the heat pump (air_water_heat_pump, ground_source_heat_pump, water_water_heat_pump): an EN 14511 record of Buildings 13 scaled to the nominal heating power (Vitocal251A08, the default of the air-water heat pump, an 8 kW air-water unit; SingleSplitRXM20R, a 2 kW air-air split; WAMAK_WaterToWater_220kW, a 220 kW water-water unit), <code>table</code> for the tables of heat_pump_table_heating_capacity and heat_pump_table_electrical_power, or <code>carnot</code> (the default of the ground-source and water-water heat pumps) for a constant Carnot effectiveness heat_pump_carnot_effectiveness</td>
 <td>library default</td>
@@ -2579,6 +2606,33 @@
 <td><code>k</code></td>
 <td><code>k</code></td>
 <td><code>k</code></td>
+</tr>
+<tr>
+<td><code>heating_loop_gain</code></td>
+<td>Gain of the heating loop of the default (PI) control of an emitter [1/K], 0.1 by default: the opening added per kelvin the room is below its set point</td>
+<td>library default</td>
+<td><code>kHeaCon</code> (default variant)</td>
+<td><code>kHeaCon</code> (default variant)</td>
+<td><code>kHeaCon</code> (default variant)</td>
+<td><code>kHeaCon</code> (default variant)</td>
+</tr>
+<tr>
+<td><code>heating_loop_integral_time</code></td>
+<td>Integral time of the heating loop of the default (PI) control of an emitter [s], 900 by default</td>
+<td>library default</td>
+<td><code>TiHeaCon</code> (default variant)</td>
+<td><code>TiHeaCon</code> (default variant)</td>
+<td><code>TiHeaCon</code> (default variant)</td>
+<td><code>TiHeaCon</code> (default variant)</td>
+</tr>
+<tr>
+<td><code>on_off_band</code></td>
+<td>Band of the on/off control of an emitter (variant onoff) [K], 0.1 by default: the emitter opens when the room is half the band below its set point and closes when it is half the band above</td>
+<td>library default</td>
+<td><code>bandwidth</code> (onoff variant)</td>
+<td><code>bandwidth</code> (onoff variant)</td>
+<td><code>bandwidth</code> (onoff variant)</td>
+<td><code>bandwidth</code> (onoff variant)</td>
 </tr>
 <tr>
 <td><code>data</code></td>
