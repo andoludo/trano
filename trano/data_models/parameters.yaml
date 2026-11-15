@@ -1,6 +1,14 @@
 BoilerControlParameters:
   description: Parameters of the control of a boiler or heat pump
   attributes:
+    always_on:
+      alias: always_on
+      render: false
+      description: >-
+        The generator charges its buffer whatever the emission valves ask (its demand is 1): a heat pump holding a
+        combi tank at the hot-water set point. false by default: the demand follows the valves of the circuits
+      ifabsent: string(false)
+      range: string
     threshold_outdoor_air_cutoff:
       alias: threshold_outdoor_air_cutoff
       description: Outdoor air temperature threshold; output is true when the outdoor air is below this heating cut-off limit [K]
@@ -797,6 +805,14 @@ PIDParameters:
 PumpParameters:
   description: Parameters of a circulation pump
   attributes:
+    constant_speed:
+      alias: constant_speed
+      render: false
+      description: >-
+        The pump runs at its nominal speed whatever its control says (y = 1): a circulation pump without speed
+        control. false by default: the speed follows the control
+      ifabsent: string(false)
+      range: string
     constant_input_set_point:
       alias: constInput
       description: Constant input set point

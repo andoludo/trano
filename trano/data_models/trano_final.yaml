@@ -157,6 +157,12 @@ classes:
     - boiler_control
   BoilerControlParameters:
     attributes:
+      always_on:
+        description: 'The generator charges its buffer whatever the emission valves
+          ask (its demand is 1): a heat pump holding a combi tank at the hot-water
+          set point. false by default: the demand follows the valves of the circuits'
+        ifabsent: string(false)
+        range: string
       temperature_hysteresis:
         description: Hysteresis of the tank temperature checks that start and stop
           the boiler (default and complex variants; the simple variant has no such
@@ -1456,6 +1462,12 @@ classes:
       constant_input_set_point:
         description: Constant input set point
         range: float
+      constant_speed:
+        description: 'The pump runs at its nominal speed whatever its control says
+          (y = 1): a circulation pump without speed control. false by default: the
+          speed follows the control'
+        ifabsent: string(false)
+        range: string
     description: Parameters of a circulation pump
     slot_usage:
       dp_nominal:
