@@ -628,13 +628,24 @@ OccupancyParameters:
       description: Occupancy table, each entry switching occupancy on or off
       ifabsent: string(3600*{7, 19})
       range: string
-    ach:
+    outdoor_air_change:
       alias: ACH
-      description: Infiltration [1/h]
+      description: >-
+        Outdoor-air change of the room that flushes its CO2 [1/h]: the envelope leakage plus the supply of the
+        ventilation system, not the leakage alone. The occupants that the variant co2 counts from the measured CO2
+        scale with it (OccupancyCo2.ACH); it can be read from the decays of the CO2 when the room empties. 0.9 by
+        default; `ach`, its older name, still counts when it is the only one given
       ifabsent: float(0.9)
       range: float
       minimum_value: 0
-      deprecated: the infiltration of a zone is the `ach` parameter of its space
+      default_from: self.ach if self.ach is not None else 0.9
+    ach:
+      alias: ach
+      description: Older name of outdoor_air_change [1/h]
+      range: float
+      minimum_value: 0
+      render: false
+      deprecated: use outdoor_air_change, the air change that flushes the CO2 of the room (not the infiltration of the space)
     floor_area:
       alias: AFlo
       description: Floor area [m2]

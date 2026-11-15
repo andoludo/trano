@@ -1236,6 +1236,16 @@ classes:
       occupant_density:
         description: Same as heat_gain_if_occupied
         range: string
+      outdoor_air_change:
+        description: 'Outdoor-air change of the room that flushes its CO2 [1/h]: the
+          envelope leakage plus the supply of the ventilation system, not the leakage
+          alone. The occupants that the variant co2 counts from the measured CO2 scale
+          with it (OccupancyCo2.ACH); it can be read from the decays of the CO2 when
+          the room empties. 0.9 by default; `ach`, its older name, still counts when
+          it is the only one given'
+        ifabsent: float(0.9)
+        minimum_value: 0
+        range: float
       sensible_heat_per_person:
         description: Sensible heat released per occupant [W]; with the latent heat
           and the radiant fraction it gives the `gain` matrix when that one is absent
@@ -1244,8 +1254,7 @@ classes:
     description: Occupancy schedule and heat gains of the occupants of a space
     slot_usage:
       ach:
-        description: Infiltration [1/h]
-        ifabsent: float(0.9)
+        description: Older name of outdoor_air_change [1/h]
         minimum_value: 0
         range: float
       data:
