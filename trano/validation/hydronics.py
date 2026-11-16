@@ -239,6 +239,25 @@ def check_valve_authorities(graph: ModelGraph) -> Iterator[Issue]:
             )
 
 
+def check_valve_leakages(graph: ModelGraph) -> Iterator[Issue]:
+    """A valve's leakage must stay below 1/rangeability: above it the closed valve passes more than the valve just
+    opened (the equal-percentage law gives 1/rangeability at y = 0), and Buildings and IDEAS stop at initialization."""
+    for valve in (component for component in graph.components.values() if component.kind == "valve"):
+        parameters = _parameters(valve)
+        leakage = _value("ValveParameters", parameters, "valve_leakage")
+        rangeability = _value("ValveParameters", parameters, "rangeability")
+        if leakage is None or not rangeability or leakage < 1 / rangeability:
+            continue
+        yield Issue(
+            "error",
+            valve.id,
+            f"its valve_leakage ({leakage:g}) is not below 1/rangeability ({1 / rangeability:.3g}): the closed valve "
+            "would pass more than the valve just opened, and Buildings and IDEAS stop at initialization ('Wrong "
+            f"parameters in valve model'). Lower valve_leakage below {1 / rangeability:.3g}, or raise rangeability "
+            f"above {1 / leakage:.3g}.",
+        )
+
+
 def heat_pump_supply(boiler: Component) -> float | None:
     """The highest supply temperature of a heat pump: its set point at the design outdoor temperature."""
     if boiler.variant not in HEAT_PUMP_VARIANTS:
@@ -353,4 +372,5 @@ def check_hydronics(graph: ModelGraph) -> Iterator[Issue]:
     yield from check_three_way_valve_layouts(graph, flow)
     yield from check_pump_flows(graph, flow)
     yield from check_valve_authorities(graph)
+    yield from check_valve_leakages(graph)
     yield from check_heat_pump_radiators(graph, flow)

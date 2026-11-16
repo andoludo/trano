@@ -817,6 +817,15 @@ classes:
           of an emitter [s], 900 by default
         minimum_value: 0
         range: float
+      minimum_opening:
+        description: 'Smallest opening of the proportional control of an emitter (variants
+          PController and MonitoredSetpoint) [1], 0 by default: the valve stays this
+          far open whatever the room temperature, as a thermostatic valve with a minimum
+          position or a radiator kept on (often the hall), which keeps the water of
+          the circuit flowing when the other rooms are warm'
+        maximum_value: 1
+        minimum_value: 0
+        range: float
       on_off_band:
         description: 'Band of the on/off control of an emitter (variant onoff) [K],
           0.1 by default: the emitter opens when the room is half the band below its

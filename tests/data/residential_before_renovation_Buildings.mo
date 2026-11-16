@@ -6004,6 +6004,7 @@ end building;
   parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
   parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
   Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));  Buildings.Controls.SetPoints.OccupancySchedule
                    occSch2(firstEntryOccupied=true, occupancy=schedule)
@@ -6014,7 +6015,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -6046,6 +6047,7 @@ connect(dataBus.OccupiedLiving_001, occSch2.occupied);
   parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
   parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
   Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));  Buildings.Controls.SetPoints.OccupancySchedule
                    occSch2(firstEntryOccupied=true, occupancy=schedule)
@@ -6056,7 +6058,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -6088,6 +6090,7 @@ connect(dataBus.OccupiedKitchen_001, occSch2.occupied);
   parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
   parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
   Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));  Buildings.Controls.SetPoints.OccupancySchedule
                    occSch2(firstEntryOccupied=true, occupancy=schedule)
@@ -6098,7 +6101,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -6130,6 +6133,7 @@ connect(dataBus.OccupiedBedroom_1_001, occSch2.occupied);
   parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
   parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
   Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));  Buildings.Controls.SetPoints.OccupancySchedule
                    occSch2(firstEntryOccupied=true, occupancy=schedule)
@@ -6140,7 +6144,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -6172,6 +6176,7 @@ connect(dataBus.OccupiedBedroom_2_001, occSch2.occupied);
   parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
   parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
   Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));  Buildings.Controls.SetPoints.OccupancySchedule
                    occSch2(firstEntryOccupied=true, occupancy=schedule)
@@ -6182,7 +6187,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)
@@ -6214,6 +6219,7 @@ connect(dataBus.OccupiedBedroom_3_001, occSch2.occupied);
   parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
   parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
   Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));  Buildings.Controls.SetPoints.OccupancySchedule
                    occSch2(firstEntryOccupied=true, occupancy=schedule)
@@ -6224,7 +6230,7 @@ annotation (Placement(transformation(extent={{-80,32},{-60,52}})));  Buildings.C
     "Heat gain if occupied in room 2"
 annotation (Placement(transformation(extent={{-80,-60},{-60,-40}})));  Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
         transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));      IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
             transformation(extent={{26,-10},{46,10}})));equation 
   connect(occSch2.occupied, switch2.u2)

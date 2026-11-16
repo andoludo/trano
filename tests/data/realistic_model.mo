@@ -7045,11 +7045,12 @@ parameter Real schedule[:]=3600*{7,19};
 parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
 parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
 Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
       transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
           transformation(extent={{26,-10},{46,10}})));Modelica.Blocks.Routing.RealPassThrough MonitoredSetpoint
 annotation (Placement(transformation(extent={{-38,38},{-18,58}})));equation 
@@ -7085,11 +7086,12 @@ parameter Real schedule[:]=3600*{7,19};
 parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
 parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
 Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
       transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
           transformation(extent={{26,-10},{46,10}})));Modelica.Blocks.Routing.RealPassThrough MonitoredSetpoint
 annotation (Placement(transformation(extent={{-38,38},{-18,58}})));equation 
@@ -7116,11 +7118,12 @@ parameter Real schedule[:]=3600*{7,19};
 parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
 parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
 Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
       transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
           transformation(extent={{26,-10},{46,10}})));Modelica.Blocks.Routing.RealPassThrough MonitoredSetpoint
 annotation (Placement(transformation(extent={{-38,38},{-18,58}})));equation 
@@ -7147,11 +7150,12 @@ parameter Real schedule[:]=3600*{7,19};
 parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
 parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
 Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
       transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
           transformation(extent={{26,-10},{46,10}})));Modelica.Blocks.Routing.RealPassThrough MonitoredSetpoint
 annotation (Placement(transformation(extent={{-38,38},{-18,58}})));equation 
@@ -7187,11 +7191,12 @@ parameter Real schedule[:]=3600*{7,19};
 parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
 parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
 Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
       transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
           transformation(extent={{26,-10},{46,10}})));Modelica.Blocks.Routing.RealPassThrough MonitoredSetpoint
 annotation (Placement(transformation(extent={{-38,38},{-18,58}})));equation 
@@ -7227,11 +7232,12 @@ parameter Real schedule[:]=3600*{7,19};
 parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
 parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
 Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
       transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
           transformation(extent={{26,-10},{46,10}})));Modelica.Blocks.Routing.RealPassThrough MonitoredSetpoint
 annotation (Placement(transformation(extent={{-38,38},{-18,58}})));equation 
@@ -7258,11 +7264,12 @@ parameter Real schedule[:]=3600*{7,19};
 parameter Modelica.Units.SI.Temperature THeaSet=273.15 + 24;
 parameter Modelica.Units.SI.Temperature THeaSetBack=273.15 + 16;
 parameter Real k(min=0) = 1 "Gain of controller";
+parameter Real yMin(min=0, max=1) = 0 "Smallest opening";
 Modelica.Blocks.Interfaces.RealOutput y
 annotation (Placement(transformation(extent={{100,-8},{120,12}})));
 Trano.Controls.BaseClasses.DataBus dataBus annotation (Placement(
       transformation(extent={{-120,-18},{-80,22}}), iconTransformation(
-extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k)
+extent={{-120,62},{-78,98}})));    IDEAS.Controls.Continuous.LimPID conPID(controllerType=Modelica.Blocks.Types.SimpleController.P, k=k, yMin=yMin)
 annotation (Placement(
           transformation(extent={{26,-10},{46,10}})));Modelica.Blocks.Routing.RealPassThrough MonitoredSetpoint
 annotation (Placement(transformation(extent={{-38,38},{-18,58}})));equation 

@@ -422,6 +422,14 @@ RULES: list[tuple[str, Model, Change, Change, str, str]] = [
         "spaces[0].emissions[0].radiator.parameters.bogus",
         "unknown field",
     ),
+    (
+        "T6 valve leakage above 1/rangeability",
+        HYDRONIC,
+        parameters(lambda m: emission(m, "VALVE:003"), valve_leakage=0.08),
+        parameters(lambda m: emission(m, "VALVE:003"), valve_leakage=0.08, rangeability=10),
+        "VALVE:003",
+        "1/rangeability",
+    ),
 ]
 
 

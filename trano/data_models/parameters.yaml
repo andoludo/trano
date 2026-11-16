@@ -596,6 +596,21 @@ EmissionControlParameters:
         ideas: *onoff_band
         reduced_order: *onoff_band
         iso_13790: *onoff_band
+    minimum_opening:
+      alias: yMin
+      description: >-
+        Smallest opening of the proportional control of an emitter (variants PController and MonitoredSetpoint)
+        [1], 0 by default: the valve stays this far open whatever the room temperature, as a thermostatic valve
+        with a minimum position or a radiator kept on (often the hall), which keeps the water of the circuit
+        flowing when the other rooms are warm
+      range: float
+      minimum_value: 0
+      maximum_value: 1
+      libraries:
+        buildings: &minimum_opening {name: yMin, variants: [PController, MonitoredSetpoint]}
+        ideas: *minimum_opening
+        reduced_order: *minimum_opening
+        iso_13790: *minimum_opening
     data:
       alias: data
       description: Occupancy data sources
