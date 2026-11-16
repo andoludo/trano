@@ -30,9 +30,10 @@
         target:
           main: element.control.name
     category: ventilation
-    template: "\nmodel Pump{{ element.name | capitalize}}\nextends {{ package_name\
-      \ }}.Trano.Fluid.Ventilation.PartialPump;\n{{bus_template}}\nequation\n{{bus_ports\
-      \ | safe}}\n end Pump{{ element.name | capitalize}};\n "
+    # constant_speed: the speed input of the mover is 1 (the nominal speed) instead of the control of the bus, whose
+    # connection is left out (Buildings' preconfigured mover has a final continuous input). The newline after the
+    # endif is doubled: the environment trims the first one after a block tag
+    template: "\nmodel Pump{{ element.name | capitalize}}\nextends {{ package_name }}.Trano.Fluid.Ventilation.PartialPump;\n{{bus_template}}\nequation\n{% if element.parameters and (element.parameters.constant_speed | string | lower == 'true') %}{% for line in bus_ports.split('\\n') if not line.strip().endswith(', pumRad.y);') %}{{ line | safe }}\n{% endfor %}pumRad.y = 1;{% else %}{{bus_ports | safe}}{% endif %}\n\n end Pump{{ element.name | capitalize}};\n "
   figures: []
   library: default
   parameter_processing:

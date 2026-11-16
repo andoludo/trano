@@ -8,6 +8,7 @@ import re
 import warnings
 from pathlib import Path
 
+import pytest
 import yaml
 
 from trano.data_models.conversion import convert_network
@@ -56,3 +57,21 @@ def test_always_on_makes_the_demand_one_and_constant_speed_the_pump_input_one(tm
     inputs = _pump_inputs(text)
     assert inputs[0] == "1"
     assert all(y.endswith(".y") for y in inputs[1:])  # the other pumps keep their control
+
+
+BUILDINGS_MODEL = Path(__file__).parent / "models" / "house_heat_pump_constant_speed.yaml"
+
+
+@pytest.mark.parametrize("library", ["Buildings", "IDEAS"])
+def test_a_constant_speed_pump_of_the_buildings_templates_runs_at_its_nominal_speed(library: str) -> None:
+    """The speed input of the mover of trano's pump is 1 instead of the control of the bus (Buildings' preconfigured
+    mover has a final continuous input); a pump without the key keeps the speed of its control."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        text = convert_network(
+            BUILDINGS_MODEL.stem, BUILDINGS_MODEL, library=Library.from_configuration(library)
+        ).model()
+    pumps = dict(re.findall(r"model (PumpPump_\d+)(.*?)end PumpPump_\d+;", text, re.DOTALL))
+    assert "pumRad.y = 1;" in pumps["PumpPump_001"]
+    assert ", pumRad.y);" not in pumps["PumpPump_001"]
+    assert all(", pumRad.y);" in body for name, body in pumps.items() if name != "PumpPump_001")
