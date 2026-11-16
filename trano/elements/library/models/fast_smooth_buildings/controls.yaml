@@ -190,7 +190,8 @@
         schedule={{ parameters.schedule }},
         THeaSet={{ parameters.THeaSet }},
         THeaSetBack={{ parameters.THeaSetBack }},
-        k={{ parameters.k }})
+        k={{ parameters.k }}{% if parameters.get('yMin') is not none %},
+        yMin={{ parameters.yMin }}{% endif %})
   variant: PController
 # The set point of MonitoredSetpoint, read from the data bus, is an input of building_mpc (<control>_TSet, a
 # disturbance): the runnable model replays the column of the external data that the YAML names for it, or holds the
@@ -233,7 +234,8 @@
   ports: *emission_ports
   template: |-
     {{ package_name }}.Components.BaseClasses.EmissionMonitored{{ element.name | capitalize }} {{ element.name }}(
-        k={{ parameters.k }})
+        k={{ parameters.k }}{% if parameters.get('yMin') is not none %},
+        yMin={{ parameters.yMin }}{% endif %})
   runnable:
     declaration: |-
       {%- set column = (element.parameters.data or []) | selectattr('component', 'eq', 'MonitoredSetpoint') | map(attribute='variable') | first -%}

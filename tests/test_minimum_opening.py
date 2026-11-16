@@ -1,6 +1,6 @@
 """The smallest opening of a proportional emission control (`minimum_opening`, the yMin of its controller): a
 thermostatic valve with a minimum position, or a radiator kept on, stays that far open whatever the room temperature.
-Without the key nothing changes; FastSmoothBuildings, whose controls have no such limit yet, leaves it out."""
+Without the key nothing changes; FastSmoothBuildings (0.9.0) takes it too."""
 
 from __future__ import annotations
 
@@ -42,6 +42,8 @@ def test_without_the_key_the_controls_take_no_minimum(tmp_path: Path) -> None:
     assert all("yMin" not in _instance(text, f"emission_control_00{i}") for i in (1, 2, 3, 4, 5, 6))
 
 
-def test_fast_smooth_buildings_does_not_take_it_yet() -> None:
-    """Its emission controls limit the opening to [0, 1] in the library: the key is left out of its model."""
-    assert "yMin" not in _instance(_model(MODEL, "FastSmoothBuildings"), "emission_control_002")
+def test_fast_smooth_buildings_takes_it_too() -> None:
+    """FastSmoothBuildings (0.9.0) limits the output of its proportional controls to [yMin, 1]."""
+    text = _model(MODEL, "FastSmoothBuildings")
+    assert "yMin=0.18" in _instance(text, "emission_control_002")
+    assert "yMin" not in _instance(text, "emission_control_001")

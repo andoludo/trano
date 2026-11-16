@@ -51,7 +51,7 @@ dependencies = [
     "pydot>=3.0.4,<4",
     "yattag>=1.16.1,<2",
     "trano-simulate>=0.3.0,<1",
-    "fastsmoothbuildings>=0.7.0,<1",
+    "fastsmoothbuildings>=0.9.0,<1",
 ]
 
 [project.urls]
