@@ -246,8 +246,8 @@ def _instantiate_components(component_data_list: list[dict[str, Any]], systems: 
     components = []
     for component_data in component_data_list:
         component = _instantiate_component(component_data)
-        systems[component.name] = component.component_instance
-        components.append(component.component_instance)
+        # A duct named by two spaces (transfer air) is one element, whichever space comes first.
+        components.append(systems.setdefault(component.name, component.component_instance))
     return components
 
 

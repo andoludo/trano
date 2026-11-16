@@ -470,6 +470,18 @@ def test_ventilation_duct_shared_by_two_spaces_is_accepted() -> None:
     assert convert_network("transfer", MODELS / "multizone_air_handling_unit_space_connected.yaml").model()
 
 
+def test_ventilation_duct_shared_by_two_spaces_listed_in_any_order(tmp_path: Path) -> None:
+    """The space the transfer air enters listed before the space it leaves: still one duct."""
+    path = _write(
+        load("multizone_air_handling_unit_space_connected.yaml"),
+        lambda m: m["spaces"].reverse(),
+        tmp_path,
+        "transfer_reversed",
+    )
+    text = convert_network("transfer_reversed", path).model()
+    assert len(re.findall(r"connect\(duct_002\.port_a", text)) == 1
+
+
 def test_weather_file_not_found_is_a_warning(tmp_path: Path) -> None:
     path = _write(
         HYDRONIC, lambda m: m.update(weather={"parameters": {"path": "/nowhere/weather.mos"}}), tmp_path, "weather"
